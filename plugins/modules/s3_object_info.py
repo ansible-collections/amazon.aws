@@ -87,6 +87,232 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+object_info:
+  description: "S3 object details"
+  returned: always
+  type: complex
+  contains:
+    object_acl:
+      description: Access control list (ACL) of an object.
+      returned: when I(object_acl) is set to I(true).
+      type: complex
+      contains:
+        owner:
+          description: bucket owner's display name and ID.
+          returned: always
+          type: complex
+          contains:
+            id:
+              description: bucket owner's ID.
+              returned: always
+              type: str
+              sample: '0xxxxxxxxxbc0f7172xxxxxxxxxaa4xxxxxxxxxa301812fb644xxxxxxxxx'
+            display_name:
+              description: bucket owner's display name.
+              returned: always
+              type: str
+              sample: 'abcdegfhi'
+        grants:
+          description: A list of grants.
+          returned: always
+          type: complex
+          contains:
+            grantee:
+              description: The person being granted permissions.
+              returned: always
+              type: complex
+              contains:
+                id:
+                  description: The canonical user ID of the grantee.
+                  returned: always
+                  type: str
+                  sample: '0xxxxxxxxxbc0f7172xxxxxxxxxaa4xxxxxxxxxa301812fb644xxxxxxxxx'
+                type:
+                  description: Type of grantee.
+                  returned: always
+                  type: str
+                  sample: "CanonicalUser"
+            permission:
+              description: Specifies the permission given to the grantee.
+              returned: always
+              type: str
+              sample: "FULL_CONTROL"
+    object_attributes:
+      description: Object attributes.
+      returned: when I(object_attributes) is set to I(true).
+      type: complex
+      contains:
+        etag:
+          description: An ETag is an opaque identifier assigned by a web server to a specific version of a resource found at a URL.
+          returned: always
+          type: str
+          sample: "8fa34xxxxxxxxxxxxxxxxxxxxx35c6f3b"
+        last_modified:
+          description: The creation date of the object.
+          returned: always
+          type: datetime
+          sample: "2022-08-10T01:11:03+00:00""
+        object_size:
+          description: The size of the object in bytes.
+          returned: alwayS
+          type: int
+          sample: 819
+        checksum:
+          description: The checksum or digest of the object.
+          returned: always
+          type: complex
+          contains:
+            checksum_crc32:
+              description: The base64-encoded, 32-bit CRC32 checksum of the object.
+              returned: if it was upload with the object.
+              type: str
+              sample: "xxxxxxxxxxxx"
+            checksum_crc32c:
+              description: The base64-encoded, 32-bit CRC32C checksum of the object.
+              returned: if it was upload with the object.
+              type: str
+              sample: "xxxxxxxxxxxx"
+            checksum_sha1:
+              description: The base64-encoded, 160-bit SHA-1 digest of the object.
+              returned: if it was upload with the object.
+              type: str
+              sample: "xxxxxxxxxxxx"
+            checksum_sha256:
+              description: The base64-encoded, 256-bit SHA-256 digest of the object.
+              returned: if it was upload with the object.
+              type: str
+              sample: "xxxxxxxxxxxx"
+        object_parts:
+          description: A collection of parts associated with a multipart upload.
+          returned: always
+          type: complex
+          contains:
+            total_parts_count:
+              description: The total number of parts.
+              returned: always
+              type: int
+            part_number_marker:
+              description: The marker for the current part.
+              returned: always
+              type: int
+            next_part_number_marker:
+              description: When a list is truncated, this element specifies the last part in the list, as well as the value to use for the PartNumberMarker request parameter in a subsequent request.
+              returned: always
+              type: int
+            max_parts:
+              description: The maximum number of parts allowed in the response.
+              returned: always
+              type: int
+            is_truncated:
+              description: Indicates whether the returned list of parts is truncated.
+              returned: always
+              type: bool
+            parts:
+              description: A container for elements related to an individual part.
+              returned: always
+              type: complex
+              contains:
+                part_number:
+                  description: The part number identifying the part. This value is a positive integer between 1 and 10,000.
+                  returned: always
+                  type: int
+                size:
+                  description: The size of the uploaded part in bytes.
+                  returned: always
+                  type: int
+                checksum_crc32:
+                  description: The base64-encoded, 32-bit CRC32 checksum of the object.
+                  returned: if it was upload with the object.
+                  type: str
+                  sample: "xxxxxxxxxxxx"
+                checksum_crc32c:
+                  description: The base64-encoded, 32-bit CRC32C checksum of the object.
+                  returned: if it was upload with the object.
+                  type: str
+                  sample: "xxxxxxxxxxxx"
+                checksum_sha1:
+                  description: The base64-encoded, 160-bit SHA-1 digest of the object.
+                  returned: if it was upload with the object.
+                  type: str
+                  sample: "xxxxxxxxxxxx"
+                checksum_sha256:
+                  description: The base64-encoded, 256-bit SHA-256 digest of the object.
+                  returned: if it was upload with the object.
+                  type: str
+                  sample: "xxxxxxxxxxxx"
+        storage_class:
+          description: The storage class information of the object.
+          returned: always
+          type: str
+          sample: "STANDARD"
+    object_legal_hold:
+      description: Object's current legal hold status
+      returned: when I(object_legal_hold) is set to I(true).
+      type: complex
+      contains:
+        legal_hold:
+          description: The current legal hold status for the specified object.
+          returned: always
+          type: complex
+          contains:
+            status:
+              description: Indicates whether the specified object has a legal hold in place.
+              returned: always
+              type: str
+              sample: "ON"
+    object_lock_configuration:
+      description: Object Lock configuration for a bucket.
+      returned: when I(object_lock_configuration) is set to I(true).
+      type: complex
+      contains:
+        object_lock_enabled:
+          description: Indicates whether this bucket has an Object Lock configuration enabled.
+          returned: always
+          type: str
+        rule:
+          description: Specifies the Object Lock rule for the specified object.
+          returned: always
+          type: complex
+          contains:
+            default_retention:
+              description: The default Object Lock retention mode and period that you want to apply to new objects placed in the specified bucket.
+              returned: always
+              type: complex
+              contains:
+                mode:
+                  description: The default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Must be used with either Days or Years.
+                  returned: always
+                  type: str
+                days:
+                  description: The number of days that you want to specify for the default retention period.
+                  returned: always
+                  type: int
+                years:
+                  description: The number of years that you want to specify for the default retention period.
+                  returned: always
+                  type: int
+    object_retention:
+      description: Object's retention settings.
+      returned: when I(object_retention) is set to I(true).
+      type: complex
+      contains:
+        retention:
+          description: The container element for an object's retention settings.
+          returned: always
+          type: complex
+          contains:
+            mode:
+              description: Indicates the Retention mode for the specified object.
+              returned: always
+              type: str
+            retain_until_date:
+              description: The date on which this Object Lock Retention will expire.
+              returned: always
+              type: datetime
+    object_tagging:
+      description: The tag-set of an object
+      returned: when I(object_tagging) is set to I(true).
+      type: complex
 '''
 
 try:
