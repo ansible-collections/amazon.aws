@@ -1304,8 +1304,8 @@ def build_top_level_options(params):
                 spec['HibernationOptions'] = {'Configured': True}
             else:
                 module.fail_json(
-                    msg="Hibernation prerequisites not satisfied. Refer {0}".format( 
-                    "Refer https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html")
+                    msg="Hibernation prerequisites not satisfied. Refer {0}".format(
+                        "Refer https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html")
                 )
     if params.get('cpu_options') is not None:
         spec['CpuOptions'] = {}
@@ -2038,7 +2038,7 @@ def main():
         placement_group=dict(type='str'),
         instance_initiated_shutdown_behavior=dict(type='str', choices=['stop', 'terminate']),
         termination_protection=dict(type='bool'),
-        hibernation_options=dict(type=bool, default=False),
+        hibernation_options=dict(type='bool', default=False),
         detailed_monitoring=dict(type='bool'),
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
