@@ -1,0 +1,81 @@
+---
+- name: Get S3 bucket ownership controls
+  aws_s3_bucket_info:
+    name_filter: "{{ name_pattern }}"
+    bucket_facts:
+      bucket_ownership_controls: true
+    transform_location: true
+  register: bucket_list
+
+- name: Assert that buckets list contains requested bucket facts
+  assert:
+    that:
+      - item.name is search(name_pattern)
+      - item.bucket_ownership_controls is defined
+  loop: "{{ bucket_list.buckets }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Get complex S3 bucket list (including ownership controls)
+  aws_s3_bucket_info:
+    name_filter: "{{ name_pattern }}"
+    bucket_facts:
+      bucket_accelerate_configuration: true
+      bucket_acl: true
+      bucket_cors: true
+      bucket_encryption: true
+      bucket_lifecycle_configuration: true
+      bucket_location: true
+      bucket_logging: true
+      bucket_notification_configuration: true
+      bucket_ownership_controls: true
+      bucket_policy: true
+      bucket_policy_status: true
+      bucket_replication: true
+      bucket_request_payment: true
+      bucket_tagging: true
+      bucket_website: true
+      public_access_block: true
+    transform_location: true
+  register: bucket_list
+
+- name: Assert that buckets list contains requested bucket facts
+  assert:
+    that:
+      - item.name is search(name_pattern)
+      - item.bucket_accelerate_configuration is defined
+      - item.bucket_acl is defined
+      - item.bucket_cors is defined
+      - item.bucket_encryption is defined
+      - item.bucket_lifecycle_configuration is defined
+      - item.bucket_location is defined
+      - item.bucket_logging is defined
+      - item.bucket_notification_configuration is defined
+      - item.bucket_ownership_controls is defined
+      - item.bucket_policy is defined
+      - item.bucket_policy_status is defined
+      - item.bucket_replication is defined
+      - item.bucket_request_payment is defined
+      - item.bucket_tagging is defined
+      - item.bucket_website is defined
+      - item.public_access_block is defined
+  loop: "{{ bucket_list.buckets }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Assert that retrieved bucket facts contains valid data
+  assert:
+    that:
+      - item.bucket_acl.Owner is defined
+      - item.bucket_tagging.snake_case is defined
+      - item.bucket_tagging.CamelCase is defined
+      - item.bucket_tagging["lowercase spaced"] is defined
+      - item.bucket_tagging["Title Case"] is defined
+      - item.bucket_tagging.snake_case == 'simple_snake_case'
+      - item.bucket_tagging.CamelCase == 'SimpleCamelCase'
+      - item.bucket_tagging["lowercase spaced"] == 'hello cruel world'
+      - item.bucket_tagging["Title Case"] == 'Hello Cruel World'
+      - item.bucket_location.LocationConstraint == aws_region
+  loop: "{{ bucket_list.buckets }}"
+  loop_control:
+    label: "{{ item.name }}"
