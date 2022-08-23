@@ -77,7 +77,7 @@ options:
               and I(group_name).
         group_name:
             type: list
-	    elements: str
+            elements: str
             description:
             - Name of the Security Group that traffic is coming from.
             - If the Security Group doesn't exist a new Security Group will be
