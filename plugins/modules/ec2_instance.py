@@ -1306,7 +1306,7 @@ def build_top_level_options(params):
             else:
                 module.fail_json(
                     msg="Hibernation prerequisites not satisfied. Refer {0}".format(
-                        "Refer https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html")
+                        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html")
                 )
     if params.get('cpu_options') is not None:
         spec['CpuOptions'] = {}
