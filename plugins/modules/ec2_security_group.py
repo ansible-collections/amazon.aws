@@ -76,11 +76,13 @@ options:
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_name:
-            type: str
+            type: list
+            elements: str
             description:
             - Name of the Security Group that traffic is coming from.
             - If the Security Group doesn't exist a new Security Group will be
               created with I(group_desc) as the description.
+            - I(group_name) can accept values of type str and list.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_desc:
