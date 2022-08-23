@@ -315,14 +315,21 @@ object_info:
       type: complex
 '''
 
+import os
+
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.six.moves.urllib.parse import urlparse
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 
 
 def describe_s3_object_acl(connection, module, bucket_name, object_key):
@@ -516,6 +523,45 @@ def get_object(connection, module, bucket_name, object_key):
         return
 
 
+
+def is_fakes3(s3_url):
+    """ Return True if s3_url has scheme fakes3:// """
+    if s3_url is not None:
+        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
+    else:
+        return False
+
+
+def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=False):
+    if s3_url and rgw:  # TODO - test this
+        rgw = urlparse(s3_url)
+        params = dict(module=module, conn_type='client', resource='s3', use_ssl=rgw.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
+    elif is_fakes3(s3_url):
+        fakes3 = urlparse(s3_url)
+        port = fakes3.port
+        if fakes3.scheme == 'fakes3s':
+            protocol = "https"
+            if port is None:
+                port = 443
+        else:
+            protocol = "http"
+            if port is None:
+                port = 80
+        params = dict(module=module, conn_type='client', resource='s3', region=location,
+                      endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
+                      use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
+    else:
+        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
+        params['config'] = botocore.client.Config(signature_version='s3v4')
+        if module.params['dualstack']:
+            dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
+            if 'config' in params:
+                params['config'] = params['config'].merge(dualconf)
+            else:
+                params['config'] = dualconf
+    return boto3_conn(**params)
+
+
 def main():
 
     argument_spec = dict(
@@ -529,7 +575,10 @@ def main():
         )),
         bucket_name=dict(required=True, type='str'),
         object_key=dict(required=False, type='str'),
-        object_attributes=dict(type='list', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])
+        object_attributes=dict(type='list', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']),
+        s3_url=dict(),
+        dualstack=dict(default='no', type='bool'),
+        rgw=dict(default='no', type='bool'),
     )
 
     module = AnsibleAWSModule(
@@ -537,10 +586,45 @@ def main():
         supports_check_mode=True,
     )
 
-    try:
-        connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+
+    # Get s3 Connection object ========================================
+    s3_url = module.params.get('s3_url')
+    dualstack = module.params.get('dualstack')
+    rgw = module.params.get('rgw')
+    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+
+    if region in ('us-east-1', '', None):
+        # default to US Standard region
+        location = 'us-east-1'
+    else:
+        # Boto uses symbolic names for locations but region strings will
+        # actually work fine for everything except us-east-1 (US Standard)
+        location = region
+
+    # allow eucarc environment variables to be used if ansible vars aren't set
+    if not s3_url and 'S3_URL' in os.environ:
+        s3_url = os.environ['S3_URL']
+
+    if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
+        module.fail_json(msg='dualstack only applies to AWS S3')
+
+    # rgw requires an explicit url
+    if rgw and not s3_url:
+        module.fail_json(msg='rgw flavour requires s3_url')
+
+    # Look at s3_url and tweak connection settings
+    # if connecting to RGW, Walrus or fakes3
+    if s3_url:
+        for key in ['validate_certs', 'security_token', 'profile_name']:
+            aws_connect_kwargs.pop(key, None)
+    connection = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
+
+    # try:
+        # connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+    # except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    #     module.fail_json_aws(e, msg='Failed to connect to AWS')
+
+    #======================================================
 
     result = {}
 
