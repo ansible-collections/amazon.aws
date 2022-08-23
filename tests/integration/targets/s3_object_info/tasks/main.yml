@@ -11,7 +11,6 @@
       s3_bucket:
         name: "{{ bucket_name }}"
         state: present
-        # acl: public-read-write
         object_ownership: BucketOwnerEnforced
         tags:
           "lowercase spaced": "hello cruel world"
@@ -47,9 +46,13 @@
         src: "{{ remote_tmp_dir }}/upload.txt"
         mode: put
         permission: bucket-owner-full-control
+        tags:
+          "lowercase spaced": "hello cruel world"
+          "Title Case": "Hello Cruel World"
+          CamelCase: "SimpleCamelCase"
+          snake_case: "simple_snake_case"
 
     - include_tasks: basic.yml
-    # - include_tasks: bucket_ownership_controls.yml
 
   always:
     - name: list bucket object

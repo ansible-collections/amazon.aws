@@ -79,11 +79,6 @@
 - name: Get s3 object info
   amazon.aws.s3_object_info:
     bucket_name: "{{ bucket_name }}"
-    object_key: "upload.txt"
-
-- name: Get s3 object info
-  amazon.aws.s3_object_info:
-    bucket_name: "{{ bucket_name }}"
     object_key: upload.txt
     object_details:
       object_acl: true
@@ -92,28 +87,9 @@
       object_lock_configuration: true
       object_attributes: false
       object_retention: true
-    # object_attributes:
-    #   - ETag
-    #   - ObjectSize
-    #   - StorageClass
-    #   - Checksum
-    #   - ObjectParts
-
-- name: Get s3 object info
-  amazon.aws.s3_object_info:
-    bucket_name: "{{ bucket_name }}"
-    object_key: "upload.txt"
-    object_details:
-      object_acl: true
-      object_tagging: true
-      object_legal_hold: true
-      object_lock_configuration: true
-      object_attributes: false
-      object_retention: true
-    # object_attributes:
-    #   - ETag
-    #   - ObjectSize
-    #   - StorageClass
-    #   - Checksum
-    #   - ObjectParts
-
+    object_attributes:
+      - ETag
+      - ObjectSize
+      - StorageClass
+      - Checksum
+      - ObjectParts
