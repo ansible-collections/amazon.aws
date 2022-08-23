@@ -247,7 +247,7 @@ object_info:
           sample: "STANDARD"
     object_legal_hold:
       description: Object's current legal hold status
-      returned: when I(object_legal_hold) is set to I(true).
+      returned: when I(object_legal_hold) is set to I(true) and required configuration is set on bucket.
       type: complex
       contains:
         legal_hold:
@@ -262,7 +262,7 @@ object_info:
               sample: "ON"
     object_lock_configuration:
       description: Object Lock configuration for a bucket.
-      returned: when I(object_lock_configuration) is set to I(true).
+      returned: when I(object_lock_configuration) is set to I(true) and required configuration is set on bucket.
       type: complex
       contains:
         object_lock_enabled:
@@ -293,7 +293,7 @@ object_info:
                   type: int
     object_retention:
       description: Object's retention settings.
-      returned: when I(object_retention) is set to I(true).
+      returned: when I(object_retention) is set to I(true) and required configuration is set on bucket.
       type: complex
       contains:
         retention:
@@ -315,21 +315,15 @@ object_info:
       type: complex
 '''
 
-import os
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.six.moves.urllib.parse import urlparse
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 
 
 def describe_s3_object_acl(connection, module, bucket_name, object_key):
@@ -505,61 +499,20 @@ def get_object(connection, module, bucket_name, object_key):
     params['Bucket'] = bucket_name
     params['Key'] = object_key
 
-    object_info = []
+    object_info = {}
 
     try:
         object_info = connection.get_object(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        pass
-    if len(object_info) != 0:
+        object_info['ERROR'] = str(e)
+
+    if len(object_info) != 0 and 'ERROR' not in object_info.keys():
         # Remove Body, ResponseMetadata from object_info, convert to snake_case
         del(object_info['Body'])
         del(object_info['ResponseMetadata'])
         object_info = camel_dict_to_snake_dict(object_info)
 
-        return object_info
-
-    else:
-        return
-
-
-
-def is_fakes3(s3_url):
-    """ Return True if s3_url has scheme fakes3:// """
-    if s3_url is not None:
-        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
-    else:
-        return False
-
-
-def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=False):
-    if s3_url and rgw:  # TODO - test this
-        rgw = urlparse(s3_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=rgw.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
-    elif is_fakes3(s3_url):
-        fakes3 = urlparse(s3_url)
-        port = fakes3.port
-        if fakes3.scheme == 'fakes3s':
-            protocol = "https"
-            if port is None:
-                port = 443
-        else:
-            protocol = "http"
-            if port is None:
-                port = 80
-        params = dict(module=module, conn_type='client', resource='s3', region=location,
-                      endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
-                      use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
-    else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
-        params['config'] = botocore.client.Config(signature_version='s3v4')
-        if module.params['dualstack']:
-            dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
-            if 'config' in params:
-                params['config'] = params['config'].merge(dualconf)
-            else:
-                params['config'] = dualconf
-    return boto3_conn(**params)
+    return object_info
 
 
 def main():
@@ -586,45 +539,10 @@ def main():
         supports_check_mode=True,
     )
 
-
-    # Get s3 Connection object ========================================
-    s3_url = module.params.get('s3_url')
-    dualstack = module.params.get('dualstack')
-    rgw = module.params.get('rgw')
-    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-
-    if region in ('us-east-1', '', None):
-        # default to US Standard region
-        location = 'us-east-1'
-    else:
-        # Boto uses symbolic names for locations but region strings will
-        # actually work fine for everything except us-east-1 (US Standard)
-        location = region
-
-    # allow eucarc environment variables to be used if ansible vars aren't set
-    if not s3_url and 'S3_URL' in os.environ:
-        s3_url = os.environ['S3_URL']
-
-    if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
-        module.fail_json(msg='dualstack only applies to AWS S3')
-
-    # rgw requires an explicit url
-    if rgw and not s3_url:
-        module.fail_json(msg='rgw flavour requires s3_url')
-
-    # Look at s3_url and tweak connection settings
-    # if connecting to RGW, Walrus or fakes3
-    if s3_url:
-        for key in ['validate_certs', 'security_token', 'profile_name']:
-            aws_connect_kwargs.pop(key, None)
-    connection = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
-
-    # try:
-        # connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
-    # except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-    #     module.fail_json_aws(e, msg='Failed to connect to AWS')
-
-    #======================================================
+    try:
+        connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     result = {}
 
@@ -642,7 +560,7 @@ def main():
         #if specific details are not requested, return object metadata
         result['object_info'] = get_object(connection, module, bucket_name, object_key)
 
-    module.exit_json(msg="Retrieved s3 object info: ", **result)
+    module.exit_json(msg="Retrieved s3 object info ", **result)
 
 
 if __name__ == '__main__':

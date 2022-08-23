@@ -86,6 +86,7 @@ action_groups:
   - route53_zone
   - s3_bucket
   - s3_object
+  - s3_object_info
 plugin_routing:
   action:
     aws_s3:

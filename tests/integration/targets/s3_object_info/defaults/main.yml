@@ -1,3 +1,0 @@
----
-name_pattern: "testbucket-ansible-integration"
-bucket_name: "{{ tiny_prefix }}-{{ name_pattern }}-1"
