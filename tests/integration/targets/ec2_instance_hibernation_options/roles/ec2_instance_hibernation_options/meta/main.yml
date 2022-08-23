@@ -1,0 +1,7 @@
+dependencies:
+- role: setup_ec2_facts
+- role: setup_botocore_pip
+  vars:
+    boto3_version: "1.20.30"
+collections:
+- amazon.aws

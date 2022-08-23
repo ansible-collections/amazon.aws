@@ -1,0 +1,20 @@
+[tests]
+instance_minimal
+instance_multiple
+checkmode_tests
+termination_protection
+ebs_optimized
+block_devices
+cpu_options
+metadata_options
+default_vpc_tests
+external_resource_attach
+instance_no_wait
+iam_instance_role
+tags_and_vpc_settings
+security_group
+state_config_updates
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter="{{ ansible_playbook_python }}"
