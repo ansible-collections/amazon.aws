@@ -11,7 +11,6 @@
           "Title Case": "Hello Cruel World"
           CamelCase: "SimpleCamelCase"
           snake_case: "simple_snake_case"
-      register: output
 
     - name: check that temp directory was made
       assert:
@@ -31,7 +30,6 @@
       stat:
         path: "{{ remote_tmp_dir }}/object-info-test.txt"
         get_checksum: yes
-      register: upload_file
 
     - name: Upload a object to bucket
       amazon.aws.aws_s3:
@@ -64,6 +62,8 @@
         that:
           - info_result is not failed
           - info_result is not changed
+          - '"object_info" in info_result'
+          - info_result.object_info | length != 0
 
     - name: Get s3 object info
       amazon.aws.s3_object_info:
@@ -72,24 +72,31 @@
         object_details:
           object_acl: true
           object_tagging: true
-          object_legal_hold: true
           object_lock_configuration: true
-          object_attributes: false
-          object_retention: true
+          object_attributes: true
+          object_retention: false
         object_attributes:
           - ETag
           - ObjectSize
           - StorageClass
           - Checksum
           - ObjectParts
-      register: info_result
-    - debug:
-        var: info_detail_result
+      register: info_detail_result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - assert:
         that:
           - info_detail_result is not failed
           - info_detail_result is not changed
+          - '"object_info" in info_detail_result'
+          - info_detail_result.object_info | length != 0
+          - '"object_acl" in info_detail_result.object_info'
+          - '"object_tagging" in info_detail_result.object_info'
+          - '"object_legal_hold" not in info_detail_result.object_info'
+          - '"object_lock_configuration" in info_detail_result.object_info'
+          - '"object_attributes" in info_detail_result.object_info'
+          - '"object_retention" not in info_detail_result.object_info'
 
   always:
     - name: list bucket object

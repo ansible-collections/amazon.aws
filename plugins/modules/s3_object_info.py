@@ -336,9 +336,9 @@ def describe_s3_object_acl(connection, module, bucket_name, object_key):
     try:
         object_acl_info = connection.get_object_acl(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_acl_info['ERROR'] = str(e)
+        object_acl_info['msg'] = 'Object ACL not found, are you sure the bucket/object configuration exist?'
 
-    if len(object_acl_info) != 0 and 'ERROR' not in object_acl_info.keys():
+    if len(object_acl_info) != 0 and 'msg' not in object_acl_info.keys():
         # Remove ResponseMetadata from object_acl_info, convert to snake_case
         del(object_acl_info['ResponseMetadata'])
         object_acl_info = camel_dict_to_snake_dict(object_acl_info)
@@ -357,9 +357,9 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_key):
     try:
         object_attributes_info = connection.get_object_attributes(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_attributes_info['ERROR'] = str(e)
+        object_attributes_info['msg'] = 'Object attributes not found, are you sure the bucket/object configuration exist?'
 
-    if len(object_attributes_info) != 0 and 'ERROR' not in object_attributes_info.keys():
+    if len(object_attributes_info) != 0 and 'msg' not in object_attributes_info.keys():
         # Remove ResponseMetadata from object_attributes_info, convert to snake_case
         del(object_attributes_info['ResponseMetadata'])
         object_attributes_info = camel_dict_to_snake_dict(object_attributes_info)
@@ -377,9 +377,9 @@ def describe_s3_object_legal_hold(connection, module, bucket_name, object_key):
     try:
         object_legal_hold_info = connection.get_object_legal_hold(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_legal_hold_info['ERROR'] = str(e)
+        object_legal_hold_info['msg'] = 'Object legal hold info not found, are you sure the bucket/object configuration exist?'
 
-    if len(object_legal_hold_info) != 0 and 'ERROR' not in object_legal_hold_info.keys():
+    if len(object_legal_hold_info) != 0 and 'msg' not in object_legal_hold_info.keys():
         # Remove ResponseMetadata from object_legal_hold_info, convert to snake_case
         del(object_legal_hold_info['ResponseMetadata'])
         object_legal_hold_info = camel_dict_to_snake_dict(object_legal_hold_info)
@@ -396,9 +396,9 @@ def describe_s3_object_lock_configuration(connection, module, bucket_name):
     try:
         object_legal_lock_configuration_info = connection.get_object_lock_configuration(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_legal_lock_configuration_info['ERROR'] = str(e)
+        object_legal_lock_configuration_info['msg'] = 'Object lock configuration not found, are you sure the bucket/object configuration exist?'
 
-    if len(object_legal_lock_configuration_info) != 0 and 'ERROR' not in object_legal_lock_configuration_info.keys():
+    if len(object_legal_lock_configuration_info) != 0 and 'msg' not in object_legal_lock_configuration_info.keys():
         # Remove ResponseMetadata from object_legal_lock_configuration_info, convert to snake_case
         del(object_legal_lock_configuration_info['ResponseMetadata'])
         object_legal_lock_configuration_info = camel_dict_to_snake_dict(object_legal_lock_configuration_info)
@@ -416,9 +416,9 @@ def describe_s3_object_retention(connection, module, bucket_name, object_key):
     try:
         object_retention_info = connection.get_object_retention(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_retention_info['ERROR'] = str(e)
+        object_retention_info['msg'] = 'Object retention info not found, are you sure the bucket/object configuration exist?'
 
-    if len(object_retention_info) != 0 and 'ERROR' not in object_retention_info.keys():
+    if len(object_retention_info) != 0 and 'msg' not in object_retention_info.keys():
         # Remove ResponseMetadata from object_retention_info, convert to snake_case
         del(object_retention_info['ResponseMetadata'])
         object_retention_info = camel_dict_to_snake_dict(object_retention_info)
@@ -436,9 +436,9 @@ def describe_s3_object_tagging(connection, module, bucket_name, object_key):
     try:
         object_tagging_info = connection.get_object_tagging(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_tagging_info['ERROR'] = str(e)
+        object_tagging_info['msg'] = 'Object tags not found, are you sure the bucket/object tags exist?'
 
-    if len(object_tagging_info) != 0 and 'ERROR' not in object_tagging_info.keys():
+    if len(object_tagging_info) != 0 and 'msg' not in object_tagging_info.keys():
         # Remove ResponseMetadata from object_tagging_info, convert to snake_case
         del(object_tagging_info['ResponseMetadata'])
         object_tagging_info = boto3_tag_list_to_ansible_dict(object_tagging_info['TagSet'])
@@ -456,40 +456,22 @@ def get_object_details(connection, module, bucket_name, object_key, requested_fa
     for key in requested_facts:
         if key == 'object_acl':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_acl(connection, module, bucket_name, object_key)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_acl(connection, module, bucket_name, object_key)
         elif key == 'object_attributes':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_attributes(connection, module, bucket_name, object_key)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_attributes(connection, module, bucket_name, object_key)
         elif key == 'object_legal_hold':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_legal_hold(connection, module, bucket_name, object_key)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_legal_hold(connection, module, bucket_name, object_key)
         elif key == 'object_lock_configuration':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_lock_configuration(connection, module, bucket_name)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_lock_configuration(connection, module, bucket_name)
         elif key == 'object_retention':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_retention(connection, module, bucket_name, object_key)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_retention(connection, module, bucket_name, object_key)
         elif key == 'object_tagging':
             all_facts[key] = {}
-            try:
-                all_facts[key] = describe_s3_object_tagging(connection, module, bucket_name, object_key)
-            except botocore.exceptions.ClientError:
-                pass
+            all_facts[key] = describe_s3_object_tagging(connection, module, bucket_name, object_key)
 
     return all_facts
 
@@ -504,9 +486,9 @@ def get_object(connection, module, bucket_name, object_key):
     try:
         object_info = connection.get_object(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_info['ERROR'] = str(e)
+        pass
 
-    if len(object_info) != 0 and 'ERROR' not in object_info.keys():
+    if len(object_info) != 0:
         # Remove Body, ResponseMetadata from object_info, convert to snake_case
         del(object_info['Body'])
         del(object_info['ResponseMetadata'])
