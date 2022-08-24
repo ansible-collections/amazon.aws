@@ -5,6 +5,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+
 DOCUMENTATION = '''
 ---
 module: s3_object_info
@@ -16,20 +17,18 @@ author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
   bucket_name:
-    description:
-      - The bucket name that contains the object.
+    description: The bucket name that contains the object.
     type: str
     required: true
   object_key:
-    description:
-      - The key of the object.
+    description: The key of the object.
     type: str
     required: true
   object_details:
     description:
       - Retrieve requested S3 object detailed information.
     suboptions:
-      object_acl
+      object_acl:
         description: Retrive S3 object acl.
         type: bool
         default: False
@@ -196,7 +195,9 @@ object_info:
               returned: always
               type: int
             next_part_number_marker:
-              description: When a list is truncated, this element specifies the last part in the list, as well as the value to use for the PartNumberMarker request parameter in a subsequent request.
+              description:
+                - When a list is truncated, this element specifies the last part in the list
+                - As well as the value to use for the PartNumberMarker request parameter in a subsequent request.
               returned: always
               type: int
             max_parts:
@@ -280,7 +281,9 @@ object_info:
               type: complex
               contains:
                 mode:
-                  description: The default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Must be used with either Days or Years.
+                  description:
+                    - The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.
+                    - Must be used with either Days or Years.
                   returned: always
                   type: str
                 days:
@@ -539,7 +542,7 @@ def main():
     if requested_details:
         result['object_info'] = get_object_details(connection, module, bucket_name, object_key, requested_details)
     else:
-        #if specific details are not requested, return object metadata
+        # if specific details are not requested, return object metadata
         result['object_info'] = get_object(connection, module, bucket_name, object_key)
 
     module.exit_json(msg="Retrieved s3 object info ", **result)
