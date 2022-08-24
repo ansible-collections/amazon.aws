@@ -1,0 +1,8 @@
+[tests]
+instance_minimal
+instance_multiple
+termination_protection
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter="{{ ansible_playbook_python }}"
