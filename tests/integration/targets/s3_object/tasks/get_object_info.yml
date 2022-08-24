@@ -53,7 +53,7 @@
     - name: Get s3 object info
       amazon.aws.s3_object_info:
         bucket_name: "{{ bucket_name }}-object-info-test"
-        object_key: "{{ list_keys_result.s3_keys[0] }}"
+        object_name: "{{ list_keys_result.s3_keys[0] }}"
       register: info_result
     - debug:
         var: info_result
@@ -68,7 +68,7 @@
     - name: Get s3 object info
       amazon.aws.s3_object_info:
         bucket_name: "{{ bucket_name }}-object-info-test"
-        object_key: "{{ list_keys_result.s3_keys[0] }}"
+        object_name: "{{ list_keys_result.s3_keys[0] }}"
         object_details:
           object_acl: true
           object_tagging: true

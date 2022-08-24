@@ -89,12 +89,12 @@ EXAMPLES = r'''
 - name: Retrieve object metadata without object itself
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    object_key: MyTestObjectKey
+    bucket_object_key: MyTestObjectKey
 
 - name: Retrieve detailed s3 object information
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    object_key: MyTestObjectKey
+    bucket_object_key: MyTestObjectKey
     object_details:
       object_acl: true
       object_tagging: true
