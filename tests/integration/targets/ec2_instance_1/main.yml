@@ -20,11 +20,11 @@
       setup_run_once: yes
     block:
     - include_role:
-        name: 'ec2_instance'
+        name: 'ec2_instance_1'
         tasks_from: env_setup.yml
     rescue:
     - include_role:
-        name: 'ec2_instance'
+        name: 'ec2_instance_1'
         tasks_from: env_cleanup.yml
       run_once: yes
     - fail:
@@ -37,4 +37,4 @@
   strategy: free
   serial: 7
   roles:
-    - ec2_instance
+    - ec2_instance_1
