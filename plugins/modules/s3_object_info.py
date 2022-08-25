@@ -10,20 +10,20 @@ DOCUMENTATION = r'''
 ---
 module: s3_object_info
 version_added: 5.0.0
-short_description: Gather information about objects in s3
+short_description: Gather information about objects in S3
 description:
-    - Describes the objects in s3.
+    - Describes objects in S3.
 author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
   bucket_name:
     description:
-      - The bucket name that contains the object.
+      - The name of the bucket that contains the object.
     required: true
     type: str
   object_name:
     description:
-      - The key of the object.
+      - The name of the object.
     required: false
     type: str
   object_attributes:
@@ -91,7 +91,7 @@ EXAMPLES = r'''
     bucket_name: MyTestBucket
     bucket_object_key: MyTestObjectKey
 
-- name: Retrieve detailed s3 object information
+- name: Retrieve detailed S3 object information
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     bucket_object_key: MyTestObjectKey
@@ -110,8 +110,46 @@ RETURN = r'''
 object_info:
     description: S3 object details.
     returned: always
-    type: complex
+    type: list
+    elements: dict
     contains:
+        object_metadata:
+            description:
+            type: dict
+            elements: str
+            contains:
+                accept_ranges:
+                    description: Indicates that a range of bytes was specified.
+                    returned: always
+                    type: str
+                content_length:
+                    description: Size of the body (object data) in bytes.
+                    returned: always
+                    type: int
+                content_type:
+                    description: A standard MIME type describing the format of the object data.
+                    returned: always
+                    type: str
+                e_tag:
+                    description: A opaque identifier assigned by a web server to a specific version of a resource found at a URL.
+                    returned: always
+                    type: str
+                last_modified:
+                    description: Creation date of the object.
+                    returned: always
+                    type: datetime
+                metadata:
+                    description: A map of metadata to store with the object in S3.
+                    returned: always
+                    type: dict
+                server_side_encryption:
+                    description: The server-side encryption algorithm used when storing this object in Amazon S3.
+                    returned: always
+                    type: str
+                tag_count:
+                    description: The number of tags, if any, on the object.
+                    returned: always
+                    type: int
         object_acl:
             description: Access control list (ACL) of an object.
             returned: when I(object_acl) is set to I(true).
@@ -477,6 +515,8 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
     # Remove non-requested facts
     requested_facts = {fact: value for fact, value in requested_facts.items() if value is True}
 
+    all_facts['object_metadata'] = get_object(connection, module, bucket_name, object_name)['object_metadata']
+
     for key in requested_facts:
         if key == 'object_acl':
             all_facts[key] = {}
@@ -505,7 +545,7 @@ def get_object(connection, module, bucket_name, object_name):
     params['Bucket'] = bucket_name
     params['Key'] = object_name
 
-    object_info = {}
+    result = {}
 
     try:
         object_info = connection.get_object(**params)
@@ -518,7 +558,9 @@ def get_object(connection, module, bucket_name, object_name):
         del(object_info['ResponseMetadata'])
         object_info = camel_dict_to_snake_dict(object_info)
 
-    return object_info
+    result['object_metadata'] = object_info
+
+    return result
 
 
 def main():
@@ -547,7 +589,7 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
-    result = {}
+    result = []
 
     bucket_name = module.params.get('bucket_name')
     object_name = module.params.get('object_name')
@@ -558,12 +600,14 @@ def main():
             module.fail_json(msg='Please provide object_attributes list to retrieve s3 object_attributes.')
 
     if requested_details:
-        result['object_info'] = get_object_details(connection, module, bucket_name, object_name, requested_details)
+        object_details = get_object_details(connection, module, bucket_name, object_name, requested_details)
+        result.append(object_details)
     else:
         # if specific details are not requested, return object metadata
-        result['object_info'] = get_object(connection, module, bucket_name, object_name)
+        object_details = get_object(connection, module, bucket_name, object_name)
+        result.append(object_details)
 
-    module.exit_json(msg="Retrieved s3 object info ", **result)
+    module.exit_json(object_info=result)
 
 
 if __name__ == '__main__':

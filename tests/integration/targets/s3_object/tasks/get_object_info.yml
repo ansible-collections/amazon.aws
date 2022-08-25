@@ -63,7 +63,8 @@
           - info_result is not failed
           - info_result is not changed
           - '"object_info" in info_result'
-          - info_result.object_info | length != 0
+          - info_result.object_info[0] | length != 0
+          - '"object_metadata" in info_result.object_info[0]'
 
     - name: Get s3 object info
       amazon.aws.s3_object_info:
@@ -90,13 +91,13 @@
           - info_detail_result is not failed
           - info_detail_result is not changed
           - '"object_info" in info_detail_result'
-          - info_detail_result.object_info | length != 0
-          - '"object_acl" in info_detail_result.object_info'
-          - '"object_tagging" in info_detail_result.object_info'
-          - '"object_legal_hold" not in info_detail_result.object_info'
-          - '"object_lock_configuration" in info_detail_result.object_info'
-          - '"object_attributes" in info_detail_result.object_info'
-          - '"object_retention" not in info_detail_result.object_info'
+          - info_detail_result.object_info[0] | length != 0
+          - '"object_acl" in info_detail_result.object_info[0]'
+          - '"object_tagging" in info_detail_result.object_info[0]'
+          - '"object_legal_hold" not in info_detail_result.object_info[0]'
+          - '"object_lock_configuration" in info_detail_result.object_info[0]'
+          - '"object_attributes" in info_detail_result.object_info[0]'
+          - '"object_retention" not in info_detail_result.object_info[0]'
 
   always:
     - name: list bucket object
