@@ -1,0 +1,208 @@
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "Make basic instance"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      image_id: "{{ ec2_ami_id }}"
+      security_groups: "{{ sg.group_id }}"
+      instance_type: "{{ ec2_instance_type }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      wait: false
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+    register: basic_instance
+
+  - name: "Make basic instance (check mode)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-checkmode-comparison-checkmode"
+      image_id: "{{ ec2_ami_id }}"
+      security_groups: "{{ sg.group_id }}"
+      instance_type: "{{ ec2_instance_type }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+    check_mode: yes
+
+  - name: "fact presented ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: presented_instance_fact
+
+  - name: "fact checkmode ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison-checkmode"
+    register: checkmode_instance_fact
+
+  - name: "Confirm whether the check mode is working normally."
+    assert:
+      that:
+        - "{{ presented_instance_fact.instances | length }} > 0"
+        - "{{ checkmode_instance_fact.instances | length }} == 0"
+
+  - name: "Stop instance (check mode)"
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+    check_mode: yes
+
+  - name: "fact ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_checkmode_stopinstance_fact
+
+  - name: "Verify that it was not stopped."
+    assert:
+      that:
+        - confirm_checkmode_stopinstance_fact.instances[0].state.name not in ["stopped", "stopping"]
+
+  - name: "Stop instance."
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+      wait: true
+    register: instance_stop
+
+  - name: "fact stopped ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_stopinstance_fact
+
+  - name: "Verify that it was stopped."
+    assert:
+      that:
+        - confirm_stopinstance_fact.instances[0].state.name  in ["stopped", "stopping"]
+
+  - name: "Running instance in check mode."
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+    check_mode: yes
+
+  - name: "fact ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_checkmode_runninginstance_fact
+
+  - name: "Verify that it was not running."
+    assert:
+      that:
+        - '"{{ confirm_checkmode_runninginstance_fact.instances[0].state.name }}" != "running"'
+
+  - name: "Running instance."
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+
+  - name: "fact ec2 instance."
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_runninginstance_fact
+
+  - name: "Verify that it was running."
+    assert:
+      that:
+        - '"{{ confirm_runninginstance_fact.instances[0].state.name }}" == "running"'
+
+  - name: "Tag instance."
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Other Value"
+    check_mode: yes
+
+  - name: "fact ec2 instance."
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_not_tagged
+
+  - name: "Verify that it hasn't been re-tagged."
+    assert:
+      that:
+        - '"{{ confirm_not_tagged.instances[0].tags.TestTag }}" == "Some Value"'
+
+  - name: "Terminate instance in check mode."
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+      wait: True
+    check_mode: yes
+
+  - name: "fact ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_checkmode_terminatedinstance_fact
+
+  - name: "Verify that it was not terminated,"
+    assert:
+      that:
+        - '"{{ confirm_checkmode_terminatedinstance_fact.instances[0].state.name }}" != "terminated"'
+
+  - name: "Terminate instance."
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
+      wait: True
+
+  - name: "fact ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_terminatedinstance_fact
+
+  - name: "Verify that it was terminated,"
+    assert:
+      that:
+        - '"{{ confirm_terminatedinstance_fact.instances[0].state.name }}" == "terminated"'
+
+  always:
+  - name: "Terminate checkmode instances"
+    ec2_instance:
+      state: absent
+      filters:
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
+      wait: yes
+    ignore_errors: yes

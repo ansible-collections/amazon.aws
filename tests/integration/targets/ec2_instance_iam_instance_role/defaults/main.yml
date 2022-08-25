@@ -1,0 +1,21 @@
+---
+# defaults file for ec2_instance
+ec2_instance_owner: 'integration-run-{{ resource_prefix }}'
+ec2_instance_type: 't3.micro'
+ec2_instance_tag_TestId: '{{ resource_prefix }}-{{ inventory_hostname }}'
+
+vpc_name: '{{ resource_prefix }}-vpc'
+vpc_seed: '{{ resource_prefix }}'
+vpc_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/16'
+
+subnet_a_az: '{{ ec2_availability_zone_names[0] }}'
+subnet_a_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
+subnet_a_startswith: '10.{{ 256 | random(seed=vpc_seed) }}.32.'
+subnet_b_az: '{{ ec2_availability_zone_names[1] }}'
+subnet_b_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.33.0/24'
+subnet_b_startswith: '10.{{ 256 | random(seed=vpc_seed) }}.33.'
+
+first_iam_role: "ansible-test-sts-{{ resource_prefix | hash('md5') }}-test-policy"
+second_iam_role: "ansible-test-sts-{{ resource_prefix | hash('md5') }}-test-policy-2"
+# Zuul resource prefixes are very long, and IAM roles can only be 64 characters
+unique_id: "{{ resource_prefix | hash('md5') }}"
