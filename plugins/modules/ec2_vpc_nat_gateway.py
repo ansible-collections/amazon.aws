@@ -152,7 +152,7 @@ EXAMPLES = r'''
     state: absent
     nat_gateway_id: nat-12345678
     release_eip: true
-    wait: yes
+    wait: true
     wait_timeout: 300
     region: ap-southeast-2
 
@@ -172,10 +172,10 @@ EXAMPLES = r'''
     subnet_id: subnet-12345678
     allocation_id: eipalloc-12345678
     region: ap-southeast-2
-    purge_tags: no
+    purge_tags: false
     tags:
         Tag3: tag3
-    wait: yes
+    wait: true
   register: update_tags_nat_gateway
 '''
 

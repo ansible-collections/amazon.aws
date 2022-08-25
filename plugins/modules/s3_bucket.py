@@ -35,7 +35,7 @@ options:
       - When trying to delete a bucket, delete all keys (including versions and delete markers)
         in the bucket first (an S3 bucket must be empty for a successful deletion).
     type: bool
-    default: 'no'
+    default: false
   name:
     description:
       - Name of the S3 bucket.
@@ -192,14 +192,14 @@ EXAMPLES = r'''
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: absent
-    force: yes
+    force: true
 
 # Create a bucket, add a policy from a file, enable requester pays, enable versioning and tag
 - amazon.aws.s3_bucket:
     name: mys3bucket
     policy: "{{ lookup('file','policy.json') }}"
-    requester_pays: yes
-    versioning: yes
+    requester_pays: true
+    versioning: true
     tags:
       example: tag1
       another: tag2

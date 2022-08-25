@@ -66,7 +66,7 @@ options:
         will be ignored, and the old DHCP option set will be preserved, if it
         is in use by any other VPC. (Otherwise, AWS will return an error.)
     type: bool
-    default: 'yes'
+    default: true
   inherit_existing:
     description:
       - For any DHCP options not specified in these parameters, whether to

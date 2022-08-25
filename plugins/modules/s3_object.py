@@ -965,7 +965,7 @@ def main():
         overwrite=dict(aliases=['force'], default='different'),
         prefix=dict(default=""),
         retries=dict(aliases=['retry'], type='int', default=0),
-        dualstack=dict(default='no', type='bool'),
+        dualstack=dict(default=False, type='bool'),
         ceph=dict(default=False, type='bool', aliases=['rgw']),
         src=dict(type='path'),
         content=dict(),
