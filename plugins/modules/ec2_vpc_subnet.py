@@ -12,66 +12,70 @@ module: ec2_vpc_subnet
 version_added: 1.0.0
 short_description: Manage subnets in AWS virtual private clouds
 description:
-    - Manage subnets in AWS virtual private clouds.
+  - Manage subnets in AWS virtual private clouds.
 author:
-- Robert Estelle (@erydo)
-- Brad Davidson (@brandond)
+  - Robert Estelle (@erydo)
+  - Brad Davidson (@brandond)
 options:
   az:
     description:
-      - "The availability zone for the subnet."
+      - The availability zone for the subnet.
+      - Required if I(outpost_arn) is set.
     type: str
   cidr:
     description:
-      - "The CIDR block for the subnet. E.g. 192.0.2.0/24."
+      - The CIDR block for the subnet. E.g. C(192.0.2.0/24).
     type: str
     required: true
   ipv6_cidr:
     description:
-      - "The IPv6 CIDR block for the subnet. The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range."
-      - "Required if I(assign_instances_ipv6=true)"
+      - The IPv6 CIDR block for the subnet.
+      - The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range.
+      - Required if I(assign_instances_ipv6=true)
     type: str
   outpost_arn:
     description:
       - The Amazon Resource Name (ARN) of the Outpost.
       - If set, allows to create subnet in an Outpost.
-      - To specify outpost_arn, availability zone of Outpost subnet must be specified.
+      - If I(outpost_arn) is set, I(az) must also be specified.
     type: str
   state:
     description:
-      - "Create or remove the subnet."
+      - Create or remove the subnet.
     default: present
     choices: [ 'present', 'absent' ]
     type: str
   vpc_id:
     description:
-      - "VPC ID of the VPC in which to create or delete the subnet."
+      -"VPC ID of the VPC in which to create or delete the subnet.
     required: true
     type: str
   map_public:
     description:
-      - "Specify C(yes) to indicate that instances launched into the subnet should be assigned public IP address by default."
+      - Whether instances launched into the subnet should default to being assigned public IP address.
     type: bool
-    default: 'no'
+    default: false
   assign_instances_ipv6:
     description:
-      - "Specify C(yes) to indicate that instances launched into the subnet should be automatically assigned an IPv6 address."
+      - Whether instances launched into the subnet should default to being automatically assigned an IPv6 address.
+      - If I(assign_instances_ipv6=true), I(ipv6_cidr) must also be specified.
     type: bool
     default: false
   wait:
     description:
-      - "When I(wait=true) and I(state=present), module will wait for subnet to be in available state before continuing."
+      - Whether to wait for changes to complete.
     type: bool
     default: true
   wait_timeout:
     description:
-      - "Number of seconds to wait for subnet to become available I(wait=True)."
+      - Number of seconds to wait for changes to complete
+      - Ignored unless I(wait=True).
     default: 300
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -265,7 +269,6 @@ def handle_waiter(conn, module, waiter_name, params, start_time):
 
 def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
     wait = module.params['wait']
-    wait_timeout = module.params['wait_timeout']
 
     params = dict(VpcId=vpc_id,
                   CidrBlock=cidr)
@@ -476,7 +479,7 @@ def ensure_subnet_present(conn, module):
 
 
 def ensure_final_subnet(conn, module, subnet, start_time):
-    for rewait in range(0, 30):
+    for _rewait in range(0, 30):
         map_public_correct = False
         assign_ipv6_correct = False
 

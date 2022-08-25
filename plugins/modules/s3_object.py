@@ -601,7 +601,7 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
 
     # Tags
-    tags, changed = ensure_tags(s3, module, bucket, obj)
+    tags, _changed = ensure_tags(s3, module, bucket, obj)
 
     try:
         url = s3.generate_presigned_url(ClientMethod='put_object',
@@ -689,7 +689,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
         module.fail_json_aws(e, msg="Unable to set object ACL")
 
     # Tags
-    tags, changed = ensure_tags(s3, module, bucket, obj)
+    tags, _changed = ensure_tags(s3, module, bucket, obj)
 
     url = put_download_url(module, s3, bucket, obj, expiry)
 
@@ -702,10 +702,14 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
     # retries is the number of loops; range/xrange needs to be one
     # more to get that count of loops.
     try:
+        # Note: Something of a permissions related hack
+        # get_object returns the HEAD information, plus a *stream* which can be read.
+        # because the stream's dropped on the floor, we never pull the data and this is the
+        # functional equivalent of calling get_head which still relying on the 'GET' permission
         if version:
-            key = s3.get_object(Bucket=bucket, Key=obj, VersionId=version)
+            s3.get_object(Bucket=bucket, Key=obj, VersionId=version)
         else:
-            key = s3.get_object(Bucket=bucket, Key=obj)
+            s3.get_object(Bucket=bucket, Key=obj)
     except is_boto3_error_code(['404', '403']) as e:
         # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
         # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
@@ -808,7 +812,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                         params[extra_args_option] = metadata[option]
                     else:
                         params['Metadata'][option] = metadata[option]
-            copy_result = s3.copy_object(**params)
+            s3.copy_object(**params)
             for acl in module.params.get('permission'):
                 s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
             # Tags
@@ -1018,7 +1022,7 @@ def main():
     if overwrite == 'different' and not HAS_MD5:
         module.fail_json(msg='overwrite=different is unavailable: ETag calculation requires MD5 support')
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
 
     if region in ('us-east-1', '', None):
         # default to US Standard region
@@ -1189,7 +1193,7 @@ def main():
             else:
                 # only use valid bucket acls for the create_bucket function
                 module.params['permission'] = bucket_acl
-                created = create_bucket(module, s3, bucket, location)
+                create_bucket(module, s3, bucket, location)
                 # only use valid object acls for the create_dirkey function
                 module.params['permission'] = object_acl
                 create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)

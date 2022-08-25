@@ -16,7 +16,7 @@ author:
   - "Razique Mahroua (@Razique)"
 short_description: Maintain an ec2 VPC security group
 description:
-    - Maintains ec2 security groups.
+  - Maintains EC2 security groups.
 options:
   name:
     description:
@@ -46,9 +46,6 @@ options:
       - List of firewall inbound rules to enforce in this group (see example). If none are supplied,
         no inbound rules will be enabled. Rules list may include its own name in I(group_name).
         This allows idempotent loopback additions (e.g. allow group to access itself).
-        Rule sources list support was added in version 2.4. This allows to define multiple sources per
-        source type as well as multiple source types per rule. Prior to 2.4 an individual source is allowed.
-        In version 2.5 support for rule descriptions was added.
     required: false
     type: list
     elements: dict
@@ -134,8 +131,6 @@ options:
     description:
       - List of firewall outbound rules to enforce in this group (see example). If none are supplied,
         a default all-out rule is assumed. If an empty list is supplied, no outbound rules will be enabled.
-        Rule Egress sources list support was added in version 2.4. In version 2.5 support for rule descriptions
-        was added.
     required: false
     type: list
     elements: dict
@@ -239,9 +234,9 @@ options:
     type: bool
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 
 notes:
@@ -1056,7 +1051,7 @@ def wait_for_rule_propagation(module, client, group, desired_ingress, desired_eg
     tries = 6
 
     def await_rules(group, desired_rules, purge, rule_key):
-        for i in range(tries):
+        for _i in range(tries):
             current_rules = set(sum([list(rule_from_group_permission(p)) for p in group[rule_key]], []))
             if purge and len(current_rules ^ set(desired_rules)) == 0:
                 return group
@@ -1354,8 +1349,8 @@ def main():
         current_ingress = sum([list(rule_from_group_permission(p)) for p in group['IpPermissions']], [])
         current_egress = sum([list(rule_from_group_permission(p)) for p in group['IpPermissionsEgress']], [])
 
-        for new_rules, rule_type, named_tuple_rule_list in [(rules, 'in', named_tuple_ingress_list),
-                                                            (rules_egress, 'out', named_tuple_egress_list)]:
+        for new_rules, _rule_type, named_tuple_rule_list in [(rules, 'in', named_tuple_ingress_list),
+                                                             (rules_egress, 'out', named_tuple_egress_list)]:
             if new_rules is None:
                 continue
             for rule in new_rules:
@@ -1439,7 +1434,6 @@ def main():
 
         # Revoke old rules
         changed |= remove_old_permissions(client, module, revoke_ingress, revoke_egress, group['GroupId'])
-        rule_msg = 'Revoking {0}, and egress {1}'.format(revoke_ingress, revoke_egress)
 
         new_ingress_permissions = [to_permission(r) for r in (set(named_tuple_ingress_list) - set(current_ingress))]
         new_ingress_permissions = rules_to_permissions(set(named_tuple_ingress_list) - set(current_ingress))

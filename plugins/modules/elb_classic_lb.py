@@ -277,14 +277,14 @@ options:
     default: 180
 
 notes:
-- The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
-  4.0.0 is no longer set.
-- Support for I(purge_tags) was added in release 2.1.0.
+  - The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
+    4.0.0 is no longer set.
+  - Support for I(purge_tags) was added in release 2.1.0.
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = """
@@ -972,11 +972,11 @@ class ElbManager(object):
         if not wait and not self.wait:
             return
         try:
-            elb_removed = self._wait_for_elb_removed()
+            self._wait_for_elb_removed()
             # Unfortunately even though the ELB itself is removed quickly
             # the interfaces take longer so reliant security groups cannot
             # be deleted until the interface has registered as removed.
-            elb_interface_removed = self._wait_for_elb_interface_removed()
+            self._wait_for_elb_interface_removed()
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
@@ -1719,7 +1719,6 @@ class ElbManager(object):
         if not self.listeners:
             return False
 
-        ensure_proxy_protocol = False
         backend_policies = self._get_backend_policies()
         proxy_policies = set(self._get_proxy_policies())
 

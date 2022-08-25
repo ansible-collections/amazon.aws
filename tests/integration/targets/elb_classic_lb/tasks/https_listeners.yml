@@ -124,3 +124,6 @@
     that:
       - delete_result is changed
       - delete_result is not failed
+  # AWS doesn't always cleanup the associations properly
+  # https://repost.aws/questions/QU63csgGNEQl2M--xCdy-oxw/cant-delete-certificate-because-there-are-dangling-load-balancer-resources
+  ignore_errors: True
