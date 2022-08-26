@@ -157,9 +157,9 @@ options:
     type: str
   purge_listeners:
     description:
-      - If C(yes), existing listeners will be purged from the ALB to match exactly what is defined by I(listeners) parameter.
+      - If C(true), existing listeners will be purged from the ALB to match exactly what is defined by I(listeners) parameter.
       - If the I(listeners) parameter is not set then listeners will not be modified.
-    default: yes
+    default: true
     type: bool
   subnets:
     description:
@@ -191,7 +191,7 @@ options:
     description:
       - Wait for the load balancer to have a state of 'active' before completing. A status check is
         performed every 15 seconds until a successful state is reached. An error is returned after 40 failed checks.
-    default: no
+    default: false
     type: bool
   wait_timeout:
     description:
@@ -200,7 +200,7 @@ options:
   purge_rules:
     description:
       - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
-    default: yes
+    default: true
     type: bool
   ip_address_type:
     description:
@@ -249,7 +249,7 @@ EXAMPLES = r'''
 
 # Create an ALB and attach a listener with logging enabled
 - community.aws.elb_application_lb:
-    access_logs_enabled: yes
+    access_logs_enabled: true
     access_logs_s3_bucket: mybucket
     access_logs_s3_prefix: "logs"
     name: myalb

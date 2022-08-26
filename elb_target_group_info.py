@@ -34,9 +34,9 @@ options:
     elements: str
   collect_targets_health:
     description:
-      - When set to "yes", output contains targets health description
+      - When set to C(True), output contains targets health description
     required: false
-    default: no
+    default: false
     type: bool
 
 extends_documentation_fragment:

@@ -240,13 +240,13 @@ EXAMPLES = r'''
           snapshot: snap-XXXX
           volume_type: gp2
           delete_on_termination: true
-          encrypted: no
+          encrypted: false
 
   - name: Create launch configuration
     community.aws.autoscaling_launch_config:
       name: lc1
       image_id: ami-xxxx
-      assign_public_ip: yes
+      assign_public_ip: true
       instance_type: t2.medium
       key_name: my-key
       security_groups: "['sg-xxxx']"

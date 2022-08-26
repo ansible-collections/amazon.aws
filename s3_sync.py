@@ -122,7 +122,7 @@ options:
     description:
     - Remove remote files that exist in bucket but are not present in the file root.
     required: false
-    default: no
+    default: false
     type: bool
 
 author: Ted Timmons (@tedder)

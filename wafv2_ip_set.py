@@ -56,7 +56,7 @@ options:
     purge_addresses:
       description:
         - When set to C(no), keep the existing addresses in place. Will modify and add, but will not delete.
-      default: yes
+      default: true
       type: bool
 
 notes:

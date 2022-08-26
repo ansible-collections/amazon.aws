@@ -27,7 +27,7 @@ extends_documentation_fragment:
 options:
   name:
     description: Name of the Web Application Firewall rule.
-    required: yes
+    required: true
     type: str
   metric_name:
     description:
@@ -79,13 +79,13 @@ EXAMPLES = r'''
       conditions:
         - name: my_regex_condition
           type: regex
-          negated: no
+          negated: false
         - name: my_geo_condition
           type: geo
-          negated: no
+          negated: false
         - name: my_byte_condition
           type: byte
-          negated: yes
+          negated: true
 
   - name: remove WAF rule
     community.aws.waf_rule:

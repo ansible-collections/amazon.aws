@@ -88,13 +88,13 @@ EXAMPLES = r'''
         labels:
           - label1: test
     state: present
-    wait: yes
+    wait: true
 
 - name: Remove an EKS Fargate Profile
   community.aws.eks_fargate_profile:
     name: test_fargate
     cluster_name: test_cluster
-    wait: yes
+    wait: true
     state: absent
 '''
 

@@ -33,7 +33,7 @@ options:
     description:
       - Whether or not the destination Snapshot should be encrypted.
     type: bool
-    default: 'no'
+    default: false
   kms_key_id:
     description:
       - KMS key id used to encrypt snapshot. If not specified, AWS defaults to C(alias/aws/ebs).
@@ -42,7 +42,7 @@ options:
     description:
       - Wait for the copied Snapshot to be in the C(Available) state before returning.
     type: bool
-    default: 'no'
+    default: false
   wait_timeout:
     description:
       - How long before wait gives up, in seconds.
@@ -72,7 +72,7 @@ EXAMPLES = '''
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
-    wait: yes
+    wait: true
     wait_timeout: 1200   # Default timeout is 600
   register: snapshot_id
 
@@ -89,14 +89,14 @@ EXAMPLES = '''
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
-    encrypted: yes
+    encrypted: true
 
 - name: Encrypted Snapshot copy with specified key
   community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
-    encrypted: yes
+    encrypted: true
     kms_key_id: arn:aws:kms:eu-central-1:XXXXXXXXXXXX:key/746de6ea-50a4-4bcb-8fbc-e3b29f2d367b
 '''
 

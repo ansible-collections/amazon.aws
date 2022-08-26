@@ -75,7 +75,7 @@ options:
     purge_aliases:
       description:
         - Specifies whether existing aliases will be removed before adding new aliases.
-        - When I(purge_aliases=yes), existing aliases are removed and I(aliases) are added.
+        - When I(purge_aliases=true), existing aliases are removed and I(aliases) are added.
       default: false
       type: bool
 
@@ -624,7 +624,7 @@ EXAMPLES = r'''
       - tested.com
     tags:
       Project: distribution 1.2
-    purge_tags: yes
+    purge_tags: true
 
 - name: create a distribution with an origin, logging and default cache behavior
   community.aws.cloudfront_distribution:

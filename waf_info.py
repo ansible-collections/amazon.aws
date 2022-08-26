@@ -22,7 +22,7 @@ options:
   waf_regional:
     description: Whether to use the C(waf-regional) module.
     default: false
-    required: no
+    required: false
     type: bool
 
 author:

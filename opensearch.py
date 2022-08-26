@@ -381,7 +381,7 @@ options:
     description:
       - Whether or not to wait for completion of OpenSearch creation, modification or deletion.
     type: bool
-    default: 'no'
+    default: false
   wait_timeout:
     description:
       - how long before wait gives up, in seconds.

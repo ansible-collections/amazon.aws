@@ -187,7 +187,7 @@ EXAMPLES = r'''
     name: fifo-queue
     region: ap-southeast-2
     queue_type: fifo
-    content_based_deduplication: yes
+    content_based_deduplication: true
 
 - name: Tag queue
   community.aws.sqs_queue:

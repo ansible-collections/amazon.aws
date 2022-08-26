@@ -337,7 +337,7 @@ def update_stack_set(module, stack_params, cfn):
     except is_boto3_error_code('OperationInProgressException') as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             err, msg="Another operation is already in progress on this stack set - please try again later. When making "
-            "multiple cloudformation_stack_set calls, it's best to enable `wait: yes` to avoid unfinished op errors.")
+            "multiple cloudformation_stack_set calls, it's best to enable `wait: true` to avoid unfinished op errors.")
     except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="Could not update stack set.")
     if module.params.get('wait'):

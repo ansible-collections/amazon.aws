@@ -69,7 +69,7 @@ options:
     description:
       - Whether or not to alter existing targets in the group to match what is passed with the module
     required: false
-    default: yes
+    default: true
     type: bool
   name:
     description:

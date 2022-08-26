@@ -138,7 +138,7 @@ options:
       - Wait for the configuration to complete before returning.
     version_added: 1.5.0
     type: bool
-    default: no
+    default: false
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -577,7 +577,7 @@ def main():
         transition_days=dict(type='int'),
         transition_date=dict(),
         transitions=dict(type='list', elements='dict'),
-        purge_transitions=dict(default='yes', type='bool'),
+        purge_transitions=dict(default=True, type='bool'),
         wait=dict(type='bool', default=False)
     )
 

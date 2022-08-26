@@ -58,7 +58,7 @@ EXAMPLES = """
   community.aws.ses_rule_set:
     name: default-rule-set
     state: present
-    active: yes
+    active: true
 
 - name: Create some arbitrary rule set but do not activate it
   community.aws.ses_rule_set:
@@ -69,7 +69,7 @@ EXAMPLES = """
   community.aws.ses_rule_set:
     name: default-rule-set
     state: present
-    active: no
+    active: false
 
 - name: Remove an arbitrary inactive rule set
   community.aws.ses_rule_set:
@@ -80,7 +80,7 @@ EXAMPLES = """
   community.aws.ses_rule_set:
     name: default-rule-set
     state: absent
-    force: yes
+    force: true
 """
 
 RETURN = """

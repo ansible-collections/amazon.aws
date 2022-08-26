@@ -95,7 +95,7 @@ options:
     purge_rules:
       description:
         - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
-      default: yes
+      default: true
       type: bool
 
 notes:
@@ -115,8 +115,8 @@ EXAMPLES = '''
     description: hallo eins
     scope: REGIONAL
     default_action: Allow
-    sampled_requests: no
-    cloudwatch_metrics: yes
+    sampled_requests: false
+    cloudwatch_metrics: true
     metric_name: test05-acl-metric
     rules:
       - name: zwei
@@ -124,8 +124,8 @@ EXAMPLES = '''
         action:
           block: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: ddos
         statement:
           xss_match_statement:
@@ -139,8 +139,8 @@ EXAMPLES = '''
         override_action:
           none: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: fsd
         statement:
           managed_rule_group_statement:
@@ -154,8 +154,8 @@ EXAMPLES = '''
         override_action:
           none: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: bad_input_protect
         statement:
           managed_rule_group_statement:
@@ -171,8 +171,8 @@ EXAMPLES = '''
         action:
           block: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: mydomain-ratelimit
         statement:
           rate_based_statement:
@@ -199,7 +199,7 @@ EXAMPLES = '''
                       text_transformations:
                         - type: LOWERCASE
                           priority: 0
-    purge_rules: yes
+    purge_rules: true
     tags:
       A: B
       C: D
@@ -211,8 +211,8 @@ EXAMPLES = '''
     description: ACL that filters web traffic based on rate limits and whitelists some IPs
     scope: REGIONAL
     default_action: Allow
-    sampled_requests: yes
-    cloudwatch_metrics: yes
+    sampled_requests: true
+    cloudwatch_metrics: true
     metric_name: ip-filtering-traffic
     rules:
       - name: whitelist-own-IPs
@@ -223,8 +223,8 @@ EXAMPLES = '''
           ip_set_reference_statement:
             arn: 'arn:aws:wafv2:us-east-1:520789123123:regional/ipset/own-public-ips/1c4bdfc4-0f77-3b23-5222-123123123'
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: waf-acl-rule-whitelist-own-IPs
       - name: rate-limit-per-IP
         priority: 1
@@ -238,10 +238,10 @@ EXAMPLES = '''
             limit: 5000
             aggregate_key_type: IP
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: waf-acl-rule-rate-limit-per-IP
-        purge_rules: yes
+        purge_rules: true
     custom_response_bodies:
       too_many_requests:
         content_type: APPLICATION_JSON

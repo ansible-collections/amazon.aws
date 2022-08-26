@@ -89,7 +89,7 @@ EXAMPLES = '''
     instance_id: i-XXXXXX
     region: us-east-1
     key_file: "~/aws-creds/my_test_key.pem"
-    wait: yes
+    wait: true
     wait_timeout: 45
 '''
 

@@ -63,7 +63,7 @@ options:
     purge_rules:
       description:
         - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
-      default: yes
+      default: true
       type: bool
 
 extends_documentation_fragment:
@@ -87,13 +87,13 @@ EXAMPLES = '''
         action:
           allow: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: fsd
         statement:
           ip_set_reference_statement:
             arn: "{{ IPSET.arn }}"
-    cloudwatch_metrics: yes
+    cloudwatch_metrics: true
     tags:
       A: B
       C: D
@@ -112,8 +112,8 @@ EXAMPLES = '''
         action:
           allow: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: fsd
         statement:
           ip_set_reference_statement:
@@ -123,8 +123,8 @@ EXAMPLES = '''
         action:
           block: {}
         visibility_config:
-          sampled_requests_enabled: yes
-          cloud_watch_metrics_enabled: yes
+          sampled_requests_enabled: true
+          cloud_watch_metrics_enabled: true
           metric_name: ddos
         statement:
           or_statement:
@@ -144,7 +144,7 @@ EXAMPLES = '''
                   text_transformations:
                     - type: NONE
                       priority: 0
-    cloudwatch_metrics: yes
+    cloudwatch_metrics: true
     tags:
       A: B
       C: D

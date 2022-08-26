@@ -40,12 +40,12 @@ options:
         been enabled.
       - If I(enable_availability_zone=no), the task will fail if the availability zone is not enabled on the ELB.
     type: bool
-    default: 'yes'
+    default: true
   wait:
     description:
       - Wait for instance registration or deregistration to complete successfully before returning.
     type: bool
-    default: 'yes'
+    default: true
   wait_timeout:
     description:
       - Number of seconds to wait for an instance to change state.

@@ -24,25 +24,25 @@ author:
 options:
     state:
         description: Whether a policy should be C(present) or C(absent).
-        required: yes
+        required: true
         choices: ['absent', 'present']
         type: str
     policy_name:
         description: The name of the scaling policy.
-        required: yes
+        required: true
         type: str
     service_namespace:
         description: The namespace of the AWS service.
-        required: yes
+        required: true
         choices: ['ecs', 'elasticmapreduce', 'ec2', 'appstream', 'dynamodb']
         type: str
     resource_id:
         description: The identifier of the resource associated with the scalable target.
-        required: yes
+        required: true
         type: str
     scalable_dimension:
         description: The scalable dimension associated with the scalable target.
-        required: yes
+        required: true
         choices: [ 'ecs:service:DesiredCount',
                    'ec2:spot-fleet-request:TargetCapacity',
                    'elasticmapreduce:instancegroup:InstanceCount',
@@ -54,19 +54,19 @@ options:
         type: str
     policy_type:
         description: The policy type.
-        required: yes
+        required: true
         choices: ['StepScaling', 'TargetTrackingScaling']
         type: str
     step_scaling_policy_configuration:
         description: A step scaling policy. This parameter is required if you are creating a policy and I(policy_type=StepScaling).
-        required: no
+        required: false
         type: dict
     target_tracking_scaling_policy_configuration:
         description:
             - A target tracking policy. This parameter is required if you are creating a new policy and I(policy_type=TargetTrackingScaling).
             - 'Full documentation of the suboptions can be found in the API documentation:'
             - 'U(https://docs.aws.amazon.com/autoscaling/application/APIReference/API_TargetTrackingScalingPolicyConfiguration.html)'
-        required: no
+        required: false
         type: dict
         suboptions:
             CustomizedMetricSpecification:
@@ -90,18 +90,18 @@ options:
     minimum_tasks:
         description: The minimum value to scale to in response to a scale in event.
             This parameter is required if you are creating a first new policy for the specified service.
-        required: no
+        required: false
         type: int
     maximum_tasks:
         description: The maximum value to scale to in response to a scale out event.
             This parameter is required if you are creating a first new policy for the specified service.
-        required: no
+        required: false
         type: int
     override_task_capacity:
         description:
             - Whether or not to override values of minimum and/or maximum tasks if it's already set.
             - Defaults to C(false).
-        required: no
+        required: false
         type: bool
 extends_documentation_fragment:
     - amazon.aws.aws

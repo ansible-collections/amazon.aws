@@ -26,7 +26,7 @@ extends_documentation_fragment:
 options:
   name:
     description: Name of the Web Application Firewall ACL to manage.
-    required: yes
+    required: true
     type: str
   default_action:
     description: The action that you want AWS WAF to take when a request doesn't
@@ -82,7 +82,7 @@ options:
   waf_regional:
     description: Whether to use C(waf-regional) module.
     default: false
-    required: no
+    required: false
     type: bool
 '''
 
@@ -95,7 +95,7 @@ EXAMPLES = r'''
           priority: 1
           action: block
       default_action: block
-      purge_rules: yes
+      purge_rules: true
       state: present
 
   - name: delete the web acl

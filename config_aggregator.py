@@ -85,7 +85,7 @@ EXAMPLES = r'''
       - 1234567890
       - 0123456789
       - 9012345678
-      all_aws_regions: yes
+      all_aws_regions: true
 '''
 
 RETURN = r'''#'''

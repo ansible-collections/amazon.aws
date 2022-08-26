@@ -80,7 +80,7 @@ EXAMPLES = r'''
 - name: Remove an EKS cluster
   community.aws.eks_cluster:
     name: my_cluster
-    wait: yes
+    wait: true
     state: absent
 '''
 

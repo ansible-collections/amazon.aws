@@ -49,7 +49,7 @@ options:
         type: bool
     purge_policy:
         description:
-            - If yes, remove the policy from the repository.
+            - If C(true), remove the policy from the repository.
             - Defaults to C(false).
         required: false
         type: bool
@@ -133,7 +133,7 @@ EXAMPLES = '''
 - name: delete-policy
   community.aws.ecs_ecr:
     name: needs-no-policy
-    purge_policy: yes
+    purge_policy: true
 
 - name: create immutable ecr-repo
   community.aws.ecs_ecr:
@@ -143,7 +143,7 @@ EXAMPLES = '''
 - name: set-lifecycle-policy
   community.aws.ecs_ecr:
     name: needs-lifecycle-policy
-    scan_on_push: yes
+    scan_on_push: true
     lifecycle_policy:
       rules:
         - rulePriority: 1

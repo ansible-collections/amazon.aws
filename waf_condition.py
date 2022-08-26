@@ -127,7 +127,7 @@ options:
   waf_regional:
     description: Whether to use C(waf-regional) module.
     default: false
-    required: no
+    required: false
     type: bool
   state:
     description: Whether the condition should be C(present) or C(absent).

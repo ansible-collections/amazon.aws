@@ -165,7 +165,7 @@ EXAMPLES = r'''
       started_by: ansible_user
       launch_type: FARGATE
       network_configuration:
-        assign_public_ip: yes
+        assign_public_ip: true
         subnets:
         - subnet-abcd1234
   register: task_output

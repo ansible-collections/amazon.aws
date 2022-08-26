@@ -86,7 +86,7 @@ EXAMPLES = '''
   community.aws.kinesis_stream:
     name: test-stream
     shards: 10
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 
@@ -97,7 +97,7 @@ EXAMPLES = '''
     shards: 10
     tags:
       Env: development
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 
@@ -109,7 +109,7 @@ EXAMPLES = '''
     shards: 10
     tags:
       Env: development
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 
@@ -118,7 +118,7 @@ EXAMPLES = '''
   community.aws.kinesis_stream:
     name: test-stream
     state: absent
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 
@@ -131,7 +131,7 @@ EXAMPLES = '''
     encryption_state: enabled
     encryption_type: KMS
     key_id: alias/aws/kinesis
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 
@@ -144,7 +144,7 @@ EXAMPLES = '''
     encryption_state: disabled
     encryption_type: KMS
     key_id: alias/aws/kinesis
-    wait: yes
+    wait: true
     wait_timeout: 600
   register: test_stream
 '''

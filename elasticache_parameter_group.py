@@ -29,7 +29,7 @@ options:
   name:
     description:
      - A user-specified name for the cache parameter group.
-    required: yes
+    required: true
     type: str
   description:
     description:
