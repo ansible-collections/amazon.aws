@@ -17,18 +17,18 @@ options:
   iam_type:
     description:
       - Type of IAM resource you wish to retrieve inline policies for.
-    required: yes
+    required: true
     choices: [ "user", "group", "role"]
     type: str
   iam_name:
     description:
       - Name of IAM resource you wish to retrieve inline policies for. In other words, the user name, group name or role name.
-    required: yes
+    required: true
     type: str
   policy_name:
     description:
       - Name of a specific IAM inline policy you with to retrieve.
-    required: no
+    required: false
     type: str
 
 author:
