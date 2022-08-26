@@ -256,7 +256,7 @@ EXAMPLES = r'''
     type: A
     ttl: 7200
     value: 1.1.1.1,2.2.2.2,3.3.3.3
-    wait: yes
+    wait: true
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
   community.aws.route53:
     state: present
@@ -268,7 +268,7 @@ EXAMPLES = r'''
       - 1.1.1.1
       - 2.2.2.2
       - 3.3.3.3
-    wait: yes
+    wait: true
 - name: Retrieve the details for new.foo.com
   community.aws.route53:
     state: get
