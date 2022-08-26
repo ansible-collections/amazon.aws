@@ -3,7 +3,7 @@
   - name: "Find AMI to use"
     run_once: yes
     ec2_ami_info:
-      owners: 'amazon'
+      owners: 125523088429  # Fedora org
       filters:
         name: '{{ ec2_ami_name }}'
     register: ec2_amis
