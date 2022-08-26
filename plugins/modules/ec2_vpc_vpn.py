@@ -26,7 +26,7 @@ options:
       - The desired state of the VPN connection.
     choices: ['present', 'absent']
     default: present
-    required: no
+    required: false
     type: str
   customer_gateway_id:
     description:
@@ -51,13 +51,13 @@ options:
       - Indicates whether the VPN connection uses static routes only. Static routes must be used for devices that don't support BGP.
     default: False
     type: bool
-    required: no
+    required: false
   tunnel_options:
     description:
       - An optional list object containing no more than two dict members, each of which may contain I(TunnelInsideCidr)
         and/or I(PreSharedKey) keys with appropriate string values.  AWS defaults will apply in absence of either of
         the aforementioned keys.
-    required: no
+    required: false
     type: list
     elements: dict
     suboptions:
