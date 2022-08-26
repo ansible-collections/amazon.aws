@@ -419,7 +419,7 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_name):
     try:
         object_attributes_info = connection.get_object_attributes(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_attributes_info['msg'] = 'Object attributes not found, are you sure the bucket/object configuration exist?'
+        object_attributes_info['msg'] = 'Object attributes not found'
 
     if len(object_attributes_info) != 0 and 'msg' not in object_attributes_info.keys():
         # Remove ResponseMetadata from object_attributes_info, convert to snake_case

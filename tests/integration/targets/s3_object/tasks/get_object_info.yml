@@ -63,6 +63,10 @@
           - '"object_info" in info_result'
           - info_result.object_info[0] | length != 0
           - '"object_metadata" in info_result.object_info[0]'
+          - '"e_tag" in info_result.object_info[0].object_metadata'
+          - '"tag_count" in info_result.object_info[0].object_metadata'
+          - '"last_modified" in info_result.object_info[0].object_metadata'
+          - '"content_type" in info_result.object_info[0].object_metadata'
 
     - name: Get s3 object info
       amazon.aws.s3_object_info:
@@ -96,6 +100,10 @@
           - '"object_lock_configuration" in info_detail_result.object_info[0]'
           - '"object_attributes" in info_detail_result.object_info[0]'
           - '"object_retention" not in info_detail_result.object_info[0]'
+          - '"e_tag" in info_result.object_info[0].object_metadata'
+          - '"tag_count" in info_result.object_info[0].object_metadata'
+          - '"last_modified" in info_result.object_info[0].object_metadata'
+          - '"content_type" in info_result.object_info[0].object_metadata'
 
   always:
     - name: list bucket object
