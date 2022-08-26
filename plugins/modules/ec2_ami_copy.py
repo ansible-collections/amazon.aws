@@ -47,7 +47,7 @@ options:
     description:
       - Wait for the copied AMI to be in state C(available) before returning.
     type: bool
-    default: 'no'
+    default: false
   wait_timeout:
     description:
       - How long before wait gives up, in seconds.
@@ -87,7 +87,7 @@ EXAMPLES = '''
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
-    wait: yes
+    wait: true
     wait_timeout: 1200  # Default timeout is 600
   register: image_id
 
@@ -107,21 +107,21 @@ EXAMPLES = '''
     tags:
         Name: My-Super-AMI
         Patch: 1.2.3
-    tag_equality: yes
+    tag_equality: true
 
 - name: Encrypted AMI copy
   community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
-    encrypted: yes
+    encrypted: true
 
 - name: Encrypted AMI copy with specified key
   community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
-    encrypted: yes
+    encrypted: true
     kms_key_id: arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/746de6ea-50a4-4bcb-8fbc-e3b29f2d367b
 '''
 
