@@ -114,7 +114,7 @@ object_info:
     elements: dict
     contains:
         object_metadata:
-            description:
+            description: A dict containing the metadata of S3 object.
             type: dict
             elements: str
             contains:
@@ -137,7 +137,7 @@ object_info:
                 last_modified:
                     description: Creation date of the object.
                     returned: always
-                    type: datetime
+                    type: str
                 metadata:
                     description: A map of metadata to store with the object in S3.
                     returned: always

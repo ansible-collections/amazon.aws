@@ -55,8 +55,6 @@
         bucket_name: "{{ bucket_name }}-object-info-test"
         object_name: "{{ list_keys_result.s3_keys[0] }}"
       register: info_result
-    - debug:
-        var: info_result
 
     - assert:
         that:
