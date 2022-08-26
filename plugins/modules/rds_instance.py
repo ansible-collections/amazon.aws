@@ -221,12 +221,12 @@ options:
             description:
               - The name of the feature associated with the IAM role.
             type: str
-            required: yes
+            required: true
           role_arn:
             description:
               - The ARN of the IAM role to associate with the DB instance.
             type: str
-            required: yes
+            required: true
         version_added: 3.3.0
     iops:
         description:
@@ -519,7 +519,7 @@ EXAMPLES = r'''
   community.aws.rds_instance:
     id: "my-instance-id"
     state: present
-    purge_iam_roles: yes
+    purge_iam_roles: true
 
 # Restore DB instance from snapshot
 - name: Create a snapshot and wait until completion
@@ -527,7 +527,7 @@ EXAMPLES = r'''
     instance_id: 'my-instance-id'
     snapshot_id: 'my-new-snapshot'
     state: present
-    wait: yes
+    wait: true
   register: snapshot
 
 - name: Restore DB from snapshot
