@@ -94,7 +94,7 @@ EXAMPLES = r'''
     region: us-east-1
     source_id: "{{ snapshot.db_snapshot_arn }}"
     source_region: us-east-2
-    copy_tags: yes
+    copy_tags: true
 '''
 
 RETURN = r'''
