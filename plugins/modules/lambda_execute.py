@@ -38,9 +38,9 @@ options:
     type: str
   tail_log:
     description:
-      - If I(tail_log=yes), the result of the task will include the last 4 KB
+      - If I(tail_log=true), the result of the task will include the last 4 KB
         of the CloudWatch log for the function execution. Log tailing only
-        works if you use synchronous invocation I(wait=yes). This is usually
+        works if you use synchronous invocation I(wait=true). This is usually
         used for development or testing Lambdas.
     type: bool
     default: false
@@ -48,7 +48,7 @@ options:
     description:
       - Whether to wait for the function results or not. If I(wait=no)
         the task will not return any results. To wait for the Lambda function
-        to complete, set I(wait=yes) and the result will be available in the
+        to complete, set I(wait=true) and the result will be available in the
         I(output) key.
     type: bool
     default: true

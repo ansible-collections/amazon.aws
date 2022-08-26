@@ -56,7 +56,7 @@ EXAMPLES = '''
 ---
 # Simple example to create a lambda function and publish a version
 - hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
     state: present
     project_folder: /path/to/deployment/package
