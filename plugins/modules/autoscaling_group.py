@@ -339,7 +339,7 @@ EXAMPLES = r'''
     vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
     tags:
       - environment: production
-        propagate_at_launch: no
+        propagate_at_launch: false
 
 # Rolling ASG Updates
 
@@ -361,14 +361,14 @@ EXAMPLES = r'''
     region: us-east-1
     security_groups: sg-23423
     instance_type: m1.small
-    assign_public_ip: yes
+    assign_public_ip: true
 
 - community.aws.autoscaling_group:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
     health_check_type: ELB
-    replace_all_instances: yes
+    replace_all_instances: true
     min_size: 5
     max_size: 5
     desired_capacity: 5
@@ -406,7 +406,7 @@ EXAMPLES = r'''
     vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
     tags:
       - environment: production
-        propagate_at_launch: no
+        propagate_at_launch: false
 
 # Basic Configuration with Launch Template using mixed instance policy
 
@@ -432,7 +432,7 @@ EXAMPLES = r'''
     vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
     tags:
       - environment: production
-        propagate_at_launch: no
+        propagate_at_launch: false
 '''
 
 RETURN = r'''
