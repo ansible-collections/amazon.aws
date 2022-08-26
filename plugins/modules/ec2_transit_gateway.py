@@ -90,8 +90,8 @@ EXAMPLES = '''
 - name: Create a new transit gateway with options
   community.aws.ec2_transit_gateway:
     asn: 64514
-    auto_associate: no
-    auto_propagate: no
+    auto_associate: false
+    auto_propagate: false
     dns_support: True
     description: "nonprod transit gateway"
     purge_tags: False
@@ -470,17 +470,17 @@ def setup_module_object():
 
     argument_spec = dict(
         asn=dict(type='int'),
-        auto_associate=dict(type='bool', default='yes'),
-        auto_attach=dict(type='bool', default='no'),
-        auto_propagate=dict(type='bool', default='yes'),
+        auto_associate=dict(type='bool', default=True),
+        auto_attach=dict(type='bool', default=False),
+        auto_propagate=dict(type='bool', default=True),
         description=dict(type='str'),
-        dns_support=dict(type='bool', default='yes'),
-        purge_tags=dict(type='bool', default='yes'),
+        dns_support=dict(type='bool', default=True),
+        purge_tags=dict(type='bool', default=True),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict', aliases=['resource_tags']),
         transit_gateway_id=dict(type='str'),
-        vpn_ecmp_support=dict(type='bool', default='yes'),
-        wait=dict(type='bool', default='yes'),
+        vpn_ecmp_support=dict(type='bool', default=True),
+        wait=dict(type='bool', default=True),
         wait_timeout=dict(type='int', default=300)
     )
 
