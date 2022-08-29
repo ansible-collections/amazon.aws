@@ -1,0 +1,98 @@
+- name: test with boto3 version that does not support instance_metadata_tags
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "fail create t3.nano instance with metadata_options"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      metadata_options:
+          http_endpoint: enabled
+          http_tokens: required
+          instance_metadata_tags: enabled
+      wait: false
+    ignore_errors: yes
+    register: instance_creation
+
+  - name: verify fail instance with metadata_options because insufficient boto3 requirements
+    assert:
+      that:
+        - instance_creation is failed
+        - instance_creation is not changed
+        - "'This is required to set instance_metadata_tags' in instance_creation.msg"
+
+- name: test with boto3 version that supports instance_metadata_tags
+  vars:
+    ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "create t3.nano instance with metadata_options"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      metadata_options:
+          http_endpoint: enabled
+          http_tokens: required
+          instance_metadata_tags: enabled
+      wait: false
+    register: instance_creation
+
+  - name: "instance with metadata_options created with the right options"
+    assert:
+      that:
+        - instance_creation is success
+        - instance_creation is changed
+        - "'{{ instance_creation.spec.MetadataOptions.HttpEndpoint }}' == 'enabled'"
+        - "'{{ instance_creation.spec.MetadataOptions.HttpTokens }}' == 'required'"
+        - "'{{ instance_creation.spec.MetadataOptions.InstanceMetadataTags }}' == 'enabled'"
+
+  - name: "modify metadata_options on existing instance"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      metadata_options:
+          http_endpoint: enabled
+          http_tokens: optional
+      wait: false
+    register: metadata_options_update
+    ignore_errors: yes
+
+  - name: "fact presented ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-test-t3nano-enabled-required"
+    register: presented_instance_fact
+
+  - name: "modify metadata_options has no effect on existing instance"
+    assert:
+      that:
+        - metadata_options_update is success
+        - metadata_options_update is not changed
+        - "{{ presented_instance_fact.instances | length }} > 0"
+        - "'{{ presented_instance_fact.instances.0.state.name }}' in ['running','pending']"
+        - "'{{ presented_instance_fact.instances.0.metadata_options.http_endpoint }}' == 'enabled'"
+        - "'{{ presented_instance_fact.instances.0.metadata_options.http_tokens }}' == 'required'"

@@ -1,0 +1,9 @@
+# this just makes sure they're in the right place
+dependencies:
+- role: setup_ec2_facts
+- role: setup_botocore_pip
+  vars:
+    botocore_version: 1.23.30
+- role: setup_ec2_instance_env
+  vars:
+    ec2_instance_test_name: metadata

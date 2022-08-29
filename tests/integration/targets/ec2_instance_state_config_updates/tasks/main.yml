@@ -1,0 +1,133 @@
+# Test that configuration changes, like security groups and instance attributes,
+# are updated correctly when the instance has different states, and also when
+# changing the state of an instance.
+# https://github.com/ansible-collections/community.aws/issues/16
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "Make instance with sg and termination protection enabled"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-state-param-changes"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      termination_protection: False
+      instance_type: "{{ ec2_instance_type }}"
+      wait: True
+    register: create_result
+
+  - assert:
+      that:
+        - create_result is not failed
+        - create_result.changed
+        - '"instances" in create_result'
+        - '"instance_ids" in create_result'
+        - '"spec" in create_result'
+        - create_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+        - create_result.spec.DisableApiTermination == False
+
+  - name: "Change sg and termination protection while instance is in state running"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-state-param-changes"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg2.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      termination_protection: True
+      instance_type: "{{ ec2_instance_type }}"
+    register: change_params_result
+
+  - assert:
+      that:
+        - change_params_result is not failed
+        - change_params_result.changed
+        - '"instances" in change_params_result'
+        - '"instance_ids" in change_params_result'
+        - '"changes" in change_params_result'
+        - change_params_result.instances[0].security_groups[0].group_id == "{{ sg2.group_id }}"
+        - change_params_result.changes[0].DisableApiTermination.Value == True
+        - change_params_result.changes[1].Groups[0] == "{{ sg2.group_id }}"  # TODO fix this to be less fragile
+
+
+  - name: "Change instance state from running to stopped, and change sg and termination protection"
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-test-state-param-changes"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      termination_protection: False
+      instance_type: "{{ ec2_instance_type }}"
+    register: change_state_params_result
+
+  - assert:
+      that:
+        - change_state_params_result is not failed
+        - change_state_params_result.changed
+        - '"instances" in change_state_params_result'
+        - '"instance_ids" in change_state_params_result'
+        - '"changes" in change_state_params_result'
+        - '"stop_success" in change_state_params_result'
+        - '"stop_failed" in change_state_params_result'
+        - change_state_params_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+        - change_state_params_result.changes[0].DisableApiTermination.Value == False
+
+  - name: "Change sg and termination protection while instance is in state stopped"
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-test-state-param-changes"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg2.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      termination_protection: True
+      instance_type: "{{ ec2_instance_type }}"
+    register: change_params_stopped_result
+
+  - assert:
+      that:
+        - change_params_stopped_result is not failed
+        - change_params_stopped_result.changed
+        - '"instances" in change_params_stopped_result'
+        - '"instance_ids" in change_params_stopped_result'
+        - '"changes" in change_params_stopped_result'
+        - change_params_stopped_result.instances[0].security_groups[0].group_id == "{{ sg2.group_id }}"
+        - change_params_stopped_result.changes[0].DisableApiTermination.Value == True
+
+  - name: "Change instance state from stopped to running, and change sg and termination protection"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-state-param-changes"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      termination_protection: False
+      instance_type: "{{ ec2_instance_type }}"
+      wait: True
+    register: change_params_start_result
+
+  - assert:
+      that:
+        - change_params_start_result is not failed
+        - change_params_start_result.changed
+        - '"instances" in change_params_start_result'
+        - '"instance_ids" in change_params_start_result'
+        - '"changes" in change_params_start_result'
+        - '"start_success" in change_params_start_result'
+        - '"start_failed" in change_params_start_result'
+        - change_params_start_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+        - change_params_start_result.changes[0].DisableApiTermination.Value == False

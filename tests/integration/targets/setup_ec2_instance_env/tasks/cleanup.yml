@@ -1,0 +1,118 @@
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: Set termination protection to false (so we can terminate instance) (cleanup)
+    ec2_instance:
+      filters:
+        instance-state-name: ['pending', 'running', 'stopping', 'stopped']
+        vpc-id: '{{ testing_vpc.vpc.id }}'
+      termination_protection: false
+    ignore_errors: yes
+
+  - name: "(Cleanup) Find all remaining Instances"
+    ec2_instance_info:
+      filters:
+        vpc-id: '{{ testing_vpc.vpc.id }}'
+        instance-state-name: ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
+    register: instances
+
+  - name: "(Cleanup) Remove Instances (start)"
+    ec2_instance:
+      state: absent
+      instance_ids: '{{ item.instance_id }}'
+      wait: no
+    ignore_errors: yes
+    loop: '{{ instances.instances }}'
+
+  - name: "(Cleanup) Remove Instances (wait for completion)"
+    ec2_instance:
+      state: absent
+      instance_ids: '{{ item.instance_id }}'
+      filters:
+        instance-state-name: ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
+        vpc-id: '{{ testing_vpc.vpc.id }}'
+      wait: yes
+    ignore_errors: yes
+    loop: '{{ instances.instances }}'
+
+  - name: "(Cleanup) Find all remaining ENIs"
+    ec2_eni_info:
+      filters:
+        vpc-id: "{{ testing_vpc.vpc.id }}"
+    register: enis
+
+  - name: "(Cleanup) delete all ENIs"
+    ec2_eni:
+      state: absent
+      eni_id: "{{ item.id }}"
+    register: eni_removed
+    until: eni_removed is not failed
+    with_items: "{{ enis.network_interfaces }}"
+    ignore_errors: yes
+    retries: 10
+
+  - name: "(Cleanup) Find all remaining Security Groups"
+    ec2_security_group_info:
+      filters:
+        vpc-id: '{{ testing_vpc.vpc.id }}'
+    register: security_groups
+
+  - name: "(Cleanup) Remove the security group rules"
+    ec2_security_group:
+      state: present
+      name: '{{ item.group_name }}'
+      description: '{{ item.description }}'
+      vpc_id: '{{ testing_vpc.vpc.id }}'
+      rules: []
+      egress_rules: []
+    loop: '{{ security_groups.security_groups }}'
+    register: sg_removed
+    until: sg_removed is not failed
+    ignore_errors: yes
+    retries: 10
+
+  - name: "(Cleanup) Remove the security groups"
+    ec2_security_group:
+      state: absent
+      group_id: '{{ item.group_id }}'
+    loop: '{{ security_groups.security_groups }}'
+    when:
+    - item.group_name != 'default'
+    register: sg_removed
+    until: sg_removed is not failed
+    ignore_errors: yes
+    retries: 10
+
+  - name: "(Cleanup) Find all remaining Subnets"
+    ec2_vpc_subnet_info:
+      filters:
+        vpc-id: '{{ testing_vpc.vpc.id }}'
+    register: subnets
+
+  - name: "(Cleanup) Remove subnets"
+    ec2_vpc_subnet:
+      state: absent
+      vpc_id: "{{ testing_vpc.vpc.id }}"
+      cidr: "{{ item.cidr_block }}"
+    register: removed
+    loop: '{{ subnets.subnets }}'
+    until: removed is not failed
+    ignore_errors: yes
+    retries: 10
+
+  - name: "(Cleanup) Remove the VPC"
+    ec2_vpc_net:
+      state: absent
+      name: "{{ vpc_name }}"
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: Ansible Testing VPC
+      tenancy: default
+    register: removed
+    until: removed is not failed
+    ignore_errors: yes
+    retries: 10

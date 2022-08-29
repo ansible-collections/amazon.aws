@@ -1,0 +1,2 @@
+- name: 'Delete ec2_instance environment'
+  include_tasks: cleanup.yml
