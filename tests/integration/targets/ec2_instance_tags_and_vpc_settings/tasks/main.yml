@@ -177,13 +177,3 @@
       that:
         - _purge_tags.instances[0].tags | length == 1
         - _purge_tags.instances[0].tags.Name.startswith(resource_prefix)
-
-  - name: "Terminate instance"
-    ec2_instance:
-      state: absent
-      filters:
-        "tag:Name": "{{ resource_prefix }}-test-basic-vpc-create"
-      wait: false
-    register: result
-  - assert:
-      that: result.changed

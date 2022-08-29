@@ -9,6 +9,7 @@
     ec2_instance:
       filters:
         instance-state-name: ['pending', 'running', 'stopping', 'stopped']
+        vpc-id: '{{ testing_vpc.vpc.id }}'
       termination_protection: false
     ignore_errors: yes
 
@@ -33,6 +34,7 @@
       instance_ids: '{{ item.instance_id }}'
       filters:
         instance-state-name: ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
+        vpc-id: '{{ testing_vpc.vpc.id }}'
       wait: yes
     ignore_errors: yes
     loop: '{{ instances.instances }}'
