@@ -248,20 +248,3 @@
         filters:
           tag:TestId: "{{ resource_prefix }}"
         state: absent
-
-  always:
-
-    - name: Set termination protection to false (so we can terminate instance) (cleanup)
-      ec2_instance:
-        filters:
-          tag:TestId: "{{ resource_prefix }}"
-        termination_protection: false
-      ignore_errors: yes
-
-    - name: Terminate instance
-      ec2_instance:
-        filters:
-          tag:TestId: "{{ resource_prefix }}"
-        state: absent
-        wait: false
-      ignore_errors: yes

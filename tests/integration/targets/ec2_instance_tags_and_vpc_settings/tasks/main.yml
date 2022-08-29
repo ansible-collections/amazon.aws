@@ -187,12 +187,3 @@
     register: result
   - assert:
       that: result.changed
-
-  always:
-  - name: "Terminate tags_and_vpc_settings instances"
-    ec2_instance:
-      state: absent
-      filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
-      wait: yes
-    ignore_errors: yes

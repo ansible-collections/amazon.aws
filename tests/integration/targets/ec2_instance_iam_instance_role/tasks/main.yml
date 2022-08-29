@@ -121,10 +121,7 @@
     iam_role:
       state: absent
       name: "{{ item }}"
-      assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
-      create_instance_profile: yes
-      managed_policy:
-      - AmazonEC2ContainerServiceRole
+      delete_instance_profile: true
     loop:
       - '{{ first_iam_role }}'
       - '{{ second_iam_role }}'

@@ -5,10 +5,18 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
+  - name: Set termination protection to false (so we can terminate instance) (cleanup)
+    ec2_instance:
+      filters:
+        instance-state-name: ['pending', 'running', 'stopping', 'stopped']
+      termination_protection: false
+    ignore_errors: yes
+
   - name: "(Cleanup) Find all remaining Instances"
     ec2_instance_info:
       filters:
         vpc-id: '{{ testing_vpc.vpc.id }}'
+        instance-state-name: ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
     register: instances
 
   - name: "(Cleanup) Remove Instances (start)"
@@ -23,6 +31,8 @@
     ec2_instance:
       state: absent
       instance_ids: '{{ item.instance_id }}'
+      filters:
+        instance-state-name: ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
       wait: yes
     ignore_errors: yes
     loop: '{{ instances.instances }}'
