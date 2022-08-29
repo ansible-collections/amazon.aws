@@ -37,7 +37,7 @@
       image_id: "{{ ec2_ami_id }}"
       security_groups: "{{ sg.group_id }}"
       instance_type: "{{ ec2_instance_type }}"
-      instance_role: "ansible-test-sts-{{ unique_id }}-test-policy"
+      instance_role: "{{ first_iam_role }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
@@ -108,6 +108,7 @@
         - 'updates_instance_info.instances[0].instance_id == instance_with_role.instances[0].instance_id'
 
   always:
+  # We need to delete the instances before we can delete the roles
   - name: "Terminate iam_instance_role instances"
     ec2_instance:
       state: absent

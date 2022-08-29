@@ -1,3 +1,0 @@
----
-minor_changes:
-- "integration tests - ec2_instance integration test is now splitted up in several independent tests."

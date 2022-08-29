@@ -148,5 +148,3 @@
         state: absent
         wait: False
       ignore_errors: yes
-
-    - include_tasks: env_cleanup.yml
