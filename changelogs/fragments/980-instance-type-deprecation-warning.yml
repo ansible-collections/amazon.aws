@@ -1,0 +1,2 @@
+bugfixes:
+- s3_instance - Only show the deprecation warning for the default value of ``instance_type`` when ``count`` or ``exact_count`` are specified (https://github.com/ansible-collections/amazon.aws/issues/980).

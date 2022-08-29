@@ -2050,9 +2050,11 @@ def main():
         supports_check_mode=True
     )
 
-    if not module.params.get('instance_type') and not module.params.get('launch_template') and module.params.get('state') != 'absent':
-        module.deprecate("Default value instance_type has been deprecated, in the future you must set an instance_type or a launch_template",
-                         date='2023-01-01', collection_name='amazon.aws')
+    if not module.params.get('instance_type') and not module.params.get('launch_template'):
+        if module.params.get('state') not in ('absent', 'stopped'):
+            if module.params.get('count') or module.params.get('exact_count'):
+                module.deprecate("Default value instance_type has been deprecated, in the future you must set an instance_type or a launch_template",
+                                 date='2023-01-01', collection_name='amazon.aws')
     result = dict()
 
     if module.params.get('network'):
