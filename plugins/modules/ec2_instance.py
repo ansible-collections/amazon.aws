@@ -935,7 +935,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.core import parse_aws_arn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
@@ -943,6 +943,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 module = None
+client = None
 
 
 def tower_callback_script(tower_conf, windows=False, passwd=None):
