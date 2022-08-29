@@ -167,7 +167,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
-
 def describe_vpcs(connection, module):
     """
     Describe VPCs.
@@ -194,12 +193,16 @@ def describe_vpcs(connection, module):
         vpc_list.append(vpc['VpcId'])
 
     # We can get these results in bulk but still needs two separate calls to the API
-    try:
-        cl_enabled = connection.describe_vpc_classic_link(VpcIds=vpc_list, aws_retry=True)
-    except is_boto3_error_code('UnsupportedOperation'):
-        cl_enabled = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkEnabled': False} for vpc_id in vpc_list]}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Unable to describe if ClassicLink is enabled')
+    cl_enabled = {}
+    # Looping through the vpc list because one or more vpcs might be a shared vpc 
+    # and classic link is not supported on them
+    for vpc in vpc_list:
+        try:
+            cl_enabled.update(connection.describe_vpc_classic_link(VpcIds=[vpc], aws_retry=True))
+        except is_boto3_error_code('UnsupportedOperation'):
+            cl_enabled.update({'Vpcs': [{'VpcId': vpc, 'ClassicLinkEnabled': False}]})
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            module.warn('Unable to describe if ClassicLink is enabled. One of the VPCs might be a shared VPC. {0}'.format(e))
 
     try:
         cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list, aws_retry=True)
@@ -223,10 +226,11 @@ def describe_vpcs(connection, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=error_message.format('enableDnsHostnames'))
 
-        # loop through the ClassicLink Enabled results and add the value for the correct VPC
-        for item in cl_enabled['Vpcs']:
-            if vpc['VpcId'] == item['VpcId']:
-                vpc['ClassicLinkEnabled'] = item['ClassicLinkEnabled']
+        if cl_enabled:
+            # loop through the ClassicLink Enabled results and add the value for the correct VPC
+            for item in cl_enabled['Vpcs']:
+                if vpc['VpcId'] == item['VpcId']:
+                    vpc['ClassicLinkEnabled'] = item['ClassicLinkEnabled']
 
         # loop through the ClassicLink DNS support results and add the value for the correct VPC
         for item in cl_dns_support['Vpcs']:
