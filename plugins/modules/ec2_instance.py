@@ -1299,7 +1299,7 @@ def build_top_level_options(params):
         spec['InstanceInitiatedShutdownBehavior'] = params.get('instance_initiated_shutdown_behavior')
     if params.get('termination_protection') is not None:
         spec['DisableApiTermination'] = params.get('termination_protection')
-    if params.get('hibernation_options') is not None and params.get('volumes'):
+    if params.get('hibernation_options') and params.get('volumes'):
         for vol in params['volumes']:
             if vol.get('ebs') and vol['ebs'].get('encrypted'):
                 spec['HibernationOptions'] = {'Configured': True}
