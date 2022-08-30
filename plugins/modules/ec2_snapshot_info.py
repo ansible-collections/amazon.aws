@@ -72,6 +72,7 @@ notes:
 extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.aws
+  - amazon.aws.aws_boto3
 '''
 
 EXAMPLES = r'''

@@ -66,10 +66,6 @@ options:
       - A dictionary to modify the botocore configuration.
       - Parameters can be found at U(https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config).
     type: dict
-requirements:
-  - python >= 3.6
-  - boto3 >= 1.18.0
-  - botocore >= 1.21.0
 notes:
   - If parameters are not set within the module, the following
     environment variables can be used in decreasing order of precedence
