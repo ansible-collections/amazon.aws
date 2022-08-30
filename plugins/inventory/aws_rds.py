@@ -359,6 +359,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if not HAS_BOTO3:
             raise AnsibleError('The RDS dynamic inventory plugin requires boto3 and botocore.')
 
+        self._read_config_data(path)
         self._set_credentials()
 
         # get user specifications
