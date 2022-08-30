@@ -180,7 +180,6 @@ def describe_vpcs(connection, module):
 
     # init empty list for return vars
     vpc_info = list()
-    vpc_list = list()
 
     # Get the basic VPC info
     try:
@@ -188,54 +187,26 @@ def describe_vpcs(connection, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to describe VPCs {0}".format(vpc_ids))
 
-    # Loop through results and create a list of VPC IDs
-    for vpc in response['Vpcs']:
-        vpc_list.append(vpc['VpcId'])
-
     # We can get these results in bulk but still needs two separate calls to the API
     cl_enabled = {}
-    # Looping through the vpc list because one or more vpcs might be a shared vpc 
-    # and classic link is not supported on them
-    for vpc in vpc_list:
-        try:
-            cl_enabled.update(connection.describe_vpc_classic_link(VpcIds=[vpc], aws_retry=True))
-        except is_boto3_error_code('UnsupportedOperation'):
-            cl_enabled.update({'Vpcs': [{'VpcId': vpc, 'ClassicLinkEnabled': False}]})
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.warn('Unable to describe if ClassicLink is enabled. One of the VPCs might be a shared VPC. {0}'.format(e))
-
-    try:
-        cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list, aws_retry=True)
-    except is_boto3_error_code('UnsupportedOperation'):
-        cl_dns_support = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkDnsSupported': False} for vpc_id in vpc_list]}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Unable to describe if ClassicLinkDns is supported')
-
+    cl_dns_support = {}
     # Loop through the results and add the other VPC attributes we gathered
     for vpc in response['Vpcs']:
-        error_message = "Unable to describe VPC attribute {0}"
-        # We have to make two separate calls per VPC to get these attributes.
-        try:
-            dns_support = connection.describe_vpc_attribute(VpcId=vpc['VpcId'],
-                                                            Attribute='enableDnsSupport', aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=error_message.format('enableDnsSupport'))
-        try:
-            dns_hostnames = connection.describe_vpc_attribute(VpcId=vpc['VpcId'],
-                                                              Attribute='enableDnsHostnames', aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=error_message.format('enableDnsHostnames'))
-
+        error_message = "Unable to describe VPC attribute {0} on VPC {1}"
+        cl_enabled = describe_classic_links(module, connection, vpc['VpcId'], 'ClassicLinkEnabled', error_message)
+        cl_dns_support = describe_classic_links(module, connection, vpc['VpcId'], 'ClassicLinkDnsSupported', error_message)
+        dns_support = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsSupport', error_message)
+        dns_hostnames = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsHostnames', error_message)
         if cl_enabled:
             # loop through the ClassicLink Enabled results and add the value for the correct VPC
             for item in cl_enabled['Vpcs']:
                 if vpc['VpcId'] == item['VpcId']:
                     vpc['ClassicLinkEnabled'] = item['ClassicLinkEnabled']
-
-        # loop through the ClassicLink DNS support results and add the value for the correct VPC
-        for item in cl_dns_support['Vpcs']:
-            if vpc['VpcId'] == item['VpcId']:
-                vpc['ClassicLinkDnsSupported'] = item['ClassicLinkDnsSupported']
+        if cl_dns_support:
+            # loop through the ClassicLink DNS support results and add the value for the correct VPC
+            for item in cl_dns_support['Vpcs']:
+                if vpc['VpcId'] == item['VpcId']:
+                    vpc['ClassicLinkDnsSupported'] = item['ClassicLinkDnsSupported']
 
         # add the two DNS attributes
         vpc['EnableDnsSupport'] = dns_support['EnableDnsSupport'].get('Value')
@@ -247,6 +218,32 @@ def describe_vpcs(connection, module):
         vpc_info[-1]['tags'] = boto3_tag_list_to_ansible_dict(vpc.get('Tags', []))
 
     module.exit_json(vpcs=vpc_info)
+
+def describe_classic_links (module, connection, vpc, attribute, error_message):
+    result = None
+    try:
+        if attribute == "ClassicLinkEnabled":
+            result = connection.describe_vpc_classic_link(VpcIds=[vpc], aws_retry=True)
+        else:
+            result = connection.describe_vpc_classic_link_dns_support(VpcIds=[vpc], aws_retry=True)
+    except is_boto3_error_code('UnsupportedOperation'):
+        result = {'Vpcs': [{'VpcId': vpc, 'ClassicLinkEnabled': False}]}
+    except is_boto3_error_code('InvalidVpcID.NotFound'):
+        module.warn(error_message.format(attribute, vpc))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Unable to describe if {0} is enabled'.format(attribute))
+    return result
+
+def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
+    result = None
+    try:
+        return connection.describe_vpc_attribute(VpcId=vpc, Attribute=attribute, aws_retry=True)
+    except is_boto3_error_code('InvalidVpcID.NotFound'):
+        module.warn(error_message.format(attribute, vpc))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
+    return result
+
 
 
 def main():
