@@ -167,6 +167,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
+
 def describe_vpcs(connection, module):
     """
     Describe VPCs.
@@ -219,7 +220,8 @@ def describe_vpcs(connection, module):
 
     module.exit_json(vpcs=vpc_info)
 
-def describe_classic_links (module, connection, vpc, attribute, error_message):
+
+def describe_classic_links(module, connection, vpc, attribute, error_message):
     result = None
     try:
         if attribute == "ClassicLinkEnabled":
@@ -234,6 +236,7 @@ def describe_classic_links (module, connection, vpc, attribute, error_message):
         module.fail_json_aws(e, msg='Unable to describe if {0} is enabled'.format(attribute))
     return result
 
+
 def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
     result = None
     try:
@@ -243,7 +246,6 @@ def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
     return result
-
 
 
 def main():
