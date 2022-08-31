@@ -40,8 +40,111 @@ EXAMPLES = '''
 
 '''
 
-# RETURN BLOCK IS WIP
 RETURN = '''
+metric_alarms:
+    description: The gathered information about specified metric alarms.
+    returned: when success
+    type: list
+    elements: dict
+    contains:
+        actions_enabled:
+            description: Indicates whether actions should be executed during any changes to the alarm state.
+            returned: always
+            type: str
+        alarm_arn:
+            description: The Amazon Resource Name (ARN) of the alarm.
+            returned: always
+            type: str
+        alarm_configuration_updated_timestamp:
+            description: The time stamp of the last update to the alarm configuration.
+            returned: always
+            type: str
+        alarm_description:
+            description: The description of the alarm.
+            returned: always
+            type: str
+        alarm_name:
+            description: Unique name for the alarm.
+            returned: always
+            type: str
+        comparison_operator:
+            description: The arithmetic operation to use when comparing the specified statistic and threshold.
+            returned: always
+            type: str
+        dimensions:
+            description: The dimensions for the metric.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                name:
+                    description: The name of the dimension.
+                    returned: always
+                    type: str
+                value:
+                    description: The value of the dimension.
+                    returned: always
+                    type: str
+        evaluation_period:
+            description: The number of periods over which data is compared to the specified threshold.
+            returned: always
+            type: str
+        insufficient_data_actions:
+            description: The actions to execute when this alarm transitions to the INSUFFICIENT_DATA state from any other state.
+            returned: always
+            type: str
+        metric_name:
+            description: Name of the monitored metric (e.g. C(CPUUtilization)).
+            returned: always
+            type: str
+        namespace:
+            description:
+                - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.).
+                - Determines the category it will appear under in CloudWatch.
+            returned: always
+            type: str
+        ok_actions:
+            description: The actions to execute when this alarm transitions to an OK state from any other state.
+            returned: always
+            type: str
+        period:
+            description:
+                - The length, in seconds, used each time the metric specified in MetricName is evaluated.
+                - Valid values are 10, 30, and any multiple of 60.
+            returned: always
+            type: int
+        state_reason:
+            description: An explanation for the alarm state, in text format.
+            returned: always
+            type: str
+        state_reason_data:
+            description: An explanation for the alarm state, in JSON format.
+            returned: always
+            type: str
+        state_updated_timestamp:
+            description: The time stamp of the last update to the alarm state.
+            returned: always
+            type: str
+        state_value:
+            description: The state value for the alarm.
+            returned: always
+            type: str
+        statistic:
+            description: The statistic for the metric associated with the alarm, other than percentile.
+            returned: always
+            type: str
+        threshold:
+            description: The value to compare with the specified statistic.
+            returned: always
+            type: str
+        treat_missing_data:
+            description: Sets how alarm is to handle missing data points.
+            returned: always
+            type: str
+        unit:
+            description: Unit used when storing the metric
+            returned: always
+            type: str
 '''
 
 
