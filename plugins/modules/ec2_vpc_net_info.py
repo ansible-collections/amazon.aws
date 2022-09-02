@@ -191,6 +191,8 @@ def describe_vpcs(connection, module):
     # We can get these results in bulk but still needs two separate calls to the API
     cl_enabled = {}
     cl_dns_support = {}
+    dns_support = {}
+    dns_hostnames = {}
     # Loop through the results and add the other VPC attributes we gathered
     for vpc in response['Vpcs']:
         error_message = "Unable to describe VPC attribute {0} on VPC {1}"
@@ -210,8 +212,10 @@ def describe_vpcs(connection, module):
                     vpc['ClassicLinkDnsSupported'] = item['ClassicLinkDnsSupported']
 
         # add the two DNS attributes
-        vpc['EnableDnsSupport'] = dns_support['EnableDnsSupport'].get('Value')
-        vpc['EnableDnsHostnames'] = dns_hostnames['EnableDnsHostnames'].get('Value')
+        if dns_support:
+            vpc['EnableDnsSupport'] = dns_support['EnableDnsSupport'].get('Value')
+        if dns_hostnames:
+            vpc['EnableDnsHostnames'] = dns_hostnames['EnableDnsHostnames'].get('Value')
         # for backwards compatibility
         vpc['id'] = vpc['VpcId']
         vpc_info.append(camel_dict_to_snake_dict(vpc))
