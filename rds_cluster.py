@@ -833,6 +833,11 @@ def changing_cluster_options(modify_params, current_cluster):
         if desired_vpc_sgs:
             changing_params['VpcSecurityGroupIds'] = desired_vpc_sgs
 
+    desired_db_cluster_parameter_group = modify_params.pop("DBClusterParameterGroupName", None)
+    if desired_db_cluster_parameter_group:
+        if desired_db_cluster_parameter_group != current_cluster["DBClusterParameterGroup"]:
+            changing_params["DBClusterParameterGroupName"] = desired_db_cluster_parameter_group
+
     for param in modify_params:
         if modify_params[param] != current_cluster[param]:
             changing_params[param] = modify_params[param]
