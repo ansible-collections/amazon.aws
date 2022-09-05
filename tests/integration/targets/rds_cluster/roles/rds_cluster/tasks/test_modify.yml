@@ -14,12 +14,12 @@
       that:
         - not _result_delete_db_cluster.changed
     ignore_errors: yes
-        
+    
   - name: Create a DB cluster
     rds_cluster:
       id: "{{ cluster_id }}"
       state: present
-      engine: "{{ engine}}"
+      engine: "{{ engine }}"
       username: "{{ username }}"
       password: "{{ password }}"
     register: _result_create_source_db_cluster
@@ -154,6 +154,61 @@
       - "'tags' in _result_modify_id"
       - "'vpc_security_groups' in _result_modify_id"
 
+  - name: Check if DB cluster parameter group exists
+    command: 'aws rds describe-db-cluster-parameter-groups --db-cluster-parameter-group-name {{ new_db_parameter_group_name }}'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+    register: _result_check_db_parameter_group
+    ignore_errors: True
+    changed_when: _result_check_db_parameter_group.rc == 0
+
+  - name: Create DB cluster parameter group if not exists
+    command: 'aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name {{ new_db_parameter_group_name }} --db-parameter-group-family aurora5.6 --description "Test DB cluster parameter group"'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+    register: _result_create_db_parameter_group
+    when: _result_check_db_parameter_group.rc != 0
+
+  - name: Modify DB cluster parameter group
+    rds_cluster:
+      id: "{{ new_cluster_id }}"
+      state: present
+      db_cluster_parameter_group_name: "{{ new_db_parameter_group_name }}"
+      apply_immediately: True
+    register: _result_modify_db_parameter_group_name
+
+  - assert:
+      that:
+        - _result_modify_db_parameter_group_name.changed
+        - "'allocated_storage' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.allocated_storage == 1
+        - "'cluster_create_time' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in _result_modify_db_parameter_group_name"
+        - "_result_modify_db_parameter_group_name.db_cluster_identifier == '{{ new_cluster_id }}'"
+        - "'db_cluster_parameter_group' in _result_modify_db_parameter_group_name"
+        - "'db_cluster_resource_id' in _result_modify_db_parameter_group_name"
+        - "'endpoint' in _result_modify_db_parameter_group_name"
+        - "'engine' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.engine == "{{ engine }}"
+        - "'engine_mode' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.engine_mode == "provisioned"
+        - "'engine_version' in _result_modify_db_parameter_group_name"
+        - "'master_username' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.master_username == "{{ username }}"
+        - "'port' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.db_cluster_parameter_group == "{{ new_db_parameter_group_name }}"
+        - "'status' in _result_modify_db_parameter_group_name"
+        - _result_modify_db_parameter_group_name.status == "available"
+        - "'tags' in _result_modify_db_parameter_group_name"
+        - "'vpc_security_groups' in _result_modify_db_parameter_group_name"
+
   - name: Delete DB cluster without creating a final snapshot (CHECK MODE)
     rds_cluster:
       state: absent
@@ -194,4 +249,13 @@
       state: absent
       cluster_id: "{{ cluster_id }}"
       skip_final_snapshot: True
+    ignore_errors: true
+
+  - name: Delete cluster parameter group
+    command: 'aws rds delete-db-cluster-parameter-group --db-cluster-parameter-group-name {{ new_db_parameter_group_name }}'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
     ignore_errors: true
