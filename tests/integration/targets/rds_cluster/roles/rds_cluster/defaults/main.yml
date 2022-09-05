@@ -15,6 +15,7 @@ tags_create:
 new_cluster_id: 'ansible-test-cluster-{{ tiny_prefix }}-new'
 new_port: 1155
 new_password: 'test-rds_password-new'
+new_db_parameter_group_name: 'ansible-test-db-parameter-group-{{ tiny_prefix }}-new'
 
 # Tag cluster
 tags_patch:
