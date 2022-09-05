@@ -25,7 +25,7 @@ options:
         Ignored for modules where region is required. Must be specified for all other modules if region is not used.
         If not set then the value of the EC2_URL environment variable, if any, is used.
     type: str
-    aliases: [ ec2_url, aws_endpoint_url ]
+    aliases: [ ec2_url, aws_endpoint_url, s3_url ]
   aws_secret_key:
     description:
       - C(AWS secret key). If not set then the value of the C(AWS_SECRET_ACCESS_KEY), C(AWS_SECRET_KEY), or C(EC2_SECRET_KEY) environment variable is used.

@@ -23,7 +23,9 @@ module: s3_bucket
 version_added: 1.0.0
 short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 description:
-  - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
+  - Manage S3 buckets.
+  - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
+  - When using non-AWS services, I(endpoint_url) should be specified.
 author:
   - Rob White (@wimnat)
   - Aubin Bikouo (@abikouo)
@@ -43,16 +45,13 @@ options:
     description:
       - The JSON policy as a string. Set to the string C("null") to force the absence of a policy.
     type: json
-  s3_url:
-    description:
-      - S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and FakeS3 etc.
-      - Assumes AWS if not specified.
-      - For Walrus, use FQDN of the endpoint without scheme nor path.
-    type: str
   ceph:
     description:
-      - Enable API compatibility with Ceph. It takes into account the S3 API subset working
-        with Ceph in order to provide the same module behaviour where possible.
+      - Enable API compatibility with Ceph RGW.
+      - It takes into account the S3 API subset working with Ceph in order to provide the same module
+        behaviour where possible.
+      - Requires I(endpoint_url) if I(ceph=true).
+    aliases: ['rgw']
     type: bool
     default: false
   requester_pays:
@@ -170,6 +169,7 @@ notes:
     operations/API aren't implemented by the endpoint, module doesn't fail
     if each parameter satisfies the following condition.
     I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
+  - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
 '''
 
 EXAMPLES = r'''
@@ -183,7 +183,7 @@ EXAMPLES = r'''
 # Create a simple S3 bucket on Ceph Rados Gateway
 - amazon.aws.s3_bucket:
     name: mys3bucket
-    s3_url: http://your-ceph-rados-gateway-server.xxx
+    endpoint_url: http://your-ceph-rados-gateway-server.xxx
     ceph: true
 
 # Remove an S3 bucket and any keys it contains
@@ -205,7 +205,7 @@ EXAMPLES = r'''
 # Create a simple DigitalOcean Spaces bucket using their provided regional endpoint
 - amazon.aws.s3_bucket:
     name: mydobucket
-    s3_url: 'https://nyc3.digitaloceanspaces.com'
+    endpoint_url: 'https://nyc3.digitaloceanspaces.com'
 
 # Create a bucket with AES256 encryption
 - amazon.aws.s3_bucket:
@@ -1044,20 +1044,21 @@ def destroy_bucket(s3_client, module):
     module.exit_json(changed=True)
 
 
-def is_fakes3(s3_url):
-    """ Return True if s3_url has scheme fakes3:// """
-    if s3_url is not None:
-        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
+def is_fakes3(endpoint_url):
+    """ Return True if endpoint_url has scheme fakes3:// """
+    if endpoint_url is not None:
+        return urlparse(endpoint_url).scheme in ('fakes3', 'fakes3s')
     else:
         return False
 
 
-def get_s3_client(module, aws_connect_kwargs, location, ceph, s3_url):
-    if s3_url and ceph:  # TODO - test this
-        ceph = urlparse(s3_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
-    elif is_fakes3(s3_url):
-        fakes3 = urlparse(s3_url)
+def get_s3_client(module, aws_connect_kwargs, location, ceph, endpoint_url):
+    if ceph:  # TODO - test this
+        ceph = urlparse(endpoint_url)
+        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https',
+                      region=location, endpoint=endpoint_url, **aws_connect_kwargs)
+    elif is_fakes3(endpoint_url):
+        fakes3 = urlparse(endpoint_url)
         port = fakes3.port
         if fakes3.scheme == 'fakes3s':
             protocol = "https"
@@ -1071,7 +1072,7 @@ def get_s3_client(module, aws_connect_kwargs, location, ceph, s3_url):
                       endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
                       use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
     else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
+        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
     return boto3_conn(**params)
 
 
@@ -1082,12 +1083,11 @@ def main():
         policy=dict(type='json'),
         name=dict(required=True),
         requester_pays=dict(type='bool'),
-        s3_url=dict(),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         versioning=dict(type='bool'),
-        ceph=dict(default=False, type='bool'),
+        ceph=dict(default=False, type='bool', aliases=['rgw']),
         encryption=dict(choices=['none', 'AES256', 'aws:kms']),
         encryption_key_id=dict(),
         bucket_key_enabled=dict(type='bool'),
@@ -1112,8 +1112,15 @@ def main():
         ['delete_object_ownership', 'object_ownership']
     ]
 
+    required_if = [
+        ['ceph', True, ['endpoint_url']],
+    ]
+
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, required_by=required_by, mutually_exclusive=mutually_exclusive
+        argument_spec=argument_spec,
+        required_by=required_by,
+        required_if=required_if,
+        mutually_exclusive=mutually_exclusive
     )
 
     region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
@@ -1129,22 +1136,19 @@ def main():
         # actually work fine for everything except us-east-1 (US Standard)
         location = region
 
-    s3_url = module.params.get('s3_url')
+    endpoint_url = module.params.get('endpoint_url')
     ceph = module.params.get('ceph')
 
+    # Look at endpoint_url and tweak connection settings
     # allow eucarc environment variables to be used if ansible vars aren't set
-    if not s3_url and 'S3_URL' in os.environ:
-        s3_url = os.environ['S3_URL']
+    if not endpoint_url and 'S3_URL' in os.environ:
+        endpoint_url = os.environ['S3_URL']
 
-    if ceph and not s3_url:
-        module.fail_json(msg='ceph flavour requires s3_url')
-
-    # Look at s3_url and tweak connection settings
     # if connecting to Ceph RGW, Walrus or fakes3
-    if s3_url:
+    if endpoint_url:
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-    s3_client = get_s3_client(module, aws_connect_kwargs, location, ceph, s3_url)
+    s3_client = get_s3_client(module, aws_connect_kwargs, location, ceph, endpoint_url)
 
     if s3_client is None:  # this should never happen
         module.fail_json(msg='Unknown error, failed to create s3 connection, no information available.')
