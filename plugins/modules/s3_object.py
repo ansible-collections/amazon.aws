@@ -230,6 +230,8 @@ author:
   - "Alina Buzachis (@alinabuzachis)"
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
+  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
+    I(s3_url) remains as an alias for I(endpoint_url).
   - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
 extends_documentation_fragment:
   - amazon.aws.aws

@@ -169,6 +169,8 @@ notes:
     operations/API aren't implemented by the endpoint, module doesn't fail
     if each parameter satisfies the following condition.
     I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
+  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
+    I(s3_url) remains as an alias for I(endpoint_url).
   - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
 '''
 
