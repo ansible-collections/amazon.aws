@@ -18,6 +18,8 @@ description:
   - Support for creating or deleting S3 buckets with this module has been deprecated and will be
     removed in release 6.0.0.
   - S3 buckets can be created or deleted using the M(amazon.aws.s3_bucket) module.
+  - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
+  - When using non-AWS services, I(endpoint_url) should be specified.
 options:
   bucket:
     description:
@@ -141,18 +143,18 @@ options:
     default: 0
     type: int
     aliases: ['retry']
-  s3_url:
-    description:
-      - S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.
-    type: str
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
     type: bool
     default: false
-  rgw:
+  ceph:
     description:
-      - Enable Ceph RGW S3 support. This option requires an explicit url via I(s3_url).
+      - Enable API compatibility with Ceph RGW.
+      - It takes into account the S3 API subset working with Ceph in order to provide the same module
+        behaviour where possible.
+      - Requires I(endpoint_url) if I(ceph=true).
+    aliases: ['rgw']
     default: false
     type: bool
   src:
@@ -228,6 +230,9 @@ author:
   - "Alina Buzachis (@alinabuzachis)"
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
+  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
+    I(s3_url) remains as an alias for I(endpoint_url).
+  - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -255,8 +260,8 @@ EXAMPLES = '''
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
     mode: put
-    rgw: true
-    s3_url: "http://localhost:8000"
+    ceph: true
+    endpoint_url: "http://localhost:8000"
 
 - name: Simple GET operation
   amazon.aws.s3_object:
@@ -822,20 +827,21 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
 
 
-def is_fakes3(s3_url):
-    """ Return True if s3_url has scheme fakes3:// """
-    if s3_url is not None:
-        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
+def is_fakes3(endpoint_url):
+    """ Return True if endpoint_url has scheme fakes3:// """
+    if endpoint_url is not None:
+        return urlparse(endpoint_url).scheme in ('fakes3', 'fakes3s')
     else:
         return False
 
 
-def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=False):
-    if s3_url and rgw:  # TODO - test this
-        rgw = urlparse(s3_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=rgw.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
-    elif is_fakes3(s3_url):
-        fakes3 = urlparse(s3_url)
+def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
+    if ceph:  # TODO - test this
+        ceph = urlparse(endpoint_url)
+        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https',
+                      region=location, endpoint=endpoint_url, **aws_connect_kwargs)
+    elif is_fakes3(endpoint_url):
+        fakes3 = urlparse(endpoint_url)
         port = fakes3.port
         if fakes3.scheme == 'fakes3s':
             protocol = "https"
@@ -849,7 +855,7 @@ def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=F
                       endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
                       use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
     else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
+        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
         if module.params['mode'] == 'put' and module.params['encryption_mode'] == 'aws:kms':
             params['config'] = botocore.client.Config(signature_version='s3v4')
         elif module.params['mode'] in ('get', 'getstr') and sig_4:
@@ -959,9 +965,8 @@ def main():
         overwrite=dict(aliases=['force'], default='different'),
         prefix=dict(default=""),
         retries=dict(aliases=['retry'], type='int', default=0),
-        s3_url=dict(),
         dualstack=dict(default='no', type='bool'),
-        rgw=dict(default='no', type='bool'),
+        ceph=dict(default=False, type='bool', aliases=['rgw']),
         src=dict(type='path'),
         content=dict(),
         content_base64=dict(),
@@ -972,14 +977,20 @@ def main():
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
         validate_bucket_name=dict(type='bool', default=True),
     )
+
+    required_if = [
+        ['ceph', True, ['endpoint_url']],
+        ['mode', 'put', ['object']],
+        ['mode', 'get', ['dest', 'object']],
+        ['mode', 'getstr', ['object']],
+        ['mode', 'geturl', ['object']],
+        ['mode', 'copy', ['copy_src']],
+    ]
+
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_if=[['mode', 'put', ['object']],
-                     ['mode', 'get', ['dest', 'object']],
-                     ['mode', 'getstr', ['object']],
-                     ['mode', 'geturl', ['object']],
-                     ['mode', 'copy', ['copy_src']]],
+        required_if=required_if,
         mutually_exclusive=[['content', 'content_base64', 'src']],
     )
 
@@ -997,9 +1008,9 @@ def main():
     overwrite = module.params.get('overwrite')
     prefix = module.params.get('prefix')
     retries = module.params.get('retries')
-    s3_url = module.params.get('s3_url')
+    endpoint_url = module.params.get('endpoint_url')
     dualstack = module.params.get('dualstack')
-    rgw = module.params.get('rgw')
+    ceph = module.params.get('ceph')
     src = module.params.get('src')
     content = module.params.get('content')
     content_base64 = module.params.get('content_base64')
@@ -1042,22 +1053,18 @@ def main():
         module.fail_json(msg='Parameter obj cannot be used with mode=delete')
 
     # allow eucarc environment variables to be used if ansible vars aren't set
-    if not s3_url and 'S3_URL' in os.environ:
-        s3_url = os.environ['S3_URL']
+    if not endpoint_url and 'S3_URL' in os.environ:
+        endpoint_url = os.environ['S3_URL']
 
-    if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
+    if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
         module.fail_json(msg='dualstack only applies to AWS S3')
 
-    # rgw requires an explicit url
-    if rgw and not s3_url:
-        module.fail_json(msg='rgw flavour requires s3_url')
-
-    # Look at s3_url and tweak connection settings
+    # Look at endpoint_url and tweak connection settings
     # if connecting to RGW, Walrus or fakes3
-    if s3_url:
+    if endpoint_url:
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-    s3 = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
+    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
 
     validate = not ignore_nonexistent_bucket
 
@@ -1106,7 +1113,7 @@ def main():
         try:
             download_s3file(module, s3, bucket, obj, dest, retries, version=version)
         except Sigv4Required:
-            s3 = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=True)
+            s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
             download_s3file(module, s3, bucket, obj, dest, retries, version=version)
 
     if mode == 'put':
@@ -1228,7 +1235,7 @@ def main():
                 try:
                     download_s3str(module, s3, bucket, obj, version=version)
                 except Sigv4Required:
-                    s3 = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=True)
+                    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
                     download_s3str(module, s3, bucket, obj, version=version)
             elif version is not None:
                 module.fail_json(msg="Key %s with version id %s does not exist." % (obj, version))

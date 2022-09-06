@@ -349,7 +349,7 @@ def _aws_common_argument_spec():
     """
     return dict(
         debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
-        endpoint_url=dict(aliases=['ec2_url', 'aws_endpoint_url']),
+        endpoint_url=dict(aliases=['ec2_url', 'aws_endpoint_url', 's3_url']),
         aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
         aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
         security_token=dict(aliases=['access_token', 'aws_security_token', 'session_token', 'aws_session_token'], no_log=True),
