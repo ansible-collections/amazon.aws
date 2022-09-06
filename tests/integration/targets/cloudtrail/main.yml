@@ -1,0 +1,10 @@
+---
+# Beware: most of our tests here are run in parallel.
+# To add new tests you'll need to add a new host to the inventory and a matching
+# '{{ inventory_hostname }}'.yml file in roles/s3_bucket/tasks/
+
+# VPC should get cleaned up once all hosts have run
+- hosts: localhost
+  gather_facts: no
+  roles:
+    - cloudtrail

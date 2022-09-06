@@ -1,0 +1,12 @@
+
+{
+"ansible_test": {
+    "environment": {
+        "ANSIBLE_DEBUG_BOTOCORE_LOGS": "True"
+    },
+    "module_defaults": null
+},
+"resource_prefix": "cloudtrail-ce0b344a",
+"tiny_prefix": "ce0b344a",
+"aws_region": "us-east-2"
+}
