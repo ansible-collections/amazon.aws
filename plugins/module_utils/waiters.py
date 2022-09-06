@@ -535,6 +535,42 @@ eks_data = {
                     "expected": "ResourceNotFoundException"
                 }
             ]
+        },
+        "NodegroupActive": {
+            "delay": 20,
+            "maxAttempts": 60,
+            "operation": "DescribeNodegroup",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "path",
+                    "argument": "nodegroup.status",
+                    "expected": "ACTIVE"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "ResourceNotFoundException"
+                }
+            ]
+        },
+        "NodegroupDeleted": {
+            "delay": 20,
+            "maxAttempts": 60,
+            "operation": "DescribeNodegroup",
+            "acceptors": [
+                {
+                    "state": "retry",
+                    "matcher": "path",
+                    "argument": "nodegroup.status == 'DELETING'",
+                    "expected": True
+                },
+                {
+                    "state": "success",
+                    "matcher": "error",
+                    "expected": "ResourceNotFoundException"
+                }
+            ]
         }
     }
 }
@@ -1107,6 +1143,18 @@ waiters_by_name = {
         eks_model('FargateProfileDeleted'),
         core_waiter.NormalizedOperationMethod(
             eks.describe_fargate_profile
+        )),
+    ('EKS', 'nodegroup_active'): lambda eks: core_waiter.Waiter(
+        'nodegroup_active',
+        eks_model('NodegroupActive'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_nodegroup
+        )),
+    ('EKS', 'nodegroup_deleted'): lambda eks: core_waiter.Waiter(
+        'nodegroup_deleted',
+        eks_model('NodegroupDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_nodegroup
         )),
     ('ElasticLoadBalancing', 'any_instance_in_service'): lambda elb: core_waiter.Waiter(
         'any_instance_in_service',
