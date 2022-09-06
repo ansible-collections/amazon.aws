@@ -19,13 +19,13 @@ options:
         a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.
     type: bool
     default: 'no'
-  ec2_url:
+  endpoint_url:
     description:
       - URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints).
         Ignored for modules where region is required. Must be specified for all other modules if region is not used.
         If not set then the value of the EC2_URL environment variable, if any, is used.
     type: str
-    aliases: [ aws_endpoint_url, endpoint_url ]
+    aliases: [ ec2_url, aws_endpoint_url ]
   aws_secret_key:
     description:
       - C(AWS secret key). If not set then the value of the C(AWS_SECRET_ACCESS_KEY), C(AWS_SECRET_KEY), or C(EC2_SECRET_KEY) environment variable is used.

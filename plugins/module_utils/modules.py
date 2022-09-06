@@ -185,15 +185,15 @@ class AnsibleAWSModule(object):
         return self._module.md5(*args, **kwargs)
 
     def client(self, service, retry_decorator=None):
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
         conn = boto3_conn(self, conn_type='client', resource=service,
-                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
+                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         return conn if retry_decorator is None else _RetryingBotoClientWrapper(conn, retry_decorator)
 
     def resource(self, service):
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
         return boto3_conn(self, conn_type='resource', resource=service,
-                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
+                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
 
     @property
     def region(self):
@@ -349,7 +349,7 @@ def _aws_common_argument_spec():
     """
     return dict(
         debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
-        ec2_url=dict(aliases=['aws_endpoint_url', 'endpoint_url']),
+        endpoint_url=dict(aliases=['ec2_url', 'aws_endpoint_url']),
         aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
         aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
         security_token=dict(aliases=['access_token', 'aws_security_token', 'session_token', 'aws_session_token'], no_log=True),

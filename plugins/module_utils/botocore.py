@@ -164,7 +164,7 @@ def get_aws_connection_info(module, boto3=None):
     # Check module args for credentials, then check environment vars
     # access_key
 
-    ec2_url = module.params.get('ec2_url')
+    endpoint_url = module.params.get('endpoint_url')
     access_key = module.params.get('aws_access_key')
     secret_key = module.params.get('aws_secret_key')
     security_token = module.params.get('security_token')
@@ -185,11 +185,11 @@ def get_aws_connection_info(module, boto3=None):
     if profile_name and (access_key or secret_key or security_token):
         module.fail("Passing both a profile and access tokens is not supported.")
 
-    if not ec2_url:
+    if not endpoint_url:
         if 'AWS_URL' in os.environ:
-            ec2_url = os.environ['AWS_URL']
+            endpoint_url = os.environ['AWS_URL']
         elif 'EC2_URL' in os.environ:
-            ec2_url = os.environ['EC2_URL']
+            endpoint_url = os.environ['EC2_URL']
 
     if not access_key:
         if os.environ.get('AWS_ACCESS_KEY_ID'):
@@ -248,7 +248,7 @@ def get_aws_connection_info(module, boto3=None):
         if isinstance(value, binary_type):
             boto_params[param] = text_type(value, 'utf-8', 'strict')
 
-    return region, ec2_url, boto_params
+    return region, endpoint_url, boto_params
 
 
 def _paginated_query(client, paginator_name, **params):
