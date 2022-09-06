@@ -33,7 +33,7 @@
   assert:
     that:
     - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+    - '"ec2:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
   example_module:
@@ -48,7 +48,7 @@
   assert:
     that:
     - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+    - '"ec2:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
   example_module:
@@ -63,7 +63,7 @@
   assert:
     that:
     - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+    - '"ec2:DescribeImages" in fips_endpoint_result.resource_actions'
 
 ##################################################################################
 # Tests using environment variables
@@ -82,7 +82,7 @@
   assert:
     that:
     - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+    - '"ec2:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (ec2-environment)'
   example_module:
@@ -98,7 +98,7 @@
   assert:
     that:
     - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+    - '"ec2:DescribeImages" in fips_endpoint_result.resource_actions'
 
 ##################################################################################
 # Tests using a bad endpoint URL
