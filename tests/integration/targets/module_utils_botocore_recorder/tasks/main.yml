@@ -1,7 +1,0 @@
----
-- module_defaults:
-  tasks:
-    - name: Call aws_az_info
-      aws_az_info:
-      register: result
-    - debug: var=result
