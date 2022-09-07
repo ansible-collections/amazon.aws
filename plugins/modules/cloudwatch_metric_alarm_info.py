@@ -165,11 +165,13 @@ def _describe_alarms(connection, **params):
 
 def describe_metric_alarms_info(connection, module):
 
-    params = {}
-    params['AlarmNames'] = module.params.get('alarm_names')
+    params = build_params(module)
+
+    alarm_type_mapping = {'composite_alarm': 'CompositeAlarm', 'metric_alarm': 'MetricAlarms'}
 
     try:
-        describe_metric_alarms_info_response = _describe_alarms(connection, **params)['MetricAlarms']
+        describe_metric_alarms_info_response = _describe_alarms(connection, **params)
+        describe_metric_alarms_info_response = describe_metric_alarms_info_response[alarm_type_mapping[module.params.get('alarm_type')]]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe cloudwatch metric alarm')
 
@@ -183,11 +185,43 @@ def describe_metric_alarms_info(connection, module):
     module.exit_json(metric_alarms=metric_alarms)
 
 
+def build_params(module):
+
+    params = {}
+
+    params['AlarmNames'] = module.params.get('alarm_names')
+
+    if module.params.get('alarm_name_prefix'):
+        params['AlarmNamePrefix'] = module.params.get('alarm_name_prefix')
+
+    if module.params.get('children_of_alarm_name'):
+        params['ChildrenOfAlarmName'] = module.params.get('children_of_alarm_name')
+
+    if module.params.get('parents_of_alarm_name'):
+        params['ParentsOfAlarmName'] = module.params.get('parents_of_alarm_name')
+
+    if module.params.get('state_value'):
+        state_value_mapping = {'ok': 'OK', 'alarm': 'ALARM', 'insufficient_data': 'INSUFFICIENT_DATA'}
+        params['StateValue'] = state_value_mapping[module.params.get('state_value')]
+
+    if module.params.get('action_prefix'):
+        params['ActionPrefix'] = module.params.get('action_prefix')
+
+    return params
+
+
 def main():
 
     argument_spec = dict(
         alarm_names=dict(type='list', elements='str', required=False),
+        alarm_name_prefix=dict(type='str', required=False),
+        alarm_type=dict(type='str', choices=['composite_alarm', 'metric_alarm'], default='metric_alarm', required=False),
+        children_of_alarm_name=dict(type='str', required=False),
+        parents_of_alarm_name=dict(type='str', required=False),
+        state_value=dict(type='str', choices=['ok', 'alarm', 'insufficient_data'], required=False),
+        action_prefix=dict(type='str', required=False),
     )
+
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True
