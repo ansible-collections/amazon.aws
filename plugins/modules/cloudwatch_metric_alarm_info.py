@@ -66,12 +66,22 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: describe the metric alarm based on metric name and namespace
+- name: describe the metric alarm based on alarm names
   amazon.aws.cloudwatch_metric_alarm_info:
-    cloudwatch_metric_alarm_info:
-        alarm_names:
-            - my-test-alarm-1
-            - my-test-alarm-2
+    alarm_names:
+        - my-test-alarm-1
+        - my-test-alarm-2
+
+- name: describe the metric alarm based alarm names and state value
+  amazon.aws.cloudwatch_metric_alarm_info:
+    alarm_names:
+        - my-test-alarm-1
+        - my-test-alarm-2
+    state_value: ok
+
+- name: describe the metric alarm based alarm names prefix
+  amazon.aws.cloudwatch_metric_alarm_info:
+    alarm_name_prefix: my-test-
 
 '''
 
@@ -225,7 +235,8 @@ def build_params(module):
 
     params = {}
 
-    params['AlarmNames'] = module.params.get('alarm_names')
+    if module.params.get('alarm_names'):
+        params['AlarmNames'] = module.params.get('alarm_names')
 
     if module.params.get('alarm_name_prefix'):
         params['AlarmNamePrefix'] = module.params.get('alarm_name_prefix')
