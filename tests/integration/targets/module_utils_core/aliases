@@ -1,4 +1,5 @@
 cloud/aws
 
+# Some of the code originally lived in core but has now been split
 module_utils_botocore
 module_utils_modules
