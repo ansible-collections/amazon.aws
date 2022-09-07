@@ -1,0 +1,3 @@
+---
+minor_changes:
+- ec2_vpc_net_info - handle classic link check for shared VPCs by throwing a warning instead of an error (https://github.com/ansible-collections/amazon.aws/pull/984).
