@@ -157,6 +157,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
+@AWSRetry.jittered_backoff(retries=10)
 def _describe_alarms(connection, **params):
     paginator = connection.get_paginator('describe_alarms')
     return paginator.paginate(**params).build_full_result()
@@ -177,7 +178,7 @@ def describe_metric_alarms_info(connection, module):
         metric_alarms.append(camel_dict_to_snake_dict(response_list_item))
 
     if len(metric_alarms) == 0:
-        module.exit_json(msg='No metric alarms found for specified options')
+        module.exit_json(metric_alarms=[])
 
     module.exit_json(metric_alarms=metric_alarms)
 
