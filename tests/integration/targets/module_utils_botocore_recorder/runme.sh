@@ -6,10 +6,9 @@ set -eux
 export ANSIBLE_ROLES_PATH=../
 
 
-cat _config-file.json
 tar xfzv recording.tar.gz
 export _ANSIBLE_PLACEBO_REPLAY=${PWD}/recording
 export AWS_ACCESS_KEY_ID=disabled
 export AWS_SECRET_ACCESS_KEY=disabled
 export AWS_SESSION_TOKEN=disabled
-ansible-playbook main.yml -e @_config-file.json -vvv
+ansible-playbook main.yml -vvv
