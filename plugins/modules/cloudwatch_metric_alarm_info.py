@@ -22,6 +22,41 @@ options:
     required: false
     type: list
     elements: str
+  alarm_name_prefix:
+    description:
+      - An alarm name prefix to retrieve information about alarms that have names that start with this prefix.
+      - Can not be used with alarm_names.
+    required: false
+    type: str
+  alarm_type:
+    description:
+      - Specify this to return metric alarms or composite alarms.
+      - Module is defaulted to return metric alarms but can return composite alarms if I(alarm_type=composite_alarm).
+    required: false
+    type: str
+    default: metric_alarm
+    choices: [composite_alarm, metric_alarm]
+  children_of_alarm_name:
+    description:
+      - If specified returns information about the "children" alarms of the alarm name specified.
+    required: false
+    type: str
+  parents_of_alarm_name:
+    description:
+      - If specified returns information about the "parent" alarms of the alarm name specified.
+    required: false
+    type: str
+  state_value:
+    description:
+      - If specified returns information only about alarms that are currently in the particular state.
+    required: false
+    type: str
+    choices: ['ok', 'alarm', 'insufficient_data']
+  action_prefix:
+    description:
+      - This parameter can be used to filter the results of the operation to only those alarms that use a certain alarm action.
+    required: false
+    type: str
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -152,6 +187,7 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -224,8 +260,10 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        mutually_exclusive=[['alarm_names', 'alarm_name_prefix']],
         supports_check_mode=True
     )
+
     try:
         connection = module.client('cloudwatch', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
