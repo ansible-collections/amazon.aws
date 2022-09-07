@@ -1018,8 +1018,6 @@ def build_volume_spec(params):
     volumes = params.get('volumes') or []
     for volume in volumes:
         if 'ebs' in volume:
-            if 'encrypted' in volume['ebs']:
-                volume['ebs']['encrypted'] = volume['ebs']['encrypted']
             for int_value in ['volume_size', 'iops']:
                 if int_value in volume['ebs']:
                     volume['ebs'][int_value] = int(volume['ebs'][int_value])
