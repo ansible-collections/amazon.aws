@@ -17,16 +17,17 @@ author: "Gomathi Selvi Srinivasan (@GomathiselviS)"
 options:
   trail_names:
     type: list
-    element: str
+    elements: str
     description:
       - Specifies a list of trail names, trail ARNs, or both, of the trails to describe.
       - If an empty list is specified, information for the trail in the current region is returned.
   include_shadow_trails:
-    type: boolean
+    type: bool
     default: true
-    description: Specifies whether to include shadow trails in the response.  
+    description: Specifies whether to include shadow trails in the response.
 extends_documentation_fragment:
   - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -34,7 +35,7 @@ EXAMPLES = '''
 
 # Gather information about all cloudtrails
 - amazon.aws.cloudtrail_info:
-    
+
 # Gather information about a particular cloudtrail
 - amazon.aws.cloudtrail_info:
     trail_names:
@@ -131,7 +132,7 @@ cloudtrails:
         latest_cloud_watch_logs_delivery_error:
             description: Displays any CloudWatch Logs error that CloudTrail encountered when attempting to deliver logs to CloudWatch Logs.
             type: str
-        latest_cloud_watch_logs_delivery_error:
+        latest_cloud_watch_logs_delivery_time:
             description: Displays the most recent date and time when CloudTrail delivered logs to CloudWatch Logs.
             type: str
         latest_digest_delivery_time:
@@ -152,7 +153,7 @@ cloudtrails:
 '''
 
 try:
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -169,7 +170,7 @@ def get_trails(connection, module):
     next = False
     try:
         result = connection.list_trails()
-    except ClientError as e:
+    except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
     if result:
         while not all_trails or result.get("NextToken", ""):
@@ -178,36 +179,37 @@ def get_trails(connection, module):
                 next = True
                 try:
                     result = connection.list_trails(result["NextToken"])
-                except ClientError as e:
+                except botocore.exceptions.ClientError as e:
                     module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
         if next:
             all_trails.extend(list_cloud_trails(result))
     return all_trails
-    
+
+
 def list_cloud_trails(trail_dict):
     return [x["TrailARN"] for x in trail_dict["Trails"]]
 
-def  get_trail_detail(connection, module, trail_name_list=[], include_shadow_trails=True):
+
+def get_trail_detail(connection, module, trail_name_list=None, include_shadow_trails=True):
     if not trail_name_list:
         trail_name_list = get_trails(connection, module)
     try:
         result = connection.describe_trails(trailNameList=trail_name_list, includeShadowTrails=True)
-    except ClientError as e:
+    except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
-    
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_cloud_trail = []
     for cloud_trail in result['trailList']:
         try:
             status_dict = connection.get_trail_status(Name=cloud_trail["TrailARN"])
             cloud_trail.update(status_dict)
-        except ClientError as e:
+        except botocore.exceptions.ClientError as e:
             module.fail_json_aws(e, msg="Failed to get the cloudtrail status")
         try:
             tag_list = connection.list_tags(ResourceIdList=[cloud_trail["TrailARN"]])
             for tag_dict in tag_list["ResourceTagList"]:
                 cloud_trail.update(tag_dict)
-        except ClientError as e:
+        except botocore.exceptions.ClientError as e:
             module.warn("Failed to get the cloudtrail tags - {0}".format(e))
         snaked_cloud_trail.append(camel_dict_to_snake_dict(cloud_trail))
 
@@ -215,27 +217,26 @@ def  get_trail_detail(connection, module, trail_name_list=[], include_shadow_tra
     for tr in snaked_cloud_trail:
         if 'tags_list' in tr:
             tr['tags'] = boto3_tag_list_to_ansible_dict(tr['tags_list'], 'key', 'value')
-            del(tr['tags_list'])
+            del (tr['tags_list'])
         if 'response_metadata' in tr:
-            del(tr['response_metadata'])
+            del (tr['response_metadata'])
 
     result['trailList'] = snaked_cloud_trail
     return result
-     
+
+
 def main():
     argument_spec = dict(
-        trail_names=dict(type='list', default=[]),
-        include_shadow_trails=dict(type='bool'),
+        trail_names=dict(type='list', elements='str', default=[]),
+        include_shadow_trails=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    
+
     try:
         connection = module.client('cloudtrail', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
-
-
     result = get_trail_detail(connection, module)
     module.exit_json(**result)
 
