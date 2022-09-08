@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Call aws_az_info
+      amazon.aws.aws_az_info:
+      register: result
+    - name: Get called information
+      amazon.aws.aws_caller_info:
+      register: result
+    - assert:
+        that:
+         - lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_RECORD') or (lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_REPLAY') and result.user_id == "AWZBREIZHEOMABRONIFVGFS6GH")

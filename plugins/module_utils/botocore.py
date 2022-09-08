@@ -103,6 +103,8 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
         profile_name=profile,
     )
 
+    enable_placebo(session)
+
     if conn_type == 'resource':
         return session.resource(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
     elif conn_type == 'client':
@@ -365,3 +367,32 @@ def normalize_boto3_result(result):
     datetime objects.  Boto3 is happy to be passed ISO8601 format strings.
     """
     return json.loads(json.dumps(result, default=_boto3_handler))
+
+
+def enable_placebo(session):
+    """
+    Helper to record or replay offline modules for testing purpose.
+    """
+    if "_ANSIBLE_PLACEBO_RECORD" in os.environ:
+        import placebo
+        existing_entries = os.listdir(os.environ["_ANSIBLE_PLACEBO_RECORD"])
+        idx = len(existing_entries)
+        data_path = f"{os.environ['_ANSIBLE_PLACEBO_RECORD']}/{idx}"
+        os.mkdir(data_path)
+        pill = placebo.attach(session, data_path=data_path)
+        pill.record()
+    if "_ANSIBLE_PLACEBO_REPLAY" in os.environ:
+        import shutil
+        import placebo
+        existing_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
+        idx = str(existing_entries[0])
+        data_path = os.environ['_ANSIBLE_PLACEBO_REPLAY'] + "/" + idx
+        try:
+            shutil.rmtree("_tmp")
+        except FileNotFoundError:
+            pass
+        shutil.move(data_path, "_tmp")
+        if len(existing_entries) == 1:
+            os.rmdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])
+        pill = placebo.attach(session, data_path="_tmp")
+        pill.playback()
