@@ -44,6 +44,8 @@ action_groups:
   - elb_classic_lb
   - s3_bucket
   - s3_object
+  - ecs_cluster_info
+  - iam_instance_profile_info
 plugin_routing:
   action:
     aws_s3:
