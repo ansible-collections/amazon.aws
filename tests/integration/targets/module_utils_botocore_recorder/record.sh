@@ -20,4 +20,5 @@ find recording -type f -exec sed -i "s,$account_id,1111111111111,g" "{}" \;
 find recording -type f -exec sed -i "s,$user_id,AWZBREIZHEOMABRONIFVGFS6GH,g" "{}" \;
 find recording -type f -exec sed -i "s,$USER,george,g" "{}" \;
 tar cfzv recording.tar.gz recording
-rm -r recording
+age --encrypt --recipient age1tugmwue6qmc0k9wqz0ktd7yrx274ws6xcuuj8q7t6e6499hypuxsenduws -o recording.tar.gz.age < recording.tar.gz
+rm -r recording recording.tar.gz
