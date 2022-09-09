@@ -1,3 +1,4 @@
+---
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
@@ -44,6 +45,9 @@ action_groups:
   - elb_classic_lb
   - s3_bucket
   - s3_object
+  - rds_cluster
+  - rds_cluster_info
+  - rds_cluster_snapshot
 plugin_routing:
   action:
     aws_s3:
