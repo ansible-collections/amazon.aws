@@ -965,7 +965,7 @@ def main():
         max_keys=dict(default=1000, type='int', no_log=False),
         metadata=dict(type='dict'),
         mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy'], required=True),
-        sig_v4=dict(default=False, type='bool')
+        sig_v4=dict(default=False, type='bool'),
         object=dict(),
         permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
