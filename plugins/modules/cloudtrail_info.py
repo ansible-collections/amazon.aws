@@ -10,9 +10,9 @@ DOCUMENTATION = '''
 ---
 module: cloudtrail_info
 version_added: 5.0.0
-short_description: Gather information about cloudtrail in AWS
+short_description: Gather information about trails in AWS Cloud Trail.
 description:
-  - Gather information about cloudtrail in AWS.
+  - Gather information about trails in AWS CloudTrail.
 author: "Gomathi Selvi Srinivasan (@GomathiselviS)"
 options:
   trail_names:
@@ -33,10 +33,10 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all cloudtrails
+# Gather information about all trails
 - amazon.aws.cloudtrail_info:
 
-# Gather information about a particular cloudtrail
+# Gather information about a particular trail
 - amazon.aws.cloudtrail_info:
     trail_names:
       - arn:aws:cloudtrail:us-east-2:123456789012:trail/MyTrail
@@ -44,7 +44,7 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-cloudtrails:
+trailList:
     description: List of trail objects. Each element consists of a dict with all the information related to that cloudtrail.
     type: list
     elements: dict
@@ -171,18 +171,17 @@ def get_trails(connection, module):
     try:
         result = connection.list_trails()
     except botocore.exceptions.ClientError as e:
-        module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
-    if result:
-        while not all_trails or result.get("NextToken", ""):
-            all_trails.extend(list_cloud_trails(result))
-            if result.get("NextToken", ""):
-                next = True
-                try:
-                    result = connection.list_trails(result["NextToken"])
-                except botocore.exceptions.ClientError as e:
-                    module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
-        if next:
-            all_trails.extend(list_cloud_trails(result))
+        module.fail_json_aws(e, msg="Failed to get the trails.")
+    while not all_trails or result.get("NextToken", ""):
+        all_trails.extend(list_cloud_trails(result))
+        if result.get("NextToken", ""):
+            next = True
+            try:
+                result = connection.list_trails(result["NextToken"])
+            except botocore.exceptions.ClientError as e:
+                module.fail_json_aws(e, msg="Failed to get the trails.")
+    if next:
+        all_trails.extend(list_cloud_trails(result))
     return all_trails
 
 
@@ -196,21 +195,21 @@ def get_trail_detail(connection, module, trail_name_list=None, include_shadow_tr
     try:
         result = connection.describe_trails(trailNameList=trail_name_list, includeShadowTrails=True)
     except botocore.exceptions.ClientError as e:
-        module.fail_json_aws(e, msg="Failed to get the cloudtrails.")
+        module.fail_json_aws(e, msg="Failed to get the trails.")
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_cloud_trail = []
     for cloud_trail in result['trailList']:
         try:
-            status_dict = connection.get_trail_status(Name=cloud_trail["TrailARN"])
+            status_dict = connection.get_trail_status(Name=cloud_trail["TrailARN"], aws_retry=True)
             cloud_trail.update(status_dict)
         except botocore.exceptions.ClientError as e:
-            module.fail_json_aws(e, msg="Failed to get the cloudtrail status")
+            module.fail_json_aws(e, msg="Failed to get the trail status")
         try:
             tag_list = connection.list_tags(ResourceIdList=[cloud_trail["TrailARN"]])
             for tag_dict in tag_list["ResourceTagList"]:
                 cloud_trail.update(tag_dict)
         except botocore.exceptions.ClientError as e:
-            module.warn("Failed to get the cloudtrail tags - {0}".format(e))
+            module.warn("Failed to get the trail tags - {0}".format(e))
         snaked_cloud_trail.append(camel_dict_to_snake_dict(cloud_trail))
 
     # Turn the boto3 result in to ansible friendly tag dictionary
