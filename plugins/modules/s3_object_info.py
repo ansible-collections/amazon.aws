@@ -86,15 +86,19 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
+- name: Retrieve a list of objects in S3 bucket
+  amazon.aws.s3_object_info:
+    bucket_name: MyTestBucket
+
 - name: Retrieve object metadata without object itself
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    bucket_object_key: MyTestObjectKey
+    object_name: MyTestObjectKey
 
 - name: Retrieve detailed S3 object information
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    bucket_object_key: MyTestObjectKey
+    object_name: MyTestObjectKey
     object_details:
       object_acl: true
       object_tagging: true
@@ -107,6 +111,15 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+s3_keys:
+  description: List of object keys.
+  returned: when only I(bucket_name) is specified and I(object_name), I(object_details) are not specified.
+  type: list
+  elements: str
+  sample:
+  - prefix1/
+  - prefix1/key1
+  - prefix1/key2
 object_info:
     description: S3 object details.
     returned: always
@@ -563,6 +576,31 @@ def get_object(connection, module, bucket_name, object_name):
     return result
 
 
+@AWSRetry.jittered_backoff(retries=10)
+def _list_bucket_objects(connection, **params):
+    paginator = connection.get_paginator('list_objects')
+    return paginator.paginate(**params).build_full_result()
+
+
+def list_bucket_objects(connection, module, bucket_name):
+    params = {}
+    params['Bucket'] = bucket_name
+
+    result = []
+
+    try:
+        list_objects_response = _list_bucket_objects(connection, **params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        pass
+
+    if len(list_objects_response) != 0:
+        # convert to snake_case
+        for response_list_item in list_objects_response['Contents']:
+            result.append(response_list_item['Key'])
+
+    module.exit_json(s3_keys=result)
+
+
 def main():
 
     argument_spec = dict(
@@ -602,10 +640,13 @@ def main():
     if requested_details:
         object_details = get_object_details(connection, module, bucket_name, object_name, requested_details)
         result.append(object_details)
-    else:
+    elif object_name:
         # if specific details are not requested, return object metadata
         object_details = get_object(connection, module, bucket_name, object_name)
         result.append(object_details)
+    else:
+        # return list of all objects in a bucket if object name and object details not specified
+        list_bucket_objects(connection, module, bucket_name)
 
     module.exit_json(object_info=result)
 
