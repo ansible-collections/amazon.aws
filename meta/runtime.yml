@@ -6,6 +6,7 @@ action_groups:
   - aws_s3
   - cloudformation
   - cloudformation_info
+  - cloudtrail
   - ec2_ami
   - ec2_ami_info
   - ec2_elb_lb
