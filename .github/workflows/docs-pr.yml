@@ -6,6 +6,9 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, closed]
 
+env:
+  GHP_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
 jobs:
   validate-docs:
     permissions:
@@ -53,6 +56,9 @@ jobs:
 
             The docsite for **this PR** is available for download as an artifact from this run:
             ${{ needs.build-docs.outputs.artifact-url }}
+
+            You can compare to the docs for the `main` branch here:
+            ${{ env.GHP_BASE_URL }}/branch/main
 
             File changes:
 
