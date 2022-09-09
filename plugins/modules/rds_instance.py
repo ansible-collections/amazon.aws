@@ -445,7 +445,7 @@ options:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: create minimal aurora instance in default VPC and default subnet group
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     engine: aurora
     db_instance_identifier: ansible-test-aurora-db-instance
     instance_type: db.t2.small
@@ -454,7 +454,7 @@ EXAMPLES = r'''
     cluster_id: ansible-test-cluster  # This cluster must exist - see rds_cluster to manage it
 
 - name: Create a DB instance using the default AWS KMS encryption key
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: test-encrypted-db
     state: present
     engine: mariadb
@@ -465,19 +465,19 @@ EXAMPLES = r'''
     allocated_storage: "{{ allocated_storage }}"
 
 - name: remove the DB instance without a final snapshot
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
     skip_final_snapshot: True
 
 - name: remove the DB instance with a final snapshot
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
     final_snapshot_identifier: "{{ snapshot_id }}"
 
 - name: Add a new security group without purge
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: present
     vpc_security_group_ids:
@@ -502,7 +502,7 @@ EXAMPLES = r'''
   register: iam_role
 
 - name: Create DB instance with added IAM role
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: "my-instance-id"
     state: present
     engine: postgres
@@ -516,14 +516,14 @@ EXAMPLES = r'''
         feature_name: 's3Export'
 
 - name: Remove IAM role from DB instance
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: "my-instance-id"
     state: present
     purge_iam_roles: true
 
 # Restore DB instance from snapshot
 - name: Create a snapshot and wait until completion
-  community.aws.rds_instance_snapshot:
+  amazon.aws.rds_instance_snapshot:
     instance_id: 'my-instance-id'
     snapshot_id: 'my-new-snapshot'
     state: present
@@ -531,7 +531,7 @@ EXAMPLES = r'''
   register: snapshot
 
 - name: Restore DB from snapshot
-  community.aws.rds_instance:
+  amazon.aws.rds_instance:
     id: 'my-restored-db'
     creation_source: snapshot
     snapshot_identifier: 'my-new-snapshot'

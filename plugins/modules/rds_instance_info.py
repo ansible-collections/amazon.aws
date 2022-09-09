@@ -39,12 +39,12 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Get information about an instance
-  community.aws.rds_instance_info:
+  amazon.aws.rds_instance_info:
     db_instance_identifier: new-database
   register: new_database_info
 
 - name: Get all RDS instances
-  community.aws.rds_instance_info:
+  amazon.aws.rds_instance_info:
 '''
 
 RETURN = '''
