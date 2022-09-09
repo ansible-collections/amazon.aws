@@ -97,6 +97,12 @@ options:
       - Keyname of the object inside the bucket.
       - Can be used to create "virtual directories", see examples.
     type: str
+  sig_v4:
+    description:
+      - Forces the Boto SDK to use Signature Version 4
+      - Only applies to get modes, I(mode=get), I(mode=getstr), I(mode=geturl)
+    default: false
+    type: bool
   permission:
     description:
       - This option lets the user set the canned permissions on the object/bucket that are created.
@@ -858,7 +864,7 @@ def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, 
         params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
         if module.params['mode'] == 'put' and module.params['encryption_mode'] == 'aws:kms':
             params['config'] = botocore.client.Config(signature_version='s3v4')
-        elif module.params['mode'] in ('get', 'getstr') and sig_4:
+        elif module.params['mode'] in ('get', 'getstr', 'geturl') and sig_4:
             params['config'] = botocore.client.Config(signature_version='s3v4')
         if module.params['dualstack']:
             dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
@@ -959,6 +965,7 @@ def main():
         max_keys=dict(default=1000, type='int', no_log=False),
         metadata=dict(type='dict'),
         mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy'], required=True),
+        sig_v4=dict(default=False, type='bool')
         object=dict(),
         permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
@@ -1006,6 +1013,7 @@ def main():
     obj = module.params.get('object')
     version = module.params.get('version')
     overwrite = module.params.get('overwrite')
+    sig_v4 = module.params.get('sig_v4')
     prefix = module.params.get('prefix')
     retries = module.params.get('retries')
     endpoint_url = module.params.get('endpoint_url')
@@ -1064,7 +1072,7 @@ def main():
     if endpoint_url:
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
+    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_v4)
 
     validate = not ignore_nonexistent_bucket
 
