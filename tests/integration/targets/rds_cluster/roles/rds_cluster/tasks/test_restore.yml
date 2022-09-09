@@ -1,28 +1,27 @@
----
 - block:
   - name: Ensure the resource doesn't exist
     rds_cluster:
-      id: "{{ cluster_id }}"
+      id: '{{ cluster_id }}'
       state: absent
-      engine: "{{ engine}}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      skip_final_snapshot: True
+      engine: '{{ engine}}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      skip_final_snapshot: true
     register: _result_delete_db_cluster
 
   - assert:
       that:
-        - not _result_delete_db_cluster.changed
+      - not _result_delete_db_cluster.changed
     ignore_errors: yes
 
   - name: Create a source DB cluster
     rds_cluster:
-      id: "{{ cluster_id }}"
+      id: '{{ cluster_id }}'
       state: present
-      engine: "{{ engine}}"
+      engine: '{{ engine}}'
       backup_retention_period: 1
-      username: "{{ username }}"
-      password: "{{ password }}"
+      username: '{{ username }}'
+      password: '{{ password }}'
     register: _result_create_source_db_cluster
 
   - assert:
@@ -46,7 +45,7 @@
       - "'master_username' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_create_source_db_cluster"
-      - "_result_create_source_db_cluster.port == {{ port }}"
+      - _result_create_source_db_cluster.port == {{ port }}
       - "'status' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.status == 'available'
       - _result_create_source_db_cluster.storage_encrypted == false
@@ -56,15 +55,15 @@
   - name: Create a point in time DB cluster
     rds_cluster:
       state: present
-      id: "{{ cluster_id }}-point-in-time"
-      source_db_cluster_identifier: "{{ cluster_id }}"
-      creation_source: "cluster"
-      engine: "{{ engine}}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+      id: '{{ cluster_id }}-point-in-time'
+      source_db_cluster_identifier: '{{ cluster_id }}'
+      creation_source: cluster
+      engine: '{{ engine}}'
+      username: '{{ username }}'
+      password: '{{ password }}'
       use_latest_restorable_time: true
       tags:
-        Name: "{{ cluster_id }}"
+        Name: '{{ cluster_id }}'
         Created_by: Ansible rds_cluster tests
     register: _result_restored_db_cluster
 
@@ -76,7 +75,7 @@
       - "'cluster_create_time' in _result_restored_db_cluster"
       - _result_restored_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_restored_db_cluster"
-      - "_result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-point-in-time'"
+      - _result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-point-in-time'
       - "'db_cluster_parameter_group' in _result_restored_db_cluster"
       - "'db_cluster_resource_id' in _result_restored_db_cluster"
       - "'endpoint' in _result_restored_db_cluster"
@@ -88,27 +87,27 @@
       - "'master_username' in _result_restored_db_cluster"
       - _result_restored_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_restored_db_cluster"
-      - "_result_restored_db_cluster.port == {{ port }}"
+      - _result_restored_db_cluster.port == {{ port }}
       - "'status' in _result_restored_db_cluster"
       - _result_restored_db_cluster.status == "available"
       - "'tags' in _result_restored_db_cluster"
-      - "_result_restored_db_cluster.tags | length == 2"
-      - "_result_restored_db_cluster.tags.Name == '{{ cluster_id }}'"
-      - "_result_restored_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'"
+      - _result_restored_db_cluster.tags | length == 2
+      - _result_restored_db_cluster.tags.Name == '{{ cluster_id }}'
+      - _result_restored_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'
       - "'vpc_security_groups' in _result_restored_db_cluster"
 
   - name: Create a point in time DB cluster (idempotence)
     rds_cluster:
       state: present
-      id: "{{ cluster_id }}-point-in-time"
-      source_db_cluster_identifier: "{{ cluster_id }}"
-      creation_source: "cluster"
-      engine: "{{ engine}}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      restore_to_time: "{{ _result_restored_db_cluster.latest_restorable_time }}"
+      id: '{{ cluster_id }}-point-in-time'
+      source_db_cluster_identifier: '{{ cluster_id }}'
+      creation_source: cluster
+      engine: '{{ engine}}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      restore_to_time: '{{ _result_restored_db_cluster.latest_restorable_time }}'
       tags:
-        Name: "{{ cluster_id }}"
+        Name: '{{ cluster_id }}'
         Created_by: Ansible rds_cluster tests
     register: _result_restored_db_cluster
 
@@ -167,8 +166,7 @@
 
   # TODO: export a snapshot to an S3 bucket and restore cluster from it
   # Requires rds_export_task module
-      
-  always:  
+  always:
   # - name: Delete the snapshot
   #   rds_cluster:
   #     snapshot_identifier: "{{ cluster_id }}-snapshot"
@@ -177,9 +175,9 @@
   - name: Delete DB cluster without creating a final snapshot
     rds_cluster:
       state: absent
-      cluster_id: "{{ item }}"
-      skip_final_snapshot: True
+      cluster_id: '{{ item }}'
+      skip_final_snapshot: true
     ignore_errors: true
     loop:
-    - "{{ cluster_id }}"
-    - "{{ cluster_id }}-point-in-time"
+    - '{{ cluster_id }}'
+    - '{{ cluster_id }}-point-in-time'
