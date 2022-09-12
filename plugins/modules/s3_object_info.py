@@ -595,10 +595,10 @@ def list_bucket_objects(connection, module, bucket_name):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         pass
 
-    if  len(list_objects_response) != 0:
-      # convert to snake_case
-      for response_list_item in list_objects_response['Contents']:
-          result.append(response_list_item['Key'])
+    if len(list_objects_response) != 0:
+        # convert to snake_case
+        for response_list_item in list_objects_response['Contents']:
+            result.append(response_list_item['Key'])
 
     module.exit_json(s3_keys=result)
 
