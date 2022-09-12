@@ -636,7 +636,7 @@ def main():
     requested_details = module.params.get('object_details')
 
     if requested_details and len(requested_details['attributes_list']) != 0:
-        module.require_botocore_at_least('1.24.8', reason='required for s3.get_object_attributes')
+        module.require_botocore_at_least('1.24.7', reason='required for s3.get_object_attributes')
         if not requested_details['attributes_list']:
             module.fail_json(msg='Please provide attributes_list list to retrieve s3 object_attributes.')
 
