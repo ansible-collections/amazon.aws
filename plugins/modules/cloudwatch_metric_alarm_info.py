@@ -25,7 +25,7 @@ options:
   alarm_name_prefix:
     description:
       - An alarm name prefix to retrieve information about alarms that have names that start with this prefix.
-      - Can not be used with alarm_names.
+      - Can not be used with I(alarm_names).
     required: false
     type: str
   alarm_type:
@@ -51,7 +51,7 @@ options:
       - If specified returns information only about alarms that are currently in the particular state.
     required: false
     type: str
-    choices: ['ok', 'alarm', 'insufficient_data']
+    choices: ['OK', 'ALARM', 'INSUFFICIENT_DATA']
   action_prefix:
     description:
       - This parameter can be used to filter the results of the operation to only those alarms that use a certain alarm action.
@@ -77,7 +77,7 @@ EXAMPLES = '''
     alarm_names:
         - my-test-alarm-1
         - my-test-alarm-2
-    state_value: ok
+    state_value: OK
 
 - name: describe the metric alarm based alarm names prefix
   amazon.aws.cloudwatch_metric_alarm_info:
@@ -281,8 +281,7 @@ def build_params(module):
         params['ParentsOfAlarmName'] = module.params.get('parents_of_alarm_name')
 
     if module.params.get('state_value'):
-        state_value_mapping = {'ok': 'OK', 'alarm': 'ALARM', 'insufficient_data': 'INSUFFICIENT_DATA'}
-        params['StateValue'] = state_value_mapping[module.params.get('state_value')]
+        params['StateValue'] = module.params.get('state_value')
 
     if module.params.get('action_prefix'):
         params['ActionPrefix'] = module.params.get('action_prefix')
@@ -298,7 +297,7 @@ def main():
         alarm_type=dict(type='str', choices=['composite_alarm', 'metric_alarm'], default='metric_alarm', required=False),
         children_of_alarm_name=dict(type='str', required=False),
         parents_of_alarm_name=dict(type='str', required=False),
-        state_value=dict(type='str', choices=['ok', 'alarm', 'insufficient_data'], required=False),
+        state_value=dict(type='str', choices=['OK', 'ALARM', 'INSUFFICIENT_DATA'], required=False),
         action_prefix=dict(type='str', required=False),
     )
 
