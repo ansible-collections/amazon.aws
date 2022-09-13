@@ -63,7 +63,6 @@
           - info_result.object_info[0] | length != 0
           - '"object_data" in info_result.object_info[0]'
           - '"e_tag" in info_result.object_info[0].object_data'
-          - '"tag_count" in info_result.object_info[0].object_data'
           - '"last_modified" in info_result.object_info[0].object_data'
           - '"content_type" in info_result.object_info[0].object_data'
 
@@ -100,7 +99,6 @@
           - '"object_attributes" in info_detail_result.object_info[0]'
           - '"object_retention" not in info_detail_result.object_info[0]'
           - '"e_tag" in info_result.object_info[0].object_data'
-          - '"tag_count" in info_result.object_info[0].object_data'
           - '"last_modified" in info_result.object_info[0].object_data'
           - '"content_type" in info_result.object_info[0].object_data'
 
@@ -127,3 +125,4 @@
       s3_bucket:
         name: "{{ bucket_name }}-object-info-test"
         state: absent
+      ignore_errors: true

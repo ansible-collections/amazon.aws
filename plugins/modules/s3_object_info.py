@@ -24,6 +24,7 @@ options:
   object_name:
     description:
       - The name of the object.
+      - If not specified, a list of all objects in the specified bucket will be returned.
     required: false
     type: str
   object_details:
@@ -93,6 +94,17 @@ EXAMPLES = r'''
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_name: MyTestObjectKey
+
+- name: Retrieve detailed S3 information for all objects in the bucket
+  amazon.aws.s3_object_info:
+    bucket_name: MyTestBucket
+    object_details:
+      object_acl: true
+      object_attributes: true
+      attributes_list:
+        - ETag
+        - ObjectSize
+        - StorageClass
 
 - name: Retrieve detailed S3 object information
   amazon.aws.s3_object_info:
@@ -210,7 +222,7 @@ object_info:
                             sample: "FULL CONTROL"
         object_legal_hold:
             description: Object's current legal hold status
-            returned: when I(object_legal_hold) is set to I(true) and required configuration is set on bucket.
+            returned: when I(object_legal_hold) is set to I(true) and object legal hold is set on the bucket.
             type: complex
             contains:
                 legal_hold:
@@ -225,7 +237,7 @@ object_info:
                             sample: "ON"
         object_lock_configuration:
             description: Object Lock configuration for a bucket.
-            returned: when I(object_lock_configuration) is set to I(true) and required configuration is set on bucket.
+            returned: when I(object_lock_configuration) is set to I(true) and object lock configuration is set on the bucket.
             type: complex
             contains:
                 object_lock_enabled:
@@ -258,7 +270,7 @@ object_info:
                                     type: int
         object_retention:
             description: Object's retention settings.
-            returned: when I(object_retention) is set to I(true) and required configuration is set on bucket.
+            returned: when I(object_retention) is set to I(true) and object retention is set on the bucket.
             type: complex
             contains:
                 retention:
@@ -565,13 +577,12 @@ def get_object(connection, bucket_name, object_name):
     object_info = {}
 
     try:
-        object_info = connection.get_object(**params)
+        object_info = connection.head_object(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         pass
 
     if len(object_info) != 0:
-        # Remove Body, ResponseMetadata from object_info, convert to snake_case
-        del(object_info['Body'])
+        # Remove ResponseMetadata from object_info, convert to snake_case
         del(object_info['ResponseMetadata'])
         object_info = camel_dict_to_snake_dict(object_info)
 
@@ -596,7 +607,7 @@ def list_bucket_objects(connection, module, bucket_name):
     try:
         list_objects_response = _list_bucket_objects(connection, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        pass
+        module.fail_json_aws(e, msg='Failed to list bucket objects.')
 
     if len(list_objects_response) != 0:
         # convert to snake_case
@@ -616,8 +627,8 @@ def main():
             object_retention=dict(type='bool', default=False),
             object_tagging=dict(type='bool', default=False),
             object_attributes=dict(type='bool', default=False),
-            attributes_list=dict(type='list', elements='str', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']),
-        )),
+            attributes_list=dict(type='list', elements='str', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])),
+        ),
         bucket_name=dict(required=True, type='str'),
         object_name=dict(type='str'),
     )
@@ -636,23 +647,23 @@ def main():
 
     bucket_name = module.params.get('bucket_name')
     object_name = module.params.get('object_name')
-    requested_details = module.params.get('object_details')
+    requested_object_details = module.params.get('object_details')
 
-    if requested_details and len(requested_details['attributes_list']) != 0:
+    if requested_object_details and requested_object_details['object_attributes']:
+        if requested_object_details['attributes_list'] is None:
+            module.fail_json(msg='Please provide `attributes_list` to use `object_attributes=true`')
         module.require_botocore_at_least('1.24.7', reason='required for s3.get_object_attributes')
-        if not requested_details['attributes_list']:
-            module.fail_json(msg='Please provide attributes_list list to retrieve s3 object_attributes.')
 
-    if requested_details:
+    if requested_object_details:
         if object_name:
-            object_details = get_object_details(connection, module, bucket_name, object_name, requested_details)
+            object_details = get_object_details(connection, module, bucket_name, object_name, requested_object_details)
             result.append(object_details)
         elif object_name is None:
             object_list = list_bucket_objects(connection, module, bucket_name)
             for object in object_list:
-                result.append(get_object_details(connection, module, bucket_name, object, requested_details))
+                result.append(get_object_details(connection, module, bucket_name, object, requested_object_details))
 
-    elif not requested_details and object_name:
+    elif not requested_object_details and object_name:
         # if specific details are not requested, return object metadata
         object_details = get_object(connection, bucket_name, object_name)
         result.append(object_details)
