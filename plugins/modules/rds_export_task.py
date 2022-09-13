@@ -11,7 +11,7 @@ DOCUMENTATION = r"""
 ---
 module: rds_export_task
 version_added: 5.0.0
-short_description: rds_export_task
+short_description: Starts and cancels an export of a snapshot to Amazon S3
 author: Alina Buzachis (@alinabuzachis)
 description:
     - Starts an export of a snapshot to Amazon S3.
@@ -50,6 +50,8 @@ options:
         description:
             - The ID of the Amazon Web Services KMS customer master key (CMK) to use to encrypt the snapshot exported to Amazon S3.
         type: str
+        aliases:
+            - key_id
     s3_prefix:
         description:
             - The Amazon S3 bucket prefix to use as the file name and path of the exported snapshot.
@@ -71,10 +73,24 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.aws_boto3
 """
 
 EXAMPLES = r"""
+- name: Export snapshot to S3
+  amazon.aws.rds_export_task:
+    export_task_id: "{{ export_task_id }}"
+    source_arn: "{{ db_snapshot_arn }}"
+    s3_bucket_name: "{{ bucket_name }}"
+    iam_role_arn: "{{ iam_role_arn }}"
+    kms_key_id: "{{ kms_key_arn }}"
+    state: present
+  register: _result_export_task
 
+- name: Delete an export task
+  amazon.aws.rds_export_task:
+    export_task_id: "{{ export_task_id }}"
+    state: absent
 """
 
 RETURN = r"""
@@ -169,7 +185,7 @@ def main():
         source_arn=dict(type="str"),
         s3_bucket_name=dict(type="str", aliases=['s3_bucket']),
         iam_role_arn=dict(type="str", aliases=['iam_role']),
-        kms_key_id=dict(type="str"),
+        kms_key_id=dict(type="str", aliases=['key_id']),
         s3_prefix=dict(type="str"),
         export_only=dict(type="list", elements="str"),
     )
