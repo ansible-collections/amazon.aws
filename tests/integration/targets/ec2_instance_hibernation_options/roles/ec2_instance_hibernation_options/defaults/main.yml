@@ -15,7 +15,7 @@ subnet_b_az: '{{ ec2_availability_zone_names[1] }}'
 subnet_b_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.33.0/24'
 subnet_b_startswith: '10.{{ 256 | random(seed=vpc_seed) }}.33.'
 
-first_iam_role: "ansible-test-sts-{{ resource_prefix | hash('md5') }}-test-policy"
-second_iam_role: "ansible-test-sts-{{ resource_prefix | hash('md5') }}-test-policy-2"
+first_iam_role: "ansible-test-sts-{{ tiny_prefix }}-test-policy"
+second_iam_role: "ansible-test-sts-{{ tiny_prefix }}-test-policy-2"
 # Zuul resource prefixes are very long, and IAM roles can only be 64 characters
 unique_id: "{{ resource_prefix | hash('md5') }}"
