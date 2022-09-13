@@ -530,6 +530,9 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
 
     all_facts['object_data'] = get_object(connection, bucket_name, object_name)['object_data']
 
+    # Below APIs do not return object_name, need to add it manually
+    all_facts['object_name'] = object_name
+
     for key in requested_facts:
         if key == 'object_acl':
             all_facts[key] = {}
@@ -600,7 +603,7 @@ def list_bucket_objects(connection, module, bucket_name):
         for response_list_item in list_objects_response['Contents']:
             result.append(response_list_item['Key'])
 
-    module.exit_json(s3_keys=result)
+    return result
 
 
 def main():
@@ -641,15 +644,22 @@ def main():
             module.fail_json(msg='Please provide attributes_list list to retrieve s3 object_attributes.')
 
     if requested_details:
-        object_details = get_object_details(connection, module, bucket_name, object_name, requested_details)
-        result.append(object_details)
+        if object_name:
+            object_details = get_object_details(connection, module, bucket_name, object_name, requested_details)
+            result.append(object_details)
+        elif object_name is None:
+            object_list = list_bucket_objects(connection, module, bucket_name)
+            for object in object_list:
+                result.append(get_object_details(connection, module, bucket_name, object, requested_details))
+
     elif not requested_details and object_name:
         # if specific details are not requested, return object metadata
         object_details = get_object(connection, bucket_name, object_name)
         result.append(object_details)
     else:
         # return list of all objects in a bucket if object name and object details not specified
-        list_bucket_objects(connection, module, bucket_name)
+        object_list = list_bucket_objects(connection, module, bucket_name)
+        module.exit_json(s3_keys=object_list)
 
     module.exit_json(object_info=result)
 
