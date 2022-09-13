@@ -299,6 +299,7 @@ that should be included into almost all AWS modules:
 
 * ``aws`` - contains the common boto3 connection parameters
 * ``ec2`` - contains the common region parameter required for many AWS modules
+* ``aws_boto3`` - contains the minimum requirements for the collection
 * ``tags`` - contains the common tagging parameters used by many AWS modules
 
 These fragments should be used rather than re-documenting these properties to ensure consistency
@@ -312,6 +313,7 @@ and that the more esoteric connection options are documented. For example:
    extends_documentation_fragment:
        - amazon.aws.aws
        - amazon.aws.ec2
+       - amazon.aws.aws_boto3
    '''
 
 .. _ansible_collections.amazon.aws.docsite.dev_exceptions:
