@@ -13,7 +13,7 @@
   - assert:
       that:
         - not _result_delete_db_cluster.changed
-    ignore_errors: yes
+    ignore_errors: true
 
   - name: Create a source DB cluster
     rds_cluster:
@@ -23,6 +23,7 @@
       backup_retention_period: 1
       username: "{{ username }}"
       password: "{{ password }}"
+      wait: true
     register: _result_create_source_db_cluster
 
   - assert:
@@ -116,63 +117,63 @@
       that:
       - not _result_restored_db_cluster.changed
 
-  # TODO: Requires rds_cluster_snapshot module
-  # - name: Take a snapshot of the DB cluster
-  #   rds_cluster_snapshot:
-  #     state: present
-  #     db_cluster_identifier: "{{ cluster_id }}"
-  #     db_snapshot_identifier: "{{ cluster_id }}-snapshot"
-  #   register: _result_cluster_snapshot
+  - name: Take a snapshot of the DB cluster
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ cluster_id }}-snapshot"
+      wait: true
+    register: _result_cluster_snapshot
 
-  # - assert:
-  #     that:
-  #     - _result_cluster_snapshot.changed
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
 
-  # - name: Restore DB cluster from source (snapshot)
-  #   rds_cluster:
-  #     creation_source: 'snapshot'
-  #     engine: "{{ engine }}"
-  #     cluster_id: "cluster-{{ resource_prefix }}-restored-snapshot"
-  #     snapshot_identifier: "cluster-{{ resource_prefix }}-snapshot"
-  #   register: _result_restored_db_cluster
+  - name: Restore DB cluster from source (snapshot)
+    rds_cluster:
+      creation_source: 'snapshot'
+      engine: "{{ engine }}"
+      cluster_id: "{{ cluster_id }}-restored-snapshot"
+      snapshot_identifier: "{{ cluster_id }}-snapshot"
+      wait: true
+    register: _result_restored_db_cluster
 
-  # - assert:
-  #     that:
-  #     - _result_restored_db_cluster.changed
-  #     - "'allocated_storage' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.allocated_storage == 1
-  #     - "'cluster_create_time' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.copy_tags_to_snapshot == false
-  #     - "'db_cluster_arn' in _result_restored_db_cluster"
-  #     - "_result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-restored-snapshot'"
-  #     - "'db_cluster_parameter_group' in _result_restored_db_cluster"
-  #     - "'db_cluster_resource_id' in _result_restored_db_cluster"
-  #     - "'endpoint' in _result_restored_db_cluster"
-  #     - "'engine' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.engine == "{{ engine }}"
-  #     - "'engine_mode' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.engine_mode == "provisioned"
-  #     - "'engine_version' in _result_restored_db_cluster"
-  #     - "'master_username' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.master_username == "{{ username }}"
-  #     - "'port' in _result_restored_db_cluster"
-  #     - "_result_restored_db_cluster.port == {{ port }}"
-  #     - "'status' in _result_restored_db_cluster"
-  #     - _result_restored_db_cluster.status == "available"
-  #     - "'tags' in _result_restored_db_cluster"
-  #     - "_result_restored_db_cluster.tags | length == 2"
-  #     - "_result_restored_db_cluster.tags.Name == '{{ cluster_id }}'"
-  #     - "_result_restored_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'"
-  #     - "'vpc_security_groups' in _result_restored_db_cluster"
+  - assert:
+      that:
+      - _result_restored_db_cluster.changed
+      - "'allocated_storage' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_restored_db_cluster"
+      - "_result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-restored-snapshot'"
+      - "'db_cluster_parameter_group' in _result_restored_db_cluster"
+      - "'db_cluster_resource_id' in _result_restored_db_cluster"
+      - "'endpoint' in _result_restored_db_cluster"
+      - "'engine' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_restored_db_cluster"
+      - "'master_username' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_restored_db_cluster"
+      - "_result_restored_db_cluster.port == {{ port }}"
+      - "'status' in _result_restored_db_cluster"
+      - _result_restored_db_cluster.status == "available"
+      - "'tags' in _result_restored_db_cluster"
+      - "'vpc_security_groups' in _result_restored_db_cluster"
 
   # TODO: export a snapshot to an S3 bucket and restore cluster from it
   # Requires rds_export_task module
       
   always:  
-  # - name: Delete the snapshot
-  #   rds_cluster:
-  #     snapshot_identifier: "{{ cluster_id }}-snapshot"
-  #   register: _result_delete_snapshot
+  - name: Delete the snapshot
+    rds_cluster_snapshot:
+      db_cluster_snapshot_identifier: "{{ cluster_id }}-snapshot"
+      state: absent
+    register: _result_delete_snapshot
+    ignore_errors: true
 
   - name: Delete DB cluster without creating a final snapshot
     rds_cluster:
@@ -183,3 +184,4 @@
     loop:
     - "{{ cluster_id }}"
     - "{{ cluster_id }}-point-in-time"
+    - "{{ cluster_id }}-restored-snapshot"
