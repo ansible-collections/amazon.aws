@@ -48,11 +48,11 @@ def _hashable_policy(policy, policy_list):
                         'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
                        }]}
         Returned value:
-        [('Statement',  ((('Action', (u's3:PutObjectAcl',)),
-                          ('Effect', (u'Allow',)),
-                          ('Principal', ('AWS', ((u'arn:aws:iam::XXXXXXXXXXXX:user/username1',), (u'arn:aws:iam::XXXXXXXXXXXX:user/username2',)))),
-                          ('Resource', (u'arn:aws:s3:::test_policy/*',)), ('Sid', (u'AddCannedAcl2',)))),
-         ('Version', (u'2012-10-17',)))]
+        [('Statement',  ((('Action', ('s3:PutObjectAcl',)),
+                          ('Effect', ('Allow',)),
+                          ('Principal', ('AWS', (('arn:aws:iam::XXXXXXXXXXXX:user/username1',), ('arn:aws:iam::XXXXXXXXXXXX:user/username2',)))),
+                          ('Resource', ('arn:aws:s3:::test_policy/*',)), ('Sid', ('AddCannedAcl2',)))),
+         ('Version', ('2012-10-17',)))]
 
     """
     # Amazon will automatically convert bool and int to strings for us

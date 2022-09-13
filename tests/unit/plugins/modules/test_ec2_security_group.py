@@ -7,20 +7,20 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_security_group as
 
 def test_from_permission():
     internal_http = {
-        u'FromPort': 80,
-        u'IpProtocol': 'tcp',
-        u'IpRanges': [
+        'FromPort': 80,
+        'IpProtocol': 'tcp',
+        'IpRanges': [
             {
-                u'CidrIp': '10.0.0.0/8',
-                u'Description': 'Foo Bar Baz'
+                'CidrIp': '10.0.0.0/8',
+                'Description': 'Foo Bar Baz'
             },
         ],
-        u'Ipv6Ranges': [
-            {u'CidrIpv6': 'fe80::94cc:8aff:fef6:9cc/64'},
+        'Ipv6Ranges': [
+            {'CidrIpv6': 'fe80::94cc:8aff:fef6:9cc/64'},
         ],
-        u'PrefixListIds': [],
-        u'ToPort': 80,
-        u'UserIdGroupPairs': [],
+        'PrefixListIds': [],
+        'ToPort': 80,
+        'UserIdGroupPairs': [],
     }
     perms = list(group_module.rule_from_group_permission(internal_http))
     assert len(perms) == 2
@@ -42,13 +42,13 @@ def test_from_permission():
     assert perms[0].port_range == (None, None)
 
     internal_prefix_http = {
-        u'FromPort': 80,
-        u'IpProtocol': 'tcp',
-        u'PrefixListIds': [
+        'FromPort': 80,
+        'IpProtocol': 'tcp',
+        'PrefixListIds': [
             {'PrefixListId': 'p-1234'}
         ],
-        u'ToPort': 80,
-        u'UserIdGroupPairs': [],
+        'ToPort': 80,
+        'UserIdGroupPairs': [],
     }
     perms = list(group_module.rule_from_group_permission(internal_prefix_http))
     assert len(perms) == 1
