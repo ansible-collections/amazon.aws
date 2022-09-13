@@ -411,6 +411,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def describe_s3_object_acl(connection, bucket_name, object_name):
@@ -617,6 +618,20 @@ def list_bucket_objects(connection, module, bucket_name):
     return result
 
 
+def bucket_check(connection, module, bucket_name,):
+    try:
+        connection.head_bucket(Bucket=bucket_name)
+    except is_boto3_error_code(['404', '403']) as e:
+        module.fail_json_aws(e, msg="The bucket %s does not exist or is missing access permissions." % bucket_name)
+
+
+def object_check(connection, module, bucket_name, object_name):
+    try:
+        connection.head_object(Bucket=bucket_name, Key=object_name)
+    except is_boto3_error_code(['404', '403']) as e:
+        module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
+
+
 def main():
 
     argument_spec = dict(
@@ -648,6 +663,12 @@ def main():
     bucket_name = module.params.get('bucket_name')
     object_name = module.params.get('object_name')
     requested_object_details = module.params.get('object_details')
+
+    # check if specified bucket exists
+    bucket_check(connection, module, bucket_name)
+    # check if specified object exists
+    if object_name:
+        object_check(connection, module, bucket_name, object_name)
 
     if requested_object_details and requested_object_details['object_attributes']:
         if requested_object_details['attributes_list'] is None:
