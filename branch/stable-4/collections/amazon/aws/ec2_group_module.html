@@ -130,14 +130,14 @@
 <h1>amazon.aws.ec2_group module – Maintain an ec2 VPC security group<a class="headerlink" href="#amazon-aws-ec2-group-module-maintain-an-ec2-vpc-security-group" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 4.1.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 4.2.0).</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-group-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_group</span></code>.</p>
 </div>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.0.0: </span>of amazon.aws</p>
+<p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -376,7 +376,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/icmp_code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-group-module-parameter-rules-icmp-code"><strong>icmp_code</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/icmp_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in 3.3.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
 <p>the ICMP code to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
@@ -386,7 +386,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/icmp_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-group-module-parameter-rules-icmp-type"><strong>icmp_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/icmp_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in 3.3.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to</p>
 <p>specify the ICMP type to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">from_port</span></code>.</p>
@@ -496,7 +496,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/icmp_code"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/icmp_code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-group-module-parameter-rules-egress-icmp-code"><span id="ansible-collections-amazon-aws-ec2-group-module-parameter-egress-rules-icmp-code"></span><strong>icmp_code</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/icmp_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in 3.3.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
 <p>the ICMP code to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
@@ -507,7 +507,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/icmp_type"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/icmp_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-group-module-parameter-rules-egress-icmp-type"><span id="ansible-collections-amazon-aws-ec2-group-module-parameter-egress-rules-icmp-type"></span><strong>icmp_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/icmp_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in 3.3.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
 <p>the ICMP type to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">from_port</span></code>.</p>

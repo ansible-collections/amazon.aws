@@ -130,7 +130,7 @@
 <h1>amazon.aws.aws_rds inventory – RDS instance inventory source<a class="headerlink" href="#amazon-aws-aws-rds-inventory-rds-instance-inventory-source" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This inventory plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 4.1.0).</p>
+<p>This inventory plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 4.2.0).</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this inventory plugin,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-inventory-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
@@ -374,7 +374,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-hostvars-prefix"><strong>hostvars_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in 3.1.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The prefix for host variables names coming from AWS.</p>
 </div></td>
@@ -382,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_suffix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-hostvars-suffix"><strong>hostvars_suffix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_suffix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in 3.1.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The suffix for host variables names coming from AWS.</p>
 </div></td>
@@ -417,7 +417,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/default_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-default-value"><strong>default_value</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/default_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in 2.12 of ansible.builtin</span></p>
+<p><span class="ansible-option-versionadded">added in ansible-core 2.12</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is an empty string.</p>
 <p>This option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">trailing_separator</span></code>.</p>
@@ -456,7 +456,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/trailing_separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-trailing-separator"><strong>trailing_separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in 2.12 of ansible.builtin</span></p>
+<p><span class="ansible-option-versionadded">added in ansible-core 2.12</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <em>False</em> to omit the <code class="docutils literal notranslate"><span class="pre">separator</span></code> after the host variable when the value is an empty string.</p>
 <p>This option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">default_value</span></code>.</p>
@@ -470,7 +470,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-leading_separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-leading-separator"><strong>leading_separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-leading_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in 2.11 of ansible.builtin</span></p>
+<p><span class="ansible-option-versionadded">added in ansible-core 2.11</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use in conjunction with keyed_groups.</p>
 <p>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</p>
@@ -529,7 +529,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-use-extra-vars"><strong>use_extra_vars</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in 2.11 of ansible.builtin</span></p>
+<p><span class="ansible-option-versionadded">added in ansible-core 2.11</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Merge extra vars into the available variables for composition (highest precedence).</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
