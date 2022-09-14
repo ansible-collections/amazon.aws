@@ -1009,3 +1009,18 @@ releases:
     - 927-ec2_instance-retries.yml
     - python.yml
     release_date: '2022-08-02'
+  4.2.0:
+    changes:
+      deprecated_features:
+      - module_utils.cloud - removal of the ``CloudRetry.backoff`` has been delayed
+        until release 6.0.0.  It is recommended to update custom modules to use ``jittered_backoff``
+        or ``exponential_backoff`` instead (https://github.com/ansible-collections/amazon.aws/pull/951).
+      minor_changes:
+      - ec2_security_group - set type as ``list`` for rules->group_name as it can
+        accept both ``str`` and ``list`` (https://github.com/ansible-collections/amazon.aws/pull/971).
+      - various modules - linting fixups (https://github.com/ansible-collections/amazon.aws/pull/953).
+    fragments:
+    - 638-ec2_security_group_group_name_datatype.yml
+    - 951-cloudretry.yml
+    - 965-linting.yml
+    release_date: '2022-09-14'
