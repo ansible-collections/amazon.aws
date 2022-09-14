@@ -27,7 +27,7 @@ Support for the original AWS SDK `boto` has been deprecated and the module_utils
 
 ## Included content
 <!--start collection content-->
-See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).
+See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/stable-3/collections/amazon/aws/index.html#plugin-index).
 
 <!--end collection content-->
 
