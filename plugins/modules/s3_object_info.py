@@ -643,6 +643,9 @@ def main():
             object_tagging=dict(type='bool', default=False),
             object_attributes=dict(type='bool', default=False),
             attributes_list=dict(type='list', elements='str', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])),
+            required_if=[
+                ("object_attributes", True, ["attributes_list"]),
+        ]
         ),
         bucket_name=dict(required=True, type='str'),
         object_name=dict(type='str'),
@@ -671,8 +674,6 @@ def main():
         object_check(connection, module, bucket_name, object_name)
 
     if requested_object_details and requested_object_details['object_attributes']:
-        if requested_object_details['attributes_list'] is None:
-            module.fail_json(msg='Please provide `attributes_list` to use `object_attributes=true`')
         module.require_botocore_at_least('1.24.7', reason='required for s3.get_object_attributes')
 
     if requested_object_details:
