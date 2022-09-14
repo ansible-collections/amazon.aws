@@ -5,6 +5,20 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v4.2.0
+======
+
+Minor Changes
+-------------
+
+- ec2_security_group - set type as ``list`` for rules->group_name as it can accept both ``str`` and ``list`` (https://github.com/ansible-collections/amazon.aws/pull/971).
+- various modules - linting fixups (https://github.com/ansible-collections/amazon.aws/pull/953).
+
+Deprecated Features
+-------------------
+
+- module_utils.cloud - removal of the ``CloudRetry.backoff`` has been delayed until release 6.0.0.  It is recommended to update custom modules to use ``jittered_backoff`` or ``exponential_backoff`` instead (https://github.com/ansible-collections/amazon.aws/pull/951).
+
 v4.1.0
 ======
 
