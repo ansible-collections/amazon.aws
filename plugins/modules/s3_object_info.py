@@ -66,6 +66,7 @@ options:
       object_attributes:
         description:
           - Retreive S3 object attributes.
+          - Requires minimum botocore version 1.24.7.
         required: false
         type: bool
         default: false
@@ -133,7 +134,7 @@ s3_keys:
   - prefix1/key2
 object_info:
     description: S3 object details.
-    returned: always
+    returned: when I(bucket_name) and I(object_name) are specified
     type: list
     elements: dict
     contains:
