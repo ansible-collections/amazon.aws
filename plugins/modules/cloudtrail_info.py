@@ -167,21 +167,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 def get_trails(connection, module):
     all_trails = []
-    next = False
     try:
-        result = connection.list_trails()
+        result = connection.get_paginator('list_trails')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the trails.")
-    while not all_trails or result.get("NextToken", ""):
-        all_trails.extend(list_cloud_trails(result))
-        if result.get("NextToken", ""):
-            next = True
-            try:
-                result = connection.list_trails(result["NextToken"])
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to get the trails.")
-    if next:
-        all_trails.extend(list_cloud_trails(result))
+    for trail in result.paginate():
+        all_trails.extend(list_cloud_trails(trail))
+        
     return all_trails
 
 
