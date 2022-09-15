@@ -134,7 +134,7 @@ s3_keys:
   - prefix1/key2
 object_info:
     description: S3 object details.
-    returned: when I(bucket_name) and I(object_name) are specified
+    returned: when I(bucket_name) and I(object_name) are specified.
     type: list
     elements: dict
     contains:
