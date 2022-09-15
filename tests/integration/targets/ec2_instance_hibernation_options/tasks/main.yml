@@ -1,7 +1,13 @@
-- block:
-    - name: Create instance with hibernation config (check mode)
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create instance with termination protection (check mode)
       ec2_instance:
-        name: "{{ resource_prefix }}-stop-hibernation"
+        name: "{{ resource_prefix }}-hibernation-options"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
@@ -27,7 +33,7 @@
 
     - name: Create instance with hibernation config
       ec2_instance:
-        name: "{{ resource_prefix }}-stop-hibernation"
+        name: "{{ resource_prefix }}-hibernation-options"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
@@ -137,13 +143,3 @@
         filters:
           tag:TestId: "{{ resource_prefix }}"
         state: absent
-
-  always:
-
-    - name: Terminate instance
-      ec2_instance:
-        filters:
-          tag:TestId: "{{ resource_prefix }}"
-        state: absent
-        wait: false
-      ignore_errors: yes
