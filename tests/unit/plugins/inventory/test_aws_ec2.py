@@ -23,6 +23,7 @@ __metaclass__ = type
 
 import pytest
 import datetime
+from unittest.mock import MagicMock
 
 from ansible.errors import AnsibleError
 from ansible.parsing.dataloader import DataLoader
@@ -108,9 +109,25 @@ instances = {
 }
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def inventory():
-    return InventoryModule()
+    inventory = InventoryModule()
+    inventory._options = {
+        "aws_profile": "first_precedence",
+        "aws_access_key": "test_access_key",
+        "aws_secret_key": "test_secret_key",
+        "aws_security_token": "test_security_token",
+        "iam_role_arn": None,
+        "use_contrib_script_compatible_ec2_tag_keys": False,
+        "hostvars_prefix": "",
+        "hostvars_suffix": "",
+        "strict": True,
+        "compose": {},
+        "groups": {},
+        "keyed_groups": [],
+    }
+    inventory.inventory = MagicMock()
+    return inventory
 
 
 def test_compile_values(inventory):
@@ -139,21 +156,50 @@ def test_boto3_conn(inventory):
             assert "Insufficient credentials found" in error_message
 
 
-def test_get_hostname_default(inventory):
+def testget_all_hostnames_default(inventory):
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames=None)[0] == "ec2-12-345-67-890.compute-1.amazonaws.com"
+    assert inventory.get_all_hostnames(instance, hostnames=None) == ["ec2-12-345-67-890.compute-1.amazonaws.com", "ip-098-76-54-321.ec2.internal"]
 
 
-def test_get_hostname(inventory):
+def testget_all_hostnames(inventory):
     hostnames = ['ip-address', 'dns-name']
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames)[0] == "12.345.67.890"
+    assert inventory.get_all_hostnames(instance, hostnames) == ["12.345.67.890", "ec2-12-345-67-890.compute-1.amazonaws.com"]
 
 
-def test_get_hostname_dict(inventory):
+def testget_all_hostnames_dict(inventory):
     hostnames = [{'name': 'private-ip-address', 'separator': '_', 'prefix': 'tag:Name'}]
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames)[0] == "aws_ec2_098.76.54.321"
+    assert inventory.get_all_hostnames(instance, hostnames) == ["aws_ec2_098.76.54.321"]
+
+
+def testget_all_hostnames_with_2_tags(inventory):
+    hostnames = ['tag:ansible', 'tag:Name']
+    instance = instances['Instances'][0]
+    assert inventory.get_all_hostnames(instance, hostnames) == ["test", "aws_ec2"]
+
+
+def test_get_preferred_hostname_default(inventory):
+    instance = instances['Instances'][0]
+    assert inventory._get_preferred_hostname(instance, hostnames=None) == "ec2-12-345-67-890.compute-1.amazonaws.com"
+
+
+def test_get_preferred_hostname(inventory):
+    hostnames = ['ip-address', 'dns-name']
+    instance = instances['Instances'][0]
+    assert inventory._get_preferred_hostname(instance, hostnames) == "12.345.67.890"
+
+
+def test_get_preferred_hostname_dict(inventory):
+    hostnames = [{'name': 'private-ip-address', 'separator': '_', 'prefix': 'tag:Name'}]
+    instance = instances['Instances'][0]
+    assert inventory._get_preferred_hostname(instance, hostnames) == "aws_ec2_098.76.54.321"
+
+
+def test_get_preferred_hostname_with_2_tags(inventory):
+    hostnames = ['tag:ansible', 'tag:Name']
+    instance = instances['Instances'][0]
+    assert inventory._get_preferred_hostname(instance, hostnames) == "test"
 
 
 def test_set_credentials(inventory):
@@ -216,3 +262,58 @@ def test_include_filters_with_filter_and_include_filters(inventory):
     assert inventory.build_include_filters() == [
         {"from_filter": 1},
         {"from_include_filter": "bar"}]
+
+
+def test_add_host_empty_hostnames(inventory):
+    hosts = [
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "ip-10-85-0-4.ec2.internal"
+        },
+    ]
+    inventory._add_hosts(hosts, "aws_ec2", [])
+    inventory.inventory.add_host.assert_called_with("ip-10-85-0-4.ec2.internal", group="aws_ec2")
+
+
+def test_add_host_with_hostnames_and_one_criteria(inventory):
+    hosts = [{
+        "Placement": {
+            "AvailabilityZone": "us-east-1a",
+        },
+        "PublicDnsName": "sample-host",
+    }]
+
+    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"])
+    assert inventory.inventory.add_host.call_count == 1
+    inventory.inventory.add_host.assert_called_with("sample-host", group="aws_ec2")
+
+
+def test_add_host_with_hostnames_and_two_matching_criteria(inventory):
+    hosts = [{
+        "Placement": {
+            "AvailabilityZone": "us-east-1a",
+        },
+        "PublicDnsName": "name-from-PublicDnsName",
+        "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
+    }]
+
+    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"])
+    assert inventory.inventory.add_host.call_count == 1
+    inventory.inventory.add_host.assert_called_with("name-from-tag-Name", group="aws_ec2")
+
+
+def test_add_host_with_hostnames_and_two_matching_criteria_and_allow_duplicated_hosts(inventory):
+    hosts = [{
+        "Placement": {
+            "AvailabilityZone": "us-east-1a",
+        },
+        "PublicDnsName": "name-from-PublicDnsName",
+        "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
+    }]
+
+    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"], allow_duplicated_hosts=True)
+    assert inventory.inventory.add_host.call_count == 2
+    inventory.inventory.add_host.assert_any_call("name-from-PublicDnsName", group="aws_ec2")
+    inventory.inventory.add_host.assert_any_call("name-from-tag-Name", group="aws_ec2")

@@ -64,6 +64,13 @@ options:
         type: str
         default: '_'
         required: False
+  allow_duplicated_hosts:
+    description:
+      - By default, only the first name that back the I(hostnames) list is returned.
+      - Turn this flag on if you don't mind having duplicated entries in the inventory
+        and you want to get all the hostnames that match.
+    type: bool
+    default: False
   filters:
     description:
       - A dictionary of filter value pairs.
@@ -175,6 +182,9 @@ hostnames:
   - name: 'test_literal' # Using literal values for hostname
     separator: '-'       # Hostname will be aws-test_literal
     prefix: 'aws'
+
+# Returns all the hostnames for a given instance
+allow_duplicated_hosts: False
 
 # Example using constructed features to create groups and set ansible_host
 plugin: aws_ec2
@@ -626,11 +636,43 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         else:
             return to_text(hostname)
 
-    def _get_hostname(self, instance, hostnames):
+    def _get_preferred_hostname(self, instance, hostnames):
         '''
             :param instance: an instance dict returned by boto3 ec2 describe_instances()
             :param hostnames: a list of hostname destination variables in order of preference
             :return the preferred identifer for the host
+        '''
+        if not hostnames:
+            hostnames = ['dns-name', 'private-dns-name']
+
+        hostname = None
+        for preference in hostnames:
+            if isinstance(preference, dict):
+                if 'name' not in preference:
+                    raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+                hostname = self._get_preferred_hostname(instance, [preference["name"]])
+                hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
+                separator = preference.get("separator", "_")
+                if hostname and hostname_from_prefix and 'prefix' in preference:
+                    hostname = hostname_from_prefix + separator + hostname
+            elif preference.startswith('tag:'):
+                tags = self._get_tag_hostname(preference, instance)
+                hostname = tags[0] if tags else None
+            else:
+                hostname = self._get_boto_attr_chain(preference, instance)
+            if hostname:
+                break
+        if hostname:
+            if ':' in to_text(hostname):
+                return self._sanitize_group_name((to_text(hostname)))
+            else:
+                return to_text(hostname)
+
+    def get_all_hostnames(self, instance, hostnames):
+        '''
+            :param instance: an instance dict returned by boto3 ec2 describe_instances()
+            :param hostnames: a list of hostname destination variables
+            :return all the candidats matching the expectation
         '''
         if not hostnames:
             hostnames = ['dns-name', 'private-dns-name']
@@ -641,8 +683,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             if isinstance(preference, dict):
                 if 'name' not in preference:
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
-                hostname = self._get_hostname(instance, [preference["name"]])
-                hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]])
+                hostname = self.get_all_hostnames(instance, [preference["name"]])
+                hostname_from_prefix = self.get_all_hostnames(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and 'prefix' in preference:
                     hostname = hostname_from_prefix[0] + separator + hostname[0]
@@ -689,20 +731,27 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         return {'aws_ec2': instances}
 
-    def _populate(self, groups, hostnames):
+    def _populate(self, groups, hostnames, allow_duplicated_hosts=False):
         for group in groups:
             group = self.inventory.add_group(group)
-            self._add_hosts(hosts=groups[group], group=group, hostnames=hostnames)
+            self._add_hosts(
+                hosts=groups[group],
+                group=group,
+                hostnames=hostnames,
+                allow_duplicated_hosts=allow_duplicated_hosts)
             self.inventory.add_child('all', group)
 
-    def _add_hosts(self, hosts, group, hostnames):
+    def _add_hosts(self, hosts, group, hostnames, allow_duplicated_hosts=False):
         '''
             :param hosts: a list of hosts to be added to a group
             :param group: the name of the group to which the hosts belong
             :param hostnames: a list of hostname destination variables in order of preference
         '''
         for host in hosts:
-            hostname_list = self._get_hostname(host, hostnames)
+            if allow_duplicated_hosts:
+                hostname_list = self.get_all_hostnames(host, hostnames)
+            else:
+                hostname_list = [self._get_preferred_hostname(host, hostnames)]
 
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
@@ -820,6 +869,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         exclude_filters = self.get_option('exclude_filters')
         hostnames = self.get_option('hostnames')
         strict_permissions = self.get_option('strict_permissions')
+        allow_duplicated_hosts = self.get_option('allow_duplicated_hosts')
 
         cache_key = self.get_cache_key(path)
         # false when refresh_cache or --flush-cache is used
@@ -839,7 +889,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if not cache or cache_needs_update:
             results = self._query(regions, include_filters, exclude_filters, strict_permissions)
 
-        self._populate(results, hostnames)
+        self._populate(results, hostnames, allow_duplicated_hosts=allow_duplicated_hosts)
 
         # If the cache has expired/doesn't exist or if refresh_inventory/flush cache is used
         # when the user is using caching, update the cached inventory
