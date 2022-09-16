@@ -8,13 +8,12 @@ action_groups:
   - cloudformation
   - cloudformation_info
   - cloudtrail
-  - cloudwatchevent_rule
   - cloudwatch_metric_alarm
+  - cloudwatchevent_rule
   - cloudwatchevent_rule
   - cloudwatchlogs_log_group
   - cloudwatchlogs_log_group_info
   - cloudwatchlogs_log_group_metric_filter
-  - cloudwatchevent_rule
   - ec2_ami
   - ec2_ami_info
   - ec2_eip
@@ -64,6 +63,9 @@ action_groups:
   - lambda_execute
   - lambda_info
   - lambda_policy
+  - rds_cluster
+  - rds_cluster_info
+  - rds_cluster_snapshot
   - route53
   - route53_health_check
   - route53_info
