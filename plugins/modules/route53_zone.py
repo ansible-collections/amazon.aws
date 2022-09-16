@@ -58,37 +58,37 @@ author:
 
 EXAMPLES = r'''
 - name: create a public zone
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: example.com
     comment: this is an example
 
 - name: delete a public zone
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: example.com
     state: absent
 
 - name: create a private zone
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: devel.example.com
     vpc_id: '{{ myvpc_id }}'
     vpc_region: us-west-2
     comment: developer domain
 
 - name: create a public zone associated with a specific reusable delegation set
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: example.com
     comment: reusable delegation set example
     delegation_set_id: A1BCDEF2GHIJKL
 
 - name: create a public zone with tags
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: example.com
     comment: this is an example
     tags:
         Owner: Ansible Team
 
 - name: modify a public zone, removing all previous tags and adding a new one
-  community.aws.route53_zone:
+  amazon.aws.route53_zone:
     zone: example.com
     comment: this is an example
     tags:

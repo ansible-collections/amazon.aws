@@ -120,7 +120,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create a health-check for host1.example.com and use it in record
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     state: present
     fqdn: host1.example.com
     type: HTTP_STR_MATCH
@@ -130,7 +130,7 @@ EXAMPLES = '''
     failure_threshold: 2
   register: my_health_check
 
-- community.aws.route53:
+- amazon.aws.route53:
     action: create
     zone: "example.com"
     type: CNAME
@@ -143,7 +143,7 @@ EXAMPLES = '''
     health_check: "{{ my_health_check.health_check.id }}"
 
 - name: create a simple health check with health_check_name as unique identifier
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     state: present
     health_check_name: ansible
     fqdn: ansible.com
@@ -152,22 +152,22 @@ EXAMPLES = '''
     use_unique_names: true
 
 - name: Delete health-check
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     state: absent
     fqdn: host1.example.com
 
 - name: Update Health check by ID - update ip_address
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
     ip_address: 1.2.3.4
 
 - name: Update Health check by ID - update port
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
     ip_address: 8080
 
 - name: Delete Health check by ID
-  community.aws.route53_health_check:
+  amazon.aws.route53_health_check:
     state: absent
     id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
 
@@ -576,7 +576,7 @@ def main():
             'The health_check_name is currently non required parameter.'
             ' This behavior will change and health_check_name '
             ' will change to required=True and use_unique_names will change to default=True in release 6.0.0.',
-            version='6.0.0', collection_name='community.aws')
+            version='6.0.0', collection_name='amazon.aws')
 
     # If update or delete Health Check based on ID
     update_delete_by_id = False

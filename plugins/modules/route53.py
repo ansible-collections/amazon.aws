@@ -249,7 +249,7 @@ set:
 
 EXAMPLES = r'''
 - name: Add new.foo.com as an A record with 3 IPs and wait until the changes have been replicated
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: new.foo.com
@@ -258,7 +258,7 @@ EXAMPLES = r'''
     value: 1.1.1.1,2.2.2.2,3.3.3.3
     wait: true
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: new.foo.com
@@ -270,14 +270,14 @@ EXAMPLES = r'''
       - 3.3.3.3
     wait: true
 - name: Retrieve the details for new.foo.com
-  community.aws.route53:
+  amazon.aws.route53:
     state: get
     zone: foo.com
     record: new.foo.com
     type: A
   register: rec
 - name: Delete new.foo.com A record using the results from the get command
-  community.aws.route53:
+  amazon.aws.route53:
     state: absent
     zone: foo.com
     record: "{{ rec.set.record }}"
@@ -287,7 +287,7 @@ EXAMPLES = r'''
 # Add an AAAA record.  Note that because there are colons in the value
 # that the IPv6 address must be quoted. Also shows using the old form command=create.
 - name: Add an AAAA record
-  community.aws.route53:
+  amazon.aws.route53:
     command: create
     zone: foo.com
     record: localhost.foo.com
@@ -297,7 +297,7 @@ EXAMPLES = r'''
 # For more information on SRV records see:
 # https://en.wikipedia.org/wiki/SRV_record
 - name: Add a SRV record with multiple fields for a service on port 22222
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: "_example-service._tcp.foo.com"
@@ -306,7 +306,7 @@ EXAMPLES = r'''
 # Note that TXT and SPF records must be surrounded
 # by quotes when sent to Route 53:
 - name: Add a TXT record.
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: localhost.foo.com
@@ -314,7 +314,7 @@ EXAMPLES = r'''
     ttl: 7200
     value: '"bar"'
 - name: Add an alias record that points to an Amazon ELB
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: elb.foo.com
@@ -323,14 +323,14 @@ EXAMPLES = r'''
     alias: True
     alias_hosted_zone_id: "{{ elb_zone_id }}"
 - name: Retrieve the details for elb.foo.com
-  community.aws.route53:
+  amazon.aws.route53:
     state: get
     zone: foo.com
     record: elb.foo.com
     type: A
   register: rec
 - name: Delete an alias record using the results from the get command
-  community.aws.route53:
+  amazon.aws.route53:
     state: absent
     zone: foo.com
     record: "{{ rec.set.record }}"
@@ -340,7 +340,7 @@ EXAMPLES = r'''
     alias: True
     alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
 - name: Add an alias record that points to an Amazon ELB and evaluates it health
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: elb.foo.com
@@ -350,7 +350,7 @@ EXAMPLES = r'''
     alias_hosted_zone_id: "{{ elb_zone_id }}"
     alias_evaluate_target_health: True
 - name: Add an AAAA record with Hosted Zone ID
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     hosted_zone_id: Z2AABBCCDDEEFF
@@ -359,7 +359,7 @@ EXAMPLES = r'''
     ttl: 7200
     value: "::1"
 - name: Use a routing policy to distribute traffic
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: foo.com
     record: www.foo.com
@@ -371,7 +371,7 @@ EXAMPLES = r'''
     weight: 100
     health_check: "d994b780-3150-49fd-9205-356abdd42e75"
 - name: Add a CAA record (RFC 6844)
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: example.com
     record: example.com
@@ -381,7 +381,7 @@ EXAMPLES = r'''
       - 0 issuewild ";"
       - 0 iodef "mailto:security@example.com"
 - name: Create a record with geo_location - country_code
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: '{{ zone_one }}'
     record: 'geo-test.{{ zone_one }}'
@@ -392,7 +392,7 @@ EXAMPLES = r'''
     geo_location:
       country_code: US
 - name: Create a record with geo_location - subdivision code
-  community.aws.route53:
+  amazon.aws.route53:
     state: present
     zone: '{{ zone_one }}'
     record: 'geo-test.{{ zone_one }}'

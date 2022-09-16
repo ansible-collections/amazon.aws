@@ -136,19 +136,19 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Simple example of listing all hosted zones
 - name: List all hosted zones
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: hosted_zone
   register: hosted_zones
 
 # Getting a count of hosted zones
 - name: Return a count of all hosted zones
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: hosted_zone
     hosted_zone_method: count
   register: hosted_zone_count
 
 - name: List the first 20 resource record sets in a given hosted zone
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     profile: account_name
     query: record_sets
     hosted_zone_id: ZZZ1111112222
@@ -156,33 +156,33 @@ EXAMPLES = r'''
   register: record_sets
 
 - name: List first 20 health checks
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: health_check
     health_check_method: list
     max_items: 20
   register: health_checks
 
 - name: Get health check last failure_reason
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: health_check
     health_check_method: failure_reason
     health_check_id: 00000000-1111-2222-3333-12345678abcd
   register: health_check_failure_reason
 
 - name: Retrieve reusable delegation set details
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: reusable_delegation_set
     delegation_set_id: delegation id
   register: delegation_sets
 
 - name: setup of example for using next_marker
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: hosted_zone
     max_items: 1
   register: first_info
 
 - name: example for using next_marker
-  community.aws.route53_info:
+  amazon.aws.route53_info:
     query: hosted_zone
     next_marker: "{{ first_info.NextMarker }}"
     max_items: 1
@@ -191,12 +191,12 @@ EXAMPLES = r'''
 - name: retrieve host entries starting with host1.workshop.test.io
   block:
     - name: grab zone id
-      community.aws.route53_zone:
+      amazon.aws.route53_zone:
         zone: "test.io"
       register: AWSINFO
 
     - name: grab Route53 record information
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         type: A
         query: record_sets
         hosted_zone_id: "{{ AWSINFO.zone_id }}"
@@ -534,7 +534,7 @@ def reusable_delegation_set_details():
     module.deprecate("The 'CamelCase' return values with key 'DelegationSets' is deprecated and \
                     will be replaced by 'snake_case' return values with key 'delegation_sets'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return results
 
@@ -560,7 +560,7 @@ def list_hosted_zones():
     module.deprecate("The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'hosted_zones'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return {
         "HostedZones": zones,
@@ -602,7 +602,7 @@ def checker_ip_range_details():
     module.deprecate("The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and \
                     will be replaced by 'snake_case' return values with key 'checker_ip_ranges'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return results
 
@@ -635,7 +635,7 @@ def get_health_check():
     module.deprecate("The 'CamelCase' return values with key 'HealthCheck' is deprecated and \
                     will be replaced by 'snake_case' return values with key 'health_check'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return results
 
@@ -674,7 +674,7 @@ def list_health_checks():
     module.deprecate("The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'health_checks'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return {
         "HealthChecks": health_checks,
@@ -713,7 +713,7 @@ def record_sets_details():
     module.deprecate("The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'resource_record_sets'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='community.aws')
+                     date='2025-01-01', collection_name='amazon.aws')
 
     return {
         "ResourceRecordSets": record_sets,
