@@ -38,16 +38,16 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Get info of all existing DB clusters
-  community.aws.rds_cluster_info:
+  amazon.aws.rds_cluster_info:
   register: _result_cluster_info
 
 - name: Get info on a specific DB cluster
-  community.aws.rds_cluster_info:
+  amazon.aws.rds_cluster_info:
     cluster_id: "{{ cluster_id }}"
   register: _result_cluster_info
 
 - name: Get info all DB clusters with specific engine
-  community.aws.rds_cluster_info:
+  amazon.aws.rds_cluster_info:
     engine: "aurora"
   register: _result_cluster_info
 '''

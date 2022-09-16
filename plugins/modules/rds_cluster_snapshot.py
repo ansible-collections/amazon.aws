@@ -79,17 +79,17 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Create a DB cluster snapshot
-  community.aws.rds_cluster_snapshot:
+  amazon.aws.rds_cluster_snapshot:
     db_cluster_identifier: "{{ cluster_id }}"
     db_cluster_snapshot_identifier: new-cluster-snapshot
 
 - name: Delete a DB cluster snapshot
-  community.aws.rds_cluster_snapshot:
+  amazon.aws.rds_cluster_snapshot:
     db_cluster_snapshot_identifier: new-cluster-snapshot
     state: absent
 
 - name: Copy snapshot from a different region and copy its tags
-  community.aws.rds_cluster_snapshot:
+  amazon.aws.rds_cluster_snapshot:
     id: new-database-snapshot-copy
     region: us-east-1
     source_id: "{{ snapshot.db_snapshot_arn }}"

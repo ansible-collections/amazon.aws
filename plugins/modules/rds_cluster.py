@@ -337,14 +337,14 @@ options:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Create minimal aurora cluster in default VPC and default subnet group
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     cluster_id: "{{ cluster_id }}"
     engine: "aurora"
     password: "{{ password }}"
     username: "{{ username }}"
 
 - name: Add a new security group without purge
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     id: "{{ cluster_id }}"
     state: present
     vpc_security_group_ids:
@@ -352,7 +352,7 @@ EXAMPLES = r'''
     purge_security_groups: false
 
 - name: Modify password
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     id: "{{ cluster_id }}"
     state: present
     password: "{{ new_password }}"
@@ -360,7 +360,7 @@ EXAMPLES = r'''
     apply_immediately: true
 
 - name: Rename the cluster
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     engine: aurora
     password: "{{ password }}"
     username: "{{ username }}"
@@ -369,7 +369,7 @@ EXAMPLES = r'''
     apply_immediately: true
 
 - name: Delete aurora cluster without creating a final snapshot
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     engine: aurora
     password: "{{ password }}"
     username: "{{ username }}"
@@ -381,7 +381,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Restore cluster from source snapshot
-  community.aws.rds_cluster:
+  amazon.aws.rds_cluster:
     engine: aurora
     password: "{{ password }}"
     username: "{{ username }}"
