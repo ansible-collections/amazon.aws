@@ -1,3 +1,4 @@
+---
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
@@ -47,6 +48,8 @@ action_groups:
   - s3_object
   - elb_application_lb
   - elb_application_lb_info
+  - ec2_eip
+  - ec2_eip_info
 plugin_routing:
   action:
     aws_s3:
