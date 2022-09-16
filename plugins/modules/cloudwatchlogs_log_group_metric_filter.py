@@ -65,7 +65,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: set metric filter on log group /fluentd/testcase
-  community.aws.cloudwatchlogs_log_group_metric_filter:
+  amazon.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     filter_pattern: '{($.value = *) && ($.hostname = "box")}'
@@ -76,7 +76,7 @@ EXAMPLES = '''
         metric_value: "$.value"
 
 - name: delete metric filter on log group /fluentd/testcase
-  community.aws.cloudwatchlogs_log_group_metric_filter:
+  amazon.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     state: absent
