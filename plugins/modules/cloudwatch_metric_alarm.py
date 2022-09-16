@@ -165,7 +165,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
   - name: create alarm
-    community.aws.cloudwatch_metric_alarm:
+    amazon.aws.cloudwatch_metric_alarm:
       state: present
       region: ap-southeast-2
       name: "cpu-low"
@@ -182,7 +182,7 @@ EXAMPLES = r'''
       alarm_actions: ["action1","action2"]
 
   - name: Create an alarm to recover a failed instance
-    community.aws.cloudwatch_metric_alarm:
+    amazon.aws.cloudwatch_metric_alarm:
       state: present
       region: us-west-1
       name: "recover-instance"
