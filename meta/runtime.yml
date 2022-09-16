@@ -10,7 +10,6 @@ action_groups:
   - cloudtrail
   - cloudwatchevent_rule
   - cloudwatch_metric_alarm
-  - cloudwatch_metric_alarm
   - cloudwatchlogs_log_group
   - cloudwatchlogs_log_group_info
   - cloudwatchlogs_log_group_metric_filter
