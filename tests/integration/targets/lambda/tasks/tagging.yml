@@ -1,27 +1,27 @@
 - name: Tests relating to tagging lambda
   vars:
     first_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
     second_tags:
-      'New Key with Spaces': Value with spaces
+      New Key with Spaces: Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
     third_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
     final_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
@@ -131,7 +131,7 @@
     lambda:
       name: '{{ lambda_function_name }}'
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
     check_mode: yes
   - name: assert that update succeeded
@@ -143,7 +143,7 @@
     lambda:
       name: '{{ lambda_function_name }}'
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -155,7 +155,7 @@
     lambda:
       name: '{{ lambda_function_name }}'
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
     check_mode: yes
   - name: assert that update succeeded
@@ -167,7 +167,7 @@
     lambda:
       name: '{{ lambda_function_name }}'
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
   - name: assert that update succeeded
     assert:
