@@ -112,7 +112,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.exponential_backoff()
-def get_placement_group_details(connection, module):
+def search_placement_group(connection, module):
+    """
+    Check if a placement group exists.
+    """
     name = module.params.get("name")
     try:
         response = connection.describe_placement_groups(
@@ -134,6 +137,22 @@ def get_placement_group_details(connection, module):
             "state": placement_group['State'],
             "strategy": placement_group['Strategy'],
         }
+
+
+@AWSRetry.exponential_backoff(catch_extra_error_codes=['InvalidPlacementGroup.Unknown'])
+def get_placement_group_information(connection, name):
+    """
+    Retrieve information about a placement group.
+    """
+    response = connection.describe_placement_groups(
+        GroupNames=[name]
+    )
+    placement_group = response['PlacementGroups'][0]
+    return {
+        "name": placement_group['GroupName'],
+        "state": placement_group['State'],
+        "strategy": placement_group['Strategy'],
+    }
 
 
 @AWSRetry.exponential_backoff()
@@ -167,9 +186,7 @@ def create_placement_group(connection, module):
             msg="Couldn't create placement group [%s]" % name)
 
     module.exit_json(changed=True,
-                     placement_group=get_placement_group_details(
-                         connection, module
-                     ))
+                     placement_group=get_placement_group_information(connection, name))
 
 
 @AWSRetry.exponential_backoff()
@@ -205,7 +222,7 @@ def main():
     state = module.params.get("state")
 
     if state == 'present':
-        placement_group = get_placement_group_details(connection, module)
+        placement_group = search_placement_group(connection, module)
         if placement_group is None:
             create_placement_group(connection, module)
         else:
@@ -223,7 +240,7 @@ def main():
                              strategy))
 
     elif state == 'absent':
-        placement_group = get_placement_group_details(connection, module)
+        placement_group = search_placement_group(connection, module)
         if placement_group is None:
             module.exit_json(changed=False)
         else:
