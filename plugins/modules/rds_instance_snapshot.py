@@ -81,13 +81,13 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Create snapshot
-  community.aws.rds_instance_snapshot:
+  amazon.aws.rds_instance_snapshot:
     db_instance_identifier: new-database
     db_snapshot_identifier: new-database-snapshot
   register: snapshot
 
 - name: Copy snapshot from a different region and copy its tags
-  community.aws.rds_instance_snapshot:
+  amazon.aws.rds_instance_snapshot:
     id: new-database-snapshot-copy
     region: us-east-1
     source_id: "{{ snapshot.db_snapshot_arn }}"
@@ -95,7 +95,7 @@ EXAMPLES = r'''
     copy_tags: true
 
 - name: Delete snapshot
-  community.aws.rds_instance_snapshot:
+  amazon.aws.rds_instance_snapshot:
     db_snapshot_identifier: new-database-snapshot
     state: absent
 '''
