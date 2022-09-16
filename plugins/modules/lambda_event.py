@@ -15,8 +15,8 @@ description:
     - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream
       events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where
       AWS Lambda invokes the function.
-      It is idempotent and supports "Check" mode.  Use module M(community.aws.lambda) to manage the lambda
-      function itself and M(community.aws.lambda_alias) to manage function aliases.
+      It is idempotent and supports "Check" mode.  Use module M(amazon.aws.lambda) to manage the lambda
+      function itself and M(amazon.aws.lambda_alias) to manage function aliases.
 
 
 author: Pierre Jodouin (@pjodouin), Ryan Brown (@ryansb)
@@ -87,7 +87,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Example that creates a lambda event notification for a DynamoDB stream
 - name: DynamoDB stream event mapping
-  community.aws.lambda_event:
+  amazon.aws.lambda_event:
     state: present
     event_source: stream
     function_name: "{{ function_name }}"

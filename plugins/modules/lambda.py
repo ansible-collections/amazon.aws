@@ -128,7 +128,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Create Lambda functions
 - name: looped creation
-  community.aws.lambda:
+  amazon.aws.lambda:
     name: '{{ item.name }}'
     state: present
     zip_file: '{{ item.zip_file }}'
@@ -158,7 +158,7 @@ EXAMPLES = r'''
 
 # To remove previously added tags pass an empty dict
 - name: remove tags
-  community.aws.lambda:
+  amazon.aws.lambda:
     name: 'Lambda function'
     state: present
     zip_file: 'code.zip'
@@ -169,7 +169,7 @@ EXAMPLES = r'''
 
 # Basic Lambda function deletion
 - name: Delete Lambda functions HelloWorld and ByeBye
-  community.aws.lambda:
+  amazon.aws.lambda:
     name: '{{ item }}'
     state: absent
   loop:

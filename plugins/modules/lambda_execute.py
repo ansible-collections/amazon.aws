@@ -74,7 +74,7 @@ options:
 '''
 
 EXAMPLES = '''
-- community.aws.lambda_execute:
+- amazon.aws.lambda_execute:
     name: test-function
     # the payload is automatically serialized and sent to the function
     payload:
@@ -84,11 +84,11 @@ EXAMPLES = '''
 
 # Test that you have sufficient permissions to execute a Lambda function in
 # another account
-- community.aws.lambda_execute:
+- amazon.aws.lambda_execute:
     function_arn: arn:aws:lambda:us-east-1:123456789012:function/some-function
     dry_run: true
 
-- community.aws.lambda_execute:
+- amazon.aws.lambda_execute:
     name: test-function
     payload:
       foo: bar
@@ -99,12 +99,12 @@ EXAMPLES = '''
   # the response will have a `logs` key that will contain a log (up to 4KB) of the function execution in Lambda
 
 # Pass the Lambda event payload as a json file.
-- community.aws.lambda_execute:
+- amazon.aws.lambda_execute:
     name: test-function
     payload: "{{ lookup('file','lambda_event.json') }}"
   register: response
 
-- community.aws.lambda_execute:
+- amazon.aws.lambda_execute:
     name: test-function
     version_qualifier: PRODUCTION
 '''

@@ -15,9 +15,9 @@ short_description: Creates, updates or deletes AWS Lambda policy statements.
 description:
     - This module allows the management of AWS Lambda policy statements.
     - It is idempotent and supports "Check" mode.
-    - Use module M(community.aws.lambda) to manage the lambda function itself, M(community.aws.lambda_alias) to manage function aliases,
-      M(community.aws.lambda_event) to manage event source mappings such as Kinesis streams, M(community.aws.execute_lambda) to execute a
-      lambda function and M(community.aws.lambda_info) to gather information relating to one or more lambda functions.
+    - Use module M(amazon.aws.lambda) to manage the lambda function itself, M(amazon.aws.lambda_alias) to manage function aliases,
+      M(amazon.aws.lambda_event) to manage event source mappings such as Kinesis streams, M(community.aws.execute_lambda) to execute a
+      lambda function and M(amazon.aws.lambda_info) to gather information relating to one or more lambda functions.
 
 
 author:
@@ -106,7 +106,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 
 - name: Lambda S3 event notification
-  community.aws.lambda_policy:
+  amazon.aws.lambda_policy:
     state: present
     function_name: functionName
     alias: Dev

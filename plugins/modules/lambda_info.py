@@ -13,8 +13,8 @@ version_added: 1.0.0
 short_description: Gathers AWS Lambda function details
 description:
   - Gathers various details related to Lambda functions, including aliases, versions and event source mappings.
-  - Use module M(community.aws.lambda) to manage the lambda function itself, M(community.aws.lambda_alias) to manage function aliases,
-    M(community.aws.lambda_event) to manage lambda event source mappings, and M(community.aws.lambda_policy) to manage policy statements.
+  - Use module M(amazon.aws.lambda) to manage the lambda function itself, M(amazon.aws.lambda_alias) to manage function aliases,
+    M(amazon.aws.lambda_event) to manage lambda event source mappings, and M(amazon.aws.lambda_policy) to manage policy statements.
 options:
   query:
     description:
@@ -43,21 +43,21 @@ EXAMPLES = '''
 ---
 # Simple example of listing all info for a function
 - name: List all for a specific function
-  community.aws.lambda_info:
+  amazon.aws.lambda_info:
     query: all
     function_name: myFunction
   register: my_function_details
 
 # List all versions of a function
 - name: List function versions
-  community.aws.lambda_info:
+  amazon.aws.lambda_info:
     query: versions
     function_name: myFunction
   register: my_function_versions
 
 # List all info for all functions
 - name: List all functions
-  community.aws.lambda_info:
+  amazon.aws.lambda_info:
     query: all
   register: output
 
@@ -525,7 +525,7 @@ def main():
         "The returned key 'function', which returned a dictionary of dictionaries, is deprecated and will be replaced by 'functions',"
         " which returns a list of dictionaries. Both keys are returned for now.",
         date='2025-01-01',
-        collection_name='community.aws'
+        collection_name='amazon.aws'
     )
 
     list_functions(client, module)
