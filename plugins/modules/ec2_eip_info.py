@@ -34,11 +34,11 @@ EXAMPLES = r'''
 # see the AWS Guide for details.
 
 - name: List all EIP addresses in the current region.
-  community.aws.ec2_eip_info:
+  amazon.aws.ec2_eip_info:
   register: regional_eip_addresses
 
 - name: List all EIP addresses for a VM.
-  community.aws.ec2_eip_info:
+  amazon.aws.ec2_eip_info:
     filters:
        instance-id: i-123456789
   register: my_vm_eips
@@ -47,7 +47,7 @@ EXAMPLES = r'''
     msg: "{{ my_vm_eips.addresses | selectattr('private_ip_address', 'equalto', '10.0.0.5') }}"
 
 - name: List all EIP addresses for several VMs.
-  community.aws.ec2_eip_info:
+  amazon.aws.ec2_eip_info:
     filters:
        instance-id:
          - i-123456789
@@ -55,13 +55,13 @@ EXAMPLES = r'''
   register: my_vms_eips
 
 - name: List all EIP addresses using the 'Name' tag as a filter.
-  community.aws.ec2_eip_info:
+  amazon.aws.ec2_eip_info:
     filters:
       tag:Name: www.example.com
   register: my_vms_eips
 
 - name: List all EIP addresses using the Allocation-id as a filter
-  community.aws.ec2_eip_info:
+  amazon.aws.ec2_eip_info:
     filters:
       allocation-id: eipalloc-64de1b01
   register: my_vms_eips

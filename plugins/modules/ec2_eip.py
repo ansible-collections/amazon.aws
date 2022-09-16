@@ -100,39 +100,39 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: associate an elastic IP with an instance
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: i-1212f003
     ip: 93.184.216.119
 
 - name: associate an elastic IP with a device
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
     ip: 93.184.216.119
 
 - name: associate an elastic IP with a device and allow reassociation
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
     public_ip: 93.184.216.119
     allow_reassociation: true
 
 - name: disassociate an elastic IP from an instance
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: i-1212f003
     ip: 93.184.216.119
     state: absent
 
 - name: disassociate an elastic IP with a device
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
     ip: 93.184.216.119
     state: absent
 
 - name: allocate a new elastic IP and associate it with an instance
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: i-1212f003
 
 - name: allocate a new elastic IP without associating it to anything
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     state: present
   register: eip
 
@@ -151,12 +151,12 @@ EXAMPLES = '''
   register: ec2
 
 - name: associate new elastic IPs with each of the instances
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     device_id: "{{ item }}"
   loop: "{{ ec2.instance_ids }}"
 
 - name: allocate a new elastic IP inside a VPC in us-west-2
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-west-2
     in_vpc: true
   register: eip
@@ -166,14 +166,14 @@ EXAMPLES = '''
     msg: "Allocated IP inside a VPC is {{ eip.public_ip }}"
 
 - name: allocate eip - reuse unallocated ips (if found) with FREE tag
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-east-1
     in_vpc: true
     reuse_existing_ip_allowed: true
     tag_name: FREE
 
 - name: allocate eip - reuse unallocated ips if tag reserved is nope
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-east-1
     in_vpc: true
     reuse_existing_ip_allowed: true
@@ -181,13 +181,13 @@ EXAMPLES = '''
     tag_value: nope
 
 - name: allocate new eip - from servers given ipv4 pool
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-east-1
     in_vpc: true
     public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
 
 - name: allocate eip - from a given pool (if no free addresses where dev-servers tag is dynamic)
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-east-1
     in_vpc: true
     reuse_existing_ip_allowed: true
@@ -195,7 +195,7 @@ EXAMPLES = '''
     public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
 
 - name: allocate eip from pool - check if tag reserved_for exists and value is our hostname
-  community.aws.ec2_eip:
+  amazon.aws.ec2_eip:
     region: us-east-1
     in_vpc: true
     reuse_existing_ip_allowed: true
@@ -526,7 +526,7 @@ def main():
         device_id=dict(required=False, aliases=['instance_id'],
                        deprecated_aliases=[dict(name='instance_id',
                                            date='2022-12-01',
-                                           collection_name='community.aws')]),
+                                           collection_name='amazon.aws')]),
         public_ip=dict(required=False, aliases=['ip']),
         state=dict(required=False, default='present',
                    choices=['present', 'absent']),
