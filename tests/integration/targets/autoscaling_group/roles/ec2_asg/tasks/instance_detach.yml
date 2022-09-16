@@ -4,7 +4,7 @@
     - name: create a launch configuration
       ec2_lc:
         name: "{{ resource_prefix }}-lc-detach-test"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         region: "{{ aws_region }}"
         instance_type: t2.micro
         assign_public_ip: yes

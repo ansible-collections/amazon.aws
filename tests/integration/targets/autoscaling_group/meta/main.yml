@@ -1,1 +1,2 @@
-dependencies: []
+dependencies:
+  - setup_ec2_facts

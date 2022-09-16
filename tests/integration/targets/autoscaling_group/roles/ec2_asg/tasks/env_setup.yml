@@ -2,17 +2,6 @@
   run_once: '{{ ec2_asg_setup_run_once }}'
   block:
 
-    # ============================================================
-
-    - name: Find AMI to use
-      ec2_ami_info:
-        owners: 'amazon'
-        filters:
-          name: '{{ ec2_ami_name }}'
-      register: ec2_amis
-    - set_fact:
-        ec2_ami_image: '{{ ec2_amis.images[0].image_id }}'
-
     # Set up the testing dependencies: VPC, subnet, security group, and two launch configurations
     - name: Create VPC for use in testing
       ec2_vpc_net:

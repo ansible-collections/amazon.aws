@@ -16,6 +16,8 @@
         region: "{{ aws_region }}"
     block:
     - include_role:
+        name: 'setup_ec2_facts'
+    - include_role:
         name: 'ec2_asg'
         tasks_from: env_setup.yml
     rescue:

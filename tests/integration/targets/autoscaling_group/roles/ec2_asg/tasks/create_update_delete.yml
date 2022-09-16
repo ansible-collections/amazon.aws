@@ -27,7 +27,7 @@
       ec2_lc:
         name: "{{ item }}"
         assign_public_ip: true
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         user_data: |
           #cloud-config
           package_upgrade: true
@@ -431,7 +431,7 @@
     - name: create launch template for autoscaling group to test its mixed instances policy
       ec2_launch_template:
         template_name: "{{ resource_prefix }}-lt"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t3.micro
         credit_specification:
           cpu_credits: standard
