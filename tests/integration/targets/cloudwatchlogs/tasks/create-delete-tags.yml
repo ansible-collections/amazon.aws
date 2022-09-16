@@ -1,30 +1,29 @@
----
 # Tests relating to create/delete and set tags on cloudwatchlogs_log_group
 
 - name: Tests relating to setting tags on cloudwatchlogs_log_group
   vars:
     first_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
     second_tags:
-      'New Key with Spaces': Value with spaces
+      New Key with Spaces: Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
     third_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
     final_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
@@ -50,9 +49,9 @@
 
   - assert:
       that:
-        - result is changed
-        - '"log_groups" not in result'
-        - '"logs:CreateLogGroup" not in result.resource_actions'
+      - result is changed
+      - '"log_groups" not in result'
+      - '"logs:CreateLogGroup" not in result.resource_actions'
 
   - name: create cloudwatch log group for integration test
     cloudwatchlogs_log_group:
@@ -149,7 +148,7 @@
   - name: test adding tags to cloudwatchlogs_log_group (check_mode)
     cloudwatchlogs_log_group:
       tags: '{{ first_tags }}'
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
 
@@ -163,7 +162,7 @@
   - name: test adding tags to cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
       tags: '{{ first_tags }}'
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -174,7 +173,7 @@
   - name: test adding tags to cloudwatchlogs_log_group - idempotency (check mode)
     cloudwatchlogs_log_group:
       tags: '{{ first_tags }}'
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
 
@@ -188,7 +187,7 @@
   - name: test adding tags to cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
       tags: '{{ first_tags }}'
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -201,7 +200,7 @@
   - name: test updating tags with purge on cloudwatchlogs_log_group (check mode)
     cloudwatchlogs_log_group:
       tags: '{{ second_tags }}'
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
 
@@ -215,7 +214,7 @@
   - name: test updating tags with purge on cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
       tags: '{{ second_tags }}'
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -223,10 +222,11 @@
       - update_result is changed
       - update_result.log_groups[0].tags == second_tags
 
-  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency (check mode)
+  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency
+      (check mode)
     cloudwatchlogs_log_group:
       tags: '{{ second_tags }}'
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
 
@@ -240,7 +240,7 @@
   - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
       tags: '{{ second_tags }}'
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -253,7 +253,7 @@
   - name: test updating tags without purge on cloudwatchlogs_log_group (check mode)
     cloudwatchlogs_log_group:
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     check_mode: true
     register: update_result
 
@@ -267,7 +267,7 @@
   - name: test updating tags without purge on cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -275,10 +275,11 @@
       - update_result is changed
       - update_result.log_groups[0].tags == final_tags
 
-  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency (check mode)
+  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency
+      (check mode)
     cloudwatchlogs_log_group:
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     check_mode: true
     register: update_result
 
@@ -292,7 +293,7 @@
   - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
       tags: '{{ third_tags }}'
-      purge_tags: False
+      purge_tags: false
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -338,7 +339,7 @@
   - name: test removing tags from cloudwatchlogs_log_group (check mode)
     cloudwatchlogs_log_group:
       tags: {}
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
 
@@ -350,7 +351,7 @@
   - name: test removing tags from cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
       tags: {}
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -361,7 +362,7 @@
   - name: test removing tags from cloudwatchlogs_log_group - idempotency (check mode)
     cloudwatchlogs_log_group:
       tags: {}
-      purge_tags: True
+      purge_tags: true
     check_mode: true
     register: update_result
   - name: assert that update succeeded
@@ -372,7 +373,7 @@
   - name: test removing tags from cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
       tags: {}
-      purge_tags: True
+      purge_tags: true
     register: update_result
   - name: assert that update succeeded
     assert:
