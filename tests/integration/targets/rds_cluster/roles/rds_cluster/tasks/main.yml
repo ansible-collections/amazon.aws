@@ -6,7 +6,5 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
 
-  collections:
-  - community.aws
   block:
   - include: ./test_{{ inventory_hostname }}.yml
