@@ -51,8 +51,15 @@ action_groups:
   - elb_application_lb
   - elb_application_lb_info
   - elb_classic_lb
+  - execute_lambda
   - iam_policy
   - iam_policy_info
+  - lambda
+  - lambda_alias
+  - lambda_event
+  - lambda_execute
+  - lambda_info
+  - lambda_policy
   - s3_bucket
   - s3_object
 plugin_routing:
@@ -72,3 +79,6 @@ plugin_routing:
     ec2_group_info:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.ec2_security_group_info
+    execute_lambda:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.lambda_execute
