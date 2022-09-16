@@ -26,7 +26,7 @@
   - name: test failure with non-existent VPC ID
     ec2_vpc_egress_igw:
       state: present
-      vpc_id: vpc-012345678
+      vpc_id: vpc-02394e50abc1807e8
     register: result
     ignore_errors: true
 
