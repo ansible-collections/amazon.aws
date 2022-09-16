@@ -505,6 +505,8 @@
       tags:
         Name: '{{ chained_cert.name }}'
     register: check_chain
+    until: check_chain.certificates|length > 0
+    retries: 3
   - name: check chain of cert we just uploaded
     assert:
       that:
@@ -545,6 +547,8 @@
       tags:
         Name: '{{ chained_cert.name }}'
     register: check_chain_2
+    until: check_chain_2.certificates|length > 0
+    retries: 3
   - name: check chain of cert we just uploaded
     assert:
       that:
