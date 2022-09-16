@@ -1,27 +1,26 @@
----
 - block:
   - name: Ensure the resource doesn't exist
     rds_cluster:
-      id: "{{ cluster_id }}"
+      id: '{{ cluster_id }}'
       state: absent
-      engine: "{{ engine}}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      skip_final_snapshot: True
+      engine: '{{ engine}}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      skip_final_snapshot: true
     register: _result_delete_db_cluster
 
   - assert:
       that:
-        - not _result_delete_db_cluster.changed
+      - not _result_delete_db_cluster.changed
     ignore_errors: yes
 
   - name: Create a DB cluster
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
-      tags: "{{ tags_create }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
+      tags: '{{ tags_create }}'
     register: _result_create_db_cluster
 
   - assert:
@@ -45,24 +44,25 @@
       - "'master_username' in _result_create_db_cluster"
       - _result_create_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_create_db_cluster"
-      - "_result_create_db_cluster.port == {{ port }}"
+      - _result_create_db_cluster.port == {{ port }}
       - "'status' in _result_create_db_cluster"
       - _result_create_db_cluster.status == 'available'
       - _result_create_db_cluster.storage_encrypted == false
       - "'tags' in _result_create_db_cluster"
       - _result_create_db_cluster.tags | length == 2
-      - _result_create_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"] }}"
+      - _result_create_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"]
+        }}"
       - _result_create_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
       - "'vpc_security_groups' in _result_create_db_cluster"
 
   - name: Test tags are not purged if purge_tags is False
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ new_password }}"
-      cluster_id: "{{ cluster_id }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ new_password }}'
+      cluster_id: '{{ cluster_id }}'
       tags: {}
-      purge_tags: False
+      purge_tags: false
     register: _result_tag_db_cluster
 
   - assert:
@@ -86,21 +86,22 @@
       - "'master_username' in _result_tag_db_cluster"
       - _result_tag_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_tag_db_cluster"
-      - "_result_tag_db_cluster.port == {{ port }}"
+      - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
       - _result_tag_db_cluster.status == 'available'
       - _result_tag_db_cluster.storage_encrypted == false
       - "'tags' in _result_tag_db_cluster"
       - _result_tag_db_cluster.tags | length == 2
-      - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"] }}"
+      - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"]
+        }}"
       - _result_tag_db_cluster.tags["Name"] == "{{ tags_create["Name"] }}"
       - "'vpc_security_groups' in _result_tag_db_cluster"
 
-  - name: Add a tag and remove a tag (purge_tags is True) 
+  - name: Add a tag and remove a tag (purge_tags is True)
     rds_cluster:
-      cluster_id: "{{ cluster_id }}"
+      cluster_id: '{{ cluster_id }}'
       state: present
-      tags: "{{ tags_patch }}"
+      tags: '{{ tags_patch }}'
     register: _result_tag_db_cluster
 
   - assert:
@@ -124,7 +125,7 @@
       - "'master_username' in _result_tag_db_cluster"
       - _result_tag_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_tag_db_cluster"
-      - "_result_tag_db_cluster.port == {{ port }}"
+      - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
       - _result_tag_db_cluster.status == 'available'
       - _result_tag_db_cluster.storage_encrypted == false
@@ -135,12 +136,12 @@
 
   - name: Purge a tag from the cluster (CHECK MODE)
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
       tags:
-        Created_By: "Ansible_rds_cluster_integration_test"
+        Created_By: Ansible_rds_cluster_integration_test
     register: _result_tag_db_cluster
     check_mode: true
 
@@ -150,12 +151,12 @@
 
   - name: Purge a tag from the cluster
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
       tags:
-        Created_By: "Ansible_rds_cluster_integration_test"
+        Created_By: Ansible_rds_cluster_integration_test
     register: _result_tag_db_cluster
 
   - assert:
@@ -179,7 +180,7 @@
       - "'master_username' in _result_tag_db_cluster"
       - _result_tag_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_tag_db_cluster"
-      - "_result_tag_db_cluster.port == {{ port }}"
+      - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
       - _result_tag_db_cluster.status == 'available'
       - _result_tag_db_cluster.storage_encrypted == false
@@ -190,13 +191,13 @@
 
   - name: Add a tag to the cluster (CHECK MODE)
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
       tags:
-        Name: "cluster-{{ resource_prefix }}"
-        Created_By: "Ansible_rds_cluster_integration_test"
+        Name: cluster-{{ resource_prefix }}
+        Created_By: Ansible_rds_cluster_integration_test
     register: _result_tag_db_cluster
     check_mode: true
 
@@ -206,11 +207,11 @@
 
   - name: Add a tag to the cluster
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
-      tags: "{{ tags_create }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
+      tags: '{{ tags_create }}'
     register: _result_tag_db_cluster
 
   - assert:
@@ -234,7 +235,7 @@
       - "'master_username' in _result_tag_db_cluster"
       - _result_tag_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_tag_db_cluster"
-      - "_result_tag_db_cluster.port == {{ port }}"
+      - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
       - _result_tag_db_cluster.status == 'available'
       - _result_tag_db_cluster.storage_encrypted == false
@@ -243,13 +244,12 @@
       - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"]}}"
       - _result_tag_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
       - "'vpc_security_groups' in _result_tag_db_cluster"
-      
   - name: Remove all tags
     rds_cluster:
-      engine: "{{ engine }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      cluster_id: "{{ cluster_id }}"
+      engine: '{{ engine }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+      cluster_id: '{{ cluster_id }}'
       tags: {}
     register: _result_tag_db_cluster
 
@@ -274,18 +274,17 @@
       - "'master_username' in _result_tag_db_cluster"
       - _result_tag_db_cluster.master_username == "{{ username }}"
       - "'port' in _result_tag_db_cluster"
-      - "_result_tag_db_cluster.port == {{ port }}"
+      - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
       - _result_tag_db_cluster.status == 'available'
       - _result_tag_db_cluster.storage_encrypted == false
       - "'tags' in _result_tag_db_cluster"
       - _result_tag_db_cluster.tags | length == 0
       - "'vpc_security_groups' in _result_tag_db_cluster"
-  
   always:
   - name: Delete DB cluster without creating a final snapshot
     rds_cluster:
       state: absent
-      cluster_id: "{{ cluster_id }}"
-      skip_final_snapshot: True
+      cluster_id: '{{ cluster_id }}'
+      skip_final_snapshot: true
     ignore_errors: true

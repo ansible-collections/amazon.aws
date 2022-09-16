@@ -1,15 +1,12 @@
----
-- name: 'rds_cluster integration tests'
+- name: rds_cluster integration tests
   module_defaults:
     group/aws:
-      region: "{{ aws_region }}"
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
 
   collections:
-    - community.aws
-    - amazon.aws
-
+  - community.aws
   block:
-  - include: './test_{{ inventory_hostname }}.yml'
+  - include: ./test_{{ inventory_hostname }}.yml
