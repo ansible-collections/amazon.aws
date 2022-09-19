@@ -1,0 +1,252 @@
+- name: Tests relating to tagging cloudtrails
+  vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+  # Mandatory settings
+  module_defaults:
+    amazon.aws.cloudtrail:
+      name: '{{ cloudtrail_name }}'
+      s3_bucket_name: '{{ s3_bucket_name }}'
+      state: present
+#    community.aws.cloudtrail_info:
+#      name: '{{ cloudtrail_name }}'
+  block:
+
+  ###
+
+  - name: test adding tags to cloudtrail (check mode)
+    cloudtrail:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+
+  - name: test adding tags to cloudtrail
+    cloudtrail:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.trail.tags == first_tags
+
+  - name: test adding tags to cloudtrail - idempotency (check mode)
+    cloudtrail:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+
+  - name: test adding tags to cloudtrail - idempotency
+    cloudtrail:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == first_tags
+
+  ###
+
+  - name: test updating tags with purge on cloudtrail (check mode)
+    cloudtrail:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+
+  - name: test updating tags with purge on cloudtrail
+    cloudtrail:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.trail.tags == second_tags
+
+  - name: test updating tags with purge on cloudtrail - idempotency (check mode)
+    cloudtrail:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+
+  - name: test updating tags with purge on cloudtrail - idempotency
+    cloudtrail:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == second_tags
+
+  ###
+
+  - name: test updating tags without purge on cloudtrail (check mode)
+    cloudtrail:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+
+  - name: test updating tags without purge on cloudtrail
+    cloudtrail:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.trail.tags == final_tags
+
+  - name: test updating tags without purge on cloudtrail - idempotency (check mode)
+    cloudtrail:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+
+  - name: test updating tags without purge on cloudtrail - idempotency
+    cloudtrail:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == final_tags
+
+#  ###
+#
+#  - name: test that cloudtrail_info returns the tags
+#    cloudtrail_info:
+#    register: tag_info
+#  - name: assert tags present
+#    assert:
+#      that:
+#      - tag_info.trail.tags == final_tags
+#
+#  ###
+
+  - name: test no tags param cloudtrail (check mode)
+    cloudtrail: {}
+    register: update_result
+    check_mode: yes
+  - name: assert no change
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == final_tags
+
+
+  - name: test no tags param cloudtrail
+    cloudtrail: {}
+    register: update_result
+  - name: assert no change
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == final_tags
+
+  ###
+
+  - name: test removing tags from cloudtrail (check mode)
+    cloudtrail:
+      tags: {}
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+
+  - name: test removing tags from cloudtrail
+    cloudtrail:
+      tags: {}
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.trail.tags == {}
+
+  - name: test removing tags from cloudtrail - idempotency (check mode)
+    cloudtrail:
+      tags: {}
+      purge_tags: True
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+
+  - name: test removing tags from cloudtrail - idempotency
+    cloudtrail:
+      tags: {}
+      purge_tags: True
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.trail.tags == {}

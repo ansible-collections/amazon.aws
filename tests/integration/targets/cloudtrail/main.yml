@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  gather_facts: no
+  #serial: 10
+  roles:
+    - cloudtrail
