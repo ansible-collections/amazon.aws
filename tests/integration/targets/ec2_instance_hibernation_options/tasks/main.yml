@@ -5,7 +5,7 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: Create instance with termination protection (check mode)
+    - name: Create instance with hibernation option (check mode)
       ec2_instance:
         name: "{{ resource_prefix }}-hibernation-options"
         image_id: "{{ ec2_ami_id }}"
@@ -63,7 +63,7 @@
     - name: Gather information about the instance to get the hibernation status
       ec2_instance_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}-stop-hibernation"
+          "tag:Name": "{{ resource_prefix }}-hibernation-options"
       register: instance_hibernation_status
 
     - name: Assert hibernation options is true
@@ -73,7 +73,7 @@
 
     - name: Create instance with hibernation option (check mode) (idempotent)
       ec2_instance:
-        name: "{{ resource_prefix }}-stop-hibernation"
+        name: "{{ resource_prefix }}-hibernation-options"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
@@ -98,7 +98,7 @@
 
     - name: Create instance with hibernation options configured (idempotent)
       ec2_instance:
-        name: "{{ resource_prefix }}-stop-hibernation"
+        name: "{{ resource_prefix }}-hibernation-options"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
@@ -123,7 +123,7 @@
 
     - name: Create instance with hibernation options configured with unencrypted volume
       ec2_instance:
-        name: "{{ resource_prefix }}-stop-hibernation-error"
+        name: "{{ resource_prefix }}-hibernation-options-error"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
