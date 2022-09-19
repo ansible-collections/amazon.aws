@@ -29,10 +29,10 @@
       new_snake_case_key: snake_case_value
   # Mandatory settings
   module_defaults:
-    community.aws.cloudwatchlogs_log_group:
+    amazon.aws.cloudwatchlogs_log_group:
       state: present
       log_group_name: '{{ log_group_name }}'
-    community.aws.cloudwatchlogs_log_group_info:
+    amazon.aws.cloudwatchlogs_log_group_info:
       log_group_name: '{{ log_group_name }}'
   block:
 
