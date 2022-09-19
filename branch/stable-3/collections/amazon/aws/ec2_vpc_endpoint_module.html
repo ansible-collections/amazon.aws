@@ -137,7 +137,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_vpc_endpoint</span></code>.</p>
 </div>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.0.0: </span>of amazon.aws</p>
+<p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -278,7 +278,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in 1.5.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Delete any tags not specified in the task that are on the instance. This means you have to specify all the desired tags on each task affecting an instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
@@ -345,7 +345,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in 1.5.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dict of tags to apply to the internet gateway.</p>
 <p>To remove all tags set <em>tags={}</em> and <em>purge_tags=true</em>.</p>
@@ -373,7 +373,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_endpoint_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-security-groups"><strong>vpc_endpoint_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_endpoint_security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-<p><span class="ansible-option-versionadded">added in 2.1.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 2.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The list of security groups to attach to the endpoint.</p>
 <p>Requires <em>vpc_endpoint_type=GatewayLoadBalancer</em> or <em>vpc_endpoint_type=Interface</em>.</p>
@@ -382,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_endpoint_subnets"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-subnets"><strong>vpc_endpoint_subnets</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_endpoint_subnets" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-<p><span class="ansible-option-versionadded">added in 2.1.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 2.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The list of subnets to attach to the endpoint.</p>
 <p>Requires <em>vpc_endpoint_type=GatewayLoadBalancer</em> or <em>vpc_endpoint_type=Interface</em>.</p>
@@ -391,7 +391,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_endpoint_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-type"><strong>vpc_endpoint_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_endpoint_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in 1.5.0 of amazon.aws</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The type of endpoint.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
