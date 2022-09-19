@@ -230,7 +230,7 @@ EXAMPLES = '''
         - device_name: /dev/sdb
           no_device: yes
 
- - name: AMI Creation with boot_mode and tpm_support
+- name: AMI Creation with boot_mode and tpm_support
   amazon.aws.ec2_ami:
     name: newtest
     state: present
