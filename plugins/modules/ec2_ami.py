@@ -471,7 +471,7 @@ def create_image(module, connection):
     billing_products = module.params.get('billing_products')
     ramdisk_id = module.params.get('ramdisk_id')
     sriov_net_support = module.params.get('sriov_net_support')
-    boot_mode = module.param.get('boot_mode')
+    boot_mode = module.params.get('boot_mode')
     tpm_support = module.params.get('tpm_support')
     uefi_data = module.params.get('uefi_data')
 
