@@ -173,7 +173,6 @@ def get_trails(connection, module):
         module.fail_json_aws(e, msg="Failed to get the trails.")
     for trail in result.paginate():
         all_trails.extend(list_cloud_trails(trail))
-        
     return all_trails
 
 
