@@ -628,6 +628,48 @@
           - not result.changed
           - not result.failed
 
+    # ============================================================
+
+    - name: create an image from the snapshot with boot_mode and tpm_support
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        description: '{{ ec2_ami_description }}'
+        state: present
+        boot_mode: uefi
+        tpm_support: v2.0
+        launch_permissions:
+          user_ids: []
+        tags:
+          Name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      register: result
+      ignore_errors: true
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_image_id_boot_tpm: "{{ result.image_id }}"
+        ec2_ami_snapshot_boot_tpm: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+
+    - name: gather facts about the image created
+      ec2_ami_info:
+        image_ids: '{{ ec2_ami_image_id_boot_tpm }}'
+      register: ami_facts_result_boot_tpm
+      ignore_errors: true
+
+    - name: assert that new ami has been created with desired options
+      assert:
+        that:
+          - "result.changed"
+          - "result.image_id.startswith('ami-')"
+          - ami_facts_result_boot_tpm.images[0].image_id | length != 0
+          - ami_facts_result_boot_tpm.images[0].boot_mode == 'uefi'
+          - ami_facts_result_boot_tpm.images[0].tpm_support == 'v2.0'
 
     # ============================================================
 
@@ -639,6 +681,13 @@
     - name: Announce teardown start
       debug:
         msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id_boot_tpm }}"
+        wait: yes
+      ignore_errors: yes
 
     - name: delete ami
       ec2_ami:

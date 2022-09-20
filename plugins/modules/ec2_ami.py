@@ -152,6 +152,8 @@ options:
   tpm_support:
     description:
       - Set to v2.0 to enable Trusted Platform Module (TPM) support.
+      - If the image is configured for NitroTPM support, the value is v2.0 .
+      - Requires I(boot_mode) to be set to 'uefi'.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
     type: str
   uefi_data:
@@ -545,6 +547,8 @@ def create_image(module, connection):
             if boot_mode:
                 params['BootMode'] = boot_mode
             if tpm_support:
+                if boot_mode != 'uefi':
+                    module.fail_json(msg="To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
                 params['TpmSupport'] = tpm_support
             if uefi_data:
                 params['UefiData'] = uefi_data
