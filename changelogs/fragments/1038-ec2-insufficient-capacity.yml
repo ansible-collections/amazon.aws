@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
