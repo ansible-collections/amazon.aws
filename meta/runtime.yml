@@ -45,6 +45,8 @@ action_groups:
   - elb_classic_lb
   - s3_bucket
   - s3_object
+  - elb_application_lb
+  - elb_application_lb_info
 plugin_routing:
   action:
     aws_s3:
