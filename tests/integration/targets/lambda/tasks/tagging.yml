@@ -27,7 +27,7 @@
       new_snake_case_key: snake_case_value
   # Mandatory settings
   module_defaults:
-    lambda:
+    amazon.aws.lambda:
       runtime: '{{ lambda_python_runtime }}'
       handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
