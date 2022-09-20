@@ -244,6 +244,14 @@ options:
       - Whether to enable termination protection.
       - This module will not terminate an instance with termination protection active, it must be turned off first.
     type: bool
+  hibernation_options:
+    description:
+      - Indicates whether an instance is enabled for hibernation.
+        Refer U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html)
+        for Hibernation prerequisits.
+    type: bool
+    default: False
+    version_added: 5.0.0
   cpu_credit_specification:
     description:
       - For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.
@@ -1289,6 +1297,15 @@ def build_top_level_options(params):
         spec['InstanceInitiatedShutdownBehavior'] = params.get('instance_initiated_shutdown_behavior')
     if params.get('termination_protection') is not None:
         spec['DisableApiTermination'] = params.get('termination_protection')
+    if params.get('hibernation_options') and params.get('volumes'):
+        for vol in params['volumes']:
+            if vol.get('ebs') and vol['ebs'].get('encrypted'):
+                spec['HibernationOptions'] = {'Configured': True}
+            else:
+                module.fail_json(
+                    msg="Hibernation prerequisites not satisfied. Refer {0}".format(
+                        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html")
+                )
     if params.get('cpu_options') is not None:
         spec['CpuOptions'] = {}
         spec['CpuOptions']['ThreadsPerCore'] = params.get('cpu_options').get('threads_per_core')
@@ -2020,6 +2037,7 @@ def main():
         placement_group=dict(type='str'),
         instance_initiated_shutdown_behavior=dict(type='str', choices=['stop', 'terminate']),
         termination_protection=dict(type='bool'),
+        hibernation_options=dict(type='bool', default=False),
         detailed_monitoring=dict(type='bool'),
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),

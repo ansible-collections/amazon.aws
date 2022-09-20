@@ -1,0 +1,145 @@
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create instance with hibernation option (check mode)
+      ec2_instance:
+        name: "{{ resource_prefix }}-hibernation-options"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        hibernation_options: true
+        instance_type: "{{ ec2_instance_type }}"
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        state: running
+        wait: yes
+      check_mode: yes
+      register: create_instance_check_mode_results
+
+    - name: Check the returned value for the earlier task
+      assert:
+        that:
+          - create_instance_check_mode_results is changed
+          - create_instance_check_mode_results.spec.HibernationOptions.Configured == True
+
+    - name: Create instance with hibernation config
+      ec2_instance:
+        name: "{{ resource_prefix }}-hibernation-options"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        hibernation_options: true
+        instance_type: "{{ ec2_instance_type }}"
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        state: running
+        wait: yes
+      register: create_instance_results
+
+    - set_fact:
+        instance_id: '{{ create_instance_results.instances[0].instance_id }}'
+
+    - name: Check return values of the create instance task
+      assert:
+        that:
+          - "{{ create_instance_results.instances | length }} > 0"
+          - "'{{ create_instance_results.instances.0.state.name }}' == 'running'"
+          - "'{{ create_instance_results.spec.HibernationOptions.Configured }}'"
+
+    - name: Gather information about the instance to get the hibernation status
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ resource_prefix }}-hibernation-options"
+      register: instance_hibernation_status
+
+    - name: Assert hibernation options is true
+      assert:
+        that:
+          - instance_hibernation_status.instances[0].hibernation_options.configured == true
+
+    - name: Create instance with hibernation option (check mode) (idempotent)
+      ec2_instance:
+        name: "{{ resource_prefix }}-hibernation-options"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        hibernation_options: true
+        instance_type: "{{ ec2_instance_type }}"
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        state: running
+        wait: yes
+      check_mode: yes
+      register: create_instance_check_mode_results
+
+    - name: Check the returned value for the earlier task
+      assert:
+        that:
+          - create_instance_check_mode_results is not changed
+
+    - name: Create instance with hibernation options configured (idempotent)
+      ec2_instance:
+        name: "{{ resource_prefix }}-hibernation-options"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        hibernation_options: true
+        instance_type: "{{ ec2_instance_type }}"
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        state: running
+        wait: yes
+      register: create_instance_results
+
+    - name: Check return values of the create instance task
+      assert:
+        that:
+          - "{{ not create_instance_results.changed }}"
+          - "{{ create_instance_results.instances | length }} > 0"
+
+    - name: Create instance with hibernation options configured with unencrypted volume
+      ec2_instance:
+        name: "{{ resource_prefix }}-hibernation-options-error"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        hibernation_options: true
+        instance_type: "{{ ec2_instance_type }}"
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+      register: create_instance_results
+      failed_when: "'Hibernation prerequisites not satisfied' not in create_instance_results.msg"
+
+    - name: Terminate the instance
+      ec2_instance:
+        filters:
+          tag:TestId: "{{ resource_prefix }}"
+        state: absent
