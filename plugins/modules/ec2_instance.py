@@ -2069,6 +2069,7 @@ def main():
     retry_decorator = AWSRetry.jittered_backoff(
         catch_extra_error_codes=[
             'IncorrectState',
+            'InsuffienctInstanceCapacity',
         ]
     )
     client = module.client('ec2', retry_decorator=retry_decorator)
