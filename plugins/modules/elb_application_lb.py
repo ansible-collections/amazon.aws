@@ -227,7 +227,7 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ALB and attach a listener
-- community.aws.elb_application_lb:
+- amazon.aws.elb_application_lb:
     name: myalb
     security_groups:
       - sg-12345678
@@ -248,7 +248,7 @@ EXAMPLES = r'''
     state: present
 
 # Create an ALB and attach a listener with logging enabled
-- community.aws.elb_application_lb:
+- amazon.aws.elb_application_lb:
     access_logs_enabled: true
     access_logs_s3_bucket: mybucket
     access_logs_s3_prefix: "logs"
@@ -272,7 +272,7 @@ EXAMPLES = r'''
     state: present
 
 # Create an ALB with listeners and rules
-- community.aws.elb_application_lb:
+- amazon.aws.elb_application_lb:
     name: test-alb
     subnets:
       - subnet-12345678
@@ -335,7 +335,7 @@ EXAMPLES = r'''
     state: present
 
 # Remove an ALB
-- community.aws.elb_application_lb:
+- amazon.aws.elb_application_lb:
     name: myalb
     state: absent
 

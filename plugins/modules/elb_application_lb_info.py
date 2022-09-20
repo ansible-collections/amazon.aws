@@ -38,21 +38,21 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all ALBs
-  community.aws.elb_application_lb_info:
+  amazon.aws.elb_application_lb_info:
 
 - name: Gather information about a particular ALB given its ARN
-  community.aws.elb_application_lb_info:
+  amazon.aws.elb_application_lb_info:
     load_balancer_arns:
       - "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-alb/aabbccddeeff"
 
 - name: Gather information about ALBs named 'alb1' and 'alb2'
-  community.aws.elb_application_lb_info:
+  amazon.aws.elb_application_lb_info:
     names:
       - alb1
       - alb2
 
 - name: Gather information about specific ALB
-  community.aws.elb_application_lb_info:
+  amazon.aws.elb_application_lb_info:
     names: "alb-name"
     region: "aws-region"
   register: alb_info
