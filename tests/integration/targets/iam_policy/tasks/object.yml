@@ -1,16 +1,14 @@
----
-- name: 'Run integration tests for IAM (inline) Policy management on {{ iam_type }}s'
+- name: Run integration tests for IAM (inline) Policy management on {{ iam_type }}s
   vars:
     iam_object_key: '{{ iam_type }}_name'
   block:
   # ============================================================
-  - name: 'Fetch policies from {{ iam_type }} before making changes'
+  - name: Fetch policies from {{ iam_type }} before making changes
     iam_policy_info:
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
     register: iam_policy_info
-
-  - name: 'Assert empty policy list'
+  - name: Assert empty policy list
     assert:
       that:
       - iam_policy_info is succeeded
@@ -18,19 +16,18 @@
       - iam_policy_info.all_policy_names | length == 0
       - iam_policy_info.policy_names | length == 0
 
-  - name: 'Fetch policies from non-existent {{ iam_type }}'
+  - name: Fetch policies from non-existent {{ iam_type }}
     iam_policy_info:
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}-junk'
     register: iam_policy_info
-
-  - name: 'Assert not failed'
+  - name: Assert not failed
     assert:
       that:
       - iam_policy_info is succeeded
 
   # ============================================================
-  - name: 'Invalid creation of policy for {{ iam_type }} - missing required parameters'
+  - name: Invalid creation of policy for {{ iam_type }} - missing required parameters
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -39,14 +36,13 @@
       skip_duplicates: yes
     register: result
     ignore_errors: yes
-
   - name: Assert task failed with correct error message
     assert:
       that:
-        - result.failed
-        - "'state is present but any of the following are missing: policy_json' in result.msg"
+      - result.failed
+      - "'state is present but any of the following are missing: policy_json' in result.msg"
 
-  - name: 'Create policy using document for {{ iam_type }} (check mode)'
+  - name: Create policy using document for {{ iam_type }} (check mode)
     check_mode: yes
     iam_policy:
       state: present
@@ -56,13 +52,12 @@
       policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
-
-  - name: 'Assert policy would be added for {{ iam_type }}'
+  - name: Assert policy would be added for {{ iam_type }}
     assert:
       that:
       - result is changed
 
-  - name: 'Create policy using document for {{ iam_type }}'
+  - name: Create policy using document for {{ iam_type }}
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -75,8 +70,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was added for {{ iam_type }}'
+  - name: Assert policy was added for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -91,7 +85,7 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_a
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Create policy using document for {{ iam_type }} (idempotency - check mode)'
+  - name: Create policy using document for {{ iam_type }} (idempotency - check mode)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -101,13 +95,12 @@
       skip_duplicates: yes
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Create policy using document for {{ iam_type }} (idempotency)'
+  - name: Create policy using document for {{ iam_type }} (idempotency)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -120,8 +113,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -135,7 +127,7 @@
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
   # ============================================================
-  - name: 'Create policy using document for {{ iam_type }} (check mode) (skip_duplicates)'
+  - name: Create policy using document for {{ iam_type }} (check mode) (skip_duplicates)
     check_mode: yes
     iam_policy:
       state: present
@@ -150,8 +142,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be added for {{ iam_type }}'
+  - name: Assert policy would be added for {{ iam_type }}
     assert:
       that:
       - result is not changed
@@ -159,7 +150,7 @@
       - '"policies" not in iam_policy_info'
       - iam_policy_name_b not in iam_policy_info.all_policy_names
 
-  - name: 'Create policy using document for {{ iam_type }} (skip_duplicates)'
+  - name: Create policy using document for {{ iam_type }} (skip_duplicates)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -173,8 +164,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was not added for {{ iam_type }} (skip_duplicates)'
+  - name: Assert policy was not added for {{ iam_type }} (skip_duplicates)
     assert:
       that:
       - result is not changed
@@ -186,7 +176,8 @@
       - iam_policy_info.all_policy_names | length == 1
       - iam_policy_name_b not in iam_policy_info.all_policy_names
 
-  - name: 'Create policy using document for {{ iam_type }} (check mode) (skip_duplicates = no)'
+  - name: Create policy using document for {{ iam_type }} (check mode) (skip_duplicates
+      = no)
     check_mode: yes
     iam_policy:
       state: present
@@ -201,8 +192,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be added for {{ iam_type }}'
+  - name: Assert policy would be added for {{ iam_type }}
     assert:
       that:
       - result.changed == True
@@ -211,7 +201,7 @@
       - iam_policy_name_a in iam_policy_info.all_policy_names
       - iam_policy_name_b not in iam_policy_info.all_policy_names
 
-  - name: 'Create policy using document for {{ iam_type }} (skip_duplicates = no)'
+  - name: Create policy using document for {{ iam_type }} (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -225,8 +215,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was added for {{ iam_type }}'
+  - name: Assert policy was added for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -240,7 +229,8 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_b
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Create policy using document for {{ iam_type }} (idempotency - check mode) (skip_duplicates = no)'
+  - name: Create policy using document for {{ iam_type }} (idempotency - check mode)
+      (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -250,13 +240,13 @@
       policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Create policy using document for {{ iam_type }} (idempotency) (skip_duplicates = no)'
+  - name: Create policy using document for {{ iam_type }} (idempotency) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -270,8 +260,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -286,7 +275,7 @@
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
   # ============================================================
-  - name: 'Create policy using json for {{ iam_type }} (check mode)'
+  - name: Create policy using json for {{ iam_type }} (check mode)
     check_mode: yes
     iam_policy:
       state: present
@@ -301,8 +290,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be added for {{ iam_type }}'
+  - name: Assert policy would be added for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -312,7 +300,7 @@
       - iam_policy_name_a in iam_policy_info.all_policy_names
       - iam_policy_name_b in iam_policy_info.all_policy_names
 
-  - name: 'Create policy using json for {{ iam_type }}'
+  - name: Create policy using json for {{ iam_type }}
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -326,8 +314,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was added for {{ iam_type }}'
+  - name: Assert policy was added for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -342,7 +329,7 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_c
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Create policy using json for {{ iam_type }} (idempotency - check mode)'
+  - name: Create policy using json for {{ iam_type }} (idempotency - check mode)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -352,13 +339,12 @@
       skip_duplicates: yes
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Create policy using json for {{ iam_type }} (idempotency)'
+  - name: Create policy using json for {{ iam_type }} (idempotency)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -372,8 +358,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -388,7 +373,7 @@
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
   # ============================================================
-  - name: 'Create policy using json for {{ iam_type }} (check mode) (skip_duplicates)'
+  - name: Create policy using json for {{ iam_type }} (check mode) (skip_duplicates)
     check_mode: yes
     iam_policy:
       state: present
@@ -403,8 +388,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would not be added for {{ iam_type }}'
+  - name: Assert policy would not be added for {{ iam_type }}
     assert:
       that:
       - result is not changed
@@ -415,7 +399,7 @@
       - iam_policy_info.all_policy_names | length == 3
       - '"policies" not in iam_policy_info'
 
-  - name: 'Create policy using json for {{ iam_type }} (skip_duplicates)'
+  - name: Create policy using json for {{ iam_type }} (skip_duplicates)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -429,8 +413,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was not added for {{ iam_type }} (skip_duplicates)'
+  - name: Assert policy was not added for {{ iam_type }} (skip_duplicates)
     assert:
       that:
       - result is not changed
@@ -444,7 +427,8 @@
       - iam_policy_info.all_policy_names | length == 3
       - '"policies" not in iam_policy_info'
 
-  - name: 'Create policy using json for {{ iam_type }} (check mode) (skip_duplicates = no)'
+  - name: Create policy using json for {{ iam_type }} (check mode) (skip_duplicates
+      = no)
     check_mode: yes
     iam_policy:
       state: present
@@ -459,13 +443,12 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be added for {{ iam_type }}'
+  - name: Assert policy would be added for {{ iam_type }}
     assert:
       that:
       - result.changed == True
 
-  - name: 'Create policy using json for {{ iam_type }} (skip_duplicates = no)'
+  - name: Create policy using json for {{ iam_type }} (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -479,8 +462,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was added for {{ iam_type }}'
+  - name: Assert policy was added for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -500,7 +482,8 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_d
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Create policy using json for {{ iam_type }} (idempotency - check mode) (skip_duplicates = no)'
+  - name: Create policy using json for {{ iam_type }} (idempotency - check mode) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -510,13 +493,13 @@
       policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Create policy using json for {{ iam_type }} (idempotency) (skip_duplicates = no)'
+  - name: Create policy using json for {{ iam_type }} (idempotency) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -530,8 +513,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -547,13 +529,12 @@
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
   # ============================================================
-  - name: 'Test fetching multiple policies from {{ iam_type }}'
+  - name: Test fetching multiple policies from {{ iam_type }}
     iam_policy_info:
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
     register: iam_policy_info
-
-  - name: 'Assert all policies returned'
+  - name: Assert all policies returned
     assert:
       that:
       - iam_policy_info is succeeded
@@ -564,13 +545,17 @@
       - iam_policy_name_c in iam_policy_info.all_policy_names
       - iam_policy_name_d in iam_policy_info.all_policy_names
       # Quick test that the policies are the ones we expect
-      - iam_policy_info.policies | community.general.json_query('[*].policy_name') | length == 4
-      - iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | length == 2
-      - iam_policy_name_c in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | list)
-      - iam_policy_name_d in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | list)
+      - iam_policy_info.policies | community.general.json_query('[*].policy_name')
+        | length == 4
+      - iam_policy_info.policies | community.general.json_query('[?policy_document.Id
+        == `MyId`].policy_name') | length == 2
+      - iam_policy_name_c in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id
+        == `MyId`].policy_name') | list)
+      - iam_policy_name_d in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id
+        == `MyId`].policy_name') | list)
 
   # ============================================================
-  - name: 'Update policy using document for {{ iam_type }} (check mode) (skip_duplicates)'
+  - name: Update policy using document for {{ iam_type }} (check mode) (skip_duplicates)
     check_mode: yes
     iam_policy:
       state: present
@@ -585,15 +570,14 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would not be added for {{ iam_type }}'
+  - name: Assert policy would not be added for {{ iam_type }}
     assert:
       that:
       - result is not changed
       - iam_policy_info.policies[0].policy_name == iam_policy_name_a
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Update policy using document for {{ iam_type }} (skip_duplicates)'
+  - name: Update policy using document for {{ iam_type }} (skip_duplicates)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -607,8 +591,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was not updated for {{ iam_type }} (skip_duplicates)'
+  - name: Assert policy was not updated for {{ iam_type }} (skip_duplicates)
     assert:
       that:
       - result is not changed
@@ -619,7 +602,8 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_a
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Update policy using document for {{ iam_type }} (check mode) (skip_duplicates = no)'
+  - name: Update policy using document for {{ iam_type }} (check mode) (skip_duplicates
+      = no)
     check_mode: yes
     iam_policy:
       state: present
@@ -634,8 +618,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be updated for {{ iam_type }}'
+  - name: Assert policy would be updated for {{ iam_type }}
     assert:
       that:
       - result.changed == True
@@ -643,7 +626,7 @@
       - iam_policy_info.policies[0].policy_name == iam_policy_name_a
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Update policy using document for {{ iam_type }} (skip_duplicates = no)'
+  - name: Update policy using document for {{ iam_type }} (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -657,8 +640,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was updated for {{ iam_type }}'
+  - name: Assert policy was updated for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -667,7 +649,8 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Update policy using document for {{ iam_type }} (idempotency - check mode) (skip_duplicates = no)'
+  - name: Update policy using document for {{ iam_type }} (idempotency - check mode)
+      (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -677,13 +660,13 @@
       policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Update policy using document for {{ iam_type }} (idempotency) (skip_duplicates = no)'
+  - name: Update policy using document for {{ iam_type }} (idempotency) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -697,8 +680,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -707,7 +689,7 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Delete policy A'
+  - name: Delete policy A
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
@@ -719,8 +701,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is changed
@@ -735,7 +716,7 @@
   # Update C with no_access.json
   # Delete C
 
-  - name: 'Update policy using json for {{ iam_type }} (check mode) (skip_duplicates)'
+  - name: Update policy using json for {{ iam_type }} (check mode) (skip_duplicates)
     check_mode: yes
     iam_policy:
       state: present
@@ -750,14 +731,13 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would not be added for {{ iam_type }}'
+  - name: Assert policy would not be added for {{ iam_type }}
     assert:
       that:
       - result is not changed
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Update policy using json for {{ iam_type }} (skip_duplicates)'
+  - name: Update policy using json for {{ iam_type }} (skip_duplicates)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -771,8 +751,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was not updated for {{ iam_type }} (skip_duplicates)'
+  - name: Assert policy was not updated for {{ iam_type }} (skip_duplicates)
     assert:
       that:
       - result is not changed
@@ -781,7 +760,8 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Update policy using json for {{ iam_type }} (check mode) (skip_duplicates = no)'
+  - name: Update policy using json for {{ iam_type }} (check mode) (skip_duplicates
+      = no)
     check_mode: yes
     iam_policy:
       state: present
@@ -796,14 +776,13 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be updated for {{ iam_type }}'
+  - name: Assert policy would be updated for {{ iam_type }}
     assert:
       that:
       - result.changed == True
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Update policy using json for {{ iam_type }} (skip_duplicates = no)'
+  - name: Update policy using json for {{ iam_type }} (skip_duplicates = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -817,8 +796,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was updated for {{ iam_type }}'
+  - name: Assert policy was updated for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -827,7 +805,8 @@
       - result[iam_object_key] == iam_name
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Update policy using json for {{ iam_type }} (idempotency - check mode) (skip_duplicates = no)'
+  - name: Update policy using json for {{ iam_type }} (idempotency - check mode) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -837,13 +816,13 @@
       policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Update policy using json for {{ iam_type }} (idempotency) (skip_duplicates = no)'
+  - name: Update policy using json for {{ iam_type }} (idempotency) (skip_duplicates
+      = no)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -857,8 +836,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -867,7 +845,7 @@
       - result[iam_object_key] == iam_name
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Delete policy C'
+  - name: Delete policy C
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
@@ -879,8 +857,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is changed
@@ -892,7 +869,7 @@
       - iam_policy_name_c not in iam_policy_info.all_policy_names
 
   # ============================================================
-  - name: 'Update policy using document for {{ iam_type }} (check mode)'
+  - name: Update policy using document for {{ iam_type }} (check mode)
     check_mode: yes
     iam_policy:
       state: present
@@ -906,14 +883,13 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be updated for {{ iam_type }}'
+  - name: Assert policy would be updated for {{ iam_type }}
     assert:
       that:
       - result.changed == True
       - '"Id" not in iam_policy_info.policies[0].policy_document'
 
-  - name: 'Update policy using document for {{ iam_type }}'
+  - name: Update policy using document for {{ iam_type }}
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -926,8 +902,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was updated for {{ iam_type }}'
+  - name: Assert policy was updated for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -936,7 +911,7 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyOtherId'
 
-  - name: 'Update policy using document for {{ iam_type }} (idempotency - check mode)'
+  - name: Update policy using document for {{ iam_type }} (idempotency - check mode)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -945,13 +920,12 @@
       policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Update policy using document for {{ iam_type }} (idempotency)'
+  - name: Update policy using document for {{ iam_type }} (idempotency)
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -964,8 +938,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -974,7 +947,7 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyOtherId'
 
-  - name: 'Delete policy B'
+  - name: Delete policy B
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
@@ -986,8 +959,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is changed
@@ -999,7 +971,7 @@
       - iam_policy_name_b not in iam_policy_info.all_policy_names
 
   # ============================================================
-  - name: 'Update policy using json for {{ iam_type }} (check mode)'
+  - name: Update policy using json for {{ iam_type }} (check mode)
     check_mode: yes
     iam_policy:
       state: present
@@ -1013,14 +985,13 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy would be updated for {{ iam_type }}'
+  - name: Assert policy would be updated for {{ iam_type }}
     assert:
       that:
       - result.changed == True
       - iam_policy_info.policies[0].policy_document.Id == 'MyId'
 
-  - name: 'Update policy using json for {{ iam_type }}'
+  - name: Update policy using json for {{ iam_type }}
     iam_policy:
       state: present
       iam_type: '{{ iam_type }}'
@@ -1033,8 +1004,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert policy was updated for {{ iam_type }}'
+  - name: Assert policy was updated for {{ iam_type }}
     assert:
       that:
       - result is changed
@@ -1043,7 +1013,7 @@
       - result[iam_object_key] == iam_name
       - iam_policy_info.policies[0].policy_document.Id == 'MyOtherId'
 
-  - name: 'Update policy using json for {{ iam_type }} (idempotency - check mode)'
+  - name: Update policy using json for {{ iam_type }} (idempotency - check mode)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -1053,13 +1023,12 @@
       policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
     check_mode: yes
-
-  - name: 'Assert no change would occur'
+  - name: Assert no change would occur
     assert:
       that:
       - result is not changed
 
-  - name: 'Update policy using json for {{ iam_type }} (idempotency)'
+  - name: Update policy using json for {{ iam_type }} (idempotency)
     iam_policy:
       state: present
       skip_duplicates: no
@@ -1073,8 +1042,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert no change'
+  - name: Assert no change
     assert:
       that:
       - result is not changed
@@ -1084,7 +1052,7 @@
       - iam_policy_info.policies[0].policy_document.Id == 'MyOtherId'
 
   # ============================================================
-  - name: 'Delete policy D (check_mode)'
+  - name: Delete policy D (check_mode)
     check_mode: yes
     iam_policy:
       state: absent
@@ -1097,8 +1065,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert not deleted'
+  - name: Assert not deleted
     assert:
       that:
       - result is changed
@@ -1109,7 +1076,7 @@
       - iam_policy_name_d in iam_policy_info.all_policy_names
       - iam_policy_info.policies[0].policy_document.Id == 'MyOtherId'
 
-  - name: 'Delete policy D'
+  - name: Delete policy D
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
@@ -1121,8 +1088,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is changed
@@ -1132,7 +1098,7 @@
       - '"policies" not in iam_policy_info'
       - iam_policy_info.all_policy_names | length == 0
 
-  - name: 'Delete policy D (test idempotency)'
+  - name: Delete policy D (test idempotency)
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
@@ -1144,15 +1110,14 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is not changed
       - '"policies" not in iam_policy_info'
       - iam_policy_info.all_policy_names | length == 0
 
-  - name: 'Delete policy D (check_mode) (test idempotency)'
+  - name: Delete policy D (check_mode) (test idempotency)
     check_mode: yes
     iam_policy:
       state: absent
@@ -1165,8 +1130,7 @@
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
     register: iam_policy_info
-
-  - name: 'Assert deleted'
+  - name: Assert deleted
     assert:
       that:
       - result is not changed
@@ -1175,31 +1139,28 @@
 
   always:
   # ============================================================
-  - name: 'Delete policy A for {{ iam_type }}'
+  - name: Delete policy A for {{ iam_type }}
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
     ignore_errors: yes
-
-  - name: 'Delete policy B for {{ iam_type }}'
+  - name: Delete policy B for {{ iam_type }}
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
     ignore_errors: yes
-
-  - name: 'Delete policy C for {{ iam_type }}'
+  - name: Delete policy C for {{ iam_type }}
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
     ignore_errors: yes
-
-  - name: 'Delete policy D for {{ iam_type }}'
+  - name: Delete policy D for {{ iam_type }}
     iam_policy:
       state: absent
       iam_type: '{{ iam_type }}'
