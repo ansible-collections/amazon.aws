@@ -70,7 +70,7 @@ EXAMPLES = '''
   register: new_groups
 
 - name: Apply READ-ONLY policy to new groups that have been recently created
-  community.aws.iam_policy:
+  amazon.aws.iam_policy:
     iam_type: group
     iam_name: "{{ item.iam_group.group.group_name }}"
     policy_name: "READ-ONLY"
@@ -80,7 +80,7 @@ EXAMPLES = '''
 
 # Create a new S3 policy with prefix per user
 - name: Create S3 policy from template
-  community.aws.iam_policy:
+  amazon.aws.iam_policy:
     iam_type: user
     iam_name: "{{ item.user }}"
     policy_name: "s3_limited_access_{{ item.prefix }}"
@@ -336,7 +336,7 @@ def main():
             policy = GroupPolicy(**args)
 
         module.deprecate("The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are returned for now.",
-                         date='2024-08-01', collection_name='community.aws')
+                         date='2024-08-01', collection_name='amazon.aws')
 
         module.exit_json(**(policy.run()))
     except (BotoCoreError, ClientError) as e:
