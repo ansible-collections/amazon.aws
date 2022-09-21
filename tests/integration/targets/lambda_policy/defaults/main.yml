@@ -1,0 +1,6 @@
+---
+# defaults file for lambda_policy integration test
+# IAM role names have to be less than 64 characters
+# we hash the resource_prefix to get a shorter, unique string
+lambda_function_name: '{{ tiny_prefix }}-api-endpoint'
+lambda_role_name: 'ansible-test-{{ tiny_prefix }}-lambda-policy'
