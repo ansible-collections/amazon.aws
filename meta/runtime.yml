@@ -8,6 +8,9 @@ action_groups:
   - cloudformation
   - cloudformation_info
   - cloudtrail
+  - cloudwatchlogs_log_group
+  - cloudwatchlogs_log_group_info
+  - cloudwatchlogs_log_group_metric_filter
   - ec2_ami
   - ec2_ami_info
   - ec2_elb_lb

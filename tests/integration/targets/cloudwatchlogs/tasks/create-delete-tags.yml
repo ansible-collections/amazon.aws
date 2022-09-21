@@ -1,0 +1,444 @@
+# Tests relating to create/delete and set tags on cloudwatchlogs_log_group
+
+- name: Tests relating to setting tags on cloudwatchlogs_log_group
+  vars:
+    first_tags:
+      Key with Spaces: Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      New Key with Spaces: Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      Key with Spaces: Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      New Key with Spaces: Updated Value with spaces
+    final_tags:
+      Key with Spaces: Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      New Key with Spaces: Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+  # Mandatory settings
+  module_defaults:
+    amazon.aws.cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+    amazon.aws.cloudwatchlogs_log_group_info:
+      log_group_name: '{{ log_group_name }}'
+  block:
+
+  - name: create cloudwatch log group for integration test (check_mode)
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+      tags:
+        CamelCase: Value
+        snake_case: value
+    check_mode: true
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+      - '"log_groups" not in result'
+      - '"logs:CreateLogGroup" not in result.resource_actions'
+
+  - name: create cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+      tags:
+        CamelCase: Value
+        snake_case: value
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+      - '"log_group_name" in log_group'
+      - '"creation_time" in log_group'
+      - '"retention_in_days" in log_group'
+      - '"metric_filter_count" in log_group'
+      - '"arn" in log_group'
+      - '"stored_bytes" in log_group'
+      # - '"kms_key_id" in log_group'
+      # pre-4.0.0 upgrade compatability
+      - '"log_group_name" in result'
+      - '"creation_time" in result'
+      - '"retention_in_days" in result'
+      - '"metric_filter_count" in result'
+      - '"arn" in result'
+      - '"stored_bytes" in result'
+      # - '"kms_key_id" in result'
+      - '"CamelCase" in log_group.tags'
+      - '"snake_case" in log_group.tags'
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+
+  - name: create cloudwatch log group for integration test (check_mode - idempotent)
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+    check_mode: true
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+
+  - name: create cloudwatch log group for integration test (idempotent)
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+
+  - name: describe all log groups
+    cloudwatchlogs_log_group_info: {}
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length >= 1
+
+  - name: describe log group
+    cloudwatchlogs_log_group_info:
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+      - '"log_group_name" in log_group'
+      - '"creation_time" in log_group'
+      - '"retention_in_days" in log_group'
+      - '"metric_filter_count" in log_group'
+      - '"arn" in log_group'
+      - '"stored_bytes" in log_group'
+      # - '"kms_key_id" in log_group'
+      - '"tags" in log_group'
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+  - name: test adding tags to cloudwatchlogs_log_group (check_mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: true
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test adding tags to cloudwatchlogs_log_group
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.log_groups[0].tags == first_tags
+
+  - name: test adding tags to cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: true
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test adding tags to cloudwatchlogs_log_group - idempotency
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == first_tags
+
+  ###
+
+  - name: test updating tags with purge on cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: true
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test updating tags with purge on cloudwatchlogs_log_group
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.log_groups[0].tags == second_tags
+
+  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency
+      (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: true
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == second_tags
+
+  ###
+
+  - name: test updating tags without purge on cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: false
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test updating tags without purge on cloudwatchlogs_log_group
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: false
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.log_groups[0].tags == final_tags
+
+  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency
+      (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: false
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
+
+  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: false
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == final_tags
+
+  ###
+
+  - name: test that cloudwatchlogs_log_group_info returns the tags
+    cloudwatchlogs_log_group_info:
+    register: tag_info
+  - name: assert tags present
+    assert:
+      that:
+      - tag_info.log_groups | length == 1
+      - tag_info.log_groups[0].tags == final_tags
+
+  ###
+
+  - name: test no tags param cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group: {}
+    check_mode: true
+    register: update_result
+
+  - name: assert no change
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == final_tags
+
+  - name: test no tags param cloudwatchlogs_log_group
+    cloudwatchlogs_log_group: {}
+    register: update_result
+  - name: assert no change
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == final_tags
+
+  ###
+
+  - name: test removing tags from cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: true
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+
+  - name: test removing tags from cloudwatchlogs_log_group
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - update_result.log_groups[0].tags == {}
+
+  - name: test removing tags from cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: true
+    check_mode: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+
+  - name: test removing tags from cloudwatchlogs_log_group - idempotency
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == {}
+
+  - name: delete cloudwatch log group for integration test (check_mode)
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    check_mode: true
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+      - '"logs:DeleteLogGroup" not in result.resource_actions'
+
+  - name: delete cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+
+  - name: delete cloudwatch log group for integration test (check_mode - idempotent)
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    check_mode: true
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+      - '"logs:DeleteLogGroup" not in result.resource_actions'
+
+  - name: delete cloudwatch log group for integration test (idempotent)
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+
+  - name: describe missing log group
+    cloudwatchlogs_log_group_info:
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length == 0
+
+  always:
+
+  - name: delete cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    ignore_errors: true

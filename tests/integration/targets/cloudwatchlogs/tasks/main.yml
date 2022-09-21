@@ -1,0 +1,16 @@
+# Tests for cloudwatchlogs_log_group, cloudwatchlogs_log_group_info, and cloudwatchlogs_log_group_metric_filter modules
+
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  block:
+
+  - name: Run tests for changes to the cloudwatchlogs_log_group and cloudwatchlogs_log_group_metric_filter
+    include_tasks: cloudwatchlogs_tests.yml
+
+  - name: Run tests relating to create/delete and set tags on cloudwatchlogs_log_group
+    include_tasks: create-delete-tags.yml
