@@ -1,0 +1,2 @@
+bugfixes:
+- module_utils/botocore - fix ``object has no attribute 'fail'`` error in error handling (https://github.com/ansible-collections/amazon.aws/pull/1045).
