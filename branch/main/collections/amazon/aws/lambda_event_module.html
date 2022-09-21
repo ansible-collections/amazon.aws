@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.iam_policy_info module – Retrieve inline IAM policies for users, groups, and roles &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.lambda_event module – Creates, updates or deletes AWS Lambda function event mappings &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
@@ -21,8 +21,8 @@
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.lambda module – Manage AWS Lambda functions" href="lambda_module.html" />
-    <link rel="prev" title="amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles" href="iam_policy_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="amazon.aws.lambda_execute module – Execute an AWS Lambda function" href="lambda_execute_module.html" />
+    <link rel="prev" title="amazon.aws.lambda_alias module – Creates, updates or deletes AWS Lambda function aliases" href="lambda_alias_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -114,10 +114,10 @@
           <li><a href="../../index.html">Collection Index</a> &raquo;</li>
           <li><a href="../index.html">Collections in the Amazon Namespace</a> &raquo;</li>
           <li><a href="index.html">Amazon.Aws</a> &raquo;</li>
-      <li>amazon.aws.iam_policy_info module – Retrieve inline IAM policies for users, groups, and roles</li>
+      <li>amazon.aws.lambda_event module – Creates, updates or deletes AWS Lambda function event mappings</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/iam_policy_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/lambda_event.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -127,15 +127,15 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-iam-policy-info-module"></span><section id="amazon-aws-iam-policy-info-module-retrieve-inline-iam-policies-for-users-groups-and-roles">
-<h1>amazon.aws.iam_policy_info module – Retrieve inline IAM policies for users, groups, and roles<a class="headerlink" href="#amazon-aws-iam-policy-info-module-retrieve-inline-iam-policies-for-users-groups-and-roles" title="Permalink to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-lambda-event-module"></span><section id="amazon-aws-lambda-event-module-creates-updates-or-deletes-aws-lambda-function-event-mappings">
+<h1>amazon.aws.lambda_event module – Creates, updates or deletes AWS Lambda function event mappings<a class="headerlink" href="#amazon-aws-lambda-event-module-creates-updates-or-deletes-aws-lambda-function-event-mappings" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 5.0.0-dev0).</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-policy-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.iam_policy_info</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-event-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.lambda_event</span></code>.</p>
 </div>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
@@ -153,11 +153,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>Supports fetching of inline IAM policies for IAM users, groups and roles.</p></li>
+<li><p>This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where AWS Lambda invokes the function. It is idempotent and supports “Check” mode.  Use module <a class="reference internal" href="lambda_module.html#ansible-collections-amazon-aws-lambda-module"><span class="std std-ref">amazon.aws.lambda</span></a> to manage the lambda function itself and <a class="reference internal" href="lambda_alias_module.html#ansible-collections-amazon-aws-lambda-alias-module"><span class="std std-ref">amazon.aws.lambda_alias</span></a> to manage function aliases.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-iam-policy-info-module-requirements"></span><h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-lambda-event-module-requirements"></span><h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -175,9 +175,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-alias"><strong>alias</strong></p>
+<a class="ansibleOptionLink" href="#parameter-alias" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the function alias.</p>
+<p>Mutually exclusive with <em>version</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-access-key"></span><strong>aws_access_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-access-key"></span><strong>aws_access_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_access_key, access_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -185,26 +193,26 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
 <p>Note: The CA Bundle is read ‘module’ side and may need to be explicitly copied from the controller if not run locally.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-config"><strong>aws_config</strong></p>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-config"><strong>aws_config</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
 <p>Parameters can be found at <a class="reference external" href="https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config">https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-secret-key"></span><strong>aws_secret_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-secret-key"></span><strong>aws_secret_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_secret_key, secret_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -212,8 +220,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <p>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
@@ -224,47 +232,44 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-iam_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-iam-name"><strong>iam_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-iam_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Name of IAM resource you wish to retrieve inline policies for. In other words, the user name, group name or role name.</p>
-</div></td>
-</tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-iam_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-iam-type"><strong>iam_type</strong></p>
-<a class="ansibleOptionLink" href="#parameter-iam_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-event_source"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-event-source"><strong>event_source</strong></p>
+<a class="ansibleOptionLink" href="#parameter-event_source" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Type of IAM resource you wish to retrieve inline policies for.</p>
+<td><div class="ansible-option-cell"><p>Source of the event that triggers the lambda function.</p>
+<p>For DynamoDB and Kinesis events, select <code class="docutils literal notranslate"><span class="pre">stream</span></code></p>
+<p>For SQS queues, select <code class="docutils literal notranslate"><span class="pre">sqs</span></code></p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">user</span></p></li>
-<li><p><span class="ansible-option-choices-entry">group</span></p></li>
-<li><p><span class="ansible-option-choices-entry">role</span></p></li>
+<li><p><span class="ansible-option-default-bold">stream</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">sqs</span></p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-policy-name"><strong>policy_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-policy_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-lambda_function_arn"></div>
+<div class="ansibleOptionAnchor" id="parameter-function_name"></div>
+<div class="ansibleOptionAnchor" id="parameter-function_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-lambda-function-arn"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-function-name"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-function-arn"></span><strong>lambda_function_arn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-lambda_function_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: function_name, function_arn</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of a specific IAM inline policy you with to retrieve.</p>
+<td><div class="ansible-option-cell"><p>The name or ARN of the lambda function.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-profile"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-profile"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -274,7 +279,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-region"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-region"></span><strong>region</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-region"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-region"></span><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -286,7 +291,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-session-token"><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-access-token"></span><strong>security_token</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-session-token"><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-lambda-event-module-parameter-access-token"></span><strong>security_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-security_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, session_token, aws_security_token, access_token</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -296,7 +301,66 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-source_params"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params"><strong>source_params</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Sub-parameters required for event source.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_params/batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-batch-size"><strong>batch_size</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params/batch_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The largest number of records that AWS Lambda will retrieve from your event source at the time of invoking your function.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">100</span></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_params/enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params/enabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether AWS Lambda should begin polling or readin from the event source.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><span class="ansible-option-choices-entry">false</span></p></li>
+<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_params/source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-source-arn"><strong>source_arn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params/source_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the SQS queue, Kinesis stream or DynamoDB stream that is the event source.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_params/starting_position"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-starting-position"><strong>starting_position</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params/starting_position" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The position in the stream where AWS Lambda should start reading.</p>
+<p>Required when <em>event_source=stream</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><span class="ansible-option-choices-entry">TRIM_HORIZON</span></p></li>
+<li><p><span class="ansible-option-choices-entry">LATEST</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Describes the desired state.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
@@ -305,6 +369,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <li><p><span class="ansible-option-choices-entry">false</span></p></li>
 <li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
 </ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-version"><strong>version</strong></p>
+<a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Version of the Lambda function.</p>
+<p>Mutually exclusive with <em>alias</em>.</p>
 </div></td>
 </tr>
 </tbody>
@@ -323,16 +395,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Describe all inline IAM policies on an IAM User</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_policy_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">iam_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span><span class="w"></span>
-<span class="w">    </span><span class="nt">iam_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_user</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example that creates a lambda event notification for a DynamoDB stream</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DynamoDB stream event mapping</span><span class="w"></span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_event</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="w">    </span><span class="nt">event_source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stream</span><span class="w"></span>
+<span class="w">    </span><span class="nt">function_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">function_name</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dev</span><span class="w"></span>
+<span class="w">    </span><span class="nt">source_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">source_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457</span><span class="w"></span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"></span>
+<span class="w">    </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
+<span class="w">    </span><span class="nt">starting_position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TRIM_HORIZON</span><span class="w"></span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">event</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Describe a specific inline policy on an IAM Role</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_policy_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">iam_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">role</span><span class="w"></span>
-<span class="w">    </span><span class="nt">iam_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_role</span><span class="w"></span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_policy</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Show source event</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">var</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">event.lambda_stream_events</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -347,42 +426,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-all_policy_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-all-policy-names"><strong>all_policy_names</strong></p>
-<a class="ansibleOptionLink" href="#return-all_policy_names" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="return-lambda_stream_events"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-lambda-stream-events"><strong>lambda_stream_events</strong></p>
+<a class="ansibleOptionLink" href="#return-lambda_stream_events" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of names of all of the IAM inline policies on the queried object</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policies"><strong>policies</strong></p>
-<a class="ansibleOptionLink" href="#return-policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>A list containing the matching IAM inline policy names and their data</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-policies/policy_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policies-policy-document"><strong>policy_document</strong></p>
-<a class="ansibleOptionLink" href="#return-policies/policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The JSON document representing the inline IAM policy</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-policies/policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policies-policy-name"><strong>policy_name</strong></p>
-<a class="ansibleOptionLink" href="#return-policies/policy_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Name of the inline policy</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-policy_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policy-names"><strong>policy_names</strong></p>
-<a class="ansibleOptionLink" href="#return-policy_names" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>A list of matching names of the IAM inline policies on the queried object</p>
+<td><div class="ansible-option-cell"><p>list of dictionaries returned by the API describing stream event mappings</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
 </div></td>
 </tr>
@@ -391,7 +438,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
 <ul class="simple">
-<li><p>Mark Chappell (&#64;tremble)</p></li>
+<li><p>Pierre Jodouin (&#64;pjodouin), Ryan Brown (&#64;ryansb)</p></li>
 </ul>
 </section>
 <section id="collection-links">
@@ -410,8 +457,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="iam_policy_module.html" class="btn btn-neutral float-left" title="amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="lambda_module.html" class="btn btn-neutral float-right" title="amazon.aws.lambda module – Manage AWS Lambda functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="lambda_alias_module.html" class="btn btn-neutral float-left" title="amazon.aws.lambda_alias module – Creates, updates or deletes AWS Lambda function aliases" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lambda_execute_module.html" class="btn btn-neutral float-right" title="amazon.aws.lambda_execute module – Execute an AWS Lambda function" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
