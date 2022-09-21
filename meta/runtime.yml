@@ -9,6 +9,8 @@ action_groups:
   - cloudformation_info
   - cloudtrail
   - cloudwatchevent_rule
+  - cloudwatch_metric_alarm
+  - cloudwatchevent_rule
   - cloudwatchlogs_log_group
   - cloudwatchlogs_log_group_info
   - cloudwatchlogs_log_group_metric_filter
@@ -85,6 +87,9 @@ plugin_routing:
     ec2_group_info:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.ec2_security_group_info
+    ec2_metric_alarm:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.cloudwatch_metric_alarm
     execute_lambda:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.lambda_execute
