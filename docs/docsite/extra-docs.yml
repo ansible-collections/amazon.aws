@@ -1,5 +1,8 @@
 ---
 sections:
+  - title: Changelog
+    toctree:
+      - CHANGELOG
   - title: Scenario Guide
     toctree:
       - guide_aws
