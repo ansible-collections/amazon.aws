@@ -1,0 +1,10 @@
+# defaults file for elb_application_lb
+
+resource_short: "{{ '%0.8x'%((16**8) | random(seed=resource_prefix)) }}"
+alb_name: alb-test-{{ resource_short }}
+tg_name: alb-test-{{ resource_short }}
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+private_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
+private_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
+public_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
+public_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24

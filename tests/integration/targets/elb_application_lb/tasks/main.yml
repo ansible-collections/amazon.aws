@@ -1,0 +1,1354 @@
+- name: elb_application_lb integration tests
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  - name: Create a test VPC
+    ec2_vpc_net:
+      cidr_block: '{{ vpc_cidr }}'
+      name: '{{ resource_prefix }}_vpc'
+      state: present
+      ipv6_cidr: true
+      tags:
+        Name: elb_application_lb testing
+        ResourcePrefix: '{{ resource_prefix }}'
+    register: vpc
+  - name: 'Set fact: VPC ID'
+    set_fact:
+      vpc_id: '{{ vpc.vpc.id }}'
+  - name: Get VPC's default security group
+    ec2_group_info:
+      filters:
+        vpc-id: '{{ vpc_id }}'
+    register: default_sg
+  - name: Create an internet gateway
+    ec2_vpc_igw:
+      vpc_id: '{{ vpc_id }}'
+      state: present
+      tags:
+        Name: '{{ resource_prefix }}'
+    register: igw
+  - name: Create private subnets
+    ec2_vpc_subnet:
+      cidr: '{{ item.cidr }}'
+      az: '{{ aws_region }}{{ item.az }}'
+      vpc_id: '{{ vpc_id }}'
+      state: present
+      tags:
+        Public: 'False'
+        Name: private-{{ item.az }}
+    with_items:
+    - cidr: '{{ private_subnet_cidr_1 }}'
+      az: a
+    - cidr: '{{ private_subnet_cidr_2 }}'
+      az: b
+    register: private_subnets
+  - name: Create public subnets with ipv6
+    ec2_vpc_subnet:
+      cidr: '{{ item.cidr }}'
+      az: '{{ aws_region }}{{ item.az }}'
+      vpc_id: '{{ vpc_id }}'
+      state: present
+      ipv6_cidr: '{{ item.vpc_ipv6_cidr }}'
+      tags:
+        Public: 'True'
+        Name: public-{{ item.az }}
+    with_items:
+    - cidr: '{{ public_subnet_cidr_1 }}'
+      az: a
+      vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block\
+        \ | replace('0::/56','0::/64') }}"
+    - cidr: '{{ public_subnet_cidr_2 }}'
+      az: b
+      vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block\
+        \ | replace('0::/56','1::/64') }}"
+    register: public_subnets
+  - name: Create list of subnet ids
+    set_fact:
+      public_subnets: "{{ public_subnets.results | map(attribute='subnet') | map(attribute='id')\
+        \ }}"
+      private_subnets: "{{ private_subnets.results | map(attribute='subnet') | map(attribute='id')\
+        \ }}"
+  - name: Create a route table
+    ec2_vpc_route_table:
+      vpc_id: '{{ vpc_id }}'
+      tags:
+        Name: igw-route
+        Created: '{{ resource_prefix }}'
+      subnets: '{{ public_subnets + private_subnets }}'
+      routes:
+      - dest: 0.0.0.0/0
+        gateway_id: '{{ igw.gateway_id }}'
+    register: route_table
+  - name: Create a security group for Ansible ALB integration tests
+    ec2_group:
+      name: '{{ resource_prefix }}'
+      description: security group for Ansible ALB integration tests
+      state: present
+      vpc_id: '{{ vpc_id }}'
+      rules:
+      - proto: tcp
+        from_port: 1
+        to_port: 65535
+        cidr_ip: 0.0.0.0/0
+    register: sec_group
+  - name: Create another security group for Ansible ALB integration tests
+    ec2_group:
+      name: '{{ resource_prefix }}-2'
+      description: security group for Ansible ALB integration tests
+      state: present
+      vpc_id: '{{ vpc_id }}'
+      rules:
+      - proto: tcp
+        from_port: 1
+        to_port: 65535
+        cidr_ip: 0.0.0.0/0
+    register: sec_group2
+  - name: Create a target group for testing
+    elb_target_group:
+      name: '{{ tg_name }}'
+      protocol: http
+      port: 80
+      vpc_id: '{{ vpc_id }}'
+      state: present
+    register: tg
+  - name: Create an ALB (invalid - SslPolicy is required when Protocol == HTTPS)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTPS
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    ignore_errors: yes
+    register: alb
+  - assert:
+      that:
+      - alb is failed
+      - alb.msg is match("'SslPolicy' is a required listener dict key when Protocol
+        = HTTPS")
+
+  - name: Create an ALB (invalid - didn't provide required listener options)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Port: 80
+    ignore_errors: yes
+    register: alb
+  - assert:
+      that:
+      - alb is failed
+      - alb.msg is match("missing required arguments:\ DefaultActions, Protocol found
+        in listeners")
+
+  - name: Create an ALB (invalid - invalid listener option type)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: bad type
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    ignore_errors: yes
+    register: alb
+  - assert:
+      that:
+      - alb is failed
+      - "'unable to convert to int' in alb.msg"
+
+  - name: Create an ALB (invalid - invalid ip address type)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: ip_addr_v4_v6
+    ignore_errors: yes
+    register: alb
+  - assert:
+      that:
+      - alb is failed
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Create an ALB with defaults - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: []
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have created ALB if not in check mode.')
+
+  - name: Create an ALB with defaults
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: []
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.listeners[0].rules | length == 1
+      - alb.security_groups | length == 1
+      - alb.security_groups[0] == default_sg.security_groups[0].group_id
+
+  - name: Create an ALB with defaults (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: []
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Create an ALB with defaults (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: []
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.listeners[0].rules | length == 1
+      - alb.security_groups[0] == default_sg.security_groups[0].group_id
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with ip address type - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with ip address type
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.ip_address_type == 'dualstack'
+      - alb.listeners[0].rules | length == 1
+      - alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'defensive'
+      - not alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - not alb.routing_http_xff_client_port_enabled | bool
+      - not alb.waf_fail_open_enabled | bool
+
+  - name: Create an ALB with ip address type (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Create an ALB with ip address type (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.ip_address_type == 'dualstack'
+      - alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'defensive'
+      - not alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - not alb.routing_http_xff_client_port_enabled | bool
+      - not alb.waf_fail_open_enabled | bool
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with different attributes - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with different attributes
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.ip_address_type == 'dualstack'
+      - not alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'monitor'
+      - alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - alb.routing_http_xff_client_port_enabled | bool
+      - alb.waf_fail_open_enabled | bool
+
+  - name: Update an ALB with different attributes (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB with different attributes (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: dualstack
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.ip_address_type == 'dualstack'
+      - not alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'monitor'
+      - alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - alb.routing_http_xff_client_port_enabled | bool
+      - alb.waf_fail_open_enabled | bool
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with different ip address type - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: ipv4
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with different ip address type
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: ipv4
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.ip_address_type == 'ipv4'
+      - not alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'monitor'
+      - alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - alb.routing_http_xff_client_port_enabled | bool
+      - alb.waf_fail_open_enabled | bool
+
+  - name: Update an ALB with different ip address type (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: ipv4
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB with different ip address type (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+      ip_address_type: ipv4
+      http2: no
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: yes
+      http_x_amzn_tls_version_and_cipher_suite: yes
+      http_xff_client_port: yes
+      waf_fail_open: yes
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.ip_address_type == 'ipv4'
+      - not alb.routing_http2_enabled | bool
+      - alb.routing_http_desync_mitigation_mode == 'monitor'
+      - alb.routing_http_drop_invalid_header_fields_enabled | bool
+      - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+      - alb.routing_http_xff_client_port_enabled | bool
+      - alb.waf_fail_open_enabled | bool
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with different listener by adding rule - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '1'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with different listener by adding rule
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '1'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.listeners[0].rules | length == 2
+      - "'1' in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+  - name: Update an ALB with different listener by adding rule (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '1'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB with different listener by adding rule (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '1'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.listeners[0].rules | length == 2
+      - "'1' in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with different listener by modifying rule - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '2'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with different listener by modifying rule
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '2'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.listeners[0].rules | length == 2
+      - "'2' in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+  - name: Update an ALB with different listener by modifying rule (idempotence) -
+      check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '2'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB with different listener by modifying rule (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules:
+        - Conditions:
+          - Field: path-pattern
+            Values:
+            - /test
+          Priority: '2'
+          Actions:
+          - TargetGroupName: '{{ tg_name }}'
+            Type: forward
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.listeners[0].rules | length == 2
+      - "'2' in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB with different listener by deleting rule - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules: []
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB with different listener by deleting rule
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules: []
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.listeners[0].rules | length == 1
+      - "'2' not in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+  - name: Update an ALB with different listener by deleting rule (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules: []
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB with different listener by deleting rule (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+      - Protocol: HTTP
+        Port: 80
+        DefaultActions:
+        - Type: forward
+          TargetGroupName: '{{ tg_name }}'
+        Rules: []
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.listeners[0].rules | length == 1
+      - "'2' not in {{ alb.listeners[0].rules | map(attribute='priority') }}"
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB by deleting listener - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners: []
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB by deleting listener
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners: []
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - not alb.listeners
+
+  - name: Update an ALB by deleting listener (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners: []
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB by deleting listener (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners: []
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - not alb.listeners
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB by adding tags - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB by adding tags
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - 'alb.tags == {"created_by": "ALB test {{ resource_prefix }}"}'
+
+  - name: Update an ALB by adding tags (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB by adding tags (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - 'alb.tags == {"created_by": "ALB test {{ resource_prefix }}"}'
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB by modifying tags - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}-2
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB by modifying tags
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}-2
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - 'alb.tags == {"created_by": "ALB test {{ resource_prefix }}-2"}'
+
+  - name: Update an ALB by modifying tags (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}-2
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB by modifying tags (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags:
+        created_by: ALB test {{ resource_prefix }}-2
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - 'alb.tags == {"created_by": "ALB test {{ resource_prefix }}-2"}'
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB by removing tags - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags: {}
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB by removing tags
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags: {}
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - not alb.tags
+
+  - name: Update an ALB by removing tags (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags: {}
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB by removing tags (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      tags: {}
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - not alb.tags
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Update an ALB by changing security group - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group2.group_id }}'
+      state: present
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have updated ALB if not in check mode.')
+
+  - name: Update an ALB by changing security group
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group2.group_id }}'
+      state: present
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+      - alb.security_groups[0] == sec_group2.group_id
+
+  - name: Update an ALB by changing security group (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group2.group_id }}'
+      state: present
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Update an ALB by changing security group (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group2.group_id }}'
+      state: present
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+      - alb.security_groups[0] == sec_group2.group_id
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Ensure elb_application_lb_info supports check_mode
+    elb_application_lb_info:
+    register: alb_info
+    check_mode: yes
+  - assert:
+      that:
+      - alb_info.load_balancers | length > 0
+
+  - name: Get ALB application info using no args
+    elb_application_lb_info:
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | length > 0
+
+  - name: Get ALB application info using load balancer arn
+    elb_application_lb_info:
+      load_balancer_arns:
+      - '{{ alb.load_balancer_arn }}'
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers[0].security_groups[0] == sec_group2.group_id
+
+  - name: Get ALB application info using load balancer name
+    elb_application_lb_info:
+      names:
+      - '{{ alb.load_balancer_name }}'
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers[0].security_groups[0] == sec_group2.group_id
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Delete an ALB - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is changed
+      - alb.msg is match('Would have deleted ALB if not in check mode.')
+
+  - name: Delete an ALB
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+    register: alb
+  - assert:
+      that:
+      - alb is changed
+
+  - name: Delete an ALB (idempotence) - check_mode
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+    register: alb
+    check_mode: yes
+  - assert:
+      that:
+      - alb is not changed
+      - alb.msg is match('IN CHECK MODE - ALB already absent.')
+
+  - name: Delete an ALB (idempotence)
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+    register: alb
+  - assert:
+      that:
+      - alb is not changed
+
+  # ----- Cleanup ------------------------------------------------------------------------------
+
+  always:
+  - name: Destroy ALB
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
+  - name: Destroy target group if it was created
+    elb_target_group:
+      name: '{{ tg_name }}'
+      protocol: http
+      port: 80
+      vpc_id: '{{ vpc_id }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    register: remove_tg
+    retries: 5
+    delay: 3
+    until: remove_tg is success
+    when: tg is defined
+    ignore_errors: true
+  - name: Destroy sec groups
+    ec2_group:
+      name: '{{ item }}'
+      description: security group for Ansible ALB integration tests
+      state: absent
+      vpc_id: '{{ vpc_id }}'
+    register: remove_sg
+    retries: 10
+    delay: 5
+    until: remove_sg is success
+    ignore_errors: true
+    with_items:
+    - '{{ resource_prefix }}'
+    - '{{ resource_prefix }}-2'
+
+  - name: Destroy route table
+    ec2_vpc_route_table:
+      vpc_id: '{{ vpc_id }}'
+      route_table_id: '{{ route_table.route_table.route_table_id }}'
+      lookup: id
+      state: absent
+    register: remove_rt
+    retries: 10
+    delay: 5
+    until: remove_rt is success
+    ignore_errors: true
+  - name: Destroy subnets
+    ec2_vpc_subnet:
+      cidr: '{{ item }}'
+      vpc_id: '{{ vpc_id }}'
+      state: absent
+    register: remove_subnet
+    retries: 10
+    delay: 5
+    until: remove_subnet is success
+    with_items:
+    - '{{ private_subnet_cidr_1 }}'
+    - '{{ private_subnet_cidr_2 }}'
+    - '{{ public_subnet_cidr_1 }}'
+    - '{{ public_subnet_cidr_2 }}'
+    ignore_errors: true
+  - name: Destroy internet gateway
+    ec2_vpc_igw:
+      vpc_id: '{{ vpc_id }}'
+      tags:
+        Name: '{{ resource_prefix }}'
+      state: absent
+    register: remove_igw
+    retries: 10
+    delay: 5
+    until: remove_igw is success
+    ignore_errors: true
+  - name: Destroy VPC
+    ec2_vpc_net:
+      cidr_block: '{{ vpc_cidr }}'
+      name: '{{ resource_prefix }}_vpc'
+      state: absent
+    register: remove_vpc
+    retries: 10
+    delay: 5
+    until: remove_vpc is success
+    ignore_errors: true
