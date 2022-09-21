@@ -13,7 +13,8 @@ version_added: 5.0.0
 short_description: Gather information about objects in S3
 description:
     - Describes objects in S3.
-    - For ceph, RGW, Walrus or fakes3 only supports list_keys currently (see examples below).
+    - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID (only supports list_keys currently).
+    - When using non-AWS services, I(endpoint_url) should be specified.
 author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
@@ -28,7 +29,7 @@ options:
       - If not specified, a list of all objects in the specified bucket will be returned.
     required: false
     type: str
-  s3_url:
+  endpoint_url:
     description:
       - S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.
     type: str
@@ -37,9 +38,13 @@ options:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
     type: bool
     default: false
-  rgw:
+  ceph:
     description:
-      - Enable Ceph RGW S3 support. This option requires an explicit url via I(s3_url).
+      - Enable API compatibility with Ceph RGW.
+      - It takes into account the S3 API subset working with Ceph in order to provide the same module
+        behaviour where possible.
+      - Requires I(endpoint_url) if I(ceph=true).
+    aliases: ['rgw']
     default: false
     type: bool
   object_details:
@@ -92,7 +97,11 @@ options:
         type: list
         elements: str
         choices: ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
-
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
+  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
+    I(s3_url) remains as an alias for I(endpoint_url).
+  - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -109,8 +118,8 @@ EXAMPLES = r'''
 - name: Retrieve a list of objects in Ceph RGW S3
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    rgw: true
-    s3_url: "http://localhost:8000"
+    ceph: true
+    endpoint_url: "http://localhost:8000"
 
 - name: Retrieve object metadata without object itself
   amazon.aws.s3_object_info:
@@ -424,11 +433,14 @@ object_info:
                             sample: "xxxxxxxxxxxx"
 '''
 
+import os
+
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.basic import to_text
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
@@ -658,20 +670,22 @@ def object_check(connection, module, bucket_name, object_name):
         module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
 
 
-#To get S3 connection, in case of dealing with ceph, dualstack, etc.
-def is_fakes3(s3_url):
-    """ Return True if s3_url has scheme fakes3:// """
-    if s3_url is not None:
-        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
+# To get S3 connection, in case of dealing with ceph, dualstack, etc.
+def is_fakes3(endpoint_url):
+    """ Return True if endpoint_url has scheme fakes3:// """
+    if endpoint_url is not None:
+        return urlparse(endpoint_url).scheme in ('fakes3', 'fakes3s')
     else:
         return False
 
-def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=False):
-    if s3_url and rgw:  # TODO - test this
-        rgw = urlparse(s3_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=rgw.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
-    elif is_fakes3(s3_url):
-        fakes3 = urlparse(s3_url)
+
+def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
+    if ceph:  # TODO - test this
+        ceph = urlparse(endpoint_url)
+        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https',
+                      region=location, endpoint=endpoint_url, **aws_connect_kwargs)
+    elif is_fakes3(endpoint_url):
+        fakes3 = urlparse(endpoint_url)
         port = fakes3.port
         if fakes3.scheme == 'fakes3s':
             protocol = "https"
@@ -685,7 +699,7 @@ def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=F
                       endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
                       use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
     else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
+        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
         if module.params['mode'] == 'put' and module.params['encryption_mode'] == 'aws:kms':
             params['config'] = botocore.client.Config(signature_version='s3v4')
         elif module.params['mode'] in ('get', 'getstr') and sig_4:
@@ -716,34 +730,36 @@ def main():
         ),
         bucket_name=dict(required=True, type='str'),
         object_name=dict(type='str'),
-        s3_url=dict(),
         dualstack=dict(default='no', type='bool'),
-        rgw=dict(default='no', type='bool'),
+        ceph=dict(default=False, type='bool', aliases=['rgw']),
     )
+
+    required_if = [
+        ['ceph', True, ['endpoint_url']],
+    ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
+        required_if=required_if,
     )
-
 
     bucket_name = module.params.get('bucket_name')
     object_name = module.params.get('object_name')
     requested_object_details = module.params.get('object_details')
-    s3_url = module.params.get('s3_url')
+    endpoint_url = module.params.get('endpoint_url')
     dualstack = module.params.get('dualstack')
-    rgw = module.params.get('rgw')
+    ceph = module.params.get('ceph')
 
-    if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
+    if not endpoint_url and 'S3_URL' in os.environ:
+        endpoint_url = os.environ['S3_URL']
+
+    if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
         module.fail_json(msg='dualstack only applies to AWS S3')
-
-    # rgw requires an explicit url
-    if rgw and not s3_url:
-        module.fail_json(msg='rgw flavour requires s3_url')
 
     result = []
 
-    if s3_url:
+    if endpoint_url:
         region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
         if region in ('us-east-1', '', None):
             # default to US Standard region
@@ -754,7 +770,7 @@ def main():
             location = region
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-        connection = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
+        connection = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
     else:
         try:
             connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
