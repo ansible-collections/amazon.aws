@@ -1,0 +1,96 @@
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    - name: Create SNS topic
+      sns_topic:
+        name: "TestSNSTopic"
+        state: present
+        display_name: "Test SNS Topic"
+      register: sns_topic_output
+
+    - name: Create classic cloudwatch event rules
+      cloudwatchevent_rule:
+        name: "{{ item }}"
+        description: "Rule for {{ item }}"
+        state: present
+        schedule_expression: "cron(0 20 * * ? *)"
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+      register: event_rules_classic_output
+      loop: "{{ test_event_names }}"
+
+    - name: Assert that classic event rules were created
+      assert:
+        that:
+          - event_rules_classic_output.changed
+          - event_rules_classic_output.msg == "All items completed"
+
+    - name: Create cloudwatch event rule with input transformer
+      cloudwatchevent_rule:
+        name: "{{ input_transformer_event_name }}"
+        description: "Event rule with input transformer configuration"
+        state: present
+        event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input_transformer:
+              input_paths_map:
+                instance: "$.detail.instance-id"
+                state: "$.detail.state"
+              input_template: "<instance> is in state <state>"
+      register: event_rule_input_transformer_output
+
+    - name: Assert that input transformer event rule was created
+      assert:
+        that:
+          - event_rule_input_transformer_output.changed
+
+    - name: Create cloudwatch event rule with inputs
+      cloudwatchevent_rule:
+        name: "{{ input_event_name }}"
+        description: "Event rule with input configuration"
+        state: present
+        event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input: 'Hello World'
+          - id: "{{ sns_topic_output.sns_topic.name }}2"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input:
+              start: 'Hello World'
+              end: 'Goodbye oh cruel World'
+      register: event_rule_input_transformer_output
+
+    - name: Assert that input transformer event rule was created
+      assert:
+        that:
+          - event_rule_input_transformer_output.changed
+
+  always:
+
+    - name: Delete classic CloudWatch event rules
+      cloudwatchevent_rule:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ test_event_names }}"
+
+    - name: Delete input transformer CloudWatch event rules
+      cloudwatchevent_rule:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ input_transformer_event_name }}"
+        - "{{ input_event_name }}"
+
+    - name: Delete SNS topic
+      sns_topic:
+        name: "TestSNSTopic"
+        state: absent

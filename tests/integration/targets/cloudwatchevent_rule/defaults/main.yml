@@ -1,0 +1,9 @@
+---
+name_pattern: "cloudwatch_event_rule-{{ tiny_prefix }}"
+
+test_event_names:
+  - "{{ name_pattern }}-1"
+  - "{{ name_pattern }}-2"
+
+input_transformer_event_name: "{{ name_pattern }}-3"
+input_event_name: "{{ name_pattern }}-4"
