@@ -98,38 +98,38 @@ EXAMPLES = r'''
 #       as users belong to them.
 
 - name: Create a user
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     state: present
 
 - name: Create a user with a password
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     password: SomeSecurePassword
     state: present
 
 - name: Create a user and attach a managed policy using its ARN
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     managed_policies:
       - arn:aws:iam::aws:policy/AmazonSNSFullAccess
     state: present
 
 - name: Remove all managed policies from an existing user with an empty list
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     state: present
     purge_policies: true
 
 - name: Create user with tags
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     state: present
     tags:
       Env: Prod
 
 - name: Delete the user
-  community.aws.iam_user:
+  amazon.aws.iam_user:
     name: testuser1
     state: absent
 
@@ -555,7 +555,7 @@ def main():
     )
 
     module.deprecate("The 'iam_user' return key is deprecated and will be replaced by 'user'. Both values are returned for now.",
-                     date='2024-05-01', collection_name='community.aws')
+                     date='2024-05-01', collection_name='amazon.aws')
 
     connection = module.client('iam')
 
