@@ -122,7 +122,7 @@ options:
 '''
 
 EXAMPLES = r'''
-- community.aws.cloudwatchevent_rule:
+- amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     schedule_expression: "cron(0 20 * * ? *)"
     description: Run my scheduled task
@@ -130,7 +130,7 @@ EXAMPLES = r'''
       - id: MyTargetId
         arn: arn:aws:lambda:us-east-1:123456789012:function:MyFunction
 
-- community.aws.cloudwatchevent_rule:
+- amazon.aws.cloudwatchevent_rule:
     name: MyDisabledCronTask
     schedule_expression: "rate(5 minutes)"
     description: Run my disabled scheduled task
@@ -140,7 +140,7 @@ EXAMPLES = r'''
         arn: arn:aws:lambda:us-east-1:123456789012:function:MyFunction
         input: '{"foo": "bar"}'
 
-- community.aws.cloudwatchevent_rule:
+- amazon.aws.cloudwatchevent_rule:
     name: MyInstanceLaunchEvent
     description: "Rule for EC2 instance launch"
     state: present
@@ -154,7 +154,7 @@ EXAMPLES = r'''
             state: "$.detail.state"
           input_template: "<instance> is in state <state>"
 
-- community.aws.cloudwatchevent_rule:
+- amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     state: absent
 '''
