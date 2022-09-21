@@ -22,7 +22,7 @@ options:
       - An alias for a key.
       - For safety, even though KMS does not require keys to have an alias, this module expects all
         new keys to be given an alias to make them easier to manage. Existing keys without an alias
-        may be referred to by I(key_id). Use M(community.aws.kms_key_info) to find key ids.
+        may be referred to by I(key_id). Use M(amazon.aws.kms_key_info) to find key ids.
       - Note that passing a I(key_id) and I(alias) will only cause a new alias to be added, an alias will never be renamed.
       - The C(alias/) prefix is optional.
       - Required if I(key_id) is not given.
@@ -143,21 +143,21 @@ extends_documentation_fragment:
 
 notes:
   - There are known inconsistencies in the amount of time required for updates of KMS keys to be fully reflected on AWS.
-    This can cause issues when running duplicate tasks in succession or using the M(community.aws.kms_key_info) module to fetch key metadata
+    This can cause issues when running duplicate tasks in succession or using the M(amazon.aws.kms_key_info) module to fetch key metadata
     shortly after modifying keys.
-    For this reason, it is recommended to use the return data from this module (M(community.aws.kms_key)) to fetch a key's metadata.
+    For this reason, it is recommended to use the return data from this module (M(amazon.aws.kms_key)) to fetch a key's metadata.
 '''
 
 EXAMPLES = r'''
 # Create a new KMS key
-- community.aws.kms_key:
+- amazon.aws.kms_key:
     alias: mykey
     tags:
       Name: myKey
       Purpose: protect_stuff
 
 # Update previous key with more tags
-- community.aws.kms_key:
+- amazon.aws.kms_key:
     alias: mykey
     tags:
       Name: myKey
@@ -167,7 +167,7 @@ EXAMPLES = r'''
 # Update a known key with grants allowing an instance with the billing-prod IAM profile
 # to decrypt data encrypted with the environment: production, application: billing
 # encryption context
-- community.aws.kms_key:
+- amazon.aws.kms_key:
     key_id: abcd1234-abcd-1234-5678-ef1234567890
     grants:
       - name: billing_prod
@@ -181,13 +181,13 @@ EXAMPLES = r'''
           - RetireGrant
 
 - name: Update IAM policy on an existing KMS key
-  community.aws.kms_key:
+  amazon.aws.kms_key:
     alias: my-kms-key
     policy: '{"Version": "2012-10-17", "Id": "my-kms-key-permissions", "Statement": [ { <SOME STATEMENT> } ]}'
     state: present
 
 - name: Example using lookup for policy json
-  community.aws.kms_key:
+  amazon.aws.kms_key:
     alias: my-kms-key
     policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
     state: present
@@ -967,7 +967,7 @@ def main():
     kms = module.client('kms')
 
     module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
-                     date='2024-05-01', collection_name='community.aws')
+                     date='2024-05-01', collection_name='amazon.aws')
 
     key_metadata = fetch_key_metadata(kms, module, module.params.get('key_id'), module.params.get('alias'))
     # We can't create keys with a specific ID, if we can't access the key we'll have to fail

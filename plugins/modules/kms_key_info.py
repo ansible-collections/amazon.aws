@@ -57,15 +57,15 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all KMS keys
-- community.aws.kms_key_info:
+- amazon.aws.kms_key_info:
 
 # Gather information about all keys with a Name tag
-- community.aws.kms_key_info:
+- amazon.aws.kms_key_info:
     filters:
       tag-key: Name
 
 # Gather information about all keys with a specific name
-- community.aws.kms_key_info:
+- amazon.aws.kms_key_info:
     filters:
       "tag:Name": Example
 '''
@@ -512,7 +512,7 @@ def main():
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
-                     date='2024-05-01', collection_name='community.aws')
+                     date='2024-05-01', collection_name='amazon.aws')
 
     all_keys = get_kms_info(connection, module)
     filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params['filters'])]
