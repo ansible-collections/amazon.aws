@@ -1,4 +1,3 @@
----
 # Beware: most of our tests here are run in parallel.
 # To add new tests you'll need to add a new host to the inventory and a matching
 # '{{ inventory_hostname }}'.yml file in roles/aws_kms/tasks/
@@ -7,4 +6,4 @@
   gather_facts: no
   strategy: free
   roles:
-    - aws_kms
+  - aws_kms
