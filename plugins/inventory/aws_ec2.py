@@ -71,6 +71,7 @@ options:
         and you want to get all the hostnames that match.
     type: bool
     default: False
+    version_added: 5.0.0
   filters:
     description:
       - A dictionary of filter value pairs.

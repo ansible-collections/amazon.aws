@@ -158,7 +158,10 @@ Some examples are shown below:
     - dns-name
     - tag:Name
     - private-ip-address
-  
+
+By default, the inventory will only return the first match one of the ``hostnames`` entries.
+You may want to get all the potential matches in your inventory, this also implies you will get
+duplicated entries. To switch to this behavior, set the ``allow_duplicated_hosts`` configuration key to ``True``.
 
 ``keyed_groups``
 ----------------
