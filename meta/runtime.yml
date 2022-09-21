@@ -2,6 +2,8 @@
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
+  - autoscaling_group
+  - autoscaling_group_info
   - aws_az_info
   - aws_caller_info
   - aws_s3
@@ -87,6 +89,12 @@ plugin_routing:
     ec2_group_info:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.ec2_security_group_info
+    ec2_asg:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.autoscaling_group
+    ec2_asg_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.autoscaling_group_info
     ec2_metric_alarm:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.cloudwatch_metric_alarm
