@@ -55,7 +55,7 @@ Minor Changes
 - aws_s3 - Add ``validate_bucket_name`` option, to control bucket name validation (https://github.com/ansible-collections/amazon.aws/pull/615).
 - aws_s3 - The ``aws_s3`` module has been renamed to ``s3_object`` (https://github.com/ansible-collections/amazon.aws/pull/869).
 - aws_s3 - ``resource_tags`` has been added as an alias for the ``tags`` parameter (https://github.com/ansible-collections/amazon.aws/pull/845).
-- ec2_eni - Change parameter ``device_index`` data type to string when passing to `describe_network_inter` api call (https://github.com/ansible-collections/amazon.aws/pull/877).
+- ec2_eni - Change parameter ``device_index`` data type to string when passing to ``describe_network_inter`` api call (https://github.com/ansible-collections/amazon.aws/pull/877).
 - ec2_eni - ``resource_tags`` has been added as an alias for the ``tags`` parameter (https://github.com/ansible-collections/amazon.aws/pull/845).
 - ec2_group - add ``egress_rules`` as an alias for ``rules_egress`` (https://github.com/ansible-collections/amazon.aws/pull/878).
 - ec2_group - add ``purge_egress_rules`` as an alias for ``purge_rules_egress`` (https://github.com/ansible-collections/amazon.aws/pull/878).
@@ -264,7 +264,7 @@ Breaking Changes / Porting Guide
 Deprecated Features
 -------------------
 
-- module_utils - support for the original AWS SDK `boto` has been deprecated in favour of the `boto3`/`botocore` SDK. All `boto` based modules have either been deprecated or migrated to `botocore`, and the remaining support code in module_utils will be removed in release 4.0.0 of the amazon.aws collection. Any modules outside of the amazon.aws and community.aws collections based on the `boto` library will need to be migrated to the `boto3`/`botocore` libraries (https://github.com/ansible-collections/amazon.aws/pull/575).
+- module_utils - support for the original AWS SDK ``boto`` has been deprecated in favour of the ``boto3``/``botocore`` SDK. All ``boto`` based modules have either been deprecated or migrated to ``botocore``, and the remaining support code in module_utils will be removed in release 4.0.0 of the amazon.aws collection. Any modules outside of the amazon.aws and community.aws collections based on the ``boto`` library will need to be migrated to the ``boto3``/``botocore`` libraries (https://github.com/ansible-collections/amazon.aws/pull/575).
 
 v2.2.0
 ======
@@ -575,9 +575,9 @@ Major Changes
 Minor Changes
 -------------
 
-- Add `aws_security_token`, `aws_endpoint_url` and `endpoint_url` aliases to improve AWS module parameter naming consistency.
-- Add support for `aws_ca_bundle` to boto3 based AWS modules
-- Add support for configuring boto3 profiles using `AWS_PROFILE` and `AWS_DEFAULT_PROFILE`
+- Add ``aws_security_token``, ``aws_endpoint_url`` and ``endpoint_url`` aliases to improve AWS module parameter naming consistency.
+- Add support for ``aws_ca_bundle`` to boto3 based AWS modules
+- Add support for configuring boto3 profiles using ``AWS_PROFILE`` and ``AWS_DEFAULT_PROFILE``
 - Added check_mode support to aws_az_info
 - Added check_mode support to ec2_eni_info
 - Added check_mode support to ec2_snapshot_info
@@ -589,7 +589,7 @@ Minor Changes
 - ec2_asg - Add support for Max Instance Lifetime
 - ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Migrated to AnsibleAWSModule
-- ec2_placement_group - make `name` a required field.
+- ec2_placement_group - make ``name`` a required field.
 - ec2_vol_info - Code cleanup and use of the AWSRetry decorator to improve stability
 - ec2_vpc_net - Enable IPv6 CIDR assignment
 
