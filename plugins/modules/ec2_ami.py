@@ -154,11 +154,13 @@ options:
       - Set to v2.0 to enable Trusted Platform Module (TPM) support.
       - If the image is configured for NitroTPM support, the value is v2.0 .
       - Requires I(boot_mode) to be set to 'uefi'.
+      - Requires minimum botocore version 1.23.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
     type: str
   uefi_data:
     description:
       - Base64 representation of the non-volatile UEFI variable store.
+      - Requires minimum botocore version 1.23.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html).
     type: str
 author:
@@ -791,6 +793,9 @@ def main():
     # the required_if for state=absent, so check manually instead
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
+
+    if module.params.get('tpm_support') != None or module.params.get('uefi_data') != None:
+        module.require_botocore_at_least('1.23.0', reason='required for ec2.register image with tpm_support or uefi_data')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

@@ -650,6 +650,8 @@
             snapshot_id: '{{ setup_snapshot.snapshot_id }}'
       register: result
       ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: set image id fact for deletion later
       set_fact:
