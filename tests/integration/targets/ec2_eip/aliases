@@ -1,0 +1,5 @@
+# https://github.com/ansible-collections/community.aws/issues/159
+# unstable
+
+cloud/aws
+ec2_eip_info

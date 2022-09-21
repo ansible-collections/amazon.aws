@@ -1,0 +1,1442 @@
+- name: Integration testing for ec2_eip
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+    amazon.aws.ec2_eip:
+      in_vpc: true
+
+  block:
+  - name: Get the current caller identity facts
+    aws_caller_info:
+    register: caller_info
+
+  - name: List available AZs
+    aws_az_info:
+    register: region_azs
+
+  - name: Create a VPC
+    ec2_vpc_net:
+      name: '{{ resource_prefix }}-vpc'
+      state: present
+      cidr_block: '{{ vpc_cidr }}'
+      tags:
+        AnsibleEIPTest: Pending
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+    register: vpc_result
+
+  - name: Look for signs of concurrent EIP tests.  Pause if they are running or their
+      prefix comes before ours.
+    vars:
+      running_query: vpcs[?tags.AnsibleEIPTest=='Running']
+      pending_query: vpcs[?tags.AnsibleEIPTest=='Pending'].tags.AnsibleEIPTestPrefix
+    ec2_vpc_net_info:
+      filters:
+        tag:AnsibleEIPTest:
+        - Pending
+        - Running
+    register: vpc_info
+    retries: 10
+    delay: 5
+    until:
+    - ( vpc_info.vpcs | map(attribute='tags') | selectattr('AnsibleEIPTest', 'equalto',
+      'Running') | length == 0 )
+    - ( vpc_info.vpcs | map(attribute='tags') | selectattr('AnsibleEIPTest', 'equalto',
+      'Pending') | map(attribute='AnsibleEIPTestPrefix') | sort | first == resource_prefix
+      )
+
+  - name: Create subnet
+    ec2_vpc_subnet:
+      cidr: '{{ subnet_cidr }}'
+      az: '{{ subnet_az }}'
+      vpc_id: '{{ vpc_result.vpc.id }}'
+      state: present
+    register: vpc_subnet_create
+
+  - name: Create internet gateway
+    amazon.aws.ec2_vpc_igw:
+      state: present
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: vpc_igw
+
+  - name: Create security group
+    ec2_group:
+      state: present
+      name: '{{ resource_prefix }}-sg'
+      description: a security group for ansible tests
+      vpc_id: '{{ vpc_result.vpc.id }}'
+      rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    register: security_group
+
+  - name: Create instance for attaching
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      image_id: '{{ ec2_ami_id }}'
+      security_group: '{{ security_group.group_id }}'
+      vpc_subnet_id: '{{ vpc_subnet_create.subnet.id }}'
+      wait: yes
+      state: running
+    register: create_ec2_instance_result
+
+  - name: Create ENI A
+    ec2_eni:
+      subnet_id: '{{ vpc_subnet_create.subnet.id }}'
+    register: eni_create_a
+
+  - name: Create ENI B
+    ec2_eni:
+      subnet_id: '{{ vpc_subnet_create.subnet.id }}'
+    register: eni_create_b
+
+  - name: Make a crude lock
+    ec2_vpc_net:
+      name: '{{ resource_prefix }}-vpc'
+      state: present
+      cidr_block: '{{ vpc_cidr }}'
+      tags:
+        AnsibleEIPTest: Running
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+
+  - name: Get current state of EIPs
+    ec2_eip_info:
+    register: eip_info_start
+
+  - name: Require that there are no free IPs when we start, otherwise we can't test
+      things properly
+    assert:
+      that:
+      - '"addresses" in eip_info_start'
+      - ( eip_info_start.addresses | length ) == ( eip_info_start.addresses | select('match',
+        'association_id') | length )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Allocate a new EIP with no conditions - check_mode
+    ec2_eip:
+      state: present
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+    register: eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip is changed
+
+  - name: Allocate a new EIP with no conditions
+    ec2_eip:
+      state: present
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+    register: eip
+
+  - ec2_eip_info:
+    register: eip_info
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip is changed
+      - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+      - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length
+        )
+
+  - name: Get EIP info via public ip
+    ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - '"addresses" in eip_info'
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+
+  - name: Get EIP info via allocation id
+    ec2_eip_info:
+      filters:
+        allocation-id: '{{ eip.allocation_id }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - '"addresses" in eip_info'
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+
+  - name: Allocate a new ip (idempotence) - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+    register: eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip is not changed
+
+  - name: Allocate a new ip (idempotence)
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+    register: eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - eip is not changed
+      - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+      - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Release EIP - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+    register: eip_release
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip_release.changed
+
+  - name: Release eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+    register: eip_release
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - eip_release.changed
+      - not eip_release.disassociated
+      - eip_release.released
+      - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+
+  - name: Release EIP (idempotence) - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+    register: eip_release
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip_release is not changed
+
+  - name: Release EIP (idempotence)
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+    register: eip_release
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - not eip_release.changed
+      - not eip_release.disassociated
+      - not eip_release.released
+      - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Allocate a new EIP - attempt reusing unallocated ones (none available) -
+      check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+    register: eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip is changed
+
+  - name: Allocate a new EIP - attempt reusing unallocated ones (none available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+    register: eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - eip is changed
+      - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+      - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length
+        )
+
+  - name: Re-Allocate a new EIP - attempt reusing unallocated ones (one available)
+      - check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+    register: reallocate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+
+  - name: Re-Allocate a new EIP - attempt reusing unallocated ones (one available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+    register: reallocate_eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+      - reallocate_eip.public_ip is defined and ( reallocate_eip.public_ip | ansible.utils.ipaddr
+        )
+      - reallocate_eip.allocation_id is defined and reallocate_eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: attempt reusing an existing EIP with a tag (No match available) - check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+    register: no_tagged_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - no_tagged_eip is changed
+
+  - name: attempt reusing an existing EIP with a tag (No match available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+    register: no_tagged_eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - no_tagged_eip is changed
+      - no_tagged_eip.public_ip is defined and ( no_tagged_eip.public_ip | ansible.utils.ipaddr
+        )
+      - no_tagged_eip.allocation_id is defined and no_tagged_eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 2  == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Tag EIP so we can try matching it
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        Team: Frontend
+
+  - name: Attempt reusing an existing EIP with a tag (Match available) - check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+    register: reallocate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+
+  - name: Attempt reusing an existing EIP with a tag (Match available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+    register: reallocate_eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+      - reallocate_eip.public_ip is defined and ( reallocate_eip.public_ip | ansible.utils.ipaddr
+        )
+      - reallocate_eip.allocation_id is defined and reallocate_eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 2  == ( eip_info.addresses | length
+        )
+
+  - name: Attempt reusing an existing EIP with a tag and it's value (no match available)
+      - check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+      tag_value: Backend
+    register: backend_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - backend_eip is changed
+
+  - name: Attempt reusing an existing EIP with a tag and it's value (no match available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+      tag_value: Backend
+    register: backend_eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - backend_eip is changed
+      - backend_eip.public_ip is defined and ( backend_eip.public_ip | ansible.utils.ipaddr
+        )
+      - backend_eip.allocation_id is defined and backend_eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 3  == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Tag EIP so we can try matching it
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        Team: Backend
+
+  - name: Attempt reusing an existing EIP with a tag and it's value (match available)
+      - check_mode
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+      tag_value: Backend
+    register: reallocate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+
+  - name: Attempt reusing an existing EIP with a tag and it's value (match available)
+    ec2_eip:
+      state: present
+      reuse_existing_ip_allowed: true
+      tag_name: Team
+      tag_value: Backend
+    register: reallocate_eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - reallocate_eip is not changed
+      - reallocate_eip.public_ip is defined and reallocate_eip.public_ip != ""
+      - reallocate_eip.allocation_id is defined and reallocate_eip.allocation_id !=
+        ""
+      - ( eip_info_start.addresses | length ) + 3  == ( eip_info.addresses | length
+        )
+
+  - name: Release backend_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ backend_eip.public_ip }}'
+
+  - name: Release no_tagged_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ no_tagged_eip.public_ip }}'
+
+  - name: Release eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Allocate a new EIP from a pool - check_mode
+    ec2_eip:
+      state: present
+      public_ipv4_pool: amazon
+    register: eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - eip is changed
+
+  - name: Allocate a new EIP from a pool
+    ec2_eip:
+      state: present
+      public_ipv4_pool: amazon
+    register: eip
+
+  - ec2_eip_info:
+    register: eip_info
+
+  - assert:
+      that:
+      - eip is changed
+      - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+      - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+      - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Attach EIP to ENI A - check_mode
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+    register: associate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - associate_eip is changed
+
+  - name: Attach EIP to ENI A
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+    register: associate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - associate_eip is changed
+      - eip_info.addresses | length == 1
+      - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+      - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+      - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+      - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address
+        | ansible.utils.ipaddr )
+      - eip_info.addresses[0].network_interface_owner_id == caller_info.account
+
+  - name: Attach EIP to ENI A (idempotence) - check_mode
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+    register: associate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - associate_eip is not changed
+
+  - name: Attach EIP to ENI A (idempotence)
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+    register: associate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - associate_eip is not changed
+      - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+      - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+      - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+      - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address
+        | ansible.utils.ipaddr )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Attach EIP to ENI B (should fail, already associated)
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+    register: associate_eip
+    ignore_errors: true
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - associate_eip is failed
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+      - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+      - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address
+        | ansible.utils.ipaddr )
+
+  - name: Attach EIP to ENI B - check_mode
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+      allow_reassociation: true
+    register: associate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - associate_eip is changed
+
+  - name: Attach EIP to ENI B
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+      allow_reassociation: true
+    register: associate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - associate_eip is changed
+      - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+      - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+      - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
+      - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address
+        | ansible.utils.ipaddr )
+
+  - name: Attach EIP to ENI B (idempotence) - check_mode
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+      allow_reassociation: true
+    register: associate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - associate_eip is not changed
+
+  - name: Attach EIP to ENI B (idempotence)
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+      allow_reassociation: true
+    register: associate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - associate_eip is not changed
+      - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+      - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+      - eip_info.addresses | length == 1
+      - eip_info.addresses[0].allocation_id == eip.allocation_id
+      - eip_info.addresses[0].domain == "vpc"
+      - eip_info.addresses[0].public_ip == eip.public_ip
+      - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+      - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
+      - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address
+        | ansible.utils.ipaddr )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Detach EIP from ENI B, without enabling release on disassociation - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is changed
+
+  - name: Detach EIP from ENI B, without enabling release on disassociation
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - disassociate_eip.changed
+      - disassociate_eip.disassociated
+      - not disassociate_eip.released
+      - eip_info.addresses | length == 1
+
+  - name: Detach EIP from ENI B, without enabling release on disassociation (idempotence)
+      - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is not changed
+
+  - name: Detach EIP from ENI B, without enabling release on disassociation (idempotence)
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_b.interface.id }}'
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - not disassociate_eip.changed
+      - not disassociate_eip.disassociated
+      - not disassociate_eip.released
+      - eip_info.addresses | length == 1
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Attach EIP to ENI A
+    ec2_eip:
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+    register: associate_eip
+
+  - name: Detach EIP from ENI A, enabling release on disassociation - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+      release_on_disassociation: true
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is changed
+
+  - name: Detach EIP from ENI A, enabling release on disassociation
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+      release_on_disassociation: true
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - disassociate_eip.changed
+      - disassociate_eip.disassociated
+      - disassociate_eip.released
+      - eip_info.addresses | length == 0
+
+  - name: Detach EIP from ENI A, enabling release on disassociation (idempotence)
+      - check_mode
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+      release_on_disassociation: true
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is not changed
+
+  - name: Detach EIP from ENI A, enabling release on disassociation (idempotence)
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+      device_id: '{{ eni_create_a.interface.id }}'
+      release_on_disassociation: true
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - not disassociate_eip.changed
+      - not disassociate_eip.disassociated
+      - not disassociate_eip.released
+      - eip_info.addresses | length == 0
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Attach EIP to an EC2 instance - check_mode
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - instance_eip is changed
+
+  - name: Attach EIP to an EC2 instance
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - instance_eip is changed
+      - eip_info.addresses[0].allocation_id is defined
+      - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0]
+        }}'
+
+  - name: Attach EIP to an EC2 instance (idempotence) - check_mode
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - instance_eip is not changed
+
+  - name: Attach EIP to an EC2 instance (idempotence)
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - instance_eip is not changed
+      - eip_info.addresses[0].allocation_id is defined
+      - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0]
+        }}'
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Detach EIP from EC2 instance, without enabling release on disassociation
+      - check_mode
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+    register: detach_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - detach_eip is changed
+
+  - name: Detach EIP from EC2 instance, without enabling release on disassociation
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+    register: detach_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - detach_eip.changed
+      - detach_eip.disassociated
+      - not detach_eip.released
+      - eip_info.addresses | length == 1
+
+  - name: Detach EIP from EC2 instance, without enabling release on disassociation
+      (idempotence) - check_mode
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+    register: detach_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - detach_eip is not changed
+
+  - name: Detach EIP from EC2 instance, without enabling release on disassociation
+      (idempotence)
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+    register: detach_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - not detach_eip.changed
+      - not detach_eip.disassociated
+      - not detach_eip.released
+      - eip_info.addresses | length == 1
+
+  - name: Release EIP
+    ec2_eip:
+      state: absent
+      public_ip: '{{ instance_eip.public_ip }}'
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Attach EIP to an EC2 instance with private Ip specified - check_mode
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      private_ip_address: '{{ create_ec2_instance_result.instances[0].private_ip_address
+        }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - instance_eip is changed
+
+  - name: Attach EIP to an EC2 instance with private Ip specified
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      private_ip_address: '{{ create_ec2_instance_result.instances[0].private_ip_address
+        }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - instance_eip is changed
+      - eip_info.addresses[0].allocation_id is defined
+      - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0]
+        }}'
+
+  - name: Attach EIP to an EC2 instance with private Ip specified (idempotence) -
+      check_mode
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      private_ip_address: '{{ create_ec2_instance_result.instances[0].private_ip_address
+        }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - instance_eip is not changed
+
+  - name: Attach EIP to an EC2 instance with private Ip specified (idempotence)
+    ec2_eip:
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      private_ip_address: '{{ create_ec2_instance_result.instances[0].private_ip_address
+        }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - instance_eip is not changed
+      - eip_info.addresses[0].allocation_id is defined
+      - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0]
+        }}'
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Detach EIP from EC2 instance, enabling release on disassociation - check_mode
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      release_on_disassociation: yes
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is changed
+
+  - name: Detach EIP from EC2 instance, enabling release on disassociation
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      release_on_disassociation: yes
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - disassociate_eip.changed
+      - disassociate_eip.disassociated
+      - disassociate_eip.released
+      - eip_info.addresses | length == 0
+
+  - name: Detach EIP from EC2 instance, enabling release on disassociation (idempotence)
+      - check_mode
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      release_on_disassociation: yes
+    register: disassociate_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - disassociate_eip is not changed
+
+  - name: Detach EIP from EC2 instance, enabling release on disassociation (idempotence)
+    ec2_eip:
+      state: absent
+      device_id: '{{ create_ec2_instance_result.instance_ids[0] }}'
+      release_on_disassociation: yes
+    register: disassociate_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - not disassociate_eip.changed
+      - not disassociate_eip.disassociated
+      - not disassociate_eip.released
+      - eip_info.addresses | length == 0
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Allocate a new eip
+    ec2_eip:
+      state: present
+    register: eip
+
+  - name: Tag EIP - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+        another_tag: another Value {{ resource_prefix }}
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is changed
+
+  - name: Tag EIP
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+        another_tag: another Value {{ resource_prefix }}
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is changed
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - '"another_tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+      - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+      - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length
+        )
+
+  - name: Tag EIP (idempotence) - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+        another_tag: another Value {{ resource_prefix }}
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is not changed
+
+  - name: Tag EIP (idempotence)
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+        another_tag: another Value {{ resource_prefix }}
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is not changed
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - '"another_tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+      - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+      - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length
+        )
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Add another Tag - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: false
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is changed
+
+  - name: Add another Tag
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: false
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is changed
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - '"another_tag" in eip_info.addresses[0].tags'
+      - '"third tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+      - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+      - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+      - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length
+        )
+
+  - name: Add another Tag (idempotence) - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: false
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is not changed
+
+  - name: Add another Tag (idempotence)
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: false
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is not changed
+      - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+      - '"another_tag" in eip_info.addresses[0].tags'
+      - '"third tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+      - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+      - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Purge tags - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: true
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is changed
+
+  - name: Purge tags
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: true
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is changed
+      - '"AnsibleEIPTestPrefix" not in eip_info.addresses[0].tags'
+      - '"another_tag" not in eip_info.addresses[0].tags'
+      - '"third tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+  - name: Purge tags (idempotence) - check_mode
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: true
+    register: tag_eip
+    check_mode: yes
+
+  - assert:
+      that:
+      - tag_eip is not changed
+
+  - name: Purge tags (idempotence)
+    ec2_eip:
+      state: present
+      public_ip: '{{ eip.public_ip }}'
+      tags:
+        third tag: Third tag - {{ resource_prefix }}
+      purge_tags: true
+    register: tag_eip
+
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ eip.public_ip }}'
+    register: eip_info
+
+  - assert:
+      that:
+      - tag_eip is not changed
+      - '"AnsibleEIPTestPrefix" not in eip_info.addresses[0].tags'
+      - '"another_tag" not in eip_info.addresses[0].tags'
+      - '"third tag" in eip_info.addresses[0].tags'
+      - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+  # ----- Cleanup ------------------------------------------------------------------------------
+
+  always:
+
+  - name: Cleanup instance (by id)
+    ec2_instance:
+      instance_ids: '{{ create_ec2_instance_result.instance_ids }}'
+      state: absent
+      wait: true
+    ignore_errors: true
+
+  - name: Cleanup instance (by name)
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      state: absent
+      wait: true
+    ignore_errors: true
+
+  - name: Cleanup ENI A
+    ec2_eni:
+      state: absent
+      eni_id: '{{ eni_create_a.interface.id }}'
+    ignore_errors: true
+
+  - name: Cleanup ENI B
+    ec2_eni:
+      state: absent
+      eni_id: '{{ eni_create_b.interface.id }}'
+    ignore_errors: true
+
+  - name: Cleanup instance eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ instance_eip.public_ip }}'
+    retries: 5
+    delay: 5
+    until: eip_cleanup is successful
+    ignore_errors: true
+
+  - name: Cleanup IGW
+    ec2_vpc_igw:
+      state: absent
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: vpc_igw
+    ignore_errors: true
+
+  - name: Cleanup security group
+    ec2_group:
+      state: absent
+      name: '{{ resource_prefix }}-sg'
+    ignore_errors: true
+
+  - name: Cleanup Subnet
+    ec2_vpc_subnet:
+      state: absent
+      cidr: '{{ subnet_cidr }}'
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    ignore_errors: true
+
+  - name: Cleanup eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ eip.public_ip }}'
+    ignore_errors: true
+
+  - name: Cleanup reallocate_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ reallocate_eip.public_ip }}'
+    ignore_errors: true
+
+  - name: Cleanup backend_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ backend_eip.public_ip }}'
+    ignore_errors: true
+
+  - name: Cleanup no_tagged_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ no_tagged_eip.public_ip }}'
+    ignore_errors: true
+
+  - name: Cleanup VPC
+    ec2_vpc_net:
+      state: absent
+      name: '{{ resource_prefix }}-vpc'
+      cidr_block: '{{ vpc_cidr }}'
+    ignore_errors: true
