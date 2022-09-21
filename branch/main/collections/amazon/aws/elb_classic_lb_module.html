@@ -787,13 +787,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_classic_lb</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test-please-delete&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
-<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 
 <span class="c1"># Ensure ELB is gone and wait for check with timeout value</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_classic_lb</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test-please-delete&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
-<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">    </span><span class="nt">wait_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w"></span>
 
 <span class="c1"># Normally, this module will purge any listeners that exist on the ELB</span><span class="w"></span>
@@ -809,7 +809,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"></span>
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
-<span class="w">    </span><span class="nt">purge_listeners</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span><span class="w"></span>
+<span class="w">    </span><span class="nt">purge_listeners</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 
 <span class="c1"># Normally, this module will leave availability zones that are enabled</span><span class="w"></span>
 <span class="c1"># on the ELB alone. If purge_zones is true, then any extraneous zones</span><span class="w"></span>
@@ -824,7 +824,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"></span>
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
-<span class="w">    </span><span class="nt">purge_zones</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">purge_zones</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 
 <span class="c1"># Creates a ELB and assigns a list of subnets to it.</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_classic_lb</span><span class="p">:</span><span class="w"></span>
@@ -832,7 +832,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;New</span><span class="nv"> </span><span class="s">ELB&#39;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;sg-123456,</span><span class="nv"> </span><span class="s">sg-67890&#39;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">subnets</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;subnet-123456,subnet-67890&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">purge_subnets</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">purge_subnets</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">    </span><span class="nt">listeners</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"></span>
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
@@ -867,7 +867,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
 <span class="w">    </span><span class="nt">stickiness</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">loadbalancer</span><span class="w"></span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">      </span><span class="nt">expiration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w"></span>
 
 <span class="c1"># Create an ELB with application stickiness enabled</span><span class="w"></span>
@@ -883,7 +883,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
 <span class="w">    </span><span class="nt">stickiness</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application</span><span class="w"></span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">      </span><span class="nt">cookie</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SESSIONID</span><span class="w"></span>
 
 <span class="c1"># Create an ELB and add tags</span><span class="w"></span>
