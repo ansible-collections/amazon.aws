@@ -87,7 +87,7 @@ options:
       - Unfortunately this is ignored for delete actions due to a difference in
         behaviour from AWS.
     required: false
-    default: no
+    default: false
     type: bool
   wait_timeout:
     description:

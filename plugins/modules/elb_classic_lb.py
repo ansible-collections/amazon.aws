@@ -360,13 +360,13 @@ EXAMPLES = """
 - amazon.aws.elb_classic_lb:
     name: "test-please-delete"
     state: absent
-    wait: yes
+    wait: true
 
 # Ensure ELB is gone and wait for check with timeout value
 - amazon.aws.elb_classic_lb:
     name: "test-please-delete"
     state: absent
-    wait: yes
+    wait: true
     wait_timeout: 600
 
 # Normally, this module will purge any listeners that exist on the ELB
@@ -382,7 +382,7 @@ EXAMPLES = """
       - protocol: http
         load_balancer_port: 80
         instance_port: 80
-    purge_listeners: no
+    purge_listeners: false
 
 # Normally, this module will leave availability zones that are enabled
 # on the ELB alone. If purge_zones is true, then any extraneous zones
@@ -397,7 +397,7 @@ EXAMPLES = """
       - protocol: http
         load_balancer_port: 80
         instance_port: 80
-    purge_zones: yes
+    purge_zones: true
 
 # Creates a ELB and assigns a list of subnets to it.
 - amazon.aws.elb_classic_lb:
@@ -405,7 +405,7 @@ EXAMPLES = """
     name: 'New ELB'
     security_group_ids: 'sg-123456, sg-67890'
     subnets: 'subnet-123456,subnet-67890'
-    purge_subnets: yes
+    purge_subnets: true
     listeners:
       - protocol: http
         load_balancer_port: 80
@@ -440,7 +440,7 @@ EXAMPLES = """
         instance_port: 80
     stickiness:
       type: loadbalancer
-      enabled: yes
+      enabled: true
       expiration: 300
 
 # Create an ELB with application stickiness enabled
@@ -456,7 +456,7 @@ EXAMPLES = """
         instance_port: 80
     stickiness:
       type: application
-      enabled: yes
+      enabled: true
       cookie: SESSIONID
 
 # Create an ELB and add tags

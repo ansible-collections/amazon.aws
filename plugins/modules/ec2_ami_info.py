@@ -43,7 +43,7 @@ options:
   describe_image_attributes:
     description:
       - Describe attributes (like launchPermission) of the images found.
-    default: no
+    default: false
     type: bool
 
 extends_documentation_fragment:
@@ -140,7 +140,7 @@ images:
       sample: machine
     launch_permissions:
       description: A List of AWS accounts may launch the AMI.
-      returned: When image is owned by calling account and I(describe_image_attributes) is yes.
+      returned: When image is owned by calling account and I(describe_image_attributes=true).
       type: list
       elements: dict
       contains:

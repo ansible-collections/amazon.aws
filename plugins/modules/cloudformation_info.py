@@ -98,7 +98,7 @@ EXAMPLES = '''
 - name: try to get info about a stack but fail if it doesn't exist
   amazon.aws.cloudformation_info:
     stack_name: nonexistent-stack
-    all_facts: yes
+    all_facts: true
   failed_when: cloudformation['nonexistent-stack'] is undefined
 '''
 

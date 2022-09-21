@@ -46,7 +46,7 @@ options:
       - Wait for the snapshot to be ready.
     type: bool
     required: false
-    default: yes
+    default: true
   wait_timeout:
     description:
       - How long before wait gives up, in seconds.

@@ -50,7 +50,7 @@ options:
   purge_cidrs:
     description:
       - Remove CIDRs that are associated with the VPC and are not specified in I(cidr_block).
-    default: no
+    default: false
     type: bool
   tenancy:
     description:

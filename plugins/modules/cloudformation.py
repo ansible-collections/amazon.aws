@@ -257,7 +257,7 @@ EXAMPLES = '''
     stack_name: my_stack
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template
-    termination_protection: yes
+    termination_protection: true
 
 # Configure TimeoutInMinutes before the stack status becomes CREATE_FAILED
 # In this case, if disable_rollback is not set or is set to false, the stack will be rolled back.

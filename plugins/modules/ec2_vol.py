@@ -142,7 +142,7 @@ EXAMPLES = '''
 - amazon.aws.ec2:
     keypair: "{{ keypair }}"
     image: "{{ image }}"
-    wait: yes
+    wait: true
     count: 3
   register: ec2
 - amazon.aws.ec2_vol:
@@ -160,7 +160,7 @@ EXAMPLES = '''
     image: "{{ image }}"
     zone: YYYYYY
     id: my_instance
-    wait: yes
+    wait: true
     count: 1
   register: ec2
 
@@ -202,7 +202,7 @@ EXAMPLES = '''
     instance: XXXXXX
     id: XXXXXX
     device_name: /dev/sdf
-    delete_on_termination: yes
+    delete_on_termination: true
 '''
 
 RETURN = '''

@@ -80,7 +80,7 @@ options:
         type: str
         description:
           - The device name. For example C(/dev/sda).
-        required: yes
+        required: true
       virtual_name:
         type: str
         description:
@@ -162,7 +162,7 @@ EXAMPLES = '''
 - name: Basic AMI Creation
   amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
-    wait: yes
+    wait: true
     name: newtest
     tags:
       Name: newtest
@@ -212,7 +212,7 @@ EXAMPLES = '''
           delete_on_termination: true
           volume_type: gp2
         - device_name: /dev/sdb
-          no_device: yes
+          no_device: true
 
 - name: Deregister/Delete AMI (keep associated snapshots)
   amazon.aws.ec2_ami:
