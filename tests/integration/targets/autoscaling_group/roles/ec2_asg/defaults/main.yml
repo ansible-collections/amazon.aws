@@ -1,0 +1,2 @@
+load_balancer_name: '{{ tiny_prefix }}-lb'
+ec2_asg_setup_run_once: true
