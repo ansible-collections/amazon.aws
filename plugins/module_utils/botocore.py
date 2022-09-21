@@ -185,7 +185,7 @@ def get_aws_connection_info(module, boto3=None):
             profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
 
     if profile_name and (access_key or secret_key or security_token):
-        module.fail("Passing both a profile and access tokens is not supported.")
+        module.fail_json(msg="Passing both a profile and access tokens is not supported.")
 
     if not endpoint_url:
         if 'AWS_URL' in os.environ:

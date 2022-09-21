@@ -55,3 +55,20 @@
     - '"msg" in bad_profile'
     - '"junk-profile" in bad_profile.msg'
     - '"could not be found" in bad_profile.msg'
+
+- name: 'Test with profile and credentials (should error)'
+  example_module:
+    profile: 'test_profile'
+    aws_region: '{{ aws_region }}'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  register: bad_profile
+  ignore_errors: True
+
+- assert:
+    that:
+    - bad_profile is failed
+    - '"msg" in bad_profile'
+    - '"Passing both" in bad_profile.msg'
+    - '"not supported" in bad_profile.msg'
