@@ -65,7 +65,7 @@ EXAMPLES = '''
     production_version: 5
   tasks:
   - name: AWS Lambda Function
-    lambda:
+    amazon.aws.lambda:
       state: "{{ state | default('present') }}"
       name: myLambdaFunction
       publish: True
@@ -80,7 +80,7 @@ EXAMPLES = '''
       role: "arn:aws:iam::{{ account }}:role/API2LambdaExecRole"
 
   - name: Get information
-    lambda_info:
+    amazon.aws.lambda_info:
       name: myLambdaFunction
     register: lambda_info
   - name: show results
