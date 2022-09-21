@@ -40,36 +40,36 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Find all groups
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
   register: asgs
 
 - name: Find a group with matching name/prefix
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
 
 - name: Find a group with matching tags
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
     tags:
       project: webapp
       env: production
   register: asgs
 
 - name: Find a group with matching name/prefix and tags
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
     name: myproject
     tags:
       env: production
   register: asgs
 
 - name: Fail if no groups are found
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length == 0 }}"
 
 - name: Fail if more than 1 group is found
-  community.aws.autoscaling_group_info:
+  amazon.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length > 1 }}"
@@ -134,7 +134,7 @@ instances:
 launch_config_name:
     description: >
       Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-      provided for compatibility with M(community.aws.autoscaling_group) module.
+      provided for compatibility with M(amazon.aws.autoscaling_group) module.
     returned: success
     type: str
     sample: "public-webapp-production-1"

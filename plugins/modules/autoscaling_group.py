@@ -328,7 +328,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Basic configuration with Launch Configuration
 
-- community.aws.autoscaling_group:
+- amazon.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -363,7 +363,7 @@ EXAMPLES = r'''
     instance_type: m1.small
     assign_public_ip: true
 
-- community.aws.autoscaling_group:
+- amazon.aws.autoscaling_group:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -377,7 +377,7 @@ EXAMPLES = r'''
 # To only replace a couple of instances instead of all of them, supply a list
 # to "replace_instances":
 
-- community.aws.autoscaling_group:
+- amazon.aws.autoscaling_group:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -392,7 +392,7 @@ EXAMPLES = r'''
 
 # Basic Configuration with Launch Template
 
-- community.aws.autoscaling_group:
+- amazon.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -410,7 +410,7 @@ EXAMPLES = r'''
 
 # Basic Configuration with Launch Template using mixed instance policy
 
-- community.aws.autoscaling_group:
+- amazon.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -510,7 +510,7 @@ instances:
 launch_config_name:
     description: >
       Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-      provided for compatibility with M(community.aws.autoscaling_group) module.
+      provided for compatibility with M(amazon.aws.autoscaling_group) module.
     returned: success
     type: str
     sample: "public-webapp-production-1"
