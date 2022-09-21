@@ -13,6 +13,8 @@ action_groups:
   - cloudwatchlogs_log_group_metric_filter
   - ec2_ami
   - ec2_ami_info
+  - ec2_eip
+  - ec2_eip_info
   - ec2_elb_lb
   - ec2_eni
   - ec2_eni_info
@@ -46,13 +48,13 @@ action_groups:
   - ec2_vpc_route_table_info
   - ec2_vpc_subnet
   - ec2_vpc_subnet_info
-  - elb_classic_lb
-  - s3_bucket
-  - s3_object
   - elb_application_lb
   - elb_application_lb_info
-  - ec2_eip
-  - ec2_eip_info
+  - elb_classic_lb
+  - iam_policy
+  - iam_policy_info
+  - s3_bucket
+  - s3_object
 plugin_routing:
   action:
     aws_s3:

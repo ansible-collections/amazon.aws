@@ -1,0 +1,7 @@
+major_changes:
+- iam_policy - The module has been migrated from the ``community.aws`` collection.
+  Playbooks using the Fully Qualified Collection Name for this module should be updated
+  to use ``amazon.aws.iam_policy``.
+- iam_policy_info - The module has been migrated from the ``community.aws`` collection.
+  Playbooks using the Fully Qualified Collection Name for this module should be updated
+  to use ``amazon.aws.iam_policy_info``.
