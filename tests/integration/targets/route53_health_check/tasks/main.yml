@@ -1,0 +1,1737 @@
+---
+# route53_health_check integration tests
+#
+# Module uses the following as an 'ID'
+# (the real ID is automatically assigned after creation)
+# - ip_address
+# - fqdn
+# - port
+# - type (immutable)
+# - request_interval (immutable)
+#
+# modifiable
+# - resource_path
+# - string_match
+# - failure_threshold
+# - disabled
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  # Route53 can only test against routable IPs.  Request an EIP so some poor
+  # soul doesn't get randomly hit by our testing.
+  - name: Allocate an EIP we can test against
+    ec2_eip:
+      state: present
+    register: eip
+
+  - set_fact:
+      ip_address: '{{ eip.public_ip }}'
+
+  - name: Run tests for creating multiple health checks with name as unique identifier
+    include_tasks: create_multiple_health_checks.yml
+
+  - name: Run tests for update and delete health check by ID
+    include_tasks: update_delete_by_id.yml
+
+  # Minimum possible definition
+  - name: 'Create a TCP health check - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: create_check
+    check_mode: true
+
+  - name: 'Check result - Create a TCP health check - check_mode'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is changed
+
+  - name: 'Create a TCP health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: create_check
+
+  - name: 'Check result - Create a TCP health check'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is changed
+      - '"health_check" in create_check'
+      - '"id" in _health_check'
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action == 'create'
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'TCP'
+      - _check_config.failure_threshold == 3
+      - _check_config.request_interval == 30
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ create_check.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - set_fact:
+      tcp_check_id: '{{ create_check.health_check.id }}'
+
+  - name: 'Create a TCP health check - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: create_check
+    check_mode: true
+
+  - name: 'Check result - Create a TCP health check - idempotency - check_mode'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is not changed
+
+  - name: 'Create a TCP health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: create_check
+
+  - name: 'Check result - Create a TCP health check - idempotency'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is not changed
+      - '"health_check" in create_check'
+      - '"id" in create_check.health_check'
+      - _health_check.id == tcp_check_id
+      - '"id" in _health_check'
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == 3
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ create_check.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  # Update an attribute
+  - name: 'Update TCP health check - set threshold - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set threshold - check_mode'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is changed
+
+  - name: 'Update TCP health check - set threshold'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set threshold'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is changed
+      - '"health_check" in update_threshold'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_threshold.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set threshold - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set threshold - idempotency - check_mode'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is not changed
+
+  - name: 'Update TCP health check - set threshold - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set threshold - idempotency'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is not changed
+      - '"health_check" in update_threshold'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_threshold.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set disabled - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_disabled
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set disabled - check_mode'
+    assert:
+      that:
+      - update_disabled is successful
+      - update_disabled is changed
+
+  - name: 'Update TCP health check - set disabled'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_disabled
+
+  - name: 'Check result - Update TCP health check - set disabled'
+    assert:
+      that:
+      - update_disabled is successful
+      - update_disabled is changed
+      - '"health_check" in update_disabled'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_disabled.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set disabled - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_disabled
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set disabled - idempotency - check_mode'
+    assert:
+      that:
+      - update_disabled is successful
+      - update_disabled is not changed
+
+  - name: 'Update TCP health check - set disabled - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_disabled
+
+  - name: 'Check result - Update TCP health check - set disabled - idempotency'
+    assert:
+      that:
+      - update_disabled is successful
+      - update_disabled is not changed
+      - '"health_check" in update_disabled'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_disabled.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set tags - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: update_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set tags - check_mode'
+    assert:
+      that:
+      - update_tags is successful
+      - update_tags is changed
+
+  - name: 'Update TCP health check - set tags'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: update_tags
+
+  - name: 'Check result - Update TCP health check - set tags'
+    assert:
+      that:
+      - update_tags is successful
+      - update_tags is changed
+      - '"health_check" in update_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set tags - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: update_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set tags - idempotency - check_mode'
+    assert:
+      that:
+      - update_tags is successful
+      - update_tags is not changed
+
+  - name: 'Update TCP health check - set tags - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: update_tags
+
+  - name: 'Check result - Update TCP health check - set tags - idempotency'
+    assert:
+      that:
+      - update_tags is successful
+      - update_tags is not changed
+      - '"health_check" in update_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - add tags - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: false
+    register: add_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - add tags - check_mode'
+    assert:
+      that:
+      - add_tags is successful
+      - add_tags is changed
+
+  - name: 'Update TCP health check - add tags'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: false
+    register: add_tags
+
+  - name: 'Check result - Update TCP health check - add tags'
+    assert:
+      that:
+      - add_tags is successful
+      - add_tags is changed
+      - '"health_check" in add_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - '"anotherTag" in _health_check.tags'
+      - _health_check.tags['anotherTag'] == 'anotherValue'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ add_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - add tags - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: false
+    register: add_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - add tags - idempotency - check_mode'
+    assert:
+      that:
+      - add_tags is successful
+      - add_tags is not changed
+
+  - name: 'Update TCP health check - add tags - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: false
+    register: add_tags
+
+  - name: 'Check result - Update TCP health check - add tags - idempotency'
+    assert:
+      that:
+      - add_tags is successful
+      - add_tags is not changed
+      - '"health_check" in add_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - '"anotherTag" in _health_check.tags'
+      - _health_check.tags['anotherTag'] == 'anotherValue'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ add_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - purge tags - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: true
+    register: purge_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - purge tags - check_mode'
+    assert:
+      that:
+      - purge_tags is successful
+      - purge_tags is changed
+
+  - name: 'Update TCP health check - purge tags'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: true
+    register: purge_tags
+
+  - name: 'Check result - Update TCP health check - purge tags'
+    assert:
+      that:
+      - purge_tags is successful
+      - purge_tags is changed
+      - '"health_check" in purge_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" not in _health_check.tags'
+      - '"snake_case" not in _health_check.tags'
+      - '"with space" not in _health_check.tags'
+      - '"anotherTag" in _health_check.tags'
+      - _health_check.tags['anotherTag'] == 'anotherValue'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ purge_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - purge tags - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: true
+    register: purge_tags
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - purge tags - idempotency - check_mode'
+    assert:
+      that:
+      - purge_tags is successful
+      - purge_tags is not changed
+
+  - name: 'Update TCP health check - purge tags - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      tags:
+        anotherTag: anotherValue
+      purge_tags: true
+    register: purge_tags
+
+  - name: 'Check result - Update TCP health check - purge tags - idempotency'
+    assert:
+      that:
+      - purge_tags is successful
+      - purge_tags is not changed
+      - '"health_check" in purge_tags'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" not in _health_check.tags'
+      - '"snake_case" not in _health_check.tags'
+      - '"with space" not in _health_check.tags'
+      - '"anotherTag" in _health_check.tags'
+      - _health_check.tags['anotherTag'] == 'anotherValue'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ purge_tags.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  # Delete the check
+  - name: 'Delete TCP health check - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: delete_tcp
+    check_mode: True
+
+  - name: 'Check result - Delete TCP health check - check_mode'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is changed
+
+  - name: 'Delete TCP health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: delete_tcp
+
+  - name: 'Check result - Delete TCP health check'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is changed
+
+  - name: 'Delete TCP health check - idempotency - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: delete_tcp
+    check_mode: True
+
+  - name: 'Check result - Delete TCP health check - idempotency - check_mode'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is not changed
+
+  - name: 'Delete TCP health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    register: delete_tcp
+
+  - name: 'Check result - Delete TCP health check - idempotency'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is not changed
+
+  # Create an HTTPS_STR_MATCH healthcheck so we can try out more settings
+  - name: 'Create a HTTPS_STR_MATCH health check - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+    register: create_match
+    check_mode: true
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check - check_mode'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is changed
+
+  - name: 'Create a HTTPS_STR_MATCH health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+    register: create_match
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is changed
+      - '"health_check" in create_match'
+      - '"id" in _health_check'
+      - _health_check.id != tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'HTTPS_STR_MATCH'
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ create_match.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - set_fact:
+      match_check_id: '{{ create_match.health_check.id }}'
+
+  - name: 'Create a HTTPS_STR_MATCH health check - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+    register: create_match
+    check_mode: true
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check - idempotency - check_mode'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is not changed
+
+  - name: 'Create a HTTPS_STR_MATCH health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+    register: create_match
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check - idempotency'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is not changed
+      - '"health_check" in create_match'
+      - '"id" in _health_check'
+      - _health_check.id == match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == type_https_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ create_match.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update HTTPS health check - set resource_path - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+    register: update_resource_path
+    check_mode: true
+
+  - name: 'Check result - Update HTTPS health check - set resource_path - check_mode'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is changed
+
+  - name: 'Update HTTPS health check - set resource_path'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+    register: update_resource_path
+
+  - name: 'Check result - Update HTTPS health check - set resource_path'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is changed
+      - '"health_check" in update_resource_path'
+      - '"id" in _health_check'
+      - _health_check.id == match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == type_https_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ update_resource_path.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update HTTPS health check - set resource_path - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+    register: update_resource_path
+    check_mode: true
+
+  - name: 'Check result - Update HTTPS health check - set resource_path - idempotency - check_mode'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is not changed
+
+  - name: 'Update HTTPS health check - set resource_path - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+    register: update_resource_path
+
+  - name: 'Check result - Update HTTPS health check - set resource_path - idempotency'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is not changed
+      - '"health_check" in update_resource_path'
+      - '"id" in _health_check'
+      - _health_check.id == match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == type_https_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ update_resource_path.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update HTTPS health check - set string_match - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+    register: update_string_match
+    check_mode: true
+
+  - name: 'Check result - Update HTTPS health check - set string_match - check_mode'
+    assert:
+      that:
+      - update_string_match is successful
+      - update_string_match is changed
+
+  - name: 'Update HTTPS health check - set string_match'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+    register: update_string_match
+
+  - name: 'Check result - Update HTTPS health check - set string_match'
+    assert:
+      that:
+      - update_string_match is successful
+      - update_string_match is changed
+      - '"health_check" in update_string_match'
+      - '"id" in _health_check'
+      - _health_check.id == match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == type_https_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match_updated
+    vars:
+      _health_check: '{{ update_string_match.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update HTTPS health check - set string_match - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+    register: update_string_match
+    check_mode: true
+
+  - name: 'Check result - Update HTTPS health check - set string_match - idempotency - check_mode'
+    assert:
+      that:
+      - update_string_match is successful
+      - update_string_match is not changed
+
+  - name: 'Update HTTPS health check - set string_match - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+    register: update_string_match
+
+  - name: 'Check result - Update HTTPS health check - set string_match - idempotency'
+    assert:
+      that:
+      - update_string_match is successful
+      - update_string_match is not changed
+      - '"health_check" in update_string_match'
+      - '"id" in _health_check'
+      - _health_check.id == match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == type_https_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == 3
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match_updated
+    vars:
+      _health_check: '{{ update_string_match.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  # Test deletion
+  - name: 'Delete HTTPS health check - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_match
+    check_mode: true
+
+  - name: 'Check result - Delete HTTPS health check - check_mode'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is changed
+
+  - name: 'Delete HTTPS health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_match
+
+  - name: 'Check result - Delete HTTPS health check'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is changed
+
+  - name: 'Delete HTTPS health check - idempotency - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_match
+    check_mode: true
+
+  - name: 'Check result - Delete HTTPS health check - idempotency - check_mode'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is not changed
+
+  - name: 'Delete HTTPS health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_match
+
+  - name: 'Check result - Delete HTTPS health check - idempotency'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is not changed
+
+  # Create an HTTP health check with lots of settings we can update
+  - name: 'Create Complex health check - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+      disabled: true
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: create_complex
+    check_mode: true
+
+  - name: 'Check result - Create Complex health check - check_mode'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is changed
+
+  - name: 'Create Complex health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+      disabled: true
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: create_complex
+
+  - name: 'Check result - Create Complex health check'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is changed
+      - '"health_check" in create_complex'
+      - '"id" in _health_check'
+      - _health_check.id != tcp_check_id
+      - _health_check.id != match_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == type_http_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == failure_threshold
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ create_complex.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - set_fact:
+      complex_check_id: '{{ create_complex.health_check.id }}'
+
+  - name: 'Create Complex health check - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+      disabled: true
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: create_complex
+    check_mode: true
+
+  - name: 'Check result - Create Complex health check - idempotency - check_mode'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is not changed
+
+  - name: 'Create Complex health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+      disabled: true
+      tags:
+        CamelCase: CamelCaseValue
+        snake_case: snake_case_value
+        "with space": Some value
+      purge_tags: false
+    register: create_complex
+
+  - name: 'Check result - Create Complex health check - idempotency'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is not changed
+      - '"health_check" in create_complex'
+      - '"id" in _health_check'
+      - _health_check.id == complex_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == type_http_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == failure_threshold
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path
+      - _check_config.search_string == string_match
+    vars:
+      _health_check: '{{ create_complex.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update Complex health check - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+    check_mode: true
+
+  - name: 'Check result - Update Complex health check - check_mode'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is changed
+
+  - name: 'Update Complex health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+
+  - name: 'Check result - Update Complex health check'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is changed
+      - '"health_check" in update_complex'
+      - '"id" in _health_check'
+      - _health_check.id == complex_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == type_http_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path_updated
+      - _check_config.search_string == string_match_updated
+    vars:
+      _health_check: '{{ update_complex.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update Complex health check - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+    check_mode: true
+
+  - name: 'Check result - Update Complex health check - idempotency - check_mode'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is not changed
+
+  - name: 'Update Complex health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+
+  - name: 'Check result - Update Complex health check - idempotency'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is not changed
+      - '"health_check" in update_complex'
+      - '"id" in _health_check'
+      - _health_check.id == complex_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - '"tags" in _health_check'
+      - '"CamelCase" in _health_check.tags'
+      - _health_check.tags['CamelCase'] == 'CamelCaseValue'
+      - '"snake_case" in _health_check.tags'
+      - _health_check.tags['snake_case'] == 'snake_case_value'
+      - '"with space" in _health_check.tags'
+      - _health_check.tags['with space'] == 'Some value'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" in _check_config'
+      - '"search_string" in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == type_http_match
+      - _check_config.request_interval == request_interval
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.fully_qualified_domain_name == fqdn
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+      - _check_config.resource_path == resource_path_updated
+      - _check_config.search_string == string_match_updated
+    vars:
+      _health_check: '{{ update_complex.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Delete Complex health check - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_complex
+    check_mode: true
+
+  - name: 'Check result - Delete Complex health check - check_mode'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is changed
+
+  - name: 'Delete Complex health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_complex
+
+  - name: 'Check result - Delete Complex health check'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is changed
+
+  - name: 'Delete Complex health check - idempotency - check_mode'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_complex
+    check_mode: true
+
+  - name: 'Check result - Delete Complex health check - idempotency - check_mode'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is not changed
+
+  - name: 'Delete Complex health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    register: delete_complex
+
+  - name: 'Check result - Delete Complex health check - idempotency'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is not changed
+
+  always:
+
+    ################################################
+    # TEARDOWN STARTS HERE
+    ################################################
+
+  - name: 'Delete TCP health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    ignore_errors: true
+
+  - name: 'Delete HTTPS health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    ignore_errors: true
+
+  - name: 'Delete Complex health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+    ignore_errors: true
+
+  - name: release EIP
+    ec2_eip:
+      state: absent
+      public_ip: '{{ ip_address }}'
+    ignore_errors: true

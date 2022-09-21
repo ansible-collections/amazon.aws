@@ -1,0 +1,134 @@
+---
+- block:
+    - name: 'Create multiple HTTP health checks with different resource_path - check_mode'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ item }}'
+        use_unique_names: true
+      register: create_check
+      check_mode: true
+      with_items:
+        - '{{ resource_path }}'
+        - '{{ resource_path_1 }}'
+
+    - name: 'Check result - Create a HTTP health check - check_mode'
+      assert:
+        that:
+        - create_check is not failed
+        - create_check is changed
+        - '"route53:CreateHealthCheck" not in create_check.results[0].resource_actions'
+        - '"route53:CreateHealthCheck" not in create_check.results[1].resource_actions'
+
+    - name: 'Create multiple HTTP health checks with different resource_path'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ item }}'
+        use_unique_names: true
+      register: create_result
+      with_items:
+        - '{{ resource_path }}'
+        - '{{ resource_path_1 }}'
+
+    - name: Get ID's for health_checks created in above task
+      set_fact:
+        health_check_1_id: "{{ create_result.results[0].health_check.id }}"
+        health_check_2_id: "{{ create_result.results[1].health_check.id }}"
+
+    - name: Get health_check 1 info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_1_id }}"
+        health_check_method: details
+      register: health_check_1_info
+
+    - name: Get health_check 2 info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_2_id }}"
+        health_check_method: details
+      register: health_check_2_info
+
+    - name: 'Check result - Create multiple HTTP health check'
+      assert:
+        that:
+        - create_result is not failed
+        - create_result is changed
+        - '"route53:UpdateHealthCheck" not in create_result.results[0].resource_actions'
+        - '"route53:UpdateHealthCheck" not in create_result.results[1].resource_actions'
+        - health_check_1_id != health_check_2_id
+        - health_check_1_info.HealthCheck.HealthCheckConfig.ResourcePath == '{{ resource_path }}'
+        - health_check_2_info.HealthCheck.HealthCheckConfig.ResourcePath == '{{ resource_path_1 }}'
+
+    - name: 'Create multiple HTTP health checks with different resource_path - idempotency - check_mode'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ item }}'
+        use_unique_names: true
+      register: create_idem_check
+      check_mode: true
+      with_items:
+        - '{{ resource_path }}'
+        - '{{ resource_path_1 }}'
+
+    - name: 'Check result - Create multiple HTTP health check - idempotency - check_mode'
+      assert:
+        that:
+        - create_idem_check is not failed
+        - create_idem_check is not changed
+        - '"route53:CreateHealthCheck" not in create_idem_check.results[0].resource_actions'
+        - '"route53:CreateHealthCheck" not in create_idem_check.results[1].resource_actions'
+        - '"route53:UpdateHealthCheck" not in create_idem_check.results[0].resource_actions'
+        - '"route53:UpdateHealthCheck" not in create_idem_check.results[1].resource_actions'
+
+    - name: 'Create multiple HTTP health checks with different resource_path - idempotency'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ item }}'
+        use_unique_names: true
+      register: create_idem
+      check_mode: true
+      with_items:
+        - '{{ resource_path }}'
+        - '{{ resource_path_1 }}'
+
+    - name: 'Check result - Create multiple HTTP health check - idempotency - check_mode'
+      assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+        - '"route53:CreateHealthCheck" not in create_idem.results[0].resource_actions'
+        - '"route53:CreateHealthCheck" not in create_idem.results[1].resource_actions'
+        - '"route53:UpdateHealthCheck" not in create_idem.results[0].resource_actions'
+        - '"route53:UpdateHealthCheck" not in create_idem.results[1].resource_actions'
+
+  always:
+    # Cleanup starts here
+      - name: 'Delete multiple HTTP health checks with different resource_path'
+        route53_health_check:
+          state: absent
+          name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+          ip_address: '{{ ip_address }}'
+          port: '{{ port }}'
+          type: '{{ type_http }}'
+          resource_path: '{{ item }}'
+          use_unique_names: true
+        register: delete_result
+        with_items:
+          - '{{ resource_path }}'
+          - '{{ resource_path_1 }}'

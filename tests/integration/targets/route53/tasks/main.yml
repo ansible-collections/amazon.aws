@@ -1,0 +1,1126 @@
+# tasks file for Route53 integration tests
+
+- set_fact:
+    zone_one: '{{ resource_prefix | replace("-", "") }}.one.ansible.test.'
+    zone_two: '{{ resource_prefix | replace("-", "") }}.two.ansible.test.'
+- debug:
+    msg: Set zones {{ zone_one }} and {{ zone_two }}
+
+- name: Test basics (new zone, A and AAAA records)
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+    amazon.aws.route53:
+      # Route53 is explicitly a global service
+      region:
+  block:
+  - name: create VPC
+    ec2_vpc_net:
+      cidr_block: 192.0.2.0/24
+      name: '{{ resource_prefix }}_vpc'
+      state: present
+    register: vpc
+
+  - name: Create a zone
+    route53_zone:
+      zone: '{{ zone_one }}'
+      comment: Created in Ansible test {{ resource_prefix }}
+      tags:
+        TestTag: '{{ resource_prefix }}.z1'
+    register: z1
+  - assert:
+      that:
+      - z1 is success
+      - z1 is changed
+      - z1.comment == 'Created in Ansible test {{ resource_prefix }}'
+      - z1.tags.TestTag == '{{ resource_prefix }}.z1'
+
+  - name: Get zone details
+    route53_info:
+      query: hosted_zone
+      hosted_zone_id: '{{ z1.zone_id }}'
+      hosted_zone_method: details
+    register: hosted_zones
+  - name: Assert newly created hosted zone only has NS and SOA records
+    assert:
+      that:
+      - hosted_zones.HostedZone.ResourceRecordSetCount == 2
+
+  - name: Create a second zone
+    route53_zone:
+      zone: '{{ zone_two }}'
+      vpc_id: '{{ vpc.vpc.id }}'
+      vpc_region: '{{ aws_region }}'
+      comment: Created in Ansible test {{ resource_prefix }}
+      tags:
+        TestTag: '{{ resource_prefix }}.z2'
+    register: z2
+  - assert:
+      that:
+      - z2 is success
+      - z2 is changed
+      - z2.comment == 'Created in Ansible test {{ resource_prefix }}'
+      - z2.tags.TestTag == '{{ resource_prefix }}.z2'
+
+  - name: Get zone details
+    route53_info:
+      query: hosted_zone
+      hosted_zone_id: '{{ z2.zone_id }}'
+      hosted_zone_method: details
+    register: hosted_zones
+
+  - name: Assert newly created hosted zone only has NS and SOA records
+    assert:
+      that:
+      - hosted_zones.HostedZone.ResourceRecordSetCount == 2
+      - hosted_zones.HostedZone.Config.PrivateZone
+
+  # Ensure that we can use the non-paginated list_by_name method with max_items
+  - name: Get zone 1 details only
+    route53_info:
+      query: hosted_zone
+      hosted_zone_method: list_by_name
+      dns_name: '{{ zone_one }}'
+      max_items: 1
+    register: list_by_name_result
+
+  - name: Assert that we found exactly one zone when querying by name
+    assert:
+      that:
+      - list_by_name_result.HostedZones | length == 1
+      - list_by_name_result.HostedZones[0].Name == '{{ zone_one }}'
+
+  - name: Create A record using zone fqdn
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: qdn_test.{{ zone_one }}
+      type: A
+      value: 192.0.2.1
+    register: qdn
+  - assert:
+      that:
+      - qdn is not failed
+      - qdn is changed
+
+  - name: Get A record using "get" method of route53 module
+    route53:
+      state: get
+      zone: '{{ zone_one }}'
+      record: qdn_test.{{ zone_one }}
+      type: A
+    register: get_result
+  - name: Check boto3 type get data
+    assert:
+      that:
+      - get_result.nameservers | length > 0
+      - get_result.resource_record_sets | length == 1
+      - '"name" in record_set'
+      - record_set.name == qdn_record
+      - '"resource_records" in record_set'
+      - record_set.resource_records | length == 1
+      - '"value" in record_set.resource_records[0]'
+      - record_set.resource_records[0].value == '192.0.2.1'
+      - '"ttl" in record_set'
+      - record_set.ttl == 3600
+      - '"type" in record_set'
+      - record_set.type == 'A'
+    vars:
+      record_set: '{{ get_result.resource_record_sets[0] }}'
+      qdn_record: qdn_test.{{ zone_one }}
+
+  - name: Check boto3 compat get data
+    assert:
+      that:
+      - '"set" in get_result'
+      - '"Name" in record_set'
+      - record_set.Name == qdn_record
+      - '"ResourceRecords" in record_set'
+      - record_set.ResourceRecords | length == 1
+      - '"Value" in record_set.ResourceRecords[0]'
+      - record_set.ResourceRecords[0].Value == '192.0.2.1'
+      - '"TTL" in record_set'
+      - record_set.TTL == 3600
+      - record_set.Type == 'A'
+    vars:
+      record_set: '{{ get_result.set }}'
+      qdn_record: qdn_test.{{ zone_one }}
+
+  - name: Check boto2 compat get data
+    assert:
+      that:
+      - '"set" in get_result'
+      - '"alias" in record_set'
+      - record_set.alias == False
+      - '"failover" in record_set'
+      - '"health_check" in record_set'
+      - '"hosted_zone_id" in record_set'
+      - record_set.hosted_zone_id == z1.zone_id
+      - '"identifier" in record_set'
+      - '"record" in record_set'
+      - record_set.record == qdn_record
+      - '"ttl" in record_set'
+      - record_set.ttl == "3600"
+      - '"type" in record_set'
+      - record_set.type == 'A'
+      - '"value" in record_set'
+      - record_set.value == '192.0.2.1'
+      - '"values" in record_set'
+      - record_set['values'] | length == 1
+      - record_set['values'][0] == '192.0.2.1'
+      - '"weight" in record_set'
+      - '"zone" in record_set'
+      - record_set.zone == zone_one
+    vars:
+      record_set: '{{ get_result.set }}'
+      qdn_record: qdn_test.{{ zone_one }}
+
+  ## test A recordset creation and order adjustments
+  - name: Create same A record using zone non-qualified domain
+    route53:
+      state: present
+      zone: '{{ zone_one[:-1] }}'
+      record: qdn_test.{{ zone_one[:-1] }}
+      type: A
+      value: 192.0.2.1
+    register: non_qdn
+  - assert:
+      that:
+      - non_qdn is not failed
+      - non_qdn is not changed
+
+  - name: Create A record using zone ID
+    route53:
+      state: present
+      hosted_zone_id: '{{ z1.zone_id }}'
+      record: zid_test.{{ zone_one }}
+      type: A
+      value: 192.0.2.1
+    register: zid
+  - assert:
+      that:
+      - zid is not failed
+      - zid is changed
+
+  - name: Create a multi-value A record with values in different order
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: order_test.{{ zone_one }}
+      type: A
+      value:
+      - 192.0.2.2
+      - 192.0.2.1
+    register: mv_a_record
+  - assert:
+      that:
+      - mv_a_record is not failed
+      - mv_a_record is changed
+
+  - name: Create same multi-value A record with values in different order
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: order_test.{{ zone_one }}
+      type: A
+      value:
+      - 192.0.2.2
+      - 192.0.2.1
+    register: mv_a_record
+  - assert:
+      that:
+      - mv_a_record is not failed
+      - mv_a_record is not changed
+
+  # Get resulting A record and ensure max_items is applied
+  - name: get Route53 A record information
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: order_test.{{ zone_one }}
+      max_items: 1
+    register: records
+
+  - assert:
+      that:
+      - records.ResourceRecordSets|length == 1
+      - records.ResourceRecordSets[0].ResourceRecords|length == 2
+      - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
+      - records.ResourceRecordSets[0].ResourceRecords[1].Value == '192.0.2.1'
+
+  - name: Remove a member from multi-value A record with values in different order
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: order_test.{{ zone_one }}
+      type: A
+      value:
+      - 192.0.2.2
+    register: del_a_record
+    ignore_errors: true
+  - name: This should fail, because `overwrite` is false
+    assert:
+      that:
+      - del_a_record is failed
+
+  - name: Remove a member from multi-value A record with values in different order
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: order_test.{{ zone_one }}
+      overwrite: true
+      type: A
+      value:
+      - 192.0.2.2
+    register: del_a_record
+    ignore_errors: true
+
+  - name: This should not fail, because `overwrite` is true
+    assert:
+      that:
+      - del_a_record is not failed
+      - del_a_record is changed
+
+  - name: get Route53 zone A record information
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: order_test.{{ zone_one }}
+      max_items: 50
+    register: records
+
+  - assert:
+      that:
+      - records.ResourceRecordSets|length == 3
+      - records.ResourceRecordSets[0].ResourceRecords|length == 1
+      - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
+
+  ## Test CNAME record creation and retrive info
+  - name: Create CNAME record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      type: CNAME
+      record: cname_test.{{ zone_one }}
+      value: order_test.{{ zone_one }}
+    register: cname_record
+
+  - assert:
+      that:
+      - cname_record is not failed
+      - cname_record is changed
+
+  - name: Get Route53 CNAME record information
+    route53_info:
+      type: CNAME
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: cname_test.{{ zone_one }}
+      max_items: 1
+    register: cname_records
+
+  - assert:
+      that:
+      - cname_records.ResourceRecordSets|length == 1
+      - cname_records.ResourceRecordSets[0].ResourceRecords|length == 1
+      - cname_records.ResourceRecordSets[0].ResourceRecords[0].Value == "order_test.{{
+        zone_one }}"
+
+  ## Test CAA record creation
+  - name: Create a LetsEncrypt CAA record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '{{ zone_one }}'
+      type: CAA
+      value:
+      - 0 issue "letsencrypt.org;"
+      - 0 issuewild "letsencrypt.org;"
+      overwrite: true
+    register: caa
+  - assert:
+      that:
+      - caa is not failed
+      - caa is changed
+
+  - name: Re-create the same LetsEncrypt CAA record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '{{ zone_one }}'
+      type: CAA
+      value:
+      - 0 issue "letsencrypt.org;"
+      - 0 issuewild "letsencrypt.org;"
+      overwrite: true
+    register: caa
+  - assert:
+      that:
+      - caa is not failed
+      - caa is not changed
+
+  - name: Re-create the same LetsEncrypt CAA record in opposite-order
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '{{ zone_one }}'
+      type: CAA
+      value:
+      - 0 issuewild "letsencrypt.org;"
+      - 0 issue "letsencrypt.org;"
+      overwrite: true
+    register: caa
+  - name: This should not be changed, as CAA records are not order sensitive
+    assert:
+      that:
+      - caa is not failed
+      - caa is not changed
+
+  - name: Create an A record for a wildcard prefix
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+      - 192.0.2.1
+    register: wc_a_record
+  - assert:
+      that:
+      - wc_a_record is not failed
+      - wc_a_record is changed
+
+  - name: Create an A record for a wildcard prefix (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+      - 192.0.2.1
+    register: wc_a_record
+  - assert:
+      that:
+      - wc_a_record is not failed
+      - wc_a_record is not changed
+
+  - name: Create an A record for a wildcard prefix (change)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+      - 192.0.2.2
+      overwrite: true
+    register: wc_a_record
+  - assert:
+      that:
+      - wc_a_record is not failed
+      - wc_a_record is changed
+
+  - name: Delete an A record for a wildcard prefix
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+      - 192.0.2.2
+    register: wc_a_record
+  - assert:
+      that:
+      - wc_a_record is not failed
+      - wc_a_record is changed
+      - wc_a_record.diff.after == {}
+
+  - name: create a record with different TTL
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: localhost.{{ zone_one }}
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+    register: ttl30
+  - name: check return values
+    assert:
+      that:
+      - ttl30.diff.resource_record_sets[0].ttl == 30
+      - ttl30 is changed
+
+  - name: delete previous record without mention ttl and value
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: localhost.{{ zone_one }}
+      type: A
+    register: ttl30
+  - name: check if record is deleted
+    assert:
+      that:
+      - ttl30 is changed
+
+  - name: immutable delete previous record without mention ttl and value
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: localhost.{{ zone_one }}
+      type: A
+    register: ttl30
+  - name: check if record was deleted
+    assert:
+      that:
+      - ttl30 is not changed
+
+  # Tests on zone two (private zone)
+  - name: Create A record using zone fqdn
+    route53:
+      state: present
+      zone: '{{ zone_two }}'
+      record: qdn_test.{{ zone_two }}
+      type: A
+      value: 192.0.2.1
+      private_zone: true
+    register: qdn
+  - assert:
+      that:
+      - qdn is not failed
+      - qdn is changed
+
+  - name: Get A record using 'get' method of route53 module
+    route53:
+      state: get
+      zone: '{{ zone_two }}'
+      record: qdn_test.{{ zone_two }}
+      type: A
+      private_zone: true
+    register: get_result
+  - assert:
+      that:
+      - get_result.nameservers|length > 0
+      - get_result.set.Name == "qdn_test.{{ zone_two }}"
+      - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
+      - get_result.set.Type == "A"
+
+  - name: Get a record that does not exist
+    route53:
+      state: get
+      zone: '{{ zone_two }}'
+      record: notfound.{{ zone_two }}
+      type: A
+      private_zone: true
+    register: get_result
+  - assert:
+      that:
+      - get_result.nameservers|length > 0
+      - get_result.set|length == 0
+      - get_result.resource_record_sets|length == 0
+
+  - name: Create same A record using zone non-qualified domain
+    route53:
+      state: present
+      zone: '{{ zone_two[:-1] }}'
+      record: qdn_test.{{ zone_two[:-1] }}
+      type: A
+      value: 192.0.2.1
+      private_zone: true
+    register: non_qdn
+  - assert:
+      that:
+      - non_qdn is not failed
+      - non_qdn is not changed
+
+  - name: Create A record using zone ID
+    route53:
+      state: present
+      hosted_zone_id: '{{ z2.zone_id }}'
+      record: zid_test.{{ zone_two }}
+      type: A
+      value: 192.0.2.2
+      private_zone: true
+    register: zid
+  - assert:
+      that:
+      - zid is not failed
+      - zid is changed
+
+  - name: Create A record using zone fqdn and vpc_id
+    route53:
+      state: present
+      zone: '{{ zone_two }}'
+      record: qdn_test_vpc.{{ zone_two }}
+      type: A
+      value: 192.0.2.3
+      private_zone: true
+      vpc_id: '{{ vpc.vpc.id }}'
+    register: qdn
+  - assert:
+      that:
+      - qdn is not failed
+      - qdn is changed
+
+  - name: Create A record using zone ID and vpc_id
+    route53:
+      state: present
+      hosted_zone_id: '{{ z2.zone_id }}'
+      record: zid_test_vpc.{{ zone_two }}
+      type: A
+      value: 192.0.2.4
+      private_zone: true
+      vpc_id: '{{ vpc.vpc.id }}'
+    register: zid
+  - assert:
+      that:
+      - zid is not failed
+      - zid is changed
+
+  - name: Create an Alias record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: alias.{{ zone_one }}
+      type: A
+      alias: true
+      alias_hosted_zone_id: '{{ z1.zone_id }}'
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+    register: alias_record
+  - name: This should be changed
+    assert:
+      that:
+      - alias_record is not failed
+      - alias_record is changed
+
+  - name: Re-Create an Alias record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: alias.{{ zone_one }}
+      type: A
+      alias: true
+      alias_hosted_zone_id: '{{ z1.zone_id }}'
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+    register: alias_record
+  - name: This should not be changed
+    assert:
+      that:
+      - alias_record is not failed
+      - alias_record is not changed
+
+  - name: Create a weighted record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: weighted.{{ zone_one }}
+      type: CNAME
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+      identifier: host1@www
+      weight: 100
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: This should be changed
+    assert:
+      that:
+      - weighted_record is not failed
+      - weighted_record is changed
+
+  - name: Re-Create a weighted record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: weighted.{{ zone_one }}
+      type: CNAME
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+      identifier: host1@www
+      weight: 100
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: This should not be changed
+    assert:
+      that:
+      - weighted_record is not failed
+      - weighted_record is not changed
+
+  - name: Create a zero weighted record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: zero_weighted.{{ zone_one }}
+      type: CNAME
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+      identifier: host1@www
+      weight: 0
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: This should be changed
+    assert:
+      that:
+      - weighted_record is not failed
+      - weighted_record is changed
+
+  - name: Re-Create a zero weighted record
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: zero_weighted.{{ zone_one }}
+      type: CNAME
+      value: zid_test.{{ zone_one }}
+      overwrite: true
+      identifier: host1@www
+      weight: 0
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: This should not be changed
+    assert:
+      that:
+      - weighted_record is not failed
+      - weighted_record is not changed
+
+#Test Geo Location - Continent Code
+  - name: Create a record with geo_location - continent_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-1.{{ zone_one }}
+      identifier: geohost1@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    check_mode: true
+    register: create_geo_continent_check_mode
+  - assert:
+      that:
+      - create_geo_continent_check_mode is changed
+      - create_geo_continent_check_mode is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_continent_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - continent_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-1.{{ zone_one }}
+      identifier: geohost1@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    register: create_geo_continent
+  # Get resulting A record and geo_location parameters are applied
+  - name: get Route53 A record information
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: geo-test-1.{{ zone_one }}
+      max_items: 1
+    register: result
+
+  - assert:
+      that:
+      - create_geo_continent is changed
+      - create_geo_continent is not failed
+      - '"route53:ChangeResourceRecordSets" in create_geo_continent.resource_actions'
+      - result.ResourceRecordSets[0].GeoLocation.ContinentCode == "NA"
+
+  - name: Create a record with geo_location - continent_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-1.{{ zone_one }}
+      identifier: geohost1@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    register: create_geo_continent_idem
+  - assert:
+      that:
+      - create_geo_continent_idem is not changed
+      - create_geo_continent_idem is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_continent_idem.resource_actions'
+
+  - name: Create a record with geo_location - continent_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-1.{{ zone_one }}
+      identifier: geohost1@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    check_mode: true
+    register: create_geo_continent_idem_check
+
+  - assert:
+      that:
+      - create_geo_continent_idem_check is not changed
+      - create_geo_continent_idem_check is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_continent_idem_check.resource_actions'
+
+#Test Geo Location - Country Code
+  - name: Create a record with geo_location - country_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-2.{{ zone_one }}
+      identifier: geohost2@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    check_mode: true
+    register: create_geo_country_check_mode
+  - assert:
+      that:
+      - create_geo_country_check_mode is changed
+      - create_geo_country_check_mode is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_country_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - country_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-2.{{ zone_one }}
+      identifier: geohost2@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    register: create_geo_country
+  # Get resulting A record and geo_location parameters are applied
+  - name: get Route53 A record information
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: geo-test-2.{{ zone_one }}
+      max_items: 1
+    register: result
+  - assert:
+      that:
+      - create_geo_country is changed
+      - create_geo_country is not failed
+      - '"route53:ChangeResourceRecordSets" in create_geo_country.resource_actions'
+      - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
+
+  - name: Create a record with geo_location - country_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-2.{{ zone_one }}
+      identifier: geohost2@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    register: create_geo_country_idem
+  - assert:
+      that:
+      - create_geo_country_idem is not changed
+      - create_geo_country_idem is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_country_idem.resource_actions'
+
+  - name: Create a record with geo_location - country_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-2.{{ zone_one }}
+      identifier: geohost2@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    check_mode: true
+    register: create_geo_country_idem_check
+
+  - assert:
+      that:
+      - create_geo_country_idem_check is not changed
+      - create_geo_country_idem_check is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_country_idem_check.resource_actions'
+
+#Test Geo Location - Subdivision Code
+  - name: Create a record with geo_location - subdivision_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-3.{{ zone_one }}
+      identifier: geohost3@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    check_mode: true
+    register: create_geo_subdivision_check_mode
+  - assert:
+      that:
+      - create_geo_subdivision_check_mode is changed
+      - create_geo_subdivision_check_mode is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - subdivision_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-3.{{ zone_one }}
+      identifier: geohost3@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    register: create_geo_subdivision
+  # Get resulting A record and geo_location parameters are applied
+  - name: get Route53 A record information
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: geo-test-3.{{ zone_one }}
+      max_items: 1
+    register: result
+  - assert:
+      that:
+      - create_geo_subdivision is changed
+      - create_geo_subdivision is not failed
+      - '"route53:ChangeResourceRecordSets" in create_geo_subdivision.resource_actions'
+      - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
+      - result.ResourceRecordSets[0].GeoLocation.SubdivisionCode == "TX"
+
+  - name: Create a record with geo_location - subdivision_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-3.{{ zone_one }}
+      identifier: geohost3@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    register: create_geo_subdivision_idem
+  - assert:
+      that:
+      - create_geo_subdivision_idem is not changed
+      - create_geo_subdivision_idem is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_idem.resource_actions'
+
+  - name: Create a record with geo_location - subdivision_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: geo-test-3.{{ zone_one }}
+      identifier: geohost3@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    check_mode: true
+    register: create_geo_subdivision_idem_check
+
+  - assert:
+      that:
+      - create_geo_subdivision_idem_check is not changed
+      - create_geo_subdivision_idem_check is not failed
+      - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_idem_check.resource_actions'
+
+#Cleanup------------------------------------------------------
+
+  always:
+
+  - name: delete a record with geo_location - continent_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: geo-test-1.{{ zone_one }}
+      identifier: geohost1@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    ignore_errors: true
+
+  - name: delete a record with geo_location - country_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: geo-test-2.{{ zone_one }}
+      identifier: geohost2@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    ignore_errors: true
+
+  - name: delete a record with geo_location - subdivision_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: geo-test-3.{{ zone_one }}
+      identifier: geohost3@www
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    ignore_errors: true
+
+  - route53_info:
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+    register: z1_records
+
+  - name: Loop over A/AAAA/CNAME Alias records and delete them
+    route53:
+      state: absent
+      alias: true
+      alias_hosted_zone_id: '{{ item.AliasTarget.HostedZoneId }}'
+      zone: '{{ zone_one }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.AliasTarget.DNSName }}'
+    ignore_errors: true
+    loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"AliasTarget" in item'
+
+  - name: Loop over A/AAAA/CNAME records and delete them
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      weight: '{{ item.Weight | default(omit) }}'
+      identifier: '{{ item.SetIdentifier }}'
+      region: '{{ omit }}'
+    ignore_errors: true
+    loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+    - '"SetIdentifier" in item'
+
+  - name: Loop over A/AAAA/CNAME records and delete them
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+    ignore_errors: true
+    loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+
+  - route53_info:
+      query: record_sets
+      hosted_zone_id: '{{ z2.zone_id }}'
+    register: z2_records
+
+  - name: Loop over A/AAAA/CNAME Alias records and delete them
+    route53:
+      state: absent
+      alias: true
+      alias_hosted_zone_id: '{{ item.AliasTarget.HostedZoneId }}'
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.AliasTarget.DNSName }}'
+      private_zone: true
+    ignore_errors: true
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"AliasTarget" in item'
+
+  - name: Loop over A/AAAA/CNAME records and delete them
+    route53:
+      state: absent
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      identifier: '{{ item.SetIdentifier }}'
+      region: '{{ omit }}'
+      private_zone: true
+    ignore_errors: true
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+    - '"SetIdentifier" in item'
+
+  - name: Loop over A/AAAA/CNAME records and delete them
+    route53:
+      state: absent
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      private_zone: true
+    ignore_errors: true
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA",
+      "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+
+  - name: Delete test zone one {{ zone_one }}
+    route53_zone:
+      state: absent
+      zone: '{{ zone_one }}'
+    register: delete_one
+    ignore_errors: true
+    retries: 10
+    until: delete_one is not failed
+
+  - name: Delete test zone two {{ zone_two }}
+    route53_zone:
+      state: absent
+      zone: '{{ zone_two }}'
+    register: delete_two
+    ignore_errors: true
+    retries: 10
+    until: delete_two is not failed
+
+  - name: destroy VPC
+    ec2_vpc_net:
+      cidr_block: 192.0.2.0/24
+      name: '{{ resource_prefix }}_vpc'
+      state: absent
+    register: remove_vpc
+    retries: 10
+    delay: 5
+    until: remove_vpc is success
+    ignore_errors: true

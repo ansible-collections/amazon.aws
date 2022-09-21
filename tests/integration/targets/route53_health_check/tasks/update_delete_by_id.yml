@@ -1,0 +1,303 @@
+---
+- block:
+    - name: 'Create HTTP health check for use in this test'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-test-update-delete-by-id'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        fqdn: '{{ fqdn }}'
+        use_unique_names: true
+      register: create_result
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_result is not failed
+        - create_result is changed
+        - '"route53:CreateHealthCheck" in create_result.resource_actions'
+
+    - name: Get ID for health_checks created in above task
+      set_fact:
+        health_check_id: "{{ create_result.health_check.id }}"
+
+    - name: Get health_check info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_id }}"
+        health_check_method: details
+      register: health_check_info
+
+    # Update Health Check by ID Tests
+    - name: 'Update Health Check by ID - Update Port - check_mode'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        port: 8888
+      register: update_result
+      check_mode: true
+    
+    - name: 'Check result - Update Health Check Port - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+    
+    - name: 'Update Health Check by ID - Update Port'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        port: 8888
+      register: update_result
+
+    - name: Get health_check info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_id }}"
+        health_check_method: details
+      register: health_check_info
+
+    - name: 'Check result - Update Health Check Port'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - health_check_info.HealthCheck.HealthCheckConfig.Port == 8888
+
+
+    - name: 'Update Health Check by ID - Update Port - idempotency - check_mode'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        port: 8888
+      register: update_result
+      check_mode: true
+
+    - name: 'Check result - Update Health Check Port - idempotency - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    - name: 'Update Health Check by ID - Update Port - idempotency'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        port: 8888
+      register: update_result
+    
+    - name: 'Check result - Update Health Check Port - idempotency'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    ##
+    - name: 'Update Health Check by ID - Update IP address and FQDN - check_mode'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        ip_address: 1.2.3.4
+        fqdn: '{{ fqdn_1 }}'
+      register: update_result
+      check_mode: true
+    
+    - name: 'Check result - Update Health Check IP address and FQDN - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+    
+    - name: 'Update Health Check by ID - Update IP address and FQDN'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        ip_address: 1.2.3.4
+        fqdn: '{{ fqdn_1 }}'
+      register: update_result
+
+    - name: Get health_check info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_id }}"
+        health_check_method: details
+      register: health_check_info
+
+    - name: 'Check result - Update Health Check IP address and FQDN'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - health_check_info.HealthCheck.HealthCheckConfig.IPAddress == '1.2.3.4'
+          - health_check_info.HealthCheck.HealthCheckConfig.FullyQualifiedDomainName == "{{ fqdn_1 }}"
+
+
+    - name: 'Update Health Check by ID - Update IP address and FQDN - idempotency - check_mode'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        ip_address: 1.2.3.4
+        fqdn: '{{ fqdn_1 }}'
+      register: update_result
+      check_mode: true
+
+    - name: 'Check result - Update Health Check IP address and FQDN - idempotency - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    - name: 'Update Health Check by ID - Update IP address and FQDN - idempotency'
+      route53_health_check:
+        id: "{{ health_check_id }}"
+        ip_address: 1.2.3.4
+        fqdn: '{{ fqdn_1 }}'
+      register: update_result
+    
+    - name: 'Check result - Update Health Check IP address and FQDN - idempotency'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    # Update Health Check (Port) by name
+
+    - name: 'Update Health Check by name - Update Port - check_mode'
+      route53_health_check:
+        state: present
+        port: 8080
+        type: '{{ type_http }}'
+        fqdn: '{{ fqdn }}'
+        health_check_name: '{{ tiny_prefix }}-test-update-delete-by-id'
+        use_unique_names: true
+      register: update_result
+      check_mode: true
+
+    - name: 'Check result - Update Health Check Port - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    - name: 'Update Health Check by name - Update Port'
+      route53_health_check:
+        state: present
+        port: 8080
+        type: '{{ type_http }}'
+        fqdn: '{{ fqdn }}'
+        health_check_name: '{{ tiny_prefix }}-test-update-delete-by-id'
+        use_unique_names: true
+      register: update_result
+
+    - name: Get health_check info
+      amazon.aws.route53_info:
+        query: health_check
+        health_check_id: "{{ health_check_id }}"
+        health_check_method: details
+      register: health_check_info
+
+    - name: 'Check result - Update Health Check Port'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is changed
+          - health_check_info.HealthCheck.HealthCheckConfig.Port == 8080
+
+    - name: 'Update Health Check by name - Update Port - idempotency - check_mode'
+      route53_health_check:
+        state: present
+        port: 8080
+        type: '{{ type_http }}'
+        fqdn: '{{ fqdn }}'
+        health_check_name: '{{ tiny_prefix }}-test-update-delete-by-id'
+        use_unique_names: true
+      register: update_result
+      check_mode: true
+
+    - name: 'Check result - Update Health Check Port - idempotency - check_mode'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    - name: 'Update Health Check by name - Update Port - idempotency'
+      route53_health_check:
+        state: present
+        port: 8080
+        type: '{{ type_http }}'
+        fqdn: '{{ fqdn }}'
+        health_check_name: '{{ tiny_prefix }}-test-update-delete-by-id'
+        use_unique_names: true
+      register: update_result
+
+    - name: 'Check result - Update Health Check Port - idempotency'
+      assert:
+        that:
+          - update_result is not failed
+          - update_result is not changed
+          - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
+
+    # Delete Health Check by ID Tests
+    - name: Delete Health check by ID - check_mode
+      route53_health_check:
+        state: absent
+        id: "{{ health_check_id }}"
+      register: delete_result
+      check_mode: true
+
+    - name: 'Check result - Delete Health Check by ID -check_mode'
+      assert:
+        that:
+          - delete_result is not failed
+          - delete_result is changed
+          - '"route53:DeleteHealthCheck" not in delete_result.resource_actions'
+
+    - name: Delete Health check by ID
+      route53_health_check:
+        state: absent
+        id: "{{ health_check_id }}"
+      register: delete_result
+
+    - name: 'Check result - Delete Health Check by ID'
+      assert:
+        that:
+          - delete_result is not failed
+          - delete_result is changed
+          - '"route53:DeleteHealthCheck" in delete_result.resource_actions'
+
+    - name: Delete Health check by ID - idempotency - check_mode
+      route53_health_check:
+        state: absent
+        id: "{{ health_check_id }}"
+      register: delete_result
+      check_mode: true
+
+    - name: 'Check result - Delete Health Check by ID -idempotency -check_mode'
+      assert:
+        that:
+          - delete_result is not failed
+          - delete_result is not changed
+          - '"route53:DeleteHealthCheck" not in delete_result.resource_actions'
+
+    - name: Delete Health check by ID - idempotency
+      route53_health_check:
+        state: absent
+        id: "{{ health_check_id }}"
+      register: delete_result
+
+    - name: 'Check result - Delete Health Check by ID -idempotency'
+      assert:
+        that:
+          - delete_result is not failed
+          - delete_result is not changed
+          - '"route53:DeleteHealthCheck" not in delete_result.resource_actions'
+
+  # cleanup
+  always:
+    - name: Delete Health check by ID
+      route53_health_check:
+        state: absent
+        id: "{{ health_check_id }}"

@@ -62,6 +62,10 @@ action_groups:
   - lambda_execute
   - lambda_info
   - lambda_policy
+  - route53
+  - route53_health_check
+  - route53_info
+  - route53_zone
   - s3_bucket
   - s3_object
 plugin_routing:

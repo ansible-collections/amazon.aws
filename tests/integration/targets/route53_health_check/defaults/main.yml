@@ -1,0 +1,36 @@
+---
+# route53_health_check integration tests
+#
+# Module uses the following as an 'ID'
+# (the real ID is automatically assigned after creation)
+# - ip_address
+# - fqdn
+# - port
+# - type
+# - request_interval
+
+#ip_address: We allocate an EIP due to route53 restrictions
+fqdn: '{{ tiny_prefix }}.route53-health.ansible.test'
+fqdn_1: '{{ tiny_prefix }}-1.route53-health.ansible.test'
+port: 8080
+type: 'TCP'
+request_interval: 30
+
+# modifiable
+# - resource_path
+# - string_match
+# - failure_threshold
+
+failure_threshold: 5
+failure_threshold_updated: 1
+
+# For resource_path we need an HTTP/HTTPS type check
+# for string_match we need an _STR_MATCH type
+type_https_match: 'HTTPS_STR_MATCH'
+type_http_match: 'HTTP_STR_MATCH'
+type_http: 'HTTP'
+resource_path: '/health.php'
+resource_path_1: '/new-health.php'
+resource_path_updated: '/healthz'
+string_match: 'Hello'
+string_match_updated: 'Hello World'
