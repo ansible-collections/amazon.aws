@@ -13,6 +13,7 @@ version_added: 5.0.0
 short_description: Gather information about objects in S3
 description:
     - Describes objects in S3.
+    - For ceph, RGW, Walrus or fakes3 only supports list_keys currently (see examples below).
 author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
@@ -27,6 +28,20 @@ options:
       - If not specified, a list of all objects in the specified bucket will be returned.
     required: false
     type: str
+  s3_url:
+    description:
+      - S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.
+    type: str
+  dualstack:
+    description:
+      - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
+    type: bool
+    default: false
+  rgw:
+    description:
+      - Enable Ceph RGW S3 support. This option requires an explicit url via I(s3_url).
+    default: false
+    type: bool
   object_details:
     description:
       - Retrieve requested S3 object detailed information.
@@ -90,6 +105,12 @@ EXAMPLES = r'''
 - name: Retrieve a list of objects in S3 bucket
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
+
+- name: Retrieve a list of objects in Ceph RGW S3
+  amazon.aws.s3_object_info:
+    bucket_name: MyTestBucket
+    rgw: true
+    s3_url: "http://localhost:8000"
 
 - name: Retrieve object metadata without object itself
   amazon.aws.s3_object_info:
@@ -408,11 +429,15 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.six.moves.urllib.parse import urlparse
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 
 
 def describe_s3_object_acl(connection, bucket_name, object_name):
@@ -633,6 +658,47 @@ def object_check(connection, module, bucket_name, object_name):
         module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
 
 
+#To get S3 connection, in case of dealing with ceph, dualstack, etc.
+def is_fakes3(s3_url):
+    """ Return True if s3_url has scheme fakes3:// """
+    if s3_url is not None:
+        return urlparse(s3_url).scheme in ('fakes3', 'fakes3s')
+    else:
+        return False
+
+def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=False):
+    if s3_url and rgw:  # TODO - test this
+        rgw = urlparse(s3_url)
+        params = dict(module=module, conn_type='client', resource='s3', use_ssl=rgw.scheme == 'https', region=location, endpoint=s3_url, **aws_connect_kwargs)
+    elif is_fakes3(s3_url):
+        fakes3 = urlparse(s3_url)
+        port = fakes3.port
+        if fakes3.scheme == 'fakes3s':
+            protocol = "https"
+            if port is None:
+                port = 443
+        else:
+            protocol = "http"
+            if port is None:
+                port = 80
+        params = dict(module=module, conn_type='client', resource='s3', region=location,
+                      endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
+                      use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
+    else:
+        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=s3_url, **aws_connect_kwargs)
+        if module.params['mode'] == 'put' and module.params['encryption_mode'] == 'aws:kms':
+            params['config'] = botocore.client.Config(signature_version='s3v4')
+        elif module.params['mode'] in ('get', 'getstr') and sig_4:
+            params['config'] = botocore.client.Config(signature_version='s3v4')
+        if module.params['dualstack']:
+            dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
+            if 'config' in params:
+                params['config'] = params['config'].merge(dualconf)
+            else:
+                params['config'] = dualconf
+    return boto3_conn(**params)
+
+
 def main():
 
     argument_spec = dict(
@@ -650,6 +716,9 @@ def main():
         ),
         bucket_name=dict(required=True, type='str'),
         object_name=dict(type='str'),
+        s3_url=dict(),
+        dualstack=dict(default='no', type='bool'),
+        rgw=dict(default='no', type='bool'),
     )
 
     module = AnsibleAWSModule(
@@ -657,16 +726,40 @@ def main():
         supports_check_mode=True,
     )
 
-    try:
-        connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
-
-    result = []
 
     bucket_name = module.params.get('bucket_name')
     object_name = module.params.get('object_name')
     requested_object_details = module.params.get('object_details')
+    s3_url = module.params.get('s3_url')
+    dualstack = module.params.get('dualstack')
+    rgw = module.params.get('rgw')
+
+    if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
+        module.fail_json(msg='dualstack only applies to AWS S3')
+
+    # rgw requires an explicit url
+    if rgw and not s3_url:
+        module.fail_json(msg='rgw flavour requires s3_url')
+
+    result = []
+
+    if s3_url:
+        region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+        if region in ('us-east-1', '', None):
+            # default to US Standard region
+            location = 'us-east-1'
+        else:
+            # Boto uses symbolic names for locations but region strings will
+            # actually work fine for everything except us-east-1 (US Standard)
+            location = region
+        for key in ['validate_certs', 'security_token', 'profile_name']:
+            aws_connect_kwargs.pop(key, None)
+        connection = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
+    else:
+        try:
+            connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     # check if specified bucket exists
     bucket_check(connection, module, bucket_name)
