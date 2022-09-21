@@ -794,8 +794,8 @@ def main():
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
 
-    if not any([module.params['tpm_support'], module.params['uefi_data']]):
-        module.require_botocore_at_least('1.26.0', reason='required for ec2.register image with tpm_support or uefi_data')
+    if any([module.params['tpm_support'], module.params['uefi_data']]):
+        module.require_botocore_at_least('1.26.0', reason='required for ec2.register_image with tpm_support or uefi_data')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
