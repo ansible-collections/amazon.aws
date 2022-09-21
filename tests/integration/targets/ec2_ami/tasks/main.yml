@@ -663,6 +663,8 @@
         image_ids: '{{ ec2_ami_image_id_boot_tpm }}'
       register: ami_facts_result_boot_tpm
       ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: assert that new ami has been created with desired options
       assert:
