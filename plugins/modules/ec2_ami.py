@@ -154,6 +154,7 @@ options:
       - Set to v2.0 to enable Trusted Platform Module (TPM) support.
       - If the image is configured for NitroTPM support, the value is v2.0 .
       - Requires I(boot_mode) to be set to 'uefi'.
+      - Requires an instance type that is compatible with Nitro.
       - Requires minimum botocore version 1.26.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
     type: str
@@ -247,7 +248,7 @@ EXAMPLES = '''
     wait: yes
     region: us-east-1
     boot_mode: uefi
-    uefi_data: data_file.bin
+    uefi_data: "{{ lookup('file', '/etc/fstab')| b64encode }}"
     tpm_support: v2.0
 
 - name: Deregister/Delete AMI (keep associated snapshots)
@@ -479,6 +480,9 @@ def create_image(module, connection):
     tpm_support = module.params.get('tpm_support')
     uefi_data = module.params.get('uefi_data')
 
+    if tpm_support and boot_mode != 'uefi':
+        module.fail_json(msg="To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
+
     if module.check_mode:
         image = connection.describe_images(Filters=[{'Name': 'name', 'Values': [str(name)]}])
         if not image['Images']:
@@ -549,8 +553,6 @@ def create_image(module, connection):
             if boot_mode:
                 params['BootMode'] = boot_mode
             if tpm_support:
-                if boot_mode != 'uefi':
-                    module.fail_json(msg="To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
                 params['TpmSupport'] = tpm_support
             if uefi_data:
                 params['UefiData'] = uefi_data
