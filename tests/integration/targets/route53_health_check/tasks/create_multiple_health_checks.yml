@@ -43,14 +43,14 @@
         health_check_2_id: "{{ create_result.results[1].health_check.id }}"
 
     - name: Get health_check 1 info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_1_id }}"
         health_check_method: details
       register: health_check_1_info
 
     - name: Get health_check 2 info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_2_id }}"
         health_check_method: details

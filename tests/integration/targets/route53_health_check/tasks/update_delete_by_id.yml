@@ -24,7 +24,7 @@
         health_check_id: "{{ create_result.health_check.id }}"
 
     - name: Get health_check info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_id }}"
         health_check_method: details
@@ -52,7 +52,7 @@
       register: update_result
 
     - name: Get health_check info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_id }}"
         health_check_method: details
@@ -117,7 +117,7 @@
       register: update_result
 
     - name: Get health_check info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_id }}"
         health_check_method: details
@@ -192,7 +192,7 @@
       register: update_result
 
     - name: Get health_check info
-      community.aws.route53_info:
+      amazon.aws.route53_info:
         query: health_check
         health_check_id: "{{ health_check_id }}"
         health_check_method: details
