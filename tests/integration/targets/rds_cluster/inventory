@@ -1,0 +1,23 @@
+[tests]
+# basic rds_cluster cretion tests
+create
+
+# restore cluster tests
+restore
+
+# TODO: Cannot be tested in the CI because:
+# An error occurred (InvalidParameterValue) when calling the CreateDBCluster operation: Replication from cluster in same region is not supported
+# promote
+
+# security groups db tests
+create_sgs
+
+# basic modify operations applied on the rds cluster
+modify
+
+# tag rds cluster test
+tag
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter="{{ ansible_playbook_python }}"
