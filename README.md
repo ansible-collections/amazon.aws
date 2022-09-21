@@ -113,7 +113,8 @@ You can also join us on:
 - [Getting Started With AWS Ansible Module Development and Community Contribution](https://www.ansible.com/blog/getting-started-with-aws-ansible-module-development)
 
 ## Release notes
-<!--Add a link to a changelog.rst file or an external docsite to cover this information. -->
+
+See the [rendered changelog](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/docsite/CHANGELOG.html) or the [raw generated changelog](https://github.com/ansible-collections/amazon.aws/tree/main/CHANGELOG.rst).
 
 ## Roadmap
 
