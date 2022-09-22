@@ -99,10 +99,11 @@ options:
     type: str
   sig_v4:
     description:
-      - Forces the Boto SDK to use Signature Version 4
-      - Only applies to get modes, I(mode=get), I(mode=getstr), I(mode=geturl)
+      - Forces the Boto SDK to use Signature Version 4.
+      - Only applies to get modes, I(mode=get), I(mode=getstr), I(mode=geturl).
     default: false
     type: bool
+    version_added: 5.0.0
   permission:
     description:
       - This option lets the user set the canned permissions on the object/bucket that are created.
