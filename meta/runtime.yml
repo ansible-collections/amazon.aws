@@ -61,20 +61,23 @@ action_groups:
   - iam_policy_info
   - iam_user
   - iam_user_info
+  - kms_key
+  - kms_key_info
   - lambda
   - lambda_alias
   - lambda_event
   - lambda_execute
   - lambda_info
   - lambda_policy
-  - kms_key
-  - kms_key_info
   - rds_cluster
   - rds_cluster_info
   - rds_cluster_snapshot
   - rds_instance
   - rds_instance_info
   - rds_instance_snapshot
+  - rds_option_group
+  - rds_option_group_info
+  - rds_param_group
   - rds_snapshot_info
   - route53
   - route53_health_check
@@ -82,8 +85,6 @@ action_groups:
   - route53_zone
   - s3_bucket
   - s3_object
-  - rds_option_group
-  - rds_option_group_info
 plugin_routing:
   action:
     aws_s3:
