@@ -101,7 +101,7 @@ options:
     description:
       - Forces the Boto SDK to use Signature Version 4.
       - Only applies to get modes, I(mode=get), I(mode=getstr), I(mode=geturl).
-    default: false
+    default: true
     type: bool
     version_added: 5.0.0
   permission:
@@ -966,7 +966,7 @@ def main():
         max_keys=dict(default=1000, type='int', no_log=False),
         metadata=dict(type='dict'),
         mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy'], required=True),
-        sig_v4=dict(default=False, type='bool'),
+        sig_v4=dict(default=True, type='bool'),
         object=dict(),
         permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
