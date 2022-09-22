@@ -68,6 +68,9 @@ action_groups:
   - rds_cluster
   - rds_cluster_info
   - rds_cluster_snapshot
+  - rds_instance
+  - rds_instance_info
+  - rds_instance_snapshot
   - rds_snapshot_info
   - route53
   - route53_health_check

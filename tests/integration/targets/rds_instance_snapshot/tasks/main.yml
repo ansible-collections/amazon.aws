@@ -1,0 +1,505 @@
+---
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+    - amazon.aws
+
+  block:
+  - name: Create a source mariadb instance
+    rds_instance:
+      id: "{{ instance_id }}"
+      state: present
+      engine: "{{ engine}}"
+      engine_version: "{{ mariadb_engine_version }}"
+      allow_major_version_upgrade: true
+      username: "{{ username }}"
+      password: "{{ password }}"
+      db_instance_class: "{{ db_instance_class }}"
+      allocated_storage: "{{ allocated_storage }}"
+    register: _result_create_instance
+
+  - assert:
+      that:
+      - _result_create_instance.changed
+      - _result_create_instance.db_instance_identifier == "{{ instance_id }}"
+
+  - name: Get all RDS snapshots for the existing instance
+    rds_snapshot_info:
+      db_instance_identifier: "{{ instance_id }}"
+    register: _result_instance_snapshot_info
+
+  - assert:
+      that:
+      - _result_instance_snapshot_info is successful
+      - _result_instance_snapshot_info.snapshots | length == 1
+
+  - name: Take a snapshot of the existing RDS instance (CHECK_MODE)
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}"
+    check_mode: yes
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+
+  - name: Take a snapshot of the existing RDS instance
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}"
+      wait: true
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Take a snapshot of the existing RDS instance (CHECK_MODE - IDEMPOTENCE)
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}"
+    check_mode: yes
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - not _result_instance_snapshot.changed
+
+  - name: Take a snapshot of the existing RDS instance (IDEMPOTENCE)
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}"
+      wait: true
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - not _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Get information about the existing DB snapshot
+    rds_snapshot_info:
+      db_snapshot_identifier: "{{ snapshot_id }}"
+    register: _result_instance_snapshot_info
+
+  - assert:
+      that:
+      - _result_instance_snapshot_info is successful
+      - _result_instance_snapshot_info.snapshots[0].db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot_info.snapshots[0].db_snapshot_identifier == "{{ snapshot_id }}"
+
+  - name: Take another snapshot of the existing RDS instance
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Get all snapshots for the existing RDS instance
+    rds_snapshot_info:
+      db_instance_identifier: "{{ instance_id }}"
+    register: _result_instance_snapshot_info
+
+  - assert:
+      that:
+      - _result_instance_snapshot_info is successful
+      #- _result_instance_snapshot_info.cluster_snapshots | length == 3
+
+  - name: Delete existing DB instance snapshot (CHECK_MODE)
+    rds_instance_snapshot:
+      state: absent
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+      - _result_delete_snapshot.changed
+
+  - name: Delete the existing DB instance snapshot
+    rds_instance_snapshot:
+      state: absent
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+
+  - assert:
+      that:
+      - _result_delete_snapshot.changed
+
+  - name: Delete existing DB instance snapshot (CHECK_MODE - IDEMPOTENCE)
+    rds_instance_snapshot:
+      state: absent
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+      - not _result_delete_snapshot.changed
+
+  - name: Delete the existing DB instance snapshot (IDEMPOTENCE)
+    rds_instance_snapshot:
+      state: absent
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+
+  - assert:
+      that:
+      - not _result_delete_snapshot.changed
+
+  - name: Take another snapshot of the existing RDS instance and assign tags
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - _result_instance_snapshot.tags | length == 2
+      - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Attempt to take another snapshot of the existing RDS instance and assign tags (idempotence)
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - not _result_instance_snapshot.changed
+
+  - name: Take another snapshot of the existing RDS instance and update tags
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+      tags:
+        tag_three: '{{ snapshot_id }}-b Three'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - _result_instance_snapshot.tags | length == 2
+      - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Take another snapshot of the existing RDS instance and update tags without purge
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+      purge_tags: no
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - _result_instance_snapshot.changed
+      - "'availability_zone' in _result_instance_snapshot"
+      - "'instance_create_time' in _result_instance_snapshot"
+      - "'db_instance_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - "'db_snapshot_identifier' in _result_instance_snapshot"
+      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_snapshot_arn' in _result_instance_snapshot"
+      - "'dbi_resource_id' in _result_instance_snapshot"
+      - "'encrypted' in _result_instance_snapshot"
+      - "'engine' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine == "{{ engine }}"
+      - "'engine_version' in _result_instance_snapshot"
+      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - "'iam_database_authentication_enabled' in _result_instance_snapshot"
+      - "'license_model' in _result_instance_snapshot"
+      - "'master_username' in _result_instance_snapshot"
+      - _result_instance_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_instance_snapshot"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - "'status' in _result_instance_snapshot"
+      - _result_instance_snapshot.status == "available"
+      - "'snapshot_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.snapshot_type == "manual"
+      - "'status' in _result_instance_snapshot"
+      - "'storage_type' in _result_instance_snapshot"
+      - _result_instance_snapshot.storage_type == "gp2"
+      - "'tags' in _result_instance_snapshot"
+      - _result_instance_snapshot.tags | length == 3
+      - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - "'vpc_id' in _result_instance_snapshot"
+
+  - name: Take another snapshot of the existing RDS instance and do not specify any tag to ensure previous tags are not removed
+    rds_instance_snapshot:
+      state: present
+      db_instance_identifier: "{{ instance_id }}"
+      db_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+      - not _result_instance_snapshot.changed
+
+  # ------------------------------------------------------------------------------------------
+  # Test copying a snapshot
+  ### Note - copying a snapshot from a different region is supported, but not in CI runs,
+  ### because the aws-terminator only terminates resources in one region.
+
+  - set_fact:
+      _snapshot_arn: "{{ _result_instance_snapshot.db_snapshot_arn }}"
+
+  - name: Copy a snapshot (check mode)
+    rds_instance_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_instance_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+        - _result_instance_snapshot.changed
+
+  - name: Copy a snapshot
+    rds_instance_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+        - _result_instance_snapshot.changed
+        - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+        - _result_instance_snapshot.source_db_snapshot_identifier == "{{ _snapshot_arn }}"
+        - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - "'tags' in _result_instance_snapshot"
+        - _result_instance_snapshot.tags | length == 3
+        - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+        - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+
+  - name: Copy a snapshot (idempotence - check mode)
+    rds_instance_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_instance_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+        - not _result_instance_snapshot.changed
+
+  - name: Copy a snapshot (idempotence)
+    rds_instance_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_instance_snapshot
+
+  - assert:
+      that:
+        - not _result_instance_snapshot.changed
+        - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+        - _result_instance_snapshot.source_db_snapshot_identifier == "{{ _snapshot_arn }}"
+        - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - "'tags' in _result_instance_snapshot"
+        - _result_instance_snapshot.tags | length == 3
+        - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+        - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+
+  always:
+  - name: Delete the existing DB instance snapshots
+    rds_instance_snapshot:
+      state: absent
+      db_snapshot_identifier: "{{ item }}"
+      wait: false
+    register: _result_delete_snapshot
+    ignore_errors: true
+    loop:
+    - "{{ snapshot_id }}"
+    - "{{ snapshot_id }}-b"
+    - "{{ snapshot_id }}-copy"
+
+  - name: Delete the existing RDS instance without creating a final snapshot
+    rds_instance:
+      state: absent
+      instance_id: "{{ instance_id }}"
+      skip_final_snapshot: True
+      wait: false
+    register: _result_delete_instance
+    ignore_errors: true

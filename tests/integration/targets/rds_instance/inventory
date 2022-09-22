@@ -1,0 +1,21 @@
+# inventory names shortened down to fit resource name length limits
+[tests]
+processor
+restore
+sgroups
+complex
+states
+modify
+tagging
+replica
+upgrade
+snapshot
+aurora
+
+# TODO: uncomment after adding iam:CreatePolicy and iam:DeletePolicy
+# iam_roles
+
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter="{{ ansible_playbook_python }}"
