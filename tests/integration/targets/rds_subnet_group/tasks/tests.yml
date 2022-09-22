@@ -1,7 +1,6 @@
----
 # ============================================================
 # Basic creation
-- name: 'Create a subnet group - CHECK_MODE'
+- name: Create a subnet group - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -16,7 +15,7 @@
     that:
     - result is changed
 
-- name: 'Create a subnet group'
+- name: Create a subnet group
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -36,7 +35,7 @@
     - subnet_ids[0] in result.subnet_group.subnet_ids
     - subnet_ids[1] in result.subnet_group.subnet_ids
 
-- name: 'Create a subnet group (idempotency) - CHECK_MODE'
+- name: Create a subnet group (idempotency) - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -51,7 +50,7 @@
     that:
     - result is not changed
 
-- name: 'Create a subnet group (idempotency)'
+- name: Create a subnet group (idempotency)
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -73,7 +72,7 @@
 
 # ============================================================
 # Update description
-- name: 'Update subnet group description - CHECK_MODE'
+- name: Update subnet group description - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -88,7 +87,7 @@
     that:
     - result is changed
 
-- name: 'Update subnet group description'
+- name: Update subnet group description
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -107,8 +106,8 @@
     - result.subnet_group.subnet_ids | length == 2
     - subnet_ids[0] in result.subnet_group.subnet_ids
     - subnet_ids[1] in result.subnet_group.subnet_ids
-  
-- name: 'Update subnet group description (idempotency) - CHECK_MODE'
+
+- name: Update subnet group description (idempotency) - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -123,7 +122,7 @@
     that:
     - result is not changed
 
-- name: 'Update subnet group description (idempotency)'
+- name: Update subnet group description (idempotency)
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -142,8 +141,8 @@
     - result.subnet_group.subnet_ids | length == 2
     - subnet_ids[0] in result.subnet_group.subnet_ids
     - subnet_ids[1] in result.subnet_group.subnet_ids
-  
-- name: 'Restore subnet group description - CHECK_MODE'
+
+- name: Restore subnet group description - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -158,7 +157,7 @@
     that:
     - result is changed
 
-- name: 'Restore subnet group description'
+- name: Restore subnet group description
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -180,7 +179,7 @@
 
 # ============================================================
 # Update subnets
-- name: 'Update subnet group list - CHECK_MODE'
+- name: Update subnet group list - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -195,7 +194,7 @@
     that:
     - result is changed
 
-- name: 'Update subnet group list'
+- name: Update subnet group list
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -215,7 +214,7 @@
     - subnet_ids[2] in result.subnet_group.subnet_ids
     - subnet_ids[3] in result.subnet_group.subnet_ids
 
-- name: 'Update subnet group list (idempotency) - CHECK_MODE'
+- name: Update subnet group list (idempotency) - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -230,7 +229,7 @@
     that:
     - result is not changed
 
-- name: 'Update subnet group list (idempotency)'
+- name: Update subnet group list (idempotency)
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -250,7 +249,7 @@
     - subnet_ids[2] in result.subnet_group.subnet_ids
     - subnet_ids[3] in result.subnet_group.subnet_ids
 
-- name: 'Add more subnets subnet group list - CHECK_MODE'
+- name: Add more subnets subnet group list - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -267,7 +266,7 @@
     that:
     - result is changed
 
-- name: 'Add more subnets subnet group list'
+- name: Add more subnets subnet group list
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -291,7 +290,7 @@
     - subnet_ids[2] in result.subnet_group.subnet_ids
     - subnet_ids[3] in result.subnet_group.subnet_ids
 
-- name: 'Add more members to subnet group list (idempotency) - CHECK_MODE'
+- name: Add more members to subnet group list (idempotency) - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -308,7 +307,7 @@
     that:
     - result is not changed
 
-- name: 'Add more members to subnet group list (idempotency)'
+- name: Add more members to subnet group list (idempotency)
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -334,7 +333,7 @@
 
 # ============================================================
 # Add tags to subnets
-- name: 'Update subnet with tags - CHECK_MODE'
+- name: Update subnet with tags - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -344,7 +343,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_one: '{{ resource_prefix }} One'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   check_mode: true
   register: result
 
@@ -352,7 +351,7 @@
     that:
     - result is changed
 
-- name: 'Update subnet with tags'
+- name: Update subnet with tags
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -362,7 +361,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_one: '{{ resource_prefix }} One'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   register: result
 
 - assert:
@@ -378,8 +377,8 @@
     - result.subnet_group.tags | length == 2
     - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
     - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
-  
-- name: 'Update subnet with tags (idempotency) - CHECK_MODE'
+
+- name: Update subnet with tags (idempotency) - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -389,7 +388,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_one: '{{ resource_prefix }} One'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   check_mode: true
   register: result
 
@@ -397,7 +396,7 @@
     that:
     - result is not changed
 
-- name: 'Update subnet with tags (idempotency)'
+- name: Update subnet with tags (idempotency)
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -407,7 +406,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_one: '{{ resource_prefix }} One'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   register: result
 
 - assert:
@@ -424,7 +423,7 @@
     - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
     - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-- name: 'Update (add/remove) tags - CHECK_MODE'
+- name: Update (add/remove) tags - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -434,7 +433,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_three: '{{ resource_prefix }} Three'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   check_mode: true
   register: result
 
@@ -442,7 +441,7 @@
     that:
     - result is changed
 
-- name: 'Update (add/remove) tags'
+- name: Update (add/remove) tags
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -452,7 +451,7 @@
     - '{{ subnet_ids[1] }}'
     tags:
       tag_three: '{{ resource_prefix }} Three'
-      "Tag Two": 'two {{ resource_prefix }}'
+      Tag Two: two {{ resource_prefix }}
   register: result
 
 - assert:
@@ -469,7 +468,7 @@
     - result.subnet_group.tags["tag_three"] == '{{ resource_prefix }} Three'
     - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-- name: 'Update tags without purge - CHECK_MODE'
+- name: Update tags without purge - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -487,7 +486,7 @@
     that:
     - result is changed
 
-- name: 'Update tags without purge'
+- name: Update tags without purge
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -515,7 +514,7 @@
     - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
     - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
 
-- name: 'Remove all the tags - CHECK_MODE'
+- name: Remove all the tags - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -531,7 +530,7 @@
     that:
     - result is changed
 
-- name: 'Remove all the tags'
+- name: Remove all the tags
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -553,7 +552,7 @@
     - subnet_ids[1] in result.subnet_group.subnet_ids
     - '"tags" in result.subnet_group'
 
-- name: 'Update with CamelCase tags - CHECK_MODE'
+- name: Update with CamelCase tags - CHECK_MODE
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -562,10 +561,10 @@
     - '{{ subnet_ids[0] }}'
     - '{{ subnet_ids[1] }}'
     tags:
-      "lowercase spaced": 'hello cruel world'
-      "Title Case": 'Hello Cruel World'
-      CamelCase: 'SimpleCamelCase'
-      snake_case: 'simple_snake_case'
+      lowercase spaced: hello cruel world
+      Title Case: Hello Cruel World
+      CamelCase: SimpleCamelCase
+      snake_case: simple_snake_case
   check_mode: true
   register: result
 
@@ -573,7 +572,7 @@
     that:
     - result is changed
 
-- name: 'Update with CamelCase tags'
+- name: Update with CamelCase tags
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -582,10 +581,10 @@
     - '{{ subnet_ids[0] }}'
     - '{{ subnet_ids[1] }}'
     tags:
-      "lowercase spaced": 'hello cruel world'
-      "Title Case": 'Hello Cruel World'
-      CamelCase: 'SimpleCamelCase'
-      snake_case: 'simple_snake_case'
+      lowercase spaced: hello cruel world
+      Title Case: Hello Cruel World
+      CamelCase: SimpleCamelCase
+      snake_case: simple_snake_case
   register: result
 
 - assert:
@@ -604,7 +603,7 @@
     - result.subnet_group.tags["CamelCase"] == 'SimpleCamelCase'
     - result.subnet_group.tags["snake_case"] == 'simple_snake_case'
 
-- name: 'Do not specify any tag to ensure previous tags are not removed'
+- name: Do not specify any tag to ensure previous tags are not removed
   rds_subnet_group:
     state: present
     name: '{{ resource_prefix }}'
@@ -633,7 +632,7 @@
 
 # ============================================================
 # Deletion
-- name: 'Delete a subnet group - CHECK_MODE'
+- name: Delete a subnet group - CHECK_MODE
   rds_subnet_group:
     state: absent
     name: '{{ resource_prefix }}'
@@ -644,7 +643,7 @@
     that:
     - result is changed
 
-- name: 'Delete a subnet group'
+- name: Delete a subnet group
   rds_subnet_group:
     state: absent
     name: '{{ resource_prefix }}'
@@ -654,7 +653,7 @@
     that:
     - result is changed
 
-- name: 'Delete a subnet group - CHECK_MODE (idempotency)'
+- name: Delete a subnet group - CHECK_MODE (idempotency)
   rds_subnet_group:
     state: absent
     name: '{{ resource_prefix }}'
@@ -665,7 +664,7 @@
     that:
     - result is not changed
 
-- name: 'Delete a subnet group (idempotency)'
+- name: Delete a subnet group (idempotency)
   rds_subnet_group:
     state: absent
     name: '{{ resource_prefix }}'

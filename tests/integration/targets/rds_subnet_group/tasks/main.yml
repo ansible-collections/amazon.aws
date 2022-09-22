@@ -1,4 +1,3 @@
----
 # Tests for rds_subnet_group
 #
 # Note: (From Amazon's documentation)
@@ -12,35 +11,33 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
-  collections:
-    - amazon.aws
   block:
 
   # ============================================================
 
-  - name: 'Fetch AZ availability'
+  - name: Fetch AZ availability
     aws_az_info:
     register: az_info
 
-  - name: 'Assert that we have multiple AZs available to us'
+  - name: Assert that we have multiple AZs available to us
     assert:
       that: az_info.availability_zones | length >= 2
 
-  - name: 'Pick AZs'
+  - name: Pick AZs
     set_fact:
       az_one: '{{ az_info.availability_zones[0].zone_name }}'
       az_two: '{{ az_info.availability_zones[1].zone_name }}'
 
   # ============================================================
 
-  - name: 'Create a VPC'
+  - name: Create a VPC
     ec2_vpc_net:
       state: present
       cidr_block: '{{ vpc_cidr }}'
       name: '{{ resource_prefix }}'
     register: vpc
 
-  - name: 'Create subnets'
+  - name: Create subnets
     ec2_vpc_subnet:
       state: present
       cidr: '{{ item.cidr }}'
@@ -68,20 +65,20 @@
 
   # ============================================================
 
-  - include_tasks: 'params.yml'
+  - include_tasks: params.yml
 
-  - include_tasks: 'tests.yml'
+  - include_tasks: tests.yml
 
   # ============================================================
 
   always:
-  - name: 'Remove subnet group'
+  - name: Remove subnet group
     rds_subnet_group:
       state: absent
       name: '{{ resource_prefix }}'
     ignore_errors: yes
 
-  - name: 'Remove subnets'
+  - name: Remove subnets
     ec2_vpc_subnet:
       state: absent
       cidr: '{{ item.cidr }}'
@@ -101,7 +98,7 @@
     retries: 5
     delay: 5
 
-  - name: 'Remove the VPC'
+  - name: Remove the VPC
     ec2_vpc_net:
       state: absent
       cidr_block: '{{ vpc_cidr }}'
