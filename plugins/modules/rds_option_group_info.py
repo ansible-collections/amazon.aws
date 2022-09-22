@@ -56,12 +56,12 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: List an option group
-  community.aws.rds_option_group_info:
+  amazon.aws.rds_option_group_info:
     option_group_name: test-mysql-option-group
   register: option_group
 
 - name: List all the option groups
-  community.aws.rds_option_group_info:
+  amazon.aws.rds_option_group_info:
     region: ap-southeast-2
     profile: production
   register: option_group

@@ -131,7 +131,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Create an RDS Mysql Option group
 - name: Create an RDS Mysql option group
-  community.aws.rds_option_group:
+  amazon.aws.rds_option_group:
     state: present
     option_group_name: test-mysql-option-group
     engine_name: mysql
@@ -152,7 +152,7 @@ EXAMPLES = r'''
 
 # Remove currently configured options for an option group by removing options argument
 - name: Create an RDS Mysql option group
-  community.aws.rds_option_group:
+  amazon.aws.rds_option_group:
     state: present
     option_group_name: test-mysql-option-group
     engine_name: mysql
@@ -162,7 +162,7 @@ EXAMPLES = r'''
   register: rds_mysql_option_group
 
 - name: Create an RDS Mysql option group using tags
-  community.aws.rds_option_group:
+  amazon.aws.rds_option_group:
     state: present
     option_group_name: test-mysql-option-group
     engine_name: mysql
@@ -176,7 +176,7 @@ EXAMPLES = r'''
 
 # Delete an RDS Mysql Option group
 - name: Delete an RDS Mysql option group
-  community.aws.rds_option_group:
+  amazon.aws.rds_option_group:
     state: absent
     option_group_name: test-mysql-option-group
   register: deleted_rds_mysql_option_group
