@@ -1,7 +1,6 @@
----
 rds_param_group:
-  name: "{{ resource_prefix}}rds-param-group"
-  description: "Test group for rds_param_group Ansible module"
+  name: '{{ resource_prefix}}rds-param-group'
+  description: Test group for rds_param_group Ansible module
   engine: postgres9.6
 
 rds_long_param_list:
@@ -26,5 +25,5 @@ rds_long_param_list:
   log_lock_waits: on
   log_temp_files: 10K
   log_timezone: UTC
-  log_statement: 'all'
+  log_statement: all
   log_replication_commands: on
