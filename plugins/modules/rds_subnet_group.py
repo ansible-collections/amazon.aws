@@ -53,7 +53,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Add or change a subnet group
-  community.aws.rds_subnet_group:
+  amazon.aws.rds_subnet_group:
     state: present
     name: norwegian-blue
     description: My Fancy Ex Parrot Subnet Group
@@ -62,7 +62,7 @@ EXAMPLES = r'''
       - subnet-bbbbbbbb
 
 - name: Add or change a subnet group and associate tags
-  community.aws.rds_subnet_group:
+  amazon.aws.rds_subnet_group:
     state: present
     name: norwegian-blue
     description: My Fancy Ex Parrot Subnet Group
@@ -74,7 +74,7 @@ EXAMPLES = r'''
       tag2: Tag2
 
 - name: Remove a subnet group
-  community.aws.rds_subnet_group:
+  amazon.aws.rds_subnet_group:
     state: absent
     name: norwegian-blue
 '''
