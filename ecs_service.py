@@ -157,7 +157,7 @@ options:
             type: str
     force_deletion:
         description:
-          - Forcabily delete the service. Required when deleting a service with >0 scale, or no target group.
+          - Forcibly delete the service. Required when deleting a service with >0 scale, or no target group.
         default: False
         type: bool
         version_added: 2.1.0
