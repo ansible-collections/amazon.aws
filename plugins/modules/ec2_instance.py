@@ -492,7 +492,7 @@ EXAMPLES = '''
     region: us-east-2
     vpc_subnet_id: subnet-0123456
     network:
-      assign_public_ip: yes
+      assign_public_ip: true
       security_group: default
     tags:
       foo: bar
@@ -505,7 +505,7 @@ EXAMPLES = '''
     count: 3
     region: us-east-2
     network:
-      assign_public_ip: yes
+      assign_public_ip: true
       security_group: default
       vpc_subnet_id: subnet-0123456
     state: present
