@@ -74,6 +74,18 @@
         state: present
       register: setup_snapshot
 
+    - name: get instance UEFI data
+      command: aws ec2 get-instance-uefi-data --instance-id {{ ec2_instance_id }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: instance_uefi_data
+    - debug:
+        var: instance_uefi_data
+
+
     # ============================================================
 
     - name: test clean failure if not providing image_id or name with state=present
@@ -96,537 +108,537 @@
 
     # ============================================================
 
-    - name: create an image from the instance (check mode)
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: present
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-        root_device_name: '{{ ec2_ami_root_disk }}'
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is changed
-      assert:
-        that:
-          - check_mode_result is changed
-
-    - name: create an image from the instance
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: present
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-        root_device_name: '{{ ec2_ami_root_disk }}'
-      register: result
-
-    - name: set image id fact for deletion later
-      set_fact:
-        ec2_ami_image_id: "{{ result.image_id }}"
-
-    - name: assert that image has been created
-      assert:
-        that:
-          - "result.changed"
-          - "result.image_id.startswith('ami-')"
-          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
-
-    - name: get related snapshot info and ensure the tags have been propagated
-      ec2_snapshot_info:
-        snapshot_ids:
-          - "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
-      register: snapshot_result
-
-    - name: ensure the tags have been propagated to the snapshot
-      assert:
-        that:
-          - "'tags' in snapshot_result.snapshots[0]"
-          - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami'"
-
-    # ============================================================
-
-    - name: create an image from the instance with attached devices with no_device true (check mode)
-      ec2_ami:
-        name: '{{ ec2_ami_name }}_no_device_true_ami'
-        instance_id: '{{ ec2_instance_id }}'
-        device_mapping:
-          - device_name: /dev/sda1
-            volume_size: 10
-            delete_on_termination: true
-            volume_type: gp2
-          - device_name: /dev/sdf
-            no_device: yes
-        state: present
-        wait: yes
-        root_device_name: '{{ ec2_ami_root_disk }}'
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is changed
-      assert:
-        that:
-          - check_mode_result is changed
-
-    - name: create an image from the instance with attached devices with no_device true
-      ec2_ami:
-        name: '{{ ec2_ami_name }}_no_device_true_ami'
-        instance_id: '{{ ec2_instance_id }}'
-        device_mapping:
-          - device_name: /dev/sda1
-            volume_size: 10
-            delete_on_termination: true
-            volume_type: gp2
-          - device_name: /dev/sdf
-            no_device: yes
-        state: present
-        wait: yes
-        root_device_name: '{{ ec2_ami_root_disk }}'
-      register: result_no_device_true
-
-    - name: set image id fact for deletion later
-      set_fact:
-        ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
-
-    - name: assert that image with no_device option yes has been created
-      assert:
-        that:
-          - "result_no_device_true.changed"
-          - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
-
-    - name: create an image from the instance with attached devices with no_device false
-      ec2_ami:
-        name: '{{ ec2_ami_name }}_no_device_false_ami'
-        instance_id: '{{ ec2_instance_id }}'
-        device_mapping:
-          - device_name: /dev/sda1
-            volume_size: 10
-            delete_on_termination: true
-            volume_type: gp2
-            no_device: no
-        state: present
-        wait: yes
-        root_device_name: '{{ ec2_ami_root_disk }}'
-      register: result_no_device_false
-
-    - name: set image id fact for deletion later
-      set_fact:
-        ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
-
-    - name: assert that image with no_device option no has been created
-      assert:
-        that:
-          - "result_no_device_false.changed"
-          - "'/dev/sda1' in result_no_device_false.block_device_mapping"
-
-    # ============================================================
-
-    - name: gather facts about the image created
-      ec2_ami_info:
-        image_ids: '{{ ec2_ami_image_id }}'
-      register: ami_facts_result
-      ignore_errors: true
-
-    - name: assert that the right image was found
-      assert:
-        that:
-          - "ami_facts_result.images[0].image_id == ec2_ami_image_id"
-
-   # some ec2_ami_info tests to test if the filtering is working fine.
-   # ============================================================
-
-    - name: gather info about the image
-      ec2_ami_info:
-        image_ids: '{{ ec2_region_images[ec2_region] }}'
-      register: ami_info_result
-      ignore_errors: true
-
-    - name: assert that the right image was found
-      assert:
-        that:
-          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
-
-    # ============================================================
-
-    - name: gather info about the image using boolean filter
-      ec2_ami_info:
-        image_ids: '{{ ec2_region_images[ec2_region] }}'
-        filters:
-          is-public: true
-      register: ami_info_result
-      ignore_errors: true
-
-    - name: assert that the right image was found
-      assert:
-        that:
-          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
-
-    # ============================================================
-
-    - name: gather info about the image using integer filter
-      ec2_ami_info:
-        image_ids: '{{ ec2_region_images[ec2_region] }}'
-        filters:
-          owner-id: 137112412989
-      register: ami_info_result
-      ignore_errors: true
-
-    - name: assert that the right image was found
-      assert:
-        that:
-          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
-
-    # ============================================================
-
-    - name: gather info about the image using string filter
-      ec2_ami_info:
-        image_ids: '{{ ec2_region_images[ec2_region] }}'
-        filters:
-          name: 'amzn-ami-hvm-2017.09.0.20170930-x86_64-gp2'
-      register: ami_info_result
-      ignore_errors: true
-
-    - name: assert that the right image was found
-      assert:
-        that:
-          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
-
-    # e2_ami_info filtering tests ends
-    # ============================================================
-
-    - name: delete the image (check mode)
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: absent
-        delete_snapshot: yes
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}'
-        image_id: '{{ result.image_id }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-      ignore_errors: true
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is changed
-      assert:
-        that:
-          - check_mode_result is changed
-
-    - name: delete the image
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: absent
-        delete_snapshot: yes
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}'
-        image_id: '{{ result.image_id }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-      ignore_errors: true
-      register: result
-
-    - name: assert that the image has been deleted
-      assert:
-        that:
-          - "result.changed"
-          - "'image_id' not in result"
-          - "result.snapshots_deleted"
-
-    # ==============================================================
-
-    - name: test removing an ami if no image ID is provided (expected failed=true)
-      ec2_ami:
-        state: absent
-      register: result
-      ignore_errors: yes
-
-    - name: assert that an image ID is required
-      assert:
-        that:
-          - "result.failed"
-          - "result.msg == 'state is absent but all of the following are missing: image_id'"
-
-    # ============================================================
-
-    - name: create an image from the snapshot
-      ec2_ami:
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}'
-        state: present
-        launch_permissions:
-          user_ids: []
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        root_device_name: '{{ ec2_ami_root_disk }}'
-        device_mapping:
-          - device_name: '{{ ec2_ami_root_disk }}'
-            volume_type: gp2
-            size: 8
-            delete_on_termination: true
-            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
-      register: result
-      ignore_errors: true
-
-    - name: set image id fact for deletion later
-      set_fact:
-        ec2_ami_image_id: "{{ result.image_id }}"
-        ec2_ami_snapshot: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
-
-    - name: assert a new ami has been created
-      assert:
-        that:
-          - "result.changed"
-          - "result.image_id.startswith('ami-')"
-
-    # ============================================================
-
-    - name: test default launch permissions idempotence (check mode)
-      ec2_ami:
-        description: '{{ ec2_ami_description }}'
-        state: present
-        name: '{{ ec2_ami_name }}_ami'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        root_device_name: '{{ ec2_ami_root_disk }}'
-        image_id: '{{ result.image_id }}'
-        launch_permissions:
-          user_ids: []
-        device_mapping:
-          - device_name: '{{ ec2_ami_root_disk }}'
-            volume_type: gp2
-            size: 8
-            delete_on_termination: true
-            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is not changed
-      assert:
-        that:
-          - check_mode_result is not changed
-
-    - name: test default launch permissions idempotence
-      ec2_ami:
-        description: '{{ ec2_ami_description }}'
-        state: present
-        name: '{{ ec2_ami_name }}_ami'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        root_device_name: '{{ ec2_ami_root_disk }}'
-        image_id: '{{ result.image_id }}'
-        launch_permissions:
-          user_ids: []
-        device_mapping:
-          - device_name: '{{ ec2_ami_root_disk }}'
-            volume_type: gp2
-            size: 8
-            delete_on_termination: true
-            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
-      register: result
-
-    - name: assert a new ami has not been created
-      assert:
-        that:
-          - "not result.changed"
-          - "result.image_id.startswith('ami-')"
-
-    # ============================================================
-
-    - name: add a tag to the AMI
-      ec2_ami:
-        state: present
-        description: '{{ ec2_ami_description }}'
-        image_id: '{{ result.image_id }}'
-        name: '{{ ec2_ami_name }}_ami'
-        tags:
-          New: Tag
-        purge_tags: no
-      register: result
-
-    - name: assert a tag was added
-      assert:
-        that:
-          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
-          - "'New' in result.tags and result.tags.New == 'Tag'"
-
-    - name: use purge_tags to remove a tag from the AMI
-      ec2_ami:
-        state: present
-        description: '{{ ec2_ami_description }}'
-        image_id: '{{ result.image_id }}'
-        name: '{{ ec2_ami_name }}_ami'
-        tags:
-          New: Tag
-      register: result
-
-    - name: assert a tag was removed
-      assert:
-        that:
-          - "'Name' not in result.tags"
-          - "'New' in result.tags and result.tags.New == 'Tag'"
-
-    # ============================================================
-
-    - name: update AMI launch permissions (check mode)
-      ec2_ami:
-        state: present
-        image_id: '{{ result.image_id }}'
-        description: '{{ ec2_ami_description }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        launch_permissions:
-          group_names: ['all']
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is changed
-      assert:
-        that:
-          - check_mode_result is changed
-
-    - name: update AMI launch permissions
-      ec2_ami:
-        state: present
-        image_id: '{{ result.image_id }}'
-        description: '{{ ec2_ami_description }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        launch_permissions:
-          group_names: ['all']
-      register: result
-
-    - name: assert launch permissions were updated
-      assert:
-        that:
-          - "result.changed"
-
-    # ============================================================
-
-    - name: modify the AMI description (check mode)
-      ec2_ami:
-        state: present
-        image_id: '{{ result.image_id }}'
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}CHANGED'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        launch_permissions:
-          group_names: ['all']
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is changed
-      assert:
-        that:
-          - check_mode_result is changed
-
-    - name: modify the AMI description
-      ec2_ami:
-        state: present
-        image_id: '{{ result.image_id }}'
-        name: '{{ ec2_ami_name }}_ami'
-        description: '{{ ec2_ami_description }}CHANGED'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        launch_permissions:
-          group_names: ['all']
-      register: result
-
-    - name: assert the description changed
-      assert:
-        that:
-          - "result.changed"
-
-    # ============================================================
-
-    - name: remove public launch permissions
-      ec2_ami:
-        state: present
-        image_id: '{{ result.image_id }}'
-        name: '{{ ec2_ami_name }}_ami'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        launch_permissions:
-          group_names: []
-      register: result
-
-    - name: assert launch permissions were updated
-      assert:
-        that:
-          - "result.changed"
-
-    # ============================================================
-
-    - name: delete ami without deleting the snapshot (default is not to delete)
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: absent
-        name: '{{ ec2_ami_name }}_ami'
-        image_id: '{{ ec2_ami_image_id }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-      ignore_errors: true
-      register: result
-
-    - name: assert that the image has been deleted
-      assert:
-        that:
-          - "result.changed"
-          - "'image_id' not in result"
-
-    - name: ensure the snapshot still exists
-      ec2_snapshot_info:
-        snapshot_ids:
-          - '{{ ec2_ami_snapshot }}'
-      register: snapshot_result
-
-    - name: assert the snapshot wasn't deleted
-      assert:
-        that:
-          - "snapshot_result.snapshots[0].snapshot_id == ec2_ami_snapshot"
-
-    - name: delete ami for a second time (check mode)
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: absent
-        name: '{{ ec2_ami_name }}_ami'
-        image_id: '{{ ec2_ami_image_id }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-      check_mode: true
-      register: check_mode_result
-
-    - name: assert that check_mode result is not changed
-      assert:
-        that:
-          - check_mode_result is not changed
-
-    - name: delete ami for a second time
-      ec2_ami:
-        instance_id: '{{ ec2_instance_id }}'
-        state: absent
-        name: '{{ ec2_ami_name }}_ami'
-        image_id: '{{ ec2_ami_image_id }}'
-        tags:
-          Name: '{{ ec2_ami_name }}_ami'
-        wait: yes
-      register: result
-
-    - name: assert that image does not exist
-      assert:
-        that:
-          - not result.changed
-          - not result.failed
+  #   - name: create an image from the instance (check mode)
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: present
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is changed
+
+  #   - name: create an image from the instance
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: present
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #     register: result
+
+  #   - name: set image id fact for deletion later
+  #     set_fact:
+  #       ec2_ami_image_id: "{{ result.image_id }}"
+
+  #   - name: assert that image has been created
+  #     assert:
+  #       that:
+  #         - "result.changed"
+  #         - "result.image_id.startswith('ami-')"
+  #         - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+
+  #   - name: get related snapshot info and ensure the tags have been propagated
+  #     ec2_snapshot_info:
+  #       snapshot_ids:
+  #         - "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+  #     register: snapshot_result
+
+  #   - name: ensure the tags have been propagated to the snapshot
+  #     assert:
+  #       that:
+  #         - "'tags' in snapshot_result.snapshots[0]"
+  #         - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami'"
+
+  #   # ============================================================
+
+  #   - name: create an image from the instance with attached devices with no_device true (check mode)
+  #     ec2_ami:
+  #       name: '{{ ec2_ami_name }}_no_device_true_ami'
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       device_mapping:
+  #         - device_name: /dev/sda1
+  #           volume_size: 10
+  #           delete_on_termination: true
+  #           volume_type: gp2
+  #         - device_name: /dev/sdf
+  #           no_device: yes
+  #       state: present
+  #       wait: yes
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is changed
+
+  #   - name: create an image from the instance with attached devices with no_device true
+  #     ec2_ami:
+  #       name: '{{ ec2_ami_name }}_no_device_true_ami'
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       device_mapping:
+  #         - device_name: /dev/sda1
+  #           volume_size: 10
+  #           delete_on_termination: true
+  #           volume_type: gp2
+  #         - device_name: /dev/sdf
+  #           no_device: yes
+  #       state: present
+  #       wait: yes
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #     register: result_no_device_true
+
+  #   - name: set image id fact for deletion later
+  #     set_fact:
+  #       ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
+
+  #   - name: assert that image with no_device option yes has been created
+  #     assert:
+  #       that:
+  #         - "result_no_device_true.changed"
+  #         - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
+
+  #   - name: create an image from the instance with attached devices with no_device false
+  #     ec2_ami:
+  #       name: '{{ ec2_ami_name }}_no_device_false_ami'
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       device_mapping:
+  #         - device_name: /dev/sda1
+  #           volume_size: 10
+  #           delete_on_termination: true
+  #           volume_type: gp2
+  #           no_device: no
+  #       state: present
+  #       wait: yes
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #     register: result_no_device_false
+
+  #   - name: set image id fact for deletion later
+  #     set_fact:
+  #       ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
+
+  #   - name: assert that image with no_device option no has been created
+  #     assert:
+  #       that:
+  #         - "result_no_device_false.changed"
+  #         - "'/dev/sda1' in result_no_device_false.block_device_mapping"
+
+  #   # ============================================================
+
+  #   - name: gather facts about the image created
+  #     ec2_ami_info:
+  #       image_ids: '{{ ec2_ami_image_id }}'
+  #     register: ami_facts_result
+  #     ignore_errors: true
+
+  #   - name: assert that the right image was found
+  #     assert:
+  #       that:
+  #         - "ami_facts_result.images[0].image_id == ec2_ami_image_id"
+
+  #  # some ec2_ami_info tests to test if the filtering is working fine.
+  #  # ============================================================
+
+  #   - name: gather info about the image
+  #     ec2_ami_info:
+  #       image_ids: '{{ ec2_region_images[ec2_region] }}'
+  #     register: ami_info_result
+  #     ignore_errors: true
+
+  #   - name: assert that the right image was found
+  #     assert:
+  #       that:
+  #         - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+  #   # ============================================================
+
+  #   - name: gather info about the image using boolean filter
+  #     ec2_ami_info:
+  #       image_ids: '{{ ec2_region_images[ec2_region] }}'
+  #       filters:
+  #         is-public: true
+  #     register: ami_info_result
+  #     ignore_errors: true
+
+  #   - name: assert that the right image was found
+  #     assert:
+  #       that:
+  #         - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+  #   # ============================================================
+
+  #   - name: gather info about the image using integer filter
+  #     ec2_ami_info:
+  #       image_ids: '{{ ec2_region_images[ec2_region] }}'
+  #       filters:
+  #         owner-id: 137112412989
+  #     register: ami_info_result
+  #     ignore_errors: true
+
+  #   - name: assert that the right image was found
+  #     assert:
+  #       that:
+  #         - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+  #   # ============================================================
+
+  #   - name: gather info about the image using string filter
+  #     ec2_ami_info:
+  #       image_ids: '{{ ec2_region_images[ec2_region] }}'
+  #       filters:
+  #         name: 'amzn-ami-hvm-2017.09.0.20170930-x86_64-gp2'
+  #     register: ami_info_result
+  #     ignore_errors: true
+
+  #   - name: assert that the right image was found
+  #     assert:
+  #       that:
+  #         - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+  #   # e2_ami_info filtering tests ends
+  #   # ============================================================
+
+  #   - name: delete the image (check mode)
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: absent
+  #       delete_snapshot: yes
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}'
+  #       image_id: '{{ result.image_id }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #     ignore_errors: true
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is changed
+
+  #   - name: delete the image
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: absent
+  #       delete_snapshot: yes
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}'
+  #       image_id: '{{ result.image_id }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #     ignore_errors: true
+  #     register: result
+
+  #   - name: assert that the image has been deleted
+  #     assert:
+  #       that:
+  #         - "result.changed"
+  #         - "'image_id' not in result"
+  #         - "result.snapshots_deleted"
+
+  #   # ==============================================================
+
+  #   - name: test removing an ami if no image ID is provided (expected failed=true)
+  #     ec2_ami:
+  #       state: absent
+  #     register: result
+  #     ignore_errors: yes
+
+  #   - name: assert that an image ID is required
+  #     assert:
+  #       that:
+  #         - "result.failed"
+  #         - "result.msg == 'state is absent but all of the following are missing: image_id'"
+
+  #   # ============================================================
+
+  #   - name: create an image from the snapshot
+  #     ec2_ami:
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}'
+  #       state: present
+  #       launch_permissions:
+  #         user_ids: []
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #       device_mapping:
+  #         - device_name: '{{ ec2_ami_root_disk }}'
+  #           volume_type: gp2
+  #           size: 8
+  #           delete_on_termination: true
+  #           snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+  #     register: result
+  #     ignore_errors: true
+
+  #   - name: set image id fact for deletion later
+  #     set_fact:
+  #       ec2_ami_image_id: "{{ result.image_id }}"
+  #       ec2_ami_snapshot: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+
+  #   - name: assert a new ami has been created
+  #     assert:
+  #       that:
+  #         - "result.changed"
+  #         - "result.image_id.startswith('ami-')"
+
+  #   # ============================================================
+
+  #   - name: test default launch permissions idempotence (check mode)
+  #     ec2_ami:
+  #       description: '{{ ec2_ami_description }}'
+  #       state: present
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #       image_id: '{{ result.image_id }}'
+  #       launch_permissions:
+  #         user_ids: []
+  #       device_mapping:
+  #         - device_name: '{{ ec2_ami_root_disk }}'
+  #           volume_type: gp2
+  #           size: 8
+  #           delete_on_termination: true
+  #           snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is not changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is not changed
+
+  #   - name: test default launch permissions idempotence
+  #     ec2_ami:
+  #       description: '{{ ec2_ami_description }}'
+  #       state: present
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       root_device_name: '{{ ec2_ami_root_disk }}'
+  #       image_id: '{{ result.image_id }}'
+  #       launch_permissions:
+  #         user_ids: []
+  #       device_mapping:
+  #         - device_name: '{{ ec2_ami_root_disk }}'
+  #           volume_type: gp2
+  #           size: 8
+  #           delete_on_termination: true
+  #           snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+  #     register: result
+
+  #   - name: assert a new ami has not been created
+  #     assert:
+  #       that:
+  #         - "not result.changed"
+  #         - "result.image_id.startswith('ami-')"
+
+  #   # ============================================================
+
+  #   - name: add a tag to the AMI
+  #     ec2_ami:
+  #       state: present
+  #       description: '{{ ec2_ami_description }}'
+  #       image_id: '{{ result.image_id }}'
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       tags:
+  #         New: Tag
+  #       purge_tags: no
+  #     register: result
+
+  #   - name: assert a tag was added
+  #     assert:
+  #       that:
+  #         - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+  #         - "'New' in result.tags and result.tags.New == 'Tag'"
+
+  #   - name: use purge_tags to remove a tag from the AMI
+  #     ec2_ami:
+  #       state: present
+  #       description: '{{ ec2_ami_description }}'
+  #       image_id: '{{ result.image_id }}'
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       tags:
+  #         New: Tag
+  #     register: result
+
+  #   - name: assert a tag was removed
+  #     assert:
+  #       that:
+  #         - "'Name' not in result.tags"
+  #         - "'New' in result.tags and result.tags.New == 'Tag'"
+
+  #   # ============================================================
+
+  #   - name: update AMI launch permissions (check mode)
+  #     ec2_ami:
+  #       state: present
+  #       image_id: '{{ result.image_id }}'
+  #       description: '{{ ec2_ami_description }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       launch_permissions:
+  #         group_names: ['all']
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is changed
+
+  #   - name: update AMI launch permissions
+  #     ec2_ami:
+  #       state: present
+  #       image_id: '{{ result.image_id }}'
+  #       description: '{{ ec2_ami_description }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       launch_permissions:
+  #         group_names: ['all']
+  #     register: result
+
+  #   - name: assert launch permissions were updated
+  #     assert:
+  #       that:
+  #         - "result.changed"
+
+  #   # ============================================================
+
+  #   - name: modify the AMI description (check mode)
+  #     ec2_ami:
+  #       state: present
+  #       image_id: '{{ result.image_id }}'
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}CHANGED'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       launch_permissions:
+  #         group_names: ['all']
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is changed
+
+  #   - name: modify the AMI description
+  #     ec2_ami:
+  #       state: present
+  #       image_id: '{{ result.image_id }}'
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       description: '{{ ec2_ami_description }}CHANGED'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       launch_permissions:
+  #         group_names: ['all']
+  #     register: result
+
+  #   - name: assert the description changed
+  #     assert:
+  #       that:
+  #         - "result.changed"
+
+  #   # ============================================================
+
+  #   - name: remove public launch permissions
+  #     ec2_ami:
+  #       state: present
+  #       image_id: '{{ result.image_id }}'
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       launch_permissions:
+  #         group_names: []
+  #     register: result
+
+  #   - name: assert launch permissions were updated
+  #     assert:
+  #       that:
+  #         - "result.changed"
+
+  #   # ============================================================
+
+  #   - name: delete ami without deleting the snapshot (default is not to delete)
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: absent
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       image_id: '{{ ec2_ami_image_id }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #     ignore_errors: true
+  #     register: result
+
+  #   - name: assert that the image has been deleted
+  #     assert:
+  #       that:
+  #         - "result.changed"
+  #         - "'image_id' not in result"
+
+  #   - name: ensure the snapshot still exists
+  #     ec2_snapshot_info:
+  #       snapshot_ids:
+  #         - '{{ ec2_ami_snapshot }}'
+  #     register: snapshot_result
+
+  #   - name: assert the snapshot wasn't deleted
+  #     assert:
+  #       that:
+  #         - "snapshot_result.snapshots[0].snapshot_id == ec2_ami_snapshot"
+
+  #   - name: delete ami for a second time (check mode)
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: absent
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       image_id: '{{ ec2_ami_image_id }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #     check_mode: true
+  #     register: check_mode_result
+
+  #   - name: assert that check_mode result is not changed
+  #     assert:
+  #       that:
+  #         - check_mode_result is not changed
+
+  #   - name: delete ami for a second time
+  #     ec2_ami:
+  #       instance_id: '{{ ec2_instance_id }}'
+  #       state: absent
+  #       name: '{{ ec2_ami_name }}_ami'
+  #       image_id: '{{ ec2_ami_image_id }}'
+  #       tags:
+  #         Name: '{{ ec2_ami_name }}_ami'
+  #       wait: yes
+  #     register: result
+
+  #   - name: assert that image does not exist
+  #     assert:
+  #       that:
+  #         - not result.changed
+  #         - not result.failed
 
     # ============================================================
 
