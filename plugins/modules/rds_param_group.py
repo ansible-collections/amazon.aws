@@ -60,7 +60,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
-  community.aws.rds_param_group:
+  amazon.aws.rds_param_group:
       state: present
       name: norwegian-blue
       description: 'My Fancy Ex Parrot Group'
@@ -72,7 +72,7 @@ EXAMPLES = '''
           Application: parrot
 
 - name: Remove a parameter group
-  community.aws.rds_param_group:
+  amazon.aws.rds_param_group:
       state: absent
       name: norwegian-blue
 '''
