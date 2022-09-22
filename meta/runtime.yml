@@ -79,6 +79,7 @@ action_groups:
   - rds_option_group_info
   - rds_param_group
   - rds_snapshot_info
+  - rds_subnet_group
   - route53
   - route53_health_check
   - route53_info
