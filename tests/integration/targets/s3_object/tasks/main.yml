@@ -88,6 +88,9 @@
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
+        tags:
+            "lowercase spaced": "hello cruel world"
+            "Title Case": "Hello Cruel World"
       retries: 3
       delay: 3
       register: result
@@ -96,6 +99,65 @@
         that:
           - result is changed
           - result.msg == "PUT operation complete"
+
+    - name: List keys
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+      register: list_keys_result
+
+    - name: Get s3 object info without specific details
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+        object_name: "{{ list_keys_result.s3_keys[0] }}"
+      register: info_result
+
+    - assert:
+        that:
+          - info_result is not failed
+          - info_result is not changed
+          - '"object_info" in info_result'
+          - info_result.object_info[0] | length != 0
+          - '"object_data" in info_result.object_info[0]'
+          - '"e_tag" in info_result.object_info[0].object_data'
+          - '"last_modified" in info_result.object_info[0].object_data'
+          - '"content_type" in info_result.object_info[0].object_data'
+
+    - name: Get s3 object info with specific details
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+        object_name: "{{ list_keys_result.s3_keys[0] }}"
+        object_details:
+          object_acl: true
+          object_tagging: true
+          object_lock_configuration: true
+          object_attributes: true
+          object_retention: false
+          attributes_list:
+            - ETag
+            - ObjectSize
+            - StorageClass
+            - Checksum
+            - ObjectParts
+      register: info_detail_result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - assert:
+        that:
+          - info_detail_result is not failed
+          - info_detail_result is not changed
+          - '"object_info" in info_detail_result'
+          - info_detail_result.object_info[0] | length != 0
+          - '"object_acl" in info_detail_result.object_info[0]'
+          - '"object_tagging" in info_detail_result.object_info[0]'
+          - info_detail_result.object_info[0].object_tagging | length == 2
+          - '"object_legal_hold" not in info_detail_result.object_info[0]'
+          - '"object_lock_configuration" in info_detail_result.object_info[0]'
+          - '"object_attributes" in info_detail_result.object_info[0]'
+          - '"object_retention" not in info_detail_result.object_info[0]'
+          - '"e_tag" in info_result.object_info[0].object_data'
+          - '"last_modified" in info_result.object_info[0].object_data'
+          - '"content_type" in info_result.object_info[0].object_data'
 
     - name: test using s3_object with async
       s3_object:
