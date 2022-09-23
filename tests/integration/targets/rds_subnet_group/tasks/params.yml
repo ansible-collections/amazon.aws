@@ -1,0 +1,29 @@
+# Try creating without a description
+- name: Create a subnet group (no description)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  ignore_errors: yes
+  register: create_missing_param
+- assert:
+    that:
+    - create_missing_param is failed
+    - "'description' in create_missing_param.msg"
+    - "'state is present but all of the following are missing' in create_missing_param.msg"
+
+# Try creating without subnets
+- name: Create a subnet group (no subnets)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+  ignore_errors: yes
+  register: create_missing_param
+- assert:
+    that:
+    - create_missing_param is failed
+    - "'subnets' in create_missing_param.msg"
+    - "'state is present but all of the following are missing' in create_missing_param.msg"

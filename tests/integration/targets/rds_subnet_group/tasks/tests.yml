@@ -1,0 +1,675 @@
+# ============================================================
+# Basic creation
+- name: Create a subnet group - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Create a subnet group
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+
+- name: Create a subnet group (idempotency) - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Create a subnet group (idempotency)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+
+# ============================================================
+# Update description
+- name: Update subnet group description - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update subnet group description
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+
+- name: Update subnet group description (idempotency) - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Update subnet group description (idempotency)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+
+- name: Restore subnet group description - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Restore subnet group description
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+
+# ============================================================
+# Update subnets
+- name: Update subnet group list - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update subnet group list
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[2] in result.subnet_group.subnet_ids
+    - subnet_ids[3] in result.subnet_group.subnet_ids
+
+- name: Update subnet group list (idempotency) - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Update subnet group list (idempotency)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[2] in result.subnet_group.subnet_ids
+    - subnet_ids[3] in result.subnet_group.subnet_ids
+
+- name: Add more subnets subnet group list - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Add more subnets subnet group list
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 4
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - subnet_ids[2] in result.subnet_group.subnet_ids
+    - subnet_ids[3] in result.subnet_group.subnet_ids
+
+- name: Add more members to subnet group list (idempotency) - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Add more members to subnet group list (idempotency)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    - '{{ subnet_ids[2] }}'
+    - '{{ subnet_ids[3] }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 4
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - subnet_ids[2] in result.subnet_group.subnet_ids
+    - subnet_ids[3] in result.subnet_group.subnet_ids
+
+# ============================================================
+# Add tags to subnets
+- name: Update subnet with tags - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+      Tag Two: two {{ resource_prefix }}
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update subnet with tags
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+      Tag Two: two {{ resource_prefix }}
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 2
+    - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
+    - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+
+- name: Update subnet with tags (idempotency) - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+      Tag Two: two {{ resource_prefix }}
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Update subnet with tags (idempotency)
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+      Tag Two: two {{ resource_prefix }}
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 2
+    - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
+    - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+
+- name: Update (add/remove) tags - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_three: '{{ resource_prefix }} Three'
+      Tag Two: two {{ resource_prefix }}
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update (add/remove) tags
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      tag_three: '{{ resource_prefix }} Three'
+      Tag Two: two {{ resource_prefix }}
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 2
+    - result.subnet_group.tags["tag_three"] == '{{ resource_prefix }} Three'
+    - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+
+- name: Update tags without purge - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    purge_tags: no
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update tags without purge
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    purge_tags: no
+    tags:
+      tag_one: '{{ resource_prefix }} One'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 3
+    - result.subnet_group.tags["tag_three"] == '{{ resource_prefix }} Three'
+    - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
+
+- name: Remove all the tags - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags: {}
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Remove all the tags
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags: {}
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+
+- name: Update with CamelCase tags - CHECK_MODE
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      lowercase spaced: hello cruel world
+      Title Case: Hello Cruel World
+      CamelCase: SimpleCamelCase
+      snake_case: simple_snake_case
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Update with CamelCase tags
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+    tags:
+      lowercase spaced: hello cruel world
+      Title Case: Hello Cruel World
+      CamelCase: SimpleCamelCase
+      snake_case: simple_snake_case
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 4
+    - result.subnet_group.tags["lowercase spaced"] == 'hello cruel world'
+    - result.subnet_group.tags["Title Case"] == 'Hello Cruel World'
+    - result.subnet_group.tags["CamelCase"] == 'SimpleCamelCase'
+    - result.subnet_group.tags["snake_case"] == 'simple_snake_case'
+
+- name: Do not specify any tag to ensure previous tags are not removed
+  rds_subnet_group:
+    state: present
+    name: '{{ resource_prefix }}'
+    description: '{{ group_description_changed }}'
+    subnets:
+    - '{{ subnet_ids[0] }}'
+    - '{{ subnet_ids[1] }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+    - result.subnet_group.description == group_description_changed
+    - result.subnet_group.name == resource_prefix
+    - result.subnet_group.vpc_id == vpc.vpc.id
+    - result.subnet_group.subnet_ids | length == 2
+    - subnet_ids[0] in result.subnet_group.subnet_ids
+    - subnet_ids[1] in result.subnet_group.subnet_ids
+    - '"tags" in result.subnet_group'
+    - result.subnet_group.tags | length == 4
+    - result.subnet_group.tags["lowercase spaced"] == 'hello cruel world'
+    - result.subnet_group.tags["Title Case"] == 'Hello Cruel World'
+    - result.subnet_group.tags["CamelCase"] == 'SimpleCamelCase'
+    - result.subnet_group.tags["snake_case"] == 'simple_snake_case'
+
+
+# ============================================================
+# Deletion
+- name: Delete a subnet group - CHECK_MODE
+  rds_subnet_group:
+    state: absent
+    name: '{{ resource_prefix }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Delete a subnet group
+  rds_subnet_group:
+    state: absent
+    name: '{{ resource_prefix }}'
+  register: result
+
+- assert:
+    that:
+    - result is changed
+
+- name: Delete a subnet group - CHECK_MODE (idempotency)
+  rds_subnet_group:
+    state: absent
+    name: '{{ resource_prefix }}'
+  check_mode: true
+  register: result
+
+- assert:
+    that:
+    - result is not changed
+
+- name: Delete a subnet group (idempotency)
+  rds_subnet_group:
+    state: absent
+    name: '{{ resource_prefix }}'
+  register: result
+
+- assert:
+    that:
+    - result is not changed
