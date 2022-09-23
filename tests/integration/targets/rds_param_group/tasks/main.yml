@@ -1,0 +1,517 @@
+# A Note about ec2 environment variable name preference:
+#  - EC2_URL -> AWS_URL
+#  - EC2_ACCESS_KEY -> AWS_ACCESS_KEY_ID -> AWS_ACCESS_KEY
+#  - EC2_SECRET_KEY -> AWS_SECRET_ACCESS_KEY -> AWX_SECRET_KEY
+#  - EC2_REGION -> AWS_REGION
+#
+# TODO - name: test 'region' parameter
+# TODO - name: test 'state=absent' parameter for existing key
+# TODO - name: test 'state=absent' parameter for missing key
+# TODO - name: test 'validate_certs' parameter
+
+# ============================================================
+
+- name: rds_option_group tests
+  module_defaults:
+    group/aws:
+      ec2_access_key: '{{ aws_access_key }}'
+      ec2_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ ec2_region }}'
+  block:
+
+    # ============================================================
+  - name: test empty parameter group - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+    check_mode: true
+    register: result
+
+  - name: assert rds parameter group changed - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+
+  - name: test empty parameter group
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+    register: result
+
+  - name: assert rds parameter group changed
+    assert:
+      that:
+      - result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - result.tags == {}
+
+    # ============================================================
+  - name: test empty parameter group with no arguments changes nothing - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+    check_mode: true
+    register: result
+
+  - name: assert no change when running empty parameter group a second time - CHECK_MODE
+    assert:
+      that:
+      - not result.changed
+
+  - name: test empty parameter group with no arguments changes nothing
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+    register: result
+
+  - name: assert no change when running empty parameter group a second time
+    assert:
+      that:
+      - not result.changed
+
+    # ============================================================
+  - name: test adding numeric tag - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: 123
+    check_mode: true
+    register: result
+
+  - name: adding numeric tag just silently converts - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+  - name: test adding numeric tag
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: 123
+    register: result
+
+  - name: adding numeric tag just silently converts
+    assert:
+      that:
+      - result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 2
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+
+    # ============================================================
+  - name: test tagging existing group - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: '123'
+        NewTag: hello
+    check_mode: true
+    register: result
+
+  - name: assert tagging existing group changes it and adds tags - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+  - name: test tagging existing group
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: '123'
+        NewTag: hello
+    register: result
+
+  - name: assert tagging existing group changes it and adds tags
+    assert:
+      that:
+      - result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 3
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+      - result.tags["NewTag"] == 'hello'
+
+    # ============================================================
+  - name: test repeating tagging existing group - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: '123'
+        NewTag: hello
+    check_mode: true
+    register: result
+
+  - name: assert tagging existing group changes it and adds tags - CHECK_MODE
+    assert:
+      that:
+      - not result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 3
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+      - result.tags["NewTag"] == 'hello'
+
+  - name: test repeating tagging existing group
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: '123'
+        NewTag: hello
+    register: result
+
+  - name: assert tagging existing group changes it and adds tags
+    assert:
+      that:
+      - not result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 3
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+      - result.tags["NewTag"] == 'hello'
+
+    # ============================================================
+  - name: test deleting tags from existing group - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+      purge_tags: yes
+    check_mode: true
+    register: result
+
+  - name: assert removing tags from existing group changes it - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+  - name: test deleting tags from existing group
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+      purge_tags: yes
+    register: result
+
+  - name: assert removing tags from existing group changes it
+    assert:
+      that:
+      - result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 1
+      - result.tags["Environment"] == 'test'
+
+    # ============================================================
+  - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    check_mode: true
+    register: result
+
+  - name: assert state=absent with engine defined (expect changed=true) - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+
+  - name: test state=absent with engine defined (expect changed=true)
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    register: result
+
+  - name: assert state=absent with engine defined (expect changed=true)
+    assert:
+      that:
+      - result.changed
+
+    # ============================================================
+  - name: test creating group with parameters - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      params:
+        log_directory: /var/log/postgresql
+        log_statement: all
+        log_duration: on
+        this_param_does_not_exist: oh_no
+      tags:
+        Environment: test
+        Test: '123'
+    check_mode: true
+    register: result
+
+  - name: assert creating a new group with parameter changes it - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+
+  - name: test creating group with parameters
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      params:
+        log_directory: /var/log/postgresql
+        log_statement: all
+        log_duration: on
+        this_param_does_not_exist: oh_no
+      tags:
+        Environment: test
+        Test: '123'
+    register: result
+
+  - name: assert creating a new group with parameter changes it
+    assert:
+      that:
+      - result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 2
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+      - result.errors|length == 2
+
+    # ============================================================
+  - name: test repeating group with parameters - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      params:
+        log_directory: /var/log/postgresql
+        log_statement: all
+        log_duration: on
+        this_param_does_not_exist: oh_no
+      tags:
+        Environment: test
+        Test: '123'
+    check_mode: true
+    register: result
+
+  - name: assert repeating group with parameters does not change it - CHECK_MODE
+    assert:
+      that:
+      - not result.changed
+
+  - name: test repeating group with parameters
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      params:
+        log_directory: /var/log/postgresql
+        log_statement: all
+        log_duration: on
+        this_param_does_not_exist: oh_no
+      tags:
+        Environment: test
+        Test: '123'
+    register: result
+
+  - name: assert repeating group with parameters does not change it
+    assert:
+      that:
+      - not result.changed
+      - '"db_parameter_group_arn" in result'
+      - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name\
+        \ | lower }}'"
+      - '"description" in result'
+      - '"tags" in result'
+      - result.tags | length == 2
+      - result.tags["Environment"] == 'test'
+      - result.tags["Test"] == '123'
+      - result.errors|length == 2
+
+    # ============================================================
+  - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    check_mode: true
+    register: result
+
+  - name: assert state=absent with engine defined (expect changed=true) - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+  - name: test state=absent with engine defined (expect changed=true)
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    register: result
+
+  - name: assert state=absent with engine defined (expect changed=true)
+    assert:
+      that:
+      - result.changed
+
+    # ============================================================
+  - name: test repeating state=absent (expect changed=false) - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    register: result
+    check_mode: true
+    ignore_errors: true
+
+  - name: assert repeating state=absent (expect changed=false) - CHECK_MODE
+    assert:
+      that:
+      - not result.changed
+  - name: test repeating state=absent (expect changed=false)
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      state: absent
+    register: result
+    ignore_errors: true
+
+  - name: assert repeating state=absent (expect changed=false)
+    assert:
+      that:
+      - not result.changed
+
+    # ============================================================
+  - name: test creating group with more than 20 parameters - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      params: '{{ rds_long_param_list }}'
+      state: present
+    check_mode: true
+    register: result
+
+  - name: assert creating a new group with lots of parameter changes it - CHECK_MODE
+    assert:
+      that:
+      - result.changed
+  - name: test creating group with more than 20 parameters
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      params: '{{ rds_long_param_list }}'
+      state: present
+    register: result
+
+  - name: assert creating a new group with lots of parameter changes it
+    assert:
+      that:
+      - result.changed
+
+    # ============================================================
+  - name: test creating group with more than 20 parameters - CHECK_MODE
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      params: '{{ rds_long_param_list }}'
+      state: present
+    check_mode: true
+    register: result
+
+  - name: assert repeating a group with lots of parameter does not change it - CHECK_MODE
+    assert:
+      that:
+      - not result.changed
+  - name: test creating group with more than 20 parameters
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine }}'
+      description: '{{ rds_param_group.description }}'
+      params: '{{ rds_long_param_list }}'
+      state: present
+    register: result
+
+  - name: assert repeating a group with lots of parameter does not change it
+    assert:
+      that:
+      - not result.changed
+
+  always:
+    # ============================================================
+  - name: test state=absent (expect changed=false)
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      state: absent
+    register: result
+    ignore_errors: true
+
+  - name: assert state=absent (expect changed=false)
+    assert:
+      that:
+      - result.changed
