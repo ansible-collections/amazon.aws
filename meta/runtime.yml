@@ -59,6 +59,8 @@ action_groups:
   - execute_lambda
   - iam_policy
   - iam_policy_info
+  - iam_user
+  - iam_user_info
   - lambda
   - lambda_alias
   - lambda_event
