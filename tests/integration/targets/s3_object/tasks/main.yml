@@ -16,8 +16,6 @@
       set_fact:
         aws_account: "{{ aws_caller_info.account }}"
 
-    - include_tasks: get_object_info.yml
-
     - name: check that temp directory was made
       assert:
         that:
