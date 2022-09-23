@@ -248,7 +248,7 @@ EXAMPLES = '''
     wait: yes
     region: us-east-1
     boot_mode: uefi
-    uefi_data: "{{ lookup('file', '/etc/fstab')| b64encode }}"
+    uefi_data: data_file.bin
     tpm_support: v2.0
 
 - name: Deregister/Delete AMI (keep associated snapshots)
