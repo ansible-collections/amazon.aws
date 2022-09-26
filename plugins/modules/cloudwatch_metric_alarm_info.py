@@ -31,11 +31,11 @@ options:
   alarm_type:
     description:
       - Specify this to return metric alarms or composite alarms.
-      - Module is defaulted to return metric alarms but can return composite alarms if I(alarm_type=composite_alarm).
+      - Module is defaulted to return metric alarms but can return composite alarms if I(alarm_type=CompositeAlarm).
     required: false
     type: str
-    default: metric_alarm
-    choices: [composite_alarm, metric_alarm]
+    default: MetricAlarm
+    choices: ['CompositeAlarm', 'MetricAlarm']
   children_of_alarm_name:
     description:
       - If specified returns information about the "children" alarms of the alarm name specified.
@@ -245,8 +245,7 @@ def describe_metric_alarms_info(connection, module):
 
     params = build_params(module)
 
-    alarm_type_mapping = {'composite_alarm': 'CompositeAlarm', 'metric_alarm': 'MetricAlarms'}
-    alarm_type_to_return = alarm_type_mapping[module.params.get('alarm_type')]
+    alarm_type_to_return = module.params.get('alarm_type')
 
     try:
         describe_metric_alarms_info_response = _describe_alarms(connection, **params)
@@ -258,7 +257,7 @@ def describe_metric_alarms_info(connection, module):
     for response_list_item in describe_metric_alarms_info_response:
         result.append(camel_dict_to_snake_dict(response_list_item))
 
-    if alarm_type_to_return == 'composite_alarm':
+    if alarm_type_to_return == 'CompositeAlarm':
         module.exit_json(composite_alarms=result)
 
     module.exit_json(metric_alarms=result)
@@ -294,7 +293,7 @@ def main():
     argument_spec = dict(
         alarm_names=dict(type='list', elements='str', required=False),
         alarm_name_prefix=dict(type='str', required=False),
-        alarm_type=dict(type='str', choices=['composite_alarm', 'metric_alarm'], default='metric_alarm', required=False),
+        alarm_type=dict(type='str', choices=['CompositeAlarm', 'MetricAlarm'], default='MetricAlarm', required=False),
         children_of_alarm_name=dict(type='str', required=False),
         parents_of_alarm_name=dict(type='str', required=False),
         state_value=dict(type='str', choices=['OK', 'ALARM', 'INSUFFICIENT_DATA'], required=False),
