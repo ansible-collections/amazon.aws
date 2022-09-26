@@ -268,8 +268,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.community.aws.plugins.module_utils.route53 import get_tags
-from ansible_collections.community.aws.plugins.module_utils.route53 import manage_tags
+from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
 
 
 def _list_health_checks(**params):
