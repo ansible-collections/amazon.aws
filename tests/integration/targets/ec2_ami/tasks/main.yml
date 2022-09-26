@@ -82,9 +82,8 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_uefi_data
-    - debug:
-        var: instance_uefi_data
-
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     # ============================================================
 
