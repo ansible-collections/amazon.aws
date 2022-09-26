@@ -1,0 +1,12 @@
+
+{
+"ansible_test": {
+    "environment": {
+        "ANSIBLE_DEBUG_BOTOCORE_LOGS": "True"
+    },
+    "module_defaults": null
+},
+"resource_prefix": "0c12e972",
+"tiny_prefix": "0c12e972",
+"aws_region": "us-east-2"
+}

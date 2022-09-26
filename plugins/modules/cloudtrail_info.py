@@ -180,11 +180,14 @@ def list_cloud_trails(trail_dict):
     return [x["TrailARN"] for x in trail_dict["Trails"]]
 
 
-def get_trail_detail(connection, module, trail_name_list=None, include_shadow_trails=True):
+def get_trail_detail(connection, module):
+    output = {}
+    trail_name_list = module.params.get("trail_names")
+    include_shadow_trails = module.params.get("include_shadow_trails")
     if not trail_name_list:
         trail_name_list = get_trails(connection, module)
     try:
-        result = connection.describe_trails(trailNameList=trail_name_list, includeShadowTrails=True, aws_retry=True)
+        result = connection.describe_trails(trailNameList=trail_name_list, includeShadowTrails=include_shadow_trails, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the trails.")
     # Turn the boto3 result in to ansible_friendly_snaked_names
@@ -211,8 +214,10 @@ def get_trail_detail(connection, module, trail_name_list=None, include_shadow_tr
         if 'response_metadata' in tr:
             del (tr['response_metadata'])
 
-    result['trail_list'] = snaked_cloud_trail
-    return result
+    
+    output['trail_list'] = snaked_cloud_trail
+    
+    return output
 
 
 def main():
