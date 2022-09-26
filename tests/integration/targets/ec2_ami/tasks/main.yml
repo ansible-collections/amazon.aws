@@ -10,6 +10,12 @@
     - amazon.aws
   block:
 
+    # AWS CLI is needed until there's a module to get instance uefi data
+    - name: Install AWS CLI
+      pip:
+        name: awscli
+        state: present
+
     # ============================================================
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
@@ -81,9 +87,11 @@
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: instance_uefi_data
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+      register: instance_uefi_data_output
+
+    - name: Convert it to an object
+      set_fact:
+        instance_uefi_data: "{{ instance_uefi_data_output.stdout | from_json }}"
 
     # ============================================================
 
