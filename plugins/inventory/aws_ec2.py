@@ -751,8 +751,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         for host in hosts:
             if allow_duplicated_hosts:
                 hostname_list = self.get_all_hostnames(host, hostnames)
+            elif preferred_hostname := self._get_preferred_hostname(host, hostnames):
+                hostname_list = [preferred_hostname]
             else:
-                hostname_list = [self._get_preferred_hostname(host, hostnames)]
+                continue
 
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
