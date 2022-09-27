@@ -826,6 +826,8 @@ def main():
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
             if name:
+                if not tags:
+                  tags = {}
                 tags['Name'] = name
             final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
         else:
