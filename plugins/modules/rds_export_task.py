@@ -73,7 +73,7 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-- amazon.aws.aws_boto3
+- amazon.aws.boto3
 """
 
 EXAMPLES = r"""
@@ -117,7 +117,7 @@ def describe_export_task():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't describe export task")
 
-    return result
+    return result['ExportTasks']
 
 
 def start_export_task():

@@ -1,6 +1,7 @@
 ---
 # defaults file for rds_export_task
-_resource_prefix: 'ansible-test-{{ tiny_prefix }}'
+#_resource_prefix: 'ansible-test-{{ tiny_prefix }}'
+_resource_prefix: 'ansible-test-exp'
 
 # Create RDS instance
 instance_id: '{{ _resource_prefix }}-rds-instance'
