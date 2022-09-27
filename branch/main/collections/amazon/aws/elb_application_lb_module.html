@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.elb_application_lb_info module – Gather information about Application Load Balancers in AWS" href="elb_application_lb_info_module.html" />
@@ -302,9 +303,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p>Defaults to <code class="docutils literal notranslate"><span class="pre">'defensive'</span></code></p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">monitor</span></p></li>
-<li><p><span class="ansible-option-choices-entry">defensive</span></p></li>
-<li><p><span class="ansible-option-choices-entry">strictest</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“monitor”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“defensive”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“strictest”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -364,8 +365,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <td><div class="ansible-option-cell"><p>Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">ipv4</span></p></li>
-<li><p><span class="ansible-option-choices-entry">dualstack</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“ipv4”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“dualstack”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -543,8 +544,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <td><div class="ansible-option-cell"><p>Internet-facing or internal load balancer. An ALB scheme can not be modified after creation.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">internet-facing</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">internal</span></p></li>
+<li><p><span class="ansible-option-default-bold">“internet-facing”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“internal”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -578,8 +579,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <td><div class="ansible-option-cell"><p>Create or destroy the load balancer.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
 </ul>
 </div></td>
 </tr>

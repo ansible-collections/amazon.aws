@@ -19,6 +19,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Index of all Lookup Plugins" href="index_lookup.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
@@ -114,6 +115,8 @@
 <section id="amazon-aws">
 <h2>amazon.aws<a class="headerlink" href="#amazon-aws" title="Permalink to this heading"></a></h2>
 <ul class="simple">
+<li><p><a class="reference internal" href="amazon/aws/autoscaling_group_module.html#ansible-collections-amazon-aws-autoscaling-group-module"><span class="std std-ref">amazon.aws.autoscaling_group</span></a> – Create or delete AWS AutoScaling Groups (ASGs)</p></li>
+<li><p><a class="reference internal" href="amazon/aws/autoscaling_group_info_module.html#ansible-collections-amazon-aws-autoscaling-group-info-module"><span class="std std-ref">amazon.aws.autoscaling_group_info</span></a> – Gather information about EC2 Auto Scaling Groups (ASGs) in AWS</p></li>
 <li><p><a class="reference internal" href="amazon/aws/aws_az_info_module.html#ansible-collections-amazon-aws-aws-az-info-module"><span class="std std-ref">amazon.aws.aws_az_info</span></a> – Gather information about availability zones in AWS</p></li>
 <li><p><a class="reference internal" href="amazon/aws/aws_caller_info_module.html#ansible-collections-amazon-aws-aws-caller-info-module"><span class="std std-ref">amazon.aws.aws_caller_info</span></a> – Get information about the user and account being used to make AWS calls</p></li>
 <li><p><a class="reference internal" href="amazon/aws/cloudformation_module.html#ansible-collections-amazon-aws-cloudformation-module"><span class="std std-ref">amazon.aws.cloudformation</span></a> – Create or delete an AWS CloudFormation stack</p></li>
@@ -164,6 +167,10 @@
 <li><p><a class="reference internal" href="amazon/aws/elb_classic_lb_module.html#ansible-collections-amazon-aws-elb-classic-lb-module"><span class="std std-ref">amazon.aws.elb_classic_lb</span></a> – Creates, updates or destroys an Amazon ELB</p></li>
 <li><p><a class="reference internal" href="amazon/aws/iam_policy_module.html#ansible-collections-amazon-aws-iam-policy-module"><span class="std std-ref">amazon.aws.iam_policy</span></a> – Manage inline IAM policies for users, groups, and roles</p></li>
 <li><p><a class="reference internal" href="amazon/aws/iam_policy_info_module.html#ansible-collections-amazon-aws-iam-policy-info-module"><span class="std std-ref">amazon.aws.iam_policy_info</span></a> – Retrieve inline IAM policies for users, groups, and roles</p></li>
+<li><p><a class="reference internal" href="amazon/aws/iam_user_module.html#ansible-collections-amazon-aws-iam-user-module"><span class="std std-ref">amazon.aws.iam_user</span></a> – Manage AWS IAM users</p></li>
+<li><p><a class="reference internal" href="amazon/aws/iam_user_info_module.html#ansible-collections-amazon-aws-iam-user-info-module"><span class="std std-ref">amazon.aws.iam_user_info</span></a> – Gather IAM user(s) facts in AWS</p></li>
+<li><p><a class="reference internal" href="amazon/aws/kms_key_module.html#ansible-collections-amazon-aws-kms-key-module"><span class="std std-ref">amazon.aws.kms_key</span></a> – Perform various KMS key management tasks</p></li>
+<li><p><a class="reference internal" href="amazon/aws/kms_key_info_module.html#ansible-collections-amazon-aws-kms-key-info-module"><span class="std std-ref">amazon.aws.kms_key_info</span></a> – Gather information about AWS KMS keys</p></li>
 <li><p><a class="reference internal" href="amazon/aws/lambda_module.html#ansible-collections-amazon-aws-lambda-module"><span class="std std-ref">amazon.aws.lambda</span></a> – Manage AWS Lambda functions</p></li>
 <li><p><a class="reference internal" href="amazon/aws/lambda_alias_module.html#ansible-collections-amazon-aws-lambda-alias-module"><span class="std std-ref">amazon.aws.lambda_alias</span></a> – Creates, updates or deletes AWS Lambda function aliases</p></li>
 <li><p><a class="reference internal" href="amazon/aws/lambda_event_module.html#ansible-collections-amazon-aws-lambda-event-module"><span class="std std-ref">amazon.aws.lambda_event</span></a> – Creates, updates or deletes AWS Lambda function event mappings</p></li>
@@ -173,6 +180,14 @@
 <li><p><a class="reference internal" href="amazon/aws/rds_cluster_module.html#ansible-collections-amazon-aws-rds-cluster-module"><span class="std std-ref">amazon.aws.rds_cluster</span></a> – rds_cluster module</p></li>
 <li><p><a class="reference internal" href="amazon/aws/rds_cluster_info_module.html#ansible-collections-amazon-aws-rds-cluster-info-module"><span class="std std-ref">amazon.aws.rds_cluster_info</span></a> – Obtain information about one or more RDS clusters</p></li>
 <li><p><a class="reference internal" href="amazon/aws/rds_cluster_snapshot_module.html#ansible-collections-amazon-aws-rds-cluster-snapshot-module"><span class="std std-ref">amazon.aws.rds_cluster_snapshot</span></a> – Manage Amazon RDS snapshots of DB clusters</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_instance_module.html#ansible-collections-amazon-aws-rds-instance-module"><span class="std std-ref">amazon.aws.rds_instance</span></a> – Manage RDS instances</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_instance_info_module.html#ansible-collections-amazon-aws-rds-instance-info-module"><span class="std std-ref">amazon.aws.rds_instance_info</span></a> – obtain information about one or more RDS instances</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_instance_snapshot_module.html#ansible-collections-amazon-aws-rds-instance-snapshot-module"><span class="std std-ref">amazon.aws.rds_instance_snapshot</span></a> – Manage Amazon RDS instance snapshots</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_option_group_module.html#ansible-collections-amazon-aws-rds-option-group-module"><span class="std std-ref">amazon.aws.rds_option_group</span></a> – Manages the creation, modification, deletion of RDS option groups</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_option_group_info_module.html#ansible-collections-amazon-aws-rds-option-group-info-module"><span class="std std-ref">amazon.aws.rds_option_group_info</span></a> – rds_option_group_info module</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_param_group_module.html#ansible-collections-amazon-aws-rds-param-group-module"><span class="std std-ref">amazon.aws.rds_param_group</span></a> – manage RDS parameter groups</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_snapshot_info_module.html#ansible-collections-amazon-aws-rds-snapshot-info-module"><span class="std std-ref">amazon.aws.rds_snapshot_info</span></a> – obtain information about one or more RDS snapshots</p></li>
+<li><p><a class="reference internal" href="amazon/aws/rds_subnet_group_module.html#ansible-collections-amazon-aws-rds-subnet-group-module"><span class="std std-ref">amazon.aws.rds_subnet_group</span></a> – manage RDS database subnet groups</p></li>
 <li><p><a class="reference internal" href="amazon/aws/route53_module.html#ansible-collections-amazon-aws-route53-module"><span class="std std-ref">amazon.aws.route53</span></a> – add or delete entries in Amazons Route 53 DNS service</p></li>
 <li><p><a class="reference internal" href="amazon/aws/route53_health_check_module.html#ansible-collections-amazon-aws-route53-health-check-module"><span class="std std-ref">amazon.aws.route53_health_check</span></a> – Manage health-checks in Amazons Route53 DNS service</p></li>
 <li><p><a class="reference internal" href="amazon/aws/route53_info_module.html#ansible-collections-amazon-aws-route53-info-module"><span class="std std-ref">amazon.aws.route53_info</span></a> – Retrieves route53 details using AWS methods</p></li>

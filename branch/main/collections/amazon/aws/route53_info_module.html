@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.route53_zone module – add or delete Route53 zones" href="route53_zone_module.html" />
@@ -273,12 +274,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>This is used in conjunction with query: health_check. It allows for listing details, counts or tags of various health check details.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">list</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">details</span></p></li>
-<li><p><span class="ansible-option-choices-entry">status</span></p></li>
-<li><p><span class="ansible-option-choices-entry">failure_reason</span></p></li>
-<li><p><span class="ansible-option-choices-entry">count</span></p></li>
-<li><p><span class="ansible-option-choices-entry">tags</span></p></li>
+<li><p><span class="ansible-option-default-bold">“list”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“details”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“status”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“failure_reason”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“count”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“tags”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -298,11 +299,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>This is used in conjunction with query: hosted_zone. It allows for listing details, counts or tags of various hosted zone details.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">details</span></p></li>
-<li><p><span class="ansible-option-default-bold">list</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">list_by_name</span></p></li>
-<li><p><span class="ansible-option-choices-entry">count</span></p></li>
-<li><p><span class="ansible-option-choices-entry">tags</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“details”</span></p></li>
+<li><p><span class="ansible-option-default-bold">“list”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“list_by_name”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“count”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“tags”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -336,12 +337,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Specifies the query action to take.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">change</span></p></li>
-<li><p><span class="ansible-option-choices-entry">checker_ip_range</span></p></li>
-<li><p><span class="ansible-option-choices-entry">health_check</span></p></li>
-<li><p><span class="ansible-option-choices-entry">hosted_zone</span></p></li>
-<li><p><span class="ansible-option-choices-entry">record_sets</span></p></li>
-<li><p><span class="ansible-option-choices-entry">reusable_delegation_set</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“change”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“checker_ip_range”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“health_check”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“hosted_zone”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“record_sets”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“reusable_delegation_set”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -394,19 +395,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>The type of DNS record.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">A</span></p></li>
-<li><p><span class="ansible-option-choices-entry">CNAME</span></p></li>
-<li><p><span class="ansible-option-choices-entry">MX</span></p></li>
-<li><p><span class="ansible-option-choices-entry">AAAA</span></p></li>
-<li><p><span class="ansible-option-choices-entry">TXT</span></p></li>
-<li><p><span class="ansible-option-choices-entry">PTR</span></p></li>
-<li><p><span class="ansible-option-choices-entry">SRV</span></p></li>
-<li><p><span class="ansible-option-choices-entry">SPF</span></p></li>
-<li><p><span class="ansible-option-choices-entry">CAA</span></p></li>
-<li><p><span class="ansible-option-choices-entry">NS</span></p></li>
-<li><p><span class="ansible-option-choices-entry">NAPTR</span></p></li>
-<li><p><span class="ansible-option-choices-entry">SOA</span></p></li>
-<li><p><span class="ansible-option-choices-entry">DS</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“A”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“CNAME”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“MX”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“AAAA”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“TXT”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“PTR”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“SRV”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“SPF”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“CAA”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“NS”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“NAPTR”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“SOA”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“DS”</span></p></li>
 </ul>
 </div></td>
 </tr>

@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.route53_info module – Retrieves route53 details using AWS methods" href="route53_info_module.html" />
@@ -357,9 +358,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><span class="ansible-option-choices-entry">10</span></p></li>
-<li><p><span class="ansible-option-choices-entry">30</span></p></li>
+<li><p><span class="ansible-option-default-bold">30</span> <span class="ansible-option-default">← (default)</span></p></li>
 </ul>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">30</span></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -393,8 +393,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Specifies the action to take.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -423,11 +423,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Once health_check is created, type can not be changed.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">HTTP</span></p></li>
-<li><p><span class="ansible-option-choices-entry">HTTPS</span></p></li>
-<li><p><span class="ansible-option-choices-entry">HTTP_STR_MATCH</span></p></li>
-<li><p><span class="ansible-option-choices-entry">HTTPS_STR_MATCH</span></p></li>
-<li><p><span class="ansible-option-choices-entry">TCP</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“HTTP”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“HTTPS”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“HTTP_STR_MATCH”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“HTTPS_STR_MATCH”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“TCP”</span></p></li>
 </ul>
 </div></td>
 </tr>

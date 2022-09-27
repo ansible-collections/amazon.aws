@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.cloudwatchevent_rule module – Manage CloudWatch Event rules and targets" href="cloudwatchevent_rule_module.html" />
@@ -227,10 +228,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>Determines how the threshold value is compared</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">GreaterThanOrEqualToThreshold</span></p></li>
-<li><p><span class="ansible-option-choices-entry">GreaterThanThreshold</span></p></li>
-<li><p><span class="ansible-option-choices-entry">LessThanThreshold</span></p></li>
-<li><p><span class="ansible-option-choices-entry">LessThanOrEqualToThreshold</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“GreaterThanOrEqualToThreshold”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“GreaterThanThreshold”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“LessThanThreshold”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“LessThanOrEqualToThreshold”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -363,8 +364,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>Register or deregister the alarm.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -376,11 +377,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>Works in conjunction with <em>period</em> and <em>evaluation_periods</em> to determine the comparison value.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">SampleCount</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Average</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Sum</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Minimum</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Maximum</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“SampleCount”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Average”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Sum”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Minimum”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Maximum”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -398,10 +399,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>Sets how the alarm handles missing data points.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">breaching</span></p></li>
-<li><p><span class="ansible-option-choices-entry">notBreaching</span></p></li>
-<li><p><span class="ansible-option-choices-entry">ignore</span></p></li>
-<li><p><span class="ansible-option-default-bold">missing</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“breaching”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“notBreaching”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“ignore”</span></p></li>
+<li><p><span class="ansible-option-default-bold">“missing”</span> <span class="ansible-option-default">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -412,33 +413,33 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>The threshold’s unit of measurement.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">Seconds</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Microseconds</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Milliseconds</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Bytes</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Kilobytes</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Megabytes</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Gigabytes</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Terabytes</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Bits</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Kilobits</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Megabits</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Gigabits</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Terabits</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Percent</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Count</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Bytes/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Kilobytes/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Megabytes/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Gigabytes/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Terabytes/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Bits/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Kilobits/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Megabits/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Gigabits/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Terabits/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">Count/Second</span></p></li>
-<li><p><span class="ansible-option-choices-entry">None</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Seconds”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Microseconds”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Milliseconds”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Bytes”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Kilobytes”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Megabytes”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Gigabytes”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Terabytes”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Bits”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Kilobits”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Megabits”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Gigabits”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Terabits”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Percent”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Count”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Bytes/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Kilobytes/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Megabytes/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Gigabytes/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Terabytes/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Bits/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Kilobits/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Megabits/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Gigabits/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Terabits/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“Count/Second”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“None”</span></p></li>
 </ul>
 </div></td>
 </tr>
