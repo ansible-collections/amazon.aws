@@ -76,7 +76,7 @@ instances = {
                  {'GroupName': 'default',
                   'GroupId': 'sg-12345678'}],
              'Ipv6Addresses': [],
-             'OwnerId': '123456789000',
+             'OwnerId': '123456789012',
              'PrivateIpAddress': '098.76.54.321',
              'SubnetId': 'subnet-12345678',
              'Association':
@@ -104,7 +104,7 @@ instances = {
          'AmiLaunchIndex': 0}],
     'ReservationId': 'r-01234567890000000',
     'Groups': [],
-    'OwnerId': '123456789000'
+    'OwnerId': '123456789012'
 }
 
 
@@ -161,7 +161,7 @@ def test_set_credentials(inventory):
                           'aws_secret_key': 'test_secret_key',
                           'aws_security_token': 'test_security_token',
                           'aws_profile': 'test_profile',
-                          'iam_role_arn': 'arn:aws:iam::112233445566:role/test-role'}
+                          'iam_role_arn': 'arn:aws:iam::123456789012:role/test-role'}
     loader = DataLoader()
     inventory._set_credentials(loader)
 
@@ -169,7 +169,7 @@ def test_set_credentials(inventory):
     assert inventory.aws_access_key_id == "test_access_key"
     assert inventory.aws_secret_access_key == "test_secret_key"
     assert inventory.aws_security_token == "test_security_token"
-    assert inventory.iam_role_arn == "arn:aws:iam::112233445566:role/test-role"
+    assert inventory.iam_role_arn == "arn:aws:iam::123456789012:role/test-role"
 
 
 def test_insufficient_credentials(inventory):

@@ -171,7 +171,7 @@ EXAMPLES = r'''
     key_id: abcd1234-abcd-1234-5678-ef1234567890
     grants:
       - name: billing_prod
-        grantee_principal: arn:aws:iam::1234567890123:role/billing_prod
+        grantee_principal: arn:aws:iam::123456789012:role/billing_prod
         constraints:
           encryption_context_equals:
             environment: production
@@ -285,12 +285,12 @@ policies:
       Resource: "*"
       Condition:
         StringEquals:
-          kms:CallerAccount: "111111111111"
+          kms:CallerAccount: "123456789012"
           kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
     - Sid: "Allow direct access to key metadata to the account"
       Effect: "Allow"
       Principal:
-        AWS: "arn:aws:iam::111111111111:root"
+        AWS: "arn:aws:iam::123456789012:root"
       Action:
       - "kms:Describe*"
       - "kms:Get*"
@@ -320,12 +320,12 @@ key_policies:
       Resource: "*"
       Condition:
         StringEquals:
-          kms:CallerAccount: "111111111111"
+          kms:CallerAccount: "123456789012"
           kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
     - Sid: "Allow direct access to key metadata to the account"
       Effect: "Allow"
       Principal:
-        AWS: "arn:aws:iam::111111111111:root"
+        AWS: "arn:aws:iam::123456789012:root"
       Action:
       - "kms:Describe*"
       - "kms:Get*"
@@ -353,7 +353,7 @@ grants:
       returned: always
       sample:
         encryption_context_equals:
-           "aws:lambda:_function_arn": "arn:aws:lambda:ap-southeast-2:012345678912:function:xyz"
+           "aws:lambda:_function_arn": "arn:aws:lambda:ap-southeast-2:123456789012:function:xyz"
     creation_date:
       description: Date of creation of the grant.
       type: str
@@ -368,12 +368,12 @@ grants:
       description: The principal that receives the grant's permissions.
       type: str
       returned: always
-      sample: arn:aws:sts::0123456789012:assumed-role/lambda_xyz/xyz
+      sample: arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz
     issuing_account:
       description: The AWS account under which the grant was issued.
       type: str
       returned: always
-      sample: arn:aws:iam::01234567890:root
+      sample: arn:aws:iam::123456789012:root
     key_id:
       description: The key ARN to which the grant applies.
       type: str
@@ -395,7 +395,7 @@ grants:
       description: The principal that can retire the grant.
       type: str
       returned: always
-      sample: arn:aws:sts::0123456789012:assumed-role/lambda_xyz/xyz
+      sample: arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz
 changes_needed:
   description: Grant types that would be changed/were changed.
   type: dict

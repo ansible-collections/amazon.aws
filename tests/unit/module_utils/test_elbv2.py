@@ -16,12 +16,12 @@ one_action = [
             "TargetGroupStickinessConfig": {"Enabled": False},
             "TargetGroups": [
                 {
-                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-58045486/5b231e04f663ae21",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-58045486/5b231e04f663ae21",
                     "Weight": 1,
                 }
             ],
         },
-        "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-58045486/5b231e04f663ae21",
+        "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-58045486/5b231e04f663ae21",
         "Type": "forward",
     }
 ]
@@ -32,11 +32,11 @@ one_action_two_tg = [
             "TargetGroupStickinessConfig": {"Enabled": False},
             "TargetGroups": [
                 {
-                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-58045486/5b231e04f663ae21",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-58045486/5b231e04f663ae21",
                     "Weight": 1,
                 },
                 {
-                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-dadf7b62/be2f50b4041f11ed",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-dadf7b62/be2f50b4041f11ed",
                     "Weight": 1,
                 }
             ],

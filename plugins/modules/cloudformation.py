@@ -244,7 +244,7 @@ EXAMPLES = '''
     template_parameters:
       DBSnapshotIdentifier:
         use_previous_value: True
-        value: arn:aws:rds:es-east-1:000000000000:snapshot:rds:my-db-snapshot
+        value: arn:aws:rds:es-east-1:123456789012:snapshot:rds:my-db-snapshot
       DBName:
         use_previous_value: True
     tags:
@@ -296,7 +296,7 @@ change_set_id:
   description: The ID of the stack change set if one was created
   returned:  I(state=present) and I(create_changeset=true)
   type: str
-  sample: "arn:aws:cloudformation:us-east-1:012345678901:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0"
+  sample: "arn:aws:cloudformation:us-east-1:123456789012:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0"
 stack_resources:
   description: AWS stack resources and their status. List of dictionaries, one dict per resource.
   returned: state == present

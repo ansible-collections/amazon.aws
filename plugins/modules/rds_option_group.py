@@ -207,7 +207,7 @@ option_group_arn:
     description: The Amazon Resource Name (ARN) for the option group.
     returned: always
     type: str
-    sample: "arn:aws:rds:ap-southeast-2:721066863947:og:ansible-test-option-group"
+    sample: "arn:aws:rds:ap-southeast-2:123456789012:og:ansible-test-option-group"
 option_group_description:
     description: Provides a description of the option group.
     returned: always

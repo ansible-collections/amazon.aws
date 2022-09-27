@@ -588,7 +588,7 @@ instances:
                     description: The Amazon Resource Name (ARN) of the instance profile.
                     returned: always
                     type: str
-                    sample: "arn:aws:iam::000012345678:instance-profile/myprofile"
+                    sample: "arn:aws:iam::123456789012:instance-profile/myprofile"
                 id:
                     description: The ID of the instance profile
                     returned: always

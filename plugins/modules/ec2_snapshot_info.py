@@ -80,15 +80,15 @@ EXAMPLES = r'''
 # Gather information about all snapshots, including public ones
 - amazon.aws.ec2_snapshot_info:
 
-# Gather information about all snapshots owned by the account 0123456789
+# Gather information about all snapshots owned by the account 123456789012
 - amazon.aws.ec2_snapshot_info:
     filters:
-      owner-id: 0123456789
+      owner-id: 123456789012
 
 # Or alternatively...
 - amazon.aws.ec2_snapshot_info:
     owner_ids:
-      - 0123456789
+      - 123456789012
 
 # Gather information about a particular snapshot using ID
 - amazon.aws.ec2_snapshot_info:
@@ -156,7 +156,7 @@ snapshots:
             description: The AWS account ID of the EBS snapshot owner.
             type: str
             returned: always
-            sample: "099720109477"
+            sample: "123456789012"
         description:
             description: The description for the snapshot.
             type: str
@@ -171,7 +171,7 @@ snapshots:
             description: The AWS account alias (for example, amazon, self) or AWS account ID that owns the snapshot.
             type: str
             returned: always
-            sample: "033440102211"
+            sample: "123456789012"
         tags:
             description: Any tags assigned to the snapshot.
             type: dict
@@ -195,7 +195,7 @@ snapshots:
                 corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
             type: str
             returned: always
-            sample: "arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
+            sample: "arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
 next_token_id:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.

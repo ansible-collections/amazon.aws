@@ -242,7 +242,7 @@ security_groups:
                     "user_id_group_pairs": []
                 }
             ],
-            "owner_id": "721066863947",
+            "owner_id": "123456789012",
             "tags": {},
             "vpc_id": "vpc-0bc3bb03f97405435"
         }

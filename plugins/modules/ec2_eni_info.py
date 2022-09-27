@@ -59,7 +59,7 @@ network_interfaces:
       sample: {
           allocation_id: "eipalloc-5sdf123",
           association_id: "eipassoc-8sdf123",
-          ip_owner_id: "4415120123456",
+          ip_owner_id: "123456789012",
           public_dns_name: "ec2-52-1-0-63.compute-1.amazonaws.com",
           public_ip: "52.1.0.63"
         }
@@ -73,7 +73,7 @@ network_interfaces:
         delete_on_termination: false,
         device_index: 1,
         instance_id: "i-15b8d3cadbafa1234",
-        instance_owner_id: "4415120123456",
+        instance_owner_id: "123456789012",
         status: "attached"
       }
     availability_zone:
@@ -130,7 +130,7 @@ network_interfaces:
       description: AWS account id of the owner of the ENI.
       returned: always
       type: str
-      sample: "4415120123456"
+      sample: "123456789012"
     private_dns_name:
       description: Private DNS name for the ENI.
       returned: always

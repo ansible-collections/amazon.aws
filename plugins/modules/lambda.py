@@ -133,7 +133,7 @@ EXAMPLES = r'''
     state: present
     zip_file: '{{ item.zip_file }}'
     runtime: 'python2.7'
-    role: 'arn:aws:iam::987654321012:role/lambda_basic_execution'
+    role: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
     handler: 'hello_python.my_handler'
     vpc_subnet_ids:
     - subnet-123abcde
@@ -163,7 +163,7 @@ EXAMPLES = r'''
     state: present
     zip_file: 'code.zip'
     runtime: 'python2.7'
-    role: 'arn:aws:iam::987654321012:role/lambda_basic_execution'
+    role: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
     handler: 'hello_python.my_handler'
     tags: {}
 

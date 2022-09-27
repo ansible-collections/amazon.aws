@@ -241,7 +241,7 @@ EXAMPLES = r'''
         # The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.
         SslPolicy: ELBSecurityPolicy-2015-05
         Certificates: # The ARN of the certificate (only one certficate ARN should be provided)
-          - CertificateArn: arn:aws:iam::12345678987:server-certificate/test.domain.com
+          - CertificateArn: arn:aws:iam::123456789012:server-certificate/test.domain.com
         DefaultActions:
           - Type: forward # Required.
             TargetGroupName: # Required. The name of the target group
@@ -265,7 +265,7 @@ EXAMPLES = r'''
         # The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.
         SslPolicy: ELBSecurityPolicy-2015-05
         Certificates: # The ARN of the certificate (only one certficate ARN should be provided)
-          - CertificateArn: arn:aws:iam::12345678987:server-certificate/test.domain.com
+          - CertificateArn: arn:aws:iam::123456789012:server-certificate/test.domain.com
         DefaultActions:
           - Type: forward # Required.
             TargetGroupName: # Required. The name of the target group
@@ -287,7 +287,7 @@ EXAMPLES = r'''
           - Type: forward
             TargetGroupName: test-target-group
         Certificates:
-          - CertificateArn: arn:aws:iam::12345678987:server-certificate/test.domain.com
+          - CertificateArn: arn:aws:iam::123456789012:server-certificate/test.domain.com
         SslPolicy: ELBSecurityPolicy-2015-05
         Rules:
           - Conditions:
@@ -456,7 +456,7 @@ load_balancer_arn:
     description: The Amazon Resource Name (ARN) of the load balancer.
     returned: when state is present
     type: str
-    sample: "arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-alb/001122334455"
+    sample: "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-alb/001122334455"
 load_balancer_name:
     description: The name of the load balancer.
     returned: when state is present
