@@ -217,6 +217,7 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.tags
+  - amazon.aws.boto3
 
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.

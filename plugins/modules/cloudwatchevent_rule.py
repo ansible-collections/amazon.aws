@@ -16,6 +16,7 @@ description:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.boto3
 
 author: "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
 notes:

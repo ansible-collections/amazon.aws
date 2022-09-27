@@ -237,7 +237,7 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.tags
-  - amazon.aws.aws_boto3
+  - amazon.aws.boto3
 
 notes:
   - If a rule declares a group_name and that group doesn't exist, it will be

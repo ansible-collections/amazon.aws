@@ -10,7 +10,7 @@ short_description: EC2 inventory source
 extends_documentation_fragment:
   - inventory_cache
   - constructed
-  - amazon.aws.aws_boto3
+  - amazon.aws.boto3
   - amazon.aws.aws_credentials
 description:
   - Get inventory hosts from Amazon Web Services EC2.

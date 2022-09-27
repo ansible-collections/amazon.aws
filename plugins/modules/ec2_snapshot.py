@@ -75,7 +75,7 @@ author: "Will Thames (@willthames)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-- amazon.aws.aws_boto3
+- amazon.aws.boto3
 '''
 
 EXAMPLES = '''
