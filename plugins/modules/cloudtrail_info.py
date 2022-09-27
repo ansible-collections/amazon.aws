@@ -213,10 +213,7 @@ def get_trail_detail(connection, module):
             del (tr['tags_list'])
         if 'response_metadata' in tr:
             del (tr['response_metadata'])
-
-    
     output['trail_list'] = snaked_cloud_trail
-    
     return output
 
 
