@@ -249,16 +249,19 @@ def describe_metric_alarms_info(connection, module):
 
     try:
         describe_metric_alarms_info_response = _describe_alarms(connection, **params)
-        describe_metric_alarms_info_response = describe_metric_alarms_info_response[alarm_type_to_return]
+        # describe_metric_alarms_info_response = describe_metric_alarms_info_response[alarm_type_to_return]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe cloudwatch metric alarm')
 
     result = []
-    for response_list_item in describe_metric_alarms_info_response:
-        result.append(camel_dict_to_snake_dict(response_list_item))
 
     if alarm_type_to_return == 'CompositeAlarm':
+        for response_list_item in describe_metric_alarms_info_response['CompositeAlarms']:
+            result.append(camel_dict_to_snake_dict(response_list_item))
         module.exit_json(composite_alarms=result)
+
+    for response_list_item in describe_metric_alarms_info_response['MetricAlarms']:
+        result.append(camel_dict_to_snake_dict(response_list_item))
 
     module.exit_json(metric_alarms=result)
 
