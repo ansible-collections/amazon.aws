@@ -1,7 +1,6 @@
 ---
 # defaults file for rds_export_task
-#_resource_prefix: 'ansible-test-{{ tiny_prefix }}'
-_resource_prefix: 'ansible-test-exp'
+_resource_prefix: 'ansible-test-{{ tiny_prefix }}'
 
 # Create RDS instance
 instance_id: '{{ _resource_prefix }}-rds-instance'
@@ -16,7 +15,7 @@ mariadb_engine_version: 10.3.31
 snapshot_id: '{{ _resource_prefix }}-rds-instance-snapshot'
 
 # Create an IAM role
-role_name: '{{ _resource_prefix }}-role'
+rds_role_name: '{{ _resource_prefix }}-role'
 
 # Create kms key 
 kms_key_alias: '{{ _resource_prefix }}-kms'

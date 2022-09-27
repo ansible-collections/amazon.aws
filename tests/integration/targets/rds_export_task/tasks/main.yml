@@ -14,7 +14,7 @@
   block:
     - name: Create an IAM role
       iam_role:
-        name: "{{ role_name }}"
+        name: "{{ rds_role_name }}"
         assume_role_policy_document: "{{ lookup('file','files/policy.json') }}"
         state: present
       register: _result_create_iam_role
