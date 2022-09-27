@@ -13,12 +13,9 @@
     include_tasks: env_setup.yml
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
     register: alarm_info_query
 
   - name: Make instance in a default subnet of the VPC
@@ -59,24 +56,17 @@
     register: ec2_instance_metric_alarm_check
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query_check
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_check
 
-  - name: convert it to an object
-    set_fact:
-      alarm_info_check: '{{ alarm_info_query_check.stdout | from_json }}'
-
-  - name: verify that an alarm was not created in check mode
+  - name: "verify that an alarm was not created in check mode"
     assert:
       that:
-      - ec2_instance_metric_alarm_check.changed
-      - not ec2_instance_metric_alarm_check.alarm_arn
-      - alarm_info_check["MetricAlarms"] | length == 0
+        - 'ec2_instance_metric_alarm_check.changed'
+        - 'not ec2_instance_metric_alarm_check.alarm_arn'
+        - 'alarm_info_check.metric_alarms | length == 0'
 
   - name: create ec2 metric alarm on ec2 instance
     ec2_metric_alarm:
@@ -98,34 +88,27 @@
     register: ec2_instance_metric_alarm
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info
 
-  - name: convert it to an object
-    set_fact:
-      alarm_info: '{{ alarm_info_query.stdout | from_json }}'
-
-  - name: verify that an alarm was created
+  - name: "verify that an alarm was created"
     assert:
       that:
-      - ec2_instance_metric_alarm.changed
-      - ec2_instance_metric_alarm.alarm_arn
-      - ec2_instance_metric_alarm.statistic == alarm_info["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm.name  == alarm_info["MetricAlarms"][0].AlarmName
-      - ec2_instance_metric_alarm.metric == alarm_info["MetricAlarms"][0].MetricName
-      - ec2_instance_metric_alarm.namespace == alarm_info["MetricAlarms"][0].Namespace
-      - ec2_instance_metric_alarm.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator
-      - ec2_instance_metric_alarm.threshold == alarm_info["MetricAlarms"][0].Threshold
-      - ec2_instance_metric_alarm.period == alarm_info["MetricAlarms"][0].Period
-      - ec2_instance_metric_alarm.unit == alarm_info["MetricAlarms"][0].Unit
-      - ec2_instance_metric_alarm.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods
-      - ec2_instance_metric_alarm.description == alarm_info["MetricAlarms"][0].AlarmDescription
-      - ec2_instance_metric_alarm.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData
+        - 'ec2_instance_metric_alarm.changed'
+        - 'ec2_instance_metric_alarm.alarm_arn'
+        - 'ec2_instance_metric_alarm.statistic == alarm_info.metric_alarms[0].statistic'
+        - 'ec2_instance_metric_alarm.name  == alarm_info.metric_alarms[0].alarm_name'
+        - 'ec2_instance_metric_alarm.metric == alarm_info.metric_alarms[0].metric_name'
+        - 'ec2_instance_metric_alarm.namespace == alarm_info.metric_alarms[0].namespace'
+        - 'ec2_instance_metric_alarm.comparison == alarm_info.metric_alarms[0].comparison_operator'
+        - 'ec2_instance_metric_alarm.threshold == alarm_info.metric_alarms[0].threshold'
+        - 'ec2_instance_metric_alarm.period == alarm_info.metric_alarms[0].period'
+        - 'ec2_instance_metric_alarm.unit == alarm_info.metric_alarms[0].unit'
+        - 'ec2_instance_metric_alarm.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods'
+        - 'ec2_instance_metric_alarm.description == alarm_info.metric_alarms[0].alarm_description'
+        - 'ec2_instance_metric_alarm.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data'
 
   - name: create ec2 metric alarm on ec2 instance (idempotent) (check mode)
     ec2_metric_alarm:
@@ -148,42 +131,33 @@
     register: ec2_instance_metric_alarm_idempotent_check
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query_idempotent_check
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_idempotent_check
 
-  - name: convert it to an object
-    set_fact:
-      alarm_info_idempotent_check: '{{ alarm_info_query_idempotent_check.stdout |
-        from_json }}'
-
-  - name: Verify alarm does not register as changed after update in check mode
+  - name: "Verify alarm does not register as changed after update in check mode"
     assert:
       that:
-      - not ec2_instance_metric_alarm_idempotent_check.changed
+        - not ec2_instance_metric_alarm_idempotent_check.changed
 
-  - name: Verify alarm did not change after updating in check mode
+  - name: "Verify alarm did not change after updating in check mode"
     assert:
       that:
-      - alarm_info['MetricAlarms'][0]['{{item}}'] == alarm_info_idempotent_check['MetricAlarms'][0]['{{
-        item }}']
+        - "alarm_info.metric_alarms[0]['{{item}}'] == alarm_info_idempotent_check.metric_alarms[0]['{{ item }}']"
     with_items:
-    - AlarmArn
-    - Statistic
-    - AlarmName
-    - MetricName
-    - Namespace
-    - ComparisonOperator
-    - Threshold
-    - Period
-    - Unit
-    - EvaluationPeriods
-    - AlarmDescription
-    - TreatMissingData
+      - alarm_arn
+      - statistic
+      - alarm_name
+      - metric_name
+      - namespace
+      - comparison_operator
+      - threshold
+      - period
+      - unit
+      - evaluation_periods
+      - alarm_description
+      - treat_missing_data
 
   - name: create ec2 metric alarm on ec2 instance (idempotent)
     ec2_metric_alarm:
@@ -205,41 +179,33 @@
     register: ec2_instance_metric_alarm_idempotent
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query_idempotent
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_idempotent_check
 
-  - name: convert it to an object
-    set_fact:
-      alarm_info_idempotent: '{{ alarm_info_query_idempotent.stdout | from_json }}'
-
-  - name: Verify alarm does not register as changed after update
+  - name: "Verify alarm does not register as changed after update in check mode"
     assert:
       that:
-      - not ec2_instance_metric_alarm_idempotent.changed
+        - not ec2_instance_metric_alarm_idempotent_check.changed
 
-  - name: Verify alarm did not change after updating
+  - name: "Verify alarm did not change after updating in check mode"
     assert:
       that:
-      - alarm_info['MetricAlarms'][0]['{{item}}'] == alarm_info_idempotent['MetricAlarms'][0]['{{
-        item }}']
+        - "alarm_info.metric_alarms[0]['{{item}}'] == alarm_info_idempotent_check.metric_alarms[0]['{{ item }}']"
     with_items:
-    - AlarmArn
-    - Statistic
-    - AlarmName
-    - MetricName
-    - Namespace
-    - ComparisonOperator
-    - Threshold
-    - Period
-    - Unit
-    - EvaluationPeriods
-    - AlarmDescription
-    - TreatMissingData
+      - alarm_arn
+      - statistic
+      - alarm_name
+      - metric_name
+      - namespace
+      - comparison_operator
+      - threshold
+      - period
+      - unit
+      - evaluation_periods
+      - alarm_description
+      - treat_missing_data
 
   - name: update alarm (check mode)
     ec2_metric_alarm:
@@ -269,18 +235,18 @@
     assert:
       that:
       - ec2_instance_metric_alarm_update_check.changed
-      - ec2_instance_metric_alarm_update_check.period == alarm_info["MetricAlarms"][0].Period        # Period of actual alarm should not change
-      - ec2_instance_metric_alarm_update_check.alarm_arn == ec2_instance_metric_alarm.alarm_arn
-      - ec2_instance_metric_alarm_update_check.statistic == alarm_info["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm_update_check.name  == alarm_info["MetricAlarms"][0].AlarmName
-      - ec2_instance_metric_alarm_update_check.metric == alarm_info["MetricAlarms"][0].MetricName
-      - ec2_instance_metric_alarm_update_check.namespace == alarm_info["MetricAlarms"][0].Namespace
-      - ec2_instance_metric_alarm_update_check.statistic == alarm_info["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm_update_check.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator
-      - ec2_instance_metric_alarm_update_check.threshold == alarm_info["MetricAlarms"][0].Threshold
-      - ec2_instance_metric_alarm_update_check.unit == alarm_info["MetricAlarms"][0].Unit
-      - ec2_instance_metric_alarm_update_check.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods
-      - ec2_instance_metric_alarm_update_check.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData
+      - 'ec2_instance_metric_alarm_update_check.period == alarm_info.metric_alarms[0].period'        # Period of actual alarm should not change
+      - 'ec2_instance_metric_alarm_update_check.alarm_arn == ec2_instance_metric_alarm.alarm_arn'
+      - 'ec2_instance_metric_alarm_update_check.statistic == alarm_info.metric_alarms[0].statistic'
+      - 'ec2_instance_metric_alarm_update_check.name  == alarm_info.metric_alarms[0].alarm_name'
+      - 'ec2_instance_metric_alarm_update_check.metric == alarm_info.metric_alarms[0].metric_name'
+      - 'ec2_instance_metric_alarm_update_check.namespace == alarm_info.metric_alarms[0].namespace'
+      - 'ec2_instance_metric_alarm_update_check.statistic == alarm_info.metric_alarms[0].statistic'
+      - 'ec2_instance_metric_alarm_update_check.comparison == alarm_info.metric_alarms[0].comparison_operator'
+      - 'ec2_instance_metric_alarm_update_check.threshold == alarm_info.metric_alarms[0].threshold'
+      - 'ec2_instance_metric_alarm_update_check.unit == alarm_info.metric_alarms[0].unit'
+      - 'ec2_instance_metric_alarm_update_check.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods'
+      - 'ec2_instance_metric_alarm_update_check.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data'
 
   - name: update alarm
     ec2_metric_alarm:
@@ -311,16 +277,16 @@
       - ec2_instance_metric_alarm_update.changed
       - ec2_instance_metric_alarm_update.period == 60        # Period should be 60, not matching old value
       - ec2_instance_metric_alarm_update.alarm_arn == ec2_instance_metric_alarm.alarm_arn
-      - ec2_instance_metric_alarm_update.statistic == alarm_info["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm_update.name  == alarm_info["MetricAlarms"][0].AlarmName
-      - ec2_instance_metric_alarm_update.metric == alarm_info["MetricAlarms"][0].MetricName
-      - ec2_instance_metric_alarm_update.namespace == alarm_info["MetricAlarms"][0].Namespace
-      - ec2_instance_metric_alarm_update.statistic == alarm_info["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm_update.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator
-      - ec2_instance_metric_alarm_update.threshold == alarm_info["MetricAlarms"][0].Threshold
-      - ec2_instance_metric_alarm_update.unit == alarm_info["MetricAlarms"][0].Unit
-      - ec2_instance_metric_alarm_update.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods
-      - ec2_instance_metric_alarm_update.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData
+      - 'ec2_instance_metric_alarm_update.statistic == alarm_info.metric_alarms[0].statistic'
+      - 'ec2_instance_metric_alarm_update.name  == alarm_info.metric_alarms[0].alarm_name'
+      - 'ec2_instance_metric_alarm_update.metric == alarm_info.metric_alarms[0].metric_name'
+      - 'ec2_instance_metric_alarm_update.namespace == alarm_info.metric_alarms[0].namespace'
+      - 'ec2_instance_metric_alarm_update.statistic == alarm_info.metric_alarms[0].statistic'
+      - 'ec2_instance_metric_alarm_update.comparison == alarm_info.metric_alarms[0].comparison_operator'
+      - 'ec2_instance_metric_alarm_update.threshold == alarm_info.metric_alarms[0].threshold'
+      - 'ec2_instance_metric_alarm_update.unit == alarm_info.metric_alarms[0].unit'
+      - 'ec2_instance_metric_alarm_update.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods'
+      - 'ec2_instance_metric_alarm_update.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data'
 
   - name: try to remove the alarm (check mode)
     ec2_metric_alarm:
@@ -335,22 +301,15 @@
       - ec2_instance_metric_alarm_deletion_check.changed
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
     register: alarm_info_query_check
-
-  - name: convert it to an object
-    set_fact:
-      alarm_info: '{{ alarm_info_query_check.stdout | from_json }}'
 
   - name: Verify that the alarm was not deleted in check mode using cli
     assert:
       that:
-      - alarm_info["MetricAlarms"] | length > 0
+        - 'alarm_info.metric_alarms | length > 0'
 
   - name: try to remove the alarm
     ec2_metric_alarm:
@@ -364,22 +323,15 @@
       - ec2_instance_metric_alarm_deletion.changed
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query
-
-  - name: convert it to an object
-    set_fact:
-      alarm_info: '{{ alarm_info_query.stdout | from_json }}'
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info
 
   - name: Verify that the alarm was deleted using cli
     assert:
       that:
-      - alarm_info["MetricAlarms"] | length == 0
+        - 'alarm_info.metric_alarms | length == 0'
 
   - name: create ec2 metric alarm with no unit on ec2 instance
     ec2_metric_alarm:
@@ -400,34 +352,27 @@
     register: ec2_instance_metric_alarm_no_unit
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query_no_unit
-
-  - name: convert it to an object
-    set_fact:
-      alarm_info_no_unit: '{{ alarm_info_query_no_unit.stdout | from_json }}'
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_no_unit
 
   - name: verify that an alarm was created
     assert:
       that:
       - ec2_instance_metric_alarm_no_unit.changed
       - ec2_instance_metric_alarm_no_unit.alarm_arn
-      - ec2_instance_metric_alarm_no_unit.statistic == alarm_info_no_unit["MetricAlarms"][0].Statistic
-      - ec2_instance_metric_alarm_no_unit.name  == alarm_info_no_unit["MetricAlarms"][0].AlarmName
-      - ec2_instance_metric_alarm_no_unit.metric == alarm_info_no_unit["MetricAlarms"][0].MetricName
-      - ec2_instance_metric_alarm_no_unit.namespace == alarm_info_no_unit["MetricAlarms"][0].Namespace
-      - ec2_instance_metric_alarm_no_unit.comparison == alarm_info_no_unit["MetricAlarms"][0].ComparisonOperator
-      - ec2_instance_metric_alarm_no_unit.threshold == alarm_info_no_unit["MetricAlarms"][0].Threshold
-      - ec2_instance_metric_alarm_no_unit.period == alarm_info_no_unit["MetricAlarms"][0].Period
-      - alarm_info_no_unit["MetricAlarms"][0].Unit is not defined
-      - ec2_instance_metric_alarm_no_unit.evaluation_periods == alarm_info_no_unit["MetricAlarms"][0].EvaluationPeriods
-      - ec2_instance_metric_alarm_no_unit.description == alarm_info_no_unit["MetricAlarms"][0].AlarmDescription
-      - ec2_instance_metric_alarm_no_unit.treat_missing_data == alarm_info_no_unit["MetricAlarms"][0].TreatMissingData
+      - 'ec2_instance_metric_alarm_no_unit.statistic == alarm_info_no_unit.metric_alarms[0].statistic'
+      - 'ec2_instance_metric_alarm_no_unit.name  == alarm_info_no_unit.metric_alarms[0].alarm_name'
+      - 'ec2_instance_metric_alarm_no_unit.metric == alarm_info_no_unit.metric_alarms[0].metric_name'
+      - 'ec2_instance_metric_alarm_no_unit.namespace == alarm_info_no_unit.metric_alarms[0].namespace'
+      - 'ec2_instance_metric_alarm_no_unit.comparison == alarm_info_no_unit.metric_alarms[0].comparison_operator'
+      - 'ec2_instance_metric_alarm_no_unit.threshold == alarm_info_no_unit.metric_alarms[0].threshold'
+      - 'ec2_instance_metric_alarm_no_unit.period == alarm_info_no_unit.metric_alarms[0].period'
+      - 'alarm_info_no_unit.metric_alarms[0].Unit is not defined'
+      - 'ec2_instance_metric_alarm_no_unit.evaluation_periods == alarm_info_no_unit.metric_alarms[0].evaluation_periods'
+      - 'ec2_instance_metric_alarm_no_unit.description == alarm_info_no_unit.metric_alarms[0].alarm_description'
+      - 'ec2_instance_metric_alarm_no_unit.treat_missing_data == alarm_info_no_unit.metric_alarms[0].treat_missing_data'
 
   - name: try to remove the alarm
     ec2_metric_alarm:
@@ -441,22 +386,15 @@
       - ec2_instance_metric_alarm_deletion_no_unit.changed
 
   - name: get info on alarms
-    command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
-    environment:
-      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-      AWS_DEFAULT_REGION: '{{ aws_region }}'
-    register: alarm_info_query_no_unit
-
-  - name: convert it to an object
-    set_fact:
-      alarm_info_no_unit: '{{ alarm_info_query_no_unit.stdout | from_json }}'
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_no_unit
 
   - name: Verify that the alarm was deleted using cli
     assert:
       that:
-      - alarm_info_no_unit["MetricAlarms"] | length == 0
+        - 'alarm_info_no_unit.metric_alarms | length == 0'
 
   always:
   - name: try to delete the alarm

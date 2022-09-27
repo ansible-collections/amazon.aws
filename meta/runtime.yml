@@ -16,6 +16,7 @@ action_groups:
   - cloudwatchlogs_log_group
   - cloudwatchlogs_log_group_info
   - cloudwatchlogs_log_group_metric_filter
+  - cloudwatch_metric_alarm_info
   - ec2_ami
   - ec2_ami_info
   - ec2_eip
