@@ -66,7 +66,7 @@ options:
         required: False
   allow_duplicated_hosts:
     description:
-      - By default, only the first name that back the I(hostnames) list is returned.
+      - By default, the first name that matches an entry of the I(hostnames) list is returned.
       - Turn this flag on if you don't mind having duplicated entries in the inventory
         and you want to get all the hostnames that match.
     type: bool
