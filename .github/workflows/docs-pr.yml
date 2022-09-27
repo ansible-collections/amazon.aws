@@ -18,6 +18,9 @@ jobs:
     with:
       init-lenient: false
       init-fail-on-error: true
+      # Please also update docs-push.yml
+      provide-link-targets: |
+        ansible_collections.community.aws.autoscaling_launch_config_module
 
 
   build-docs:
@@ -28,6 +31,9 @@ jobs:
     with:
       init-lenient: true
       init-fail-on-error: false
+      # Please also update docs-push.yml
+      provide-link-targets: |
+        ansible_collections.community.aws.autoscaling_launch_config_module
 
   comment:
     permissions:
