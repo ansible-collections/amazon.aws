@@ -23,7 +23,7 @@ __metaclass__ = type
 
 import pytest
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import Mock, MagicMock
 
 from ansible.errors import AnsibleError
 from ansible.parsing.dataloader import DataLoader
@@ -277,43 +277,214 @@ def test_add_host_empty_hostnames(inventory):
     inventory.inventory.add_host.assert_called_with("ip-10-85-0-4.ec2.internal", group="aws_ec2")
 
 
-def test_add_host_with_hostnames_and_one_criteria(inventory):
-    hosts = [{
-        "Placement": {
-            "AvailabilityZone": "us-east-1a",
-        },
-        "PublicDnsName": "sample-host",
-    }]
+def test_add_host_with_hostnames_no_criteria(inventory):
+    hosts = [{}]
 
-    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"])
+    inventory._add_hosts(
+        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
+    )
+    assert inventory.inventory.add_host.call_count == 0
+
+
+def test_add_host_with_hostnames_and_one_criteria(inventory):
+    hosts = [
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "sample-host",
+        }
+    ]
+
+    inventory._add_hosts(
+        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
+    )
     assert inventory.inventory.add_host.call_count == 1
     inventory.inventory.add_host.assert_called_with("sample-host", group="aws_ec2")
 
 
 def test_add_host_with_hostnames_and_two_matching_criteria(inventory):
-    hosts = [{
-        "Placement": {
-            "AvailabilityZone": "us-east-1a",
-        },
-        "PublicDnsName": "name-from-PublicDnsName",
-        "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
-    }]
+    hosts = [
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "name-from-PublicDnsName",
+            "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
+        }
+    ]
 
-    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"])
+    inventory._add_hosts(
+        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
+    )
     assert inventory.inventory.add_host.call_count == 1
-    inventory.inventory.add_host.assert_called_with("name-from-tag-Name", group="aws_ec2")
+    inventory.inventory.add_host.assert_called_with(
+        "name-from-tag-Name", group="aws_ec2"
+    )
 
 
-def test_add_host_with_hostnames_and_two_matching_criteria_and_allow_duplicated_hosts(inventory):
-    hosts = [{
-        "Placement": {
-            "AvailabilityZone": "us-east-1a",
-        },
-        "PublicDnsName": "name-from-PublicDnsName",
-        "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
-    }]
+def test_add_host_with_hostnames_and_two_matching_criteria_and_allow_duplicated_hosts(
+    inventory,
+):
+    hosts = [
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "name-from-PublicDnsName",
+            "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
+        }
+    ]
 
-    inventory._add_hosts(hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"], allow_duplicated_hosts=True)
+    inventory._add_hosts(
+        hosts,
+        "aws_ec2",
+        hostnames=["tag:Name", "private-dns-name", "dns-name"],
+        allow_duplicated_hosts=True,
+    )
     assert inventory.inventory.add_host.call_count == 2
-    inventory.inventory.add_host.assert_any_call("name-from-PublicDnsName", group="aws_ec2")
+    inventory.inventory.add_host.assert_any_call(
+        "name-from-PublicDnsName", group="aws_ec2"
+    )
     inventory.inventory.add_host.assert_any_call("name-from-tag-Name", group="aws_ec2")
+
+
+def test_sanityize_hostname(inventory):
+    assert inventory._sanitize_hostname(1) == "1"
+    assert inventory._sanitize_hostname("a:b") == "a_b"
+    assert inventory._sanitize_hostname("a:/b") == "a__b"
+
+
+def test_sanityize_hostname_legacy(inventory):
+    inventory._sanitize_group_name = (
+        inventory._legacy_script_compatible_group_sanitization
+    )
+    assert inventory._sanitize_hostname("a:/b") == "a__b"
+
+
+@pytest.mark.parametrize(
+    "hostvars_prefix,hostvars_suffix,use_contrib_script_compatible_ec2_tag_keys,expectation",
+    [
+        (
+            None,
+            None,
+            False,
+            {
+                "my_var": 1,
+                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "tags": {"Name": "my-name"},
+            },
+        ),
+        (
+            "pre",
+            "post",
+            False,
+            {
+                "premy_varpost": 1,
+                "preplacementpost": {
+                    "availability_zone": "us-east-1a",
+                    "region": "us-east-1",
+                },
+                "pretagspost": {"Name": "my-name"},
+                "premy_varpost": 1,
+            },
+        ),
+        (
+            None,
+            None,
+            True,
+            {
+                "my_var": 1,
+                "ec2_tag_Name": "my-name",
+                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "tags": {"Name": "my-name"},
+            },
+        ),
+    ],
+)
+def test_prepare_host_vars(
+    inventory,
+    hostvars_prefix,
+    hostvars_suffix,
+    use_contrib_script_compatible_ec2_tag_keys,
+    expectation,
+):
+    original_host_vars = {
+        "my_var": 1,
+        "placement": {"availability_zone": "us-east-1a"},
+        "Tags": [{"Key": "Name", "Value": "my-name"}],
+    }
+    assert (
+        inventory.prepare_host_vars(
+            original_host_vars,
+            hostvars_prefix,
+            hostvars_suffix,
+            use_contrib_script_compatible_ec2_tag_keys,
+        )
+        == expectation
+    )
+
+
+def test_iter_entry(inventory):
+    hosts = [
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "first-host://",
+        },
+        {
+            "Placement": {
+                "AvailabilityZone": "us-east-1a",
+            },
+            "PublicDnsName": "second-host",
+            "Tags": [{"Key": "Name", "Value": "my-name"}],
+        },
+    ]
+
+    entries = list(inventory.iter_entry(hosts, hostnames=[]))
+    assert len(entries) == 2
+    assert entries[0][0] == "first_host___"
+    assert entries[1][0] == "second-host"
+    assert entries[1][1]["tags"]["Name"] == "my-name"
+
+    entries = list(
+        inventory.iter_entry(
+            hosts,
+            hostnames=[],
+            hostvars_prefix="a_",
+            hostvars_suffix="_b",
+            use_contrib_script_compatible_ec2_tag_keys=True,
+        )
+    )
+    assert len(entries) == 2
+    assert entries[0][0] == "first_host___"
+    assert entries[1][1]["a_tags_b"]["Name"] == "my-name"
+
+
+def test_query_empty(inventory):
+    result = inventory._query("us-east-1", [], [], strict_permissions=True)
+    assert result == {"aws_ec2": []}
+
+
+instance_foobar = {"InstanceId": "foobar"}
+instance_barfoo = {"InstanceId": "barfoo"}
+
+
+def test_query_empty_include_only(inventory):
+    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar]])
+    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [], strict_permissions=True)
+    assert result == {"aws_ec2": [instance_foobar]}
+
+
+def test_query_empty_include_ordered(inventory):
+    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_barfoo]])
+    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}, {"tag:Name": ["barfoo"]}], [], strict_permissions=True)
+    assert result == {"aws_ec2": [instance_barfoo, instance_foobar]}
+    inventory._get_instances_by_region.assert_called_with('us-east-1', [{'Name': 'tag:Name', 'Values': ['barfoo']}], True)
+
+
+def test_query_empty_include_exclude(inventory):
+    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_foobar]])
+    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [{"tag:Name": ["foobar"]}], strict_permissions=True)
+    assert result == {"aws_ec2": []}
