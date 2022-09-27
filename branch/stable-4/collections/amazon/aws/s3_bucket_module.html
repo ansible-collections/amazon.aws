@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.s3_object module – Manage objects in S3" href="s3_object_module.html" />
@@ -182,10 +183,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p>If your bucket uses the bucket owner enforced setting for S3 Object Ownership, ACLs are disabled and no longer affect permissions.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">private</span></p></li>
-<li><p><span class="ansible-option-choices-entry">public-read</span></p></li>
-<li><p><span class="ansible-option-choices-entry">public-read-write</span></p></li>
-<li><p><span class="ansible-option-choices-entry">authenticated-read</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“private”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“public-read”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“public-read-write”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“authenticated-read”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -311,9 +312,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <td><div class="ansible-option-cell"><p>Describes the default server-side encryption to apply to new objects in the bucket. In order to remove the server-side encryption, the encryption needs to be set to ‘none’ explicitly.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">none</span></p></li>
-<li><p><span class="ansible-option-choices-entry">AES256</span></p></li>
-<li><p><span class="ansible-option-choices-entry">aws:kms</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“none”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“AES256”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“aws:kms”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -356,9 +357,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> has been added in version 3.2.0.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">BucketOwnerEnforced</span></p></li>
-<li><p><span class="ansible-option-choices-entry">BucketOwnerPreferred</span></p></li>
-<li><p><span class="ansible-option-choices-entry">ObjectWriter</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“BucketOwnerEnforced”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“BucketOwnerPreferred”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“ObjectWriter”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -504,8 +505,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <td><div class="ansible-option-cell"><p>Create or remove the S3 bucket.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
 </ul>
 </div></td>
 </tr>
