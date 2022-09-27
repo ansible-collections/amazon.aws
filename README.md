@@ -64,7 +64,7 @@ collections:
 The python module dependencies are not installed by `ansible-galaxy`.  They can
 be manually installed using pip:
 
-    pip install requirements.txt
+    pip install -r requirements.txt
 
 or:
 
@@ -72,7 +72,7 @@ or:
 
 ## Using this collection
 
-You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
+You can either call modules by their Fully Qualified Collection Name (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
 
 ```yaml
 ---
