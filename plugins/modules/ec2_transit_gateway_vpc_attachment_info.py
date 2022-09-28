@@ -142,7 +142,7 @@ transit_gateway_attachments:
         - The ID of the account that the VPC belongs to.
       type: str
       returned: success
-      example: '012345678901'
+      example: '123456789012'
 '''
 
 
