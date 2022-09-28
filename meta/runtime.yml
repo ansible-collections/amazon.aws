@@ -10,6 +10,7 @@ action_groups:
   - cloudformation
   - cloudformation_info
   - cloudtrail
+  - cloudtrail_info
   - cloudwatch_metric_alarm
   - cloudwatchevent_rule
   - cloudwatchevent_rule
