@@ -58,7 +58,7 @@ arn:
     description: The Amazon resource name of the server certificate
     returned: success
     type: str
-    sample: "arn:aws:iam::911277865346:server-certificate/server-cert-name"
+    sample: "arn:aws:iam::123456789012:server-certificate/server-cert-name"
 path:
     description: The path of the server certificate
     returned: success
@@ -106,7 +106,7 @@ def get_server_certs(iam, name=None):
             "server_certificate_name": "server-cert-name",
             "expiration": "2017-06-15T12:00:00+00:00",
             "path": "/",
-            "arn": "arn:aws:iam::911277865346:server-certificate/server-cert-name"
+            "arn": "arn:aws:iam::123456789012:server-certificate/server-cert-name"
         }
     """
     results = dict()

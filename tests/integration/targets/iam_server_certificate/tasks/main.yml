@@ -245,7 +245,7 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/example/'
+      path: '/ansible-test-example/'
     register: create_cert
     check_mode: true
 
@@ -262,7 +262,7 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/example/'
+      path: '/ansible-test-example/'
     register: create_cert
 
   - name: check result - Create Certificate with Chain and path
@@ -279,7 +279,7 @@
       - create_cert.arn.startswith('arn:aws')
       - create_cert.arn.endswith(cert_name)
       - create_cert.name == cert_name
-      - create_cert.cert_path == '/example/'
+      - create_cert.cert_path == '/ansible-test-example/'
       - create_cert.cert_body == cert_a_data
 
   - name: Create Certificate with Chain and path - idempotency - check_mode
@@ -289,7 +289,7 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/example/'
+      path: '/ansible-test-example/'
     register: create_cert
     check_mode: true
 
@@ -306,7 +306,7 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/example/'
+      path: '/ansible-test-example/'
     register: create_cert
 
   - name: check result - Create Certificate with Chain and path - idempotency
@@ -323,7 +323,7 @@
       - create_cert.arn.startswith('arn:aws')
       - create_cert.arn.endswith(cert_name)
       - create_cert.name == cert_name
-      - create_cert.cert_path == '/example/'
+      - create_cert.cert_path == '/ansible-test-example/'
       - create_cert.cert_body == cert_a_data
 
   ################################################
@@ -446,8 +446,8 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/example/'
-      new_path: '/path/'
+      path: '/ansible-test-example/'
+      new_path: '/ansible-test-path/'
     register: update_path
     check_mode: true
 
@@ -461,8 +461,8 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/example/'
-      new_path: '/path/'
+      path: '/ansible-test-example/'
+      new_path: '/ansible-test-path/'
     register: update_path
 
   - name: check result - Update certificate path
@@ -479,15 +479,15 @@
       - update_path.arn.startswith('arn:aws')
       - update_path.arn.endswith(cert_name)
       - update_path.name == cert_name
-      - update_path.cert_path == '/path/'
+      - update_path.cert_path == '/ansible-test-path/'
       - update_path.cert_body == cert_a_data
 
   - name: Update certificate path - idempotency - check_mode
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/example/'
-      new_path: '/path/'
+      path: '/ansible-test-example/'
+      new_path: '/ansible-test-path/'
     register: update_path
     check_mode: true
 
@@ -501,8 +501,8 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/example/'
-      new_path: '/path/'
+      path: '/ansible-test-example/'
+      new_path: '/ansible-test-path/'
     register: update_path
 
   - name: check result - Update certificate path - idempotency
@@ -548,7 +548,7 @@
       - update_name.arn.startswith('arn:aws')
       - update_name.arn.endswith('-renamed')
       - update_name.name.endswith('renamed')
-      - update_name.cert_path == '/path/'
+      - update_name.cert_path == '/ansible-test-path/'
       - update_name.cert_body == cert_a_data
 
   - name: Update certificate name - idempotency - check_mode
@@ -586,7 +586,7 @@
       - update_name.arn.startswith('arn:aws')
       - update_name.arn.endswith('-renamed')
       - update_name.name.endswith('renamed')
-      - update_name.cert_path == '/path/'
+      - update_name.cert_path == '/ansible-test-path/'
       - update_name.cert_body == cert_a_data
 
   always:
