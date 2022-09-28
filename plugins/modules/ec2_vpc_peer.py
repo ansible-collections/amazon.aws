@@ -109,7 +109,7 @@ EXAMPLES = '''
     region: ap-southeast-2
     vpc_id: vpc-12345678
     peer_vpc_id: vpc-12345678
-    peer_owner_id: 123456789102
+    peer_owner_id: 123456789012
     state: present
     tags:
       Name: Peering connection for VPC 21 to VPC 22
@@ -171,7 +171,7 @@ EXAMPLES = '''
     region: ap-southeast-2
     vpc_id: vpc-12345678
     peer_vpc_id: vpc-12345678
-    peer_owner_id: 123456789102
+    peer_owner_id: 123456789012
     state: present
     tags:
       Name: Peering connection for VPC 21 to VPC 22
@@ -196,7 +196,7 @@ EXAMPLES = '''
     region: ap-southeast-2
     vpc_id: vpc-12345678
     peer_vpc_id: vpc-12345678
-    peer_owner_id: 123456789102
+    peer_owner_id: 123456789012
     state: present
     tags:
       Name: Peering connection for VPC 21 to VPC 22
@@ -247,7 +247,7 @@ vpc_peering_connection:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 012345678901
+          example: 123456789012
         peering_options:
           description: Additional peering configuration.
           returned: when connection is in the accepted state.
@@ -299,7 +299,7 @@ vpc_peering_connection:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 012345678901
+          example: 123456789012
         peering_options:
           description: Additional peering configuration.
           returned: when connection is not in the deleted state.
@@ -341,7 +341,7 @@ vpc_peering_connection:
           description: Additional information about the status of the connection.
           returned: success
           type: str
-          example: Pending Acceptance by 012345678901
+          example: Pending Acceptance by 123456789012
     tags:
       description: Tags applied to the connection.
       returned: success
