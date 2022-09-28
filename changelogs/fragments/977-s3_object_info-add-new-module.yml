@@ -1,0 +1,2 @@
+minor_changes:
+- s3_object_info - Added a new module that describes S3 Objects (https://github.com/ansible-collections/amazon.aws/pull/977).
