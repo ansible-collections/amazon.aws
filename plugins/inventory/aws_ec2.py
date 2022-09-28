@@ -747,6 +747,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             :param hosts: a list of hosts to be added to a group
             :param group: the name of the group to which the hosts belong
             :param hostnames: a list of hostname destination variables in order of preference
+            :param bool allow_duplicated_hosts: allow multiple copy for the same host with a different name
         '''
         for host in hosts:
             if allow_duplicated_hosts:
