@@ -94,7 +94,7 @@ snapshots:
       description: Snapshot ARN
       returned: always
       type: str
-      sample: arn:aws:rds:us-west-2:123456789012:snapshot:rds:hello-world-rds-us1-2018-05-16-04-03
+      sample: arn:aws:rds:us-west-2:111111111111:snapshot:rds:hello-world-rds-us1-2018-05-16-04-03
     db_snapshot_identifier:
       description: Snapshot name
       returned: always
@@ -129,7 +129,7 @@ snapshots:
       description: ID of the KMS Key encrypting the snapshot
       returned: always
       type: str
-      sample: arn:aws:kms:us-west-2:123456789012:key/abcd1234-1234-aaaa-0000-1234567890ab
+      sample: arn:aws:kms:us-west-2:111111111111:key/abcd1234-1234-aaaa-0000-1234567890ab
     license_model:
       description: License model
       returned: always
@@ -211,7 +211,7 @@ cluster_snapshots:
       description: ARN of the database snapshot
       returned: always
       type: str
-      sample: arn:aws:rds:ca-central-1:123456789012:cluster-snapshot:test-aurora-snapshot
+      sample: arn:aws:rds:ca-central-1:111111111111:cluster-snapshot:test-aurora-snapshot
     db_cluster_snapshot_identifier:
       description: Snapshot identifier
       returned: always
@@ -236,7 +236,7 @@ cluster_snapshots:
       description: ID of the KMS Key encrypting the snapshot
       returned: always
       type: str
-      sample: arn:aws:kms:ca-central-1:123456789012:key/abcd1234-abcd-1111-aaaa-0123456789ab
+      sample: arn:aws:kms:ca-central-1:111111111111:key/abcd1234-abcd-1111-aaaa-0123456789ab
     license_model:
       description: License model
       returned: always

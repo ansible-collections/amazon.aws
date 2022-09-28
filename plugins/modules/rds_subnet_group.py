@@ -165,7 +165,7 @@ subnet_group:
             description: The ARN of the DB subnet group
             returned: I(state=present)
             type: str
-            sample: "arn:aws:rds:eu-north-1:123456789012:subgrp:ansible-test-13950442"
+            sample: "arn:aws:rds:eu-north-1:721066863947:subgrp:ansible-test-13950442"
         tags:
             description: The tags associated with the subnet group
             returned: I(state=present)

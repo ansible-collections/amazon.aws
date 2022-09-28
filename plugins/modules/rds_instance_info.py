@@ -87,7 +87,7 @@ instances:
       description: ARN of the database instance
       returned: always
       type: str
-      sample: arn:aws:rds:us-west-2:123456789012:db:helloworld-rds
+      sample: arn:aws:rds:us-west-2:111111111111:db:helloworld-rds
     db_instance_class:
       description: Instance class of the database instance
       returned: always
@@ -248,7 +248,7 @@ instances:
       description: KMS Key ID
       returned: always
       type: str
-      sample: arn:aws:kms:us-west-2:123456789012:key/abcd1234-0000-abcd-1111-0123456789ab
+      sample: arn:aws:kms:us-west-2:111111111111:key/abcd1234-0000-abcd-1111-0123456789ab
     latest_restorable_time:
       description: Latest time to which a database can be restored with point-in-time restore
       returned: always
