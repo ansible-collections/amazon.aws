@@ -144,7 +144,7 @@ vpn_connections:
                description: The Amazon Resource Name of the virtual private gateway tunnel endpoint certificate.
                returned: when a private certificate is used for authentication
                type: str
-               sample: "arn:aws:acm:us-east-1:123456789101:certificate/c544d8ce-20b8-4fff-98b0-example"
+               sample: "arn:aws:acm:us-east-1:123456789012:certificate/c544d8ce-20b8-4fff-98b0-example"
       vpn_connection_id:
         description: The ID of the VPN connection.
         returned: always
