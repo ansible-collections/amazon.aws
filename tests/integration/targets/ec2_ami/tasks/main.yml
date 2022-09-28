@@ -13,7 +13,7 @@
     # AWS CLI is needed until there's a module to get instance uefi data
     - name: Install AWS CLI
       pip:
-        name: awscli
+        name: awscli==1.25.83
         state: present
 
     # ============================================================
