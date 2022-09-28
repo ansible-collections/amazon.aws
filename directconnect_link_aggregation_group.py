@@ -115,7 +115,7 @@ connections:
          "connection_state": "down",
          "lag_id": "dxlag-fgnsp4rq",
          "location": "EqSe2",
-         "owner_account": "448830907657",
+         "owner_account": "123456789012",
          "region": "us-west-2"
       }
       ]

@@ -107,7 +107,7 @@ instance:
   returned: always
   type: dict
   sample:
-    arn: "arn:aws:lightsail:us-east-1:448830907657:Instance/1fef0175-d6c8-480e-84fa-214f969cda87"
+    arn: "arn:aws:lightsail:us-east-1:123456789012:Instance/1fef0175-d6c8-480e-84fa-214f969cda87"
     blueprint_id: "ubuntu_16_04"
     blueprint_name: "Ubuntu"
     bundle_id: "nano_1_0"
@@ -145,7 +145,7 @@ instance:
     state:
       code: 16
       name: running
-    support_code: "588307843083/i-0997c97831ee21e33"
+    support_code: "123456789012/i-0997c97831ee21e33"
     username: "ubuntu"
 '''
 

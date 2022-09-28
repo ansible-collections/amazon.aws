@@ -183,7 +183,7 @@ endpoint:
         - The ARN that uniquely identifies the endpoint.
       type: str
       returned: success
-      example: "arn:aws:dms:us-east-1:012345678901:endpoint:1234556789ABCDEFGHIJKLMNOPQRSTUVWXYZ012"
+      example: "arn:aws:dms:us-east-1:123456789012:endpoint:1234556789ABCDEFGHIJKLMNOPQRSTUVWXYZ012"
     endpoint_identifier:
       description:
         - The database endpoint identifier.
@@ -213,7 +213,7 @@ endpoint:
         - An KMS key ID that is used to encrypt the connection parameters for the endpoint.
       type: str
       returned: success
-      example: "arn:aws:kms:us-east-1:012345678901:key/01234567-abcd-12ab-98fe-123456789abc"
+      example: "arn:aws:kms:us-east-1:123456789012:key/01234567-abcd-12ab-98fe-123456789abc"
     port:
       description:
         - The port used to access the endpoint.

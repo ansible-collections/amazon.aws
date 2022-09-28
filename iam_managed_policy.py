@@ -116,7 +116,7 @@ policy:
         "default_version_id": "v1",
         "is_attachable": true,
         "path": "/",
-        "policy_id": "ANPALM4KLDMTFXGOOJIHL",
+        "policy_id": "ANPA1245EXAMPLE54321",
         "policy_name": "AdministratorAccess",
         "update_date": "2017-03-01T15:42:55.981000+00:00"
   }'

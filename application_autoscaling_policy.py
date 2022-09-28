@@ -216,7 +216,7 @@ role_arn:
     description: The ARN of an IAM role that allows Application Auto Scaling to modify the scalable target on your behalf. Required if I(state) is C(present).
     returned: when state present
     type: str
-    sample: arn:aws:iam::123456789123:role/roleName
+    sample: arn:aws:iam::123456789012:role/roleName
 step_scaling_policy_configuration:
     description: The step scaling policy.
     returned: when state present and the policy type is StepScaling

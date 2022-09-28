@@ -60,12 +60,12 @@ EXAMPLES = '''
   community.aws.stepfunctions_state_machine_execution:
     name: an_execution_name
     execution_input: '{ "IsHelloWorldExample": true }'
-    state_machine_arn: "arn:aws:states:us-west-2:682285639423:stateMachine:HelloWorldStateMachine"
+    state_machine_arn: "arn:aws:states:us-west-2:123456789012:stateMachine:HelloWorldStateMachine"
 
 - name: Stop an execution of a state machine
   community.aws.stepfunctions_state_machine_execution:
     action: stop
-    execution_arn: "arn:aws:states:us-west-2:682285639423:execution:HelloWorldStateMachineCopy:a1e8e2b5-5dfe-d40e-d9e3-6201061047c8"
+    execution_arn: "arn:aws:states:us-west-2:123456789012:execution:HelloWorldStateMachineCopy:a1e8e2b5-5dfe-d40e-d9e3-6201061047c8"
     cause: "cause of task failure"
     error: "error code of the failure"
 '''
@@ -75,7 +75,7 @@ execution_arn:
     description: ARN of the AWS Step Functions state machine execution.
     type: str
     returned: if action == start and changed == True
-    sample: "arn:aws:states:us-west-2:682285639423:execution:HelloWorldStateMachineCopy:a1e8e2b5-5dfe-d40e-d9e3-6201061047c8"
+    sample: "arn:aws:states:us-west-2:123456789012:execution:HelloWorldStateMachineCopy:a1e8e2b5-5dfe-d40e-d9e3-6201061047c8"
 start_date:
     description: The date the execution is started.
     type: str

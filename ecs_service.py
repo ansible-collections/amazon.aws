@@ -411,9 +411,10 @@ service:
             returned: always
             type: int
         serviceArn:
-            description: The Amazon Resource Name (ARN) that identifies the service. The ARN contains the arn:aws:ecs namespace, followed by the region
-                         of the service, the AWS account ID of the service owner, the service namespace, and then the service name. For example,
-                         arn:aws:ecs:region :012345678910 :service/my-service .
+            description:
+                - The Amazon Resource Name (ARN) that identifies the service. The ARN contains the C(arn:aws:ecs) namespace, followed by
+                  the region of the service, the AWS account ID of the service owner, the service namespace, and then the service name.
+            sample: 'arn:aws:ecs:us-east-1:123456789012:service/my-service'
             returned: always
             type: str
         serviceName:
@@ -547,9 +548,10 @@ ansible_facts:
                     returned: always
                     type: int
                 serviceArn:
-                    description: The Amazon Resource Name (ARN) that identifies the service. The ARN contains the arn:aws:ecs namespace, followed by the region
-                                 of the service, the AWS account ID of the service owner, the service namespace, and then the service name. For example,
-                                 arn:aws:ecs:region :012345678910 :service/my-service .
+                    description:
+                        - The Amazon Resource Name (ARN) that identifies the service. The ARN contains the arn:aws:ecs namespace, followed by the region
+                          of the service, the AWS account ID of the service owner, the service namespace, and then the service name.
+                    sample: 'arn:aws:ecs:us-east-1:123456789012:service/my-service'
                     returned: always
                     type: str
                 serviceName:

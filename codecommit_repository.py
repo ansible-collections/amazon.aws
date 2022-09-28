@@ -52,12 +52,12 @@ repository_metadata:
       description: "The ID of the AWS account associated with the repository."
       returned: when state is present
       type: str
-      sample: "268342293637"
+      sample: "123456789012"
     arn:
       description: "The Amazon Resource Name (ARN) of the repository."
       returned: when state is present
       type: str
-      sample: "arn:aws:codecommit:ap-northeast-1:268342293637:username"
+      sample: "arn:aws:codecommit:ap-northeast-1:123456789012:username"
     clone_url_http:
       description: "The URL to use for cloning the repository over HTTPS."
       returned: when state is present

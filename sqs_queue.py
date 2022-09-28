@@ -138,7 +138,7 @@ queue_arn:
     description: The queue's Amazon resource name (ARN).
     type: str
     returned: on success
-    sample: 'arn:aws:sqs:us-east-1:199999999999:queuename-987d2de0'
+    sample: 'arn:aws:sqs:us-east-1:123456789012:queuename-987d2de0'
 queue_url:
     description: URL to access the queue
     type: str

@@ -221,7 +221,7 @@ EXAMPLES = '''
           allow: {}
         statement:
           ip_set_reference_statement:
-            arn: 'arn:aws:wafv2:us-east-1:520789123123:regional/ipset/own-public-ips/1c4bdfc4-0f77-3b23-5222-123123123'
+            arn: 'arn:aws:wafv2:us-east-1:123456789012:regional/ipset/own-public-ips/1c4bdfc4-0f77-3b23-5222-123123123'
         visibility_config:
           sampled_requests_enabled: true
           cloud_watch_metrics_enabled: true
@@ -254,7 +254,7 @@ EXAMPLES = '''
 RETURN = """
 arn:
   description: web acl arn
-  sample: arn:aws:wafv2:eu-central-1:11111111:regional/webacl/test05/318c1ab9-fa74-4b3b-a974-f92e25106f61
+  sample: arn:aws:wafv2:eu-central-1:123456789012:regional/webacl/test05/318c1ab9-fa74-4b3b-a974-f92e25106f61
   type: str
   returned: Always, as long as the web acl exists
 description:

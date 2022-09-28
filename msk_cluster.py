@@ -225,7 +225,7 @@ EXAMPLES = r"""
       - subnet-d9fbeaf46c54bfab6
     wait: true
     wait_timeout: 1800
-    configuration_arn: arn:aws:kafka:us-east-1:000000000001:configuration/kafka-cluster-configuration/aaaaaaaa-bbbb-4444-3333-ccccccccc-1
+    configuration_arn: arn:aws:kafka:us-east-1:123456789012:configuration/kafka-cluster-configuration/aaaaaaaa-bbbb-4444-3333-ccccccccc-1
     configuration_revision: 1
 
 - community.aws.msk_cluster:

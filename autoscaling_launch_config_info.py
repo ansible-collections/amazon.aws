@@ -126,7 +126,7 @@ launch_configuration_arn:
     description: Amazon Resource Name (ARN) of the launch configuration.
     type: str
     returned: always
-    sample: "arn:aws:autoscaling:us-east-1:666612345678:launchConfiguration:ba785e3a-dd42-6f02-4585-ea1a2b458b3d:launchConfigurationName/lc-app"
+    sample: "arn:aws:autoscaling:us-east-1:123456798012:launchConfiguration:ba785e3a-dd42-6f02-4585-ea1a2b458b3d:launchConfigurationName/lc-app"
 launch_configuration_name:
     description: Name of the launch configuration.
     type: str

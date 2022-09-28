@@ -196,7 +196,7 @@ mount_targets:
                 "life_cycle_state": "available",
                 "mount_target_id": "fsmt-d8907871",
                 "network_interface_id": "eni-6e387e26",
-                "owner_id": "740748460359",
+                "owner_id": "123456789012",
                 "security_groups": [
                     "sg-a30b22c6"
                 ],

@@ -53,7 +53,7 @@ static_ip:
   returned: always
   type: dict
   sample:
-    arn: "arn:aws:lightsail:ap-southeast-2:184297340509:StaticIp/d8f47672-c261-4443-a484-4a2ec983db9a"
+    arn: "arn:aws:lightsail:ap-southeast-2:123456789012:StaticIp/d8f47672-c261-4443-a484-4a2ec983db9a"
     created_at: "2021-02-28T00:04:05.202000+10:30"
     ip_address: "192.0.2.5"
     is_attached: false
@@ -62,7 +62,7 @@ static_ip:
         region_name: ap-southeast-2
     name: "static_ip"
     resource_type: StaticIp
-    support_code: "677585553206/192.0.2.5"
+    support_code: "123456789012/192.0.2.5"
 '''
 
 try:

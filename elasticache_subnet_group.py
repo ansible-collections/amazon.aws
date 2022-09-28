@@ -70,7 +70,7 @@ cache_subnet_group:
       description: The Amazon Resource Name (ARN) of the cache subnet group.
       returned: when the subnet group exists
       type: str
-      sample: arn:aws:elasticache:us-east-1:012345678901:subnetgroup:norwegian-blue
+      sample: arn:aws:elasticache:us-east-1:123456789012:subnetgroup:norwegian-blue
     description:
       description: The description of the cache subnet group.
       returned: when the cache subnet group exists

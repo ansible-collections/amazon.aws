@@ -107,7 +107,7 @@ EXAMPLES = '''
 
 - name: Cross account ecr-repo
   community.aws.ecs_ecr:
-    registry_id: 999999999999
+    registry_id: 123456789012
     name: cross/account
 
 - name: set-policy as object
@@ -186,10 +186,10 @@ repository:
     returned: I(state=present)
     sample:
         createdAt: '2017-01-17T08:41:32-06:00'
-        registryId: '999999999999'
-        repositoryArn: arn:aws:ecr:us-east-1:999999999999:repository/ecr-test-1484664090
+        registryId: '123456789012'
+        repositoryArn: arn:aws:ecr:us-east-1:123456789012:repository/ecr-test-1484664090
         repositoryName: ecr-test-1484664090
-        repositoryUri: 999999999999.dkr.ecr.us-east-1.amazonaws.com/ecr-test-1484664090
+        repositoryUri: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ecr-test-1484664090
 '''
 
 import json

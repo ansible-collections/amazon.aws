@@ -58,7 +58,7 @@ EXAMPLES = '''
   community.aws.stepfunctions_state_machine:
     name: "HelloWorldStateMachine"
     definition: "{{ lookup('file','state_machine.json') }}"
-    role_arn: arn:aws:iam::987654321012:role/service-role/invokeLambdaStepFunctionsRole
+    role_arn: arn:aws:iam::123456789012:role/service-role/invokeLambdaStepFunctionsRole
     tags:
       project: helloWorld
 
@@ -67,7 +67,7 @@ EXAMPLES = '''
   community.aws.stepfunctions_state_machine:
     name: HelloWorldStateMachine
     definition: "{{ lookup('file','state_machine.json') }}"
-    role_arn: arn:aws:iam::987654321012:role/service-role/anotherStepFunctionsRole
+    role_arn: arn:aws:iam::123456789012:role/service-role/anotherStepFunctionsRole
     tags:
       otherTag: aDifferentTag
 

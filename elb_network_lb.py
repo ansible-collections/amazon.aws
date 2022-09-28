@@ -289,7 +289,7 @@ load_balancer:
             description: The Amazon Resource Name (ARN) of the load balancer.
             returned: when state is present
             type: str
-            sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
+            sample: arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-elb/001122334455
         load_balancer_name:
             description: The name of the load balancer.
             returned: when state is present

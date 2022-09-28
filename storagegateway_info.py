@@ -59,7 +59,7 @@ gateways:
       description: "Storage Gateway ARN"
       returned: always
       type: str
-      sample: "arn:aws:storagegateway:eu-west-1:367709993819:gateway/sgw-9999F888"
+      sample: "arn:aws:storagegateway:eu-west-1:123456789012:gateway/sgw-9999F888"
     gateway_id:
       description: "Storage Gateway ID"
       returned: always
@@ -89,7 +89,7 @@ gateways:
           description: "File share ARN"
           returned: always
           type: str
-          sample: "arn:aws:storagegateway:eu-west-1:399805793479:share/share-AF999C88"
+          sample: "arn:aws:storagegateway:eu-west-1:123456789012:share/share-AF999C88"
         file_share_id:
           description: "File share ID"
           returned: always
@@ -109,7 +109,7 @@ gateways:
             description: "Tape ARN"
             returned: always
             type: str
-            sample: "arn:aws:storagegateway:eu-west-1:399805793479:tape/tape-AF999C88"
+            sample: "arn:aws:storagegateway:eu-west-1:123456789012:tape/tape-AF999C88"
           tape_barcode:
             description: "Tape ARN"
             returned: always

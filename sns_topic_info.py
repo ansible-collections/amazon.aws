@@ -47,7 +47,7 @@ result:
         description: The ARN of the topic.
         type: str
         returned: always
-        sample: "arn:aws:sns:us-east-2:111111111111:my_topic_name"
+        sample: "arn:aws:sns:us-east-2:123456789012:my_topic_name"
     sns_topic:
         description: Dict of sns topic details.
         type: complex
@@ -69,14 +69,14 @@ result:
                 description: AWS account that owns the topic.
                 returned: when topic is owned by this AWS account
                 type: str
-                sample: '111111111111'
+                sample: '123456789012'
             policy:
                 description: Policy for the SNS topic.
                 returned: when topic is owned by this AWS account
                 type: str
                 sample: >
-                    {"Version":"2012-10-17","Id":"SomePolicyId","Statement":[{"Sid":"ANewSid","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::111111111111:root"},
-                    "Action":"sns:Subscribe","Resource":"arn:aws:sns:us-east-2:111111111111:ansible-test-dummy-topic","Condition":{"StringEquals":{"sns:Protocol":"email"}}}]}
+                    {"Version":"2012-10-17","Id":"SomePolicyId","Statement":[{"Sid":"ANewSid","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::123456789012:root"},
+                    "Action":"sns:Subscribe","Resource":"arn:aws:sns:us-east-2:123456789012:ansible-test-dummy-topic","Condition":{"StringEquals":{"sns:Protocol":"email"}}}]}
             subscriptions:
                 description: List of subscribers to the topic in this AWS account.
                 returned: always
@@ -121,7 +121,7 @@ result:
                 description: ARN of the SNS topic (equivalent to sns_arn).
                 returned: when topic is owned by this AWS account
                 type: str
-                sample: arn:aws:sns:us-east-2:111111111111:ansible-test-dummy-topic
+                sample: arn:aws:sns:us-east-2:123456789012:ansible-test-dummy-topic
             topic_type:
                 description: The type of topic.
                 type: str

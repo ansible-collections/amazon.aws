@@ -89,7 +89,7 @@ arn:
   description: ARN of the EKS cluster
   returned: when state is present
   type: str
-  sample: arn:aws:eks:us-west-2:111111111111:cluster/my-eks-cluster
+  sample: arn:aws:eks:us-west-2:123456789012:cluster/my-eks-cluster
 certificate_authority:
   description: Dictionary containing Certificate Authority Data for cluster
   returned: after creation
@@ -143,7 +143,7 @@ role_arn:
   description: ARN of the IAM role used by the cluster
   returned: when state is present
   type: str
-  sample: arn:aws:iam::111111111111:role/eks_cluster_role
+  sample: arn:aws:iam::123456789012:role/eks_cluster_role
 status:
   description: status of the EKS cluster
   returned: when state is present

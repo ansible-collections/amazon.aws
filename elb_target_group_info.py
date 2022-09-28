@@ -53,7 +53,7 @@ EXAMPLES = r'''
 
 - name: Gather information about the target group attached to a particular ELB
   community.aws.elb_target_group_info:
-    load_balancer_arn: "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-elb/aabbccddeeff"
+    load_balancer_arn: "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-elb/aabbccddeeff"
 
 - name: Gather information about a target groups named 'tg1' and 'tg2'
   community.aws.elb_target_group_info:
@@ -152,7 +152,7 @@ target_groups:
             description: The Amazon Resource Name (ARN) of the target group.
             returned: always
             type: str
-            sample: "arn:aws:elasticloadbalancing:ap-southeast-2:01234567890:targetgroup/mytargetgroup/aabbccddee0044332211"
+            sample: "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/mytargetgroup/aabbccddee0044332211"
         targets_health_description:
             description: Targets health description.
             returned: when collect_targets_health is enabled

@@ -31,11 +31,11 @@ mfa_devices:
     type: list
     sample:
       - enable_date: "2016-03-11T23:25:36+00:00"
-        serial_number: arn:aws:iam::085120003701:mfa/pwnall
-        user_name: pwnall
+        serial_number: arn:aws:iam::123456789012:mfa/example
+        user_name: example
       - enable_date: "2016-03-11T23:25:37+00:00"
-        serial_number: arn:aws:iam::085120003702:mfa/pwnall
-        user_name: pwnall
+        serial_number: arn:aws:iam::123456789012:mfa/example
+        user_name: example
 """
 
 EXAMPLES = r'''
