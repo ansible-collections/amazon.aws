@@ -88,7 +88,7 @@ vpc_peering_connections:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 012345678901
+          example: 123456789012
         peering_options:
           description: Additional peering configuration.
           returned: when connection is in the accepted state.
@@ -140,7 +140,7 @@ vpc_peering_connections:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 012345678901
+          example: 123456789012
         peering_options:
           description: Additional peering configuration.
           returned: when connection is not in the deleted state.
@@ -182,7 +182,7 @@ vpc_peering_connections:
           description: Additional information about the status of the connection.
           returned: success
           type: str
-          example: Pending Acceptance by 012345678901
+          example: Pending Acceptance by 123456789012
     tags:
       description: Tags applied to the connection.
       returned: success
