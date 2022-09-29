@@ -23,7 +23,7 @@
 
     - name: Create content
       set_fact:
-          content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
+        content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
     - name: test create bucket without permissions
       module_defaults: { group/aws: {} }
@@ -388,6 +388,22 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: geturl
+        object: delete.txt
+      retries: 3
+      delay: 3
+      register: result
+      until: result is changed
+
+    - assert:
+        that:
+          - "'Download url:' in result.msg"
+          - result is changed
+
+    - name: test geturl of the object with sigv4
+      s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: geturl
+        sig_v4: true
         object: delete.txt
       retries: 3
       delay: 3
