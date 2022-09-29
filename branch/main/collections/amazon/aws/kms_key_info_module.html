@@ -388,7 +388,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS Account ID that the key belongs to.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “1234567890123”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “123456789012”</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -451,7 +451,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Constraints on the encryption context that the grant allows. See <a class="reference external" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html">https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html</a> for further details</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“encryption_context_equals”: {“aws:lambda:_function_arn”: “arn:aws:lambda:ap-southeast-2:012345678912:function:xyz”}}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“encryption_context_equals”: {“aws:lambda:_function_arn”: “arn:aws:lambda:ap-southeast-2:123456789012:function:xyz”}}</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -478,7 +478,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The principal that receives the grant’s permissions.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::0123456789012:assumed-role/lambda_xyz/xyz”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz”</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -487,7 +487,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS account under which the grant was issued.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:iam::01234567890:root”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:iam::123456789012:root”</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -523,7 +523,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The principal that can retire the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::0123456789012:assumed-role/lambda_xyz/xyz”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz”</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -551,7 +551,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “111111111111”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::111111111111:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “123456789012”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::123456789012:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -588,7 +588,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “111111111111”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::111111111111:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “123456789012”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::123456789012:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">

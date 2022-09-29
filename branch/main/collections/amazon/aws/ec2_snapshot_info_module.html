@@ -354,15 +354,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <span class="c1"># Gather information about all snapshots, including public ones</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot_info</span><span class="p">:</span><span class="w"></span>
 
-<span class="c1"># Gather information about all snapshots owned by the account 0123456789</span><span class="w"></span>
+<span class="c1"># Gather information about all snapshots owned by the account 123456789012</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot_info</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">owner-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0123456789</span><span class="w"></span>
+<span class="w">      </span><span class="nt">owner-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123456789012</span><span class="w"></span>
 
 <span class="c1"># Or alternatively...</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot_info</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">owner_ids</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0123456789</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123456789012</span><span class="w"></span>
 
 <span class="c1"># Gather information about a particular snapshot using ID</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot_info</span><span class="p">:</span><span class="w"></span>
@@ -419,7 +419,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The data encryption key identifier for the snapshot. This value is a unique identifier that corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456”</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -455,7 +455,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS account alias (for example, amazon, self) or AWS account ID that owns the snapshot.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “033440102211”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “123456789012”</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -464,7 +464,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS account ID of the EBS snapshot owner.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “099720109477”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “123456789012”</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">

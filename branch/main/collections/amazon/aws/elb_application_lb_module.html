@@ -680,7 +680,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span><span class="w"></span>
 <span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
 <span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::12345678987:server-certificate/test.domain.com</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
 <span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span><span class="w"></span>
 <span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span><span class="w"></span>
@@ -704,7 +704,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span><span class="w"></span>
 <span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
 <span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::12345678987:server-certificate/test.domain.com</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
 <span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span><span class="w"></span>
 <span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span><span class="w"></span>
@@ -726,7 +726,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"></span>
 <span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span><span class="w"></span>
 <span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::12345678987:server-certificate/test.domain.com</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
 <span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
 <span class="w">        </span><span class="nt">Rules</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span><span class="w"></span>
@@ -991,7 +991,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the load balancer.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is present</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-alb/001122334455”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-alb/001122334455”</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
