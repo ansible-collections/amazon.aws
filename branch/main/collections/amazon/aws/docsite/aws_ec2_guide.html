@@ -250,6 +250,9 @@ You should still provide AWS credentials with enough privilege to perform the As
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private-ip-address</span><span class="w"></span>
 </pre></div>
 </div>
+<p>By default, the inventory will only return the first match one of the <code class="docutils literal notranslate"><span class="pre">hostnames</span></code> entries.
+You may want to get all the potential matches in your inventory, this also implies you will get
+duplicated entries. To switch to this behavior, set the <code class="docutils literal notranslate"><span class="pre">allow_duplicated_hosts</span></code> configuration key to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </section>
 <section id="keyed-groups">
 <h2><code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code><a class="headerlink" href="#keyed-groups" title="Permalink to this heading"></a></h2>
