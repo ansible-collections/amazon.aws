@@ -1,0 +1,2 @@
+bugfixes:
+- 'module_utils/cloud - Fix ``ValueError: ansible_collections.amazon.aws.plugins.module_utils.core.__spec__ is None`` error on Ansible 2.9 (https://github.com/ansible-collections/amazon.aws/issues/1083).'
