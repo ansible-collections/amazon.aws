@@ -301,7 +301,7 @@ EXAMPLES = '''
       - proto: tcp
         from_port: 3306
         to_port: 3306
-        group_id: 123412341234/sg-87654321/exact-name-of-sg
+        group_id: 123456789012/sg-87654321/exact-name-of-sg
       - proto: udp
         from_port: 10050
         to_port: 10050

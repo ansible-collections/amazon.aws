@@ -295,7 +295,7 @@ location:
     description: Location of image.
     returned: when AMI is created or already exists
     type: str
-    sample: "315210894379/nat-server"
+    sample: "123456789012/nat-server"
 name:
     description: AMI name of image.
     returned: when AMI is created or already exists
@@ -305,7 +305,7 @@ ownerId:
     description: Owner of image.
     returned: when AMI is created or already exists
     type: str
-    sample: "435210894375"
+    sample: "123456789012"
 platform:
     description: Platform of image.
     returned: when AMI is created or already exists

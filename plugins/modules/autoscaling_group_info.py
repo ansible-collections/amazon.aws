@@ -81,7 +81,7 @@ auto_scaling_group_arn:
     description: The Amazon Resource Name of the ASG
     returned: success
     type: str
-    sample: "arn:aws:autoscaling:us-west-2:1234567890:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1"
+    sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1"
 auto_scaling_group_name:
     description: Name of autoscaling group
     returned: success
@@ -279,7 +279,7 @@ def find_asgs(conn, module, name=None, tags=None):
         [
             {
                 "auto_scaling_group_arn": (
-                    "arn:aws:autoscaling:us-west-2:275977225706:autoScalingGroup:58abc686-9783-4528-b338-3ad6f1cbbbaf:"
+                    "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:58abc686-9783-4528-b338-3ad6f1cbbbaf:"
                     "autoScalingGroupName/public-webapp-production"
                 ),
                 "auto_scaling_group_name": "public-webapp-production",

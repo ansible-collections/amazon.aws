@@ -2,6 +2,7 @@
   ec2_ami_info:
     filters:
       architecture: x86_64
+      # CentOS Community Platform Engineering (CPE)
       owner-id: '125523088429'
       virtualization-type: hvm
       root-device-type: ebs

@@ -16,8 +16,8 @@ mkdir recording
 ansible-playbook main.yml -vvv
 account_id=$(aws sts get-caller-identity --query "Account" --output text)
 user_id=$(aws sts get-caller-identity --query "UserId" --output text)
-find recording -type f -exec sed -i "s,$account_id,1111111111111,g" "{}" \;
-find recording -type f -exec sed -i "s,$user_id,AWZBREIZHEOMABRONIFVGFS6GH,g" "{}" \;
+find recording -type f -exec sed -i "s,$account_id,123456789012,g" "{}" \;
+find recording -type f -exec sed -i "s,$user_id,AIDA12345EXAMPLE54321,g" "{}" \;
 find recording -type f -exec sed -i "s,$USER,george,g" "{}" \;
 tar cfzv recording.tar.gz recording
 rm -r recording

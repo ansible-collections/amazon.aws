@@ -119,7 +119,7 @@ ansible_facts:
         ansible_ec2_iam_info_instanceprofilearn:
             description: The IAM instance profile ARN.
             type: str
-            sample: "arn:aws:iam::<account id>:instance-profile/role_name"
+            sample: "arn:aws:iam::123456789012:instance-profile/role_name"
         ansible_ec2_iam_info_instanceprofileid:
             description: IAM instance profile ID.
             type: str
@@ -181,7 +181,7 @@ ansible_facts:
         ansible_ec2_instance_identity_document_accountid:
             description: ""
             type: str
-            sample: "012345678901"
+            sample: "123456789012"
         ansible_ec2_instance_identity_document_architecture:
             description: Instance system architecture.
             type: str
@@ -315,7 +315,7 @@ ansible_facts:
                 - In multiple-interface environments, an interface can be attached by a third party, such as Elastic Load Balancing.
                 - Traffic on an interface is always billed to the interface owner.
             type: str
-            sample: "01234567890"
+            sample: "123456789012"
         ansible_ec2_network_interfaces_macs_mac_address_public_hostname:
             description:
                 - The interface's public DNS (IPv4). If the instance is in a VPC,

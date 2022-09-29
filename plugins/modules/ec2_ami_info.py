@@ -132,7 +132,7 @@ images:
       description: The location of the AMI.
       returned: always
       type: str
-      sample: 408466080000/Webapp
+      sample: 123456789012/Webapp
     image_type:
       description: The type of image.
       returned: always
@@ -150,7 +150,7 @@ images:
         user_id:
             description: An AWS account ID with permissions to launch the AMI.
             type: str
-      sample: [{"group": "all"}, {"user_id": "408466080000"}]
+      sample: [{"group": "all"}, {"user_id": "123456789012"}]
     name:
       description: The name of the AMI that was provided during image creation.
       returned: always
@@ -160,7 +160,7 @@ images:
       description: The AWS account ID of the image owner.
       returned: always
       type: str
-      sample: '408466080000'
+      sample: '123456789012'
     public:
       description: Whether the image has public launch permissions.
       returned: always

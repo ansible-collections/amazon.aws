@@ -70,7 +70,7 @@ iam_users:
             description: the ARN of the user
             returned: if user exists
             type: str
-            sample: "arn:aws:iam::156360693172:user/dev/test_user"
+            sample: "arn:aws:iam::123456789012:user/dev/test_user"
         create_date:
             description: the datetime user was created
             returned: if user exists

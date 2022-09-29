@@ -43,7 +43,7 @@ EXAMPLES = r'''
 - name: Gather information about a particular ALB given its ARN
   amazon.aws.elb_application_lb_info:
     load_balancer_arns:
-      - "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-alb/aabbccddeeff"
+      - "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-alb/aabbccddeeff"
 
 - name: Gather information about ALBs named 'alb1' and 'alb2'
   amazon.aws.elb_application_lb_info:
@@ -153,7 +153,7 @@ load_balancers:
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
             type: str
-            sample: "arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-alb/001122334455"
+            sample: "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-alb/001122334455"
         load_balancer_name:
             description: The name of the load balancer.
             type: str
