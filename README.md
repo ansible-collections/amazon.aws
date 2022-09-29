@@ -3,15 +3,11 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 
 AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
 
-<!--start requires_ansible-->
 ## Ansible version compatibility
 
-This collection has been tested against following Ansible versions: **>=2.9.10**.
+Tested with the Ansible Core 2.12, and 2.13 releases, and the current development version of Ansible. Ansible Core versions before 2.11.0 are not supported. In particular, Ansible Core 2.10 and Ansible 2.9 are not supported.
 
-Plugins and modules within a collection may be tested with only specific Ansible versions.
-A collection may contain metadata that identifies these versions.
-PEP440 is the schema used to describe the versions of Ansible.
-<!--end requires_ansible-->
+Use amazon.aws 4.x.y if you are using Ansible 2.9 or Ansible Core 2.10.
 
 ## Python version compatibility
 
