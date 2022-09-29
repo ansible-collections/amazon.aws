@@ -40,11 +40,11 @@
           assert:
             that:
               - "'aws_ec2' in groups"
-              - groups['aws_ec2'] | length == 2
+              - groups['aws_ec2'] | length == 1
               - "'Test1' in groups['aws_ec2']"
-              - "'Test2' in groups['aws_ec2']"
+              - "'Test2' not in groups['aws_ec2']"
               - "'Test1' in hostvars"
-              - "'Test2' in hostvars"
+              - "'Test2' not in hostvars"
 
       always:
 
