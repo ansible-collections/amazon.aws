@@ -798,7 +798,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 hostvars_suffix=hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys):
             self.inventory.add_host(name, group=group)
-            assert isinstance(host_vars, dict)
             for k, v in host_vars.items():
                 self.inventory.set_variable(name, k, v)
 

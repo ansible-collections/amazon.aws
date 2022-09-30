@@ -349,13 +349,14 @@ def test_add_host_with_hostnames_and_two_matching_criteria_and_allow_duplicated_
     inventory.inventory.add_host.assert_any_call("name-from-tag-Name", group="aws_ec2")
 
 
-def test_sanityize_hostname(inventory):
+def test_sanitize_hostname(inventory):
     assert inventory._sanitize_hostname(1) == "1"
     assert inventory._sanitize_hostname("a:b") == "a_b"
     assert inventory._sanitize_hostname("a:/b") == "a__b"
+    assert inventory._sanitize_hostname("example") == "example"
 
 
-def test_sanityize_hostname_legacy(inventory):
+def test_sanitize_hostname_legacy(inventory):
     inventory._sanitize_group_name = (
         inventory._legacy_script_compatible_group_sanitization
     )
