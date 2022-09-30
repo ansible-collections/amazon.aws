@@ -429,11 +429,12 @@ See exception handling:</p>
 </div>
 <section id="common-documentation-fragments-for-connection-parameters">
 <h3><a class="toc-backref" href="#id18">Common Documentation Fragments for Connection Parameters</a><a class="headerlink" href="#common-documentation-fragments-for-connection-parameters" title="Permalink to this heading"></a></h3>
-<p>There are two <a class="reference external" href="https://docs.ansible.com/ansible/devel/dev_guide/developing_modules_documenting.html#module-docs-fragments" title="(in Ansible vdevel)"><span class="xref std std-ref">common documentation fragments</span></a>
+<p>There are four <a class="reference external" href="https://docs.ansible.com/ansible/devel/dev_guide/developing_modules_documenting.html#module-docs-fragments" title="(in Ansible vdevel)"><span class="xref std std-ref">common documentation fragments</span></a>
 that should be included into almost all AWS modules:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">aws</span></code> - contains the common boto3 connection parameters</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ec2</span></code> - contains the common region parameter required for many AWS modules</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">boto3</span></code> - contains the minimum requirements for the collection</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tags</span></code> - contains the common tagging parameters used by many AWS modules</p></li>
 </ul>
 <p>These fragments should be used rather than re-documenting these properties to ensure consistency
@@ -444,6 +445,7 @@ and that the more esoteric connection options are documented. For example:</p>
 <span class="s1">extends_documentation_fragment:</span>
 <span class="s1">    - amazon.aws.aws</span>
 <span class="s1">    - amazon.aws.ec2</span>
+<span class="s1">    - amazon.aws.boto3</span>
 <span class="s1">&#39;&#39;&#39;</span>
 </pre></div>
 </div>
