@@ -27,7 +27,6 @@ def setup_testing(module_params):
     paginate = MagicMock(name="paginator.paginate")
     connection.get_paginator.return_value = conn_paginator
     conn_paginator.paginate.return_value = paginate
-    # paginate.build_full_result.return_value = list_layers_versions_paginate_result
     connection.delete_layer_version.return_value = None
 
     return module, connection, conn_paginator, paginate
