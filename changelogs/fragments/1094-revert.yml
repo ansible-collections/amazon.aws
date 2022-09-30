@@ -1,0 +1,2 @@
+trivial:
+- revert Work around for #1083 (https://github.com/ansible-collections/amazon.aws/pull/1094).
