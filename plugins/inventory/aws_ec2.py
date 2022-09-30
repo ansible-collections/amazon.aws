@@ -730,7 +730,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         return {'aws_ec2': instances}
 
-    def _populate(self, groups, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def _populate(self, groups, hostnames, allow_duplicated_hosts=False,
+                  hostvars_prefix=None, hostvars_suffix=None,
+                  use_contrib_script_compatible_ec2_tag_keys=False):
         for group in groups:
             group = self.inventory.add_group(group)
             self._add_hosts(
@@ -743,9 +745,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys)
             self.inventory.add_child('all', group)
 
-
     @classmethod
-    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None,
+                          use_contrib_script_compatible_ec2_tag_keys=False):
         host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=['Tags'])
         host_vars['tags'] = boto3_tag_list_to_ansible_dict(original_host_vars.get('Tags', []))
 
@@ -767,7 +769,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         return host_vars
 
-    def iter_entry(self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def iter_entry(self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None,
+                   hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
         for host in hosts:
             if allow_duplicated_hosts:
                 hostname_list = self.get_all_hostnames(host, hostnames)
@@ -784,11 +787,16 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             for name in hostname_list:
                 yield to_text(name), host_vars
 
-    def _add_hosts(self, hosts, group, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def _add_hosts(self, hosts, group, hostnames, allow_duplicated_hosts=False,
+                   hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
         '''
             :param hosts: a list of hosts to be added to a group
             :param group: the name of the group to which the hosts belong
             :param hostnames: a list of hostname destination variables in order of preference
+            :param bool allow_duplicated_hosts: if true, accept same host with different names
+            :param str hostvars_prefix: starts the hostvars variable name with this prefix
+            :param str hostvars_suffix: ends the hostvars variable name with this suffix
+            :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
         '''
 
         for name, host_vars in self.iter_entry(
