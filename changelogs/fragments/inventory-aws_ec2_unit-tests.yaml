@@ -1,0 +1,3 @@
+---
+trivial:
+- inventory/aws_ec2 - Expand unit tests. 
