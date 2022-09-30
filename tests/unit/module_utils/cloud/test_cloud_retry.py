@@ -6,10 +6,11 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
-import pytest
 import random
 from datetime import datetime
+import pytest
+
+from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
 class CloudRetryTestSuite():
