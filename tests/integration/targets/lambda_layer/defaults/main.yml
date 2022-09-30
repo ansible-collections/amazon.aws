@@ -1,0 +1,10 @@
+---
+lambda_hander_content: |
+  # Copyright: Ansible Project
+  # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+  import logging
+  from datetime import datetime
+  logger = logging.getLogger()
+  logger.setLevel(logging.INFO)
+  def lambda_handler(event, context):
+      logger.info('Ansible amazon.aws collection lambda handler executed at {0}'.format(datetime.now().strftime("%y%m%d-%H%M%S")))
