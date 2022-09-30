@@ -386,7 +386,6 @@ def test_sanityize_hostname_legacy(inventory):
                     "region": "us-east-1",
                 },
                 "pretagspost": {"Name": "my-name"},
-                "premy_varpost": 1,
             },
         ),
         (
