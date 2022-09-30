@@ -126,6 +126,18 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
+@AWSRetry.jittered_backoff()
+def _list_layer_versions(client, **params):
+    paginator = client.get_paginator('list_layer_versions')
+    return paginator.paginate(**params).build_full_result()
+
+
+@AWSRetry.jittered_backoff()
+def _list_layers(client, **params):
+    paginator = client.get_paginator('list_layers')
+    return paginator.paginate(**params).build_full_result()
+
+
 def list_layer_versions(module, lambda_client):
 
     params = dict(LayerName=module.params.get("name"))
@@ -134,8 +146,7 @@ def list_layer_versions(module, lambda_client):
     if module.params.get("compatible_architecture"):
         params["CompatibleArchitecture"] = module.params.get("compatible_architecture")
     try:
-        paginator = lambda_client.get_paginator('list_layer_versions')
-        layer_versions = paginator.paginate(**params).build_full_result()['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to list layer versions for name {0}".format(module.params.get("name")))
@@ -149,8 +160,7 @@ def list_layers(module, lambda_client):
     if module.params.get("compatible_architecture"):
         params["CompatibleArchitecture"] = module.params.get("compatible_architecture")
     try:
-        paginator = lambda_client.get_paginator('list_layers')
-        layers = paginator.paginate(**params).build_full_result()['Layers']
+        layers = _list_layers(lambda_client, **params)['Layers']
         layer_versions = []
         for layer in layers:
             layer.update(layer.pop("LatestMatchingVersion", None))
@@ -181,7 +191,7 @@ def main():
         supports_check_mode=True,
     )
 
-    lambda_client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+    lambda_client = module.client('lambda')
     execute_module(module, lambda_client)
 
 

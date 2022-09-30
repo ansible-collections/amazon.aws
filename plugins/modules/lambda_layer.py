@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: lambda_layer
 version_added: 5.0.0
-short_description: Creates AWS Lambda layer or deletes AWS Lambda layer version
+short_description: Creates an AWS Lambda layer or deletes an AWS Lambda layer version
 description:
   - This module allows the management of AWS Lambda functions aliases via the Ansible
   - Creates an Lambda layer from a ZIP archive.
@@ -223,12 +223,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
+@AWSRetry.jittered_backoff()
+def _list_layer_versions(client, **params):
+    paginator = client.get_paginator('list_layer_versions')
+    return paginator.paginate(**params).build_full_result()
+
+
 def list_layer_versions(module, lambda_client):
 
     try:
         params = dict(LayerName=module.params.get("name"))
-        paginator = lambda_client.get_paginator('list_layer_versions')
-        layer_versions = paginator.paginate(**params).build_full_result()['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to list layer versions for name {0}".format(module.params.get("name")))
@@ -267,7 +272,7 @@ def create_layer_version(module, lambda_client):
             content[d] = module.params["content"].get(k)
     params["Content"] = content
     try:
-        layer_version = lambda_client.publish_layer_version(**params)
+        layer_version = lambda_client.publish_layer_version(aws_retry=True, **params)
         layer_version.pop("ResponseMetadata", None)
         module.exit_json(changed=True, layer_version=camel_dict_to_snake_dict(layer_version))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -286,7 +291,7 @@ def delete_layer_version(module, lambda_client):
             if not module.check_mode:
                 params = dict(LayerName=module.params.get("name"), VersionNumber=version)
                 try:
-                    lambda_client.delete_layer_version(**params)
+                    lambda_client.delete_layer_version(aws_retry=True, **params)
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                     module.fail_json_aws(e, msg="Failed to delete layer version.")
     module.exit_json(changed=changed, layer_version=layer_version_instance)
@@ -342,7 +347,7 @@ def main():
         supports_check_mode=True,
     )
 
-    lambda_client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+    lambda_client = module.client('lambda')
     execute_module(module, lambda_client)
 
 

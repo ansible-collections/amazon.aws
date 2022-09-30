@@ -70,6 +70,8 @@ action_groups:
   - lambda_event
   - lambda_execute
   - lambda_info
+  - lambda_layer
+  - lambda_layer_info
   - lambda_policy
   - rds_cluster
   - rds_cluster_info
@@ -89,8 +91,6 @@ action_groups:
   - s3_bucket
   - s3_object
   - s3_object_info
-  - lambda_layer
-  - lambda_layer_info
 plugin_routing:
   action:
     aws_s3:
