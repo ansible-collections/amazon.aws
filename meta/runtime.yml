@@ -90,6 +90,7 @@ action_groups:
   - s3_object
   - s3_object_info
   - lambda_layer
+  - lambda_layer_info
 plugin_routing:
   action:
     aws_s3:
