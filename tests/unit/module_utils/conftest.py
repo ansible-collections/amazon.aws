@@ -7,10 +7,12 @@ __metaclass__ = type
 import json
 import sys
 from io import BytesIO
+import warnings
 
 import pytest
 
 import ansible.module_utils.basic
+import ansible.module_utils.common
 from ansible.module_utils.six import PY3, string_types
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common._collections_compat import MutableMapping
@@ -22,6 +24,13 @@ def stdin(mocker, request):
     ansible.module_utils.basic._ANSIBLE_ARGS = None
     old_argv = sys.argv
     sys.argv = ['ansible_unittest']
+
+    for var in ["_global_warnings", "_global_deprecations"]:
+        if hasattr(ansible.module_utils.common.warnings, var):
+            setattr(ansible.module_utils.common.warnings, var, [])
+        else:
+            # No need to reset the value
+            warnings.warn("deprecated")
 
     if isinstance(request.param, string_types):
         args = request.param
