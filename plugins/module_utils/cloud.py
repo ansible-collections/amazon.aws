@@ -32,12 +32,7 @@ __metaclass__ = type
 import time
 import functools
 import random
-
-try:
-    import ansible.module_utils.common.warnings as ansible_warnings
-    ANCIENT_ANSIBLE = False
-except ImportError:
-    ANCIENT_ANSIBLE = True
+import ansible.module_utils.common.warnings as ansible_warnings
 
 
 class BackoffIterator:
@@ -205,10 +200,9 @@ class CloudRetry:
         """
         # This won't emit a warning (we don't have the context available to us), but will trigger
         # sanity failures as we prepare for 6.0.0
-        if not ANCIENT_ANSIBLE:
-            ansible_warnings.deprecate(
-                'CloudRetry.backoff has been deprecated, please use CloudRetry.exponential_backoff instead',
-                version='6.0.0', collection_name='amazon.aws')
+        ansible_warnings.deprecate(
+            'CloudRetry.backoff has been deprecated, please use CloudRetry.exponential_backoff instead',
+            version='6.0.0', collection_name='amazon.aws')
 
         return cls.exponential_backoff(
             retries=tries,
