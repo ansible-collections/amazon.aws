@@ -58,7 +58,7 @@ notes:
 extends_documentation_fragment:
   - inventory_cache
   - constructed
-  - amazon.aws.aws_boto3
+  - amazon.aws.boto3
   - amazon.aws.aws_credentials
 author:
   - Sloane Hertel (@s-hertel)

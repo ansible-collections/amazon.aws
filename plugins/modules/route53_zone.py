@@ -50,6 +50,7 @@ extends_documentation_fragment:
     - amazon.aws.aws
     - amazon.aws.ec2
     - amazon.aws.tags
+    - amazon.aws.boto3
 notes:
     - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 author:

@@ -140,6 +140,7 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.tags
+  - amazon.aws.boto3
 
 notes:
   - There are known inconsistencies in the amount of time required for updates of KMS keys to be fully reflected on AWS.

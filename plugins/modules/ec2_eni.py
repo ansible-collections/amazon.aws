@@ -118,6 +118,7 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.tags
+  - amazon.aws.boto3
 notes:
   - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
     or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.

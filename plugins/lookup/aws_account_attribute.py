@@ -8,7 +8,7 @@ name: aws_account_attribute
 author:
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
 extends_documentation_fragment:
-  - amazon.aws.aws_boto3
+  - amazon.aws.boto3
   - amazon.aws.aws_credentials
   - amazon.aws.aws_region
 short_description: Look up AWS account attributes

@@ -163,6 +163,7 @@ author:
 - Mike Buzzetti (@jimbydamonk)
 extends_documentation_fragment:
 - amazon.aws.aws
+- amazon.aws.boto3
 '''
 
 RETURN = r'''

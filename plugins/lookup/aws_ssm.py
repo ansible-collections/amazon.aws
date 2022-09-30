@@ -72,7 +72,7 @@ options:
     type: string
     version_added: 3.3.0
 extends_documentation_fragment:
-  - amazon.aws.aws_boto3
+  - amazon.aws.boto3
 '''
 
 EXAMPLES = '''
