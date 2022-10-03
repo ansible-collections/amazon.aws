@@ -774,9 +774,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         for host in hosts:
             if allow_duplicated_hosts:
                 hostname_list = self.get_all_hostnames(host, hostnames)
-            elif preferred_hostname := self._get_preferred_hostname(host, hostnames):
-                hostname_list = [preferred_hostname]
             else:
+                hostname_list = [self._get_preferred_hostname(host, hostnames)]
+            if not hostname_list or hostname_list[0] is None:
                 continue
 
             host_vars = self.prepare_host_vars(
