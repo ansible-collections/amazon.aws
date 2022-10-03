@@ -6,8 +6,13 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from contextlib import nullcontext
+import sys
 import pytest
+
+if sys.version_info < (3, 7):
+    pytest.skip("contextlib.nullcontext was introduced in Python 3.7", allow_module_level=True)
+
+from contextlib import nullcontext
 
 try:
     import botocore
