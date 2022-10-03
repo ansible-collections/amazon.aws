@@ -36,15 +36,15 @@ options:
   description:
     description:
     - The description of the version.
-    - Ignored when C(state) is set to I(absent).
-    - Mutually exclusive with C(version).
+    - Ignored when I(state=absent).
+    - Mutually exclusive with I(version).
     type: str
   content:
     description:
     - The function layer archive.
-    - Required when I(state) is set to C(present).
-    - Ignored when I(state) is set to C(absent).
-    - Mutually exclusive with C(version).
+    - Required when I(state=present).
+    - Ignored when I(state=absent).
+    - Mutually exclusive with I(version).
     type: dict
     suboptions:
       s3_bucket:
@@ -66,34 +66,36 @@ options:
   compatible_runtimes:
     description:
     - A list of compatible function runtimes.
-    - Ignored when C(state) is set to I(absent).
-    - Mutually exclusive with C(version).
+    - Ignored when I(state=absent).
+    - Mutually exclusive with I(version).
     type: list
     elements: str
   license_info:
     description:
     - The layer's software license. It can be any of an SPDX license identifier,
       the URL of a license hosted on the internet or the full text of the license.
-    - Ignored when C(state) is set to I(absent).
-    - Mutually exclusive with C(version).
+    - Ignored when I(state=absent).
+    - Mutually exclusive with I(version).
     type: str
   compatible_architectures:
     description:
     - A list of compatible instruction set architectures. For example, x86_64.
-    - Mutually exclusive with C(version).
+    - Mutually exclusive with I(version).
     type: list
     elements: str
   version:
     description:
     - The version number of the layer to delete.
-    - Required when C(state) is set to I(absent).
-    - Ignored when C(state) is set to I(present).
-    - Mutually exclusive with C(description), C(content), C(compatible_runtimes),
-      C(license_info), C(compatible_architectures).
+    - Set to C(-1) to delete all versions for the specified layer name.
+    - Required when I(state=absent).
+    - Ignored when I(state=present).
+    - Mutually exclusive with I(description), I(content), I(compatible_runtimes),
+      I(license_info), I(compatible_architectures).
     type: int
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.aws_boto3
 
 '''
 
@@ -101,7 +103,7 @@ EXAMPLES = '''
 ---
 # Create a new Python library layer version from a zip archive located into a S3 bucket
 - name: Create a new python library layer
-  lambda_layer:
+  amazon.aws.lambda_layer:
     state: present
     name: sample-layer
     description: 'My Python layer'
@@ -117,7 +119,7 @@ EXAMPLES = '''
 
 # Create a layer version from a zip in the local filesystem
 - name: Create a new layer from a zip in the local filesystem
-  lambda_layer:
+  amazon.aws.lambda_layer:
     state: present
     name: sample-layer
     description: 'My Python layer'
@@ -132,17 +134,25 @@ EXAMPLES = '''
 
 # Delete a layer version
 - name: Delete a layer version
-  lambda_layer:
-    state: present
+  amazon.aws.lambda_layer:
+    state: absent
     name: sample-layer
     version: 2
+
+# Delete all versions of test-layer
+- name: Delete all versions
+  amazon.aws.lambda_layer:
+    state: absent
+    name: test-layer
+    version: -1
 '''
 
 RETURN = '''
 layer_version:
   description: info about the layer version that was created or deleted.
   returned: always
-  type: complex
+  type: list
+  elements: dict
   contains:
     content:
         description: Details about the layer version.
@@ -194,7 +204,7 @@ layer_version:
     version:
         description: The version number.
         returned: if the layer version exists or has been created
-        type: str
+        type: int
         sample: 1
     compatible_runtimes:
         description: A list of compatible runtimes.
@@ -272,9 +282,9 @@ def create_layer_version(module, lambda_client):
             content[d] = module.params["content"].get(k)
     params["Content"] = content
     try:
-        layer_version = lambda_client.publish_layer_version(aws_retry=True, **params)
+        layer_version = lambda_client.publish_layer_version(**params)
         layer_version.pop("ResponseMetadata", None)
-        module.exit_json(changed=True, layer_version=camel_dict_to_snake_dict(layer_version))
+        module.exit_json(changed=True, layer_versions=[camel_dict_to_snake_dict(layer_version)])
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to publish a new layer version (check that you have required permissions).")
 
@@ -282,19 +292,19 @@ def create_layer_version(module, lambda_client):
 def delete_layer_version(module, lambda_client):
     layer_versions = list_layer_versions(module, lambda_client)
     version = module.params.get("version")
-    layer_version_instance = dict()
+    deleted_versions = []
     changed = False
     for layer in layer_versions:
-        if layer["version"] == version:
-            layer_version_instance = layer
+        if version == -1 or layer["version"] == version:
+            deleted_versions.append(layer)
             changed = True
             if not module.check_mode:
-                params = dict(LayerName=module.params.get("name"), VersionNumber=version)
+                params = dict(LayerName=module.params.get("name"), VersionNumber=layer["version"])
                 try:
-                    lambda_client.delete_layer_version(aws_retry=True, **params)
+                    lambda_client.delete_layer_version(**params)
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                     module.fail_json_aws(e, msg="Failed to delete layer version.")
-    module.exit_json(changed=changed, layer_version=layer_version_instance)
+    module.exit_json(changed=changed, layer_versions=deleted_versions)
 
 
 def execute_module(module, lambda_client):

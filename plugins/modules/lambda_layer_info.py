@@ -26,21 +26,22 @@ options:
   compatible_runtime:
     description:
     - A runtime identifier.
-    - Specify this option without C(name) to list only latest layers versions of layers that indicate
+    - Specify this option without I(name) to list only latest layers versions of layers that indicate
       that they're compatible with that runtime.
-    - Specify this option with C(name) to list only layer versions that indicate that
+    - Specify this option with I(name) to list only layer versions that indicate that
       they're compatible with that runtime.
     type: str
   compatible_architecture:
     description:
     - A compatible instruction set architectures.
-    - Specify this option without C(name) to include only to list only latest layers versions of layers that
+    - Specify this option without I(name) to include only to list only latest layers versions of layers that
       are compatible with that instruction set architecture.
-    - Specify this option with C(name) to include only layer versions that are compatible with that architecture.
+    - Specify this option with I(name) to include only layer versions that are compatible with that architecture.
     type: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.aws_boto3
 
 '''
 
@@ -48,22 +49,22 @@ EXAMPLES = '''
 ---
 # Display information about the versions for the layer named blank-java-lib
 - name: Retrieve layer versions
-  lambda_layer_info:
+  amazon.aws.lambda_layer_info:
     name: blank-java-lib
 
 # Display information about the versions for the layer named blank-java-lib compatible with architecture x86_64
 - name: Retrieve layer versions
-  lambda_layer_info:
+  amazon.aws.lambda_layer_info:
     name: blank-java-lib
     compatible_architecture: x86_64
 
 # list latest versions of available layers
 - name: list latest versions for all layers
-  lambda_layer_info:
+  amazon.aws.lambda_layer_info:
 
 # list latest versions of available layers compatible with runtime python3.7
 - name: list latest versions for all layers
-  lambda_layer_info:
+  amazon.aws.lambda_layer_info:
     compatible_runtime: python3.7
 '''
 
@@ -97,7 +98,7 @@ layers_versions:
     version:
         description: The version number.
         returned: if the layer version exists or has been created
-        type: str
+        type: int
         sample: 1
     compatible_runtimes:
         description: A list of compatible runtimes.

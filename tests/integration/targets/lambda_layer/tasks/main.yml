@@ -1,10 +1,11 @@
 ---
 - module_defaults:
     group/aws:
-      aws_access_key: '{{ aws_access_key | default(omit) }}'
-      aws_secret_key: '{{ aws_secret_key | default(omit) }}'
-      security_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region | default(omit) }}'
+      # aws_access_key: '{{ aws_access_key | default(omit) }}'
+      # aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+      # security_token: '{{ security_token | default(omit) }}'
+      # region: '{{ aws_region | default(omit) }}'
+      aws_profile: "eu_london"
 
   collections:
     - amazon.aws
@@ -103,9 +104,11 @@
       assert:
         that:
           - '"layers_versions" in layers'
-          - last_version.layer_version.layer_arn in layers_arns
-          - last_version.layer_version.layer_version_arn in layers_version_arns
-          - first_version.layer_version.layer_version_arn not in layers_version_arns
+          - first_version.layer_versions | length == 1
+          - last_version.layer_versions | length == 1
+          - last_version.layer_versions.0.layer_arn in layers_arns
+          - last_version.layer_versions.0.layer_version_arn in layers_version_arns
+          - first_version.layer_versions.0.layer_version_arn not in layers_version_arns
       vars:
         layers_arns: '{{ layers.layers_versions | map(attribute="layer_arn") | list }}'
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
@@ -120,15 +123,17 @@
         that:
           - '"layers_versions" in layers'
           - layers.layers_versions | length == 2
-          - last_version.layer_version.layer_version_arn in layers_version_arns
-          - first_version.layer_version.layer_version_arn in layers_version_arns
+          - first_version.layer_versions | length == 1
+          - last_version.layer_versions | length == 1
+          - last_version.layer_versions.0.layer_version_arn in layers_version_arns
+          - first_version.layer_versions.0.layer_version_arn in layers_version_arns
       vars:
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete latest layer version
       lambda_layer:
         name: "{{ layer_name }}"
-        version: "{{ last_version.layer_version.version }}"
+        version: "{{ last_version.layer_versions.0.version }}"
         state: absent
       check_mode: true
       register: delete_check_mode
@@ -138,20 +143,21 @@
         name: "{{ layer_name }}"
       register: layers
 
-    - name: Ensure layer still contains the same number of versions
+    - name: Ensure no layer version was deleted
       assert:
         that:
           - delete_check_mode is changed
+          - delete_check_mode.layer_versions | length == 1
           - layers.layers_versions | length == 2
-          - last_version.layer_version.layer_version_arn in layers_version_arns
-          - first_version.layer_version.layer_version_arn in layers_version_arns
+          - last_version.layer_versions.0.layer_version_arn in layers_version_arns
+          - first_version.layer_versions.0.layer_version_arn in layers_version_arns
       vars:
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete latest layer version
       lambda_layer:
         name: "{{ layer_name }}"
-        version: "{{ last_version.layer_version.version }}"
+        version: "{{ last_version.layer_versions.0.version }}"
         state: absent
       register: delete_layer
 
@@ -160,20 +166,21 @@
         name: "{{ layer_name }}"
       register: layers
 
-    - name: Ensure layer still contains the same number of versions
+    - name: Ensure latest layer version was deleted
       assert:
         that:
           - delete_layer is changed
+          - delete_layer.layer_versions | length == 1
           - layers.layers_versions | length == 1
-          - last_version.layer_version.layer_version_arn not in layers_version_arns
-          - first_version.layer_version.layer_version_arn in layers_version_arns
+          - last_version.layer_versions.0.layer_version_arn not in layers_version_arns
+          - first_version.layer_versions.0.layer_version_arn in layers_version_arns
       vars:
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete again the latest layer version (idempotency)
       lambda_layer:
         name: "{{ layer_name }}"
-        version: "{{ last_version.layer_version.version }}"
+        version: "{{ last_version.layer_versions.0.version }}"
         state: absent
       register: delete_idempotent
 
@@ -182,10 +189,22 @@
         that:
           - delete_idempotent is not changed
 
-    - name: Delete first layer version
+    - name: Create multiple lambda layer versions
       lambda_layer:
         name: "{{ layer_name }}"
-        version: "{{ first_version.layer_version.version }}"
+        description: '{{ resource_prefix }} lambda layer version compatible with python3.{{ item }}'
+        content:
+          s3_bucket: "{{ s3_bucket_name }}"
+          s3_key: "{{ s3_bucket_object }}"
+        compatible_runtimes:
+          - "python3.{{ item }}"
+        license_info: GPL-3.0-only
+      with_items: ["9", "10"]
+
+    - name: Delete all layer versions
+      lambda_layer:
+        name: "{{ layer_name }}"
+        version: -1
         state: absent
       register: delete_layer
 
@@ -198,9 +217,17 @@
       assert:
         that:
           - delete_layer is changed
+          - delete_layer.layer_versions | length > 1
           - layers.layers_versions | length == 0
 
   always:
+    - name: Delete lambda layer if not deleted during testing
+      lambda_layer:
+        name: "{{ layer_name }}"
+        version: -1
+        state: absent
+      ignore_errors: true
+
     - name: Delete temporary directory
       file:
         state: absent
