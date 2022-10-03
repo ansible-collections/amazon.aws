@@ -156,7 +156,6 @@ def test_delete_layer_existing_version():
     lambda_client.delete_layer_version.assert_called_with(
         LayerName="testlayer",
         VersionNumber=2,
-        aws_retry=True,
     )
     module.exit_json.assert_called_with(
         changed=True,
@@ -387,7 +386,6 @@ def test_create_layer_using_s3_bucket():
             S3Key="mybucket-key",
             S3ObjectVersion="v1"
         ),
-        aws_retry=True,
     )
 
     module.exit_json.assert_called_with(
@@ -481,7 +479,6 @@ def test_create_layer_using_zip_file():
             Content=dict(
                 ZipFile=zip_file_content
             ),
-            aws_retry=True,
         )
 
         module.exit_json.assert_called_with(
