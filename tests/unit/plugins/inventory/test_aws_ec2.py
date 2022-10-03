@@ -499,6 +499,7 @@ def test_query_empty_include_exclude(inventory):
     result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [{"tag:Name": ["foobar"]}], strict_permissions=True)
     assert result == {"aws_ec2": []}
 
+
 def test_include_extra_api_calls_deprecated(inventory):
     inventory.display.deprecate = Mock()
     inventory._read_config_data = Mock()
