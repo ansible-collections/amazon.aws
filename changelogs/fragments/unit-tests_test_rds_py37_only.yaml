@@ -1,0 +1,3 @@
+---
+trivial:
+- "module_utils/test_rds.py unit-tests only works with Python 3.7." 
