@@ -103,6 +103,7 @@ options:
     description:
       - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
       - Spot instances may be persistent and instances may have associated events.
+      - The I(include_extra_api_calls) option had been deprecated and will be removed in release 6.0.0.
     type: bool
     default: False
   strict_permissions:
@@ -566,8 +567,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                     new_instances = r['Instances']
                     for instance in new_instances:
                         instance.update(self._get_reservation_details(r))
-                        if self.get_option('include_extra_api_calls'):
-                            instance.update(self._get_event_set_and_persistence(connection, instance['InstanceId'], instance.get('SpotInstanceRequestId')))
                     instances.extend(new_instances)
             except botocore.exceptions.ClientError as e:
                 if e.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict_permissions:
@@ -587,29 +586,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             'RequesterId': reservation.get('RequesterId', ''),
             'ReservationId': reservation['ReservationId']
         }
-
-    def _get_event_set_and_persistence(self, connection, instance_id, spot_instance):
-        host_vars = {'Events': '', 'Persistent': False}
-        try:
-            kwargs = {'InstanceIds': [instance_id]}
-            host_vars['Events'] = connection.describe_instance_status(**kwargs)['InstanceStatuses'][0].get('Events', '')
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            if not self.get_option('strict_permissions'):
-                pass
-            else:
-                raise AnsibleError("Failed to describe instance status: %s" % to_native(e))
-        if spot_instance:
-            try:
-                kwargs = {'SpotInstanceRequestIds': [spot_instance]}
-                host_vars['Persistent'] = bool(
-                    connection.describe_spot_instance_requests(**kwargs)['SpotInstanceRequests'][0].get('Type') == 'persistent'
-                )
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                if not self.get_option('strict_permissions'):
-                    pass
-                else:
-                    raise AnsibleError("Failed to describe spot instance requests: %s" % to_native(e))
-        return host_vars
 
     @classmethod
     def _get_tag_hostname(cls, preference, instance):
@@ -908,6 +884,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if cache:
             # get the user-specified directive
             cache = self.get_option('cache')
+
+        if self.get_option('include_extra_api_calls'):
+            self.display.deprecate(
+                "The include_extra_api_calls option has been deprecated "
+                " and will be removed in release 6.0.0.",
+                date='2024-09-01', collection_name='amazon.aws')
 
         # Generate inventory
         cache_needs_update = False
