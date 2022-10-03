@@ -125,6 +125,16 @@ def inventory():
         "compose": {},
         "groups": {},
         "keyed_groups": [],
+        "regions": ["us-east-1"],
+        "filters": [],
+        "include_filters": [],
+        "exclude_filters": [],
+        "hostnames": [],
+        "strict_permissions": False,
+        "allow_duplicated_hosts": False,
+        "cache": False,
+        "include_extra_api_calls": False,
+        "use_contrib_script_compatible_sanitization": False,
     }
     inventory.inventory = MagicMock()
     return inventory
@@ -488,3 +498,16 @@ def test_query_empty_include_exclude(inventory):
     inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_foobar]])
     result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [{"tag:Name": ["foobar"]}], strict_permissions=True)
     assert result == {"aws_ec2": []}
+
+def test_include_extra_api_calls_deprecated(inventory):
+    inventory.display.deprecate = Mock()
+    inventory._read_config_data = Mock()
+    inventory._set_credentials = Mock()
+    inventory._query = Mock(return_value=[])
+
+    inventory.parse(inventory=[], loader=None, path=None)
+    assert inventory.display.deprecate.call_count == 0
+
+    inventory._options["include_extra_api_calls"] = True
+    inventory.parse(inventory=[], loader=None, path=None)
+    assert inventory.display.deprecate.call_count == 1

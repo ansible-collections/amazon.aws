@@ -99,6 +99,13 @@ options:
     elements: dict
     default: []
     version_added: 1.5.0
+  include_extra_api_calls:
+    description:
+      - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
+      - Spot instances may be persistent and instances may have associated events.
+      - The I(include_extra_api_calls) option had been deprecated and will be removed in release 6.0.0.
+    type: bool
+    default: False
   strict_permissions:
     description:
       - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
@@ -877,6 +884,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if cache:
             # get the user-specified directive
             cache = self.get_option('cache')
+
+        if self.get_option('include_extra_api_calls'):
+            self.display.deprecate("The include_extra_api_calls option has been deprecated and will be removed in release 6.0.0.", date='2024-09-01', collection_name='amazon.aws')
 
         # Generate inventory
         cache_needs_update = False
