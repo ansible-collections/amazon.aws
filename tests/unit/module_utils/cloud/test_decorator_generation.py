@@ -7,11 +7,15 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
+import sys
 
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import BackoffIterator
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
+
+if sys.version_info < (3, 8):
+    pytest.skip("accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True)
 
 
 @pytest.fixture
