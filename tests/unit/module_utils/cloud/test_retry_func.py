@@ -7,10 +7,14 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
+import sys
 
 import ansible_collections.amazon.aws.plugins.module_utils.cloud as cloud_utils
 from ansible_collections.amazon.aws.tests.unit.compat.mock import Mock
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
+
+if sys.version_info < (3, 8):
+    pytest.skip("accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True)
 
 
 class ExceptionA(Exception):

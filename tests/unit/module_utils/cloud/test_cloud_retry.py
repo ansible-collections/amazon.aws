@@ -13,7 +13,7 @@ import pytest
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
-class CloudRetryTestSuite():
+class TestCloudRetry():
 
     error_codes = [400, 500, 600]
     custom_error_codes = [100, 200, 300]
@@ -45,9 +45,9 @@ class CloudRetryTestSuite():
         @staticmethod
         def found(response_code, catch_extra_error_codes=None):
             if catch_extra_error_codes:
-                return response_code in catch_extra_error_codes + CloudRetryTestSuite.custom_error_codes
+                return response_code in catch_extra_error_codes + TestCloudRetry.custom_error_codes
             else:
-                return response_code in CloudRetryTestSuite.custom_error_codes
+                return response_code in TestCloudRetry.custom_error_codes
 
     class KeyRetry(CloudRetry):
         base_class = KeyError
@@ -76,12 +76,12 @@ class CloudRetryTestSuite():
     # ========================================================
     def test_retry_backoff(self):
 
-        @CloudRetryTestSuite.UnitTestsRetry.backoff(tries=3, delay=1, backoff=1.1,
-                                                    catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.backoff(tries=3, delay=1, backoff=1.1,
+                                               catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -94,12 +94,12 @@ class CloudRetryTestSuite():
     # ========================================================
     def test_retry_exponential_backoff(self):
 
-        @CloudRetryTestSuite.UnitTestsRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
-                                                                catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
+                                                           catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -110,12 +110,12 @@ class CloudRetryTestSuite():
     def test_retry_exponential_backoff_with_unexpected_exception(self):
         unexpected_except = self.TestException(status=100)
 
-        @CloudRetryTestSuite.UnitTestsRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
-                                                                catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
+                                                           catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter == 0:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 raise unexpected_except
 
@@ -129,12 +129,12 @@ class CloudRetryTestSuite():
     #   retry jittered backoff
     # ========================================================
     def test_retry_jitter_backoff(self):
-        @CloudRetryTestSuite.UnitTestsRetry.jittered_backoff(retries=3, delay=1, max_delay=3,
-                                                             catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.jittered_backoff(retries=3, delay=1, max_delay=3,
+                                                        catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -145,12 +145,12 @@ class CloudRetryTestSuite():
     def test_retry_jittered_backoff_with_unexpected_exception(self):
         unexpected_except = self.TestException(status=100)
 
-        @CloudRetryTestSuite.UnitTestsRetry.jittered_backoff(retries=3, delay=1, max_delay=3,
-                                                             catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.jittered_backoff(retries=3, delay=1, max_delay=3,
+                                                        catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter == 0:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 raise unexpected_except
 
@@ -165,10 +165,10 @@ class CloudRetryTestSuite():
     # ========================================================
     def test_retry_exponential_backoff_custom_class(self):
         def build_response():
-            return dict(response=dict(status=random.choice(CloudRetryTestSuite.custom_error_codes)))
+            return dict(response=dict(status=random.choice(TestCloudRetry.custom_error_codes)))
 
         @self.CustomRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
-                                              catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+                                              catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
@@ -185,10 +185,10 @@ class CloudRetryTestSuite():
     #   Test wrapped function multiple times will restart the sleep
     # =============================================================
     def test_wrapped_function_called_several_times(self):
-        @CloudRetryTestSuite.UnitTestsRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100,
-                                                                catch_extra_error_codes=CloudRetryTestSuite.error_codes)
+        @TestCloudRetry.UnitTestsRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100,
+                                                           catch_extra_error_codes=TestCloudRetry.error_codes)
         def _fail():
-            raise self.TestException(status=random.choice(CloudRetryTestSuite.error_codes))
+            raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
 
         # run the method 3 times and assert that each it is retrying after 2secs
         # the elapsed execution time should be closed to 2sec
@@ -211,8 +211,8 @@ class CloudRetryTestSuite():
         def _fail_exception():
             raise Exception('bang')
 
-        key_retry_decorator = CloudRetryTestSuite.KeyRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
-        key_and_index_retry_decorator = CloudRetryTestSuite.KeyAndIndexRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
+        key_retry_decorator = TestCloudRetry.KeyRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
+        key_and_index_retry_decorator = TestCloudRetry.KeyAndIndexRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
 
         expectations = [
             [key_retry_decorator, _fail_exception, 0, Exception],
@@ -223,11 +223,11 @@ class CloudRetryTestSuite():
             [key_and_index_retry_decorator, _fail_key, 2, KeyError],
         ]
 
-        for expection in expectations:
-            decorator = expection[0]
-            function = expection[1]
-            duration = expection[2]
-            exception = exception[3]
+        for expectation in expectations:
+            decorator = expectation[0]
+            function = expectation[1]
+            duration = expectation[2]
+            exception = expectation[3]
 
             start = datetime.now()
             with pytest.raises(exception):
