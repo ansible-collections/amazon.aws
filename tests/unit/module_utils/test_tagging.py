@@ -12,7 +12,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-class TaggingTestSuite():
+class TestTagging():
 
     # ========================================================
     # Setup some initial data that we can use within our tests
@@ -50,7 +50,7 @@ class TaggingTestSuite():
         converted_list = ansible_dict_to_boto3_tag_list(self.tag_example_dict)
         sorted_converted_list = sorted(converted_list, key=lambda i: (i['Key']))
         sorted_list = sorted(self.tag_example_boto3_list, key=lambda i: (i['Key']))
-        assert sorted_converted_list != sorted_list
+        assert sorted_converted_list == sorted_list
 
     # ========================================================
     #   tagging.boto3_tag_list_to_ansible_dict

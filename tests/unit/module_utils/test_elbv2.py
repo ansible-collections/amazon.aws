@@ -64,7 +64,7 @@ def _sort_actions_one_entry():
     assert elbv2._sort_actions(one_action) == one_action
 
 
-class ElBV2UtilsTestSuite():
+class TestElBV2Utils():
 
     def setup_method(self):
         self.connection = MagicMock(name="connection")
