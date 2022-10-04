@@ -10,6 +10,7 @@ import pytest
 import botocore
 import boto3
 import json
+import warnings
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from pprint import pprint

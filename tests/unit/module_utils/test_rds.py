@@ -7,17 +7,26 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import sys
+import pytest
+
+if sys.version_info < (3, 7):
+    pytest.skip("contextlib.nullcontext was introduced in Python 3.7", allow_module_level=True)
+
 from ansible_collections.amazon.aws.plugins.module_utils import rds
 from ansible_collections.amazon.aws.tests.unit.compat import unittest
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
-
-from contextlib import nullcontext
-import pytest
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 try:
     from botocore.exceptions import ClientError, WaiterError
 except ImportError:
     pass
+
+from contextlib import nullcontext
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_rds.py requires the python modules 'boto3' and 'botocore'")
 
 
 def expected(x):
