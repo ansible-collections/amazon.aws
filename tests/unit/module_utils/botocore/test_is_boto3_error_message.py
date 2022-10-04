@@ -22,7 +22,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_is_boto3_error_message.py requires the python modules 'boto3' and 'botocore'")
 
 
-class Boto3ErrorMessageTestSuite():
+class TestIsBoto3ErrorMessaged():
 
     def _make_denied_exception(self):
         return botocore.exceptions.ClientError(
@@ -91,7 +91,7 @@ class Boto3ErrorMessageTestSuite():
 
         caught_exception = self._do_try_message(thrown_exception, messages_to_catch)
 
-        self.assertEqual(caught_exception, thrown_exception)
+        assert caught_exception == thrown_exception
 
     def test_is_boto3_error_message_single__raise__unexpected(self):
         # error with 'Boom!' as the message, shouldn't match and should fall through
