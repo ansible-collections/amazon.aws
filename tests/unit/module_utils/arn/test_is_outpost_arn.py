@@ -13,6 +13,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_a
 outpost_arn_test_inputs = [
     ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", True),
     ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0123", False),
+    ("arn:aws:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0", False),
+    ("ars:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", False),
+    ("arn:was:outposts:us-east-1:123456789012:outpost/ op-1234567890abcdef0", False),
     ("arn:aws:outpost:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
     ("ars:aws:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
     ("arn:was:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
