@@ -1,3 +1,0 @@
----
-trivial:
-  - "inventory/aws_ec2 - Avoid the := operator (py3.8+) because we still support Python 3.6."

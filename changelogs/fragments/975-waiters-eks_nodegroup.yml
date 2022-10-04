@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils/waiters - Add waiters to manage eks_nodegroup module (https://github.com/ansible-collections/community.aws/pull/1415).

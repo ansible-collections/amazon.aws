@@ -1,3 +1,0 @@
----
-trivial:
-  - "unit-tests: Drop some ``u`` (unicode) string prefix that are not required anymore with Python3 (https://github.com/ansible-collections/amazon.aws/pull/1017)."

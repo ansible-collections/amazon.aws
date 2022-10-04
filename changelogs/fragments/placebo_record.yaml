@@ -1,3 +1,0 @@
----
-minor_changes:
-- Ability to record and replay the API interaction of a module for testing purpose. Show case the feature with an example (https://github.com/ansible-collections/amazon.aws/pull/998).

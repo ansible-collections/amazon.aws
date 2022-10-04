@@ -1,2 +1,0 @@
-trivial:
-- various modules - Update example Account IDs and IAM UUIDs for consistency (https://github.com/ansible-collections/amazon.aws/pull/1070).

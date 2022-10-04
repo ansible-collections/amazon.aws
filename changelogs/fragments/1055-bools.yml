@@ -1,2 +1,0 @@
-trivial:
-- various modules - Adjust booleans from ``yes``/``no`` to ``true``/``false`` in docs (https://github.com/ansible-collections/amazon.aws/pull/1055).

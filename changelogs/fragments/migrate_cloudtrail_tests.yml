@@ -1,2 +1,0 @@
-trivial:
-- cloudtrail - Import the functional tests (https://github.com/ansible-collections/amazon.aws/pull/1035).
