@@ -163,8 +163,9 @@ def list_layers(module, lambda_client):
     try:
         layers = _list_layers(lambda_client, **params)['Layers']
         layer_versions = []
-        for layer in layers:
-            layer.update(layer.pop("LatestMatchingVersion", None))
+        for item in layers:
+            layer = {key: value for key, value in item.items() if key != "LatestMatchingVersion"}
+            layer.update(item.get("LatestMatchingVersion"))
             layer_versions.append(camel_dict_to_snake_dict(layer))
         return layer_versions
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
