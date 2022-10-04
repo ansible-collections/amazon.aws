@@ -6,140 +6,147 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import BackoffIterator
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 
 
-class TestBackoffCreation(object):
-
-    def setup_method(self):
-        self.decorator_generator = MagicMock()
-        self.decorator_generator.return_value = sentinel.decorator
-
-    def test_create_exponential_backoff(self, monkeypatch):
-        decorator_generator = self.decorator_generator
+@pytest.fixture
+def patch_cloud_retry(monkeypatch):
+    """
+    replaces CloudRetry.base_decorator with a MagicMock so that we can exercise the generation of
+    the various "public" decorators.  We can then check that base_decorator was called as expected.
+    Note: this doesn't test the operation of CloudRetry.base_decorator itself, but does make sure
+    we can fully exercise the various wrapper functions built over the top of it.
+    """
+    def perform_patch():
+        decorator_generator = MagicMock()
+        decorator_generator.return_value = sentinel.decorator
         monkeypatch.setattr(CloudRetry, 'base_decorator', decorator_generator)
+        return CloudRetry, decorator_generator
 
-        decorator = CloudRetry.exponential_backoff()
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+    return perform_patch
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] is None
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 10
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 3
-        assert sleep_time_generator.backoff == 2
-        assert sleep_time_generator.max_delay == 60
-        assert sleep_time_generator.jitter is False
+def check_common_side_effects(decorator_generator):
+    """
+    By invoking CloudRetry.(exponential_backoff|jittered_backoff|backoff) we expect certain things
+    to have happend, specifically CloudRetry.base_decorator should have been called *once* with a
+    number of keyword arguments.
+    "found" should be CloudRetry.found
+    "status_code_from_exception"  should be CloudRetry.status_code_from_exception (this is replaced when the abstract class is realised)
+    "sleep_time_generator" should be an instance of CloudRetry.BackoffIterator
+    """
 
-        decorator_generator.reset_mock()
+    assert decorator_generator.called is True
+    assert decorator_generator.call_count == 1
 
-        decorator = CloudRetry.exponential_backoff(retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42])
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+    gen_kw_args = decorator_generator.call_args.kwargs
+    assert gen_kw_args['found'] is CloudRetry.found
+    assert gen_kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] == [42]
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 11
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
+    sleep_time_generator = gen_kw_args['sleep_time_generator']
+    assert isinstance(sleep_time_generator, BackoffIterator)
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 4
-        assert sleep_time_generator.backoff == 3
-        assert sleep_time_generator.max_delay == 61
-        assert sleep_time_generator.jitter is False
+    # Return the KW args used when CloudRetry.base_decorator was called and the sleep_time_generator
+    # passed, these are what should change between the different decorators
+    return gen_kw_args, sleep_time_generator
 
-    def test_create_jittered_backoff(self, monkeypatch):
-        decorator_generator = self.decorator_generator
-        monkeypatch.setattr(CloudRetry, 'base_decorator', decorator_generator)
 
-        decorator = CloudRetry.jittered_backoff()
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+def test_create_exponential_backoff_with_defaults(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] is None
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 10
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
+    decorator = cloud_retry.exponential_backoff()
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 3
-        assert sleep_time_generator.backoff == 2
-        assert sleep_time_generator.max_delay == 60
-        assert sleep_time_generator.jitter is True
+    assert decorator is sentinel.decorator
 
-        decorator_generator.reset_mock()
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-        decorator = CloudRetry.jittered_backoff(retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42])
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+    assert gen_kw_args['retries'] == 10
+    assert gen_kw_args['catch_extra_error_codes'] is None
+    assert sleep_time_generator.delay == 3
+    assert sleep_time_generator.backoff == 2
+    assert sleep_time_generator.max_delay == 60
+    assert sleep_time_generator.jitter is False
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] == [42]
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 11
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 4
-        assert sleep_time_generator.backoff == 3
-        assert sleep_time_generator.max_delay == 61
-        assert sleep_time_generator.jitter is True
+def test_create_exponential_backoff_with_args(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
 
-    def test_create_legacy_backoff(self, monkeypatch):
-        decorator_generator = self.decorator_generator
-        monkeypatch.setattr(CloudRetry, 'base_decorator', decorator_generator)
+    decorator = cloud_retry.exponential_backoff(retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42])
+    assert decorator is sentinel.decorator
 
-        decorator = CloudRetry.backoff()
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] is None
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 10
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
+    assert gen_kw_args['catch_extra_error_codes'] == [42]
+    assert gen_kw_args['retries'] == 11
+    assert sleep_time_generator.delay == 4
+    assert sleep_time_generator.backoff == 3
+    assert sleep_time_generator.max_delay == 61
+    assert sleep_time_generator.jitter is False
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 3
-        assert sleep_time_generator.backoff == 1.1
-        assert sleep_time_generator.max_delay is None
-        assert sleep_time_generator.jitter is False
 
-        decorator_generator.reset_mock()
+def test_create_jittered_backoff_with_defaults(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
 
-        decorator = CloudRetry.backoff(tries=11, delay=4, backoff=3, catch_extra_error_codes=[42])
-        assert decorator_generator.called is True
-        assert decorator_generator.call_count == 1
-        assert decorator is sentinel.decorator
+    decorator = cloud_retry.jittered_backoff()
+    assert decorator is sentinel.decorator
 
-        kw_args = decorator_generator.call_args.kwargs
-        assert kw_args['catch_extra_error_codes'] == [42]
-        assert kw_args['found'] is CloudRetry.found
-        assert kw_args['retries'] == 11
-        assert isinstance(kw_args['sleep_time_generator'], BackoffIterator)
-        assert kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-        sleep_time_generator = kw_args['sleep_time_generator']
-        assert sleep_time_generator.delay == 4
-        assert sleep_time_generator.backoff == 3
-        assert sleep_time_generator.max_delay is None
-        assert sleep_time_generator.jitter is False
+    assert gen_kw_args['catch_extra_error_codes'] is None
+    assert gen_kw_args['retries'] == 10
+    assert sleep_time_generator.delay == 3
+    assert sleep_time_generator.backoff == 2
+    assert sleep_time_generator.max_delay == 60
+    assert sleep_time_generator.jitter is True
+
+
+def test_create_jittered_backoff_with_args(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
+
+    decorator = cloud_retry.jittered_backoff(retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42])
+    assert decorator is sentinel.decorator
+
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
+
+    assert gen_kw_args['catch_extra_error_codes'] == [42]
+    assert gen_kw_args['retries'] == 11
+    assert sleep_time_generator.delay == 4
+    assert sleep_time_generator.backoff == 3
+    assert sleep_time_generator.max_delay == 61
+    assert sleep_time_generator.jitter is True
+
+
+def test_create_legacy_backoff_with_defaults(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
+
+    decorator = cloud_retry.backoff()
+
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
+
+    assert gen_kw_args['catch_extra_error_codes'] is None
+    assert gen_kw_args['retries'] == 10
+    assert sleep_time_generator.delay == 3
+    assert sleep_time_generator.backoff == 1.1
+    assert sleep_time_generator.max_delay is None
+    assert sleep_time_generator.jitter is False
+
+
+def test_create_legacy_backoff_with_args(patch_cloud_retry):
+    cloud_retry, decorator_generator = patch_cloud_retry()
+
+    # Note: the Keyword Args have different names here, and not all of them can be passed...
+    decorator = cloud_retry.backoff(tries=11, delay=4, backoff=3, catch_extra_error_codes=[42])
+
+    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
+
+    assert gen_kw_args['catch_extra_error_codes'] == [42]
+    assert gen_kw_args['retries'] == 11
+    assert sleep_time_generator.delay == 4
+    assert sleep_time_generator.backoff == 3
+    assert sleep_time_generator.max_delay is None
+    assert sleep_time_generator.jitter is False

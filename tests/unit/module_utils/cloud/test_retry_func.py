@@ -9,85 +9,117 @@ __metaclass__ = type
 import pytest
 
 import ansible_collections.amazon.aws.plugins.module_utils.cloud as cloud_utils
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.amazon.aws.tests.unit.compat.mock import Mock
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 
 
-class TestRetryFunc:
+class ExceptionA(Exception):
+    def __init__(self):
+        pass
 
-    class ExceptionA(Exception):
-        def __init__(self):
-            pass
 
-    class ExceptionB(Exception):
-        def __init__(self):
-            pass
+class ExceptionB(Exception):
+    def __init__(self):
+        pass
 
-    def setup_method(self):
-        self.sleep_generator = cloud_utils.BackoffIterator(0, 0)
-        self.test_function = MagicMock()
-        self.test_function.return_value = sentinel.successful_run
-        self.found_function = MagicMock()
-        self.found_function.return_value = False
-        self.extract_code = MagicMock()
-        self.extract_code.return_value = sentinel.extracted_code
 
-        self.common_params = [self.test_function, self.sleep_generator, 4, None,
-                              self.found_function, self.extract_code, TestRetryFunc.ExceptionA]
+@pytest.fixture
+def retrier():
+    def do_retry(
+        func=None,
+        sleep_generator=None,
+        retries=4,
+        catch_extra_error_codes=None,
+        found_f=None,
+        extract_code=None,
+        base_class=None,
+    ):
+        if not func:
+            func = Mock(return_value=sentinel.successful_run)
+        if not sleep_generator:
+            sleep_generator = cloud_utils.BackoffIterator(0, 0)
+        if not found_f:
+            found_f = Mock(return_value=False)
+        if not extract_code:
+            extract_code = Mock(return_value=sentinel.extracted_code)
+        if not base_class:
+            base_class = ExceptionA
 
-    def test_success(self):
-        result = cloud_utils._retry_func(*self.common_params)
-        assert result is sentinel.successful_run
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 1
+        result = cloud_utils._retry_func(
+            func,
+            sleep_generator,
+            retries,
+            catch_extra_error_codes,
+            found_f,
+            extract_code,
+            base_class,
+        )
+        return func, result
 
-    def test_not_base(self):
-        self.test_function.side_effect = TestRetryFunc.ExceptionB()
-        with pytest.raises(TestRetryFunc.ExceptionB):
-            cloud_utils._retry_func(*self.common_params)
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 1
+    return do_retry
 
-    def test_no_match(self):
-        self.found_function.return_value = False
-        self.test_function.side_effect = TestRetryFunc.ExceptionA()
 
-        with pytest.raises(TestRetryFunc.ExceptionA):
-            cloud_utils._retry_func(*self.common_params)
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 1
-        assert self.found_function.called is True
-        assert self.found_function.call_count == 1
-        assert self.found_function.call_args.args[0] is sentinel.extracted_code
-        assert self.found_function.call_args.args[1] is None
+def test_success(retrier):
+    func, result = retrier()
+    assert result is sentinel.successful_run
+    assert func.called is True
+    assert func.call_count == 1
 
-        self.test_function.reset_mock()
-        self.found_function.reset_mock()
 
-        self.common_params[3] = sentinel.extra_codes
+def test_not_base(retrier):
+    func = Mock(side_effect=ExceptionB)
+    with pytest.raises(ExceptionB):
+        _f, _result = retrier(func=func)
+    assert func.called is True
+    assert func.call_count == 1
 
-        with pytest.raises(TestRetryFunc.ExceptionA):
-            cloud_utils._retry_func(*self.common_params)
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 1
-        assert self.found_function.called is True
-        assert self.found_function.call_count == 1
-        assert self.found_function.call_args.args[0] is sentinel.extracted_code
-        assert self.found_function.call_args.args[1] is sentinel.extra_codes
 
-    def test_simple_retries(self):
-        self.found_function.return_value = True
-        self.test_function.side_effect = TestRetryFunc.ExceptionA()
+def test_no_match(retrier):
+    found_f = Mock(return_value=False)
+    func = Mock(side_effect=ExceptionA)
 
-        with pytest.raises(TestRetryFunc.ExceptionA):
-            cloud_utils._retry_func(*self.common_params)
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 4
+    with pytest.raises(ExceptionA):
+        _f, _result = retrier(func=func, found_f=found_f)
+    assert func.called is True
+    assert func.call_count == 1
+    assert found_f.called is True
+    assert found_f.call_count == 1
+    assert found_f.call_args.args[0] is sentinel.extracted_code
+    assert found_f.call_args.args[1] is None
 
-        self.test_function.reset_mock()
-        self.common_params[2] = 2
 
-        with pytest.raises(TestRetryFunc.ExceptionA):
-            cloud_utils._retry_func(*self.common_params)
-        assert self.test_function.called is True
-        assert self.test_function.call_count == 2
+def test_no_match_with_extra_error_codes(retrier):
+    found_f = Mock(return_value=False)
+    func = Mock(side_effect=ExceptionA)
+    catch_extra_error_codes = sentinel.extra_codes
+
+    with pytest.raises(ExceptionA):
+        _f, _result = retrier(
+            func=func, found_f=found_f, catch_extra_error_codes=catch_extra_error_codes
+        )
+    assert func.called is True
+    assert func.call_count == 1
+    assert found_f.called is True
+    assert found_f.call_count == 1
+    assert found_f.call_args.args[0] is sentinel.extracted_code
+    assert found_f.call_args.args[1] is sentinel.extra_codes
+
+
+def test_simple_retries_4_times(retrier):
+    found_f = Mock(return_value=True)
+    func = Mock(side_effect=ExceptionA)
+
+    with pytest.raises(ExceptionA):
+        _f, _result = retrier(func=func, found_f=found_f)
+    assert func.called is True
+    assert func.call_count == 4
+
+
+def test_simple_retries_2_times(retrier):
+    found_f = Mock(return_value=True)
+    func = Mock(side_effect=ExceptionA)
+
+    with pytest.raises(ExceptionA):
+        _f, _result = retrier(func=func, found_f=found_f, retries=2)
+    assert func.called is True
+    assert func.call_count == 2

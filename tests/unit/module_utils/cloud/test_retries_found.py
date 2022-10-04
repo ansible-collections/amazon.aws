@@ -9,22 +9,26 @@ __metaclass__ = type
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
-class TestRetriesFound:
+def test_found_not_itterable():
+    assert CloudRetry.found('404', 5) is False
+    assert CloudRetry.found('404', None) is False
+    assert CloudRetry.found('404', 404) is False
+    # This seems counter intuitive, but the second argument is supposed to be iterable...
+    assert CloudRetry.found(404, 404) is False
 
-    def setup_method(self):
-        pass
 
-    def test_found_not_itterable(self):
-        assert CloudRetry.found('404', 5) is False
-        assert CloudRetry.found('404', None) is False
+def test_found_no_match():
+    assert CloudRetry.found('404', ['403']) is False
+    assert CloudRetry.found('404', ['500', '403']) is False
+    assert CloudRetry.found('404', {'403'}) is False
+    assert CloudRetry.found('404', {'500', '403'}) is False
 
-    def test_found_no_match(self):
-        assert CloudRetry.found('404', ['403']) is False
-        assert CloudRetry.found('404', ['500', '403']) is False
 
-    def test_found_match(self):
-        assert CloudRetry.found('404', ['404']) is True
-        assert CloudRetry.found('404', ['403', '404']) is True
-        assert CloudRetry.found('404', ['404', '403']) is True
-        assert CloudRetry.found('404', {'404'}) is True
-        assert CloudRetry.found('404', {'403', '404'}) is True
+def test_found_match():
+    assert CloudRetry.found('404', ['404']) is True
+    assert CloudRetry.found('404', ['403', '404']) is True
+    assert CloudRetry.found('404', ['404', '403']) is True
+    assert CloudRetry.found('404', {'404'}) is True
+    assert CloudRetry.found('404', {'403', '404'}) is True
+    # Beware, this will generally only work with strings (they're iterable)
+    assert CloudRetry.found('404', '404') is True
