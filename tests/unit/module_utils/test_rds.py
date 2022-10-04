@@ -727,12 +727,12 @@ def test__handle_errors_failed(method_name, exception, expected, error):
         module.fail_json_aws.call_args[1]["msg"] == expected
 
 
-class RdsUtilsTestSuite():
+class TestRdsUtils():
 
     # ========================================================
     # Setup some initial data that we can use within our tests
     # ========================================================
-    def setUp(self):
+    def setup_method(self):
         self.target_role_list = [
             {
                 'role_arn': 'role_won',
