@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_vol_info module – Gather information about ec2 volumes in AWS" href="ec2_vol_info_module.html" />
@@ -136,9 +137,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_vol</span></code>.</p>
 </div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
-</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -404,9 +403,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <p>The use of <em>state=list</em> to interrogate the volume has been deprecated and will be removed after 2022-06-01.  The ‘list’ functionality has been moved to a dedicated module <a class="reference internal" href="ec2_vol_info_module.html#ansible-collections-amazon-aws-ec2-vol-info-module"><span class="std std-ref">amazon.aws.ec2_vol_info</span></a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">list</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“list”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -455,13 +454,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <td><div class="ansible-option-cell"><p>Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD). “Standard” is the old EBS default and continues to remain the Ansible default for backwards compatibility.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">standard</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">gp2</span></p></li>
-<li><p><span class="ansible-option-choices-entry">io1</span></p></li>
-<li><p><span class="ansible-option-choices-entry">st1</span></p></li>
-<li><p><span class="ansible-option-choices-entry">sc1</span></p></li>
-<li><p><span class="ansible-option-choices-entry">gp3</span></p></li>
-<li><p><span class="ansible-option-choices-entry">io2</span></p></li>
+<li><p><span class="ansible-option-default-bold">“standard”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“gp2”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“io1”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“st1”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“sc1”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“gp3”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“io2”</span></p></li>
 </ul>
 </div></td>
 </tr>

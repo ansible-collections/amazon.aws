@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_instance_info module – Gather information about ec2 instances in AWS" href="ec2_instance_info_module.html" />
@@ -136,9 +137,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_instance</span></code>.</p>
 </div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
-</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id2">Synopsis</a></p></li>
@@ -242,8 +241,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Choose <em>unlimited</em> to enable buying additional CPU credits.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">unlimited</span></p></li>
-<li><p><span class="ansible-option-choices-entry">standard</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“unlimited”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“standard”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -391,8 +390,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <td><div class="ansible-option-cell"><p>Whether to stop or terminate an instance upon shutdown.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">stop</span></p></li>
-<li><p><span class="ansible-option-choices-entry">terminate</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“stop”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“terminate”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -464,8 +463,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>If specified a value of disabled, metadata of the instance will not be accessible.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">enabled</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">disabled</span></p></li>
+<li><p><span class="ansible-option-default-bold">“enabled”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“disabled”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -478,8 +477,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">optional</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">required</span></p></li>
+<li><p><span class="ansible-option-default-bold">“optional”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“required”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -673,14 +672,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p><em>state=absent</em>: alias for <em>state=terminated</em></p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">present</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">terminated</span></p></li>
-<li><p><span class="ansible-option-choices-entry">running</span></p></li>
-<li><p><span class="ansible-option-choices-entry">started</span></p></li>
-<li><p><span class="ansible-option-choices-entry">stopped</span></p></li>
-<li><p><span class="ansible-option-choices-entry">restarted</span></p></li>
-<li><p><span class="ansible-option-choices-entry">rebooted</span></p></li>
-<li><p><span class="ansible-option-choices-entry">absent</span></p></li>
+<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“terminated”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“running”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“started”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“stopped”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“restarted”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“rebooted”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -698,8 +697,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <td><div class="ansible-option-cell"><p>What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">dedicated</span></p></li>
-<li><p><span class="ansible-option-choices-entry">default</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“dedicated”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“default”</span></p></li>
 </ul>
 </div></td>
 </tr>

@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.cloudformation module – Create or delete an AWS CloudFormation stack" href="cloudformation_module.html" />
@@ -136,9 +137,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-s3-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.aws_s3</span></code>.</p>
 </div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version amazon.aws: </span>1.0.0</p>
-</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -343,8 +342,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-s3-m
 <td><div class="ansible-option-cell"><p>What encryption mode to use if <em>encrypt=true</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">AES256</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">aws:kms</span></p></li>
+<li><p><span class="ansible-option-default-bold">“AES256”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“aws:kms”</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -415,15 +414,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-s3-m
 <p><code class="docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">get</span></p></li>
-<li><p><span class="ansible-option-choices-entry">put</span></p></li>
-<li><p><span class="ansible-option-choices-entry">delete</span></p></li>
-<li><p><span class="ansible-option-choices-entry">create</span></p></li>
-<li><p><span class="ansible-option-choices-entry">geturl</span></p></li>
-<li><p><span class="ansible-option-choices-entry">getstr</span></p></li>
-<li><p><span class="ansible-option-choices-entry">delobj</span></p></li>
-<li><p><span class="ansible-option-choices-entry">list</span></p></li>
-<li><p><span class="ansible-option-choices-entry">copy</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“get”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“put”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“delete”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“create”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“geturl”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“getstr”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“delobj”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“list”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“copy”</span></p></li>
 </ul>
 </div></td>
 </tr>

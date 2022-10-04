@@ -19,6 +19,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.aws_rds inventory – rds instance source" href="aws_rds_inventory.html" />
@@ -258,11 +259,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <ul>
 <li><p>INI entries:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_connection = None</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">fact_caching_connection = VALUE</span><span class="w"></span>
 </pre></div>
 </div>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="l l-Scalar l-Scalar-Plain">cache_connection = None</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">cache_connection = VALUE</span><span class="w"></span>
 </pre></div>
 </div>
 </li>
@@ -552,8 +553,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <td><div class="ansible-option-cell"><p>Token that ensures this is a source file for the plugin.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">aws_ec2</span></p></li>
-<li><p><span class="ansible-option-choices-entry">amazon.aws.aws_ec2</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“aws_ec2”</span></p></li>
+<li><p><span class="ansible-option-choices-entry">“amazon.aws.aws_ec2”</span></p></li>
 </ul>
 </div></td>
 </tr>
