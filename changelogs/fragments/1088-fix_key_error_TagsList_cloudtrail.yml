@@ -1,3 +1,0 @@
----
-bugfixes:
-  - cloudtrail - Fix key error TagList to TagsList (https://github.com/ansible-collections/amazon.aws/issues/1088).

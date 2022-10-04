@@ -1,3 +1,0 @@
----
-trivial:
-- "Set a max duration of some ec2_instance integration tests to avoid timeout (https://github.com/ansible-collections/amazon.aws/pull/1019)."

@@ -1,3 +1,0 @@
----
-minor_changes:
-- Remove the empty __init__.py file from the distribution, they were not required anymore (https://github.com/ansible-collections/amazon.aws/pull/1018).

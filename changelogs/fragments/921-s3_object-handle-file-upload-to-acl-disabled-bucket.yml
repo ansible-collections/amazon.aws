@@ -1,2 +1,0 @@
-minor_changes:
-- s3_object - updated module to add support for handling file upload to a bucket with ACL disabled (https://github.com/ansible-collections/amazon.aws/pull/921).

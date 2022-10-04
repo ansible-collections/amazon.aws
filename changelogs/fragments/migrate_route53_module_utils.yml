@@ -1,2 +1,0 @@
-trivial:
-- route53 - Migrate plugins/module_utils/route53.py to amazon.aws (https://github.com/ansible-collections/amazon.aws/pull/1066).
