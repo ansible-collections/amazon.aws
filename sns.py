@@ -81,6 +81,7 @@ options:
 extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.aws
+- amazon.aws.boto3
 '''
 
 EXAMPLES = """

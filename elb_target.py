@@ -71,6 +71,7 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.boto3
 
 notes:
   - If you specified a port override when you registered a target, you must specify both the target ID and the port when you deregister it.

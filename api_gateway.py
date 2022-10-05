@@ -105,6 +105,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.boto3
 
 notes:
   - A future version of this module will probably use tags or another

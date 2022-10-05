@@ -202,6 +202,7 @@ options:
 extends_documentation_fragment:
     - amazon.aws.aws
     - amazon.aws.ec2
+    - amazon.aws.boto3
     - amazon.aws.tags
 notes:
     - All operations are time consuming, for example create takes 20-30 minutes,

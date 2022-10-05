@@ -18,6 +18,7 @@ short_description: Create and manage AWS Datapipelines
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.boto3
 description:
   - Create and manage AWS Datapipelines. Creation is not idempotent in AWS, so the C(uniqueId) is created by hashing the options (minus objects)
     given to the datapipeline.

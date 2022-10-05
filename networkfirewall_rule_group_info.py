@@ -47,6 +47,7 @@ author: Mark Chappell (@tremble)
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.boto3
 '''
 
 EXAMPLES = '''
