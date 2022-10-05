@@ -1,2 +1,3 @@
 bugfixes:
   - ec2_vpc_net_info - fix KeyError (https://github.com/ansible-collections/amazon.aws/pull/1109).
+  - ec2_vpc_net_info - remove hardcoded ``ClassicLinkEnabled`` parameter when request for ``ClassicLinkDnsSupported`` failed (https://github.com/ansible-collections/amazon.aws/pull/1109).
