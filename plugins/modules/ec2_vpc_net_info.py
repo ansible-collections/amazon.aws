@@ -200,12 +200,12 @@ def describe_vpcs(connection, module):
         cl_dns_support = describe_classic_links(module, connection, vpc['VpcId'], 'ClassicLinkDnsSupported', error_message)
         dns_support = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsSupport', error_message)
         dns_hostnames = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsHostnames', error_message)
-        if cl_enabled:
+        if cl_enabled.get('VPC')[0].get('ClassicLinkEnabled'):
             # loop through the ClassicLink Enabled results and add the value for the correct VPC
             for item in cl_enabled['Vpcs']:
                 if vpc['VpcId'] == item['VpcId']:
                     vpc['ClassicLinkEnabled'] = item['ClassicLinkEnabled']
-        if cl_dns_support:
+        if cl_dns_support.get('Vpcs')[0].get('ClassicLinkEnabled'):
             # loop through the ClassicLink DNS support results and add the value for the correct VPC
             for item in cl_dns_support['Vpcs']:
                 if vpc['VpcId'] == item['VpcId']:
