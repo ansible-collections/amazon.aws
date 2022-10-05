@@ -233,7 +233,7 @@ def describe_classic_links(module, connection, vpc, attribute, error_message):
         else:
             result = connection.describe_vpc_classic_link_dns_support(VpcIds=[vpc], aws_retry=True)
     except is_boto3_error_code('UnsupportedOperation'):
-        result = {'Vpcs': [{'VpcId': vpc]}
+        result = {'Vpcs': [{'VpcId': vpc}]}
     except is_boto3_error_code('InvalidVpcID.NotFound'):
         module.warn(error_message.format(attribute, vpc))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
