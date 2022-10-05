@@ -811,7 +811,6 @@ def main():
             mapped_device = get_mapped_block_device(instance_dict=inst, device_name=device_name)
             if mapped_device:
                 other_volume_mapped = False
-
                 if volume:
                     if volume['volume_id'] != mapped_device['ebs']['volume_id']:
                         other_volume_mapped = True
@@ -830,10 +829,11 @@ def main():
 
         final_tags = None
         tags_changed = False
-
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
             if name:
+                if not tags:
+                    tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
                 tags['Name'] = name
             final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
         else:

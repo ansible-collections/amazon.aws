@@ -61,6 +61,21 @@
         that:
           - test_instance_2.changed
 
+    - name: create another ec2 instance
+      ec2_instance:
+        name: "{{ instance_name }}-3"
+        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
+        instance_type: t3.nano
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: test_instance_3
+
+    - name: check task return attributes
+      assert:
+        that:
+          - test_instance_3.changed
+
     # # ==== ec2_vol tests ===============================================
 
     - name: create a volume (validate module defaults - check_mode)
@@ -852,6 +867,28 @@
           - 'test_instance.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
           - 'test_instance_2.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
 
+    - name: create a volume without tags
+      ec2_vol:
+        volume_size: 5
+        zone: "{{ availability_zone }}"
+        instance: "{{ test_instance_3.instance_ids[0] }}"
+      register: volume_without_tag
+
+    - assert:
+        that:
+          - volume_without_tag.changed
+
+    # idempotency check without tags
+    - name: create a volume without tags (idempotency check)
+      ec2_vol:
+        volume_size: 5
+        zone: "{{ availability_zone }}"
+        instance: "{{ test_instance_3.instance_ids[0] }}"
+      register: volume_without_tag
+
+    - assert:
+        that:
+          - not volume_without_tag.changed
     # ==== Cleanup ============================================================
 
   always:
@@ -863,6 +900,7 @@
       with_items:
         - "{{ test_instance.instance_ids[0] }}"
         - "{{ test_instance_2.instance_ids[0] }}"
+        - "{{ test_instance_3.instance_ids[0] }}"
       register: pre_delete
 
     - debug:
@@ -877,6 +915,7 @@
       with_items:
         - "{{ test_instance.instance_ids[0] }}"
         - "{{ test_instance_2.instance_ids[0] }}"
+        - "{{ test_instance_3.instance_ids[0] }}"
       ignore_errors: yes
 
     - name: delete volumes
@@ -893,6 +932,7 @@
         - "{{ dot_volume }}"
         - "{{ gp3_volume }}"
         - "{{ multi_attach_disk }}"
+        - "{{ volume_without_tag }}"
 
     - name: delete snapshot
       ec2_snapshot:
