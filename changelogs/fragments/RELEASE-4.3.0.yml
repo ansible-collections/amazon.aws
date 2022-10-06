@@ -1,4 +1,0 @@
-release_summary: |
-    The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
-    Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
-    security issues and bugfixes.

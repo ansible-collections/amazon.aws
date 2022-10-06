@@ -5,6 +5,28 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v4.3.0
+======
+
+Release Summary
+---------------
+
+The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
+Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
+security issues and bugfixes.
+
+
+Minor Changes
+-------------
+
+- ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
+
+Bugfixes
+--------
+
+- ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
+- module_utils/cloud - Fix ``ValueError: ansible_collections.amazon.aws.plugins.module_utils.core.__spec__ is None`` error on Ansible 2.9 (https://github.com/ansible-collections/amazon.aws/issues/1083).
+
 v4.2.0
 ======
 
