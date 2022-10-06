@@ -836,6 +836,24 @@ releases:
     - 914-elb_classic_lb-security_group_names.yml
     - 927-ec2_instance-retries.yml
     release_date: '2022-08-02'
+  3.5.0:
+    changes:
+      bugfixes:
+      - ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when
+        using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
+      minor_changes:
+      - ec2_security_group - set type as ``list`` for rules->group_name as it can
+        accept both ``str`` and ``list`` (https://github.com/ansible-collections/amazon.aws/pull/971).
+      release_summary: 'Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix
+        release and the final planned release for the 3.x series.
+
+        '
+    fragments:
+    - 638-ec2_security_group_group_name_datatype.yml
+    - 943-ec2_metadata_facts-fix-NoneType-callable.yml
+    - RELEASE-3.5.0.yml
+    - unit-tests_test_rds_py37_only.yaml
+    release_date: '2022-10-06'
   4.0.0:
     changes:
       breaking_changes:
@@ -1024,6 +1042,33 @@ releases:
     - 951-cloudretry.yml
     - 965-linting.yml
     release_date: '2022-09-14'
+  4.3.0:
+    changes:
+      bugfixes:
+      - ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when
+        using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
+      - 'module_utils/cloud - Fix ``ValueError: ansible_collections.amazon.aws.plugins.module_utils.core.__spec__
+        is None`` error on Ansible 2.9 (https://github.com/ansible-collections/amazon.aws/issues/1083).'
+      minor_changes:
+      - ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity``
+        (https://github.com/ansible-collections/amazon.aws/issues/1038).
+      release_summary: 'The amazon.aws 4.3.0 release includes a number of minor bug
+        fixes and improvements.
+
+        Following the release of amazon.aws 5.0.0, backports to the 4.x series will
+        be limited to
+
+        security issues and bugfixes.
+
+        '
+    fragments:
+    - 1038-ec2-insufficient-capacity.yml
+    - 1083-__spec__-is-None.yml
+    - 943-ec2_metadata_facts-fix-NoneType-callable.yml
+    - RELEASE-4.3.0.yml
+    - tests-cloud.yml
+    - unit-tests_test_rds_py37_only.yaml
+    release_date: '2022-10-06'
   5.0.0:
     changes:
       breaking_changes:
@@ -1342,3 +1387,22 @@ releases:
       name: s3_object_info
       namespace: ''
     release_date: '2022-10-04'
+  5.0.1:
+    changes:
+      bugfixes:
+      - ec2_vpc_net_info - fix KeyError (https://github.com/ansible-collections/amazon.aws/pull/1109).
+      - ec2_vpc_net_info - remove hardcoded ``ClassicLinkEnabled`` parameter when
+        request for ``ClassicLinkDnsSupported`` failed (https://github.com/ansible-collections/amazon.aws/pull/1109).
+      - s3_object - be more defensive when checking the results of ``s3.get_bucket_ownership_controls``
+        (https://github.com/ansible-collections/amazon.aws/issues/1115).
+    fragments:
+    - 1109-ec2_vpc_net_info_keyerror.yml
+    - 1115-s3_object-scaleway.yml
+    release_date: '2022-10-06'
+  5.0.2:
+    changes:
+      bugfixes:
+      - ec2_metadata_facts - fixed ``AttributeError`` (https://github.com/ansible-collections/amazon.aws/issues/1134).
+    fragments:
+    - 1134-ec2_metadata_facts-AttributeError.yml
+    release_date: '2022-10-10'
