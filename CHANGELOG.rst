@@ -5,6 +5,25 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v3.5.0
+======
+
+Release Summary
+---------------
+
+Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
+
+
+Minor Changes
+-------------
+
+- ec2_security_group - set type as ``list`` for rules->group_name as it can accept both ``str`` and ``list`` (https://github.com/ansible-collections/amazon.aws/pull/971).
+
+Bugfixes
+--------
+
+- ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
+
 v3.4.0
 ======
 
