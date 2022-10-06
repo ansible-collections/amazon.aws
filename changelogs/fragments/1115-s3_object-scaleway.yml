@@ -1,2 +1,0 @@
-bugfixes:
-- s3_object - be more defensive when checking the results of ``s3.get_bucket_ownership_controls`` (https://github.com/ansible-collections/amazon.aws/issues/1115).
