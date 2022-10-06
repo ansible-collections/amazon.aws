@@ -379,11 +379,24 @@ def _describe_db_instances(conn, **params):
     return results
 
 
-def instance_info(module, conn):
-    instance_name = module.params.get('db_instance_identifier')
-    filters = module.params.get('filters')
+class RdsInstanceInfoFailure(Exception):
+    def __init__(self, original_e, user_message):
+        self.original_e = original_e
+        self.user_message = user_message
+        super().__init__(self)
 
-    params = dict()
+
+def get_instance_tags(conn, arn):
+    try:
+        return boto3_tag_list_to_ansible_dict(
+            conn.list_tags_for_resource(ResourceName=arn,
+                                        aws_retry=True)['TagList'])
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        raise RdsInstanceInfoFailure(e, "Couldn't get tags for instance %s" % arn)
+
+
+def instance_info(conn, instance_name, filters):
+    params = {}
     if instance_name:
         params['DBInstanceIdentifier'] = instance_name
     if filters:
@@ -392,16 +405,15 @@ def instance_info(module, conn):
     try:
         results = _describe_db_instances(conn, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get instance information")
+        raise RdsInstanceInfoFailure(e, "Couldn't get instance information")
 
     for instance in results:
-        try:
-            instance['Tags'] = boto3_tag_list_to_ansible_dict(conn.list_tags_for_resource(ResourceName=instance['DBInstanceArn'],
-                                                                                          aws_retry=True)['TagList'])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get tags for instance %s" % instance['DBInstanceIdentifier'])
+        instance['Tags'] = get_instance_tags(conn, arn=instance['DBInstanceArn'])
 
-    return dict(changed=False, instances=[camel_dict_to_snake_dict(instance, ignore_list=['Tags']) for instance in results])
+    return {
+        "changed": False,
+        "instances": [camel_dict_to_snake_dict(instance, ignore_list=['Tags']) for instance in results]
+    }
 
 
 def main():
@@ -417,7 +429,13 @@ def main():
 
     conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
-    module.exit_json(**instance_info(module, conn))
+    instance_name = module.params.get('db_instance_identifier')
+    filters = module.params.get('filters')
+
+    try:
+        module.exit_json(**instance_info(conn, instance_name, filters))
+    except RdsInstanceInfoFailure as e:
+        module.fail_json_aws(e.original_e, e.user_message)
 
 
 if __name__ == '__main__':
