@@ -3,7 +3,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from ansible_collections.amazon.aws.plugins.modules import rds_instance_info
-from unittest.mock import MagicMock, Mock, patch, ANY
+from unittest.mock import MagicMock, Mock, patch, ANY, call
 import ansible.module_utils.basic
 import botocore.exceptions
 import pytest
@@ -53,12 +53,19 @@ def test_instance_info_all_instances(m_get_instance_tags, m_describe_db_instance
             "DBInstanceArn": "arn:aws:rds:us-east-2:123456789012:og:second-instance",
         },
     ]
-    rds_instance_info.instance_info(conn, instance_name=None, filters={"engine": "postgres"})
+    rds_instance_info.instance_info(
+        conn, instance_name=None, filters={"engine": "postgres"}
+    )
 
-    m_describe_db_instances.assert_called_with(conn, Filters=[{'Name': 'engine', 'Values': ['postgres']}])
+    m_describe_db_instances.assert_called_with(
+        conn, Filters=[{"Name": "engine", "Values": ["postgres"]}]
+    )
     assert m_get_instance_tags.call_count == 2
-    m_get_instance_tags.assert_called_with(
-        conn, arn="arn:aws:rds:us-east-2:123456789012:og:second-instance"
+    m_get_instance_tags.assert_has_calls(
+        [
+            call(conn, arn="arn:aws:rds:us-east-2:123456789012:og:first-instance"),
+            call(conn, arn="arn:aws:rds:us-east-2:123456789012:og:second-instance"),
+        ]
     )
 
 
