@@ -123,34 +123,3 @@ def test_create_jittered_backoff_with_args(patch_cloud_retry):
     assert sleep_time_generator.backoff == 3
     assert sleep_time_generator.max_delay == 61
     assert sleep_time_generator.jitter is True
-
-
-def test_create_legacy_backoff_with_defaults(patch_cloud_retry):
-    cloud_retry, decorator_generator = patch_cloud_retry()
-
-    decorator = cloud_retry.backoff()
-
-    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
-
-    assert gen_kw_args['catch_extra_error_codes'] is None
-    assert gen_kw_args['retries'] == 10
-    assert sleep_time_generator.delay == 3
-    assert sleep_time_generator.backoff == 1.1
-    assert sleep_time_generator.max_delay is None
-    assert sleep_time_generator.jitter is False
-
-
-def test_create_legacy_backoff_with_args(patch_cloud_retry):
-    cloud_retry, decorator_generator = patch_cloud_retry()
-
-    # Note: the Keyword Args have different names here, and not all of them can be passed...
-    decorator = cloud_retry.backoff(tries=11, delay=4, backoff=3, catch_extra_error_codes=[42])
-
-    gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
-
-    assert gen_kw_args['catch_extra_error_codes'] == [42]
-    assert gen_kw_args['retries'] == 11
-    assert sleep_time_generator.delay == 4
-    assert sleep_time_generator.backoff == 3
-    assert sleep_time_generator.max_delay is None
-    assert sleep_time_generator.jitter is False
