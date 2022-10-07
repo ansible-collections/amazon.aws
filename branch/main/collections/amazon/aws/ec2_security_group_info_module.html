@@ -218,8 +218,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -239,7 +239,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSecurityGroups.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSecurityGroups.html</a> for possible filters. Filter names and values are case sensitive. You can also use underscores (_) instead of dashes (-) in the filter keys, which will take precedence in case of conflict.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">{}</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -282,8 +282,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -368,7 +368,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </div></td>
 <td><div class="ansible-option-cell"><p>Security groups that match the provided filters. Each element consists of a dict with all the information related to that security group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“description”: “created by rds_instance integration tests”, “group_id”: “sg-036496a610b79da88”, “group_name”: “ansible-test-89355088-unknown5c5f67f3ad09-sg-1”, “ip_permissions”: [], “ip_permissions_egress”: [{“ip_protocol”: “-1”, “ip_ranges”: [{“cidr_ip”: “0.0.0.0/0”}], “ipv6_ranges”: [], “prefix_list_ids”: [], “user_id_group_pairs”: []}], “owner_id”: “123456789012”, “tags”: {}, “vpc_id”: “vpc-0bc3bb03f97405435”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;description&quot;:</span> <span class="pre">&quot;created</span> <span class="pre">by</span> <span class="pre">rds_instance</span> <span class="pre">integration</span> <span class="pre">tests&quot;,</span> <span class="pre">&quot;group_id&quot;:</span> <span class="pre">&quot;sg-036496a610b79da88&quot;,</span> <span class="pre">&quot;group_name&quot;:</span> <span class="pre">&quot;ansible-test-89355088-unknown5c5f67f3ad09-sg-1&quot;,</span> <span class="pre">&quot;ip_permissions&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;ip_permissions_egress&quot;:</span> <span class="pre">[{&quot;ip_protocol&quot;:</span> <span class="pre">&quot;-1&quot;,</span> <span class="pre">&quot;ip_ranges&quot;:</span> <span class="pre">[{&quot;cidr_ip&quot;:</span> <span class="pre">&quot;0.0.0.0/0&quot;}],</span> <span class="pre">&quot;ipv6_ranges&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;prefix_list_ids&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;user_id_group_pairs&quot;:</span> <span class="pre">[]}],</span> <span class="pre">&quot;owner_id&quot;:</span> <span class="pre">&quot;123456789012&quot;,</span> <span class="pre">&quot;tags&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;vpc_id&quot;:</span> <span class="pre">&quot;vpc-0bc3bb03f97405435&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">

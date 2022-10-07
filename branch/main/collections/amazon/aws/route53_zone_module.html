@@ -216,7 +216,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-comment" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Comment associated with the zone.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -226,8 +226,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -276,8 +276,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -312,8 +312,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Whether or not the zone should exist or not.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -334,8 +334,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -433,7 +433,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>optional hosted zone comment</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when hosted zone exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Private zone”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Private</span> <span class="pre">zone&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -442,7 +442,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>id of the associated reusable delegation set</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for public hosted zones, if they have been associated with a reusable delegation set</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “A1BCDEF2GHIJKL”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;A1BCDEF2GHIJKL&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -451,7 +451,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>hosted zone name</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when hosted zone exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “private.local.”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;private.local.&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -460,7 +460,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>whether hosted zone is private or public</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when hosted zone exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> true</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -477,7 +477,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>id of vpc attached to private hosted zone</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “vpc-1d36c84f”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-1d36c84f&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -486,7 +486,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>region of vpc attached to private hosted zone</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “eu-west-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eu-west-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -495,7 +495,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>hosted zone id</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when hosted zone exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Z6JQG9820BEFMW”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Z6JQG9820BEFMW&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

@@ -237,8 +237,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Requires <em>endpoint_url</em> if <em>ceph=true</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -300,8 +300,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -320,8 +320,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -333,8 +333,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">copy</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -353,8 +353,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>The encryption mode to use if <em>encrypt=true</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“AES256”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“aws:kms”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;AES256&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aws:kms&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -377,7 +377,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <em>mode=put</em> or <em>mode=geturl</em> operation.</p>
 <p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">geturl</span></code>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">600</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">600</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -396,8 +396,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>This can be useful when a user may have the <code class="docutils literal notranslate"><span class="pre">GetObject</span></code> permission but no other permissions.  In which case using <em>mode=get</em> will fail unless <em>ignore_nonexistent_bucket=true</em> is specified.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -414,7 +414,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Max number of results to return when <em>mode=list</em>, set this if you want to retrieve fewer than the default 1000 keys.</p>
 <p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">1000</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1000</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -441,15 +441,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for creating and deleting buckets has been deprecated and will be removed in release 6.0.0.  To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“get”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“put”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“delete”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“create”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“geturl”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“getstr”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“delobj”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“list”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“copy”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;get&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;put&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;delete&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;create&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;geturl&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;getstr&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;delobj&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;list&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -475,7 +475,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><code class="docutils literal notranslate"><span class="pre">false</span></code> is equal to <code class="docutils literal notranslate"><span class="pre">never</span></code>.</p>
 <p>When this is set to <code class="docutils literal notranslate"><span class="pre">different</span></code> the MD5 sum of the local file is compared with the ‘ETag’ of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html">https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</p>
 <p>When <em>mode=get</em> and <em>overwrite=latest</em> the last modified timestamp of local file is compared with the ‘LastModified’ of the object/key in S3.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“different”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;different&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -484,7 +484,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code> for a bucket or <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">aws-exec-read</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-full-control</span></code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file.</p>
 <p>For a full list of permissions see the AWS documentation <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl">https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl</a>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">[“private”]</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;private&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -492,7 +492,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Limits the response to keys that begin with the specified prefix for list mode.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -513,8 +513,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -535,7 +535,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>On recoverable failure, how many times to retry before actually failing.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">0</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -561,8 +561,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Only applies to get modes, <em>mode=get</em>, <em>mode=getstr</em>, <em>mode=geturl</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -594,8 +594,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>See the Amazon documentation for more information about bucket naming rules <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -606,8 +606,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -763,7 +763,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Contents of the object as string.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for getstr operation)</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Hello, world!”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Hello,</span> <span class="pre">world!&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -772,7 +772,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Number of seconds the presigned url is valid for.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for geturl operation)</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 600</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">600</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -781,7 +781,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Message indicating the status of the operation.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “PUT operation complete”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;PUT</span> <span class="pre">operation</span> <span class="pre">complete&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -790,7 +790,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>List of object keys.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for list operation)</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“prefix1/”, “prefix1/key1”, “prefix1/key2”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;prefix1/&quot;,</span> <span class="pre">&quot;prefix1/key1&quot;,</span> <span class="pre">&quot;prefix1/key2&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -799,7 +799,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>URL of the object.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for put and geturl operations)</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “<a class="reference external" href="https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=">https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=</a>&lt;access-key&gt;&amp;Expires=1506888865&amp;Signature=&lt;signature&gt;”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=&lt;access-key&gt;&amp;Expires=1506888865&amp;Signature=&lt;signature&gt;&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
