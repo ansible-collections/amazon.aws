@@ -1,6 +1,2 @@
-# We're dependent on AWS actually starting up the instances in a timely manner.
-# This doesn't always happen...
-unstable
-
 non_local
 cloud/aws
