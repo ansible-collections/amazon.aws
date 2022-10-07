@@ -80,18 +80,20 @@
         state: present
       register: setup_snapshot
 
-    - name: get instance UEFI data
-      command: aws ec2 get-instance-uefi-data --instance-id {{ ec2_instance_id }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: instance_uefi_data_output
+    # note: the current CI supported instance types (t2, t3, m1) do not support uefi boot mode + tpm_support
+    # disabling the task as aws documentation states that support for t3 will be coming soon
+    # - name: get instance UEFI data
+    #   command: aws ec2 get-instance-uefi-data --instance-id {{ ec2_instance_id }} --region {{ aws_region }}
+    #   environment:
+    #     AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+    #     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    #     AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+    #     AWS_DEFAULT_REGION: "{{ aws_region }}"
+    #   register: instance_uefi_data_output
 
-    - name: Convert it to an object
-      set_fact:
-        instance_uefi_data: "{{ instance_uefi_data_output.stdout | from_json }}"
+    # - name: Convert it to an object
+    #   set_fact:
+    #     instance_uefi_data: "{{ instance_uefi_data_output.stdout | from_json }}"
 
     # ============================================================
 
