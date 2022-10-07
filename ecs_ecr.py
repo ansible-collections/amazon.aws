@@ -246,7 +246,7 @@ class EcsEcr:
                 repositoryName=name, **build_kwargs(registry_id))
             text = res.get('policyText')
             return text and json.loads(text)
-        except is_boto3_error_code('RepositoryPolicyNotFoundException'):
+        except is_boto3_error_code(['RepositoryNotFoundException', 'RepositoryPolicyNotFoundException']):
             return None
 
     def create_repository(self, registry_id, name, image_tag_mutability):
@@ -334,7 +334,7 @@ class EcsEcr:
                 repositoryName=name, **build_kwargs(registry_id))
             text = res.get('lifecyclePolicyText')
             return text and json.loads(text)
-        except is_boto3_error_code('LifecyclePolicyNotFoundException'):
+        except is_boto3_error_code(['LifecyclePolicyNotFoundException', 'RepositoryNotFoundException']):
             return None
 
     def put_lifecycle_policy(self, registry_id, name, policy_text):
