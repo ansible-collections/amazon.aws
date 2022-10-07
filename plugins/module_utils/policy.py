@@ -35,6 +35,34 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import string_types
 
+import ansible.module_utils.common.warnings as ansible_warnings
+
+
+def _canonify_root_arn(arn):
+    # There are multiple ways to specifiy delegation of access to an account
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-accounts
+    if arn.startswith('arn:aws:iam::') and arn.endswith(':root'):
+        arn = arn.split(':')[4]
+    return arn
+
+
+def _canonify_policy_dict_item(item, key):
+    """
+    Converts special cases where there are multiple ways to write the same thing into a single form
+    """
+    # There are multiple ways to specify anonymous principals
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-anonymous
+    if key in ["NotPrincipal", "Principal"]:
+        if item == "*":
+            return {"AWS": "*"}
+    return item
+
+
+def _tuplify_list(element):
+    if isinstance(element, list):
+        return tuple(element)
+    return element
+
 
 def _hashable_policy(policy, policy_list):
     """
@@ -63,30 +91,24 @@ def _hashable_policy(policy, policy_list):
 
     if isinstance(policy, list):
         for each in policy:
-            tupleified = _hashable_policy(each, [])
-            if isinstance(tupleified, list):
-                tupleified = tuple(tupleified)
+            hashed_policy = _hashable_policy(each, [])
+            tupleified = _tuplify_list(hashed_policy)
             policy_list.append(tupleified)
     elif isinstance(policy, string_types) or isinstance(policy, binary_type):
         policy = to_text(policy)
         # convert root account ARNs to just account IDs
-        if policy.startswith('arn:aws:iam::') and policy.endswith(':root'):
-            policy = policy.split(':')[4]
+        policy = _canonify_root_arn(policy)
         return [policy]
     elif isinstance(policy, dict):
+        # Sort the keys to ensure a consistent order for later comparison
         sorted_keys = list(policy.keys())
         sorted_keys.sort()
         for key in sorted_keys:
-            element = policy[key]
-            # Special case defined in
-            # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
-            if key in ["NotPrincipal", "Principal"] and policy[key] == "*":
-                element = {"AWS": "*"}
-            tupleified = _hashable_policy(element, [])
-            if isinstance(tupleified, list):
-                tupleified = tuple(tupleified)
+            # Converts special cases to a consistent form
+            element = _canonify_policy_dict_item(policy[key], key)
+            hashed_policy = _hashable_policy(element, [])
+            tupleified = _tuplify_list(hashed_policy)
             policy_list.append((key, tupleified))
-
     # ensure we aren't returning deeply nested structures of length 1
     if len(policy_list) == 1 and isinstance(policy_list[0], tuple):
         policy_list = policy_list[0]
@@ -135,7 +157,10 @@ def compare_policies(current_policy, new_policy, default_version="2008-10-17"):
 
 def sort_json_policy_dict(policy_dict):
 
-    """ Sort any lists in an IAM JSON policy so that comparison of two policies with identical values but
+    """
+    DEPRECATED - will be removed in amazon.aws 8.0.0
+
+    Sort any lists in an IAM JSON policy so that comparison of two policies with identical values but
     different orders will return true
     Args:
         policy_dict (dict): Dict representing IAM JSON policy.
@@ -150,6 +175,11 @@ def sort_json_policy_dict(policy_dict):
             }
         }
     """
+
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.policy.sort_json_policy_dict has been deprecated, consider using '
+        'amazon.aws.module_utils.policy.compare_policies instead',
+        version='8.0.0', collection_name='amazon.aws')
 
     def value_is_list(my_list):
 
