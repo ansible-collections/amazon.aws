@@ -207,7 +207,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import sort_json_policy_dict
 
 
 def build_kwargs(registry_id):
@@ -457,17 +456,11 @@ def run(ecr, params):
 
             elif lifecycle_policy_text is not None:
                 try:
-                    lifecycle_policy = sort_json_policy_dict(lifecycle_policy)
                     result['lifecycle_policy'] = lifecycle_policy
-
                     original_lifecycle_policy = ecr.get_lifecycle_policy(
                         registry_id, name)
 
-                    if original_lifecycle_policy:
-                        original_lifecycle_policy = sort_json_policy_dict(
-                            original_lifecycle_policy)
-
-                    if original_lifecycle_policy != lifecycle_policy:
+                    if compare_policies(original_lifecycle_policy, lifecycle_policy):
                         ecr.put_lifecycle_policy(registry_id, name,
                                                  lifecycle_policy_text)
                         result['changed'] = True
