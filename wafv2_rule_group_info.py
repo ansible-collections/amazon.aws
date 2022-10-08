@@ -15,11 +15,6 @@ short_description: wafv2_web_acl_info
 description:
   - Get informations about existing wafv2 rule groups.
 options:
-    state:
-      description:
-        - This option does nothing, has been deprecated, and will be removed in a release after 2022-12-01.
-      required: false
-      type: str
     name:
       description:
         - The name of the rule group.
@@ -43,7 +38,6 @@ EXAMPLES = '''
 - name: rule group info
   community.aws.wafv2_rule_group_info:
     name: test02
-    state: present
     scope: REGIONAL
 '''
 
@@ -119,7 +113,6 @@ def get_rule_group(wafv2, name, scope, id, fail_json_aws):
 
 def main():
     arg_spec = dict(
-        state=dict(type='str', required=False),
         name=dict(type='str', required=True),
         scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL'])
     )
@@ -129,16 +122,10 @@ def main():
         supports_check_mode=True
     )
 
-    state = module.params.get("state")
     name = module.params.get("name")
     scope = module.params.get("scope")
 
     wafv2 = module.client('wafv2')
-
-    if state:
-        module.deprecate(
-            'The state parameter does nothing, has been deprecated, and will be removed in a future release.',
-            version='6.0.0', collection_name='community.aws')
 
     # check if rule group exists
     response = wafv2_list_rule_groups(wafv2, scope, module.fail_json_aws)
