@@ -219,8 +219,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -231,8 +231,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <td><div class="ansible-option-cell"><p>Do not *actually* invoke the function. A <code class="docutils literal notranslate"><span class="pre">DryRun</span></code> call will check that the caller has permissions to call the function, especially for checking cross-account permissions.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -266,7 +266,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <a class="ansibleOptionLink" href="#parameter-payload" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary in any form to be provided as input to the Lambda function.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">{}</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -309,8 +309,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <td><div class="ansible-option-cell"><p>If <em>tail_log=true</em>, the result of the task will include the last 4 KB of the CloudWatch log for the function execution. Log tailing only works if you use synchronous invocation <em>wait=true</em>. This is usually used for development or testing Lambdas.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -321,8 +321,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -340,8 +340,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <td><div class="ansible-option-cell"><p>Whether to wait for the function results or not. If <em>wait=no</em> the task will not return any results. To wait for the Lambda function to complete, set <em>wait=true</em> and the result will be available in the <em>output</em> key.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -431,7 +431,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Function output if wait=true and the function returns a value</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“output”: “something”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;output&quot;:</span> <span class="pre">&quot;something&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -440,7 +440,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">StatusCode</span></code> of API call exit (200 for synchronous invokes, 202 for async)</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 200</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">200</span></code></p>
 </div></td>
 </tr>
 </tbody>

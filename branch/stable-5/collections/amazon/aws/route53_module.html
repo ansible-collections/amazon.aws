@@ -182,8 +182,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -194,8 +194,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Whether or not to evaluate an alias target health. Useful for aliases to Elastic Load Balancers.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -251,8 +251,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -275,8 +275,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Mutually exclusive with <em>weight</em> and <em>region</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“SECONDARY”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“PRIMARY”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SECONDARY&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;PRIMARY&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -343,8 +343,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Whether an existing record should be overwritten on create if values do not match.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -356,8 +356,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>The default is to use the public zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -390,7 +390,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-retry_interval" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of <code class="docutils literal notranslate"><span class="pre">500</span></code> seconds may be too long.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">500</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">500</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -416,11 +416,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Specifies the state of the resource record.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“present”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“get”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“create”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“delete”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;get&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;create&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;delete&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -430,7 +430,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>The TTL, in second, to give the new record.</p>
 <p>Mutually exclusive with <em>alias</em>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">3600</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3600</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -440,17 +440,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>The type of DNS record to create.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“A”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“CNAME”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“MX”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“AAAA”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“TXT”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“PTR”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“SRV”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“SPF”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“CAA”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“NS”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“SOA”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;A&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;CNAME&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;MX&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;AAAA&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;TXT&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;PTR&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SRV&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SPF&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;CAA&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;NS&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SOA&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -461,8 +461,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -488,8 +488,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Wait until the changes have been replicated to all Amazon Route 53 DNS servers.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -498,7 +498,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>How long to wait for the changes to be replicated, in seconds.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">300</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">300</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -707,7 +707,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>Nameservers associated with the zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is ‘get’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“ns-1036.awsdns-00.org.”, “ns-516.awsdns-00.net.”, “ns-1504.awsdns-00.co.uk.”, “ns-1.awsdns-00.com.”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;ns-1036.awsdns-00.org.&quot;,</span> <span class="pre">&quot;ns-516.awsdns-00.net.&quot;,</span> <span class="pre">&quot;ns-1504.awsdns-00.co.uk.&quot;,</span> <span class="pre">&quot;ns-1.awsdns-00.com.&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -724,7 +724,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether this is an alias.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -733,7 +733,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether this is the primary or secondary resource record set.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “PRIMARY”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;PRIMARY&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -743,7 +743,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>geograpic location based on which Route53 resonds to DNS queries.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when configured</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“continent_code”: “NA”, “country_code”: “US”, “subdivision_code”: “CA”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;continent_code&quot;:</span> <span class="pre">&quot;NA&quot;,</span> <span class="pre">&quot;country_code&quot;:</span> <span class="pre">&quot;US&quot;,</span> <span class="pre">&quot;subdivision_code&quot;:</span> <span class="pre">&quot;CA&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -768,7 +768,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Domain name for the record set.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “new.foo.com.”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;new.foo.com.&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -777,7 +777,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Which region this should be associated with for latency-based routing.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-west-2”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-2&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -786,7 +786,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Resource record cache TTL.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “3600”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;3600&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -795,7 +795,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Resource record set type.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “A”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;A&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -804,7 +804,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Record value.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “52.43.18.27”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;52.43.18.27&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -813,7 +813,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Record Values.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“52.43.18.27”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;52.43.18.27&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -822,7 +822,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Weight of the record.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “3”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;3&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -831,7 +831,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Zone this record set belongs to.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “foo.bar.com.”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;foo.bar.com.&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

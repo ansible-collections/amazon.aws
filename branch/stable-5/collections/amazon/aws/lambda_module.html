@@ -185,8 +185,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Requires botocore &gt;= 1.21.51.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“x86_64”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“arm64”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;arm64&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -242,8 +242,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -292,7 +292,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-memory_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The amount of memory, in MB, your Lambda function is given.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">128</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">128</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -320,8 +320,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -398,8 +398,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-cell"><p>Create or delete Lambda function.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -418,7 +418,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The function maximum execution time in seconds after which Lambda should terminate the function.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">3</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -428,8 +428,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-cell"><p>Set mode to ‘Active’ to sample and trace incoming requests with AWS X-Ray. Turned off (set to ‘PassThrough’) by default.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“Active”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“PassThrough”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;PassThrough&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -440,8 +440,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -565,7 +565,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The presigned URL you can use to download the function’s .zip file that you previously uploaded.</p>
 <p>The URL is valid for up to 10 minutes.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “<a class="reference external" href="https://prod-04-2014-tasks.s3.us-east-1.amazonaws.com/snapshots/sample">https://prod-04-2014-tasks.s3.us-east-1.amazonaws.com/snapshots/sample</a>”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;https://prod-04-2014-tasks.s3.us-east-1.amazonaws.com/snapshots/sample&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -574,7 +574,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The repository from which you can download the function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “S3”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;S3&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -591,7 +591,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The architectures supported by the function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> successful run where botocore &gt;= 1.21.51</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“arm64”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;arm64&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -600,7 +600,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The SHA256 hash of the function’s deployment package.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “zOAGfF5JLFuzZoSNirUtOrQp+S341IOA3BcoXXoaIaU=”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;zOAGfF5JLFuzZoSNirUtOrQp+S341IOA3BcoXXoaIaU=&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -609,7 +609,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The size of the function’s deployment package in bytes.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 123</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">123</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -618,7 +618,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s dead letter queue.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when the function has a dead letter queue configured</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“target_arn”: “arn:aws:lambda:us-east-1:123456789012:function:myFunction:1”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;target_arn&quot;:</span> <span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -627,7 +627,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of an SQS queue or SNS topic.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when the function has a dead letter queue configured</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:lambda:us-east-1:123456789012:function:myFunction:1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -636,7 +636,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s description.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “My function”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">function&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -677,7 +677,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Environment variable key-value pairs.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when environment variables exist</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“key”: “value”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;key&quot;:</span> <span class="pre">&quot;value&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -686,7 +686,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s Amazon Resource Name (ARN).</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:lambda:us-east-1:123456789012:function:myFunction:1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -695,7 +695,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s name.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “myFunction”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;myFunction&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -704,7 +704,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function Lambda calls to begin executing your function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “index.handler”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;index.handler&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -713,7 +713,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time that the function was last updated, in ISO-8601 format (YYYY-MM-DDThh:mm:ssTZD).</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2017-08-01T00:00:00.000+0000”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-08-01T00:00:00.000+0000&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -722,7 +722,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The memory allocated to the function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 128</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">128</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -731,7 +731,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The latest updated revision of the function or alias.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “a2x9886d-d48a-4a0c-ab64-82abc005x80c”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;a2x9886d-d48a-4a0c-ab64-82abc005x80c&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -740,7 +740,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s execution role.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:iam::123456789012:role/lambda_basic_execution”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:role/lambda_basic_execution&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -749,7 +749,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The funtime environment for the Lambda function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “nodejs6.10”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nodejs6.10&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -758,7 +758,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The amount of time that Lambda allows a function to run before terminating it.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 3</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -767,7 +767,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s AWS X-Ray tracing configuration.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“mode”: “Active”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;mode&quot;:</span> <span class="pre">&quot;Active&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -776,7 +776,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tracing mode.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Active”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -785,7 +785,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The version of the Lambda function.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -794,7 +794,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s networking configuration.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“security_group_ids”: [], “subnet_ids”: [], “vpc_id”: “123”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;security_group_ids&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;subnet_ids&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;vpc_id&quot;:</span> <span class="pre">&quot;123&quot;}</span></code></p>
 </div></td>
 </tr>
 </tbody>

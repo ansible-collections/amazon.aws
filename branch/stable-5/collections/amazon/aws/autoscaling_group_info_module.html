@@ -219,8 +219,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -290,8 +290,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -366,7 +366,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name of the ASG</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -375,7 +375,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of autoscaling group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “public-webapp-production-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public-webapp-production-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -384,7 +384,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of Availability Zones that are enabled for this ASG.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“us-west-2a”, “us-west-2b”, “us-west-2a”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;us-west-2a&quot;,</span> <span class="pre">&quot;us-west-2b&quot;,</span> <span class="pre">&quot;us-west-2a&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -393,7 +393,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The date and time this ASG was created, in ISO 8601 format.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2015-11-25T00:05:36.309Z”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-11-25T00:05:36.309Z&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -402,7 +402,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The default cooldown time in seconds.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 300</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">300</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -411,7 +411,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The number of EC2 instances that should be running in this group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 3</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -420,7 +420,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 30</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">30</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -429,7 +429,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The service you want the health status from, one of “EC2” or “ELB”.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ELB”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ELB&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -438,7 +438,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of EC2 instances and their status as it relates to the ASG.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“availability_zone”: “us-west-2a”, “health_status”: “Healthy”, “instance_id”: “i-es22ad25”, “launch_configuration_name”: “public-webapp-production-1”, “lifecycle_state”: “InService”, “protected_from_scale_in”: “false”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;availability_zone&quot;:</span> <span class="pre">&quot;us-west-2a&quot;,</span> <span class="pre">&quot;health_status&quot;:</span> <span class="pre">&quot;Healthy&quot;,</span> <span class="pre">&quot;instance_id&quot;:</span> <span class="pre">&quot;i-es22ad25&quot;,</span> <span class="pre">&quot;launch_configuration_name&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;lifecycle_state&quot;:</span> <span class="pre">&quot;InService&quot;,</span> <span class="pre">&quot;protected_from_scale_in&quot;:</span> <span class="pre">&quot;false&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -447,7 +447,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of launch configuration associated with the ASG. Same as launch_configuration_name, provided for compatibility with <a class="reference internal" href="autoscaling_group_module.html#ansible-collections-amazon-aws-autoscaling-group-module"><span class="std std-ref">amazon.aws.autoscaling_group</span></a> module.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “public-webapp-production-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public-webapp-production-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -456,7 +456,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of launch configuration associated with the ASG.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “public-webapp-production-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public-webapp-production-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -465,7 +465,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of lifecycle hooks for the ASG.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“AutoScalingGroupName”: “public-webapp-production-1”, “DefaultResult”: “ABANDON”, “GlobalTimeout”: 172800, “HeartbeatTimeout”: 3600, “LifecycleHookName”: “instance-launch”, “LifecycleTransition”: “autoscaling:EC2_INSTANCE_LAUNCHING”}, {“AutoScalingGroupName”: “public-webapp-production-1”, “DefaultResult”: “ABANDON”, “GlobalTimeout”: 172800, “HeartbeatTimeout”: 3600, “LifecycleHookName”: “instance-terminate”, “LifecycleTransition”: “autoscaling:EC2_INSTANCE_TERMINATING”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;AutoScalingGroupName&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;DefaultResult&quot;:</span> <span class="pre">&quot;ABANDON&quot;,</span> <span class="pre">&quot;GlobalTimeout&quot;:</span> <span class="pre">172800,</span> <span class="pre">&quot;HeartbeatTimeout&quot;:</span> <span class="pre">3600,</span> <span class="pre">&quot;LifecycleHookName&quot;:</span> <span class="pre">&quot;instance-launch&quot;,</span> <span class="pre">&quot;LifecycleTransition&quot;:</span> <span class="pre">&quot;autoscaling:EC2_INSTANCE_LAUNCHING&quot;},</span> <span class="pre">{&quot;AutoScalingGroupName&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;DefaultResult&quot;:</span> <span class="pre">&quot;ABANDON&quot;,</span> <span class="pre">&quot;GlobalTimeout&quot;:</span> <span class="pre">172800,</span> <span class="pre">&quot;HeartbeatTimeout&quot;:</span> <span class="pre">3600,</span> <span class="pre">&quot;LifecycleHookName&quot;:</span> <span class="pre">&quot;instance-terminate&quot;,</span> <span class="pre">&quot;LifecycleTransition&quot;:</span> <span class="pre">&quot;autoscaling:EC2_INSTANCE_TERMINATING&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -474,7 +474,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of load balancers names attached to the ASG.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“elb-webapp-prod”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;elb-webapp-prod&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -483,7 +483,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Maximum size of group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 3</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -492,7 +492,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Minimum size of group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 1</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -501,7 +501,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether or not new instances a protected from automatic scaling in.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -510,7 +510,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>Placement group into which instances are launched, if any.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “None”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -519,7 +519,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>The current state of the group when DeleteAutoScalingGroup is in progress.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “None”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -528,7 +528,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of tags for the ASG, and whether or not each tag propagates to instances at launch.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“key”: “Name”, “propagate_at_launch”: “true”, “resource_id”: “public-webapp-production-1”, “resource_type”: “auto-scaling-group”, “value”: “public-webapp-production-1”}, {“key”: “env”, “propagate_at_launch”: “true”, “resource_id”: “public-webapp-production-1”, “resource_type”: “auto-scaling-group”, “value”: “production”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;key&quot;:</span> <span class="pre">&quot;Name&quot;,</span> <span class="pre">&quot;propagate_at_launch&quot;:</span> <span class="pre">&quot;true&quot;,</span> <span class="pre">&quot;resource_id&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;resource_type&quot;:</span> <span class="pre">&quot;auto-scaling-group&quot;,</span> <span class="pre">&quot;value&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;},</span> <span class="pre">{&quot;key&quot;:</span> <span class="pre">&quot;env&quot;,</span> <span class="pre">&quot;propagate_at_launch&quot;:</span> <span class="pre">&quot;true&quot;,</span> <span class="pre">&quot;resource_id&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;resource_type&quot;:</span> <span class="pre">&quot;auto-scaling-group&quot;,</span> <span class="pre">&quot;value&quot;:</span> <span class="pre">&quot;production&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -537,7 +537,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of ARNs of the target groups that the ASG populates</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-host-hello/1a2b3c4d5e6f1a2b”, “arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-path-world/abcd1234abcd1234”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-host-hello/1a2b3c4d5e6f1a2b&quot;,</span> <span class="pre">&quot;arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-path-world/abcd1234abcd1234&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -546,7 +546,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>List of names of the target groups that the ASG populates</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“target-group-host-hello”, “target-group-path-world”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;target-group-host-hello&quot;,</span> <span class="pre">&quot;target-group-path-world&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -555,7 +555,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of termination policies for the group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “[‘Default’]”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;['Default']&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

@@ -218,8 +218,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -309,9 +309,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>Whether the rule is present (and enabled), disabled, or absent.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“disabled”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;disabled&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -409,8 +409,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -486,7 +486,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </div></td>
 <td><div class="ansible-option-cell"><p>CloudWatch Event rule data.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“arn”: “arn:aws:events:us-east-1:123456789012:rule/MyCronTask”, “description”: “Run my scheduled task”, “name”: “MyCronTask”, “schedule_expression”: “cron(0 20 * * ? *)”, “state”: “ENABLED”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;arn&quot;:</span> <span class="pre">&quot;arn:aws:events:us-east-1:123456789012:rule/MyCronTask&quot;,</span> <span class="pre">&quot;description&quot;:</span> <span class="pre">&quot;Run</span> <span class="pre">my</span> <span class="pre">scheduled</span> <span class="pre">task&quot;,</span> <span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;MyCronTask&quot;,</span> <span class="pre">&quot;schedule_expression&quot;:</span> <span class="pre">&quot;cron(0</span> <span class="pre">20</span> <span class="pre">*</span> <span class="pre">*</span> <span class="pre">?</span> <span class="pre">*)&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;ENABLED&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -495,7 +495,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </div></td>
 <td><div class="ansible-option-cell"><p>CloudWatch Event target(s) assigned to the rule.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“[{ ‘arn’: ‘arn:aws:lambda:us-east-1:123456789012:function:MyFunction’”, ” ‘id’: ‘MyTargetId’ }]”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;[{</span> <span class="pre">'arn':</span> <span class="pre">'arn:aws:lambda:us-east-1:123456789012:function:MyFunction'&quot;,</span> <span class="pre">&quot;</span> <span class="pre">'id':</span> <span class="pre">'MyTargetId'</span> <span class="pre">}]&quot;]</span></code></p>
 </div></td>
 </tr>
 </tbody>

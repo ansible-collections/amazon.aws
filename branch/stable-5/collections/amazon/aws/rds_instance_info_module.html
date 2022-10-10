@@ -227,8 +227,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -290,8 +290,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -345,7 +345,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Gigabytes of storage allocated to the database</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 10</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">10</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -354,7 +354,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether minor version upgrades happen automatically</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> true</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -363,7 +363,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Availability Zone in which the database resides</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-west-2b”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-2b&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -372,7 +372,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Days for which backups are retained</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 7</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">7</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -381,7 +381,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID for the CA certificate</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “rds-ca-2015”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rds-ca-2015&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -390,7 +390,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether DB tags should be copied to the snapshot</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -399,7 +399,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ARN of the database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:rds:us-west-2:123456789012:db:helloworld-rds”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:rds:us-west-2:123456789012:db:helloworld-rds&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -408,7 +408,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Instance class of the database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “db.t2.small”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;db.t2.small&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -417,7 +417,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database instance identifier</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “helloworld-rds”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;helloworld-rds&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -426,7 +426,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Port used by the database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 0</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -435,7 +435,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of the database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “available”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -444,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the database</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “management”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;management&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -461,7 +461,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the database parameter group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “psql-pg-helloworld”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;psql-pg-helloworld&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -470,7 +470,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the parameter group has been applied</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “in-sync”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;in-sync&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -479,7 +479,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of security groups used by the database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> []</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -496,7 +496,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Description of the DB subnet group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “My database subnet group”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">database</span> <span class="pre">subnet</span> <span class="pre">group&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -505,7 +505,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the database subnet group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “my-subnet-group”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;my-subnet-group&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -514,7 +514,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet group status</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Complete”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Complete&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -539,7 +539,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the availability zone</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-west-2c”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-2c&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -548,7 +548,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet ID</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “subnet-abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -557,7 +557,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet status</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Active”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -566,7 +566,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VPC id of the subnet group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “vpc-abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -575,7 +575,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>AWS Region-unique, immutable identifier for the DB instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “db-AAAAAAAAAAAAAAAAAAAAAAAAAA”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;db-AAAAAAAAAAAAAAAAAAAAAAAAAA&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -585,7 +585,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the DB instance has deletion protection enabled, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -594,7 +594,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of domain memberships</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> []</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -611,7 +611,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database endpoint address</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “helloworld-rds.ctrqpe3so1sf.us-west-2.rds.amazonaws.com”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;helloworld-rds.ctrqpe3so1sf.us-west-2.rds.amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -620,7 +620,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Route53 hosted zone ID</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Z1PABCD0000000”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Z1PABCD0000000&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -629,7 +629,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database endpoint port</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 5432</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">5432</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -638,7 +638,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “postgres”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;postgres&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -647,7 +647,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine version</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “9.5.10”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;9.5.10&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -656,7 +656,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether database authentication through IAM is enabled</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -665,7 +665,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time the instance was created</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2017-10-10T04:00:07.434000+00:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-10-10T04:00:07.434000+00:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -674,7 +674,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Provisioned IOPS value for the DB instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 1000</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1000</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -683,7 +683,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>KMS Key ID</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:kms:us-west-2:123456789012:key/abcd1234-0000-abcd-1111-0123456789ab”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:us-west-2:123456789012:key/abcd1234-0000-abcd-1111-0123456789ab&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -692,7 +692,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Latest time to which a database can be restored with point-in-time restore</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2018-05-17T00:03:56+00:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2018-05-17T00:03:56+00:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -701,7 +701,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>License model</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “postgresql-license”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;postgresql-license&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -710,7 +710,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database master username</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “dbadmin”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;dbadmin&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -719,7 +719,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 0</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -728,7 +728,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether Multi-AZ is on</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -745,7 +745,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Option group name</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “default:postgres-9-5”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default:postgres-9-5&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -754,7 +754,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of option group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “in-sync”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;in-sync&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -771,7 +771,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether performance insights are enabled</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -780,7 +780,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Preferred backup window</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “04:00-05:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;04:00-05:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -789,7 +789,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Preferred maintenance window</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “mon:05:00-mon:05:30”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;mon:05:00-mon:05:30&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -798,7 +798,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the DB is publicly accessible</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -807,7 +807,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of database instance read replicas</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> []</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -816,7 +816,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the storage is encrypted</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> true</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -825,7 +825,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Storage type of the Database instance</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “gp2”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;gp2&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -850,7 +850,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of the VPC security group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “active”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;active&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -859,7 +859,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VPC Security Group ID</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “sg-abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sg-abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

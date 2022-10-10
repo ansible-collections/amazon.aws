@@ -233,8 +233,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -253,8 +253,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>Whether the key should be automatically rotated every year.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -265,8 +265,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>Whether or not a key is enabled.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -312,17 +312,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of operations that the grantee may perform using the CMK.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“Decrypt”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“Encrypt”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“GenerateDataKey”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“GenerateDataKeyWithoutPlaintext”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ReEncryptFrom”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ReEncryptTo”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“CreateGrant”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“RetireGrant”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“DescribeKey”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“Verify”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“Sign”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Decrypt&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Encrypt&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;GenerateDataKey&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;GenerateDataKeyWithoutPlaintext&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ReEncryptFrom&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ReEncryptTo&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;CreateGrant&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;RetireGrant&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;DescribeKey&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Verify&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Sign&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -354,14 +354,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>The specification is not changeable once the key is created.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“SYMMETRIC_DEFAULT”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“RSA_2048”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“RSA_3072”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“RSA_4096”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ECC_NIST_P256”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ECC_NIST_P384”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ECC_NIST_P521”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“ECC_SECG_P256K1”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;SYMMETRIC_DEFAULT&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;RSA_2048&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;RSA_3072&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;RSA_4096&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ECC_NIST_P256&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ECC_NIST_P384&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ECC_NIST_P521&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ECC_SECG_P256K1&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -374,8 +374,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>The usage is not changeable once the key is created.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“ENCRYPT_DECRYPT”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“SIGN_VERIFY”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;ENCRYPT_DECRYPT&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SIGN_VERIFY&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -416,8 +416,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>Whether the <em>grants</em> argument should cause grants not in the list to be removed.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -430,8 +430,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -468,8 +468,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>Passing a key that is scheduled for deletion with <em>state=present</em> will cancel key deletion.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -490,8 +490,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -573,7 +573,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>List of aliases associated with the key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“aws/acm”, “aws/ebs”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;aws/acm&quot;,</span> <span class="pre">&quot;aws/ebs&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -582,7 +582,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS Account ID that the key belongs to.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “1234567890123”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1234567890123&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -591,7 +591,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Grant types that would be changed/were changed.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“role”: “add”, “role grant”: “add”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;role&quot;:</span> <span class="pre">&quot;add&quot;,</span> <span class="pre">&quot;role</span> <span class="pre">grant&quot;:</span> <span class="pre">&quot;add&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -600,7 +600,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Date and time of creation of the key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2017-04-18T15:12:08.551000+10:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-04-18T15:12:08.551000+10:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -610,7 +610,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Date and time after which KMS deletes this KMS key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when key_state is PendingDeletion</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2017-04-18T15:12:08.551000+10:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-04-18T15:12:08.551000+10:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -619,7 +619,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Description of the key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “My Key for Protecting important stuff”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">Key</span> <span class="pre">for</span> <span class="pre">Protecting</span> <span class="pre">important</span> <span class="pre">stuff&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -628,7 +628,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the automatic annual key rotation is enabled. Returns None if key rotation status can’t be determined.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -637,7 +637,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the key is enabled. True if <em>key_state</em> is <code class="docutils literal notranslate"><span class="pre">Enabled</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -654,7 +654,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Constraints on the encryption context that the grant allows. See <a class="reference external" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html">https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html</a> for further details</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“encryption_context_equals”: {“aws:lambda:_function_arn”: “arn:aws:lambda:ap-southeast-2:123456789012:function:xyz”}}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;encryption_context_equals&quot;:</span> <span class="pre">{&quot;aws:lambda:_function_arn&quot;:</span> <span class="pre">&quot;arn:aws:lambda:ap-southeast-2:123456789012:function:xyz&quot;}}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -663,7 +663,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date of creation of the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2017-04-18T15:12:08+10:00”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-04-18T15:12:08+10:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -672,7 +672,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The unique ID for the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -681,7 +681,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The principal that receives the grant’s permissions.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -690,7 +690,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS account under which the grant was issued.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:iam::123456789012:root”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:root&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -699,7 +699,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key ARN to which the grant applies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -708,7 +708,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “xyz”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;xyz&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -717,7 +717,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The list of operations permitted by the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“Decrypt”, “RetireGrant”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;Decrypt&quot;,</span> <span class="pre">&quot;RetireGrant&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -726,7 +726,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The principal that can retire the grant.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -743,7 +743,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>ARN of key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -752,7 +752,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>ID of key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “abcd1234-abcd-1234-5678-ef1234567890”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;abcd1234-abcd-1234-5678-ef1234567890&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -762,7 +762,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “123456789012”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::123456789012:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Id&quot;:</span> <span class="pre">&quot;auto-ebs-2&quot;,</span> <span class="pre">&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Encrypt&quot;,</span> <span class="pre">&quot;kms:Decrypt&quot;,</span> <span class="pre">&quot;kms:ReEncrypt*&quot;,</span> <span class="pre">&quot;kms:GenerateDataKey*&quot;,</span> <span class="pre">&quot;kms:CreateGrant&quot;,</span> <span class="pre">&quot;kms:DescribeKey&quot;],</span> <span class="pre">&quot;Condition&quot;:</span> <span class="pre">{&quot;StringEquals&quot;:</span> <span class="pre">{&quot;kms:CallerAccount&quot;:</span> <span class="pre">&quot;123456789012&quot;,</span> <span class="pre">&quot;kms:ViaService&quot;:</span> <span class="pre">&quot;ec2.ap-southeast-2.amazonaws.com&quot;}},</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;*&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">access</span> <span class="pre">through</span> <span class="pre">EBS</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">principals</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">account</span> <span class="pre">that</span> <span class="pre">are</span> <span class="pre">authorized</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">EBS&quot;},</span> <span class="pre">{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Describe*&quot;,</span> <span class="pre">&quot;kms:Get*&quot;,</span> <span class="pre">&quot;kms:List*&quot;,</span> <span class="pre">&quot;kms:RevokeGrant&quot;],</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;arn:aws:iam::123456789012:root&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">direct</span> <span class="pre">access</span> <span class="pre">to</span> <span class="pre">key</span> <span class="pre">metadata</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">account&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -772,7 +772,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <td><div class="ansible-option-cell"><p>The state of the key.</p>
 <p>Will be one of <code class="docutils literal notranslate"><span class="pre">'Creating'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Enabled'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Disabled'</span></code>, <code class="docutils literal notranslate"><span class="pre">'PendingDeletion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'PendingImport'</span></code>, <code class="docutils literal notranslate"><span class="pre">'PendingReplicaDeletion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Unavailable'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'Updating'</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “PendingDeletion”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;PendingDeletion&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -781,7 +781,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>The cryptographic operations for which you can use the key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ENCRYPT_DECRYPT”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ENCRYPT_DECRYPT&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -790,7 +790,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>The source of the key’s key material. When this value is <code class="docutils literal notranslate"><span class="pre">AWS_KMS</span></code>, AWS KMS created the key material. When this value is <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code>, the key material was imported or the CMK lacks key material.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “AWS_KMS”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AWS_KMS&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -799,7 +799,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Id”: “auto-ebs-2”, “Statement”: [{“Action”: [“kms:Encrypt”, “kms:Decrypt”, “kms:ReEncrypt*”, “kms:GenerateDataKey*”, “kms:CreateGrant”, “kms:DescribeKey”], “Condition”: {“StringEquals”: {“kms:CallerAccount”: “123456789012”, “kms:ViaService”: “ec2.ap-southeast-2.amazonaws.com”}}, “Effect”: “Allow”, “Principal”: {“AWS”: “*”}, “Resource”: “*”, “Sid”: “Allow access through EBS for all principals in the account that are authorized to use EBS”}, {“Action”: [“kms:Describe*”, “kms:Get*”, “kms:List*”, “kms:RevokeGrant”], “Effect”: “Allow”, “Principal”: {“AWS”: “arn:aws:iam::123456789012:root”}, “Resource”: “*”, “Sid”: “Allow direct access to key metadata to the account”}], “Version”: “2012-10-17”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Id&quot;:</span> <span class="pre">&quot;auto-ebs-2&quot;,</span> <span class="pre">&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Encrypt&quot;,</span> <span class="pre">&quot;kms:Decrypt&quot;,</span> <span class="pre">&quot;kms:ReEncrypt*&quot;,</span> <span class="pre">&quot;kms:GenerateDataKey*&quot;,</span> <span class="pre">&quot;kms:CreateGrant&quot;,</span> <span class="pre">&quot;kms:DescribeKey&quot;],</span> <span class="pre">&quot;Condition&quot;:</span> <span class="pre">{&quot;StringEquals&quot;:</span> <span class="pre">{&quot;kms:CallerAccount&quot;:</span> <span class="pre">&quot;123456789012&quot;,</span> <span class="pre">&quot;kms:ViaService&quot;:</span> <span class="pre">&quot;ec2.ap-southeast-2.amazonaws.com&quot;}},</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;*&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">access</span> <span class="pre">through</span> <span class="pre">EBS</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">principals</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">account</span> <span class="pre">that</span> <span class="pre">are</span> <span class="pre">authorized</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">EBS&quot;},</span> <span class="pre">{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Describe*&quot;,</span> <span class="pre">&quot;kms:Get*&quot;,</span> <span class="pre">&quot;kms:List*&quot;,</span> <span class="pre">&quot;kms:RevokeGrant&quot;],</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;arn:aws:iam::123456789012:root&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">direct</span> <span class="pre">access</span> <span class="pre">to</span> <span class="pre">key</span> <span class="pre">metadata</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">account&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -808,7 +808,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>Dictionary of tags applied to the key. Empty when access is denied even if there are tags.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Name”: “myKey”, “Purpose”: “protecting_stuff”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;myKey&quot;,</span> <span class="pre">&quot;Purpose&quot;:</span> <span class="pre">&quot;protecting_stuff&quot;}</span></code></p>
 </div></td>
 </tr>
 </tbody>
