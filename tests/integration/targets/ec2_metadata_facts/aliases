@@ -1,6 +1,5 @@
-# We're dependent on AWS actually starting up the instances in a timely manner.
-# This doesn't always happen...
-unstable
+# very dependent on how quickly the instance comes up, varies between 5m and 10m
+time=10m
 
 non_local
 cloud/aws
