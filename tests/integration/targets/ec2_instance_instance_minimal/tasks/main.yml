@@ -279,6 +279,16 @@
       wait: true
     register: create_instance
 
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_3: "{{ create_instance.instance_ids[0] }}"
+
+  - name: Get instance info
+    ec2_instance_info:
+      instance_ids:
+        - "{{ create_instance_id_3 }}"
+    register: info_result
+
   - assert:
       that:
       - create_instance is not failed
@@ -287,11 +297,7 @@
       - '"instance_ids" in create_instance'
       - create_instance.instance_ids | length == 1
       - create_instance.instance_ids[0].startswith("i-")
-      - create_instance.instances[0].placement.availability_zone == '{{ aws_region }}a'
-
-  - name: "Save instance ID"
-    set_fact:
-      create_instance_id_3: "{{ create_instance.instance_ids[0] }}"
+      - info_result.instances[0].placement.availability_zone == '{{ aws_region }}a'
 
   - name: "Create a new instance in AZ {{ aws_region }}b"
     ec2_instance:
@@ -306,6 +312,16 @@
       wait: true
     register: create_instance
 
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_4: "{{ create_instance.instance_ids[0] }}"
+
+  - name: Get instance info
+    ec2_instance_info:
+      instance_ids:
+        - "{{ create_instance_id_4 }}"
+    register: info_result
+
   - assert:
       that:
       - create_instance is not failed
@@ -314,11 +330,7 @@
       - '"instance_ids" in create_instance'
       - create_instance.instance_ids | length == 1
       - create_instance.instance_ids[0].startswith("i-")
-      - create_instance.instances[0].placement.availability_zone == '{{ aws_region }}b'
-
-  - name: "Save instance ID"
-    set_fact:
-      create_instance_id_4: "{{ create_instance.instance_ids[0] }}"
+      - info_result.instances[0].placement.availability_zone == '{{ aws_region }}b'
 
 ################################################################
 
