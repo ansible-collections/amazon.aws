@@ -21,9 +21,9 @@ jobs:
     with:
       init-lenient: false
       init-fail-on-error: true
-      # Please also update docs-pr.yml
-      provide-link-targets: |
-        ansible_collections.community.aws.autoscaling_launch_config_module
+      intersphinx-links: |
+        community_aws:https://ansible-collections.github.io/community.aws/branch/main/
+        ansible_devel:https://docs.ansible.com/ansible-core/devel/
 
   publish-docs-gh-pages:
     # use to prevent running on forks
