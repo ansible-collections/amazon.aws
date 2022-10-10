@@ -60,30 +60,34 @@ options:
                 description:
                   - A short name used to tie this object to the results in the response. 
                 type: str
-            metricstat:
+            metric_stat:
                 description: The metric to be returned, along with statistics, period, and units. 
                 type: dict
                 suboptions:
-                    namespace:
-                        description: The namespace of the metric.
-                        type: str
-                    metricname:
-                        description: The name of the metric. 
-                        type: str
-                        required: True
-                    dimensions:
-                        description: a name/value pair that is part of the identity of a metric.
-                        type: list
-                        elements: dict
+                    metric:
+                        description: The metric to return, including the metric name, namespace, and dimensions.
+                        type: dict
                         suboptions:
-                            name:
-                                description: The name of the dimension.
+                            namespace:
+                                description: The namespace of the metric.
+                                type: str
+                            metric_name:
+                                description: The name of the metric. 
                                 type: str
                                 required: True
-                            value:
-                                description: The value of the dimension.
-                                type: str
-                                required: True
+                            dimensions:
+                                description: a name/value pair that is part of the identity of a metric.
+                                type: list
+                                elements: dict
+                                suboptions:
+                                    name:
+                                        description: The name of the dimension.
+                                        type: str
+                                        required: True
+                                    value:
+                                        description: The value of the dimension.
+                                        type: str
+                                        required: True
                     period:
                         description: The granularity, in seconds, of the returned data points. 
                         type: int
@@ -95,23 +99,23 @@ options:
                     unit:
                         description: Unit to use when storing the metric.
                         type: str
-              expression:
-                  description: 
-                    - This field can contain either a Metrics Insights query,
-                      or a metric math expression to be performed on the returned data.
-                  type: str
-              label:
-                  description: A human-readable label for this metric or expression. 
-                  type: str
-              return_data:
-                  description: This option indicates whether to return the timestamps and raw data values of this metric.
-                  type: bool
-              period:
-                  description: The granularity, in seconds, of the returned data points. 
-                  type: int
-              account_id:
-                  description: The ID of the account where the metrics are located, if this is a cross-account alarm.
-                  type: str
+            expression:
+                description: 
+                  - This field can contain either a Metrics Insights query,
+                    or a metric math expression to be performed on the returned data.
+                type: str
+            label:
+                description: A human-readable label for this metric or expression. 
+                type: str
+            return_data:
+                description: This option indicates whether to return the timestamps and raw data values of this metric.
+                type: bool
+            period:
+                description: The granularity, in seconds, of the returned data points. 
+                type: int
+            account_id:
+                description: The ID of the account where the metrics are located, if this is a cross-account alarm.
+                type: str
     namespace:
         description:
           - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
@@ -238,7 +242,7 @@ EXAMPLES = r'''
       state: present
       region: ap-southeast-2
       name: "cpu-low"
-      metric: "CPUUtilization"
+      metric_name: "CPUUtilization"
       namespace: "AWS/EC2"
       statistic: Average
       comparison: "LessThanOrEqualToThreshold"
@@ -250,6 +254,26 @@ EXAMPLES = r'''
       dimensions: {'InstanceId':'i-XXX'}
       alarm_actions: ["action1","action2"]
 
+  - name: create alarm with metrics
+    amazon.aws.cloudwatch_metric_alarm:
+      state: present
+      region: ap-southeast-2
+      name: "cpu-low"
+      metrics:
+        - id: 'CPU'
+          metric_stat:
+              metric:
+                  dimensions:
+                      name: "InstanceId"
+                      value: "i-xx"
+                  metric_name: "CPUUtilization"
+                  namespace: "AWS/EC2"
+              period: "300"
+              stat: "Average"
+              unit: "Percent"
+          return_data: False
+      alarm_actions: ["action1","action2"]
+      
   - name: Create an alarm to recover a failed instance
     amazon.aws.cloudwatch_metric_alarm:
       state: present
