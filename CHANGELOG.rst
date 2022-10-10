@@ -5,6 +5,14 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.0.2
+======
+
+Bugfixes
+--------
+
+- ec2_metadata_facts - fixed ``AttributeError`` (https://github.com/ansible-collections/amazon.aws/issues/1134).
+
 v5.0.1
 ======
 

@@ -1354,3 +1354,10 @@ releases:
     - 1109-ec2_vpc_net_info_keyerror.yml
     - 1115-s3_object-scaleway.yml
     release_date: '2022-10-06'
+  5.0.2:
+    changes:
+      bugfixes:
+      - ec2_metadata_facts - fixed ``AttributeError`` (https://github.com/ansible-collections/amazon.aws/issues/1134).
+    fragments:
+    - 1134-ec2_metadata_facts-AttributeError.yml
+    release_date: '2022-10-10'
