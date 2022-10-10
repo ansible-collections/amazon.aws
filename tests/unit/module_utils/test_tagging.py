@@ -6,6 +6,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
@@ -24,6 +26,13 @@ class TestTagging():
             {'Key': 'UpperCamel', 'Value': 'upperCamelValue'},
             {'Key': 'Normal case', 'Value': 'Normal Value'},
             {'Key': 'lower case', 'Value': 'lower case value'}
+        ]
+
+        self.tag_example_boto3_list_custom_key = [
+            {'MyKey': 'lowerCamel', 'MyValue': 'lowerCamelValue'},
+            {'MyKey': 'UpperCamel', 'MyValue': 'upperCamelValue'},
+            {'MyKey': 'Normal case', 'MyValue': 'Normal Value'},
+            {'MyKey': 'lower case', 'MyValue': 'lower case value'}
         ]
 
         self.tag_example_dict = {
@@ -52,6 +61,10 @@ class TestTagging():
         sorted_list = sorted(self.tag_example_boto3_list, key=lambda i: (i['Key']))
         assert sorted_converted_list == sorted_list
 
+    def test_ansible_dict_to_boto3_tag_list_empty(self):
+        assert ansible_dict_to_boto3_tag_list({}) == []
+        assert ansible_dict_to_boto3_tag_list(None) == []
+
     # ========================================================
     #   tagging.boto3_tag_list_to_ansible_dict
     # ========================================================
@@ -65,6 +78,14 @@ class TestTagging():
         assert boto3_tag_list_to_ansible_dict([]) == {}
         # Minio returns [{}] when there are no tags
         assert boto3_tag_list_to_ansible_dict([{}]) == {}
+
+    def test_boto3_tag_list_to_ansible_dict_nondefault_keys(self):
+        converted_dict = boto3_tag_list_to_ansible_dict(self.tag_example_boto3_list_custom_key, 'MyKey', 'MyValue')
+        assert converted_dict == self.tag_example_dict
+
+        with pytest.raises(ValueError) as context:
+            boto3_tag_list_to_ansible_dict(self.tag_example_boto3_list, 'MyKey', 'MyValue')
+        assert "Couldn't find tag key" in str(context.value)
 
     # ========================================================
     #   tagging.compare_aws_tags
@@ -174,6 +195,10 @@ class TestTagging():
     # ========================================================
     #   tagging.boto3_tag_specifications
     # ========================================================
+
+    def test_boto3_tag_specifications_empty(self):
+        assert boto3_tag_specifications(None) is None
+        assert boto3_tag_specifications({}) is None
 
     # Builds upon ansible_dict_to_boto3_tag_list, assume that if a minimal tag
     # dictionary behaves as expected, then all will behave
