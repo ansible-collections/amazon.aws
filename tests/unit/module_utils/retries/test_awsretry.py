@@ -26,7 +26,7 @@ class TestAWSRetry():
     def test_no_failures(self):
         self.counter = 0
 
-        @AWSRetry.backoff(tries=2, delay=0.1)
+        @AWSRetry.exponential_backoff(retries=2, delay=0.1)
         def no_failures():
             self.counter += 1
 
@@ -37,7 +37,7 @@ class TestAWSRetry():
         self.counter = 0
         err_response = {'Error': {'Code': 'MalformedPolicyDocument'}}
 
-        @AWSRetry.backoff(tries=2, delay=0.1, catch_extra_error_codes=['MalformedPolicyDocument'])
+        @AWSRetry.exponential_backoff(retries=2, delay=0.1, catch_extra_error_codes=['MalformedPolicyDocument'])
         def extend_failures():
             self.counter += 1
             if self.counter < 2:
@@ -53,7 +53,7 @@ class TestAWSRetry():
         self.counter = 0
         err_response = {'Error': {'Code': 'InternalFailure'}}
 
-        @AWSRetry.backoff(tries=2, delay=0.1)
+        @AWSRetry.exponential_backoff(retries=2, delay=0.1)
         def retry_once():
             self.counter += 1
             if self.counter < 2:
@@ -69,7 +69,7 @@ class TestAWSRetry():
         self.counter = 0
         err_response = {'Error': {'Code': 'RequestLimitExceeded'}}
 
-        @AWSRetry.backoff(tries=4, delay=0.1)
+        @AWSRetry.exponential_backoff(retries=4, delay=0.1)
         def fail():
             self.counter += 1
             raise botocore.exceptions.ClientError(err_response, 'toooo fast!!')
@@ -84,7 +84,7 @@ class TestAWSRetry():
         self.counter = 0
         err_response = {'Error': {'Code': 'AuthFailure'}}
 
-        @AWSRetry.backoff(tries=4, delay=0.1)
+        @AWSRetry.exponential_backoff(retries=4, delay=0.1)
         def raise_unexpected_error():
             self.counter += 1
             raise botocore.exceptions.ClientError(err_response, 'unexpected error')

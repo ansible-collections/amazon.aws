@@ -72,24 +72,6 @@ class TestCloudRetry():
             return True
 
     # ========================================================
-    #   retry original backoff
-    # ========================================================
-    def test_retry_backoff(self):
-
-        @TestCloudRetry.UnitTestsRetry.backoff(tries=3, delay=1, backoff=1.1,
-                                               catch_extra_error_codes=TestCloudRetry.error_codes)
-        def test_retry_func():
-            if test_retry_func.counter < 2:
-                test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
-            else:
-                return True
-
-        test_retry_func.counter = 0
-        ret = test_retry_func()
-        assert ret is True
-
-    # ========================================================
     #   retry exponential backoff
     # ========================================================
     def test_retry_exponential_backoff(self):
