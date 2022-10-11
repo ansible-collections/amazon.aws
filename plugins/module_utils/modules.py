@@ -123,7 +123,7 @@ class AnsibleAWSModule(object):
         if local_settings["check_boto3"]:
             if not HAS_BOTO3:
                 self._module.fail_json(
-                    msg=missing_required_lib('botocore or boto3'))
+                    msg=missing_required_lib('botocore and boto3'))
             if not self.botocore_at_least('1.21.0'):
                 self.warn('botocore < 1.21.0 is not supported or tested.'
                           '  Some features may not work.')
