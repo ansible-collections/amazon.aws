@@ -1126,7 +1126,7 @@ def build_network_spec(params):
                 module.fail_json(
                     msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to create an instance")
             else:
-                sub = get_default_subnet(default_vpc)
+                sub = get_default_subnet(default_vpc, availability_zone=module.params.get('availability_zone'))
                 spec['SubnetId'] = sub['SubnetId']
 
         if network.get('private_ip_address'):
