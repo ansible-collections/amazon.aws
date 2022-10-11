@@ -1048,3 +1048,41 @@ Where one of these reasons apply you should open a pull request proposing the mi
 Unsupported integration tests will not be automatically run by CI.  However, the
 necessary policies should be available so that the tests can be manually run by
 someone performing a PR review or writing a patch.
+
+Unit-tests for AWS plugins
+==========================
+
+Why do we need unit-tests when we've got functional tests
+---------------------------------------------------------
+
+Unit-tests are much faster and more suitable to test corner cases. They are also don't depend on a third party service
+and thus, a failure is less likley to be a false positive.
+
+Unit-tests guidlines
+--------------------
+
+Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknoledge that writing unit-tests may
+be challenging and we also accept contribution with no coverage. The test coverage of the other type of plugins is recommand.
+
+- Our tests are run with ``pytest`` and we use the features it provides such as Fixtures, Parametrization.
+- The use of ``unittest.TestCase`` is discouraged for the sack of consistency and simplicity.
+- Unit-tests should run fine without any network connection.
+- It's not necessary to mock all the boto3/botocore calls (``get_paginator()``, ``paginate()``, etc). It's often better to just set-up a function that wrap these calls and mock the result.
+- Simplicity prevails. Tests should be short and cover a limited set of features.
+
+Pytest is well documented and you will find some example in its `ow-to guides <https://docs.pytest.org/en/latest/how-to/index.html>`_
+
+How to run my unit-tests
+------------------------
+
+In our CI, the testing is done by ``ansible-test``. You can run the tests locally with the following command:
+
+.. code-block:: shell
+
+    $ ansible-test units --docker
+
+We also provide a ``tox`` configuration which allow you to run one specific test faster. In this example, we focus on the tests for the ``s3_object`` module:
+
+.. code-block:: shell
+
+    $ tox -e py3 -- tests/unit/plugins/modules/test_s3_object.py
