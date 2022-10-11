@@ -20,11 +20,17 @@ from ansible.module_utils.urls import open_url
 from .ec2 import HAS_BOTO3
 from .ec2 import get_aws_connection_info
 
+import ansible.module_utils.common.warnings as ansible_warnings
+
 
 def hexdigest(s):
     """
     Returns the sha256 hexdigest of a string after encoding.
     """
+
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.urls.hexdigest is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
 
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
@@ -35,6 +41,10 @@ def format_querystring(params=None):
 
     It's specially sorted for cannonical requests
     """
+
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.urls.format_querystring is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
 
     if not params:
         return ""
@@ -50,6 +60,10 @@ def sign(key, msg):
     Return digest for key applied to msg
     '''
 
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.urls.sign is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
+
     return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
 
@@ -57,6 +71,10 @@ def get_signature_key(key, dateStamp, regionName, serviceName):
     '''
     Returns signature key for AWS resource
     '''
+
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.urls.get_signature_key is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
 
     kDate = sign(("AWS4" + key).encode("utf-8"), dateStamp)
     kRegion = sign(kDate, regionName)
@@ -69,6 +87,10 @@ def get_aws_credentials_object(module):
     '''
     Returns aws_access_key_id, aws_secret_access_key, session_token for a module.
     '''
+
+    ansible_warnings.deprecate(
+        'amazon.aws.module_utils.urls.get_aws_credentials_object is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
 
     if not HAS_BOTO3:
         module.fail_json("get_aws_credentials_object requires boto3")
@@ -113,6 +135,10 @@ def signed_request(
 
     :returns: HTTPResponse
     """
+
+    module.deprecate(
+        'amazon.aws.module_utils.urls.signed_request is unused and has been deprecated.',
+        version='7.0.0', collection_name='amazon.aws')
 
     if not HAS_BOTO3:
         module.fail_json("A sigv4 signed_request requires boto3")
