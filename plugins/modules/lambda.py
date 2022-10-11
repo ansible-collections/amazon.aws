@@ -9,10 +9,11 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: lambda
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage AWS Lambda functions
 description:
-   - Allows for the management of Lambda functions.
+  - Allows for the management of Lambda functions.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   name:
     description:
@@ -108,6 +109,7 @@ options:
       - The KMS key ARN used to encrypt the function's environment variables.
     type: str
     version_added: 3.3.0
+    version_added_collection: community.aws
   architecture:
     description:
       - The instruction set architecture that the function supports.

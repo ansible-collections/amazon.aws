@@ -9,13 +9,14 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: kms_key
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Perform various KMS key management tasks
 description:
   - Manage role/user access to a KMS key.
   - Not designed for encrypting/decrypting.
   - Prior to release 5.0.0 this module was called C(community.aws.aws_kms).
     The usage did not change.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   alias:
     description:
@@ -72,6 +73,7 @@ options:
     type: int
     aliases: ['deletion_delay']
     version_added: 1.4.0
+    version_added_collection: community.aws
   purge_grants:
     description:
       - Whether the I(grants) argument should cause grants not in the list to be removed.
@@ -124,6 +126,7 @@ options:
     default: SYMMETRIC_DEFAULT
     choices: ['SYMMETRIC_DEFAULT', 'RSA_2048', 'RSA_3072', 'RSA_4096', 'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521', 'ECC_SECG_P256K1']
     version_added: 2.1.0
+    version_added_collection: community.aws
   key_usage:
     description:
       - Determines the cryptographic operations for which you can use the KMS key.
@@ -132,6 +135,7 @@ options:
     default: ENCRYPT_DECRYPT
     choices: ['ENCRYPT_DECRYPT', 'SIGN_VERIFY']
     version_added: 2.1.0
+    version_added_collection: community.aws
 author:
   - Ted Timmons (@tedder)
   - Will Thames (@willthames)
@@ -241,6 +245,7 @@ deletion_date:
   returned: when key_state is PendingDeletion
   sample: "2017-04-18T15:12:08.551000+10:00"
   version_added: 3.3.0
+  version_added_collection: community.aws
 description:
   description: Description of the key.
   type: str
@@ -334,6 +339,7 @@ key_policies:
       - "kms:RevokeGrant"
       Resource: "*"
   version_added: 3.3.0
+  version_added_collection: community.aws
 tags:
   description: Dictionary of tags applied to the key. Empty when access is denied even if there are tags.
   type: dict

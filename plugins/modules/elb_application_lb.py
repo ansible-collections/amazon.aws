@@ -21,10 +21,11 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: elb_application_lb
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage an Application Load Balancer
 description:
   - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - "Rob White (@wimnat)"
 options:
@@ -64,24 +65,28 @@ options:
     type: str
     choices: ['monitor', 'defensive', 'strictest']
     version_added: 3.2.0
+    version_added_collection: community.aws
   http_drop_invalid_header_fields:
     description:
       - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(True) or routed to targets C(False).
       - Defaults to C(False).
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
   http_x_amzn_tls_version_and_cipher_suite:
     description:
       - Indicates whether the two headers are added to the client request before sending it to the target.
       - Defaults to C(False).
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
   http_xff_client_port:
     description:
       - Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
       - Defaults to C(False).
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
   idle_timeout:
     description:
       - The number of seconds to wait before an idle connection is closed.
@@ -213,6 +218,7 @@ options:
       - Defaults to C(False).
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2

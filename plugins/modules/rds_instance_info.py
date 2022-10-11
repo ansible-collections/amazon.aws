@@ -11,10 +11,11 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_instance_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: obtain information about one or more RDS instances
 description:
   - Obtain information about one or more RDS instances.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   db_instance_identifier:
     description:
@@ -29,12 +30,12 @@ options:
         See U(https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBInstances.html)
     type: dict
 author:
-    - "Will Thames (@willthames)"
-    - "Michael De La Rue (@mikedlr)"
+  - "Will Thames (@willthames)"
+  - "Michael De La Rue (@mikedlr)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 
@@ -195,6 +196,7 @@ instances:
       type: bool
       sample: False
       version_added: 3.3.0
+      version_added_collection: community.aws
     domain_memberships:
       description: List of domain memberships
       returned: always

@@ -11,11 +11,12 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_eip
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: manages EC2 elastic IP (EIP) addresses.
 description:
   - This module can allocate or release an EIP.
   - This module can associate/disassociate an EIP with instances or network interfaces.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   device_id:
     description:

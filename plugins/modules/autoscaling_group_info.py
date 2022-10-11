@@ -9,12 +9,13 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: autoscaling_group_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Gather information about EC2 Auto Scaling Groups (ASGs) in AWS
 description:
   - Gather information about EC2 Auto Scaling Groups (ASGs) in AWS.
   - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_info).
     The usage did not change.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - "Rob White (@wimnat)"
 options:

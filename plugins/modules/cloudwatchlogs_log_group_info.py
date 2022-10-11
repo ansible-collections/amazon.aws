@@ -10,10 +10,11 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Get information about log_group in CloudWatchLogs
 description:
   - Lists the specified log groups. You can list all your log groups or filter the results by prefix.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Willian Ricardo (@willricardo) <willricardo@gmail.com>
 options:
@@ -72,6 +73,7 @@ log_groups:
             returned: always
             type: dict
             version_added: 4.0.0
+            version_added_collection: community.aws
 '''
 
 try:

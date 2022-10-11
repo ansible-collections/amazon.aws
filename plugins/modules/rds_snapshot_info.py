@@ -11,11 +11,12 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_snapshot_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: obtain information about one or more RDS snapshots
 description:
   - Obtain information about one or more RDS snapshots. These can be for unclustered snapshots or snapshots of clustered DBs (Aurora).
   - Aurora snapshot information may be obtained if no identifier parameters are passed or if one of the cluster parameters are passed.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   db_snapshot_identifier:
     description:
@@ -51,11 +52,11 @@ options:
     choices: ['automated', 'manual', 'shared', 'public']
     type: str
 author:
-    - "Will Thames (@willthames)"
+  - "Will Thames (@willthames)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

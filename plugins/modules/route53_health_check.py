@@ -9,12 +9,13 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: route53_health_check
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage health-checks in Amazons Route53 DNS service
 description:
   - Creates and deletes DNS Health checks in Amazons Route53 service.
   - Only the port, resource_path, string_match and request_interval are
     considered when updating existing health-checks.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   state:
     description:
@@ -30,6 +31,7 @@ options:
       - Defaults to C(true) when creating a new health check.
     type: bool
     version_added: 2.1.0
+    version_added_collection: community.aws
   ip_address:
     description:
       - IP address of the end-point to check. Either this or I(fqdn) has to be provided.
@@ -94,12 +96,14 @@ options:
     required: False
     aliases: ['name']
     version_added: 4.1.0
+    version_added_collection: community.aws
   use_unique_names:
     description:
       - Used together with I(health_check_name) to set/make use of I(health_check_name) as a unique identifier.
     type: bool
     required: False
     version_added: 4.1.0
+    version_added_collection: community.aws
   health_check_id:
     description:
       - ID of the health check to be update or deleted.
@@ -108,6 +112,7 @@ options:
     required: False
     aliases: ['id']
     version_added: 4.1.0
+    version_added_collection: community.aws
 author:
   - "zimbatm (@zimbatm)"
 notes:

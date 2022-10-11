@@ -9,13 +9,14 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: autoscaling_group
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Create or delete AWS AutoScaling Groups (ASGs)
 description:
   - Can create or delete AWS AutoScaling Groups.
   - Can be used with the M(community.aws.autoscaling_launch_config) module to manage Launch Configurations.
   - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg).
     The usage did not change.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - "Gareth Rushgrove (@garethr)"
 options:
@@ -106,6 +107,7 @@ options:
         required: false
         type: dict
         version_added: 1.5.0
+        version_added_collection: community.aws
         suboptions:
           on_demand_allocation_strategy:
             description:
@@ -113,6 +115,7 @@ options:
             type: str
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
           on_demand_base_capacity:
             description:
               - >-
@@ -124,6 +127,7 @@ options:
             type: int
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
           on_demand_percentage_above_base_capacity:
             description:
               - Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.
@@ -132,12 +136,14 @@ options:
             type: int
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
           spot_allocation_strategy:
             description:
               - Indicates how to allocate instances across Spot Instance pools.
             type: str
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
           spot_instance_pools:
             description:
               - >-
@@ -148,6 +154,7 @@ options:
             type: int
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
           spot_max_price:
             description:
               - The maximum price per unit hour that you are willing to pay for a Spot Instance.
@@ -156,6 +163,7 @@ options:
             type: str
             required: false
             version_added: 1.5.0
+            version_added_collection: community.aws
     type: dict
   placement_group:
     description:
@@ -194,12 +202,14 @@ options:
     type: list
     elements: str
     version_added: 3.2.0
+    version_added_collection: community.aws
   decrement_desired_capacity:
     description:
       - Indicates whether the AutoScalingGroup decrements the desired capacity value by the number of instances detached.
     default: false
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
   lc_check:
     description:
       - Check to make sure instances that are being replaced with I(replace_instances) do not already have the current I(launch_config).
@@ -230,6 +240,7 @@ options:
     default: false
     type: bool
     version_added: 3.2.0
+    version_added_collection: community.aws
   health_check_period:
     description:
       - Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
