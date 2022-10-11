@@ -3,6 +3,9 @@
 # No KMS supported waiters, and manual waiting for updates didn't fix the issue either.
 # Issue likely from AWS side - added waits on updates in integration tests to workaround this.
 
+# Some KMS operations are just slow
+time=10m
+
 cloud/aws
 
 kms_key_info
