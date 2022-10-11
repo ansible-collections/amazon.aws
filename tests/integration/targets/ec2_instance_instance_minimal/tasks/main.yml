@@ -264,6 +264,74 @@
       - create_instance_tag.instance_ids | length == 1
       - create_instance_tag.instance_ids[0] == create_instance_id_tag
 
+###############################################################
+
+  - name: "Create a new instance in AZ {{ aws_region }}a"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-{{ aws_region }}a"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      region: "{{ aws_region }}"
+      availability_zone: "{{ aws_region }}a"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_3: "{{ create_instance.instance_ids[0] }}"
+
+  - name: Get instance info
+    ec2_instance_info:
+      instance_ids:
+        - "{{ create_instance_id_3 }}"
+    register: info_result
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is changed
+      - '"ec2:RunInstances" in create_instance.resource_actions'
+      - '"instance_ids" in create_instance'
+      - create_instance.instance_ids | length == 1
+      - create_instance.instance_ids[0].startswith("i-")
+      - info_result.instances[0].placement.availability_zone == '{{ aws_region }}a'
+
+  - name: "Create a new instance in AZ {{ aws_region }}b"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-{{ aws_region }}b"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      region: "{{ aws_region }}"
+      availability_zone: "{{ aws_region }}b"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_4: "{{ create_instance.instance_ids[0] }}"
+
+  - name: Get instance info
+    ec2_instance_info:
+      instance_ids:
+        - "{{ create_instance_id_4 }}"
+    register: info_result
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is changed
+      - '"ec2:RunInstances" in create_instance.resource_actions'
+      - '"instance_ids" in create_instance'
+      - create_instance.instance_ids | length == 1
+      - create_instance.instance_ids[0].startswith("i-")
+      - info_result.instances[0].placement.availability_zone == '{{ aws_region }}b'
+
 ################################################################
 
   - name: "Terminate instance based on name parameter (check_mode)"
@@ -471,6 +539,154 @@
       state: absent
       instance_ids:
       - "{{ create_instance_id_2 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+################################################################
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_3 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_3
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_3 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_3
+
+  - name: "Terminate instance based on id - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_3 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+  - name: "Terminate instance based on id - idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_3 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+################################################################
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_4 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_4
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_4 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_4
+
+  - name: "Terminate instance based on id - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_4 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+  - name: "Terminate instance based on id - idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_4 }}"
       wait: true
     register: terminate_id
 
