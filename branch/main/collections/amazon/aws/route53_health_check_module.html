@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.route53_health_check</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -154,6 +154,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <ul class="simple">
 <li><p>Creates and deletes DNS Health checks in Amazons Route53 service.</p></li>
 <li><p>Only the port, resource_path, string_match and request_interval are considered when updating existing health-checks.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -227,7 +228,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-disabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-disabled"><strong>disabled</strong></p>
 <a class="ansibleOptionLink" href="#parameter-disabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Stops Route 53 from performing health checks.</p>
 <p>See the AWS documentation for more details on the exact implications. <a class="reference external" href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html">https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html</a></p>
@@ -283,7 +284,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-id"><span id="ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-id"></span><strong>health_check_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-health_check_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: id</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 4.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 4.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>ID of the health check to be update or deleted.</p>
 <p>If provided, a health check can be updated or deleted based on the ID as unique identifier.</p>
@@ -294,7 +295,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-name"><span id="ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-name"></span><strong>health_check_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-health_check_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: name</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 4.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 4.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the Health Check.</p>
 <p>Used together with <em>use_unique_names</em> to set/make use of <em>health_check_name</em> as a unique identifier.</p>
@@ -432,7 +433,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_unique_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-use-unique-names"><strong>use_unique_names</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_unique_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 4.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 4.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Used together with <em>health_check_name</em> to set/make use of <em>health_check_name</em> as a unique identifier.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>

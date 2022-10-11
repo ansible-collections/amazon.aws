@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.lambda_info</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -154,6 +154,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <ul class="simple">
 <li><p>Gathers various details related to Lambda functions, including aliases, versions and event source mappings.</p></li>
 <li><p>Use module <a class="reference internal" href="lambda_module.html#ansible-collections-amazon-aws-lambda-module"><span class="std std-ref">amazon.aws.lambda</span></a> to manage the lambda function itself, <a class="reference internal" href="lambda_alias_module.html#ansible-collections-amazon-aws-lambda-alias-module"><span class="std std-ref">amazon.aws.lambda_alias</span></a> to manage function aliases, <a class="reference internal" href="lambda_event_module.html#ansible-collections-amazon-aws-lambda-event-module"><span class="std std-ref">amazon.aws.lambda_event</span></a> to manage lambda event source mappings, and <a class="reference internal" href="lambda_policy_module.html#ansible-collections-amazon-aws-lambda-policy-module"><span class="std std-ref">amazon.aws.lambda_policy</span></a> to manage policy statements.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -390,7 +391,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions"><strong>functions</strong></p>
 <a class="ansibleOptionLink" href="#return-functions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 4.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 4.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of information for each lambda function matching the query.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>

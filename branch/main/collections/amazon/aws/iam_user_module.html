@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.iam_user</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -154,6 +154,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <ul class="simple">
 <li><p>A module to manage AWS IAM users.</p></li>
 <li><p>The module does not manage groups that users belong to, groups memberships can be managed using <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/iam_group_module.html#ansible-collections-community-aws-iam-group-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.iam_group</span></a>.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -255,7 +256,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-password"><strong>password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The password to apply to the user.</p>
 </div></td>
@@ -263,7 +264,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-password_reset_required"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-password-reset-required"><strong>password_reset_required</strong></p>
 <a class="ansibleOptionLink" href="#parameter-password_reset_required" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Defines if the user is required to set a new password after login.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
@@ -324,7 +325,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-remove_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-remove-password"><strong>remove_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-remove_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Option to delete user login passwords.</p>
 <p>This field is mutually exclusive to <em>password</em>.</p>
@@ -374,7 +375,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-update_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-update-password"><strong>update_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-update_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When to update user passwords.</p>
 <p><em>update_password=always</em> will ensure the password is set to <em>password</em>.</p>
@@ -401,7 +402,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for IAM user creation before returning.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
@@ -414,7 +415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-parameter-wait-timeout"><strong>wait_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>How long (in seconds) to wait for creation / updates to complete.</p>
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">120</span></code></p>

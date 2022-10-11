@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.kms_key_info</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -154,6 +154,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <ul class="simple">
 <li><p>Gather information about AWS KMS keys including tags and grants.</p></li>
 <li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.aws_kms_info</span></code>. The usage did not change.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -179,7 +180,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <div class="ansibleOptionAnchor" id="parameter-key_alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-info-module-parameter-key-alias"><span id="ansible-collections-amazon-aws-kms-key-info-module-parameter-alias"></span><strong>alias</strong></p>
 <a class="ansibleOptionLink" href="#parameter-alias" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: key_alias</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.4.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Alias for key.</p>
 <p>Mutually exclusive with <em>key_id</em> and <em>filters</em>.</p>
@@ -259,7 +260,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <div class="ansibleOptionAnchor" id="parameter-key_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-info-module-parameter-key-id"><span id="ansible-collections-amazon-aws-kms-key-info-module-parameter-key-arn"></span><strong>key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: key_arn</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.4.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Key ID or ARN of the key.</p>
 <p>Mutually exclusive with <em>alias</em> and <em>filters</em>.</p>
@@ -403,7 +404,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-kms_keys/deletion_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-info-module-return-kms-keys-deletion-date"><strong>deletion_date</strong></p>
 <a class="ansibleOptionLink" href="#return-kms_keys/deletion_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time after which KMS deletes this KMS key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when key_state is PendingDeletion</p>
@@ -547,7 +548,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-kms_keys/key_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-info-module-return-kms-keys-key-policies"><strong>key_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-kms_keys/key_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
