@@ -9,432 +9,361 @@ __metaclass__ = type
 
 import pytest
 from tempfile import NamedTemporaryFile
+import os
 
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
+from unittest.mock import MagicMock, call
+from unittest import TestCase
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer
 
 
-def setup_testing(module_params):
-    connection = MagicMock(name="connection")
-    module = MagicMock(name="module")
-    module.params = module_params
-    module.params.setdefault("state", "present")
-    module.check_mode = False
-    module.exit_json.side_effect = SystemExit(1)
-    module.fail_json.side_effect = SystemExit(2)
-
-    conn_paginator = MagicMock(name="connection.paginator")
-    paginate = MagicMock(name="paginator.paginate")
-    connection.get_paginator.return_value = conn_paginator
-    conn_paginator.paginate.return_value = paginate
-    connection.delete_layer_version.return_value = None
-
-    return module, connection, conn_paginator, paginate
+def raise_lambdalayer_exception(e=None, m=None):
+    e = e or "lambda layer exc"
+    m = m or "unit testing"
+    return lambda_layer.LambdaLayerFailure(exc=e, msg=m)
 
 
-def test_delete_non_existing_layer():
-    module_params = dict(
-        state="absent",
-        name="testlayer",
-        version=4,
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    paginate.build_full_result.return_value = dict(
-        LayerVersions=[],
-        ResponseMetadata=dict(http_header=True),
-        NextMarker="abcdef123"
-    )
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="testlayer",
-    )
-    paginate.build_full_result.assert_called_once()
-    module.exit_json.assert_called_with(
-        changed=False,
-        layer_versions=[]
-    )
-
-
-def test_delete_layer_non_existing_version():
-    module_params = dict(
-        state="absent",
-        name="testlayer",
-        version=4,
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    paginate.build_full_result.return_value = {
-        "LayerVersions": [
+@pytest.mark.parametrize(
+    "params,api_result,calls,ansible_result",
+    [
+        (
             {
-                'CompatibleRuntimes': ["python3.7"],
-                'CreatedDate': "2022-09-29T10:31:35.977+0000",
-                'LayerVersionArn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "LicenseInfo": "MIT",
-                'Version': 2,
-                'CompatibleArchitectures': [
-                    'arm64'
-                ]
+                "name": "testlayer",
+                "version": 4
             },
+            [],
+            [],
+            {"changed": False, "layer_versions": []}
+        ),
+        (
             {
-                "CompatibleRuntimes": ["python3.7"],
-                "CreatedDate": "2022-09-29T10:31:26.341+0000",
-                "Description": "lambda layer first version",
-                "LayerVersionArn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "LicenseInfo": "GPL-3.0-only",
-                "Version": 1
-            }
-        ],
-        "ResponseMetadata": {
-            "http_header": True
-        },
-        "NextMarker": "abcdef123"
-    }
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="testlayer",
-    )
-    paginate.build_full_result.assert_called_once()
-    module.exit_json.assert_called_with(
-        changed=False,
-        layer_versions=[]
-    )
-
-
-def test_delete_layer_existing_version():
-    module_params = dict(
-        state="absent",
-        name="testlayer",
-        version=2,
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-
-    paginate.build_full_result.return_value = {
-        "LayerVersions": [
-            {
-                'CompatibleRuntimes': ["python3.7"],
-                'CreatedDate': "2022-09-29T10:31:35.977+0000",
-                'LayerVersionArn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "LicenseInfo": "MIT",
-                'Version': 2,
-                'CompatibleArchitectures': [
-                    'arm64'
-                ]
+                "name": "testlayer",
+                "version": 4
             },
+            [
+                {
+                    'compatible_runtimes': ["python3.7"],
+                    'created_date': "2022-09-29T10:31:35.977+0000",
+                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "license_info": "MIT",
+                    'version': 2,
+                    'compatible_architectures': [
+                        'arm64'
+                    ]
+                },
+                {
+                    "created_date": "2022-09-29T10:31:26.341+0000",
+                    "description": "lambda layer first version",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+                    "version": 1
+                }
+            ],
+            [],
+            {"changed": False, "layer_versions": []}
+        ),
+        (
             {
-                "CompatibleRuntimes": ["python3.7"],
-                "CreatedDate": "2022-09-29T10:31:26.341+0000",
-                "Description": "lambda layer first version",
-                "LayerVersionArn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "LicenseInfo": "GPL-3.0-only",
-                "Version": 1
+                "name": "testlayer",
+                "version": 2
+            },
+            [
+                {
+                    'compatible_runtimes': ["python3.7"],
+                    'created_date': "2022-09-29T10:31:35.977+0000",
+                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "license_info": "MIT",
+                    'version': 2,
+                    'compatible_architectures': [
+                        'arm64'
+                    ]
+                },
+                {
+                    "created_date": "2022-09-29T10:31:26.341+0000",
+                    "description": "lambda layer first version",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+                    "version": 1
+                }
+            ],
+            [
+                call(LayerName='testlayer', VersionNumber=2)
+            ],
+            {
+                "changed": True,
+                "layer_versions": [
+                    {
+                        'compatible_runtimes': ["python3.7"],
+                        'created_date': "2022-09-29T10:31:35.977+0000",
+                        'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                        "license_info": "MIT",
+                        'version': 2,
+                        'compatible_architectures': [
+                            'arm64'
+                        ]
+                    }
+                ]
             }
-        ],
-        "ResponseMetadata": {
-            "http_header": True
-        },
-        "NextMarker": "abcdef123"
-    }
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="testlayer",
-    )
-    paginate.build_full_result.assert_called_once()
-    lambda_client.delete_layer_version.assert_called_with(
-        LayerName="testlayer",
-        VersionNumber=2,
-    )
-    module.exit_json.assert_called_with(
-        changed=True,
-        layer_versions=[
+        ),
+        (
             {
-                "compatible_runtimes": ["python3.7"],
-                "created_date": "2022-09-29T10:31:35.977+0000",
-                "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                "name": "testlayer",
+                "version": -1
+            },
+            [
+                {
+                    'compatible_runtimes': ["python3.7"],
+                    'created_date': "2022-09-29T10:31:35.977+0000",
+                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "license_info": "MIT",
+                    'version': 2,
+                    'compatible_architectures': [
+                        'arm64'
+                    ]
+                },
+                {
+                    "created_date": "2022-09-29T10:31:26.341+0000",
+                    "description": "lambda layer first version",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+                    "version": 1
+                }
+            ],
+            [
+                call(LayerName='testlayer', VersionNumber=2),
+                call(LayerName='testlayer', VersionNumber=1)
+            ],
+            {
+                "changed": True,
+                "layer_versions": [
+                    {
+                        'compatible_runtimes': ["python3.7"],
+                        'created_date': "2022-09-29T10:31:35.977+0000",
+                        'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                        "license_info": "MIT",
+                        'version': 2,
+                        'compatible_architectures': [
+                            'arm64'
+                        ]
+                    },
+                    {
+                        "created_date": "2022-09-29T10:31:26.341+0000",
+                        "description": "lambda layer first version",
+                        "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+                        "version": 1
+                    }
+                ]
+            }
+        )
+    ]
+)
+def test_delete_layer(params, api_result, calls, ansible_result):
+
+    lambda_client = MagicMock()
+    lambda_client.delete_layer_version.return_value = None
+    lambda_layer.list_layer_versions = MagicMock()
+
+    lambda_layer.list_layer_versions.return_value = api_result
+    result = lambda_layer.delete_layer_version(lambda_client, params)
+    assert result == ansible_result
+
+    lambda_layer.list_layer_versions.assert_called_once_with(
+        lambda_client, params.get("name")
+    )
+
+    if not calls:
+        lambda_client.delete_layer_version.assert_not_called()
+    else:
+        lambda_client.delete_layer_version.assert_has_calls(calls, any_order=True)
+
+
+def test_delete_layer_check_mode():
+
+    lambda_client = MagicMock()
+    lambda_client.delete_layer_version.return_value = None
+    lambda_layer.list_layer_versions = MagicMock()
+
+    lambda_layer.list_layer_versions.return_value = [
+        {
+            'compatible_runtimes': ["python3.7"],
+            'created_date': "2022-09-29T10:31:35.977+0000",
+            'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+            "license_info": "MIT",
+            'version': 2,
+            'compatible_architectures': [
+                'arm64'
+            ]
+        },
+        {
+            "created_date": "2022-09-29T10:31:26.341+0000",
+            "description": "lambda layer first version",
+            "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+            "version": 1
+        }
+    ]
+    params = {"name": "testlayer", "version": -1}
+    result = lambda_layer.delete_layer_version(lambda_client, params, check_mode=True)
+    ansible_result = {
+        "changed": True,
+        "layer_versions": [
+            {
+                'compatible_runtimes': ["python3.7"],
+                'created_date': "2022-09-29T10:31:35.977+0000",
+                'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                 "license_info": "MIT",
-                "version": 2,
-                'compatible_architectures': [
-                    'arm64'
-                ]
-            },
-        ]
-    )
-
-
-def test_delete_layer_existing_version_using_check_mode():
-    module_params = dict(
-        state="absent",
-        name="testlayer",
-        version=2,
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    module.check_mode = True
-    paginate.build_full_result.return_value = {
-        "LayerVersions": [
-            {
-                'CompatibleRuntimes': ["python3.7"],
-                'CreatedDate': "2022-09-29T10:31:35.977+0000",
-                'LayerVersionArn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "LicenseInfo": "MIT",
-                'Version': 2,
-                'CompatibleArchitectures': [
-                    'arm64'
-                ]
-            },
-            {
-                "CompatibleRuntimes": ["python3.7"],
-                "CreatedDate": "2022-09-29T10:31:26.341+0000",
-                "Description": "lambda layer first version",
-                "LayerVersionArn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "LicenseInfo": "GPL-3.0-only",
-                "Version": 1
-            }
-        ],
-        "ResponseMetadata": {
-            "http_header": True
-        },
-        "NextMarker": "abcdef123"
-    }
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="testlayer",
-    )
-    paginate.build_full_result.assert_called_once()
-    lambda_client.delete_layer_version.assert_not_called()
-    module.exit_json.assert_called_with(
-        changed=True,
-        layer_versions=[
-            {
-                "compatible_runtimes": ["python3.7"],
-                "created_date": "2022-09-29T10:31:35.977+0000",
-                "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "license_info": "MIT",
-                "version": 2,
-                'compatible_architectures': [
-                    'arm64'
-                ]
-            },
-        ]
-    )
-
-
-def test_delete_all_layer_versions():
-    module_params = dict(
-        state="absent",
-        name="testlayer",
-        version=-1,
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    module.check_mode = True
-    paginate.build_full_result.return_value = {
-        "LayerVersions": [
-            {
-                'CompatibleRuntimes': ["python3.7"],
-                'CreatedDate': "2022-09-29T10:31:35.977+0000",
-                'LayerVersionArn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "LicenseInfo": "MIT",
-                'Version': 2,
-                'CompatibleArchitectures': [
-                    'arm64'
-                ]
-            },
-            {
-                "CompatibleRuntimes": ["python3.7"],
-                "CreatedDate": "2022-09-29T10:31:26.341+0000",
-                "Description": "lambda layer first version",
-                "LayerVersionArn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "LicenseInfo": "GPL-3.0-only",
-                "Version": 1
-            }
-        ],
-        "ResponseMetadata": {
-            "http_header": True
-        },
-        "NextMarker": "abcdef123"
-    }
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="testlayer",
-    )
-    paginate.build_full_result.assert_called_once()
-    lambda_client.delete_layer_version.assert_not_called()
-    module.exit_json.assert_called_with(
-        changed=True,
-        layer_versions=[
-            {
-                "compatible_runtimes": ["python3.7"],
-                "created_date": "2022-09-29T10:31:35.977+0000",
-                "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
-                "license_info": "MIT",
-                "version": 2,
+                'version': 2,
                 'compatible_architectures': [
                     'arm64'
                 ]
             },
             {
-                "compatible_runtimes": ["python3.7"],
                 "created_date": "2022-09-29T10:31:26.341+0000",
                 "description": "lambda layer first version",
                 "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "license_info": "GPL-3.0-only",
                 "version": 1
             }
         ]
-    )
-
-
-def test_create_layer_using_check_mode():
-    module_params = dict(
-        name="testlayer",
-        description="ansible units testing sample layer",
-        content=dict(
-            s3_bucket="mybucket",
-            s3_key="mybucket-key",
-            s3_object_version="v1"
-        ),
-        license_info="MIT"
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    module.check_mode = True
-    paginate.build_full_result.return_value = None
-
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_not_called()
-    conn_paginator.paginate.assert_not_called()
-    paginate.build_full_result.assert_not_called()
-    lambda_client.publish_layer_version.assert_not_called()
-    module.exit_json.assert_called_with(
-        changed=True,
-        msg="Create operation skipped - running in check mode"
-    )
-
-
-def test_create_layer_using_s3_bucket():
-    module_params = dict(
-        name="testlayer",
-        description="ansible units testing sample layer",
-        content=dict(
-            s3_bucket="mybucket",
-            s3_key="mybucket-key",
-            s3_object_version="v1"
-        ),
-        license_info="MIT"
-    )
-
-    module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-    paginate.build_full_result.return_value = None
-    lambda_client.publish_layer_version.return_value = {
-        'CompatibleRuntimes': [
-            'python3.6',
-            'python3.7',
-        ],
-        'Content': {
-            'CodeSha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
-            'CodeSize': 169,
-            'Location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb',
-        },
-        'CreatedDate': '2018-11-14T23:03:52.894+0000',
-        'Description': "ansible units testing sample layer",
-        'LayerArn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
-        'LayerVersionArn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
-        'LicenseInfo': 'MIT',
-        'Version': 1,
-        'ResponseMetadata': {
-            'http_header': 'true',
-        },
     }
+    assert result == ansible_result
 
-    with pytest.raises(SystemExit):
-        lambda_layer.execute_module(module, lambda_client)
-
-    lambda_client.get_paginator.assert_not_called()
-    conn_paginator.paginate.assert_not_called()
-    paginate.build_full_result.assert_not_called()
-
-    lambda_client.publish_layer_version.assert_called_with(
-        LayerName="testlayer",
-        Description="ansible units testing sample layer",
-        LicenseInfo="MIT",
-        Content=dict(
-            S3Bucket="mybucket",
-            S3Key="mybucket-key",
-            S3ObjectVersion="v1"
-        ),
+    lambda_layer.list_layer_versions.assert_called_once_with(
+        lambda_client, params.get("name")
     )
+    lambda_client.delete_layer_version.assert_not_called()
 
-    module.exit_json.assert_called_with(
-        changed=True,
-        layer_versions=[
-            {
-                'compatible_runtimes': ['python3.6', 'python3.7'],
-                'content': {
-                    'code_sha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
-                    'code_size': 169,
-                    'location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb'
-                },
-                'created_date': '2018-11-14T23:03:52.894+0000',
-                'description': 'ansible units testing sample layer',
-                'layer_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
-                'layer_version_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
-                'license_info': 'MIT',
-                'version': 1
+
+def test_delete_layer_failure():
+
+    lambda_client = MagicMock()
+    lambda_client.delete_layer_version.side_effect = raise_lambdalayer_exception()
+    lambda_layer.list_layer_versions = MagicMock()
+
+    lambda_layer.list_layer_versions.return_value = [
+        {
+            "created_date": "2022-09-29T10:31:26.341+0000",
+            "description": "lambda layer first version",
+            "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
+            "version": 1
+        }
+    ]
+    params = {"name": "testlayer", "version": 1}
+    with pytest.raises(lambda_layer.LambdaLayerFailure):
+        lambda_layer.delete_layer_version(lambda_client, params)
+
+
+class CreateLayerTestCase(TestCase):
+    def setUp(self):
+        self.lambda_client = MagicMock()
+        lambda_layer.list_layer_versions = MagicMock()
+
+        self.zip_file_data = b"simple lambda layer content"
+        self.file_handler = NamedTemporaryFile(delete=False)
+        self.file_handler.write(self.zip_file_data)
+        self.file_handler.flush()
+
+    def tearDown(self):
+        self.file_handler.close()
+        os.unlink(self.file_handler.name)
+
+    def test_check_mode(self):
+        params = {
+            "name": "testlayer",
+            "description": "ansible units testing sample layer",
+            "content": {
+                "s3_bucket": "mybucket",
+                "s3_key": "mybucket-key",
+                "s3_object_version": "v1"
+            },
+            "license_info": "MIT"
+        }
+
+        result = lambda_layer.create_layer_version(self.lambda_client, params, check_mode=True)
+        assert result == {"msg": "Create operation skipped - running in check mode", "changed": True}
+
+        lambda_layer.list_layer_versions.assert_not_called()
+        self.lambda_client.publish_layer_version.assert_not_called()
+
+    def test_using_s3_bucket(self):
+        params = {
+            "name": "testlayer",
+            "description": "ansible units testing sample layer",
+            "content": {
+                "s3_bucket": "mybucket",
+                "s3_key": "mybucket-key",
+                "s3_object_version": "v1"
+            },
+            "license_info": "MIT"
+        }
+
+        self.lambda_client.publish_layer_version.return_value = {
+            'CompatibleRuntimes': [
+                'python3.6',
+                'python3.7',
+            ],
+            'Content': {
+                'CodeSha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
+                'CodeSize': 169,
+                'Location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb',
+            },
+            'CreatedDate': '2018-11-14T23:03:52.894+0000',
+            'Description': "ansible units testing sample layer",
+            'LayerArn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
+            'LayerVersionArn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
+            'LicenseInfo': 'MIT',
+            'Version': 1,
+            'ResponseMetadata': {
+                'http_header': 'true',
+            },
+        }
+
+        expected = {
+            "changed": True,
+            "layer_versions": [
+                {
+                    'compatible_runtimes': ['python3.6', 'python3.7'],
+                    'content': {
+                        'code_sha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
+                        'code_size': 169,
+                        'location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb'
+                    },
+                    'created_date': '2018-11-14T23:03:52.894+0000',
+                    'description': 'ansible units testing sample layer',
+                    'layer_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
+                    'layer_version_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
+                    'license_info': 'MIT',
+                    'version': 1
+                }
+            ]
+        }
+
+        result = lambda_layer.create_layer_version(self.lambda_client, params)
+        assert result == expected
+
+        self.lambda_client.publish_layer_version.assert_called_with(
+            LayerName="testlayer",
+            Description="ansible units testing sample layer",
+            LicenseInfo="MIT",
+            Content={
+                "S3Bucket": "mybucket",
+                "S3Key": "mybucket-key",
+                "S3ObjectVersion": "v1"
             }
-        ]
-    )
+        )
 
-
-def test_create_layer_using_zip_file():
-
-    zip_file_content = b"simple lambda layer content"
-    with NamedTemporaryFile() as tf:
-        tf.write(zip_file_content)
-        tf.flush()
-
-        module_params = dict(
-            name="testlayer",
-            description="ansible units testing sample layer",
-            content=dict(
-                zip_file=tf.name,
-            ),
-            compatible_runtimes=[
+    def test_using_zip_file(self):
+        params = {
+            "name": "testlayer",
+            "description": "ansible units testing sample layer",
+            "content": {
+                "zip_file": self.file_handler.name,
+            },
+            "compatible_runtimes": [
                 "nodejs",
                 "python3.9"
             ],
-            compatible_architectures=[
+            "compatible_architectures": [
                 'x86_64',
                 'arm64'
             ]
-        )
+        }
 
-        module, lambda_client, conn_paginator, paginate = setup_testing(module_params)
-        paginate.build_full_result.return_value = None
-        lambda_client.publish_layer_version.return_value = {
+        self.lambda_client.publish_layer_version.return_value = {
             'CompatibleRuntimes': [
                 'nodejs',
                 'python3.9',
@@ -458,32 +387,9 @@ def test_create_layer_using_zip_file():
             },
         }
 
-        with pytest.raises(SystemExit):
-            lambda_layer.execute_module(module, lambda_client)
-
-        lambda_client.get_paginator.assert_not_called()
-        conn_paginator.paginate.assert_not_called()
-        paginate.build_full_result.assert_not_called()
-
-        lambda_client.publish_layer_version.assert_called_with(
-            LayerName="testlayer",
-            Description="ansible units testing sample layer",
-            CompatibleRuntimes=[
-                "nodejs",
-                "python3.9"
-            ],
-            CompatibleArchitectures=[
-                'x86_64',
-                'arm64'
-            ],
-            Content=dict(
-                ZipFile=zip_file_content
-            ),
-        )
-
-        module.exit_json.assert_called_with(
-            changed=True,
-            layer_versions=[
+        expected = {
+            "changed": True,
+            "layer_versions": [
                 {
                     'compatible_runtimes': ['nodejs', 'python3.9'],
                     "compatible_architectures": ['x86_64', 'arm64'],
@@ -499,4 +405,141 @@ def test_create_layer_using_zip_file():
                     'version': 2
                 }
             ]
+        }
+
+        result = lambda_layer.create_layer_version(self.lambda_client, params)
+        assert result == expected
+
+        self.lambda_client.publish_layer_version.assert_called_with(
+            LayerName="testlayer",
+            Description="ansible units testing sample layer",
+            CompatibleRuntimes=[
+                "nodejs",
+                "python3.9"
+            ],
+            CompatibleArchitectures=[
+                'x86_64',
+                'arm64'
+            ],
+            Content={
+                "ZipFile": self.zip_file_data
+            },
+        )
+
+    def test_failure(self):
+        params = {
+            "name": "testlayer",
+            "description": "ansible units testing sample layer",
+            "content": {
+                "zip_file": self.file_handler.name,
+            },
+            "compatible_runtimes": [
+                "nodejs",
+                "python3.9"
+            ],
+            "compatible_architectures": [
+                'x86_64',
+                'arm64'
+            ]
+        }
+
+        self.lambda_client.publish_layer_version.side_effect = raise_lambdalayer_exception()
+        with pytest.raises(lambda_layer.LambdaLayerFailure):
+            lambda_layer.create_layer_version(self.lambda_client, params)
+
+    def test_using_unexisting_file(self):
+        params = {
+            "name": "testlayer",
+            "description": "ansible units testing sample layer",
+            "content": {
+                "zip_file": "this_file_does_not_exist",
+            },
+            "compatible_runtimes": [
+                "nodejs",
+                "python3.9"
+            ],
+            "compatible_architectures": [
+                'x86_64',
+                'arm64'
+            ]
+        }
+
+        self.lambda_client.publish_layer_version.return_value = {}
+        with pytest.raises(FileNotFoundError):
+            lambda_layer.create_layer_version(self.lambda_client, params)
+
+        self.lambda_client.publish_layer_version.assert_not_called()
+
+
+class ExecuteModuleTestCase(TestCase):
+
+    def setUp(self):
+        self.module = MagicMock()
+        self.module.check_mode = False
+        self.module.exit_json.side_effect = SystemExit(1)
+        self.module.fail_json_aws.side_effect = SystemExit(2)
+
+        self.lambda_client = MagicMock()
+
+        lambda_layer.create_layer_version = MagicMock()
+        lambda_layer.delete_layer_version = MagicMock()
+
+    def test_create_layer(self):
+        params = {
+            "name": "test-layer"
+        }
+        self.module.params = params
+
+        result = {"changed": True, "layers_versions": {}}
+        lambda_layer.create_layer_version.return_value = result
+
+        with pytest.raises(SystemExit):
+            lambda_layer.execute_module(self.module, self.lambda_client)
+
+        self.module.exit_json.assert_called_with(
+            **result
+        )
+        self.module.fail_json_aws.assert_not_called()
+        lambda_layer.create_layer_version.assert_called_with(
+            self.lambda_client, params, self.module.check_mode
+        )
+        lambda_layer.delete_layer_version.assert_not_called()
+
+    def test_delete_layer(self):
+        params = {
+            "name": "test-layer", "state": "absent"
+        }
+        self.module.params = params
+
+        result = {"changed": True, "layers_versions": []}
+        lambda_layer.delete_layer_version.return_value = result
+
+        with pytest.raises(SystemExit):
+            lambda_layer.execute_module(self.module, self.lambda_client)
+
+        self.module.exit_json.assert_called_with(
+            **result
+        )
+        self.module.fail_json_aws.assert_not_called()
+        lambda_layer.delete_layer_version.assert_called_with(
+            self.lambda_client, params, self.module.check_mode
+        )
+        lambda_layer.create_layer_version.assert_not_called()
+
+    def test_failure(self):
+        params = {
+            "name": "test-layer", "state": "absent"
+        }
+        self.module.params = params
+
+        exc = "lambdalayer_execute_module_exception"
+        msg = "this_exception_is_used_for_unit_testing"
+        lambda_layer.delete_layer_version.side_effect = raise_lambdalayer_exception(exc, msg)
+
+        with pytest.raises(SystemExit):
+            lambda_layer.execute_module(self.module, self.lambda_client)
+
+        self.module.exit_json.assert_not_called()
+        self.module.fail_json_aws.assert_called_with(
+            exc, msg=msg
         )

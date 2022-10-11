@@ -139,27 +139,34 @@ def _list_layers(client, **params):
     return paginator.paginate(**params).build_full_result()
 
 
-def list_layer_versions(module, lambda_client):
+class LambdaLayerInfoFailure(Exception):
+    def __init__(self, exc, msg):
+        self.exc = exc
+        self.msg = msg
+        super().__init__(self)
 
-    params = dict(LayerName=module.params.get("name"))
-    if module.params.get("compatible_runtime"):
-        params["CompatibleRuntime"] = module.params.get("compatible_runtime")
-    if module.params.get("compatible_architecture"):
-        params["CompatibleArchitecture"] = module.params.get("compatible_architecture")
+
+def list_layer_versions(lambda_client, name, compatible_runtime=None, compatible_architecture=None):
+
+    params = {"LayerName": name}
+    if compatible_runtime:
+        params["CompatibleRuntime"] = compatible_runtime
+    if compatible_architecture:
+        params["CompatibleArchitecture"] = compatible_architecture
     try:
         layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list layer versions for name {0}".format(module.params.get("name")))
+        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layer versions for name {0}".format(name))
 
 
-def list_layers(module, lambda_client):
+def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=None):
 
-    params = dict()
-    if module.params.get("compatible_runtime"):
-        params["CompatibleRuntime"] = module.params.get("compatible_runtime")
-    if module.params.get("compatible_architecture"):
-        params["CompatibleArchitecture"] = module.params.get("compatible_architecture")
+    params = {}
+    if compatible_runtime:
+        params["CompatibleRuntime"] = compatible_runtime
+    if compatible_architecture:
+        params["CompatibleArchitecture"] = compatible_architecture
     try:
         layers = _list_layers(lambda_client, **params)['Layers']
         layer_versions = []
@@ -169,16 +176,24 @@ def list_layers(module, lambda_client):
             layer_versions.append(camel_dict_to_snake_dict(layer))
         return layer_versions
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list layers {0}".format(params))
+        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layers {0}".format(params))
 
 
 def execute_module(module, lambda_client):
 
-    operation = list_layers
-    if module.params.get("name") is not None:
-        operation = list_layer_versions
+    name = module.params.get("name")
+    compatible_runtime = module.params.get("compatible_runtime")
+    compatible_architecture = module.params.get("compatible_architecture")
 
-    module.exit_json(changed=False, layers_versions=operation(module, lambda_client))
+    try:
+        if name is not None:
+            result = list_layer_versions(lambda_client, name, compatible_runtime, compatible_architecture)
+        else:
+            result = list_layers(lambda_client, compatible_runtime, compatible_architecture)
+
+        module.exit_json(changed=False, layers_versions=result)
+    except LambdaLayerInfoFailure as e:
+        module.fail_json_aws(e.exc, msg=e.msg)
 
 
 def main():

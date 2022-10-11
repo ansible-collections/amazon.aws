@@ -239,21 +239,27 @@ def _list_layer_versions(client, **params):
     return paginator.paginate(**params).build_full_result()
 
 
-def list_layer_versions(module, lambda_client):
+class LambdaLayerFailure(Exception):
+    def __init__(self, exc, msg):
+        self.exc = exc
+        self.msg = msg
+        super().__init__(self)
+
+
+def list_layer_versions(lambda_client, name):
 
     try:
-        params = dict(LayerName=module.params.get("name"))
-        layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, LayerName=name)['LayerVersions']
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list layer versions for name {0}".format(module.params.get("name")))
+        raise LambdaLayerFailure(e, "Unable to list layer versions for name {0}".format(name))
 
 
-def create_layer_version(module, lambda_client):
-    if module.check_mode:
-        module.exit_json(msg="Create operation skipped - running in check mode", changed=True)
+def create_layer_version(lambda_client, params, check_mode=False):
+    if check_mode:
+        return {"msg": "Create operation skipped - running in check mode", "changed": True}
 
-    params = dict(LayerName=module.params.get("name"))
+    opt = {"LayerName": params.get("name"), "Content": {}}
     keys = [
         ('description', 'Description'),
         ('compatible_runtimes', 'CompatibleRuntimes'),
@@ -261,61 +267,58 @@ def create_layer_version(module, lambda_client):
         ('compatible_architectures', 'CompatibleArchitectures'),
     ]
     for k, d in keys:
-        if module.params.get(k) is not None:
-            params[d] = module.params.get(k)
+        if params.get(k) is not None:
+            opt[d] = params.get(k)
 
     # Read zip file if any
-    zip_file = module.params["content"].get("zip_file")
+    zip_file = params["content"].get("zip_file")
     if zip_file is not None:
         with open(zip_file, "rb") as zf:
-            module.params["content"]["zip_file"] = zf.read()
+            opt["Content"]["ZipFile"] = zf.read()
+    else:
+        opt["Content"]["S3Bucket"] = params["content"].get("s3_bucket")
+        opt["Content"]["S3Key"] = params["content"].get("s3_key")
+        if params["content"].get("s3_object_version") is not None:
+            opt["Content"]["S3ObjectVersion"] = params["content"].get("s3_object_version")
 
-    content = dict()
-    content_keys = [
-        ('s3_bucket', 'S3Bucket'),
-        ('s3_key', 'S3Key'),
-        ('s3_object_version', 'S3ObjectVersion'),
-        ('zip_file', 'ZipFile'),
-    ]
-    for k, d in content_keys:
-        if module.params["content"].get(k) is not None:
-            content[d] = module.params["content"].get(k)
-    params["Content"] = content
     try:
-        layer_version = lambda_client.publish_layer_version(**params)
+        layer_version = lambda_client.publish_layer_version(**opt)
         layer_version.pop("ResponseMetadata", None)
-        module.exit_json(changed=True, layer_versions=[camel_dict_to_snake_dict(layer_version)])
+        return {"changed": True, "layer_versions": [camel_dict_to_snake_dict(layer_version)]}
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to publish a new layer version (check that you have required permissions).")
+        raise LambdaLayerFailure(e, "Failed to publish a new layer version (check that you have required permissions).")
 
 
-def delete_layer_version(module, lambda_client):
-    layer_versions = list_layer_versions(module, lambda_client)
-    version = module.params.get("version")
+def delete_layer_version(lambda_client, params, check_mode=False):
+    name = params.get("name")
+    version = params.get("version")
+    layer_versions = list_layer_versions(lambda_client, name)
     deleted_versions = []
     changed = False
     for layer in layer_versions:
         if version == -1 or layer["version"] == version:
             deleted_versions.append(layer)
             changed = True
-            if not module.check_mode:
-                params = dict(LayerName=module.params.get("name"), VersionNumber=layer["version"])
+            if not check_mode:
                 try:
-                    lambda_client.delete_layer_version(**params)
+                    lambda_client.delete_layer_version(LayerName=name, VersionNumber=layer["version"])
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg="Failed to delete layer version.")
-    module.exit_json(changed=changed, layer_versions=deleted_versions)
+                    LambdaLayerFailure(e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version))
+    return {"changed": changed, "layer_versions": deleted_versions}
 
 
 def execute_module(module, lambda_client):
 
-    state = module.params.get("state")
-    if state == "present":
-        # Create layer version
-        create_layer_version(module, lambda_client)
-    else:
-        # Delete layer version
-        delete_layer_version(module, lambda_client)
+    try:
+
+        state = module.params.get("state")
+        f_operation = create_layer_version
+        if state == "absent":
+            f_operation = delete_layer_version
+
+        module.exit_json(**f_operation(lambda_client, module.params, module.check_mode))
+    except LambdaLayerFailure as e:
+        module.fail_json_aws(e.exc, msg=e.msg)
 
 
 def main():

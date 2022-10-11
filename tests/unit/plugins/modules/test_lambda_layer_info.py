@@ -8,8 +8,9 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
+from botocore.exceptions import BotoCoreError
 
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
+from unittest.mock import MagicMock, call
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer_info
 
 
@@ -134,181 +135,210 @@ list_layers_versions_result = [
 ]
 
 
-def setup_testing(module_params, paginate_results):
-    connection = MagicMock(name="connection")
-    module = MagicMock(name="module")
-    module.params = module_params
+@pytest.mark.parametrize(
+    "params,call_args",
+    [
+        (
+            {
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            },
+            {
+                "CompatibleRuntime": "nodejs",
+                "CompatibleArchitecture": "arm64"
+            }
+        ),
+        (
+            {
+                "compatible_runtime": "nodejs",
+            },
+            {
+                "CompatibleRuntime": "nodejs",
+            }
+        ),
+        (
+            {
+                "compatible_architecture": "arm64"
+            },
+            {
+                "CompatibleArchitecture": "arm64"
+            }
+        ),
+        (
+            {}, {}
+        )
+    ]
+)
+def test_list_layers_with_latest_version(params, call_args):
 
+    lambda_client = MagicMock()
+    lambda_layer_info._list_layers = MagicMock()
+
+    lambda_layer_info._list_layers.return_value = list_layers_paginate_result
+    layers = lambda_layer_info.list_layers(lambda_client, **params)
+
+    lambda_layer_info._list_layers.assert_has_calls(
+        [
+            call(lambda_client, **call_args)
+        ]
+    )
+    assert layers == list_layers_result
+
+
+@pytest.mark.parametrize(
+    "params,call_args",
+    [
+        (
+            {
+                "name": "layer-01",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            },
+            {
+                "LayerName": "layer-01",
+                "CompatibleRuntime": "nodejs",
+                "CompatibleArchitecture": "arm64"
+            }
+        ),
+        (
+            {
+                "name": "layer-01",
+                "compatible_runtime": "nodejs",
+            },
+            {
+                "LayerName": "layer-01",
+                "CompatibleRuntime": "nodejs",
+            }
+        ),
+        (
+            {
+                "name": "layer-01",
+                "compatible_architecture": "arm64"
+            },
+            {
+                "LayerName": "layer-01",
+                "CompatibleArchitecture": "arm64"
+            }
+        ),
+        (
+            {"name": "layer-01"}, {"LayerName": "layer-01"}
+        )
+    ]
+)
+def test_list_layer_versions(params, call_args):
+
+    lambda_client = MagicMock()
+    lambda_layer_info._list_layer_versions = MagicMock()
+
+    lambda_layer_info._list_layer_versions.return_value = list_layers_versions_paginate_result
+    layers = lambda_layer_info.list_layer_versions(lambda_client, **params)
+
+    lambda_layer_info._list_layer_versions.assert_has_calls(
+        [
+            call(lambda_client, **call_args)
+        ]
+    )
+    assert layers == list_layers_versions_result
+
+
+def raise_botocore_exception():
+    return BotoCoreError(error="failed", operation="list_layers")
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        (
+            {
+                "name": "test-layer",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            }
+        ),
+        (
+            {
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            }
+        )
+    ]
+)
+def test_list_layers_with_failure(params):
+
+    lambda_client = MagicMock()
+    lambda_layer_info._list_layers = MagicMock()
+    lambda_layer_info._list_layer_versions = MagicMock()
+
+    if "name" in params:
+        lambda_layer_info._list_layer_versions.side_effect = raise_botocore_exception()
+        test_function = lambda_layer_info.list_layer_versions
+    else:
+        lambda_layer_info._list_layers.side_effect = raise_botocore_exception()
+        test_function = lambda_layer_info.list_layers
+
+    with pytest.raises(lambda_layer_info.LambdaLayerInfoFailure):
+        test_function(lambda_client, **params)
+
+
+@pytest.mark.parametrize(
+    "params,m_method,result",
+    [
+        (
+            {
+                "name": "test-layer",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            },
+            "list_layer_versions",
+            list_layers_versions_result
+        ),
+        (
+            {
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64"
+            },
+            "list_layers",
+            list_layers_result
+        )
+    ]
+)
+def test_execute_module_with_exit_json(params, m_method, result):
+    lambda_client = MagicMock()
+    module = MagicMock()
+
+    module.params = params
     module.exit_json.side_effect = SystemExit(1)
-    module.fail_json.side_effect = SystemExit(2)
 
-    conn_paginator = MagicMock(name="connection.paginator")
-    paginate = MagicMock(name="paginator.paginate")
-    connection.get_paginator.return_value = conn_paginator
-    conn_paginator.paginate.return_value = paginate
-    paginate.build_full_result.return_value = paginate_results
+    mock_method = getattr(lambda_layer_info, m_method)
 
-    return module, connection, conn_paginator, paginate
-
-
-def test_list_layers_with_latest_version_with_compatible_runtimes_and_architectures():
-
-    module_params = dict(compatible_runtime="nodejs", compatible_architecture="arm64")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_paginate_result)
+    mock_method = MagicMock()
+    mock_method.return_value = result
 
     with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layers")
-    conn_paginator.paginate.assert_called_with(
-        CompatibleRuntime="nodejs",
-        CompatibleArchitecture="arm64",
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_result
-    )
+        lambda_layer_info.execute_module(module, lambda_client)
+        calls = [call(changed=False, layers_versions=result)]
+        assert module.exit_json.assert_has_calls(calls)
 
 
-def test_list_layers_with_latest_version_with_compatible_runtimes_only():
-
-    module_params = dict(compatible_runtime="nodejs")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layers")
-    conn_paginator.paginate.assert_called_with(
-        CompatibleRuntime="nodejs"
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_result
-    )
+def raise_layer_info_exception(e, m):
+    return lambda_layer_info.LambdaLayerInfoFailure(exc=e, msg=m)
 
 
-def test_list_layers_with_latest_version_with_compatible_architectures_only():
+def test_execute_module_with_failure():
+    lambda_client = MagicMock()
+    module = MagicMock()
 
-    module_params = dict(compatible_architecture="arm64")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_paginate_result)
+    module.params = {
+        "name": "test-layer",
+        "compatible_runtime": "nodejs",
+        "compatible_architecture": "arm64"
+    }
+    module.fail_json_aws.side_effect = SystemExit(1)
+
+    lambda_layer_info.list_layer_versions = MagicMock()
+    e, m = "some exception message", "module fails to execute as expected"
+    lambda_layer_info.list_layer_versions.side_effect = raise_layer_info_exception(e, m)
 
     with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layers")
-    conn_paginator.paginate.assert_called_with(
-        CompatibleArchitecture="arm64"
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_result
-    )
-
-
-def test_list_layers_with_latest_version_without_any_params():
-
-    module_params = dict()
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layers")
-    conn_paginator.paginate.assert_called_with()
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_result
-    )
-
-
-def test_list_layers_versions_with_latest_version_with_all_parameters():
-
-    module_params = dict(name="layer-01", compatible_runtime="nodejs", compatible_architecture="arm64")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_versions_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="layer-01",
-        CompatibleRuntime="nodejs",
-        CompatibleArchitecture="arm64",
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_versions_result
-    )
-
-
-def test_list_layers_versions_with_latest_version_with_name_and_compatible_runtimes_only():
-
-    module_params = dict(name="layer-01", compatible_runtime="nodejs")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_versions_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="layer-01",
-        CompatibleRuntime="nodejs"
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_versions_result
-    )
-
-
-def test_list_layers_versions_with_name_and_compatible_architectures_only():
-
-    module_params = dict(name="layer-01", compatible_architecture="arm64")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_versions_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="layer-01",
-        CompatibleArchitecture="arm64"
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_versions_result
-    )
-
-
-def test_list_layers_versions_with_name_only():
-
-    module_params = dict(name="layer-01")
-    module, connection, conn_paginator, paginate = setup_testing(module_params, list_layers_versions_paginate_result)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, connection)
-
-    connection.get_paginator.assert_called_with("list_layer_versions")
-    conn_paginator.paginate.assert_called_with(
-        LayerName="layer-01",
-    )
-    paginate.build_full_result.assert_called_once()
-
-    module.exit_json.assert_called_with(
-        changed=False,
-        layers_versions=list_layers_versions_result
-    )
+        lambda_layer_info.execute_module(module, lambda_client)
+        assert module.fail_json_aws.assert_called_with(e, msg=m)
