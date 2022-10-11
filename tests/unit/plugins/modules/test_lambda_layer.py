@@ -11,7 +11,7 @@ import pytest
 from tempfile import NamedTemporaryFile
 import os
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer
 
 
@@ -19,6 +19,11 @@ def raise_lambdalayer_exception(e=None, m=None):
     e = e or "lambda layer exc"
     m = m or "unit testing"
     return lambda_layer.LambdaLayerFailure(exc=e, msg=m)
+
+
+mod_list_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.list_layer_versions'
+mod_create_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.create_layer_version'
+mod_delete_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.delete_layer_version'
 
 
 @pytest.mark.parametrize(
@@ -152,17 +157,17 @@ def raise_lambdalayer_exception(e=None, m=None):
         )
     ]
 )
-def test_delete_layer(params, api_result, calls, ansible_result):
+@patch(mod_list_layer)
+def test_delete_layer(m_list_layer, params, api_result, calls, ansible_result):
 
     lambda_client = MagicMock()
     lambda_client.delete_layer_version.return_value = None
-    lambda_layer.list_layer_versions = MagicMock()
 
-    lambda_layer.list_layer_versions.return_value = api_result
+    m_list_layer.return_value = api_result
     result = lambda_layer.delete_layer_version(lambda_client, params)
     assert result == ansible_result
 
-    lambda_layer.list_layer_versions.assert_called_once_with(
+    m_list_layer.assert_called_once_with(
         lambda_client, params.get("name")
     )
 
@@ -172,13 +177,13 @@ def test_delete_layer(params, api_result, calls, ansible_result):
         lambda_client.delete_layer_version.assert_has_calls(calls, any_order=True)
 
 
-def test_delete_layer_check_mode():
+@patch(mod_list_layer)
+def test_delete_layer_check_mode(m_list_layer):
 
     lambda_client = MagicMock()
     lambda_client.delete_layer_version.return_value = None
-    lambda_layer.list_layer_versions = MagicMock()
 
-    lambda_layer.list_layer_versions.return_value = [
+    m_list_layer.return_value = [
         {
             'compatible_runtimes': ["python3.7"],
             'created_date': "2022-09-29T10:31:35.977+0000",
@@ -221,19 +226,19 @@ def test_delete_layer_check_mode():
     }
     assert result == ansible_result
 
-    lambda_layer.list_layer_versions.assert_called_once_with(
+    m_list_layer.assert_called_once_with(
         lambda_client, params.get("name")
     )
     lambda_client.delete_layer_version.assert_not_called()
 
 
-def test_delete_layer_failure():
+@patch(mod_list_layer)
+def test_delete_layer_failure(m_list_layer):
 
     lambda_client = MagicMock()
     lambda_client.delete_layer_version.side_effect = raise_lambdalayer_exception()
-    lambda_layer.list_layer_versions = MagicMock()
 
-    lambda_layer.list_layer_versions.return_value = [
+    m_list_layer.return_value = [
         {
             "created_date": "2022-09-29T10:31:26.341+0000",
             "description": "lambda layer first version",
@@ -253,7 +258,8 @@ def test_delete_layer_failure():
         (False)
     ]
 )
-def test_create_layer(b_s3content):
+@patch(mod_list_layer)
+def test_create_layer(m_list_layer, b_s3content):
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
@@ -262,7 +268,6 @@ def test_create_layer(b_s3content):
     }
 
     lambda_client = MagicMock()
-    lambda_layer.list_layer_versions = MagicMock()
 
     lambda_client.publish_layer_version.return_value = {
         'CompatibleRuntimes': [
@@ -344,10 +349,11 @@ def test_create_layer(b_s3content):
         Content=content_arg,
     )
 
-    lambda_layer.list_layer_versions.assert_not_called()
+    m_list_layer.assert_not_called()
 
 
-def test_create_layer_check_mode():
+@patch(mod_list_layer)
+def test_create_layer_check_mode(m_list_layer):
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
@@ -360,12 +366,11 @@ def test_create_layer_check_mode():
     }
 
     lambda_client = MagicMock()
-    lambda_layer.list_layer_versions = MagicMock()
 
     result = lambda_layer.create_layer_version(lambda_client, params, check_mode=True)
     assert result == {"msg": "Create operation skipped - running in check mode", "changed": True}
 
-    lambda_layer.list_layer_versions.assert_not_called()
+    m_list_layer.assert_not_called()
     lambda_client.publish_layer_version.assert_not_called()
 
 
@@ -412,7 +417,6 @@ def test_create_layer_using_unexisting_file():
     }
 
     lambda_client = MagicMock()
-    lambda_layer.list_layer_versions = MagicMock()
 
     lambda_client.publish_layer_version.return_value = {}
     with pytest.raises(FileNotFoundError):
@@ -442,7 +446,9 @@ def test_create_layer_using_unexisting_file():
         ),
     ]
 )
-def test_execute_module(params, failure):
+@patch(mod_create_layer)
+@patch(mod_delete_layer)
+def test_execute_module(m_delete_layer, m_create_layer, params, failure):
 
     module = MagicMock()
     module.params = params
@@ -452,41 +458,38 @@ def test_execute_module(params, failure):
 
     lambda_client = MagicMock()
 
-    lambda_layer.create_layer_version = MagicMock()
-    lambda_layer.delete_layer_version = MagicMock()
-
     state = params.get("state", "present")
     result = {"changed": True, "layers_versions": {}}
 
     if not failure:
         if state == "present":
-            lambda_layer.create_layer_version.return_value = result
+            m_create_layer.return_value = result
             with pytest.raises(SystemExit):
                 lambda_layer.execute_module(module, lambda_client)
 
             module.exit_json.assert_called_with(**result)
             module.fail_json_aws.assert_not_called()
-            lambda_layer.create_layer_version.assert_called_with(
+            m_create_layer.assert_called_with(
                 lambda_client, params, module.check_mode
             )
-            lambda_layer.delete_layer_version.assert_not_called()
+            m_delete_layer.assert_not_called()
 
         elif state == "absent":
-            lambda_layer.delete_layer_version.return_value = result
+            m_delete_layer.return_value = result
             with pytest.raises(SystemExit):
                 lambda_layer.execute_module(module, lambda_client)
 
             module.exit_json.assert_called_with(**result)
             module.fail_json_aws.assert_not_called()
-            lambda_layer.delete_layer_version.assert_called_with(
+            m_delete_layer.assert_called_with(
                 lambda_client, params, module.check_mode
             )
-            lambda_layer.create_layer_version.assert_not_called()
+            m_create_layer.assert_not_called()
     else:
         exc = "lambdalayer_execute_module_exception"
         msg = "this_exception_is_used_for_unit_testing"
-        lambda_layer.create_layer_version.side_effect = raise_lambdalayer_exception(exc, msg)
-        lambda_layer.delete_layer_version.side_effect = raise_lambdalayer_exception(exc, msg)
+        m_create_layer.side_effect = raise_lambdalayer_exception(exc, msg)
+        m_delete_layer.side_effect = raise_lambdalayer_exception(exc, msg)
 
         with pytest.raises(SystemExit):
             lambda_layer.execute_module(module, lambda_client)

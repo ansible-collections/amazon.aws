@@ -10,8 +10,14 @@ __metaclass__ = type
 import pytest
 from botocore.exceptions import BotoCoreError
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer_info
+
+
+mod__list_layer_versions = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer_info._list_layer_versions'
+mod__list_layers = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer_info._list_layers'
+mod_list_layer_versions = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer_info.list_layer_versions'
+mod_list_layers = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer_info.list_layers'
 
 
 list_layers_paginate_result = {
@@ -169,15 +175,15 @@ list_layers_versions_result = [
         )
     ]
 )
-def test_list_layers_with_latest_version(params, call_args):
+@patch(mod__list_layers)
+def test_list_layers_with_latest_version(m__list_layers, params, call_args):
 
     lambda_client = MagicMock()
-    lambda_layer_info._list_layers = MagicMock()
 
-    lambda_layer_info._list_layers.return_value = list_layers_paginate_result
+    m__list_layers.return_value = list_layers_paginate_result
     layers = lambda_layer_info.list_layers(lambda_client, **params)
 
-    lambda_layer_info._list_layers.assert_has_calls(
+    m__list_layers.assert_has_calls(
         [
             call(lambda_client, **call_args)
         ]
@@ -225,15 +231,15 @@ def test_list_layers_with_latest_version(params, call_args):
         )
     ]
 )
-def test_list_layer_versions(params, call_args):
+@patch(mod__list_layer_versions)
+def test_list_layer_versions(m__list_layer_versions, params, call_args):
 
     lambda_client = MagicMock()
-    lambda_layer_info._list_layer_versions = MagicMock()
 
-    lambda_layer_info._list_layer_versions.return_value = list_layers_versions_paginate_result
+    m__list_layer_versions.return_value = list_layers_versions_paginate_result
     layers = lambda_layer_info.list_layer_versions(lambda_client, **params)
 
-    lambda_layer_info._list_layer_versions.assert_has_calls(
+    m__list_layer_versions.assert_has_calls(
         [
             call(lambda_client, **call_args)
         ]
@@ -263,17 +269,17 @@ def raise_botocore_exception():
         )
     ]
 )
-def test_list_layers_with_failure(params):
+@patch(mod__list_layers)
+@patch(mod__list_layer_versions)
+def test_list_layers_with_failure(m__list_layer_versions, m__list_layers, params):
 
     lambda_client = MagicMock()
-    lambda_layer_info._list_layers = MagicMock()
-    lambda_layer_info._list_layer_versions = MagicMock()
 
     if "name" in params:
-        lambda_layer_info._list_layer_versions.side_effect = raise_botocore_exception()
+        m__list_layer_versions.side_effect = raise_botocore_exception()
         test_function = lambda_layer_info.list_layer_versions
     else:
-        lambda_layer_info._list_layers.side_effect = raise_botocore_exception()
+        m__list_layers.side_effect = raise_botocore_exception()
         test_function = lambda_layer_info.list_layers
 
     with pytest.raises(lambda_layer_info.LambdaLayerInfoFailure):
@@ -312,7 +318,9 @@ def raise_layer_info_exception(exc, msg):
         )
     ]
 )
-def test_execute_module(params, failure):
+@patch(mod_list_layers)
+@patch(mod_list_layer_versions)
+def test_execute_module(m_list_layer_versions, m_list_layers, params, failure):
 
     lambda_client = MagicMock()
 
@@ -321,20 +329,15 @@ def test_execute_module(params, failure):
     module.exit_json.side_effect = SystemExit(1)
     module.fail_json_aws.side_effect = SystemExit(2)
 
-    lambda_layer_info.list_layer_versions = MagicMock()
-    lambda_layer_info.list_layers = MagicMock()
-
-    called_method = lambda_layer_info.list_layers
-    not_called = lambda_layer_info.list_layer_versions
+    method_called, method_not_called = m_list_layers, m_list_layer_versions
     if "name" in params:
-        called_method = lambda_layer_info.list_layer_versions
-        not_called = lambda_layer_info.list_layers
+        method_not_called, method_called = m_list_layers, m_list_layer_versions
 
     if failure:
         exc = "lambda_layer_exception"
         msg = "this exception has been generated for unit tests"
 
-        called_method.side_effect = raise_layer_info_exception(exc, msg)
+        method_called.side_effect = raise_layer_info_exception(exc, msg)
 
         with pytest.raises(SystemExit):
             lambda_layer_info.execute_module(module, lambda_client)
@@ -343,7 +346,7 @@ def test_execute_module(params, failure):
 
     else:
         result = {"A": "valueA", "B": "valueB"}
-        called_method.return_value = result
+        method_called.return_value = result
 
         with pytest.raises(SystemExit):
             lambda_layer_info.execute_module(module, lambda_client)
@@ -351,5 +354,5 @@ def test_execute_module(params, failure):
         module.exit_json.assert_called_with(
             changed=False, layers_versions=result
         )
-        called_method.assert_called_with(lambda_client, **params)
-        not_called.list_layers.assert_not_called()
+        method_called.assert_called_with(lambda_client, **params)
+        method_not_called.list_layers.assert_not_called()
