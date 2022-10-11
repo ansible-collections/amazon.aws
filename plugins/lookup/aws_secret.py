@@ -129,6 +129,7 @@ except ImportError:
 from ansible.errors import AnsibleError
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.lookup import LookupBase
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
@@ -177,7 +178,7 @@ class LookupModule(LookupBase):
                    :returns: A list of parameter values or a list of dictionaries if bypath=True.
                '''
         if not HAS_BOTO3:
-            raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
+            raise AnsibleError(missing_required_lib('botocore and boto3'))
 
         deleted = on_deleted.lower()
         if not isinstance(deleted, string_types) or deleted not in ['error', 'warn', 'skip']:

@@ -57,6 +57,7 @@ except ImportError:
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.lookup import LookupBase
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
@@ -99,7 +100,7 @@ class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
 
         if not HAS_BOTO3:
-            raise AnsibleError("The lookup aws_account_attribute requires boto3 and botocore.")
+            raise AnsibleError(missing_required_lib('botocore and boto3'))
 
         self.set_options(var_options=variables, direct=kwargs)
         boto_credentials = _get_credentials(self._options)
