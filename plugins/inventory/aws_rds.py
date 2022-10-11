@@ -88,6 +88,7 @@ except ImportError:
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.plugins.inventory import Cacheable
 from ansible.plugins.inventory import Constructable
@@ -357,7 +358,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         if not HAS_BOTO3:
-            raise AnsibleError('The RDS dynamic inventory plugin requires boto3 and botocore.')
+            raise AnsibleError(missing_required_lib('botocore and boto3'))
 
         self._set_credentials()
 

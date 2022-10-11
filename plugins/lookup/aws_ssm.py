@@ -137,6 +137,7 @@ from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 from ansible.module_utils.six import string_types
+from ansible.module_utils.basic import missing_required_lib
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
@@ -170,7 +171,7 @@ class LookupModule(LookupBase):
         '''
 
         if not HAS_BOTO3:
-            raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
+            raise AnsibleError(missing_required_lib('botocore and boto3'))
 
         # validate arguments 'on_missing' and 'on_denied'
         if on_missing is not None and (not isinstance(on_missing, string_types) or on_missing.lower() not in ['error', 'warn', 'skip']):
