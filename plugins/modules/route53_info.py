@@ -9,9 +9,10 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 module: route53_info
 short_description: Retrieves route53 details using AWS methods
-version_added: 1.0.0
+version_added: 5.0.0
 description:
-    - Gets various details related to Route53 zone, record set or health check details.
+  - Gets various details related to Route53 zone, record set or health check details.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   query:
     description:
@@ -126,11 +127,12 @@ options:
         ]
     default: 'list'
     type: str
-author: Karen Cheng (@Etherdaemon)
+author:
+  - Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 
@@ -255,6 +257,7 @@ resource_record_sets:
                     type: str
                     sample: 'NY'
     version_added: 4.0.0
+    version_added_collection: community.aws
 hosted_zones:
     description: A list of hosted zones returned by list_hosted_zones in boto3.
     returned: when I(query=hosted_zone)
@@ -290,6 +293,7 @@ hosted_zones:
                     type: bool
                     sample: false
     version_added: 4.0.0
+    version_added_collection: community.aws
 health_checks:
     description: A list of Route53 health checks returned by list_health_checks in boto3.
     type: list
@@ -361,18 +365,21 @@ health_checks:
                     type: str
                     sample: HTTPS
     version_added: 4.0.0
+    version_added_collection: community.aws
 checker_ip_ranges:
     description: A list of IP ranges in CIDR format for Amazon Route 53 health checkers.
     returned: when I(query=checker_ip_range)
     type: list
     elements: str
     version_added: 4.1.0
+    version_added_collection: community.aws
 delegation_sets:
     description: A list of dicts that contains information about the reusable delegation set.
     returned: when I(query=reusable_delegation_set)
     type: list
     elements: dict
     version_added: 4.1.0
+    version_added_collection: community.aws
 health_check:
     description: A dict of Route53 health check details returned by get_health_check_status in boto3.
     type: dict
@@ -443,6 +450,7 @@ health_check:
                     type: str
                     sample: HTTPS
     version_added: 4.1.0
+    version_added_collection: community.aws
 ResourceRecordSets:
     description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \

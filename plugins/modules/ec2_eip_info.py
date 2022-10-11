@@ -9,11 +9,13 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_eip_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: List EC2 EIP details
 description:
-    - List details of EC2 Elastic IP addresses.
-author: "Brad Macpherson (@iiibrad)"
+  - List details of EC2 Elastic IP addresses.
+  - This module was originally added to C(community.aws) in release 1.0.0.
+author:
+  - "Brad Macpherson (@iiibrad)"
 options:
   filters:
     description:
@@ -24,9 +26,9 @@ options:
     default: {}
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

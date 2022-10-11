@@ -10,16 +10,15 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_policy
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Creates, updates or deletes AWS Lambda policy statements.
 description:
-    - This module allows the management of AWS Lambda policy statements.
-    - It is idempotent and supports "Check" mode.
-    - Use module M(amazon.aws.lambda) to manage the lambda function itself, M(amazon.aws.lambda_alias) to manage function aliases,
-      M(amazon.aws.lambda_event) to manage event source mappings such as Kinesis streams, M(community.aws.execute_lambda) to execute a
-      lambda function and M(amazon.aws.lambda_info) to gather information relating to one or more lambda functions.
-
-
+  - This module allows the management of AWS Lambda policy statements.
+  - It is idempotent and supports "Check" mode.
+  - Use module M(amazon.aws.lambda) to manage the lambda function itself, M(amazon.aws.lambda_alias) to manage function aliases,
+    M(amazon.aws.lambda_event) to manage event source mappings such as Kinesis streams, M(community.aws.execute_lambda) to execute a
+    lambda function and M(amazon.aws.lambda_info) to gather information relating to one or more lambda functions.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Pierre Jodouin (@pjodouin)
   - Michael De La Rue (@mikedlr)
@@ -98,9 +97,9 @@ options:
     type: str
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

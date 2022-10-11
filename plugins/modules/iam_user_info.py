@@ -11,35 +11,36 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_user_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Gather IAM user(s) facts in AWS
 description:
   - This module can be used to gather IAM user(s) facts in AWS.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Constantin Bugneac (@Constantin07)
   - Abhijeet Kasurde (@Akasurde)
 options:
   name:
     description:
-     - The name of the IAM user to look for.
+      - The name of the IAM user to look for.
     required: false
     type: str
   group:
     description:
-     - The group name name of the IAM user to look for. Mutually exclusive with C(path).
+      - The group name name of the IAM user to look for. Mutually exclusive with C(path).
     required: false
     type: str
   path:
     description:
-     - The path to the IAM user. Mutually exclusive with C(group).
-     - If specified, then would get all user names whose path starts with user provided value.
+      - The path to the IAM user. Mutually exclusive with C(group).
+      - If specified, then would get all user names whose path starts with user provided value.
     required: false
     default: '/'
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

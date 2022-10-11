@@ -12,10 +12,11 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: route53
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: add or delete entries in Amazons Route 53 DNS service
 description:
-     - Creates and deletes DNS records in Amazons Route 53 service.
+  - Creates and deletes DNS records in Amazons Route 53 service.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   state:
     description:
@@ -132,6 +133,7 @@ options:
         type: str
     type: dict
     version_added: 3.3.0
+    version_added_collection: community.aws
   health_check:
     description:
       - Health check to associate with this record
@@ -159,11 +161,11 @@ options:
     default: 300
     type: int
 author:
-- Bruce Pennypacker (@bpennypacker)
-- Mike Buzzetti (@jimbydamonk)
+  - Bruce Pennypacker (@bpennypacker)
+  - Mike Buzzetti (@jimbydamonk)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.boto3
 '''
 
 RETURN = r'''
@@ -197,6 +199,7 @@ set:
       type: dict
       sample: { continent_code: "NA", country_code: "US", subdivision_code: "CA" }
       version_added: 3.3.0
+      version_added_collection: community.aws
     health_check:
       description: health_check associated with this record.
       returned: always

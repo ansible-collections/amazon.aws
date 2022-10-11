@@ -21,12 +21,13 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 module: cloudwatch_metric_alarm
 short_description: "Create/update or delete AWS CloudWatch 'metric alarms'"
-version_added: 1.0.0
+version_added: 5.0.0
 description:
  - Can create or delete AWS CloudWatch metric alarms.
  - Metrics you wish to alarm on must already exist.
  - Prior to release 5.0.0 this module was called C(community.aws.ec2_metric_alarm).
    The usage did not change.
+ - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - "Zacharie Eakin (@Zeekin)"
 options:

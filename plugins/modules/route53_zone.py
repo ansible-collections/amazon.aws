@@ -8,9 +8,10 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 module: route53_zone
 short_description: add or delete Route53 zones
-version_added: 1.0.0
+version_added: 5.0.0
 description:
     - Creates and deletes Route53 private and public zones.
+    - This module was originally added to C(community.aws) in release 1.0.0.
 options:
     zone:
         description:

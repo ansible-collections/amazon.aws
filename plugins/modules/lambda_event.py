@@ -9,17 +9,19 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_event
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Creates, updates or deletes AWS Lambda function event mappings
 description:
-    - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream
-      events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where
-      AWS Lambda invokes the function.
-      It is idempotent and supports "Check" mode.  Use module M(amazon.aws.lambda) to manage the lambda
-      function itself and M(amazon.aws.lambda_alias) to manage function aliases.
+  - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream
+    events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where
+    AWS Lambda invokes the function.
+    It is idempotent and supports "Check" mode.  Use module M(amazon.aws.lambda) to manage the lambda
+    function itself and M(amazon.aws.lambda_alias) to manage function aliases.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 
-
-author: Pierre Jodouin (@pjodouin), Ryan Brown (@ryansb)
+author:
+  - Pierre Jodouin (@pjodouin)
+  - Ryan Brown (@ryansb)
 options:
   lambda_function_arn:
     description:
@@ -79,9 +81,9 @@ options:
     required: true
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 
