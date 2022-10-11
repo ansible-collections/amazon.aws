@@ -181,19 +181,24 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
 
 def execute_module(module, lambda_client):
 
+    params = {}
+    f_operation = list_layers
     name = module.params.get("name")
+    if name is not None:
+        f_operation = list_layer_versions
+        params["name"] = name
     compatible_runtime = module.params.get("compatible_runtime")
+    if compatible_runtime is not None:
+        params["compatible_runtime"] = compatible_runtime
     compatible_architecture = module.params.get("compatible_architecture")
+    if compatible_architecture is not None:
+        params["compatible_architecture"] = compatible_architecture
 
     try:
-        if name is not None:
-            result = list_layer_versions(lambda_client, name, compatible_runtime, compatible_architecture)
-        else:
-            result = list_layers(lambda_client, compatible_runtime, compatible_architecture)
-
+        result = f_operation(lambda_client, **params)
         module.exit_json(changed=False, layers_versions=result)
     except LambdaLayerInfoFailure as e:
-        module.fail_json_aws(e.exc, msg=e.msg)
+        module.fail_json_aws(exception=e.exc, msg=e.msg)
 
 
 def main():

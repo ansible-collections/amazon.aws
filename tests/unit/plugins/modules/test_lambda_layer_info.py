@@ -11,6 +11,7 @@ import pytest
 from botocore.exceptions import BotoCoreError
 
 from unittest.mock import MagicMock, call
+from unittest import TestCase
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer_info
 
 
@@ -280,65 +281,81 @@ def test_list_layers_with_failure(params):
         test_function(lambda_client, **params)
 
 
-@pytest.mark.parametrize(
-    "params,m_method,result",
-    [
-        (
-            {
-                "name": "test-layer",
-                "compatible_runtime": "nodejs",
-                "compatible_architecture": "arm64"
-            },
-            "list_layer_versions",
-            list_layers_versions_result
-        ),
-        (
-            {
-                "compatible_runtime": "nodejs",
-                "compatible_architecture": "arm64"
-            },
-            "list_layers",
-            list_layers_result
+class ExecuteModuleTestCase(TestCase):
+
+    def setUp(self):
+
+        self.lambda_client = MagicMock()
+        self.module = MagicMock()
+
+        self.module.exit_json.side_effect = SystemExit(1)
+        self.module.fail_json_aws.side_effect = SystemExit(2)
+
+        lambda_layer_info.list_layer_versions = MagicMock()
+        lambda_layer_info.list_layers = MagicMock()
+
+        self.exc = "lambda_layer_exception"
+        self.msg = "this exception has been generated for unit tests"
+
+    def raise_layer_info_exception(self):
+        return lambda_layer_info.LambdaLayerInfoFailure(exc=self.exc, msg=self.msg)
+
+    def test_list_layer_exit_json(self):
+        self.module.params = {
+            "name": "test-layer",
+            "compatible_runtime": "nodejs",
+            "compatible_architecture": "arm64"
+        }
+
+        result = {"key": "value", "anotherkey": "another_value"}
+        lambda_layer_info.list_layer_versions.return_value = result
+
+        with pytest.raises(SystemExit):
+            lambda_layer_info.execute_module(self.module, self.lambda_client)
+
+        self.module.exit_json.assert_called_with(
+            changed=False, layers_versions=result
         )
-    ]
-)
-def test_execute_module_with_exit_json(params, m_method, result):
-    lambda_client = MagicMock()
-    module = MagicMock()
+        lambda_layer_info.list_layer_versions.assert_called_with(
+            self.lambda_client,
+            name=self.module.params.get("name"),
+            compatible_runtime=self.module.params.get("compatible_runtime"),
+            compatible_architecture=self.module.params.get("compatible_architecture"),
+        )
+        lambda_layer_info.list_layers.assert_not_called()
 
-    module.params = params
-    module.exit_json.side_effect = SystemExit(1)
+    def test_list_layer_version_exit_json(self):
+        self.module.params = {
+            "compatible_runtime": "nodejs",
+            "compatible_architecture": "arm64"
+        }
 
-    mock_method = getattr(lambda_layer_info, m_method)
+        result = {"key": "value", "anotherkey": "another_value"}
+        lambda_layer_info.list_layers.return_value = result
 
-    mock_method = MagicMock()
-    mock_method.return_value = result
+        with pytest.raises(SystemExit):
+            lambda_layer_info.execute_module(self.module, self.lambda_client)
 
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, lambda_client)
-        calls = [call(changed=False, layers_versions=result)]
-        assert module.exit_json.assert_has_calls(calls)
+        self.module.exit_json.assert_called_with(
+            changed=False, layers_versions=result
+        )
+        lambda_layer_info.list_layers.assert_called_with(
+            self.lambda_client,
+            compatible_runtime=self.module.params.get("compatible_runtime"),
+            compatible_architecture=self.module.params.get("compatible_architecture"),
+        )
+        lambda_layer_info.list_layer_versions.assert_not_called()
 
+    def test_failure(self):
 
-def raise_layer_info_exception(e, m):
-    return lambda_layer_info.LambdaLayerInfoFailure(exc=e, msg=m)
+        self.module.params = {
+            "name": "test-layer",
+            "compatible_runtime": "nodejs",
+            "compatible_architecture": "arm64"
+        }
+        lambda_layer_info.list_layer_versions.side_effect = self.raise_layer_info_exception()
 
+        with pytest.raises(SystemExit):
+            lambda_layer_info.execute_module(self.module, self.lambda_client)
 
-def test_execute_module_with_failure():
-    lambda_client = MagicMock()
-    module = MagicMock()
-
-    module.params = {
-        "name": "test-layer",
-        "compatible_runtime": "nodejs",
-        "compatible_architecture": "arm64"
-    }
-    module.fail_json_aws.side_effect = SystemExit(1)
-
-    lambda_layer_info.list_layer_versions = MagicMock()
-    e, m = "some exception message", "module fails to execute as expected"
-    lambda_layer_info.list_layer_versions.side_effect = raise_layer_info_exception(e, m)
-
-    with pytest.raises(SystemExit):
-        lambda_layer_info.execute_module(module, lambda_client)
-        assert module.fail_json_aws.assert_called_with(e, msg=m)
+        self.module.fail_json_aws.assert_called_with(exception=self.exc, msg=self.msg)
