@@ -352,34 +352,45 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-iam_instance_profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-instance_role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-role"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-iam-instance-profile"></span><strong>iam_instance_profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-iam_instance_profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: instance_role</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ARN or name of an EC2-enabled IAM instance profile to be used.</p>
+<p>If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted. <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html">https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html</a></p>
+<p>If no full ARN is provided, the role with a matching name will be used from the active AWS account.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-image"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-image"><strong>image</strong></p>
 <a class="ansibleOptionLink" href="#parameter-image" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>An image to use for the instance. The <a class="reference internal" href="ec2_ami_info_module.html#ansible-collections-amazon-aws-ec2-ami-info-module"><span class="std std-ref">amazon.aws.ec2_ami_info</span></a> module may be used to retrieve images. One of <em>image</em> or <em>image_id</em> are required when instance is not already present.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-image/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-image-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-image/id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AMI ID.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-image/kernel"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-image-kernel"><strong>kernel</strong></p>
 <a class="ansibleOptionLink" href="#parameter-image/kernel" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>a string AKI to override the AMI kernel.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-image/ramdisk"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-image-ramdisk"><strong>ramdisk</strong></p>
 <a class="ansibleOptionLink" href="#parameter-image/ramdisk" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Overrides the AMI’s default ramdisk ID.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-image_id"></div><p class="ansible-option-title" id="id1"><strong>image_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-image_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -387,7 +398,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>This is an alias for <em>image.id</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-instance_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-ids"><strong>instance_ids</strong></p>
 <a class="ansibleOptionLink" href="#parameter-instance_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -395,7 +406,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Mutually exclusive with <em>exact_count</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-instance_initiated_shutdown_behavior"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-initiated-shutdown-behavior"><strong>instance_initiated_shutdown_behavior</strong></p>
 <a class="ansibleOptionLink" href="#parameter-instance_initiated_shutdown_behavior" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -405,15 +416,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;stop&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;terminate&quot;</span></code></p></li>
 </ul>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-instance_role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-role"><strong>instance_role</strong></p>
-<a class="ansibleOptionLink" href="#parameter-instance_role" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The ARN or name of an EC2-enabled instance role to be used.</p>
-<p>If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted. <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html">https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html</a></p>
-<p>If no full ARN is provided, the role with a matching name will be used from the active AWS account.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
