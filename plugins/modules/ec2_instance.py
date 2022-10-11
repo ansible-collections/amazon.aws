@@ -293,13 +293,14 @@ options:
       - By default, instances are filtered for counting by their "Name" tag, base AMI, state (running, by default), and
         subnet ID. Any queryable filter can be used. Good candidates are specific tags, SSH keys, or security groups.
     type: dict
-  instance_role:
+  iam_instance_profile:
     description:
-      - The ARN or name of an EC2-enabled instance role to be used.
+      - The ARN or name of an EC2-enabled IAM instance profile to be used.
       - If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted.
         U(https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html)
       - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
+    aliases: ['instance_role']
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
@@ -1354,28 +1355,31 @@ def build_run_instance_spec(params):
         MaxCount=1,
         MinCount=1,
     )
-    # network parameters
+    spec.update(**build_top_level_options(params))
+
     spec['NetworkInterfaces'] = build_network_spec(params)
     spec['BlockDeviceMappings'] = build_volume_spec(params)
-    spec.update(**build_top_level_options(params))
-    spec['TagSpecifications'] = build_instance_tags(params)
+
+    tag_spec = build_instance_tags(params)
+    if tag_spec is not None:
+        spec['TagSpecifications'] = tag_spec
 
     # IAM profile
-    if params.get('instance_role'):
-        spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
+    if params.get('iam_instance_profile'):
+        spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('iam_instance_profile')))
 
-    if module.params.get('exact_count'):
-        spec['MaxCount'] = module.params.get('to_launch')
-        spec['MinCount'] = module.params.get('to_launch')
+    if params.get('exact_count'):
+        spec['MaxCount'] = params.get('to_launch')
+        spec['MinCount'] = params.get('to_launch')
 
-    if module.params.get('count'):
-        spec['MaxCount'] = module.params.get('count')
-        spec['MinCount'] = module.params.get('count')
+    if params.get('count'):
+        spec['MaxCount'] = params.get('count')
+        spec['MinCount'] = params.get('count')
 
-    if not module.params.get('launch_template'):
-        spec['InstanceType'] = params['instance_type'] if module.params.get('instance_type') else 't2.micro'
+    if not params.get('launch_template'):
+        spec['InstanceType'] = params['instance_type'] if params.get('instance_type') else 't2.micro'
 
-    if module.params.get('launch_template') and module.params.get('instance_type'):
+    if params.get('launch_template') and params.get('instance_type'):
         spec['InstanceType'] = params['instance_type']
 
     return spec
@@ -1794,9 +1798,9 @@ def determine_iam_role(name_or_arn):
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
         return role['InstanceProfile']['Arn']
     except is_boto3_error_code('NoSuchEntity') as e:
-        module.fail_json_aws(e, msg="Could not find instance_role {0}".format(name_or_arn))
+        module.fail_json_aws(e, msg="Could not find iam_instance_profile {0}".format(name_or_arn))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(name_or_arn))
+        module.fail_json_aws(e, msg="An error occurred while searching for iam_instance_profile {0}. Please try supplying the full ARN.".format(name_or_arn))
 
 
 def handle_existing(existing_matches, state):
@@ -1827,7 +1831,7 @@ def handle_existing(existing_matches, state):
                     module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
         all_changes.extend(changes)
         changed |= bool(changes)
-        changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'))
+        changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('iam_instance_profile'))
         changed |= change_network_attachments(existing_matches[0], module.params)
 
     altered = find_instances(ids=[i['InstanceId'] for i in existing_matches])
@@ -2022,7 +2026,7 @@ def main():
         availability_zone=dict(type='str'),
         security_groups=dict(default=[], type='list', elements='str'),
         security_group=dict(type='str'),
-        instance_role=dict(type='str'),
+        iam_instance_profile=dict(type='str', aliases=['instance_role']),
         name=dict(type='str'),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
