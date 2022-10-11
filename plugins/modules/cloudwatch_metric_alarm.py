@@ -51,34 +51,40 @@ options:
         aliases: ['metric']
     metrics:
         description:
-          - An array of MetricDataQuery structures that enable 
+          - An array of MetricDataQuery structures that enable
             you to create an alarm based on the result of a metric math expression.
         type: list
+        required: false
         elements: dict
         suboptions:
             id:
                 description:
-                  - A short name used to tie this object to the results in the response. 
+                  - A short name used to tie this object to the results in the response.
                 type: str
+                required: true
             metric_stat:
-                description: The metric to be returned, along with statistics, period, and units. 
+                description: The metric to be returned, along with statistics, period, and units.
                 type: dict
+                required: false
                 suboptions:
                     metric:
                         description: The metric to return, including the metric name, namespace, and dimensions.
                         type: dict
+                        required: false
                         suboptions:
                             namespace:
                                 description: The namespace of the metric.
                                 type: str
+                                required: false
                             metric_name:
-                                description: The name of the metric. 
+                                description: The name of the metric.
                                 type: str
                                 required: True
                             dimensions:
                                 description: a name/value pair that is part of the identity of a metric.
                                 type: list
                                 elements: dict
+                                required: false
                                 suboptions:
                                     name:
                                         description: The name of the dimension.
@@ -89,7 +95,7 @@ options:
                                         type: str
                                         required: True
                     period:
-                        description: The granularity, in seconds, of the returned data points. 
+                        description: The granularity, in seconds, of the returned data points.
                         type: int
                         required: True
                     stat:
@@ -99,23 +105,29 @@ options:
                     unit:
                         description: Unit to use when storing the metric.
                         type: str
+                        required: false
             expression:
-                description: 
+                description:
                   - This field can contain either a Metrics Insights query,
                     or a metric math expression to be performed on the returned data.
                 type: str
+                required: false
             label:
-                description: A human-readable label for this metric or expression. 
+                description: A human-readable label for this metric or expression.
                 type: str
+                required: false
             return_data:
                 description: This option indicates whether to return the timestamps and raw data values of this metric.
                 type: bool
+                required: false
             period:
-                description: The granularity, in seconds, of the returned data points. 
+                description: The granularity, in seconds, of the returned data points.
                 type: int
+                required: false
             account_id:
                 description: The ID of the account where the metrics are located, if this is a cross-account alarm.
                 type: str
+                required: false
     namespace:
         description:
           - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
@@ -130,7 +142,8 @@ options:
         type: str
     extended_statistic:
         description: The percentile statistic for the metric specified in the metric name.
-        type: string
+        type: str
+        required: false
     comparison:
         description:
           - Determines how the threshold value is compared
@@ -273,7 +286,7 @@ EXAMPLES = r'''
               unit: "Percent"
           return_data: False
       alarm_actions: ["action1","action2"]
-      
+
   - name: Create an alarm to recover a failed instance
     amazon.aws.cloudwatch_metric_alarm:
       state: present
@@ -296,18 +309,18 @@ try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # protected by AnsibleAWSModule
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 
 def create_metric_alarm(connection, module, params):
     alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
 
-    if not isinstance(params['Dimensions'], list):
-        fixed_dimensions = []
-        for key, value in params['Dimensions'].items():
-            fixed_dimensions.append({'Name': key, 'Value': value})
-        params['Dimensions'] = fixed_dimensions
+    if params.get('Dimensions'):
+        if not isinstance(params['Dimensions'], list):
+            fixed_dimensions = []
+            for key, value in params['Dimensions'].items():
+                fixed_dimensions.append({'Name': key, 'Value': value})
+            params['Dimensions'] = fixed_dimensions
 
     if not alarms['MetricAlarms']:
         try:
@@ -327,7 +340,7 @@ def create_metric_alarm(connection, module, params):
 
         for key in ['ActionsEnabled', 'StateValue', 'StateReason',
                     'StateReasonData', 'StateUpdatedTimestamp',
-                    'AlarmArn', 'AlarmConfigurationUpdatedTimestamp']:
+                    'AlarmArn', 'AlarmConfigurationUpdatedTimestamp', 'Metrics']:
             alarm.pop(key, None)
         if alarm != params:
             changed = True
@@ -361,6 +374,8 @@ def create_metric_alarm(connection, module, params):
                      insufficient_data_actions=result.get('InsufficientDataActions'),
                      last_updated=result.get('AlarmConfigurationUpdatedTimestamp'),
                      metric=result.get('MetricName'),
+                     metric_name=result.get('MetricName'),
+                     metrics=result.get('Metrics'),
                      namespace=result.get('Namespace'),
                      ok_actions=result.get('OKActions'),
                      period=result.get('Period'),
@@ -384,12 +399,25 @@ def delete_metric_alarm(connection, module, params):
             module.fail_json_aws(e)
     else:
         module.exit_json(changed=False)
+        
+def delete_none_values(params):
+    """Delete None values recursively from params"""
+    if isinstance(params, dict):
+        for key, value in list(params.items()):
+            if isinstance(value, (list, dict, tuple, set)):
+                params[key] = delete_none_values(value)
+            elif value is None or key is None:
+                del params[key]
+    elif isinstance(params, list):
+        params = [(delete_none_values(item) for item in params if item is not None)]
+
+    return params
 
 
 def main():
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        metric=dict(type='str'),
+        metric_name=dict(type='str', aliases=['metric']),
         namespace=dict(type='str'),
         statistic=dict(type='str', choices=['SampleCount', 'Average', 'Sum', 'Minimum', 'Maximum']),
         comparison=dict(type='str', choices=['LessThanOrEqualToThreshold', 'LessThanThreshold', 'GreaterThanThreshold',
@@ -402,27 +430,33 @@ def main():
                                        'Terabytes/Second', 'Bits/Second', 'Kilobits/Second', 'Megabits/Second', 'Gigabits/Second',
                                        'Terabits/Second', 'Count/Second', 'None']),
         evaluation_periods=dict(type='int'),
+        extended_statistic=dict(type='str'),
         description=dict(type='str'),
-        dimensions=dict(type='dict', default={}),
+        dimensions=dict(type='dict'),
         alarm_actions=dict(type='list', default=[], elements='str'),
         insufficient_data_actions=dict(type='list', default=[], elements='str'),
         ok_actions=dict(type='list', default=[], elements='str'),
         treat_missing_data=dict(type='str', choices=['breaching', 'notBreaching', 'ignore', 'missing'], default='missing'),
         state=dict(default='present', choices=['present', 'absent']),
-        metrics=dict(type='list', elements='dict'),
+        metrics=dict(type='list', elements='dict', default=[]),
     )
-    
+
     mutually_exclusive = [
-        ['metric_name', 'metrics', 'dimensions', 'period', 'namespace', 'statistic', 'extended_statistic'],
+        ['metric_name', 'metrics'],
+        ['dimensions', 'metrics'],
+        ['period', 'metrics'],
+        ['namespace', 'metrics'],
+        ['statistic', 'metrics'],
+        ['extended_statistic', 'metrics'],
+        ['unit', 'metrics'],
         ['statistic', 'extended_statistic'],
     ]
-    
+    #mutually_exclusive = []
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=mutually_exclusive,
         supports_check_mode=True,
     )
-
 
     state = module.params.get('state')
 
@@ -443,7 +477,20 @@ def main():
     params['InsufficientDataActions'] = module.params.get('insufficient_data_actions', [])
     params['OKActions'] = module.params.get('ok_actions', [])
     params['TreatMissingData'] = module.params.get('treat_missing_data')
-    params['Metrics'] = module.params.get('metrics')
+    if module.params.get('metrics'):
+        params['Metrics'] = []
+        for element in module.params.get('metrics'):
+            params['Metrics'].append(snake_dict_to_camel_dict(element, capitalize_first=True))
+    if module.params.get('extended_statistic'):
+        params['ExtendedStatistic'] = module.params.get('extended_statistic')
+        
+    # Remove None value from params
+    #delete_none_values(params)
+    for key, value in list(params.items()):
+        if value is None:
+            del params[key]
+    
+    
 
     connection = module.client('cloudwatch')
 
