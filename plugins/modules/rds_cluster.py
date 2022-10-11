@@ -10,18 +10,19 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: rds_cluster
-version_added: "3.2.0"
+version_added: 5.0.0
 short_description: rds_cluster module
 description:
-    - Create, modify, and delete RDS clusters.
+  - Create, modify, and delete RDS clusters.
+  - This module was originally added to C(community.aws) in release 3.2.0.
 extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
-    - amazon.aws.tags
-    - amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
+  - amazon.aws.boto3
 author:
-    - Sloane Hertel (@s-hertel)
-    - Alina Buzachis (@alinabuzachis)
+  - Sloane Hertel (@s-hertel)
+  - Alina Buzachis (@alinabuzachis)
 options:
   # General module options
     state:

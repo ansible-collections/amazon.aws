@@ -12,10 +12,11 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: rds_subnet_group
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: manage RDS database subnet groups
 description:
   - Creates, modifies, and deletes RDS database subnet groups.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   state:
     description:
@@ -132,6 +133,7 @@ subnet_group:
                     returned: I(state=present)
                     type: dict
                     version_added: 3.2.0
+                    version_added_collection: community.aws
                     sample:
                         name: "eu-north-1b"
                 subnet_identifier:
@@ -139,18 +141,21 @@ subnet_group:
                     returned: I(state=present)
                     type: str
                     version_added: 3.2.0
+                    version_added_collection: community.aws
                     sample: "subnet-08c94870f4480797e"
                 subnet_outpost:
                     description: This value specifies the Outpost.
                     returned: I(state=present)
                     type: dict
                     version_added: 3.2.0
+                    version_added_collection: community.aws
                     sample: {}
                 subnet_status:
                     description: The status of the subnet.
                     returned: I(state=present)
                     type: str
                     version_added: 3.2.0
+                    version_added_collection: community.aws
                     sample: "Active"
         status:
             description: The status of the DB subnet group (maintained for backward compatibility)
@@ -172,6 +177,7 @@ subnet_group:
             returned: I(state=present)
             type: dict
             version_added: 3.2.0
+            version_added_collection: community.aws
             sample:
                 tag1: Tag1
                 tag2: Tag2

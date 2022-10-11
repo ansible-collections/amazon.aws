@@ -9,10 +9,11 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: rds_cluster_info
-version_added: 3.2.0
+version_added: 5.0.0
 short_description: Obtain information about one or more RDS clusters
 description:
   - Obtain information about one or more RDS clusters.
+  - This module was originally added to C(community.aws) in release 3.2.0.
 options:
     db_cluster_identifier:
         description:
@@ -29,11 +30,11 @@ options:
               See U(https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBClusters.html).
         type: dict
 author:
-    - Alina Buzachis (@alinabuzachis)
+  - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

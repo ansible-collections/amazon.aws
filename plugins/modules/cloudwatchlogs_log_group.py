@@ -10,13 +10,14 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: create or delete log_group in CloudWatchLogs
+description:
+  - Create or delete log_group in CloudWatchLogs.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 notes:
   - For details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/logs.html).
   - Support for I(purge_tags) was added in release 4.0.0.
-description:
-  - Create or delete log_group in CloudWatchLogs.
 author:
   - Willian Ricardo (@willricardo) <willricardo@gmail.com>
 options:
@@ -95,6 +96,7 @@ log_groups:
     returned: success
     type: complex
     version_added: 4.0.0
+    version_added_collection: community.aws
     contains:
         log_group_name:
             description: The name of the log group.

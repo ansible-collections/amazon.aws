@@ -9,17 +9,18 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: rds_instance
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage RDS instances
 description:
-    - Create, modify, and delete RDS instances.
+ - Create, modify, and delete RDS instances.
+ - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
-    - amazon.aws.tags
-    - amazon.aws.boto3
+ - amazon.aws.aws
+ - amazon.aws.ec2
+ - amazon.aws.tags
+ - amazon.aws.boto3
 author:
-    - Sloane Hertel (@s-hertel)
+ - Sloane Hertel (@s-hertel)
 
 options:
   # General module options
@@ -167,6 +168,7 @@ options:
              By default, deletion protection is disabled.
         type: bool
         version_added: 3.3.0
+        version_added_collection: community.aws
     domain:
         description:
           - The Active Directory Domain to restore the instance in.
@@ -229,6 +231,7 @@ options:
             type: str
             required: true
         version_added: 3.3.0
+        version_added_collection: community.aws
     iops:
         description:
           - The Provisioned IOPS (I/O operations per second) value. Is only set when using I(storage_type) is set to io1.
@@ -346,6 +349,7 @@ options:
         type: bool
         default: False
         version_added: 3.3.0
+        version_added_collection: community.aws
     restore_time:
         description:
           - If using I(creation_source=instance) this indicates the UTC date and time to restore from the source instance.
@@ -441,6 +445,7 @@ options:
         type: bool
         default: True
         version_added: 1.5.0
+        version_added_collection: community.aws
 '''
 
 EXAMPLES = r'''
@@ -683,6 +688,7 @@ deletion_protection:
   type: bool
   sample: False
   version_added: 3.3.0
+  version_added_collection: community.aws
 domain_memberships:
   description: The Active Directory Domain membership records associated with the DB instance.
   returned: always

@@ -9,12 +9,13 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Gathers AWS Lambda function details
 description:
   - Gathers various details related to Lambda functions, including aliases, versions and event source mappings.
   - Use module M(amazon.aws.lambda) to manage the lambda function itself, M(amazon.aws.lambda_alias) to manage function aliases,
     M(amazon.aws.lambda_event) to manage lambda event source mappings, and M(amazon.aws.lambda_policy) to manage policy statements.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   query:
     description:
@@ -87,6 +88,7 @@ functions:
     type: list
     elements: dict
     version_added: 4.1.0
+    version_added_collection: community.aws
     contains:
         aliases:
             description: The aliases associated with the function.

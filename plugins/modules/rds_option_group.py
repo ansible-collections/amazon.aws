@@ -9,9 +9,10 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 module: rds_option_group
 short_description: Manages the creation, modification, deletion of RDS option groups
-version_added: 2.1.0
+version_added: 5.0.0
 description:
   - Manages the creation, modification, deletion of RDS option groups.
+  - This module was originally added to C(community.aws) in release 2.1.0.
 author:
   - "Nick Aslanidis (@naslanidis)"
   - "Will Thames (@willthames)"

@@ -11,10 +11,11 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: rds_instance_snapshot
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage Amazon RDS instance snapshots
 description:
   - Creates or deletes RDS snapshots.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   state:
     description:
@@ -47,17 +48,20 @@ options:
       - source_snapshot_id
     type: str
     version_added: 3.3.0
+    version_added_collection: community.aws
   source_region:
     description:
       - The region that contains the snapshot to be copied.
     type: str
     version_added: 3.3.0
+    version_added_collection: community.aws
   copy_tags:
     description:
       - Whether to copy all tags from I(source_db_snapshot_identifier) to I(db_instance_identifier).
     type: bool
     default: False
     version_added: 3.3.0
+    version_added_collection: community.aws
   wait:
     description:
       - Whether or not to wait for snapshot creation or deletion.
@@ -193,6 +197,7 @@ source_db_snapshot_identifier:
   type: str
   sample: arn:aws:rds:us-west-2:123456789012:snapshot:ansible-test-16638696-test-snapshot-source
   version_added: 3.3.0
+  version_added_collection: community.aws
 snapshot_create_time:
   description: Creation time of the snapshot.
   returned: always

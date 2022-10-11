@@ -9,10 +9,11 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_policy_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Retrieve inline IAM policies for users, groups, and roles
 description:
-     - Supports fetching of inline IAM policies for IAM users, groups and roles.
+  - Supports fetching of inline IAM policies for IAM users, groups and roles.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   iam_type:
     description:
@@ -30,14 +31,12 @@ options:
       - Name of a specific IAM inline policy you with to retrieve.
     required: false
     type: str
-
 author:
-    - Mark Chappell (@tremble)
-
+  - Mark Chappell (@tremble)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

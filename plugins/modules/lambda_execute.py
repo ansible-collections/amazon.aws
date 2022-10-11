@@ -9,13 +9,14 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_execute
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Execute an AWS Lambda function
 description:
   - This module executes AWS Lambda functions, allowing synchronous and asynchronous
     invocation.
   - Prior to release 5.0.0 this module was called C(community.aws.execute_lambda).
     The usage did not change.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
