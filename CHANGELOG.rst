@@ -152,6 +152,28 @@ New Modules
 - cloudwatch_metric_alarm_info - Gather information about the alarms for the specified metric
 - s3_object_info - Gather information about objects in S3
 
+v4.3.0
+======
+
+Release Summary
+---------------
+
+The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
+Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
+security issues and bugfixes.
+
+
+Minor Changes
+-------------
+
+- ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
+
+Bugfixes
+--------
+
+- ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
+- module_utils/cloud - Fix ``ValueError: ansible_collections.amazon.aws.plugins.module_utils.core.__spec__ is None`` error on Ansible 2.9 (https://github.com/ansible-collections/amazon.aws/issues/1083).
+
 v4.2.0
 ======
 
@@ -267,6 +289,25 @@ Bugfixes
 - ec2_vpc_net - fix a bug where CIDR configuration would be updated in check mode (https://github.com/ansible/ansible/issues/62678).
 - ec2_vpc_net - fix a bug where the module would get stuck if DNS options were updated in check mode (https://github.com/ansible/ansible/issues/62677).
 - elb_classic_lb - modify the return value of _format_listeners method to resolve a failure creating https listeners (https://github.com/ansible-collections/amazon.aws/pull/860).
+
+v3.5.0
+======
+
+Release Summary
+---------------
+
+Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
+
+
+Minor Changes
+-------------
+
+- ec2_security_group - set type as ``list`` for rules->group_name as it can accept both ``str`` and ``list`` (https://github.com/ansible-collections/amazon.aws/pull/971).
+
+Bugfixes
+--------
+
+- ec2_metadata_facts - fix ``'NoneType' object is not callable`` exception when using Ansible 2.13+ (https://github.com/ansible-collections/amazon.aws/issues/942).
 
 v3.4.0
 ======
