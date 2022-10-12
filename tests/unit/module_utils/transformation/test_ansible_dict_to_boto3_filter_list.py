@@ -10,7 +10,7 @@ __metaclass__ = type
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-class AnsibleDictToBoto3FilterListTestSuite():
+class TestAnsibleDictToBoto3FilterList():
 
     # ========================================================
     #   ec2.ansible_dict_to_boto3_filter_list
@@ -28,7 +28,7 @@ class AnsibleDictToBoto3FilterListTestSuite():
         ]
 
         converted_filters_list = ansible_dict_to_boto3_filter_list(filters)
-        self.assertEqual(converted_filters_list, filter_list_string)
+        assert converted_filters_list == filter_list_string
 
     def test_ansible_dict_with_boolean_to_boto3_filter_list(self):
         filters = {'enabled': True}
@@ -42,7 +42,7 @@ class AnsibleDictToBoto3FilterListTestSuite():
         ]
 
         converted_filters_bool = ansible_dict_to_boto3_filter_list(filters)
-        self.assertEqual(converted_filters_bool, filter_list_boolean)
+        assert converted_filters_bool == filter_list_boolean
 
     def test_ansible_dict_with_integer_to_boto3_filter_list(self):
         filters = {'version': 1}
@@ -56,4 +56,18 @@ class AnsibleDictToBoto3FilterListTestSuite():
         ]
 
         converted_filters_int = ansible_dict_to_boto3_filter_list(filters)
-        self.assertEqual(converted_filters_int, filter_list_integer)
+        assert converted_filters_int == filter_list_integer
+
+    def test_ansible_dict_with_list_to_boto3_filter_list(self):
+        filters = {'version': ['1', '2', '3']}
+        filter_list_integer = [
+            {
+                'Name': 'version',
+                'Values': [
+                    '1', '2', '3'
+                ]
+            }
+        ]
+
+        converted_filters_int = ansible_dict_to_boto3_filter_list(filters)
+        assert converted_filters_int == filter_list_integer
