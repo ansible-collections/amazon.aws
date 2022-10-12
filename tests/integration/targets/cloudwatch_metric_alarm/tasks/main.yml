@@ -433,14 +433,14 @@
       - ec2_instance_metric_alarm_metrics.changed
       - ec2_instance_metric_alarm_metrics.alarm_arn
       - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.stat == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.stat'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.namespace == alarm_info_metrics.metric_alarms[0].nmetrics[0].metric_stat.metric.namespace'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.metric_name == alarm_info_metrics.metric_alarms[0].nmetrics[0].metric_stat.metric.metric_name'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].name == alarm_info_metrics.metric_alarms[0].nmetrics[0].metric_stat.metric.dimensions[0].name'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].value == alarm_info_metrics.metric_alarms[0].nmetrics[0].metric_stat.metric.dimensions[0].value'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.id == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.id'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.namespace == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.namespace'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.metric_name == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.metric_name'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].name == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.dimensions[0].name'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].value == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.dimensions[0].value'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].id == alarm_info_metrics.metric_alarms[0].metrics[0].id'
       - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.period == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.period'
       - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.unit == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.unit'
-      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.return_data == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.return_data'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].return_data == alarm_info_metrics.metric_alarms[0].metrics[0].return_data'
 
 
   - name: try to remove the alarm

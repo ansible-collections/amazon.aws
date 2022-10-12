@@ -55,6 +55,7 @@ options:
             you to create an alarm based on the result of a metric math expression.
         type: list
         required: false
+        version_added: "5.1.0"
         elements: dict
         suboptions:
             id:
@@ -144,6 +145,7 @@ options:
         description: The percentile statistic for the metric specified in the metric name.
         type: str
         required: false
+        version_added: "5.1.0"
     comparison:
         description:
           - Determines how the threshold value is compared
@@ -310,11 +312,12 @@ try:
 except ImportError:
     pass  # protected by AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
 
 def create_metric_alarm(connection, module, params):
     alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
-
     if params.get('Dimensions'):
         if not isinstance(params['Dimensions'], list):
             fixed_dimensions = []
@@ -360,6 +363,11 @@ def create_metric_alarm(connection, module, params):
 
     result = {}
     if alarms['MetricAlarms']:
+        if alarms['MetricAlarms'][0].get('Metrics'):
+            metric_list = []
+            for metric_element in alarms['MetricAlarms'][0]['Metrics']:
+                metric_list.append(camel_dict_to_snake_dict(metric_element))
+            alarms['MetricAlarms'][0]['Metrics'] = metric_list
         result = alarms['MetricAlarms'][0]
 
     module.exit_json(changed=changed,
@@ -399,19 +407,6 @@ def delete_metric_alarm(connection, module, params):
             module.fail_json_aws(e)
     else:
         module.exit_json(changed=False)
-        
-def delete_none_values(params):
-    """Delete None values recursively from params"""
-    if isinstance(params, dict):
-        for key, value in list(params.items()):
-            if isinstance(value, (list, dict, tuple, set)):
-                params[key] = delete_none_values(value)
-            elif value is None or key is None:
-                del params[key]
-    elif isinstance(params, list):
-        params = [(delete_none_values(item) for item in params if item is not None)]
-
-    return params
 
 
 def main():
@@ -451,7 +446,7 @@ def main():
         ['unit', 'metrics'],
         ['statistic', 'extended_statistic'],
     ]
-    #mutually_exclusive = []
+
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=mutually_exclusive,
@@ -483,14 +478,10 @@ def main():
             params['Metrics'].append(snake_dict_to_camel_dict(element, capitalize_first=True))
     if module.params.get('extended_statistic'):
         params['ExtendedStatistic'] = module.params.get('extended_statistic')
-        
-    # Remove None value from params
-    #delete_none_values(params)
+
     for key, value in list(params.items()):
         if value is None:
             del params[key]
-    
-    
 
     connection = module.client('cloudwatch')
 
