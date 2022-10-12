@@ -9,16 +9,18 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: cloudwatchevent_rule
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage CloudWatch Event rules and targets
 description:
   - This module creates and manages CloudWatch event rules and targets.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
-author: "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
+author:
+  - "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
 notes:
   - A rule must contain at least an I(event_pattern) or I(schedule_expression). A
     rule can have both an I(event_pattern) and a I(schedule_expression), in which
@@ -96,6 +98,7 @@ options:
         description:
           - Settings to support providing custom input to a target based on certain event data.
         version_added: 4.1.0
+        version_added_collection: community.aws
         suboptions:
           input_paths_map:
             type: dict

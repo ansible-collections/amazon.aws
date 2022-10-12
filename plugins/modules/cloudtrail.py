@@ -9,10 +9,11 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudtrail
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: manage CloudTrail create, delete, update
 description:
   - Creates, deletes, or updates CloudTrail configuration. Ensures logging is also enabled.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Ansible Core Team
   - Ted Timmons (@tedder)

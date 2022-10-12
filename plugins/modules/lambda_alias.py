@@ -9,15 +9,17 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_alias
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Creates, updates or deletes AWS Lambda function aliases
 description:
-    - This module allows the management of AWS Lambda functions aliases via the Ansible
-      framework.  It is idempotent and supports "Check" mode.    Use module M(amazon.aws.lambda) to manage the lambda function
-      itself and M(amazon.aws.lambda_event) to manage event source mappings.
+  - This module allows the management of AWS Lambda functions aliases via the Ansible
+    framework.  It is idempotent and supports "Check" mode.    Use module M(amazon.aws.lambda) to manage the lambda function
+    itself and M(amazon.aws.lambda_event) to manage event source mappings.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 
-
-author: Pierre Jodouin (@pjodouin), Ryan Scott Brown (@ryansb)
+author:
+  - Pierre Jodouin (@pjodouin)
+  - Ryan Scott Brown (@ryansb)
 options:
   function_name:
     description:
@@ -47,9 +49,9 @@ options:
     aliases: ['version']
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 

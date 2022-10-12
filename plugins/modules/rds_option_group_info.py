@@ -10,9 +10,10 @@ DOCUMENTATION = r'''
 ---
 module: rds_option_group_info
 short_description: rds_option_group_info module
-version_added: 2.1.0
+version_added: 5.0.0
 description:
-    - Gather information about RDS option groups.
+  - Gather information about RDS option groups.
+  - This module was originally added to C(community.aws) in release 2.1.0.
 author: "Alina Buzachis (@alinabuzachis)"
 options:
     option_group_name:
@@ -48,9 +49,9 @@ options:
         default: ''
         required: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 '''
 
 EXAMPLES = r'''

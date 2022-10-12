@@ -9,12 +9,13 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: kms_key_info
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Gather information about AWS KMS keys
 description:
   - Gather information about AWS KMS keys including tags and grants.
   - Prior to release 5.0.0 this module was called C(community.aws.aws_kms_info).
     The usage did not change.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - "Will Thames (@willthames)"
 options:
@@ -27,6 +28,7 @@ options:
       - key_alias
     type: str
     version_added: 1.4.0
+    version_added_collection: community.aws
   key_id:
     description:
       - Key ID or ARN of the key.
@@ -36,6 +38,7 @@ options:
       - key_arn
     type: str
     version_added: 1.4.0
+    version_added_collection: community.aws
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
@@ -123,6 +126,7 @@ kms_keys:
       returned: when key_state is PendingDeletion
       sample: "2017-04-18T15:12:08.551000+10:00"
       version_added: 3.3.0
+      version_added_collection: community.aws
     description:
       description: Description of the key.
       type: str
@@ -223,6 +227,7 @@ kms_keys:
           - "kms:RevokeGrant"
           Resource: "*"
       version_added: 3.3.0
+      version_added_collection: community.aws
     grants:
       description: List of grants associated with a key.
       type: list

@@ -9,12 +9,14 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: iam_user
-version_added: 1.0.0
+version_added: 5.0.0
 short_description: Manage AWS IAM users
 description:
   - A module to manage AWS IAM users.
   - The module does not manage groups that users belong to, groups memberships can be managed using M(community.aws.iam_group).
-author: Josh Souza (@joshsouza)
+  - This module was originally added to C(community.aws) in release 1.0.0.
+author:
+  - Josh Souza (@joshsouza)
 options:
   name:
     description:
@@ -27,6 +29,7 @@ options:
     required: false
     type: str
     version_added: 2.2.0
+    version_added_collection: community.aws
   password_reset_required:
     description:
       - Defines if the user is required to set a new password after login.
@@ -34,6 +37,7 @@ options:
     type: bool
     default: false
     version_added: 3.1.0
+    version_added_collection: community.aws
   update_password:
     default: always
     choices: ['always', 'on_create']
@@ -43,12 +47,14 @@ options:
       - I(update_password=on_create) will only set the password for newly created users.
     type: str
     version_added: 2.2.0
+    version_added_collection: community.aws
   remove_password:
     description:
       - Option to delete user login passwords.
       - This field is mutually exclusive to I(password).
     type: 'bool'
     version_added: 2.2.0
+    version_added_collection: community.aws
   managed_policies:
     description:
       - A list of managed policy ARNs or friendly names to attach to the user.
@@ -77,12 +83,14 @@ options:
     default: True
     type: bool
     version_added: 2.2.0
+    version_added_collection: community.aws
   wait_timeout:
     description:
       - How long (in seconds) to wait for creation / updates to complete.
     default: 120
     type: int
     version_added: 2.2.0
+    version_added_collection: community.aws
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:

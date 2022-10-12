@@ -8,13 +8,14 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group_metric_filter
-version_added: 1.0.0
+version_added: 5.0.0
 author:
   - "Markus Bergholz (@markuman)"
 short_description: Manage CloudWatch log group metric filter
 description:
   - Create, modify and delete CloudWatch log group metric filter.
   - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
+  - This module was originally added to C(community.aws) in release 1.0.0.
 options:
     state:
       description:
@@ -58,9 +59,9 @@ options:
             - The value to emit when a filter pattern does not match a log event.
           type: float
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
 
 '''
 
