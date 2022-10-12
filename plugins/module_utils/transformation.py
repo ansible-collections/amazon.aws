@@ -104,7 +104,7 @@ def map_complex_type(complex_type, type_map):
                         complex_type[key],
                         type_map[key])
             else:
-                return complex_type
+                new_type[key] = complex_type[key]
     elif isinstance(complex_type, list):
         for i in range(len(complex_type)):
             new_type.append(map_complex_type(
