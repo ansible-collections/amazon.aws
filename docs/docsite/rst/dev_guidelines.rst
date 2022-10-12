@@ -1058,6 +1058,22 @@ Why do we need unit-tests when we've got functional tests
 Unit-tests are much faster and more suitable to test corner cases. They also don't depend on a third party service
 and thus, a failure is less likley to be a false positive.
 
+
+How to keep my code simple?
+---------------------------
+
+Ideally, you should break up your code in tiny functions. Each function should have a limited number of parameters
+and a low amount of cross dependencies with the rest of the code (low coupling):
+
+- Don't pass a large data structure to a function if it only use one field. This clarify the inputs of your
+  function (the contract) and also reduce the risk of an unexpected transformation of the data structure
+  from within the function.
+- The boto client object is complex and can be source of unwanted side-effect. It's better to isolate the calls
+  in dedicated functions. These functions will have their own unit-tests.
+- Don't pass the ``module`` object when you only need the read a couple of parameters from ``module.params``.
+  Pass the parameter directly to your function. By doing so, you're explicite about what the function inputs
+  (the contract) and you reduce potential side-effect.
+
 Unit-tests guidlines
 --------------------
 
