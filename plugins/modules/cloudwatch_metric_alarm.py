@@ -473,9 +473,7 @@ def main():
     params['OKActions'] = module.params.get('ok_actions', [])
     params['TreatMissingData'] = module.params.get('treat_missing_data')
     if module.params.get('metrics'):
-        params['Metrics'] = []
-        for element in module.params.get('metrics'):
-            params['Metrics'].append(snake_dict_to_camel_dict(element, capitalize_first=True))
+        params['Metrics'] = snake_dict_to_camel_dict(module.params['metrics'], capitalize_first=True)
     if module.params.get('extended_statistic'):
         params['ExtendedStatistic'] = module.params.get('extended_statistic')
 
