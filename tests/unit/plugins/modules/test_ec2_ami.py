@@ -19,7 +19,7 @@ def test_create_image_uefi_data(m_get_image_by_id):
         "ImageId": "ami-0c7a795306730b288",
         "BootMode": "uefi",
         "TpmSupport": "v2.0",
-        }
+    }
 
     module.params = {
         "name": "my-image",
