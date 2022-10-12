@@ -8,8 +8,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-from tempfile import NamedTemporaryFile
-import os
 
 from unittest.mock import MagicMock, call, patch
 from ansible_collections.amazon.aws.plugins.modules import lambda_layer
@@ -259,7 +257,7 @@ def test_delete_layer_failure(m_list_layer):
     ]
 )
 @patch(mod_list_layer)
-def test_create_layer(m_list_layer, b_s3content):
+def test_create_layer(m_list_layer, b_s3content, tmp_path):
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
@@ -310,8 +308,6 @@ def test_create_layer(m_list_layer, b_s3content):
         ]
     }
 
-    zfile_handler = None
-
     if b_s3content:
         params["content"] = {
             "s3_bucket": "mybucket",
@@ -325,20 +321,17 @@ def test_create_layer(m_list_layer, b_s3content):
         }
     else:
         binary_data = b"simple lambda layer content"
-        zfile_handler = NamedTemporaryFile(delete=False)
-        zfile_handler.write(binary_data)
-        zfile_handler.flush()
+        test_dir = tmp_path / "lambda_layer"
+        test_dir.mkdir()
+        zipfile = test_dir / "lambda.zip"
+        zipfile.write_bytes(binary_data)
 
-        params["content"] = {"zip_file": zfile_handler.name}
+        params["content"] = {"zip_file": str(zipfile)}
         content_arg = {
             "ZipFile": binary_data,
         }
 
     result = lambda_layer.create_layer_version(lambda_client, params)
-
-    if zfile_handler:
-        zfile_handler.close()
-        os.unlink(zfile_handler.name)
 
     assert result == expected
 
