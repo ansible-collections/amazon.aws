@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.autoscaling_group</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -155,6 +155,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <li><p>Can create or delete AWS AutoScaling Groups.</p></li>
 <li><p>Can be used with the <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/autoscaling_launch_config_module.html#ansible-collections-community-aws-autoscaling-launch-config-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.autoscaling_launch_config</span></a> module to manage Launch Configurations.</p></li>
 <li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.ec2_asg</span></code>. The usage did not change.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -236,7 +237,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-decrement_desired_capacity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-decrement-desired-capacity"><strong>decrement_desired_capacity</strong></p>
 <a class="ansibleOptionLink" href="#parameter-decrement_desired_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether the AutoScalingGroup decrements the desired capacity value by the number of instances detached.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
@@ -264,7 +265,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-detach_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-detach-instances"><strong>detach_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-detach_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Removes one or more instances from the specified AutoScalingGroup.</p>
 <p>If <em>decrement_desired_capacity</em> flag is not set, new instance(s) are launched to replace the detached instance(s).</p>
@@ -441,7 +442,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution"><strong>instances_distribution</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies the distribution of On-Demand Instances and Spot Instances, the maximum price to pay for Spot Instances, and how the Auto Scaling group allocates instance types to fulfill On-Demand and Spot capacity.</p>
 <p>See also <a class="reference external" href="https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html">https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html</a></p>
@@ -450,7 +451,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/on_demand_allocation_strategy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-on-demand-allocation-strategy"><strong>on_demand_allocation_strategy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/on_demand_allocation_strategy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates how to allocate instance types to fulfill On-Demand capacity.</p>
 </div></td>
@@ -458,7 +459,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/on_demand_base_capacity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-on-demand-base-capacity"><strong>on_demand_base_capacity</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/on_demand_base_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The minimum amount of the Auto Scaling group’s capacity that must be fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.</p>
 <p>Default if not set is 0. If you leave it set to 0, On-Demand Instances are launched as a percentage of the Auto Scaling group’s desired capacity, per the OnDemandPercentageAboveBaseCapacity setting.</p>
@@ -467,7 +468,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/on_demand_percentage_above_base_capacity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-on-demand-percentage-above-base-capacity"><strong>on_demand_percentage_above_base_capacity</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/on_demand_percentage_above_base_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.</p>
 <p>Default if not set is 100. If you leave it set to 100, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.</p>
@@ -477,7 +478,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/spot_allocation_strategy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-spot-allocation-strategy"><strong>spot_allocation_strategy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/spot_allocation_strategy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates how to allocate instances across Spot Instance pools.</p>
 </div></td>
@@ -485,7 +486,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/spot_instance_pools"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-spot-instance-pools"><strong>spot_instance_pools</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/spot_instance_pools" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.</p>
 <p>Used only when the Spot allocation strategy is lowest-price.</p>
@@ -495,7 +496,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instances_distribution/spot_max_price"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-spot-max-price"><strong>spot_max_price</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/spot_max_price" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum price per unit hour that you are willing to pay for a Spot Instance.</p>
 <p>If you leave the value of this parameter blank (which is the default), the maximum Spot price is set at the On-Demand price.</p>
@@ -543,7 +544,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.2.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.2.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>If <code class="docutils literal notranslate"><span class="pre">true</span></code>, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>

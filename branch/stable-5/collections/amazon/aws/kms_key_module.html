@@ -138,7 +138,7 @@ You need further requirements to be able to use this module,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.kms_key</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -155,6 +155,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <li><p>Manage role/user access to a KMS key.</p></li>
 <li><p>Not designed for encrypting/decrypting.</p></li>
 <li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.aws_kms</span></code>. The usage did not change.</p></li>
+<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -348,7 +349,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <div class="ansibleOptionAnchor" id="parameter-customer_master_key_spec"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-key-spec"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-customer-master-key-spec"></span><strong>key_spec</strong></p>
 <a class="ansibleOptionLink" href="#parameter-key_spec" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: customer_master_key_spec</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies the type of KMS key to create.</p>
 <p>The specification is not changeable once the key is created.</p>
@@ -368,7 +369,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-key_usage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-key-usage"><strong>key_usage</strong></p>
 <a class="ansibleOptionLink" href="#parameter-key_usage" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 2.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Determines the cryptographic operations for which you can use the KMS key.</p>
 <p>The usage is not changeable once the key is created.</p>
@@ -384,7 +385,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <div class="ansibleOptionAnchor" id="parameter-deletion_delay"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-pending-window"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-deletion-delay"></span><strong>pending_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pending_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: deletion_delay</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 1.4.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The number of days between requesting deletion of the CMK and when it will actually be deleted.</p>
 <p>Only used when <em>state=absent</em> and the CMK has not yet been deleted.</p>
@@ -606,7 +607,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-deletion_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-deletion-date"><strong>deletion_date</strong></p>
 <a class="ansibleOptionLink" href="#return-deletion_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Date and time after which KMS deletes this KMS key.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when key_state is PendingDeletion</p>
@@ -758,7 +759,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-key_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-key-policies"><strong>key_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-key_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
+<p><span class="ansible-option-versionadded">added in community.aws 3.3.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of policy documents for the key. Empty when access is denied even if there are policies.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
