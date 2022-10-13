@@ -18,7 +18,7 @@ class TestCloudRetry():
     error_codes = [400, 500, 600]
     custom_error_codes = [100, 200, 300]
 
-    class TestException(Exception):
+    class OurTestException(Exception):
         """
         custom exception class for testing
         """
@@ -81,7 +81,7 @@ class TestCloudRetry():
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+                raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -99,7 +99,7 @@ class TestCloudRetry():
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+                raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -108,19 +108,19 @@ class TestCloudRetry():
         assert ret is True
 
     def test_retry_exponential_backoff_with_unexpected_exception(self):
-        unexpected_except = self.TestException(status=100)
+        unexpected_except = self.OurTestException(status=100)
 
         @TestCloudRetry.UnitTestsRetry.exponential_backoff(retries=3, delay=1, backoff=1.1, max_delay=3,
                                                            catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter == 0:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+                raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        with pytest.raises(self.TestException) as context:
+        with pytest.raises(self.OurTestException) as context:
             test_retry_func()
 
         assert context.value.status == unexpected_except.status
@@ -134,7 +134,7 @@ class TestCloudRetry():
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+                raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 return True
 
@@ -143,19 +143,19 @@ class TestCloudRetry():
         assert ret is True
 
     def test_retry_jittered_backoff_with_unexpected_exception(self):
-        unexpected_except = self.TestException(status=100)
+        unexpected_except = self.OurTestException(status=100)
 
         @TestCloudRetry.UnitTestsRetry.jittered_backoff(retries=3, delay=1, max_delay=3,
                                                         catch_extra_error_codes=TestCloudRetry.error_codes)
         def test_retry_func():
             if test_retry_func.counter == 0:
                 test_retry_func.counter += 1
-                raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+                raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
             else:
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        with pytest.raises(self.TestException) as context:
+        with pytest.raises(self.OurTestException) as context:
             test_retry_func()
 
         assert context.value.status == unexpected_except.status
@@ -172,7 +172,7 @@ class TestCloudRetry():
         def test_retry_func():
             if test_retry_func.counter < 2:
                 test_retry_func.counter += 1
-                raise self.TestException(build_response())
+                raise self.OurTestException(build_response())
             else:
                 return True
 
@@ -188,13 +188,13 @@ class TestCloudRetry():
         @TestCloudRetry.UnitTestsRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100,
                                                            catch_extra_error_codes=TestCloudRetry.error_codes)
         def _fail():
-            raise self.TestException(status=random.choice(TestCloudRetry.error_codes))
+            raise self.OurTestException(status=random.choice(TestCloudRetry.error_codes))
 
         # run the method 3 times and assert that each it is retrying after 2secs
         # the elapsed execution time should be closed to 2sec
         for _i in range(3):
             start = datetime.now()
-            with pytest.raises(self.TestException):
+            with pytest.raises(self.OurTestException):
                 _fail()
             duration = (datetime.now() - start).seconds
             assert duration == 2
