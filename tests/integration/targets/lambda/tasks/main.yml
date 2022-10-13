@@ -645,36 +645,33 @@
     tempfile:
       suffix: lambda
       state: directory
-    register: ldir
+    register: test_dir
 
-  - name: Create virtual env and install required libs
-    pip:
-      name:
-        - requests
-      virtualenv: "{{ ldir.path }}/virtualenv"
+  - name: Create python directory for lambda layer
+    file:
+      path: "{{ test_dir.path }}/python"
+      state: directory
 
-  - name: Locate python env site-packages
-    ansible.builtin.find:
-      recurse: true
-      file_type: directory
-      paths:
-      - "{{ ldir.path }}/virtualenv"
-      patterns:
-        - "site-packages"
-    register: package_dir
+  - name: Create lambda layer library
+    copy:
+      content: |
+        def hello():
+          print("Hello from the ansible amazon.aws lambda layer")
+          return 1
+      dest: "{{ test_dir.path }}/python/lambda_layer.py"
 
-  - name: Create lambda layer zip
+  - name: Create lambda layer archive
     archive:
       format: zip
-      path: '{{ package_dir.files.0.path }}'
-      dest: '{{ ldir.path }}/sample_lambda.zip'
+      path: "{{ test_dir.path }}"
+      dest: "{{ test_dir.path }}/lambda_layer.zip"
 
   - name: Create lambda layer
     lambda_layer:
       name: "{{ lambda_python_layers_names[0] }}"
       description: '{{ lambda_python_layers_names[0] }} lambda layer'
       content:
-        zip_file: '{{ ldir.path }}/sample_lambda.zip'
+        zip_file: "{{ test_dir.path }}/lambda_layer.zip"
     register: first_layer
 
   - name: Create another lambda layer
@@ -682,7 +679,7 @@
       name: "{{ lambda_python_layers_names[1] }}"
       description: '{{ lambda_python_layers_names[1] }} lambda layer'
       content:
-        zip_file: '{{ ldir.path }}/sample_lambda.zip'
+        zip_file: "{{ test_dir.path }}/lambda_layer.zip"
     register: second_layer
 
   - name: Create lambda function with layers
@@ -763,9 +760,9 @@
   - name: Delete temporary directory
     file:
       state: absent
-      path: "{{ ldir.path }}"
+      path: "{{ test_dir.path }}"
     ignore_errors: true
-    when: ldir is defined
+    when: test_dir is defined
 
   - name: Delete lambda layers
     lambda_layer:
