@@ -23,7 +23,7 @@
 
   block:
     - name: Gather availability zones
-      aws_az_facts:
+      aws_az_info:
       register: azs
 
     # Create a new volume in detached mode without tags

@@ -59,7 +59,7 @@
 
 
   - name: Create security groups
-    ec2_group:
+    ec2_security_group:
       name: '{{ item }}'
       description: created by rds_instance integration tests
       state: present
@@ -921,7 +921,7 @@
     ignore_errors: yes
 
   - name: Remove security groups
-    ec2_group:
+    ec2_security_group:
       name: '{{ item }}'
       description: created by rds_instance integration tests
       state: absent

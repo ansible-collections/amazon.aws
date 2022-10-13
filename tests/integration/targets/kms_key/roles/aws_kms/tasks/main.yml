@@ -1,4 +1,4 @@
-- name: aws_kms integration tests
+- name: kms_key integration tests
   collections:
   - community.aws
   module_defaults:

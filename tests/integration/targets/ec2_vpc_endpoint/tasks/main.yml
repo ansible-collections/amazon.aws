@@ -764,7 +764,7 @@
     register: interface_endpoint_create_subnet_check
 
   - name: Create a security group
-    ec2_group:
+    ec2_security_group:
       name: securitygroup-prodext
       description: "security group for Ansible interface endpoint"
       state: present

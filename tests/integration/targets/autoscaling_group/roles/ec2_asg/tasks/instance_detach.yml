@@ -2,7 +2,7 @@
   block:
     #----------------------------------------------------------------------
   - name: create a launch configuration
-    ec2_lc:
+    autoscaling_launch_config:
       name: '{{ resource_prefix }}-lc-detach-test'
       image_id: '{{ ec2_ami_id }}'
       region: '{{ aws_region }}'
@@ -19,7 +19,7 @@
     #----------------------------------------------------------------------
 
   - name: create a AutoScalingGroup to be used for instance_detach test - check_mode
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       launch_config_name: '{{ resource_prefix }}-lc-detach-test'
       health_check_period: 60
@@ -38,7 +38,7 @@
       - '"autoscaling:CreateAutoScalingGroup" not in create_asg.resource_actions'
 
   - name: create a AutoScalingGroup to be used for instance_detach test
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       launch_config_name: '{{ resource_prefix }}-lc-detach-test'
       health_check_period: 60
@@ -60,7 +60,7 @@
       - '"autoscaling:CreateAutoScalingGroup" in create_asg.resource_actions'
 
   - name: gather info about asg, get instance ids
-    ec2_asg_info:
+    autoscaling_group_info:
       name: '{{ resource_prefix }}-asg-detach-test'
     register: asg_info
   - set_fact:
@@ -84,7 +84,7 @@
     #----------------------------------------------------------------------
 
   - name: detach 2 instance from the asg and replace with other instances - check_mode
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       launch_config_name: '{{ resource_prefix }}-lc-detach-test'
       health_check_period: 60
@@ -105,7 +105,7 @@
       - '"autoscaling:DetachInstances" not in detach_result.resource_actions'
 
   - name: detach 2 instance from the asg and replace with other instances
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       launch_config_name: '{{ resource_prefix }}-lc-detach-test'
       health_check_period: 60
@@ -122,7 +122,7 @@
   - name: Pause for 30 seconds
     wait_for:
       timeout: 30
-  - ec2_asg_info:
+  - autoscaling_group_info:
       name: '{{ resource_prefix }}-asg-detach-test'
     register: asg_info_replaced
   - set_fact:
@@ -155,7 +155,7 @@
     # detach 2 instances from the asg and reduce the desired capacity from 3 to 1
   - name: detach 2 instance from the asg and reduce the desired capacity from 3 to
       1
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       launch_config_name: '{{ resource_prefix }}-lc-detach-test'
       health_check_period: 60
@@ -172,7 +172,7 @@
   - name: Pause for 30 seconds to allow completion of above task
     wait_for:
       timeout: 30
-  - ec2_asg_info:
+  - autoscaling_group_info:
       name: '{{ resource_prefix }}-asg-detach-test'
     register: asg_info_decrement
   - set_fact:
@@ -215,7 +215,7 @@
     - '{{ instance_replace_3 }}'
 
   - name: kill asg created in this test - check_mode
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       state: absent
     register: removed
@@ -227,7 +227,7 @@
       - '"autoscaling:DeleteAutoScalingGroup" not in removed.resource_actions'
 
   - name: kill asg created in this test
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       state: absent
     register: removed
@@ -235,7 +235,7 @@
     ignore_errors: yes
     retries: 10
   - name: kill asg created in this test - check_mode (idempotent)
-    ec2_asg:
+    autoscaling_group:
       name: '{{ resource_prefix }}-asg-detach-test'
       state: absent
     register: removed
@@ -247,7 +247,7 @@
       - '"autoscaling:DeleteAutoScalingGroup" not in removed.resource_actions'
 
   - name: remove launch config created in this test
-    ec2_lc:
+    autoscaling_launch_config:
       name: '{{ resource_prefix }}-lc-detach-test'
       state: absent
     register: removed
