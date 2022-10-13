@@ -643,6 +643,7 @@
       service: '{{ endpoint_service_a }}'
       route_table_ids:
       - '{{ rtb_igw_id }}'
+      purge_tags: false
       tags:
         new_tag: ANewTag
     register: add_tag_vpc_endpoint
@@ -767,7 +768,7 @@
       name: securitygroup-prodext
       description: "security group for Ansible interface endpoint"
       state: present
-      vpc_id: "{{ vpc.vpc.id }}"
+      vpc_id: "{{ vpc_id }}"
       rules:
         - proto: tcp
           from_port: 1
@@ -779,10 +780,11 @@
     ec2_vpc_endpoint:
       state: present
       vpc_id: '{{ vpc_id }}'
-      service: '{{ endpoint_service_a }}'
+      service: '{{ endpoint_service_b }}'
       vpc_endpoint_type: Interface
-      vpc_endpoint_subnets: "{{ interface_endpoint_create_subnet_check.subnet.id') }}"
+      vpc_endpoint_subnets: "{{ interface_endpoint_create_subnet_check.subnet.id }}"
       vpc_endpoint_security_groups: "{{ interface_endpoint_create_sg_check.group_id }}"
+      wait: true
     register: create_interface_endpoint_with_sg_subnets
   - name: Check that the interface endpoint was created properly
     assert:
@@ -794,6 +796,7 @@
     ec2_vpc_endpoint:
       state: absent
       vpc_endpoint_id: "{{ create_interface_endpoint_with_sg_subnets.result.vpc_endpoint_id }}"
+      wait: true
     register: create_interface_endpoint_with_sg_subnets_delete_check
   - assert:
       that:
@@ -802,62 +805,30 @@
   # ============================================================
   # BEGIN POST-TEST CLEANUP
   always:
-  # Delete the routes first - you can't delete an endpoint with a route
-  # attached.
-  - name: Delete minimal route table (no routes)
-    ec2_vpc_route_table:
-      state: absent
-      lookup: id
-      route_table_id: '{{ rtb_creation_empty.route_table.id }}'
-    ignore_errors: true
-
-  - name: Delete minimal route table (IGW route)
-    ec2_vpc_route_table:
-      state: absent
-      lookup: id
-      route_table_id: '{{ rtb_creation_igw.route_table.id }}'
-    ignore_errors: true
-
-  - name: Delete endpoint
-    ec2_vpc_endpoint:
-      state: absent
-      vpc_endpoint_id: '{{ create_endpoint.result.vpc_endpoint_id }}'
-    ignore_errors: true
-
-  - name: Delete endpoint
-    ec2_vpc_endpoint:
-      state: absent
-      vpc_endpoint_id: '{{ create_rtb_endpoint.result.vpc_endpoint_id }}'
-    ignore_errors: true
-
-  - name: Query any remain endpoints we created (idempotency work is ongoing)  # FIXME
+  - name: Query any remain endpoints we created
     ec2_vpc_endpoint_info:
       query: endpoints
       filters:
         vpc-id:
         - '{{ vpc_id }}'
-    register: test_endpoints
+    register: remaining_endpoints
 
   - name: Delete all endpoints
     ec2_vpc_endpoint:
       state: absent
       vpc_endpoint_id: '{{ item.vpc_endpoint_id }}'
-    with_items: '{{ test_endpoints.vpc_endpoints }}'
+      wait: true
+    loop: '{{ remaining_endpoints.vpc_endpoints }}'
     ignore_errors: true
+    register: endpoints_removed
+    until:
+      - endpoints_removed is not failed
+      - endpoints_removed is not changed
+    retries: 20
+    delay: 10
 
-  - name: Remove IGW
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_id }}'
-    register: igw_deletion
-    retries: 10
-    delay: 5
-    until: igw_deletion is success
-    ignore_errors: yes
-
-  - name: Remove VPC
-    ec2_vpc_net:
-      state: absent
-      name: '{{ vpc_name }}'
-      cidr_block: '{{ vpc_cidr }}'
-    ignore_errors: true
+  - include_role:
+      name: 'setup_ec2_vpc'
+      tasks_from: 'cleanup.yml'
+    vars:
+      vpc_id: '{{ vpc_creation.vpc.id }}'
