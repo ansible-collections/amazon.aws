@@ -85,21 +85,6 @@
           - upload_file_result.msg != "PUT operation complete"
           - '"s3:PutObject" not in upload_file_result.resource_actions'
 
-    - name: Create an object in the bucket with permission for the object
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}-acl-disabled"
-        object: "/test_directory"
-        permission: bucket-owner-full-control
-        mode: create
-      register: upload_file_result
-
-    - assert:
-        that:
-          - upload_file_result is not changed
-          - upload_file_result is not failed
-          - '"s3:PutObject" not in upload_file_result.resource_actions'
-
-
   always:
 
     - name: Delete the file in the bucket

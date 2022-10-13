@@ -1081,7 +1081,7 @@ def main():
     # check if bucket exists, if yes, check if ACL is disabled
     acl_disabled = False
     exists = bucket_check(module, s3, bucket)
-    import q
+
     if exists:
         try:
             ownership_controls = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']
