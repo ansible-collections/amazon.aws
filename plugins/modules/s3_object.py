@@ -1081,9 +1081,11 @@ def main():
     # check if bucket exists, if yes, check if ACL is disabled
     acl_disabled = False
     exists = bucket_check(module, s3, bucket)
+    import q
     if exists:
         try:
             ownership_controls = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']
+            q(ownership_controls)
             if ownership_controls.get('Rules'):
                 object_ownership = ownership_controls['Rules'][0]['ObjectOwnership']
                 if object_ownership == 'BucketOwnerEnforced':
@@ -1217,15 +1219,17 @@ def main():
                 if key_check(module, s3, bucket, dirobj):
                     module.exit_json(msg="Bucket %s and key %s already exists." % (bucket, obj), changed=False)
                 else:
-                    # setting valid object acls for the create_dirkey function
-                    module.params['permission'] = object_acl
+                    if not acl_disabled:
+                        # setting valid object acls for the create_dirkey function
+                        module.params['permission'] = object_acl
                     create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
             else:
                 # only use valid bucket acls for the create_bucket function
                 module.params['permission'] = bucket_acl
                 create_bucket(module, s3, bucket, location)
-                # only use valid object acls for the create_dirkey function
-                module.params['permission'] = object_acl
+                if not acl_disabled:
+                    # only use valid object acls for the create_dirkey function
+                    module.params['permission'] = object_acl
                 create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
 
     # Support for grabbing the time-expired URL for an object in S3/Walrus.
@@ -1265,8 +1269,9 @@ def main():
             # only use valid bucket acls for create_bucket function
             module.params['permission'] = bucket_acl
             create_bucket(module, s3, bucket, location)
-        # only use valid object acls for the copy operation
-        module.params['permission'] = object_acl
+        if not acl_disabled:
+            # only use valid object acls for the copy operation
+            module.params['permission'] = object_acl
         copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag)
 
     module.exit_json(failed=False)
