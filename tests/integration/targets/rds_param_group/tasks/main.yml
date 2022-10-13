@@ -123,6 +123,26 @@
       - result.tags["Test"] == '123'
 
     # ============================================================
+
+  - name: test modifying rds parameter group engine/family
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine_to_modify_to }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: 123
+    register: result
+    ignore_errors: true
+
+  - name: adding numeric tag just silently converts
+    assert:
+      that:
+      - not result.changed
+      - result.failed
+
+    # ============================================================
   - name: test tagging existing group - CHECK_MODE
     rds_param_group:
       name: '{{ rds_param_group.name }}'
