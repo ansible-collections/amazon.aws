@@ -91,14 +91,11 @@
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
         src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
-        object: "{{ item }}"
+        object: "acl_disabled_upload_test.txt"
         mode: delobj
       retries: 3
       delay: 3
       ignore_errors: true
-      loop:
-        - "acl_disabled_upload_test.txt"
-        - "/test_directory"
 
     - name: Delete bucket created in this test
       s3_bucket:

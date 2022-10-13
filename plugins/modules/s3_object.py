@@ -1085,7 +1085,6 @@ def main():
     if exists:
         try:
             ownership_controls = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']
-            q(ownership_controls)
             if ownership_controls.get('Rules'):
                 object_ownership = ownership_controls['Rules'][0]['ObjectOwnership']
                 if object_ownership == 'BucketOwnerEnforced':
