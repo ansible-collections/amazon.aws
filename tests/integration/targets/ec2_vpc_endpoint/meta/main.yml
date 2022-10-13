@@ -1,1 +1,2 @@
-dependencies: []
+dependencies:
+- role: setup_ec2_vpc

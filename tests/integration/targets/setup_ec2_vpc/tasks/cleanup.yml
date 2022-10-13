@@ -1,0 +1,126 @@
+# ============================================================
+- name: Run all tests
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit)}}'
+      region: '{{ aws_region }}'
+  block:
+
+    # ============================================================
+    # Describe state of remaining resources
+
+    - name: '(VPC Cleanup) Find all remaining ENIs'
+      ec2_eni_info:
+        filters:
+          vpc-id: '{{ vpc_id }}'
+      register: remaining_enis
+
+    - name: '(VPC Cleanup) Retrieve security group info based on VPC ID'
+      ec2_group_info:
+        filters:
+          vpc-id: '{{ vpc_id }}'
+      register: remaining_groups
+
+    - name: '(VPC Cleanup) Retrieve subnet info based on VPC ID'
+      ec2_vpc_subnet_info:
+        filters:
+          vpc-id: '{{ vpc_id }}'
+      register: remaining_subnets
+
+    - name: '(VPC Cleanup) Retrieve route table info based on VPC ID'
+      ec2_vpc_route_table_info:
+        filters:
+          vpc-id: '{{ vpc_id }}'
+      register: remaining_rtbs
+
+    - name: '(VPC Cleanup) Retrieve VPC info based on VPC ID'
+      ec2_vpc_net_info:
+        vpc_ids:
+          - '{{ vpc_id }}'
+      register: remaining_vpc
+
+    # ============================================================
+
+    - name: '(Cleanup) Delete all ENIs'
+      ec2_eni:
+        state: absent
+        eni_id: '{{ item.id }}'
+      register: eni_removed
+      until: eni_removed is not failed
+      loop: '{{ remaining_enis.network_interfaces }}'
+      ignore_errors: yes
+      retries: 10
+
+    # ============================================================
+    # Delete all remaining SGs
+
+    # Cross-dependencies between rules in the SGs can cause us problems if we don't clear the rules
+    # first
+    - name: '(VPC Cleanup) Delete rules from remaining SGs'
+      ec2_group:
+        name: '{{ item.group_name }}'
+        group_id: '{{ item.group_id }}'
+        description: '{{ item.description }}'
+        rules: []
+        rules_egress: []
+      loop: '{{ remaining_groups.security_groups }}'
+      ignore_errors: yes
+
+    - name: '(VPC Cleanup) Delete remaining SGs'
+      ec2_group:
+        state: absent
+        group_id: '{{ item.group_id }}'
+      loop: '{{ remaining_groups.security_groups }}'
+      ignore_errors: yes
+
+    # ============================================================
+
+    - name: '(VPC Cleanup) Delete remaining subnets'
+      ec2_vpc_subnet:
+        state: absent
+        vpc_id: '{{ vpc_id }}'
+        cidr: '{{ item.cidr_block }}'
+      register: subnets_removed
+      loop: '{{ remaining_subnets.subnets }}'
+      until: subnets_removed is not failed
+      when:
+        - item.name != 'default'
+      ignore_errors: yes
+      retries: 10
+
+    # ============================================================
+
+    - name: '(VPC Cleanup) Delete IGW'
+      ec2_vpc_igw:
+        state: absent
+        vpc_id: '{{ vpc_id }}'
+      register: igw_deletion
+      retries: 10
+      delay: 5
+      until: igw_deletion is success
+      ignore_errors: yes
+
+    # ============================================================
+
+    - name: '(VPC Cleanup) Delete remaining route tables'
+      ec2_vpc_route_table:
+        state: absent
+        vpc_id: '{{ vpc_id }}'
+        route_table_id: '{{ item.id }}'
+        lookup: 'id'
+      register: rtbs_removed
+      loop: '{{ remaining_rtbs.route_tables }}'
+      ignore_errors: yes
+
+    # ============================================================
+
+    - name: '(VPC Cleanup) Remove the VPC'
+      ec2_vpc_net:
+        state: absent
+        vpc_id: '{{ vpc_id }}'
+      register: vpc_removed
+      until: vpc_removed is not failed
+      ignore_errors: yes
+      retries: 10
