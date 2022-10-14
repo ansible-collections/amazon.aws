@@ -978,7 +978,6 @@ def main():
     max_keys = module.params.get('max_keys')
     metadata = module.params.get('metadata')
     mode = module.params.get('mode')
-    encryption_mode = module.params.get('encryption_mode')
     obj = module.params.get('object')
     version = module.params.get('version')
     overwrite = module.params.get('overwrite')
@@ -1050,7 +1049,7 @@ def main():
     if endpoint_url:
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-    s3 = get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_v4)
+    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_v4)
 
     validate = not ignore_nonexistent_bucket
 
@@ -1102,7 +1101,7 @@ def main():
         try:
             download_s3file(module, s3, bucket, obj, dest, retries, version=version)
         except Sigv4Required:
-            s3 = get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
+            s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
             download_s3file(module, s3, bucket, obj, dest, retries, version=version)
 
     if mode == 'put':
@@ -1226,7 +1225,7 @@ def main():
                 try:
                     download_s3str(module, s3, bucket, obj, version=version)
                 except Sigv4Required:
-                    s3 = get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
+                    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
                     download_s3str(module, s3, bucket, obj, version=version)
             elif version is not None:
                 module.fail_json(msg="Key %s with version id %s does not exist." % (obj, version))

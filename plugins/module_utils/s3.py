@@ -145,7 +145,7 @@ def parse_default_endpoint(url, mode, encryption_mode, dualstack, sig_4):
     return result
 
 
-def get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
+def s3_conn_params(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
     params = dict(
         conn_type='client',
         resource='s3',
@@ -160,4 +160,16 @@ def get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, loca
         endpoint_p = parse_default_endpoint(endpoint_url, mode, encryption_mode, dualstack, sig_4)
 
     params.update(endpoint_p)
-    return boto3_conn(**params)
+    return params
+
+
+def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
+    s3_conn = s3_conn_params(module.params.get("mode"),
+                             module.params.get("encryption_mode"),
+                             module.params.get("dualstack"),
+                             aws_connect_kwargs,
+                             location,
+                             ceph,
+                             endpoint_url,
+                             sig_4)
+    return boto3_conn(module, **s3_conn)

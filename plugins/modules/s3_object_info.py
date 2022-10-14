@@ -704,8 +704,6 @@ def main():
     endpoint_url = module.params.get('endpoint_url')
     dualstack = module.params.get('dualstack')
     ceph = module.params.get('ceph')
-    mode = module.params.get('mode')
-    encryption_mode = module.params.get('encryption_mode')
 
     if not endpoint_url and 'S3_URL' in os.environ:
         endpoint_url = os.environ['S3_URL']
@@ -733,13 +731,7 @@ def main():
             location = region
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
-        connection = get_s3_connection(mode,
-                                       encryption_mode,
-                                       dualstack,
-                                       aws_connect_kwargs,
-                                       location,
-                                       ceph,
-                                       endpoint_url)
+        connection = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
     else:
         try:
             connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())

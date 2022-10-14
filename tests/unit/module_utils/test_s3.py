@@ -382,14 +382,12 @@ def test_parse_default_endpoint(m_config, mode, encryption_mode, dualstack, sig_
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_fakes3_endpoint')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.is_fakes3')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_ceph_endpoint')
-@patch('ansible_collections.amazon.aws.plugins.module_utils.s3.boto3_conn')
-def test_get_s3_connection(m_boto3_conn,
-                           m_parse_ceph_endpoint,
-                           m_is_fakes3,
-                           m_parse_fakes3_endpoint,
-                           m_parse_default_endpoint,
-                           ceph,
-                           isfakes3):
+def test_s3_conn_params(m_parse_ceph_endpoint,
+                        m_is_fakes3,
+                        m_parse_fakes3_endpoint,
+                        m_parse_default_endpoint,
+                        ceph,
+                        isfakes3):
 
     url = "https://my-bucket.s3.us-west-2.amazonaws.com"
     region = "us-east-1"
@@ -413,7 +411,7 @@ def test_get_s3_connection(m_boto3_conn,
     expected.update(aws_connect_kwargs)
     expected.update(endpoint)
 
-    result = s3.get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, region, ceph, url, sig_4)
+    assert expected == s3.s3_conn_params(mode, encryption_mode, dualstack, aws_connect_kwargs, region, ceph, url, sig_4)
 
     if ceph:
         m_parse_ceph_endpoint.assert_called_with(url)
@@ -429,6 +427,3 @@ def test_get_s3_connection(m_boto3_conn,
         )
         m_parse_ceph_endpoint.assert_not_called()
         m_parse_fakes3_endpoint.assert_not_called()
-
-    assert result == m_boto3_conn.return_value
-    m_boto3_conn.assert_called_with(**expected)
