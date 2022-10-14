@@ -1071,7 +1071,7 @@ and a low amount of cross dependencies with the rest of the code (low coupling):
 - The boto client object is complex and can be source of unwanted side-effect. It's better to isolate the calls
   in dedicated functions. These functions will have their own unit-tests.
 - Don't pass the ``module`` object when you only need the read a couple of parameters from ``module.params``.
-  Pass the parameter directly to your function. By doing so, you're explicite about what the function inputs
+  Pass the parameter directly to your function. By doing so, you're explicit about the function's inputs
   (the contract) and you reduce potential side-effect.
 
 Unit-tests guidlines
