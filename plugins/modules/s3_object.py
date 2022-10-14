@@ -396,6 +396,7 @@ from ssl import SSLError
 import base64
 import time
 
+
 try:
     import botocore
 except ImportError:
@@ -607,6 +608,8 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except is_boto3_error_code('AccessControlListNotSupported'):
+            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
 
@@ -696,6 +699,8 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                 s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
         except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
             module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
+        except is_boto3_error_code('AccessControlListNotSupported'):
+            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Unable to set object ACL")
 
@@ -831,6 +836,8 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), tags=tags, changed=True)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except is_boto3_error_code('AccessControlListNotSupported'):
+            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
 
@@ -1203,6 +1210,7 @@ def main():
         # these were separated above into the variables bucket_acl and object_acl
 
         if bucket and not obj:
+            
             if bucketrtn:
                 module.exit_json(msg="Bucket already exists.", changed=False)
             else:
