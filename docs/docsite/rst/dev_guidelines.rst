@@ -1081,7 +1081,7 @@ Ideally, all the ``module_utils`` should be covered by unit-tests. However we ac
 be challenging and we also accept contribution with no coverage. Test coverage of the other type of plugins is recommended.
 
 - Our tests are run with ``pytest`` and we use the features it provides such as Fixtures, Parametrization.
-- The use of ``unittest.TestCase`` is discouraged for the sack of consistency and simplicity.
+- The use of ``unittest.TestCase`` is discouraged for the sake of consistency and simplicity.
 - Unit-tests should run fine without any network connection.
 - It's not necessary to mock all the boto3/botocore calls (``get_paginator()``, ``paginate()``, etc). It's often better to just set-up a function that wrap these calls and mock the result.
 - Simplicity prevails. Tests should be short and cover a limited set of features.
