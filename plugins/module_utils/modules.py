@@ -53,10 +53,11 @@ don't need to be wrapped in the backoff decorator.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import re
-import logging
-import traceback
 from functools import wraps
+import logging
+import os
+import re
+import traceback
 
 
 try:
@@ -130,6 +131,32 @@ class AnsibleAWSModule(object):
             if not self.boto3_at_least("1.18.0"):
                 self.warn('boto3 < 1.18.0 is not supported or tested.'
                           '  Some features may not work.')
+
+        deprecated_vars = {'EC2_REGION', 'EC2_SECURITY_TOKEN', 'EC2_SECRET_KEY', 'EC2_ACCESS_KEY',
+                           'EC2_URL', 'S3_URL'}
+        if deprecated_vars.intersection(set(os.environ.keys())):
+            self._module.deprecate(
+                "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
+                "'EC2_SECURITY_TOKEN', 'EC2_URL', and 'S3_URL' environment "
+                "variables has been deprecated.  "
+                "These variables are currently used for all AWS services which can "
+                "cause confusion.  We recomend using the relevant module "
+                "parameters or alternatively the 'AWS_REGION', 'AWS_ACCESS_KEY_ID', "
+                "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
+                "environment variables can be used instead.",
+                date='2024-12-01', collection_name='amazon.aws',
+            )
+
+        if 'AWS_SECURITY_TOKEN' in os.environ.keys():
+            self._module.deprecate(
+                "Support for the 'AWS_SECURITY_TOKEN' environment variable "
+                "has been deprecated.  This variable was based on the original "
+                "boto SDK, support for which has now been dropped.  "
+                "We recommend using the 'session_token' module parameter "
+                "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
+                "can be used instead.",
+                date='2024-12-01', collection_name='amazon.aws',
+            )
 
         self.check_mode = self._module.check_mode
         self._diff = self._module._diff
@@ -348,15 +375,42 @@ def _aws_common_argument_spec():
     can't include the region parameter.
     """
     return dict(
-        debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
-        endpoint_url=dict(aliases=['ec2_url', 'aws_endpoint_url', 's3_url']),
-        aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
-        aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
-        security_token=dict(aliases=['access_token', 'aws_security_token', 'session_token', 'aws_session_token'], no_log=True),
+
+        access_key=dict(
+            aliases=['aws_access_key_id', 'aws_access_key', 'ec2_access_key'],
+            deprecated_aliases=[
+                dict(name='ec2_access_key', date='2024-12-01', collection_name='amazon.aws'),
+            ],
+            no_log=False,
+        ),
+        secret_key=dict(
+            aliases=['aws_secret_access_key', 'aws_secret_key', 'ec2_secret_key'],
+            deprecated_aliases=[
+                dict(name='ec2_secret_key', date='2024-12-01', collection_name='amazon.aws'),
+            ],
+            no_log=True,
+        ),
+        session_token=dict(
+            aliases=['aws_session_token', 'security_token', 'access_token', 'aws_security_token'],
+            deprecated_aliases=[
+                dict(name='access_token', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name='security_token', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name='aws_security_token', date='2024-12-01', collection_name='amazon.aws'),
+            ],
+            no_log=True),
+        profile=dict(aliases=['aws_profile']),
+
+        endpoint_url=dict(
+            aliases=['aws_endpoint_url', 'ec2_url', 's3_url'],
+            deprecated_aliases=[
+                dict(name='ec2_url', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name='s3_url', date='2024-12-01', collection_name='amazon.aws'),
+            ],
+        ),
         validate_certs=dict(default=True, type='bool'),
         aws_ca_bundle=dict(type='path'),
-        profile=dict(aliases=['aws_profile']),
         aws_config=dict(type='dict'),
+        debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
     )
 
 

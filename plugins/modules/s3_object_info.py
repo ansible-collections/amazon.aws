@@ -97,6 +97,10 @@ options:
         type: list
         elements: str
         choices: ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
+notes:
+  - Support for the C(S3_URL) environment variable has been
+    deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
+    or the C(AWS_URL) environment variable.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -749,6 +753,13 @@ def main():
 
     if not endpoint_url and 'S3_URL' in os.environ:
         endpoint_url = os.environ['S3_URL']
+        module.deprecate(
+            "Support for the 'S3_URL' environment variable has been "
+            "deprecated.  We recommend using the 'endpoint_url' module "
+            "parameter.  Alternatively, the 'AWS_URL' environment variable can "
+            "be used instead.",
+            date='2024-12-01', collection_name='amazon.aws',
+        )
 
     if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
         module.fail_json(msg='dualstack only applies to AWS S3')
