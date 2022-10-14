@@ -1065,7 +1065,7 @@ How to keep my code simple?
 Ideally, you should break up your code in tiny functions. Each function should have a limited number of parameters
 and a low amount of cross dependencies with the rest of the code (low coupling):
 
-- Don't pass a large data structure to a function if it only use one field. This clarify the inputs of your
+- Don't pass a large data structure to a function if it only use one field. This clarifies the inputs of your
   function (the contract) and also reduce the risk of an unexpected transformation of the data structure
   from within the function.
 - The boto client object is complex and can be source of unwanted side-effect. It's better to isolate the calls
