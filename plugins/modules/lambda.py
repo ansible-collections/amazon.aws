@@ -127,6 +127,7 @@ options:
         layer_version_arn:
             description:
             - The ARN of the layer version.
+            - Mutually exclusive with I(layer_version_arn).
             type: str
         layer_name:
             description:

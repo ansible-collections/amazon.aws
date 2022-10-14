@@ -649,7 +649,7 @@
 
   - name: Create python directory for lambda layer
     file:
-      path: "{{ test_dir.path }}/python"
+      path: "{{ remote_tmp_dir }}/python"
       state: directory
 
   - name: Create lambda layer library
@@ -658,20 +658,20 @@
         def hello():
           print("Hello from the ansible amazon.aws lambda layer")
           return 1
-      dest: "{{ test_dir.path }}/python/lambda_layer.py"
+      dest: "{{ remote_tmp_dir }}/python/lambda_layer.py"
 
   - name: Create lambda layer archive
     archive:
       format: zip
-      path: "{{ test_dir.path }}"
-      dest: "{{ test_dir.path }}/lambda_layer.zip"
+      path: "{{ remote_tmp_dir }}"
+      dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
 
   - name: Create lambda layer
     lambda_layer:
       name: "{{ lambda_python_layers_names[0] }}"
       description: '{{ lambda_python_layers_names[0] }} lambda layer'
       content:
-        zip_file: "{{ test_dir.path }}/lambda_layer.zip"
+        zip_file: "{{ remote_tmp_dir }}/lambda_layer.zip"
     register: first_layer
 
   - name: Create another lambda layer
@@ -679,7 +679,7 @@
       name: "{{ lambda_python_layers_names[1] }}"
       description: '{{ lambda_python_layers_names[1] }} lambda layer'
       content:
-        zip_file: "{{ test_dir.path }}/lambda_layer.zip"
+        zip_file: "{{ remote_tmp_dir }}/lambda_layer.zip"
     register: second_layer
 
   - name: Create lambda function with layers
@@ -756,13 +756,6 @@
         - result is not changed
 
   always:
-
-  - name: Delete temporary directory
-    file:
-      state: absent
-      path: "{{ test_dir.path }}"
-    ignore_errors: true
-    when: test_dir is defined
 
   - name: Delete lambda layers
     lambda_layer:
