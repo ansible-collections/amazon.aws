@@ -1077,7 +1077,7 @@ and a low amount of cross dependencies with the rest of the code (low coupling):
 Unit-tests guidlines
 --------------------
 
-Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknoledge that writing unit-tests may
+Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknowledge that writing unit-tests may
 be challenging and we also accept contribution with no coverage. The test coverage of the other type of plugins is recommand.
 
 - Our tests are run with ``pytest`` and we use the features it provides such as Fixtures, Parametrization.
