@@ -1083,7 +1083,7 @@ be challenging and we also accept contribution with no coverage. Test coverage o
 - Our tests are run with ``pytest`` and we use the features it provides such as Fixtures, Parametrization.
 - The use of ``unittest.TestCase`` is discouraged for the sake of consistency and simplicity.
 - Unit-tests should run fine without any network connection.
-- It's not necessary to mock all the boto3/botocore calls (``get_paginator()``, ``paginate()``, etc). It's often better to just set-up a function that wrap these calls and mock the result.
+- It's not necessary to mock all the boto3/botocore calls (``get_paginator()``, ``paginate()``, etc). It's often better to just set-up a function that wraps these calls and mock the result.
 - Simplicity prevails. Tests should be short and cover a limited set of features.
 
 Pytest is well documented and you will find some example in its `how-to guides <https://docs.pytest.org/en/latest/how-to/index.html>`_
