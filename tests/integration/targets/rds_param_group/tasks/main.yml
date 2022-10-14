@@ -136,7 +136,7 @@
     register: result
     ignore_errors: true
 
-  - name: adding numeric tag just silently converts
+  - name: verify that modifying rds param group engine/family failed
     assert:
       that:
       - not result.changed
