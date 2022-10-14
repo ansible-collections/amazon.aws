@@ -205,7 +205,7 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
 
 
 @pytest.mark.parametrize(
-    "bucket_name,error",
+    "bucket_name,result",
     [
         ("docexamplebucket1", None),
         ("log-delivery-march-2020", None),
@@ -224,19 +224,9 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
         ("my", "the length of an S3 bucket must be at least 3 characters")
     ]
 )
-def test_validate_bucket_name(bucket_name, error):
+def test_validate_bucket_name(bucket_name, result):
 
-    module = MagicMock()
-    module.fail_json.side_effect = SystemExit(1)
-
-    if error:
-        with pytest.raises(SystemExit):
-            s3.validate_bucket_name(module, bucket_name)
-
-        module.fail_json.assert_called_with(msg=error)
-    else:
-        assert s3.validate_bucket_name(module, bucket_name)
-        module.fail_json.assert_not_called()
+    assert result == s3.validate_bucket_name(bucket_name)
 
 
 mod_urlparse = "ansible_collections.amazon.aws.plugins.module_utils.s3.urlparse"
@@ -392,7 +382,9 @@ def test_parse_default_endpoint(m_config, mode, encryption_mode, dualstack, sig_
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_fakes3_endpoint')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.is_fakes3')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_ceph_endpoint')
-def test_get_s3_connection(m_parse_ceph_endpoint,
+@patch('ansible_collections.amazon.aws.plugins.module_utils.s3.boto3_conn')
+def test_get_s3_connection(m_boto3_conn,
+                           m_parse_ceph_endpoint,
                            m_is_fakes3,
                            m_parse_fakes3_endpoint,
                            m_parse_default_endpoint,
@@ -402,13 +394,12 @@ def test_get_s3_connection(m_parse_ceph_endpoint,
     url = "https://my-bucket.s3.us-west-2.amazonaws.com"
     region = "us-east-1"
     aws_connect_kwargs = {"aws_secret_key": "secret123!", "aws_access_key": "ABCDEFG"}
-    params = {"mode": "put", "encryption_mode": "aws:test", "dualstack": False}
+    mode = "put"
+    encryption_mode = "aws:test"
+    dualstack = False
     sig_4 = False
 
     endpoint = {"endpoint": url, "config": {"s3": True, "signature": "s123"}}
-
-    module = MagicMock()
-    module.params = params
 
     m_is_fakes3.return_value = isfakes3
     if ceph:
@@ -422,7 +413,7 @@ def test_get_s3_connection(m_parse_ceph_endpoint,
     expected.update(aws_connect_kwargs)
     expected.update(endpoint)
 
-    result = s3.get_s3_connection(module, aws_connect_kwargs, region, ceph, url, sig_4)
+    result = s3.get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, region, ceph, url, sig_4)
 
     if ceph:
         m_parse_ceph_endpoint.assert_called_with(url)
@@ -434,14 +425,10 @@ def test_get_s3_connection(m_parse_ceph_endpoint,
         m_parse_default_endpoint.assert_not_called()
     else:
         m_parse_default_endpoint.assert_called_with(
-            url,
-            params.get("mode"),
-            params.get("encryption_mode"),
-            params.get("dualstack"),
-            sig_4
+            url, mode, encryption_mode, dualstack, sig_4
         )
         m_parse_ceph_endpoint.assert_not_called()
         m_parse_fakes3_endpoint.assert_not_called()
 
-    assert result == module.boto3_conn.return_value
-    module.boto3_conn.assert_called_with(**expected)
+    assert result == m_boto3_conn.return_value
+    m_boto3_conn.assert_called_with(**expected)

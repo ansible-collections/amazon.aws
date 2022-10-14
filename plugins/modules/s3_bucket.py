@@ -1132,7 +1132,9 @@ def main():
     region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
 
     if module.params.get('validate_bucket_name'):
-        validate_bucket_name(module, module.params["name"])
+        err = validate_bucket_name(module.params["name"])
+        if err:
+            module.fail_json(msg=err)
 
     if region in ('us-east-1', '', None):
         # default to US Standard region

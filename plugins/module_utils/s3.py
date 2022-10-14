@@ -7,6 +7,8 @@ __metaclass__ = type
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
+from .botocore import boto3_conn
+
 try:
     from botocore.client import Config
     from botocore.exceptions import BotoCoreError, ClientError
@@ -88,20 +90,20 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
         return '"{0}"'.format(md5(content).hexdigest())
 
 
-def validate_bucket_name(module, name):
+def validate_bucket_name(name):
     # See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
     if len(name) < 3:
-        module.fail_json(msg='the length of an S3 bucket must be at least 3 characters')
+        return 'the length of an S3 bucket must be at least 3 characters'
     if len(name) > 63:
-        module.fail_json(msg='the length of an S3 bucket cannot exceed 63 characters')
+        return 'the length of an S3 bucket cannot exceed 63 characters'
 
     legal_characters = string.ascii_lowercase + ".-" + string.digits
     illegal_characters = [c for c in name if c not in legal_characters]
     if illegal_characters:
-        module.fail_json(msg='invalid character(s) found in the bucket name')
+        return 'invalid character(s) found in the bucket name'
     if name[-1] not in string.ascii_lowercase + string.digits:
-        module.fail_json(msg='bucket names must begin and end with a letter or number')
-    return True
+        return 'bucket names must begin and end with a letter or number'
+    return None
 
 
 # Spot special case of fakes3.
@@ -143,7 +145,7 @@ def parse_default_endpoint(url, mode, encryption_mode, dualstack, sig_4):
     return result
 
 
-def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
+def get_s3_connection(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
     params = dict(
         conn_type='client',
         resource='s3',
@@ -155,10 +157,7 @@ def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, 
     elif is_fakes3(endpoint_url):
         endpoint_p = parse_fakes3_endpoint(endpoint_url)
     else:
-        mode = module.params.get("mode")
-        encryption_mode = module.params.get("encryption_mode")
-        dualstack = module.params.get("dualstack")
         endpoint_p = parse_default_endpoint(endpoint_url, mode, encryption_mode, dualstack, sig_4)
 
     params.update(endpoint_p)
-    return module.boto3_conn(**params)
+    return boto3_conn(**params)
