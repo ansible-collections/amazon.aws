@@ -1078,7 +1078,7 @@ Unit-tests guidlines
 --------------------
 
 Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknowledge that writing unit-tests may
-be challenging and we also accept contribution with no coverage. Test coverage of the other type of plugins is recommended.
+be challenging and we also accept contribution with no unit-test. Generally speaking, unit-tests are recommended and likely to speed up the PR reviews.
 
 - Our tests are run with ``pytest`` and we use the features it provides such as Fixtures, Parametrization.
 - The use of ``unittest.TestCase`` is discouraged for the sake of consistency and simplicity.
