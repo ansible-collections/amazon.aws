@@ -69,7 +69,7 @@
       ignore_errors: yes
 
     - name: '(VPC Cleanup) Delete remaining SGs'
-      security_group:
+      ec2_security_group:
         state: absent
         group_id: '{{ item.group_id }}'
       loop: '{{ remaining_groups.security_groups }}'

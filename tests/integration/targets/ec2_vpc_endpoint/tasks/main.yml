@@ -780,7 +780,7 @@
     ec2_vpc_endpoint:
       state: present
       vpc_id: '{{ vpc_id }}'
-      service: '{{ endpoint_service_b }}'
+      service: '{{ endpoint_service_c }}'
       vpc_endpoint_type: Interface
       vpc_endpoint_subnets: "{{ interface_endpoint_create_subnet_check.subnet.id }}"
       vpc_endpoint_security_groups: "{{ interface_endpoint_create_sg_check.group_id }}"
