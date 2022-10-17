@@ -146,16 +146,11 @@ def get_aws_region(module, boto3=None):
     if not HAS_BOTO3:
         module.fail_json(msg=missing_required_lib('boto3'), exception=BOTO3_IMP_ERR)
 
-    if 'AWS_REGION' in os.environ:
-        return os.environ['AWS_REGION']
-    if 'AWS_DEFAULT_REGION' in os.environ:
-        return os.environ['AWS_DEFAULT_REGION']
-    if 'EC2_REGION' in os.environ:
-        return os.environ['EC2_REGION']
-
     # here we don't need to make an additional call, will default to 'us-east-1' if the below evaluates to None.
     try:
-        profile_name = module.params.get('profile')
+        # Botocore doesn't like empty strings, make sure we default to None in the case of an empty
+        # string.
+        profile_name = module.params.get('profile') or None
         return botocore.session.Session(profile=profile_name).get_config_variable('region')
     except botocore.exceptions.ProfileNotFound:
         return None
@@ -176,76 +171,31 @@ def get_aws_connection_info(module, boto3=None):
     ca_bundle = module.params.get('aws_ca_bundle')
     config = module.params.get('aws_config')
 
-    # Only read the profile environment variables if we've *not* been passed
-    # any credentials as parameters.
-    if not profile_name and not access_key and not secret_key:
-        if os.environ.get('AWS_PROFILE'):
-            profile_name = os.environ.get('AWS_PROFILE')
-        if os.environ.get('AWS_DEFAULT_PROFILE'):
-            profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
-
     if profile_name and (access_key or secret_key or session_token):
         module.fail_json(msg="Passing both a profile and access tokens is not supported.")
 
-    if not endpoint_url:
-        if 'AWS_URL' in os.environ:
-            endpoint_url = os.environ['AWS_URL']
-        elif 'EC2_URL' in os.environ:
-            endpoint_url = os.environ['EC2_URL']
-
+    # Botocore doesn't like empty strings, make sure we default to None in the case of an empty
+    # string.
     if not access_key:
-        # AWS_ACCESS_KEY_ID is the one supported by the AWS CLI
-        # AWS_ACCESS_KEY is to match up with our parameter name
-        if os.environ.get('AWS_ACCESS_KEY_ID'):
-            access_key = os.environ['AWS_ACCESS_KEY_ID']
-        elif os.environ.get('AWS_ACCESS_KEY'):
-            access_key = os.environ['AWS_ACCESS_KEY']
-        # Deprecated - 'EC2' implies just EC2, but is global
-        elif os.environ.get('EC2_ACCESS_KEY'):
-            access_key = os.environ['EC2_ACCESS_KEY']
-        else:
-            # in case access_key came in as empty string
-            access_key = None
-
+        access_key = None
     if not secret_key:
-        # AWS_SECRET_ACCESS_KEY is the one supported by the AWS CLI
-        # AWS_SECRET_KEY is to match up with our parameter name
-        if os.environ.get('AWS_SECRET_ACCESS_KEY'):
-            secret_key = os.environ['AWS_SECRET_ACCESS_KEY']
-        elif os.environ.get('AWS_SECRET_KEY'):
-            secret_key = os.environ['AWS_SECRET_KEY']
-        # Deprecated - 'EC2' implies just EC2, but is global
-        elif os.environ.get('EC2_SECRET_KEY'):
-            secret_key = os.environ['EC2_SECRET_KEY']
-        else:
-            # in case secret_key came in as empty string
-            secret_key = None
-
+        secret_key = None
     if not session_token:
-        # AWS_SESSION_TOKEN is supported by the AWS CLI
-        if os.environ.get('AWS_SESSION_TOKEN'):
-            session_token = os.environ['AWS_SESSION_TOKEN']
-        # Deprecated - boto
-        elif os.environ.get('AWS_SECURITY_TOKEN'):
-            session_token = os.environ['AWS_SECURITY_TOKEN']
-        # Deprecated - 'EC2' implies just EC2, but is global
-        elif os.environ.get('EC2_SECURITY_TOKEN'):
-            session_token = os.environ['EC2_SECURITY_TOKEN']
-        else:
-            # in case secret_token came in as empty string
-            session_token = None
-
-    if not ca_bundle:
-        if os.environ.get('AWS_CA_BUNDLE'):
-            ca_bundle = os.environ.get('AWS_CA_BUNDLE')
-
-    boto_params = dict(aws_access_key_id=access_key,
-                       aws_secret_access_key=secret_key,
-                       aws_session_token=session_token)
+        session_token = None
 
     if profile_name:
-        boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
-        boto_params['profile_name'] = profile_name
+        boto_params = dict(
+            aws_access_key_id=None,
+            aws_secret_access_key=None,
+            aws_session_token=None,
+            profile_name=profile_name,
+        )
+    else:
+        boto_params = dict(
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            aws_session_token=session_token,
+        )
 
     if validate_certs and ca_bundle:
         boto_params['verify'] = ca_bundle

@@ -380,6 +380,7 @@ def _aws_common_argument_spec():
             deprecated_aliases=[
                 dict(name='ec2_access_key', date='2024-12-01', collection_name='amazon.aws'),
             ],
+            fallback=(env_fallback, ['AWS_ACCESS_KEY_ID', 'AWS_ACCESS_KEY', 'EC2_ACCESS_KEY']),
             no_log=False,
         ),
         secret_key=dict(
@@ -387,6 +388,7 @@ def _aws_common_argument_spec():
             deprecated_aliases=[
                 dict(name='ec2_secret_key', date='2024-12-01', collection_name='amazon.aws'),
             ],
+            fallback=(env_fallback, ['AWS_SECRET_ACCESS_KEY', 'AWS_SECRET_KEY', 'EC2_SECRET_KEY']),
             no_log=True,
         ),
         session_token=dict(
@@ -396,10 +398,12 @@ def _aws_common_argument_spec():
                 dict(name='security_token', date='2024-12-01', collection_name='amazon.aws'),
                 dict(name='aws_security_token', date='2024-12-01', collection_name='amazon.aws'),
             ],
+            fallback=(env_fallback, ['AWS_SESSION_TOKEN', 'AWS_SECURITY_TOKEN', 'EC2_SECURITY_TOKEN']),
             no_log=True,
         ),
         profile=dict(
             aliases=['aws_profile'],
+            fallback=(env_fallback, ['AWS_PROFILE', 'AWS_DEFAULT_PROFILE']),
         ),
 
         endpoint_url=dict(
@@ -408,16 +412,18 @@ def _aws_common_argument_spec():
                 dict(name='ec2_url', date='2024-12-01', collection_name='amazon.aws'),
                 dict(name='s3_url', date='2024-12-01', collection_name='amazon.aws'),
             ],
+            fallback=(env_fallback, ['AWS_URL', 'EC2_URL', 'S3_URL']),
         ),
         validate_certs=dict(
             type='bool',
             default=True,
         ),
         aws_ca_bundle=dict(
-            type='path'
+            type='path',
+            fallback=(env_fallback, ['AWS_CA_BUNDLE']),
         ),
         aws_config=dict(
-            type='dict'
+            type='dict',
         ),
         debug_botocore_endpoint_logs=dict(
             type='bool',
@@ -437,6 +443,7 @@ def aws_argument_spec():
             deprecated_aliases=[
                 dict(name='ec2_region', date='2024-12-01', collection_name='amazon.aws'),
             ],
+            fallback=(env_fallback, ['AWS_REGION', 'AWS_DEFAULT_REGION', 'EC2_REGION']),
         ),
     )
     spec = _aws_common_argument_spec()
