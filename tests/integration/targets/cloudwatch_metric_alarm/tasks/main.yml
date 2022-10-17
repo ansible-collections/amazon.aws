@@ -378,6 +378,75 @@
     ec2_metric_alarm:
       state: absent
       name: '{{ alarm_full_name }}'
+    register: ec2_instance_metric_alarm_deletion
+
+  - name: Verify that the alarm reports deleted/changed
+    assert:
+      that:
+      - ec2_instance_metric_alarm_deletion.changed
+
+  - name: get info on alarms
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info
+
+  - name: Verify that the alarm was deleted using cli
+    assert:
+      that:
+        - 'alarm_info.metric_alarms | length == 0'
+
+  - name: create ec2 metric alarm with metrics
+    ec2_metric_alarm:
+      state: present
+      name: '{{ alarm_full_name }}'
+      treat_missing_data: missing
+      comparison: LessThanOrEqualToThreshold
+      threshold: 5.0
+      evaluation_periods: 3
+      description: This will alarm when an instance's cpu usage average is lower than
+        5% for 15 minutes
+      metrics:
+        - id: cpu
+          metric_stat:
+              metric:
+                  dimensions:
+                    - name: "InstanceId"
+                      value: "{{ ec2_instance_results.instances[0].instance_id }}"
+                  metric_name: "CPUUtilization"
+                  namespace: "AWS/EC2"
+              period: 300
+              stat: "Average"
+              unit: "Percent"
+          return_data: true
+    register: ec2_instance_metric_alarm_metrics
+
+  - name: get info on alarms
+    amazon.aws.cloudwatch_metric_alarm_info:
+      alarm_names:
+        - "{{ alarm_full_name }}"
+    register: alarm_info_metrics
+
+  - name: verify that an alarm was created
+    assert:
+      that:
+      - ec2_instance_metric_alarm_metrics.changed
+      - ec2_instance_metric_alarm_metrics.alarm_arn
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.stat == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.stat'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.namespace == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.namespace'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.metric_name == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.metric_name'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].name == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.dimensions[0].name'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.dimensions[0].value == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.dimensions[0].value'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].id == alarm_info_metrics.metric_alarms[0].metrics[0].id'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.period == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.period'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.unit == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.unit'
+      - 'ec2_instance_metric_alarm_metrics.metrics[0].return_data == alarm_info_metrics.metric_alarms[0].metrics[0].return_data'
+
+
+  - name: try to remove the alarm
+    ec2_metric_alarm:
+      state: absent
+      name: '{{ alarm_full_name }}'
     register: ec2_instance_metric_alarm_deletion_no_unit
 
   - name: Verify that the alarm reports deleted/changed
@@ -395,6 +464,43 @@
     assert:
       that:
         - 'alarm_info_no_unit.metric_alarms | length == 0'
+
+  - name: create ec2 metric alarm by providing mutually exclusive values
+    ec2_metric_alarm:
+      dimensions:
+        InstanceId: '{{ ec2_instance_results.instances[0].instance_id }}'
+      state: present
+      name: '{{ alarm_full_name }}'
+      metric: CPUUtilization
+      namespace: AWS/EC2
+      treat_missing_data: missing
+      statistic: Average
+      comparison: LessThanOrEqualToThreshold
+      threshold: 5.0
+      period: 300
+      evaluation_periods: 3
+      description: This will alarm when an instance's cpu usage average is lower than
+        5% for 15 minutes
+      metrics:
+        - id: cpu
+          metric_stat:
+              metric:
+                  dimensions:
+                    - name: "InstanceId"
+                      value: "{{ ec2_instance_results.instances[0].instance_id }}"
+                  metric_name: "CPUUtilization"
+                  namespace: "AWS/EC2"
+              period: 300
+              stat: "Average"
+              unit: "Percent"
+          return_data: true
+    register: ec2_instance_metric_mutually_exclusive
+    ignore_errors: true
+
+  - assert:
+      that:
+      - ec2_instance_metric_mutually_exclusive.failed
+      - '"parameters are mutually exclusive" in ec2_instance_metric_mutually_exclusive.msg'
 
   always:
   - name: try to delete the alarm
