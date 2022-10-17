@@ -120,9 +120,11 @@ options:
     type: bool
     default: false
 notes:
-  - B(Caution:) Environment variables and configuration files are read from the
-    Ansible 'host' context and not the 'controller' context.  Files may need to
-    be explicitly copied to the 'host'.
+  - B(Caution:) For modules, environment variables and configuration files are
+    read from the Ansible 'host' context and not the 'controller' context.
+    As such, files may need to be explicitly copied to the 'host'.  For lookup
+    and connection plugins, environment variables and configuration files are
+    read from the Ansible 'controller' context and not the 'host' context.
   - The AWS SDK (boto3) that Ansible uses may also read defaults for credentials
     and other settings, such as the region, from its configuration files in the
     Ansible 'host' context (typically C(~/.aws/credentials)).
