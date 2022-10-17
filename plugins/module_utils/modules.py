@@ -375,7 +375,6 @@ def _aws_common_argument_spec():
     can't include the region parameter.
     """
     return dict(
-
         access_key=dict(
             aliases=['aws_access_key_id', 'aws_access_key', 'ec2_access_key'],
             deprecated_aliases=[
@@ -397,8 +396,11 @@ def _aws_common_argument_spec():
                 dict(name='security_token', date='2024-12-01', collection_name='amazon.aws'),
                 dict(name='aws_security_token', date='2024-12-01', collection_name='amazon.aws'),
             ],
-            no_log=True),
-        profile=dict(aliases=['aws_profile']),
+            no_log=True,
+        ),
+        profile=dict(
+            aliases=['aws_profile'],
+        ),
 
         endpoint_url=dict(
             aliases=['aws_endpoint_url', 'ec2_url', 's3_url'],
@@ -407,10 +409,21 @@ def _aws_common_argument_spec():
                 dict(name='s3_url', date='2024-12-01', collection_name='amazon.aws'),
             ],
         ),
-        validate_certs=dict(default=True, type='bool'),
-        aws_ca_bundle=dict(type='path'),
-        aws_config=dict(type='dict'),
-        debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
+        validate_certs=dict(
+            type='bool',
+            default=True,
+        ),
+        aws_ca_bundle=dict(
+            type='path'
+        ),
+        aws_config=dict(
+            type='dict'
+        ),
+        debug_botocore_endpoint_logs=dict(
+            type='bool',
+            default=False,
+            fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']),
+        ),
     )
 
 
@@ -418,10 +431,14 @@ def aws_argument_spec():
     """
     Returns a dictionary containing the argument_spec common to all AWS modules.
     """
-    spec = _aws_common_argument_spec()
-    spec.update(
-        dict(
-            region=dict(aliases=['aws_region', 'ec2_region']),
-        )
+    region_spec = dict(
+        region=dict(
+            aliases=['aws_region', 'ec2_region'],
+            deprecated_aliases=[
+                dict(name='ec2_region', date='2024-12-01', collection_name='amazon.aws'),
+            ],
+        ),
     )
+    spec = _aws_common_argument_spec()
+    spec.update(region_spec)
     return spec
