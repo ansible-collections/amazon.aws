@@ -1,5 +1,5 @@
 ---
-# defaults file for ec2_elb_lb
+# defaults file for elb_classic_lb
 elb_name: 'ansible-test-{{ tiny_prefix }}'
 
 vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'

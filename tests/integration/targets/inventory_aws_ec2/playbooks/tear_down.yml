@@ -3,7 +3,7 @@
     subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
 
 - name: remove setup security group
-  ec2_group:
+  ec2_security_group:
     name: '{{ resource_prefix }}_setup'
     description: 'created by Ansible integration tests'
     state: absent

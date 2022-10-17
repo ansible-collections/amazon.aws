@@ -16,7 +16,7 @@
         "Deny"} }'
     register: iam_role_result
   - name: create a key
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       tags:
         Hello: World
@@ -49,7 +49,7 @@
     # ------------------------------------------------------------------------------------------
 
   - name: Add grant - check mode
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       purge_grants: yes
@@ -75,7 +75,7 @@
   - wait_for:
       timeout: 20
   - name: Add grant
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       purge_grants: yes
@@ -117,7 +117,7 @@
     wait_for:
       timeout: 45
   - name: Add grant (idempotence) - check mode
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       purge_grants: yes
@@ -139,7 +139,7 @@
       - not key.changed
 
   - name: Add grant (idempotence)
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       purge_grants: yes
@@ -177,7 +177,7 @@
       - key.description == ''
 
   - name: Add a second grant
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       grants:
@@ -218,7 +218,7 @@
     wait_for:
       timeout: 45
   - name: Add a second grant again
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       grants:
@@ -256,7 +256,7 @@
       - key.description == ''
 
   - name: Update the grants with purge_grants set
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       purge_grants: yes
@@ -295,7 +295,7 @@
       - key.description == ''
 
   - name: Update third grant to change encryption context equals to subset
-    aws_kms:
+    kms_key:
       alias: '{{ kms_key_alias }}'
       state: present
       grants:
@@ -338,7 +338,7 @@
     # ============================================================
     #   CLEAN-UP
   - name: finish off by deleting keys
-    aws_kms:
+    kms_key:
       state: absent
       alias: '{{ kms_key_alias }}'
       pending_window: 7

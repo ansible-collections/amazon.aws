@@ -44,7 +44,7 @@
     register: vpc_subnet_result
 
   - name: create a security group
-    ec2_group:
+    ec2_security_group:
       name: "{{ resource_prefix }}-sg"
       description: "Created by {{ resource_prefix }}"
       rules: []
@@ -279,7 +279,7 @@
         with_items: "{{ spot_request_list.spot_request }}"
 
       - name: remove the security group
-        ec2_group:
+        ec2_security_group:
           name: "{{ resource_prefix }}-sg"
           description: "{{ resource_prefix }}"
           rules: []

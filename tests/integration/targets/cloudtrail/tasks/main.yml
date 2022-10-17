@@ -127,14 +127,14 @@
       policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
 
   - name: 'Create KMS Key'
-    aws_kms:
+    kms_key:
       state: present
       alias: '{{ kms_alias }}'
       enabled: yes
       policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
     register: kms_key
   - name: 'Create second KMS Key'
-    aws_kms:
+    kms_key:
       state: present
       alias: '{{ kms_alias }}-2'
       enabled: yes
@@ -1543,12 +1543,12 @@
       force: yes
     ignore_errors: yes
   - name: 'Delete KMS Key'
-    aws_kms:
+    kms_key:
       state: absent
       alias: '{{ kms_alias }}'
     ignore_errors: yes
   - name: 'Delete second KMS Key'
-    aws_kms:
+    kms_key:
       state: absent
       alias: '{{ kms_alias }}-2'
     ignore_errors: yes

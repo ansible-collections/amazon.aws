@@ -207,7 +207,7 @@
     # 'file' lookup path or a remote path.  Keeping this working is dependent on
     # having a redirect for both the module and the action plugin
     - name: check that roles file lookups work as expected when using old name
-      aws_s3:
+      s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: hello.txt
@@ -766,7 +766,7 @@
           - result is changed
 
     - name: create an object from a template (idempotency)
-      aws_s3:
+      s3_object:
         bucket: "{{ bucket_name }}"
         object: put-template.txt
         mode: put
@@ -806,7 +806,7 @@
           - result is changed
 
     - name: create an object from binary data (idempotency)
-      aws_s3:
+      s3_object:
         bucket: "{{ bucket_name }}"
         object: put-binary.bin
         mode: put

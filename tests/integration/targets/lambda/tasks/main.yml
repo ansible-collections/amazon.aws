@@ -73,7 +73,7 @@
       - '"role" in result.msg'
 
   - name: test execute lambda with no function arn or name
-    execute_lambda:
+    lambda_execute:
     register: result
     ignore_errors: true
   - name: assert failure when called with no parameters
@@ -183,7 +183,7 @@
 
   # Test basic operation of Uploaded lambda
   - name: test lambda works (check mode)
-    execute_lambda:
+    lambda_execute:
       name: '{{lambda_function_name}}'
       payload:
         name: Mr Ansible Tests
@@ -196,7 +196,7 @@
       - "'result' not in result"
 
   - name: test lambda works
-    execute_lambda:
+    lambda_execute:
       name: '{{lambda_function_name}}'
       payload:
         name: Mr Ansible Tests
@@ -506,7 +506,7 @@
         great!!"
 
   - name: test lambda works
-    execute_lambda:
+    lambda_execute:
       name: '{{lambda_function_name}}'
       payload:
         name: Mr Ansible Tests

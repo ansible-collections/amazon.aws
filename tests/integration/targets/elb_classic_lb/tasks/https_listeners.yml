@@ -25,7 +25,7 @@
   register: cert_create_result
 
 - name: upload certificates first time
-  aws_acm:
+  community.aws.acm_certificate:
     name_tag: '{{ item.name }}'
     certificate: '{{ lookup(''file'', item.cert ) }}'
     private_key: '{{ lookup(''file'', item.priv_key ) }}'
@@ -116,7 +116,7 @@
     state: absent
 
 - name: Delete the certificate created in this test
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     certificate_arn: '{{ cert_arn }}'
     state: absent
   # AWS doesn't always cleanup the associations properly

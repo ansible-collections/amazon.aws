@@ -1,6 +1,6 @@
 ---
 - name: delete security groups
-  ec2_group:
+  ec2_security_group:
     name: '{{ item }}'
     state: absent
   ignore_errors: true

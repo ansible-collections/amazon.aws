@@ -20,7 +20,7 @@
     set_fact:
       vpc_id: '{{ vpc.vpc.id }}'
   - name: Get VPC's default security group
-    ec2_group_info:
+    ec2_security_group_info:
       filters:
         vpc-id: '{{ vpc_id }}'
     register: default_sg
@@ -84,7 +84,7 @@
         gateway_id: '{{ igw.gateway_id }}'
     register: route_table
   - name: Create a security group for Ansible ALB integration tests
-    ec2_group:
+    ec2_security_group:
       name: '{{ resource_prefix }}'
       description: security group for Ansible ALB integration tests
       state: present
@@ -96,7 +96,7 @@
         cidr_ip: 0.0.0.0/0
     register: sec_group
   - name: Create another security group for Ansible ALB integration tests
-    ec2_group:
+    ec2_security_group:
       name: '{{ resource_prefix }}-2'
       description: security group for Ansible ALB integration tests
       state: present
@@ -1291,7 +1291,7 @@
     when: tg is defined
     ignore_errors: true
   - name: Destroy sec groups
-    ec2_group:
+    ec2_security_group:
       name: '{{ item }}'
       description: security group for Ansible ALB integration tests
       state: absent

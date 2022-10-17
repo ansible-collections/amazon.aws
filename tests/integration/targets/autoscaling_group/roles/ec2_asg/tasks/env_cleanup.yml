@@ -1,5 +1,5 @@
 - name: kill asg
-  ec2_asg:
+  autoscaling_group:
     name: '{{ resource_prefix }}-asg'
     state: absent
   register: removed
@@ -19,7 +19,7 @@
   - '{{ tg2_name }}'
 
 - name: remove the load balancer
-  ec2_elb_lb:
+  elb_classic_lb:
     name: '{{ load_balancer_name }}'
     state: absent
     security_group_ids:
@@ -44,7 +44,7 @@
   ignore_errors: true
   retries: 10
 - name: remove launch configs
-  ec2_lc:
+  autoscaling_launch_config:
     name: '{{ item }}'
     state: absent
   register: removed
@@ -64,7 +64,7 @@
   until: del_lt is not failed
   ignore_errors: true
 - name: remove the security group
-  ec2_group:
+  ec2_security_group:
     name: '{{ resource_prefix }}-sg'
     description: a security group for ansible tests
     vpc_id: '{{ testing_vpc.vpc.id }}'
