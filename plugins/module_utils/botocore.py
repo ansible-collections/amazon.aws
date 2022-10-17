@@ -167,9 +167,9 @@ def get_aws_connection_info(module, boto3=None):
     # access_key
 
     endpoint_url = module.params.get('endpoint_url')
-    access_key = module.params.get('aws_access_key')
-    secret_key = module.params.get('aws_secret_key')
-    security_token = module.params.get('security_token')
+    access_key = module.params.get('access_key')
+    secret_key = module.params.get('secret_key')
+    session_token = module.params.get('session_token')
     region = get_aws_region(module)
     profile_name = module.params.get('profile')
     validate_certs = module.params.get('validate_certs')
@@ -184,7 +184,7 @@ def get_aws_connection_info(module, boto3=None):
         if os.environ.get('AWS_DEFAULT_PROFILE'):
             profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
 
-    if profile_name and (access_key or secret_key or security_token):
+    if profile_name and (access_key or secret_key or session_token):
         module.fail_json(msg="Passing both a profile and access tokens is not supported.")
 
     if not endpoint_url:
@@ -194,10 +194,13 @@ def get_aws_connection_info(module, boto3=None):
             endpoint_url = os.environ['EC2_URL']
 
     if not access_key:
+        # AWS_ACCESS_KEY_ID is the one supported by the AWS CLI
+        # AWS_ACCESS_KEY is to match up with our parameter name
         if os.environ.get('AWS_ACCESS_KEY_ID'):
             access_key = os.environ['AWS_ACCESS_KEY_ID']
         elif os.environ.get('AWS_ACCESS_KEY'):
             access_key = os.environ['AWS_ACCESS_KEY']
+        # Deprecated - 'EC2' implies just EC2, but is global
         elif os.environ.get('EC2_ACCESS_KEY'):
             access_key = os.environ['EC2_ACCESS_KEY']
         else:
@@ -205,26 +208,32 @@ def get_aws_connection_info(module, boto3=None):
             access_key = None
 
     if not secret_key:
+        # AWS_SECRET_ACCESS_KEY is the one supported by the AWS CLI
+        # AWS_SECRET_KEY is to match up with our parameter name
         if os.environ.get('AWS_SECRET_ACCESS_KEY'):
             secret_key = os.environ['AWS_SECRET_ACCESS_KEY']
         elif os.environ.get('AWS_SECRET_KEY'):
             secret_key = os.environ['AWS_SECRET_KEY']
+        # Deprecated - 'EC2' implies just EC2, but is global
         elif os.environ.get('EC2_SECRET_KEY'):
             secret_key = os.environ['EC2_SECRET_KEY']
         else:
             # in case secret_key came in as empty string
             secret_key = None
 
-    if not security_token:
-        if os.environ.get('AWS_SECURITY_TOKEN'):
-            security_token = os.environ['AWS_SECURITY_TOKEN']
-        elif os.environ.get('AWS_SESSION_TOKEN'):
-            security_token = os.environ['AWS_SESSION_TOKEN']
+    if not session_token:
+        # AWS_SESSION_TOKEN is supported by the AWS CLI
+        if os.environ.get('AWS_SESSION_TOKEN'):
+            session_token = os.environ['AWS_SESSION_TOKEN']
+        # Deprecated - boto
+        elif os.environ.get('AWS_SECURITY_TOKEN'):
+            session_token = os.environ['AWS_SECURITY_TOKEN']
+        # Deprecated - 'EC2' implies just EC2, but is global
         elif os.environ.get('EC2_SECURITY_TOKEN'):
-            security_token = os.environ['EC2_SECURITY_TOKEN']
+            session_token = os.environ['EC2_SECURITY_TOKEN']
         else:
             # in case secret_token came in as empty string
-            security_token = None
+            session_token = None
 
     if not ca_bundle:
         if os.environ.get('AWS_CA_BUNDLE'):
@@ -232,7 +241,7 @@ def get_aws_connection_info(module, boto3=None):
 
     boto_params = dict(aws_access_key_id=access_key,
                        aws_secret_access_key=secret_key,
-                       aws_session_token=security_token)
+                       aws_session_token=session_token)
 
     if profile_name:
         boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)

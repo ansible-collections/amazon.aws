@@ -14,8 +14,17 @@ class ModuleDocFragment(object):
 options:
     region:
         description:
-          - The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used.
-            See U(http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region)
+          - The AWS region to use.
+          - For global services such as IAM, Route53 and CloudFront, I(region)
+            is ignored.
+          - The C(AWS_REGION) or C(EC2_REGION) environment variables may also
+            be used.
+          - See the Amazon AWS documentation for more information
+            U(http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region).
+          - The C(ec2_region) alias has been deprecated and will be removed in
+            a release after 2024-12-01
+          - Support for the C(EC2_REGION) environment variable has been
+            deprecated and will be removed in a release after 2024-12-01.
         type: str
         aliases: [ aws_region, ec2_region ]
 '''
