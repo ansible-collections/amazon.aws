@@ -1,0 +1,3 @@
+---
+minor_changes:
+- lambda -  add support for function layers when creating or updating lambda function.
