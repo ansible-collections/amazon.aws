@@ -42,12 +42,93 @@ options:
           - Unique name for the alarm.
         required: true
         type: str
-    metric:
+    metric_name:
         description:
           - Name of the monitored metric (e.g. C(CPUUtilization)).
           - Metric must already exist.
         required: false
         type: str
+        aliases: ['metric']
+    metrics:
+        description:
+          - An array of MetricDataQuery structures that enable
+            you to create an alarm based on the result of a metric math expression.
+        type: list
+        required: false
+        version_added: "5.1.0"
+        elements: dict
+        suboptions:
+            id:
+                description:
+                  - A short name used to tie this object to the results in the response.
+                type: str
+                required: true
+            metric_stat:
+                description: The metric to be returned, along with statistics, period, and units.
+                type: dict
+                required: false
+                suboptions:
+                    metric:
+                        description: The metric to return, including the metric name, namespace, and dimensions.
+                        type: dict
+                        required: false
+                        suboptions:
+                            namespace:
+                                description: The namespace of the metric.
+                                type: str
+                                required: false
+                            metric_name:
+                                description: The name of the metric.
+                                type: str
+                                required: True
+                            dimensions:
+                                description: a name/value pair that is part of the identity of a metric.
+                                type: list
+                                elements: dict
+                                required: false
+                                suboptions:
+                                    name:
+                                        description: The name of the dimension.
+                                        type: str
+                                        required: True
+                                    value:
+                                        description: The value of the dimension.
+                                        type: str
+                                        required: True
+                    period:
+                        description: The granularity, in seconds, of the returned data points.
+                        type: int
+                        required: True
+                    stat:
+                        description: The statistic to return. It can include any CloudWatch statistic or extended statistic.
+                        type: str
+                        required: True
+                    unit:
+                        description: Unit to use when storing the metric.
+                        type: str
+                        required: false
+            expression:
+                description:
+                  - This field can contain either a Metrics Insights query,
+                    or a metric math expression to be performed on the returned data.
+                type: str
+                required: false
+            label:
+                description: A human-readable label for this metric or expression.
+                type: str
+                required: false
+            return_data:
+                description: This option indicates whether to return the timestamps and raw data values of this metric.
+                type: bool
+                required: false
+            period:
+                description: The granularity, in seconds, of the returned data points.
+                type: int
+                required: false
+            account_id:
+                description: The ID of the account where the metrics are located, if this is a cross-account alarm.
+                type: str
+                required: false
     namespace:
         description:
           - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
@@ -60,6 +141,11 @@ options:
         required: false
         choices: ['SampleCount','Average','Sum','Minimum','Maximum']
         type: str
+    extended_statistic:
+        description: The percentile statistic for the metric specified in the metric name.
+        type: str
+        required: false
+        version_added: "5.1.0"
     comparison:
         description:
           - Determines how the threshold value is compared
@@ -175,7 +261,7 @@ EXAMPLES = r'''
       state: present
       region: ap-southeast-2
       name: "cpu-low"
-      metric: "CPUUtilization"
+      metric_name: "CPUUtilization"
       namespace: "AWS/EC2"
       statistic: Average
       comparison: "LessThanOrEqualToThreshold"
@@ -185,6 +271,26 @@ EXAMPLES = r'''
       unit: "Percent"
       description: "This will alarm when a instance's CPU usage average is lower than 5% for 15 minutes"
       dimensions: {'InstanceId':'i-XXX'}
+      alarm_actions: ["action1","action2"]
+
+  - name: create alarm with metrics
+    amazon.aws.cloudwatch_metric_alarm:
+      state: present
+      region: ap-southeast-2
+      name: "cpu-low"
+      metrics:
+        - id: 'CPU'
+          metric_stat:
+              metric:
+                  dimensions:
+                      name: "InstanceId"
+                      value: "i-xx"
+                  metric_name: "CPUUtilization"
+                  namespace: "AWS/EC2"
+              period: "300"
+              stat: "Average"
+              unit: "Percent"
+          return_data: False
       alarm_actions: ["action1","action2"]
 
   - name: Create an alarm to recover a failed instance
@@ -209,18 +315,19 @@ try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # protected by AnsibleAWSModule
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 
 def create_metric_alarm(connection, module, params):
     alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
-
-    if not isinstance(params['Dimensions'], list):
-        fixed_dimensions = []
-        for key, value in params['Dimensions'].items():
-            fixed_dimensions.append({'Name': key, 'Value': value})
-        params['Dimensions'] = fixed_dimensions
+    if params.get('Dimensions'):
+        if not isinstance(params['Dimensions'], list):
+            fixed_dimensions = []
+            for key, value in params['Dimensions'].items():
+                fixed_dimensions.append({'Name': key, 'Value': value})
+            params['Dimensions'] = fixed_dimensions
 
     if not alarms['MetricAlarms']:
         try:
@@ -262,6 +369,11 @@ def create_metric_alarm(connection, module, params):
 
     result = {}
     if alarms['MetricAlarms']:
+        if alarms['MetricAlarms'][0].get('Metrics'):
+            metric_list = []
+            for metric_element in alarms['MetricAlarms'][0]['Metrics']:
+                metric_list.append(camel_dict_to_snake_dict(metric_element))
+            alarms['MetricAlarms'][0]['Metrics'] = metric_list
         result = alarms['MetricAlarms'][0]
 
     module.exit_json(changed=changed,
@@ -276,6 +388,8 @@ def create_metric_alarm(connection, module, params):
                      insufficient_data_actions=result.get('InsufficientDataActions'),
                      last_updated=result.get('AlarmConfigurationUpdatedTimestamp'),
                      metric=result.get('MetricName'),
+                     metric_name=result.get('MetricName'),
+                     metrics=result.get('Metrics'),
                      namespace=result.get('Namespace'),
                      ok_actions=result.get('OKActions'),
                      period=result.get('Period'),
@@ -304,7 +418,7 @@ def delete_metric_alarm(connection, module, params):
 def main():
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        metric=dict(type='str'),
+        metric_name=dict(type='str', aliases=['metric']),
         namespace=dict(type='str'),
         statistic=dict(type='str', choices=['SampleCount', 'Average', 'Sum', 'Minimum', 'Maximum']),
         comparison=dict(type='str', choices=['LessThanOrEqualToThreshold', 'LessThanThreshold', 'GreaterThanThreshold',
@@ -317,22 +431,39 @@ def main():
                                        'Terabytes/Second', 'Bits/Second', 'Kilobits/Second', 'Megabits/Second', 'Gigabits/Second',
                                        'Terabits/Second', 'Count/Second', 'None']),
         evaluation_periods=dict(type='int'),
+        extended_statistic=dict(type='str'),
         description=dict(type='str'),
-        dimensions=dict(type='dict', default={}),
+        dimensions=dict(type='dict'),
         alarm_actions=dict(type='list', default=[], elements='str'),
         insufficient_data_actions=dict(type='list', default=[], elements='str'),
         ok_actions=dict(type='list', default=[], elements='str'),
         treat_missing_data=dict(type='str', choices=['breaching', 'notBreaching', 'ignore', 'missing'], default='missing'),
         state=dict(default='present', choices=['present', 'absent']),
+        metrics=dict(type='list', elements='dict', default=[]),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    mutually_exclusive = [
+        ['metric_name', 'metrics'],
+        ['dimensions', 'metrics'],
+        ['period', 'metrics'],
+        ['namespace', 'metrics'],
+        ['statistic', 'metrics'],
+        ['extended_statistic', 'metrics'],
+        ['unit', 'metrics'],
+        ['statistic', 'extended_statistic'],
+    ]
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=mutually_exclusive,
+        supports_check_mode=True,
+    )
 
     state = module.params.get('state')
 
     params = dict()
     params['AlarmName'] = module.params.get('name')
-    params['MetricName'] = module.params.get('metric')
+    params['MetricName'] = module.params.get('metric_name')
     params['Namespace'] = module.params.get('namespace')
     params['Statistic'] = module.params.get('statistic')
     params['ComparisonOperator'] = module.params.get('comparison')
@@ -347,6 +478,14 @@ def main():
     params['InsufficientDataActions'] = module.params.get('insufficient_data_actions', [])
     params['OKActions'] = module.params.get('ok_actions', [])
     params['TreatMissingData'] = module.params.get('treat_missing_data')
+    if module.params.get('metrics'):
+        params['Metrics'] = snake_dict_to_camel_dict(module.params['metrics'], capitalize_first=True)
+    if module.params.get('extended_statistic'):
+        params['ExtendedStatistic'] = module.params.get('extended_statistic')
+
+    for key, value in list(params.items()):
+        if value is None:
+            del params[key]
 
     connection = module.client('cloudwatch')
 
