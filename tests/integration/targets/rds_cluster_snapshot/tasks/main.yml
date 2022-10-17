@@ -7,7 +7,6 @@
       security_token: "{{ security_token | default(omit) }}"
   collections:
     - amazon.aws
-
   block:
   - name: Create a source DB cluster
     rds_cluster:

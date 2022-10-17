@@ -1,4 +1,10 @@
-- block:
+- module_defaults:
+    group/aws:
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  block:
   - name: Ensure the resource doesn't exist
     rds_cluster:
       id: '{{ cluster_id }}'
