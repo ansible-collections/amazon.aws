@@ -534,12 +534,14 @@ class Connection(ConnectionBase):
     def _get_url(self, client_method, bucket_name, out_path, http_method, profile_name, extra_args=None):
         ''' Generate URL for get_object / put_object '''
 
-        bucket_location = boto3.client('s3').get_bucket_location(
+        region_name = self.get_option('region') or 'us-east-1'
+
+        bucket_location = self._get_boto_client('s3', region_name=region_name, profile_name=profile_name).get_bucket_location(
             Bucket=(self.get_option('bucket_name')),
         )
-        region_name = bucket_location['LocationConstraint']
+        bucket_region_name = bucket_location['LocationConstraint']
 
-        client = self._get_boto_client('s3', region_name=region_name, profile_name=profile_name)
+        client = self._get_boto_client('s3', region_name=bucket_region_name, profile_name=profile_name)
         params = {'Bucket': bucket_name, 'Key': out_path}
         if extra_args is not None:
             params.update(extra_args)
