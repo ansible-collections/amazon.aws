@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible.module_utils.basic import to_text
-from ansible.module_utils.six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 from .botocore import boto3_conn
 

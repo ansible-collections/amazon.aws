@@ -28,7 +28,7 @@ def generate_random_string(size, include_digits=True):
     return ''.join(random.choice(buffer) for i in range(size))
 
 
-@pytest.mark.parametrize("parts", range(10))
+@pytest.mark.parametrize("parts", range(0, 10, 3))
 @pytest.mark.parametrize("version", [True, False])
 def test_s3_head_objects(parts, version):
 
@@ -68,7 +68,7 @@ def raise_botoclient_exception():
 
 
 @pytest.mark.parametrize("use_file", [False, True])
-@pytest.mark.parametrize("parts", range(10))
+@pytest.mark.parametrize("parts", range(0, 10, 3))
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.md5")
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.s3_head_objects")
 def test_calculate_checksum(m_s3_head_objects, m_s3_md5, use_file, parts, tmp_path):
@@ -370,14 +370,7 @@ def test_parse_default_endpoint(m_config, mode, encryption_mode, dualstack, sig_
     assert result == expected
 
 
-@pytest.mark.parametrize(
-    "ceph,isfakes3",
-    [
-        (True, False),
-        (False, True),
-        (False, False),
-    ]
-)
+@pytest.mark.parametrize("scenario", ["ceph", "fakes3", "default"])
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_default_endpoint')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.parse_fakes3_endpoint')
 @patch('ansible_collections.amazon.aws.plugins.module_utils.s3.is_fakes3')
@@ -386,8 +379,7 @@ def test_s3_conn_params(m_parse_ceph_endpoint,
                         m_is_fakes3,
                         m_parse_fakes3_endpoint,
                         m_parse_default_endpoint,
-                        ceph,
-                        isfakes3):
+                        scenario):
 
     url = "https://my-bucket.s3.us-west-2.amazonaws.com"
     region = "us-east-1"
@@ -398,6 +390,9 @@ def test_s3_conn_params(m_parse_ceph_endpoint,
     sig_4 = False
 
     endpoint = {"endpoint": url, "config": {"s3": True, "signature": "s123"}}
+
+    ceph = bool(scenario == "ceph")
+    isfakes3 = bool(scenario == "fakes3")
 
     m_is_fakes3.return_value = isfakes3
     if ceph:
