@@ -21,7 +21,7 @@ options:
   device_id:
     description:
       - The id of the device for the EIP. Can be an EC2 Instance id or Elastic Network Interface (ENI) id.
-      - The I(instance_id) alias has been deprecated and will be removed after 2022-12-01.
+      - The I(instance_id) alias has been deprecated and will be removed in release 6.0.0.
     required: false
     aliases: [ instance_id ]
     type: str
@@ -527,7 +527,7 @@ def main():
     argument_spec = dict(
         device_id=dict(required=False, aliases=['instance_id'],
                        deprecated_aliases=[dict(name='instance_id',
-                                           date='2022-12-01',
+                                           version='6.0.0',
                                            collection_name='amazon.aws')]),
         public_ip=dict(required=False, aliases=['ip']),
         state=dict(required=False, default='present',

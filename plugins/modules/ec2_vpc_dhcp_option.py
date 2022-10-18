@@ -472,7 +472,7 @@ def main():
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     module.deprecate("The 'new_config' return key is deprecated and will be replaced by 'dhcp_config'. Both values are returned for now.",
-                     date='2022-12-01', collection_name='amazon.aws')
+                     version='6.0.0', collection_name='amazon.aws')
     if state == 'absent':
         if not dhcp_options_id:
             # Look up the option id first by matching the supplied options

@@ -19,7 +19,7 @@ options:
       - I(query=endpoints) returns information about AWS VPC endpoints.
       - Retrieving information about services using I(query=services) has been
         deprecated in favour of the M(amazon.aws.ec2_vpc_endpoint_service_info) module.
-      - The I(query) option has been deprecated and will be removed after 2022-12-01.
+      - The I(query) option has been deprecated and will be removed in release 6.0.0.
     required: False
     choices:
       - services
@@ -269,17 +269,17 @@ def main():
     query = module.params.get('query')
     if query == 'endpoints':
         module.deprecate('The query option has been deprecated and'
-                         ' will be removed after 2022-12-01.  Searching for'
+                         ' will be removed in release 6.0.0.  Searching for'
                          ' `endpoints` is now the default and after'
-                         ' 2022-12-01 this module will only support fetching'
+                         ' release 6.0.0 this module will only support fetching'
                          ' endpoints.',
-                         date='2022-12-01', collection_name='amazon.aws')
+                         version='6.0.0', collection_name='amazon.aws')
     elif query == 'services':
         module.deprecate('Support for fetching service information with this '
-                         'module has been deprecated and will be removed after'
-                         ' 2022-12-01.  '
+                         'module has been deprecated and will be removed in '
+                         'release 6.0.0.  '
                          'Please use the ec2_vpc_endpoint_service_info module '
-                         'instead.', date='2022-12-01',
+                         'instead.', version='6.0.0',
                          collection_name='amazon.aws')
     else:
         query = 'endpoints'
