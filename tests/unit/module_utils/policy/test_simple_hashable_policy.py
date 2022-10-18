@@ -7,7 +7,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _hashable_policy
-from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 
 
 def test_hashable_policy_none():

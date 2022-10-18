@@ -466,7 +466,7 @@ def describe_s3_object_acl(connection, bucket_name, object_name):
 
     if len(object_acl_info) != 0:
         # Remove ResponseMetadata from object_acl_info, convert to snake_case
-        del(object_acl_info['ResponseMetadata'])
+        del object_acl_info['ResponseMetadata']
         object_acl_info = camel_dict_to_snake_dict(object_acl_info)
 
     return object_acl_info
@@ -487,7 +487,7 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_name):
 
     if len(object_attributes_info) != 0 and 'msg' not in object_attributes_info.keys():
         # Remove ResponseMetadata from object_attributes_info, convert to snake_case
-        del(object_attributes_info['ResponseMetadata'])
+        del object_attributes_info['ResponseMetadata']
         object_attributes_info = camel_dict_to_snake_dict(object_attributes_info)
 
     return object_attributes_info
@@ -507,7 +507,7 @@ def describe_s3_object_legal_hold(connection, bucket_name, object_name):
 
     if len(object_legal_hold_info) != 0:
         # Remove ResponseMetadata from object_legal_hold_info, convert to snake_case
-        del(object_legal_hold_info['ResponseMetadata'])
+        del object_legal_hold_info['ResponseMetadata']
         object_legal_hold_info = camel_dict_to_snake_dict(object_legal_hold_info)
 
     return object_legal_hold_info
@@ -526,7 +526,7 @@ def describe_s3_object_lock_configuration(connection, bucket_name):
 
     if len(object_legal_lock_configuration_info) != 0:
         # Remove ResponseMetadata from object_legal_lock_configuration_info, convert to snake_case
-        del(object_legal_lock_configuration_info['ResponseMetadata'])
+        del object_legal_lock_configuration_info['ResponseMetadata']
         object_legal_lock_configuration_info = camel_dict_to_snake_dict(object_legal_lock_configuration_info)
 
     return object_legal_lock_configuration_info
@@ -546,7 +546,7 @@ def describe_s3_object_retention(connection, bucket_name, object_name):
 
     if len(object_retention_info) != 0:
         # Remove ResponseMetadata from object_retention_info, convert to snake_case
-        del(object_retention_info['ResponseMetadata'])
+        del object_retention_info['ResponseMetadata']
         object_retention_info = camel_dict_to_snake_dict(object_retention_info)
 
     return object_retention_info
@@ -566,7 +566,7 @@ def describe_s3_object_tagging(connection, bucket_name, object_name):
 
     if len(object_tagging_info) != 0:
         # Remove ResponseMetadata from object_tagging_info, convert to snake_case
-        del(object_tagging_info['ResponseMetadata'])
+        del object_tagging_info['ResponseMetadata']
         object_tagging_info = boto3_tag_list_to_ansible_dict(object_tagging_info['TagSet'])
 
     return object_tagging_info
@@ -622,7 +622,7 @@ def get_object(connection, bucket_name, object_name):
 
     if len(object_info) != 0:
         # Remove ResponseMetadata from object_info, convert to snake_case
-        del(object_info['ResponseMetadata'])
+        del object_info['ResponseMetadata']
         object_info = camel_dict_to_snake_dict(object_info)
 
     result['object_data'] = object_info

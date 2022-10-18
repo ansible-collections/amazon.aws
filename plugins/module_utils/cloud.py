@@ -32,7 +32,6 @@ __metaclass__ = type
 import time
 import functools
 import random
-import ansible.module_utils.common.warnings as ansible_warnings
 
 
 class BackoffIterator:

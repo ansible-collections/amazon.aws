@@ -79,8 +79,8 @@ def test_determine_iam_role_missing(params_object, ec2_instance):
     iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
     ec2_instance_module.module.client.return_value = iam_client
 
-    with pytest.raises(FailJsonException) as exception:
-        arn = ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
+    with pytest.raises(FailJsonException):
+        ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
 
     assert ec2_instance_module.module.fail_json_aws.call_count == 1
     assert ec2_instance_module.module.fail_json_aws.call_args.args[0] is missing_exception
@@ -93,8 +93,8 @@ def test_determine_iam_role_missing(params_object, ec2_instance):
     iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
     ec2_instance_module.module.client.return_value = iam_client
 
-    with pytest.raises(FailJsonException) as exception:
-        arn = ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
+    with pytest.raises(FailJsonException):
+        ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
 
     assert ec2_instance_module.module.fail_json_aws.call_count == 1
     assert ec2_instance_module.module.fail_json_aws.call_args.args[0] is missing_exception

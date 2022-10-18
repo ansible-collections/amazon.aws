@@ -284,7 +284,7 @@ def copy_snapshot(params):
         method_params = get_parameters(params, 'copy_db_cluster_snapshot')
         if method_params.get('Tags'):
             method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-        result, changed = call_method(client, module, 'copy_db_cluster_snapshot', method_params)
+        _result, changed = call_method(client, module, 'copy_db_cluster_snapshot', method_params)
 
     return changed
 
@@ -316,7 +316,7 @@ def create_snapshot(params):
     method_params = get_parameters(params, 'create_db_cluster_snapshot')
     if method_params.get('Tags'):
         method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-    snapshot, changed = call_method(client, module, 'create_db_cluster_snapshot', method_params)
+    _snapshot, changed = call_method(client, module, 'create_db_cluster_snapshot', method_params)
 
     return changed
 

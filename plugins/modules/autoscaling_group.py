@@ -1108,9 +1108,7 @@ def create_autoscaling_group(connection):
     load_balancers = module.params['load_balancers']
     target_group_arns = module.params['target_group_arns']
     availability_zones = module.params['availability_zones']
-    launch_config_name = module.params.get('launch_config_name')
     launch_template = module.params.get('launch_template')
-    mixed_instances_policy = module.params.get('mixed_instances_policy')
     min_size = module.params['min_size']
     max_size = module.params['max_size']
     max_instance_lifetime = module.params.get('max_instance_lifetime')
@@ -1360,7 +1358,7 @@ def create_autoscaling_group(connection):
         else:
             try:
                 ag['LaunchConfigurationName'] = as_group['LaunchConfigurationName']
-            except Exception:
+            except KeyError:
                 launch_template = as_group['LaunchTemplate']
                 # Prefer LaunchTemplateId over Name as it's more specific.  Only one can be used for update_asg.
                 ag['LaunchTemplate'] = {"LaunchTemplateId": launch_template['LaunchTemplateId'], "Version": launch_template['Version']}
