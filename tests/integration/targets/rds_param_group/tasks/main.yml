@@ -124,7 +124,7 @@
 
     # ============================================================
 
-  - name: test modifying rds parameter group engine/family
+  - name: test modifying rds parameter group engine/family (warning displayed)
     rds_param_group:
       name: '{{ rds_param_group.name }}'
       engine: '{{ rds_param_group.engine_to_modify_to }}'
@@ -134,13 +134,12 @@
         Environment: test
         Test: 123
     register: result
-    ignore_errors: true
 
   - name: verify that modifying rds param group engine/family failed
     assert:
       that:
       - not result.changed
-      - result.failed
+      - not result.failed
 
     # ============================================================
   - name: test tagging existing group - CHECK_MODE

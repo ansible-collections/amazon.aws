@@ -35,7 +35,7 @@ options:
       - The type of database for this group.
       - Please use following command to get list of all supported db engines and their respective versions.
       - '# aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"'
-      - The DB parameter group family can't be changed when updating a DB parameter group.
+      - The DB parameter group family is immutable and can't be changed when updating a DB parameter group.
         See U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html)
       - Required for I(state=present).
     type: str
@@ -271,7 +271,7 @@ def ensure_present(module, connection):
         db_parameter_group_family = group['DBParameterGroupFamily']
 
         if module.params.get('engine') != db_parameter_group_family:
-            module.fail_json(msg="The DB parameter group family (engine) can't be changed when updating a DB parameter group.")
+            module.warn("The DB parameter group family (engine) can't be changed when updating a DB parameter group.")
 
         if tags:
             changed = update_tags(module, connection, group, tags)
