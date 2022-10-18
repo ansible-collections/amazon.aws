@@ -550,11 +550,9 @@ def main():
     ip_addr_in = module.params.get('ip_address')
     port_in = module.params.get('port')
     type_in = module.params.get('type')
-    resource_path_in = module.params.get('resource_path')
     fqdn_in = module.params.get('fqdn')
     string_match_in = module.params.get('string_match')
     request_interval_in = module.params.get('request_interval')
-    failure_threshold_in = module.params.get('failure_threshold')
     health_check_name = module.params.get('health_check_name')
     tags = module.params.get('tags')
 

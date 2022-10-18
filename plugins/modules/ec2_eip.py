@@ -282,11 +282,11 @@ def disassociate_ip_and_device(ec2, module, address, device_id, check_mode, is_i
     if not check_mode:
         try:
             if address['Domain'] == 'vpc':
-                res = ec2.disassociate_address(
+                ec2.disassociate_address(
                     AssociationId=address['AssociationId'], aws_retry=True
                 )
             else:
-                res = ec2.disassociate_address(
+                ec2.disassociate_address(
                     PublicIp=address['PublicIp'], aws_retry=True
                 )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -390,7 +390,7 @@ def release_address(ec2, module, address, check_mode):
     # If we're in check mode, nothing else to do
     if not check_mode:
         try:
-            result = ec2.release_address(AllocationId=address['AllocationId'], aws_retry=True)
+            ec2.release_address(AllocationId=address['AllocationId'], aws_retry=True)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Couldn't release Elastic IP address")
 

@@ -363,7 +363,7 @@ def get_key_policy_with_backoff(connection, key_id, policy_name):
 def get_enable_key_rotation_with_backoff(connection, key_id):
     try:
         current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-    except is_boto3_error_code(['AccessDeniedException', 'UnsupportedOperationException']) as e:
+    except is_boto3_error_code(['AccessDeniedException', 'UnsupportedOperationException']):
         return None
 
     return current_rotation_status.get('KeyRotationEnabled')

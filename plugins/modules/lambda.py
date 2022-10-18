@@ -401,48 +401,13 @@ try:
 except ImportError:
     pass  # protected by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-
-
-def get_account_info(module):
-    """return the account information (account id and partition) we are currently working on
-
-    get_account_info tries too find out the account that we are working
-    on.  It's not guaranteed that this will be easy so we try in
-    several different ways.  Giving either IAM or STS privileges to
-    the account should be enough to permit this.
-    """
-    account_id = None
-    partition = None
-    try:
-        sts_client = module.client('sts', retry_decorator=AWSRetry.jittered_backoff())
-        caller_id = sts_client.get_caller_identity(aws_retry=True)
-        account_id = caller_id.get('Account')
-        partition = caller_id.get('Arn').split(':')[1]
-    except (BotoCoreError, ClientError):
-        try:
-            iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
-            arn, partition, service, reg, account_id, resource = iam_client.get_user(aws_retry=True)['User']['Arn'].split(':')
-        except is_boto3_error_code('AccessDenied') as e:
-            try:
-                except_msg = to_native(e.message)
-            except AttributeError:
-                except_msg = to_native(e)
-            m = re.search(r"arn:(aws(-([a-z\-]+))?):iam::([0-9]{12,32}):\w+/", except_msg)
-            if m is None:
-                module.fail_json_aws(e, msg="getting account information")
-            account_id = m.group(4)
-            partition = m.group(1)
-        except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="getting account information")
-
-    return account_id, partition
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 
 
 def get_current_function(connection, function_name, qualifier=None):
@@ -577,7 +542,6 @@ def _code_args(module, current_config):
     s3_object_version = module.params.get('s3_object_version')
     zip_file = module.params.get('zip_file')
     architectures = module.params.get('architecture')
-    checksum_match = False
 
     code_kwargs = {}
 
@@ -665,10 +629,6 @@ def main():
     runtime = module.params.get('runtime')
     role = module.params.get('role')
     handler = module.params.get('handler')
-    s3_bucket = module.params.get('s3_bucket')
-    s3_key = module.params.get('s3_key')
-    s3_object_version = module.params.get('s3_object_version')
-    zip_file = module.params.get('zip_file')
     description = module.params.get('description')
     timeout = module.params.get('timeout')
     memory_size = module.params.get('memory_size')
@@ -700,7 +660,7 @@ def main():
             role_arn = role
         else:
             # get account ID and assemble ARN
-            account_id, partition = get_account_info(module)
+            account_id, partition = get_aws_account_info(module)
             role_arn = 'arn:{0}:iam::{1}:role/{2}'.format(partition, account_id, role)
 
         # create list of layer version arn

@@ -909,7 +909,7 @@ def get_rds_method_attribute_name(instance, state, creation_source, read_replica
 
 def get_instance(client, module, db_instance_id):
     try:
-        for i in range(3):
+        for _i in range(3):
             try:
                 instance = client.describe_db_instances(DBInstanceIdentifier=db_instance_id)['DBInstances'][0]
                 instance['Tags'] = get_tags(client, module, instance['DBInstanceArn'])
@@ -936,7 +936,7 @@ def get_final_snapshot(client, module, snapshot_identifier):
         if len(snapshots.get('DBSnapshots', [])) == 1:
             return snapshots['DBSnapshots'][0]
         return {}
-    except is_boto3_error_code('DBSnapshotNotFound') as e:  # May not be using wait: True
+    except is_boto3_error_code('DBSnapshotNotFound'):  # May not be using wait: True
         return {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to retrieve information about the final snapshot')
@@ -1128,10 +1128,6 @@ def validate_options(client, module, instance):
     read_replica = module.params['read_replica']
     creation_source = module.params['creation_source']
     source_instance = module.params['source_db_instance_identifier']
-    if module.params['source_region'] is not None:
-        same_region = bool(module.params['source_region'] == module.params['region'])
-    else:
-        same_region = True
 
     if modified_id:
         modified_instance = get_instance(client, module, modified_id)
@@ -1176,8 +1172,8 @@ def promote_replication_instance(client, module, instance, read_replica):
         # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/describe-db-instances.html
         if bool(instance.get('StatusInfos')):
             try:
-                result, changed = call_method(client, module, method_name='promote_read_replica',
-                                              parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
+                _result, changed = call_method(client, module, method_name='promote_read_replica',
+                                               parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
             except is_boto3_error_message('DB Instance is not a read replica'):
                 pass
     return changed
@@ -1232,7 +1228,7 @@ def reboot_running_db_instance(client, module, instance):
         call_method(client, module, 'start_db_instance', parameters)
     if module.params.get('force_failover') is not None:
         parameters['ForceFailover'] = module.params['force_failover']
-    results, changed = call_method(client, module, 'reboot_db_instance', parameters)
+    _results, changed = call_method(client, module, 'reboot_db_instance', parameters)
     return changed
 
 
@@ -1242,9 +1238,9 @@ def start_or_stop_instance(client, module, instance, state):
     if state == 'stopped' and instance['DBInstanceStatus'] not in ['stopping', 'stopped']:
         if module.params['db_snapshot_identifier']:
             parameters['DBSnapshotIdentifier'] = module.params['db_snapshot_identifier']
-        result, changed = call_method(client, module, 'stop_db_instance', parameters)
+        _result, changed = call_method(client, module, 'stop_db_instance', parameters)
     elif state == 'started' and instance['DBInstanceStatus'] not in ['available', 'starting', 'restarting']:
-        result, changed = call_method(client, module, 'start_db_instance', parameters)
+        _result, changed = call_method(client, module, 'start_db_instance', parameters)
     return changed
 
 
@@ -1393,7 +1389,7 @@ def main():
             # Exit on check_mode when parameters to modify
             if module.check_mode:
                 module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures']))
-            result, changed = call_method(client, module, method_name, parameters_to_modify)
+            _result, changed = call_method(client, module, method_name, parameters_to_modify)
 
         instance_id = get_final_identifier(method_name, module)
 
@@ -1409,7 +1405,7 @@ def main():
         if changed:
             instance = get_instance(client, module, instance_id)
             if state != 'absent' and (instance or not module.check_mode):
-                for attempt_to_wait in range(0, 10):
+                for _wait_attempt in range(0, 10):
                     instance = get_instance(client, module, instance_id)
                     if instance:
                         break

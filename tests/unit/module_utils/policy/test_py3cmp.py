@@ -37,7 +37,7 @@ def test_py3cmp_mixed():
     assert _py3cmp("a", ("b",)) == -1
 
     # intended for use by _hashable_policy, so expects either a string or a tuple
-    with pytest.raises(TypeError) as context:
+    with pytest.raises(TypeError):
         _py3cmp((1,), 1)
-    with pytest.raises(TypeError) as context:
+    with pytest.raises(TypeError):
         _py3cmp(1, (1,))
