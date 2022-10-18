@@ -399,6 +399,7 @@ from ssl import SSLError
 import base64
 import time
 
+
 try:
     import botocore
 except ImportError:
@@ -610,6 +611,8 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except is_boto3_error_code('AccessControlListNotSupported'):
+        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
 
@@ -699,6 +702,8 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                 s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
         except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
             module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
+        except is_boto3_error_code('AccessControlListNotSupported'):
+            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Unable to set object ACL")
 
@@ -834,6 +839,8 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), tags=tags, changed=True)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except is_boto3_error_code('AccessControlListNotSupported'):
+        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
 
@@ -1091,6 +1098,7 @@ def main():
     # check if bucket exists, if yes, check if ACL is disabled
     acl_disabled = False
     exists = bucket_check(module, s3, bucket)
+
     if exists:
         try:
             ownership_controls = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']
@@ -1227,15 +1235,17 @@ def main():
                 if key_check(module, s3, bucket, dirobj):
                     module.exit_json(msg="Bucket %s and key %s already exists." % (bucket, obj), changed=False)
                 else:
-                    # setting valid object acls for the create_dirkey function
-                    module.params['permission'] = object_acl
+                    if not acl_disabled:
+                        # setting valid object acls for the create_dirkey function
+                        module.params['permission'] = object_acl
                     create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
             else:
                 # only use valid bucket acls for the create_bucket function
                 module.params['permission'] = bucket_acl
                 create_bucket(module, s3, bucket, location)
-                # only use valid object acls for the create_dirkey function
-                module.params['permission'] = object_acl
+                if not acl_disabled:
+                    # only use valid object acls for the create_dirkey function
+                    module.params['permission'] = object_acl
                 create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
 
     # Support for grabbing the time-expired URL for an object in S3/Walrus.
@@ -1275,8 +1285,9 @@ def main():
             # only use valid bucket acls for create_bucket function
             module.params['permission'] = bucket_acl
             create_bucket(module, s3, bucket, location)
-        # only use valid object acls for the copy operation
-        module.params['permission'] = object_acl
+        if not acl_disabled:
+            # only use valid object acls for the copy operation
+            module.params['permission'] = object_acl
         copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag)
 
     module.exit_json(failed=False)

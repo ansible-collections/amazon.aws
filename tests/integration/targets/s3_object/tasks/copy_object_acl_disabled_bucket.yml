@@ -85,17 +85,39 @@
           - upload_file_result.msg != "PUT operation complete"
           - '"s3:PutObject" not in upload_file_result.resource_actions'
 
+    - name: Create an object in the bucket with permissions (permission not set)
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        object: "/test_directory"
+        permission: bucket-owner-full-control
+        mode: create
+      register: permission_result
+
+    - assert:
+        that:
+          - permission_result is changed
+          - upload_file_result is not failed
+          - '"PutObjectAcl operation : The bucket does not allow ACLs." in permission_result.warnings'
+          - '"Virtual directory test_directory/ created" in permission_result.msg'
+
   always:
 
     - name: Delete the file in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
-        object: "acl_disabled_upload_test.txt"
+        object: "{{ item }}"
         mode: delobj
       retries: 3
       delay: 3
       ignore_errors: true
+      loop:
+        - "acl_disabled_upload_test.txt"
+        - "test_directory/"
+
+    - name: List keys simple
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        mode: list
 
     - name: Delete bucket created in this test
       s3_bucket:
