@@ -240,6 +240,9 @@ notes:
   - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
     I(s3_url) remains as an alias for I(endpoint_url).
   - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
+  - Support for the C(S3_URL) environment variable has been
+    deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
+    or the C(AWS_URL) environment variable.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -1065,6 +1068,13 @@ def main():
     # allow eucarc environment variables to be used if ansible vars aren't set
     if not endpoint_url and 'S3_URL' in os.environ:
         endpoint_url = os.environ['S3_URL']
+        module.deprecate(
+            "Support for the 'S3_URL' environment variable has been "
+            "deprecated.  We recommend using the 'endpoint_url' module "
+            "parameter.  Alternatively, the 'AWS_URL' environment variable can "
+            "be used instead.",
+            date='2024-12-01', collection_name='amazon.aws',
+        )
 
     if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
         module.fail_json(msg='dualstack only applies to AWS S3')
