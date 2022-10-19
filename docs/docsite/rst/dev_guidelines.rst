@@ -1075,7 +1075,7 @@ and a low amount of cross dependencies with the rest of the code (low coupling):
   (the contract) and you reduce potential side-effect.
 
 Unit-tests guidelines
---------------------
+---------------------
 
 Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknowledge that writing unit-tests may
 be challenging and we also accept contribution with no unit-test. Generally speaking, unit-tests are recommended and likely to speed up the PR reviews.
