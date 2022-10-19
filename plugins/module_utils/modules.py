@@ -54,6 +54,7 @@ import logging
 import os
 import re
 import traceback
+from types import MappingProxyType
 
 try:
     from cStringIO import StringIO
@@ -163,7 +164,7 @@ class AnsibleAWSModule:
 
     @property
     def params(self):
-        return self._module.params
+        return MappingProxyType(self._module.params)
 
     def _get_resource_action_list(self):
         actions = []
