@@ -1,0 +1,205 @@
+- name: rds_instance / complex integration tests
+  collections:
+  - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  #TODO: test availability_zone and multi_az
+  - name: Ensure the resource doesn't exist
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+    ignore_errors: yes
+
+  - name: Create an enhanced monitoring role
+    iam_role:
+      assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json')\
+        \ }}"
+      name: '{{ instance_id }}-role'
+      state: present
+      managed_policy: arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+    register: enhanced_monitoring_role
+
+  - name: Create a mariadb instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ io1_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      iops: '{{ iops }}'
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - result.db_instance_identifier == '{{ instance_id }}'
+
+  - name: Add IAM roles to mariab (should fail - iam roles not supported for mariadb)
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ io1_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      iops: '{{ iops }}'
+      iam_roles:
+      - role_arn: my_role
+        feature_name: my_feature
+    register: result
+    ignore_errors: true
+
+  - assert:
+      that:
+      - result.failed
+      - '"is not valid for adding IAM roles" in result.msg'
+
+    # TODO: test modifying db_subnet_group_name, db_security_groups, db_parameter_group_name, option_group_name,
+    # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name, cloudwatch_logs_export_configuration
+
+    # Test multiple modifications including enabling enhanced monitoring
+
+  - name: Modify several attributes - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      allocated_storage: '{{ io1_modified_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      db_instance_class: '{{ modified_db_instance_class }}'
+      backup_retention_period: 2
+      preferred_backup_window: 05:00-06:00
+      preferred_maintenance_window: '{{ preferred_maintenance_window }}'
+      auto_minor_version_upgrade: false
+      monitoring_interval: '{{ monitoring_interval }}'
+      monitoring_role_arn: '{{ enhanced_monitoring_role.arn }}'
+      iops: '{{ iops }}'
+      port: 1150
+      max_allocated_storage: 150
+      apply_immediately: true
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - result.changed
+
+  - name: Modify several attributes
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      allocated_storage: '{{ io1_modified_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      db_instance_class: '{{ modified_db_instance_class }}'
+      backup_retention_period: 2
+      preferred_backup_window: 05:00-06:00
+      preferred_maintenance_window: '{{ preferred_maintenance_window }}'
+      auto_minor_version_upgrade: false
+      monitoring_interval: '{{ monitoring_interval }}'
+      monitoring_role_arn: '{{ enhanced_monitoring_role.arn }}'
+      iops: '{{ iops }}'
+      port: 1150
+      max_allocated_storage: 150
+      apply_immediately: true
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - '"allocated_storage" in result.pending_modified_values or result.allocated_storage
+        == io1_modified_allocated_storage'
+      - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage
+        == 150'
+      - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
+      - '"db_instance_class" in result.pending_modified_values or result.db_instance_class
+        == modified_db_instance_class'
+      - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval
+        == monitoring_interval'
+
+  - name: Idempotence modifying several pending attributes - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      allocated_storage: '{{ io1_modified_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      db_instance_class: '{{ modified_db_instance_class }}'
+      backup_retention_period: 2
+      preferred_backup_window: 05:00-06:00
+      preferred_maintenance_window: '{{ preferred_maintenance_window }}'
+      auto_minor_version_upgrade: false
+      monitoring_interval: '{{ monitoring_interval }}'
+      monitoring_role_arn: '{{ enhanced_monitoring_role.arn }}'
+      iops: '{{ iops }}'
+      port: 1150
+      max_allocated_storage: 150
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - not result.changed
+
+  - name: Idempotence modifying several pending attributes
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      allocated_storage: '{{ io1_modified_allocated_storage }}'
+      storage_type: '{{ storage_type }}'
+      db_instance_class: '{{ modified_db_instance_class }}'
+      backup_retention_period: 2
+      preferred_backup_window: 05:00-06:00
+      preferred_maintenance_window: '{{ preferred_maintenance_window }}'
+      auto_minor_version_upgrade: false
+      monitoring_interval: '{{ monitoring_interval }}'
+      monitoring_role_arn: '{{ enhanced_monitoring_role.arn }}'
+      iops: '{{ iops }}'
+      port: 1150
+      max_allocated_storage: 150
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+      - '"allocated_storage" in result.pending_modified_values or result.allocated_storage
+        == io1_modified_allocated_storage'
+      - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage
+        == 150'
+      - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
+      - '"db_instance_class" in result.pending_modified_values or result.db_instance_class
+        == modified_db_instance_class'
+
+  always:
+  - name: Delete the instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+      wait: false
+    ignore_errors: yes
+
+  - name: Remove enhanced monitoring role
+    iam_role:
+      assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json')\
+        \ }}"
+      name: '{{ instance_id }}-role'
+      state: absent
+    ignore_errors: yes

@@ -1,0 +1,6 @@
+# See: https://github.com/ansible-collections/amazon.aws/pull/1192
+disabled
+cloud/aws
+rds_instance_info
+time=15m
+rds_instance

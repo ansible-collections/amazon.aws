@@ -1,0 +1,131 @@
+- name: rds_instance / restore integration tests
+  collections:
+  - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+     # TODO: snapshot, s3
+
+  - name: Ensure the resource doesn't exist
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+    ignore_errors: yes
+
+  - name: Create a source DB instance
+    rds_instance:
+      id: '{{ instance_id }}-s'
+      state: present
+      engine: mysql
+      backup_retention_period: 1
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+    register: source_db
+
+  - assert:
+      that:
+      - source_db.changed
+      - source_db.db_instance_identifier == '{{ instance_id }}-s'
+
+  - name: Create a point in time DB instance - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      source_db_instance_identifier: '{{ instance_id }}-s'
+      creation_source: instance
+      engine: mysql
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      use_latest_restorable_time: true
+    register: result
+    check_mode: yes
+
+  - assert:
+      that: result.changed
+
+  - name: Create a point in time DB instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      source_db_instance_identifier: '{{ instance_id }}-s'
+      creation_source: instance
+      engine: mysql
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      use_latest_restorable_time: true
+    register: result
+
+  - assert:
+      that: result.changed
+
+  - name: Create a point in time DB instance (idempotence) - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      source_db_instance_identifier: '{{ instance_id }}-s'
+      creation_source: instance
+      engine: mysql
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      restore_time: '{{ result.latest_restorable_time }}'
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - not result.changed
+
+  - name: Create a point in time DB instance (idempotence)
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      source_db_instance_identifier: '{{ instance_id }}-s'
+      creation_source: instance
+      engine: mysql
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      restore_time: '{{ result.latest_restorable_time }}'
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+      - result.db_instance_identifier == '{{ instance_id }}'
+
+  always:
+
+  - name: Remove the DB instance
+    rds_instance:
+      id: '{{ instance_id }}-s'
+      state: absent
+      skip_final_snapshot: true
+      wait: false
+    ignore_errors: yes
+
+  - name: Remove the point in time restored DB
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+      wait: false
+    ignore_errors: yes
