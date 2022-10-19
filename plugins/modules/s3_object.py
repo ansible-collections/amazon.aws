@@ -405,15 +405,13 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import to_text
 from ansible.module_utils.basic import to_native
-from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_connection
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
@@ -845,48 +843,6 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
 
 
-def is_fakes3(endpoint_url):
-    """ Return True if endpoint_url has scheme fakes3:// """
-    if endpoint_url is not None:
-        return urlparse(endpoint_url).scheme in ('fakes3', 'fakes3s')
-    else:
-        return False
-
-
-def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
-    if ceph:  # TODO - test this
-        ceph = urlparse(endpoint_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https',
-                      region=location, endpoint=endpoint_url, **aws_connect_kwargs)
-    elif is_fakes3(endpoint_url):
-        fakes3 = urlparse(endpoint_url)
-        port = fakes3.port
-        if fakes3.scheme == 'fakes3s':
-            protocol = "https"
-            if port is None:
-                port = 443
-        else:
-            protocol = "http"
-            if port is None:
-                port = 80
-        params = dict(module=module, conn_type='client', resource='s3', region=location,
-                      endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
-                      use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
-    else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
-        if module.params['mode'] == 'put' and module.params['encryption_mode'] == 'aws:kms':
-            params['config'] = botocore.client.Config(signature_version='s3v4')
-        elif module.params['mode'] in ('get', 'getstr', 'geturl') and sig_4:
-            params['config'] = botocore.client.Config(signature_version='s3v4')
-        if module.params['dualstack']:
-            dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
-            if 'config' in params:
-                params['config'] = params['config'].merge(dualconf)
-            else:
-                params['config'] = dualconf
-    return boto3_conn(**params)
-
-
 def get_current_object_tags_dict(s3, bucket, obj, version=None):
     try:
         if version:
@@ -1040,7 +996,9 @@ def main():
     bucket_canned_acl = ["private", "public-read", "public-read-write", "authenticated-read"]
 
     if module.params.get('validate_bucket_name'):
-        validate_bucket_name(module, bucket)
+        err = validate_bucket_name(bucket)
+        if err:
+            module.fail_json(msg=err)
 
     if overwrite not in ['always', 'never', 'different', 'latest']:
         if module.boolean(overwrite):
