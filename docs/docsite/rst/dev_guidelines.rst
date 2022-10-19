@@ -1056,7 +1056,7 @@ Why do we need unit-tests when we've got functional tests
 ---------------------------------------------------------
 
 Unit-tests are much faster and more suitable to test corner cases. They also don't depend on a third party service
-and thus, a failure is less likley to be a false positive.
+and thus, a failure is less likely to be a false positive.
 
 
 How to keep my code simple?
