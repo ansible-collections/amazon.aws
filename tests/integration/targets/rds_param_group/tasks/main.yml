@@ -135,11 +135,13 @@
         Test: 123
     register: result
 
-  - name: verify that modifying rds param group engine/family failed
+  - name: verify that modifying rds param group engine/family displays warning
     assert:
       that:
       - not result.changed
       - not result.failed
+      - result.warnings is defined
+      - result.warnings | length > 0
 
     # ============================================================
   - name: test tagging existing group - CHECK_MODE
