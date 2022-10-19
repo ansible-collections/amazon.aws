@@ -1066,7 +1066,7 @@ Ideally, you should break up your code in tiny functions. Each function should h
 and a low amount of cross dependencies with the rest of the code (low coupling):
 
 - Don't pass a large data structure to a function if it only use one field. This clarifies the inputs of your
-  function (the contract) and also reduce the risk of an unexpected transformation of the data structure
+  function (the contract) and also reduces the risk of an unexpected transformation of the data structure
   from within the function.
 - The boto client object is complex and can be source of unwanted side-effect. It's better to isolate the calls
   in dedicated functions. These functions will have their own unit-tests.
@@ -1074,7 +1074,7 @@ and a low amount of cross dependencies with the rest of the code (low coupling):
   Pass the parameter directly to your function. By doing so, you're explicit about the function's inputs
   (the contract) and you reduce potential side-effect.
 
-Unit-tests guidlines
+Unit-tests guidelines
 --------------------
 
 Ideally, all the ``module_utils`` should be covered by unit-tests. However we acknowledge that writing unit-tests may
