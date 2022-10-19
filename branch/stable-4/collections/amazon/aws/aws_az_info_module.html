@@ -217,8 +217,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -242,7 +242,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <p>Filter names and values are case sensitive.</p>
 <p>You can use underscores instead of dashes (-) in the filter keys.</p>
 <p>Filter keys with underscores will take precedence in case of conflict.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">{}</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -285,8 +285,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -334,7 +334,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-cell"><p>Availability zones that match the provided filters. Each element consists of a dict with all the information related to that available zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“group_name”: “us-east-1”, “messages”: [], “network_border_group”: “us-east-1”, “opt_in_status”: “opt-in-not-required”, “region_name”: “us-east-1”, “state”: “available”, “zone_id”: “use1-az6”, “zone_name”: “us-east-1a”, “zone_type”: “availability-zone”}, {“group_name”: “us-east-1”, “messages”: [], “network_border_group”: “us-east-1”, “opt_in_status”: “opt-in-not-required”, “region_name”: “us-east-1”, “state”: “available”, “zone_id”: “use1-az1”, “zone_name”: “us-east-1b”, “zone_type”: “availability-zone”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;group_name&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;messages&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;network_border_group&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;opt_in_status&quot;:</span> <span class="pre">&quot;opt-in-not-required&quot;,</span> <span class="pre">&quot;region_name&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;available&quot;,</span> <span class="pre">&quot;zone_id&quot;:</span> <span class="pre">&quot;use1-az6&quot;,</span> <span class="pre">&quot;zone_name&quot;:</span> <span class="pre">&quot;us-east-1a&quot;,</span> <span class="pre">&quot;zone_type&quot;:</span> <span class="pre">&quot;availability-zone&quot;},</span> <span class="pre">{&quot;group_name&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;messages&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;network_border_group&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;opt_in_status&quot;:</span> <span class="pre">&quot;opt-in-not-required&quot;,</span> <span class="pre">&quot;region_name&quot;:</span> <span class="pre">&quot;us-east-1&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;available&quot;,</span> <span class="pre">&quot;zone_id&quot;:</span> <span class="pre">&quot;use1-az1&quot;,</span> <span class="pre">&quot;zone_name&quot;:</span> <span class="pre">&quot;us-east-1b&quot;,</span> <span class="pre">&quot;zone_type&quot;:</span> <span class="pre">&quot;availability-zone&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -344,7 +344,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the associated group.</p>
 <p>For availability zones, this will be the same as <em>region_name</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-east-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -353,7 +353,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of messages about the availability zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“message”: “message_one”}, {“message”: “message_two”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;message&quot;:</span> <span class="pre">&quot;message_one&quot;},</span> <span class="pre">{&quot;message&quot;:</span> <span class="pre">&quot;message_two&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -362,7 +362,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The message about the availability zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “msg”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;msg&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -371,7 +371,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the network border group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-east-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -381,7 +381,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The opt-in status.</p>
 <p>The value is always <code class="docutils literal notranslate"><span class="pre">opt-in-not-required</span></code> for availability zones.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “opt-in-not-required”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;opt-in-not-required&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -390,7 +390,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the region.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-east-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -400,7 +400,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The state of the availability zone.</p>
 <p>The value is always <code class="docutils literal notranslate"><span class="pre">available</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “available”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -409,7 +409,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the availability zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “use1-az5”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;use1-az5&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -418,7 +418,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the availability zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-east-1e”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1e&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -427,7 +427,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-az-i
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of zone.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “availability-zone”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;availability-zone&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
