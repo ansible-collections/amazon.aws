@@ -203,6 +203,14 @@
 </li>
 </ul>
 </li>
+<li><p><a class="reference internal" href="#unit-tests-for-aws-plugins" id="id48">Unit-tests for AWS plugins</a></p>
+<ul>
+<li><p><a class="reference internal" href="#why-do-we-need-unit-tests-when-we-ve-got-functional-tests" id="id49">Why do we need unit-tests when we’ve got functional tests</a></p></li>
+<li><p><a class="reference internal" href="#how-to-keep-my-code-simple" id="id50">How to keep my code simple?</a></p></li>
+<li><p><a class="reference internal" href="#unit-tests-guidelines" id="id51">Unit-tests guidelines</a></p></li>
+<li><p><a class="reference internal" href="#how-to-run-my-unit-tests" id="id52">How to run my unit-tests</a></p></li>
+</ul>
+</li>
 </ul>
 </div>
 <section id="requirements">
@@ -1078,6 +1086,53 @@ tests for a module within CI.  Where these apply you should add the keyword
 necessary policies should be available so that the tests can be manually run by
 someone performing a PR review or writing a patch.</p>
 </section>
+</section>
+</section>
+<section id="unit-tests-for-aws-plugins">
+<h2><a class="toc-backref" href="#id48">Unit-tests for AWS plugins</a><a class="headerlink" href="#unit-tests-for-aws-plugins" title="Permalink to this heading"></a></h2>
+<section id="why-do-we-need-unit-tests-when-we-ve-got-functional-tests">
+<h3><a class="toc-backref" href="#id49">Why do we need unit-tests when we’ve got functional tests</a><a class="headerlink" href="#why-do-we-need-unit-tests-when-we-ve-got-functional-tests" title="Permalink to this heading"></a></h3>
+<p>Unit-tests are much faster and more suitable to test corner cases. They also don’t depend on a third party service
+and thus, a failure is less likely to be a false positive.</p>
+</section>
+<section id="how-to-keep-my-code-simple">
+<h3><a class="toc-backref" href="#id50">How to keep my code simple?</a><a class="headerlink" href="#how-to-keep-my-code-simple" title="Permalink to this heading"></a></h3>
+<p>Ideally, you should break up your code in tiny functions. Each function should have a limited number of parameters
+and a low amount of cross dependencies with the rest of the code (low coupling):</p>
+<ul class="simple">
+<li><p>Don’t pass a large data structure to a function if it only uses one field. This clarifies the inputs of your
+function (the contract) and also reduces the risk of an unexpected transformation of the data structure
+from within the function.</p></li>
+<li><p>The boto client object is complex and can be source of unwanted side-effect. It’s better to isolate the calls
+in dedicated functions. These functions will have their own unit-tests.</p></li>
+<li><p>Don’t pass the <code class="docutils literal notranslate"><span class="pre">module</span></code> object when you only need the read a couple of parameters from <code class="docutils literal notranslate"><span class="pre">module.params</span></code>.
+Pass the parameter directly to your function. By doing so, you’re explicit about the function’s inputs
+(the contract) and you reduce potential side-effect.</p></li>
+</ul>
+</section>
+<section id="unit-tests-guidelines">
+<h3><a class="toc-backref" href="#id51">Unit-tests guidelines</a><a class="headerlink" href="#unit-tests-guidelines" title="Permalink to this heading"></a></h3>
+<p>Ideally, all the <code class="docutils literal notranslate"><span class="pre">module_utils</span></code> should be covered by unit-tests. However we acknowledge that writing unit-tests may
+be challenging and we also accept contribution with no unit-test. Generally speaking, unit-tests are recommended and likely to speed up the PR reviews.</p>
+<ul class="simple">
+<li><p>Our tests are run with <code class="docutils literal notranslate"><span class="pre">pytest</span></code> and we use the features it provides such as Fixtures, Parametrization.</p></li>
+<li><p>The use of <code class="docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> is discouraged for the sake of consistency and simplicity.</p></li>
+<li><p>Unit-tests should run fine without any network connection.</p></li>
+<li><p>It’s not necessary to mock all the boto3/botocore calls (<code class="docutils literal notranslate"><span class="pre">get_paginator()</span></code>, <code class="docutils literal notranslate"><span class="pre">paginate()</span></code>, etc). It’s often better to just set-up a function that wraps these calls and mock the result.</p></li>
+<li><p>Simplicity prevails. Tests should be short and cover a limited set of features.</p></li>
+</ul>
+<p>Pytest is well documented and you will find some example in its <a class="reference external" href="https://docs.pytest.org/en/latest/how-to/index.html">how-to guides</a></p>
+</section>
+<section id="how-to-run-my-unit-tests">
+<h3><a class="toc-backref" href="#id52">How to run my unit-tests</a><a class="headerlink" href="#how-to-run-my-unit-tests" title="Permalink to this heading"></a></h3>
+<p>In our CI, the testing is done by <code class="docutils literal notranslate"><span class="pre">ansible-test</span></code>. You can run the tests locally with the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ansible-test units --docker
+</pre></div>
+</div>
+<p>We also provide a <code class="docutils literal notranslate"><span class="pre">tox</span></code> configuration which allow you to run one specific test faster. In this example, we focus on the tests for the <code class="docutils literal notranslate"><span class="pre">s3_object</span></code> module:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -e py3 -- tests/unit/plugins/modules/test_s3_object.py
+</pre></div>
+</div>
 </section>
 </section>
 </section>
