@@ -283,10 +283,10 @@ options:
     type: dict
   instance_role:
     description:
-      - The ARN or name of an EC2-enabled instance role to be used. If a name is not provided in arn format
-        then the ListInstanceProfiles permission must also be granted.
-        U(https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html) If no full ARN is provided,
-        the role with a matching name will be used from the active AWS account.
+      - The ARN or name of an EC2-enabled IAM instance profile to be used.
+      - If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted.
+        U(https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html)
+      - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
   placement_group:
     description:
@@ -1333,28 +1333,31 @@ def build_run_instance_spec(params):
         MaxCount=1,
         MinCount=1,
     )
-    # network parameters
+    spec.update(**build_top_level_options(params))
+
     spec['NetworkInterfaces'] = build_network_spec(params)
     spec['BlockDeviceMappings'] = build_volume_spec(params)
-    spec.update(**build_top_level_options(params))
-    spec['TagSpecifications'] = build_instance_tags(params)
+
+    tag_spec = build_instance_tags(params)
+    if tag_spec is not None:
+        spec['TagSpecifications'] = tag_spec
 
     # IAM profile
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
 
-    if module.params.get('exact_count'):
-        spec['MaxCount'] = module.params.get('to_launch')
-        spec['MinCount'] = module.params.get('to_launch')
+    if params.get('exact_count'):
+        spec['MaxCount'] = params.get('to_launch')
+        spec['MinCount'] = params.get('to_launch')
 
-    if module.params.get('count'):
-        spec['MaxCount'] = module.params.get('count')
-        spec['MinCount'] = module.params.get('count')
+    if params.get('count'):
+        spec['MaxCount'] = params.get('count')
+        spec['MinCount'] = params.get('count')
 
-    if not module.params.get('launch_template'):
-        spec['InstanceType'] = params['instance_type'] if module.params.get('instance_type') else 't2.micro'
+    if not params.get('launch_template'):
+        spec['InstanceType'] = params['instance_type'] if params.get('instance_type') else 't2.micro'
 
-    if module.params.get('launch_template') and module.params.get('instance_type'):
+    if params.get('launch_template') and params.get('instance_type'):
         spec['InstanceType'] = params['instance_type']
 
     return spec

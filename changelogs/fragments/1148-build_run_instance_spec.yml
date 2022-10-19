@@ -1,0 +1,3 @@
+bugfixes:
+- ec2_instance - fixes ``Invalid type for parameter TagSpecifications, value None`` error when
+  tags aren't specified (https://github.com/ansible-collections/amazon.aws/issues/1148).
