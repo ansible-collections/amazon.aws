@@ -2,6 +2,7 @@ rds_param_group:
   name: '{{ resource_prefix}}rds-param-group'
   description: Test group for rds_param_group Ansible module
   engine: postgres9.6
+  engine_to_modify_to: postgres10
 
 rds_long_param_list:
   application_name: Test

@@ -123,6 +123,27 @@
       - result.tags["Test"] == '123'
 
     # ============================================================
+
+  - name: test modifying rds parameter group engine/family (warning displayed)
+    rds_param_group:
+      name: '{{ rds_param_group.name }}'
+      engine: '{{ rds_param_group.engine_to_modify_to }}'
+      description: '{{ rds_param_group.description }}'
+      state: present
+      tags:
+        Environment: test
+        Test: 123
+    register: result
+
+  - name: verify that modifying rds param group engine/family displays warning
+    assert:
+      that:
+      - not result.changed
+      - not result.failed
+      - result.warnings is defined
+      - result.warnings | length > 0
+
+    # ============================================================
   - name: test tagging existing group - CHECK_MODE
     rds_param_group:
       name: '{{ rds_param_group.name }}'
