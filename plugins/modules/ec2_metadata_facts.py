@@ -595,7 +595,7 @@ class Ec2Metadata(object):
         data = self.fix_invalid_varnames(data)
 
         instance_tags_keys = self._fetch(self.uri_instance_tags)
-        instance_tags_keys = instance_tags_keys.split('\n') if '\n' in instance_tags_keys else [instance_tags_keys]
+        instance_tags_keys = instance_tags_keys.split('\n')
         data[self._prefix % 'instance_tags_keys'] = instance_tags_keys
 
         # Maintain old key for backwards compatibility
