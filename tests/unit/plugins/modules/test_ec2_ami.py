@@ -5,6 +5,8 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 from unittest.mock import call
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.modules import ec2_ami
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_ami"
