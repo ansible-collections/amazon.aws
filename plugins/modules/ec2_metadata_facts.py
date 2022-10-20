@@ -457,7 +457,16 @@ class Ec2Metadata(object):
     ec2_userdata_uri = 'http://169.254.169.254/latest/user-data/'
     ec2_dynamicdata_uri = 'http://169.254.169.254/latest/dynamic/'
 
-    def __init__(self, module, ec2_metadata_token_uri=None, ec2_metadata_uri=None, ec2_metadata_instance_tags_uri= None, ec2_sshdata_uri=None, ec2_userdata_uri=None, ec2_dynamicdata_uri=None):
+    def __init__(
+        self,
+        module,
+        ec2_metadata_token_uri=None,
+        ec2_metadata_uri=None,
+        ec2_metadata_instance_tags_uri=None,
+        ec2_sshdata_uri=None,
+        ec2_userdata_uri=None,
+        ec2_dynamicdata_uri=None,
+    ):
         self.module = module
         self.uri_token = ec2_metadata_token_uri or self.ec2_metadata_token_uri
         self.uri_meta = ec2_metadata_uri or self.ec2_metadata_uri
