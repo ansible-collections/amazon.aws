@@ -248,6 +248,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-para
 <td><div class="ansible-option-cell"><p>The type of database for this group.</p>
 <p>Please use following command to get list of all supported db engines and their respective versions.</p>
 <p># aws rds describe-db-engine-versions –query “DBEngineVersions[].DBParameterGroupFamily”</p>
+<p>The DB parameter group family is immutable and can’t be changed when updating a DB parameter group. See <a class="reference external" href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html</a></p>
 <p>Required for <em>state=present</em>.</p>
 </div></td>
 </tr>
