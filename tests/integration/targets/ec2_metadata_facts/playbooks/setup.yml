@@ -115,8 +115,11 @@
       network:
         assign_public_ip: true
         delete_on_termination: true
+      metadata_options:
+          instance_metadata_tags: enabled
+      tags:
+        snake_case_key: a_snake_case_value
       wait: True
-
     register: ec2_instance
 
   - set_fact:
