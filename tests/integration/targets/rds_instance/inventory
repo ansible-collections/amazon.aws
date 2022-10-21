@@ -10,7 +10,9 @@ tagging
 replica
 upgrade
 snapshot
-aurora
+# Disabled until https://github.com/ansible-collections/amazon.aws/pull/941
+# is merged
+#aurora
 
 # TODO: uncomment after adding iam:CreatePolicy and iam:DeletePolicy
 # iam_roles
