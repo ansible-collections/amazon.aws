@@ -183,7 +183,7 @@ def handle_errors(module, exception, method_name, parameters):
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
     elif method_name == 'create_db_cluster' and error_code == 'InvalidParameterValue':
         accepted_engines = [
-            'aurora', 'aurora-mysql', 'aurora-postgresql'
+            'aurora', 'aurora-mysql', 'aurora-postgresql', 'mysql', 'postgres'
         ]
         accepted_engine_modes = [
             'provisioned', 'serverless', 'parallelquery', 'global', 'multimaster'

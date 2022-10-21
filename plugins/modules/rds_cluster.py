@@ -171,14 +171,19 @@ options:
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
+          - The combinaison of I(engine) and I(engine_mode) may not be supported.
+            See AWS documentation for more details L(Amazon Relational Database Service (RDS) Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html).
         choices:
           - aurora
           - aurora-mysql
           - aurora-postgresql
+          - mysql
+          - postgres
         type: str
     engine_mode:
         description:
-          - The DB engine mode of the DB cluster.
+          - The DB engine mode of the DB cluster. The combinaison of I(engine) and I(engine_mode) may not be supported.
+            See AWS documentation for more details L(Amazon Relational Database Service (RDS) Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html).
         choices:
           - provisioned
           - serverless
@@ -400,6 +405,23 @@ EXAMPLES = r'''
     username: "{{ username }}"
     cluster_id: "cluster-{{ resource_prefix }}-restored"
     snapshot_identifier: "cluster-{{ resource_prefix }}-snapshot"
+
+  - name: Create an Aurora PostgreSQL cluster and attach an intance
+    rds_cluster:
+      state: present
+      engine: aurora-postgresql
+      engine_mode: provisioned
+      cluster_id: '{{ cluster_id }}'
+      username: '{{ username }}'
+      password: '{{ password }}'
+
+  - name: Create an Aurora instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      cluster_id: '{{ cluster_id }}'
+      engine: aurora-postgresql
+      state: present
+      db_instance_class: 'db.t3.medium'
 '''
 
 RETURN = r'''
