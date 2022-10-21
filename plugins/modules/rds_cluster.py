@@ -172,7 +172,7 @@ options:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
           - The combinaison of I(engine) and I(engine_mode) may not be supported.
-          - "See AWS documentation for details: 
+          - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
         choices:
           - aurora
@@ -184,7 +184,7 @@ options:
     engine_mode:
         description:
           - The DB engine mode of the DB cluster. The combinaison of I(engine) and I(engine_mode) may not be supported.
-          - "See AWS documentation for details: 
+          - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
         choices:
           - provisioned
