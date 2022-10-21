@@ -160,11 +160,42 @@ options:
             By default, write operations are not allowed on Aurora DB clusters that are secondary clusters in an Aurora global database.
           - This value can be only set on Aurora DB clusters that are members of an Aurora global database.
         type: bool
+    db_cluster_instance_class:
+        description:
+          - The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example db.m6gd.xlarge.
+          - Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.
+          - For the full list of DB instance classes and availability for your engine visit U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
+          - This setting is required to create a Multi-AZ DB cluster.
+        type: str
+        version_added: 5.1.0
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
             If this option is omitted when creating the cluster, Amazon RDS sets this to C(false).
         type: bool
+    allocated_storage:
+        description:
+          - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster.
+        type: int
+        version_added: 5.1.0
+    storage_type:
+        description:
+          - Specifies the storage type to be associated with the DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster.
+          - When specified, a value for the I(iops) parameter is required.
+        type: str
+        default: io1
+        choices:
+          - io1
+        version_added: 5.1.0
+    iops:
+        description:
+          - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster
+          - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
+        type: int
+        version_added: 5.1.0
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
@@ -175,6 +206,8 @@ options:
           - aurora
           - aurora-mysql
           - aurora-postgresql
+          - mysql
+          - postgres
         type: str
     engine_mode:
         description:
@@ -703,7 +736,8 @@ def get_create_options(params_dict):
         'OptionGroupName', 'Port', 'ReplicationSourceIdentifier', 'SourceRegion', 'StorageEncrypted',
         'Tags', 'VpcSecurityGroupIds', 'EngineMode', 'ScalingConfiguration', 'DeletionProtection',
         'EnableHttpEndpoint', 'CopyTagsToSnapshot', 'Domain', 'DomainIAMRoleName',
-        'EnableGlobalWriteForwarding',
+        'EnableGlobalWriteForwarding', 'AllocatedStorage', 'DBClusterInstanceClass', 'StorageType',
+        'Iops',
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -717,6 +751,7 @@ def get_modify_options(params_dict, force_update_password):
         'OptionGroupName', 'Port', 'VpcSecurityGroupIds', 'EnableIAMDatabaseAuthentication',
         'CloudwatchLogsExportConfiguration', 'DeletionProtection', 'EnableHttpEndpoint',
         'CopyTagsToSnapshot', 'EnableGlobalWriteForwarding', 'Domain', 'DomainIAMRoleName',
+        'DBClusterInstanceClass', 'AllocatedStorage', 'StorageType', 'Iops',
     ]
     modify_options = dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
     if not force_update_password:
@@ -952,10 +987,14 @@ def main():
         domain=dict(),
         domain_iam_role_name=dict(),
         enable_global_write_forwarding=dict(type='bool'),
+        db_cluster_instance_class=dict(type='str'),
         enable_iam_database_authentication=dict(type='bool'),
         engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql"]),
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
+        allocated_storage=dict(type="int"),
+        storage_type=dict(type="str", choices=["io1"], default='io1'),
+        iops=dict(type="int"),
         final_snapshot_identifier=dict(),
         force_backtrack=dict(type='bool'),
         kms_key_id=dict(),
@@ -994,6 +1033,8 @@ def main():
             ('creation_source', 's3', (
                 's3_bucket_name', 'engine', 'master_username', 'master_user_password',
                 'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
+            ('engine', 'mysql', ('allocated_storage', 'storage_type', 'iops', 'db_cluster_instance_class')),
+            ('engine', 'postgres', ('allocated_storage', 'storage_type', 'iops', 'db_cluster_instance_class')),
         ],
         mutually_exclusive=[
             ('s3_bucket_name', 'source_db_cluster_identifier', 'snapshot_identifier'),
