@@ -199,10 +199,10 @@ options:
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
-          - The combinaison of I(engine) and I(engine_mode) may not be supported.
-          - "See AWS documentation for details:
-            L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
-          - Support for C(postgres) and C(mysql) was added in amazon.aws 6.0.0.
+          - When I(engine=mysql), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
+          - When I(engine=postgres), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
+          - C(postgres) and C(mysql) require botocore >= 1.23.44.
+          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.1.0.
         choices:
           - aurora
           - aurora-mysql
@@ -1034,8 +1034,8 @@ def main():
             ('creation_source', 's3', (
                 's3_bucket_name', 'engine', 'master_username', 'master_user_password',
                 'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
-            ('engine', 'mysql', ('allocated_storage', 'storage_type', 'iops', 'db_cluster_instance_class')),
-            ('engine', 'postgres', ('allocated_storage', 'storage_type', 'iops', 'db_cluster_instance_class')),
+            ('engine', 'mysql', ('allocated_storage', 'iops', 'db_cluster_instance_class')),
+            ('engine', 'postgres', ('allocated_storage', 'iops', 'db_cluster_instance_class')),
         ],
         mutually_exclusive=[
             ('s3_bucket_name', 'source_db_cluster_identifier', 'snapshot_identifier'),

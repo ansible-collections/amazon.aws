@@ -19,9 +19,6 @@
       that:
       - not _result_delete_db_cluster.changed
     ignore_errors: true
-  
-  - set_fact:
-      engine: "mysql"
 
   - name: Create a source DB cluster
     rds_cluster:
@@ -29,10 +26,6 @@
       state: present
       engine: '{{ engine}}'
       backup_retention_period: 1
-      allocated_storage: 100
-      storage_type: io1
-      iops: 5000
-      db_cluster_instance_class: db.m6gd.xlarge
       username: '{{ username }}'
       password: '{{ password }}'
       wait: true
