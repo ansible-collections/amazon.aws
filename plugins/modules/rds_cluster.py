@@ -178,8 +178,6 @@ options:
           - aurora
           - aurora-mysql
           - aurora-postgresql
-          - mysql
-          - postgres
         type: str
     engine_mode:
         description:
@@ -958,7 +956,7 @@ def main():
         domain_iam_role_name=dict(),
         enable_global_write_forwarding=dict(type='bool'),
         enable_iam_database_authentication=dict(type='bool'),
-        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql", "mysql", "postgres"]),
+        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql"]),
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
         final_snapshot_identifier=dict(),

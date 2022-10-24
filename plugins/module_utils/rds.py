@@ -181,23 +181,6 @@ def handle_errors(module, exception, method_name, parameters):
             changed = False
         else:
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
-    elif method_name == 'create_db_cluster' and error_code == 'InvalidParameterValue':
-        accepted_engines = [
-            'aurora', 'aurora-mysql', 'aurora-postgresql', 'mysql', 'postgres'
-        ]
-        accepted_engine_modes = [
-            'provisioned', 'serverless', 'parallelquery', 'global', 'multimaster'
-        ]
-        if parameters.get('Engine') not in accepted_engines:
-            module.fail_json_aws(exception, msg='DB engine {0} should be one of {1}'.format(parameters.get('Engine'), accepted_engines))
-        elif parameters.get('EngineMode') and parameters.get('EngineMode') in accepted_engines:
-            module.fail_json_aws(exception, msg='DB engine mode {0} should be one of {1}'.format(parameters.get('EngineMode'), accepted_engine_modes))
-        elif parameters.get('Engine') == 'aurora-postgresql' and parameters.get('EngineMode') in ('parallelquery', 'multimaster'):
-            module.fail_json_aws(exception, msg='DB engine {0} does not support engine mode {1}'.format(parameters.get('Engine'), parameters.get('EngineMode')))
-        elif parameters.get('ScalingConfiguration') and parameters.get('EngineMode') != 'serverless':
-            module.fail_json_aws(exception, msg='You can only specify scaling configuration for an Aurora Serverless cluster')
-        else:
-            module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
     else:
         module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
 
