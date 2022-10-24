@@ -1598,7 +1598,7 @@ def get_default_subnet(vpc, availability_zone=None):
     return None
 
 
-def ensure_instance_state(desired_module_state):
+def ensure_instance_state(desired_module_state, filters):
     """
     Sets return keys depending on the desired instance state
     """
@@ -1606,7 +1606,7 @@ def ensure_instance_state(desired_module_state):
     changed = False
     if desired_module_state in ('running', 'started'):
         _changed, failed, instances, failure_reason = change_instance_state(
-            filters=module.params.get('filters'), desired_module_state=desired_module_state)
+            filters=filters, desired_module_state=desired_module_state)
         changed |= bool(len(_changed))
 
         if failed:
@@ -1630,8 +1630,7 @@ def ensure_instance_state(desired_module_state):
         # The Ansible behaviour of issuing a stop/start has a minor impact on user billing
         # This will need to be changelogged if we ever change to client.reboot_instance
         _changed, failed, instances, failure_reason = change_instance_state(
-            filters=module.params.get('filters'),
-            desired_module_state='stopped',
+            filters=filters, desired_module_state='stopped',
         )
 
         if failed:
@@ -1642,8 +1641,7 @@ def ensure_instance_state(desired_module_state):
 
         changed |= bool(len(_changed))
         _changed, failed, instances, failure_reason = change_instance_state(
-            filters=module.params.get('filters'),
-            desired_module_state=desired_module_state,
+            filters=filters, desired_module_state=desired_module_state,
         )
         changed |= bool(len(_changed))
 
@@ -1662,8 +1660,7 @@ def ensure_instance_state(desired_module_state):
         )
     elif desired_module_state in ('stopped',):
         _changed, failed, instances, failure_reason = change_instance_state(
-            filters=module.params.get('filters'),
-            desired_module_state=desired_module_state,
+            filters=filters, desired_module_state=desired_module_state,
         )
         changed |= bool(len(_changed))
 
@@ -1682,7 +1679,7 @@ def ensure_instance_state(desired_module_state):
         )
     elif desired_module_state in ('absent', 'terminated'):
         terminated, terminate_failed, instances, failure_reason = change_instance_state(
-            filters=module.params.get('filters'),
+            filters=filters,
             desired_module_state=desired_module_state,
         )
 
@@ -1803,7 +1800,7 @@ def determine_iam_role(name_or_arn):
         module.fail_json_aws(e, msg="An error occurred while searching for iam_instance_profile {0}. Please try supplying the full ARN.".format(name_or_arn))
 
 
-def handle_existing(existing_matches, state):
+def handle_existing(existing_matches, state, filters):
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
     name = module.params.get('name')
@@ -1842,7 +1839,7 @@ def handle_existing(existing_matches, state):
         changes=changes,
     )
 
-    state_results = ensure_instance_state(state)
+    state_results = ensure_instance_state(state, filters)
     alter_config_result['changed'] |= state_results.pop('changed', False)
     result = {**state_results, **alter_config_result}
 
@@ -2097,14 +2094,15 @@ def main():
     )
     client = module.client('ec2', retry_decorator=retry_decorator)
 
-    if module.params.get('filters') is None:
-        module.params['filters'] = build_filters()
+    filters = module.params.get('filters')
+    if filters is None:
+        filters = build_filters()
 
-    existing_matches = find_instances(filters=module.params.get('filters'))
+    existing_matches = find_instances(filters=filters)
 
     if state in ('terminated', 'absent'):
         if existing_matches:
-            result = ensure_instance_state(state)
+            result = ensure_instance_state(state, filters)
         else:
             result = dict(
                 msg='No matching instances found',
@@ -2116,7 +2114,7 @@ def main():
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
             warn_if_cpu_options_changed(match)
-        result = handle_existing(existing_matches, state)
+        result = handle_existing(existing_matches, state, filters=filters)
     else:
         result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
 
