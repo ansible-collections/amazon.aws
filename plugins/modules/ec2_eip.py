@@ -20,10 +20,11 @@ description:
 options:
   device_id:
     description:
-      - The id of the device for the EIP. Can be an EC2 Instance id or Elastic Network Interface (ENI) id.
-      - The I(instance_id) alias has been deprecated and will be removed in release 6.0.0.
+      - The id of the device for the EIP.
+      - Can be an EC2 Instance id or Elastic Network Interface (ENI) id.
+      - When specifying an ENI id, I(in_vpc) must be C(true)
+      - The C(instance_id) alias was removed in release 6.0.0.
     required: false
-    aliases: [ instance_id ]
     type: str
   public_ip:
     description:
@@ -229,6 +230,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+
+
+class EipError(Exception):
+    pass
 
 
 def associate_ip_and_device(ec2, module, address, private_ip_address, device_id, allow_reassociation, check_mode, is_instance=True):
@@ -523,12 +528,21 @@ def generate_tag_dict(module, tag_name, tag_value):
         module.fail_json(msg="parameters are required together: ('tag_name', 'tag_value')")
 
 
+def check_is_instance(device_id, in_vpc):
+    if not device_id:
+        return False
+    if device_id.startswith('i-'):
+        return True
+
+    if device_id.startswith('eni-') and not in_vpc:
+        raise("If you are specifying an ENI, in_vpc must be true")
+
+    return False
+
+
 def main():
     argument_spec = dict(
-        device_id=dict(required=False, aliases=['instance_id'],
-                       deprecated_aliases=[dict(name='instance_id',
-                                           version='6.0.0',
-                                           collection_name='amazon.aws')]),
+        device_id=dict(required=False),
         public_ip=dict(required=False, aliases=['ip']),
         state=dict(required=False, default='present',
                    choices=['present', 'absent']),
@@ -556,7 +570,6 @@ def main():
     ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     device_id = module.params.get('device_id')
-    instance_id = module.params.get('instance_id')
     public_ip = module.params.get('public_ip')
     private_ip_address = module.params.get('private_ip_address')
     state = module.params.get('state')
@@ -571,16 +584,10 @@ def main():
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
 
-    if instance_id:
-        is_instance = True
-        device_id = instance_id
-    else:
-        if device_id and device_id.startswith('i-'):
-            is_instance = True
-        elif device_id:
-            if device_id.startswith('eni-') and not in_vpc:
-                module.fail_json(msg="If you are specifying an ENI, in_vpc must be true")
-            is_instance = False
+    try:
+        is_instance = check_is_instance(device_id, in_vpc)
+    except EipError as e:
+        module.fail_json(msg=str(e))
 
     # Tags for *searching* for an EIP.
     tag_dict = generate_tag_dict(module, tag_name, tag_value)
