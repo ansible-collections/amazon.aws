@@ -202,6 +202,7 @@ options:
           - The combinaison of I(engine) and I(engine_mode) may not be supported.
           - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
+          - Support for C(postgres) and C(mysql) was added in amazon.aws 6.0.0.
         choices:
           - aurora
           - aurora-mysql
@@ -221,7 +222,7 @@ options:
           - global
           - multimaster
         type: str
-        version_added: 5.1.0
+        version_added: 6.0.0
     engine_version:
         description:
           - The version number of the database engine to use.
