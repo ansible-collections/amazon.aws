@@ -232,6 +232,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 
 
+class EipError(Exception):
+    pass
+
+
 def associate_ip_and_device(ec2, module, address, private_ip_address, device_id, allow_reassociation, check_mode, is_instance=True):
     if address_is_associated_with_device(ec2, module, address, device_id, is_instance):
         return {'changed': False}
@@ -531,7 +535,7 @@ def check_is_instance(device_id, in_vpc):
         return True
 
     if device_id.startswith('eni-') and not in_vpc:
-        module.fail_json(msg="If you are specifying an ENI, in_vpc must be true")
+        raise("If you are specifying an ENI, in_vpc must be true")
 
     return False
 
@@ -580,7 +584,10 @@ def main():
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
 
-    is_instance = check_is_instance(device_id, in_vpc)
+    try:
+        is_instance = check_is_instance(device_id, in_vpc)
+    except EipError as e:
+        module.fail_json(msg=str(e))
 
     # Tags for *searching* for an EIP.
     tag_dict = generate_tag_dict(module, tag_name, tag_value)
