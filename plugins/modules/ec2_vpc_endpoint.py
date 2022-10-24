@@ -55,24 +55,10 @@ options:
     description:
       - A properly formatted JSON policy as string, see
         U(https://github.com/ansible/ansible/issues/7005#issuecomment-42894813).
-        Cannot be used with I(policy_file).
       - Option when creating an endpoint. If not provided AWS will
         utilise a default policy which provides full access to the service.
     required: false
     type: json
-  policy_file:
-    description:
-      - The path to the properly json formatted policy file, see
-        U(https://github.com/ansible/ansible/issues/7005#issuecomment-42894813)
-        on how to use it properly. Cannot be used with I(policy).
-      - Option when creating an endpoint. If not provided AWS will
-        utilise a default policy which provides full access to the service.
-      - This option has been deprecated and will be removed in release 6.0.0
-        to maintain the existing functionality please use the I(policy) option
-        and a file lookup.
-    required: false
-    aliases: [ "policy_path" ]
-    type: path
   state:
     description:
       - C(present) to ensure resource is created.
@@ -122,6 +108,8 @@ author:
   - Karen Cheng (@Etherdaemon)
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 1.5.0.
+  - The C(policy_file) paramater was removed in release 6.0.0 please use the
+    I(policy) option and a file lookup instead.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -150,18 +138,6 @@ EXAMPLES = r'''
     region: ap-southeast-2
     vpc_id: vpc-12345678
     service: com.amazonaws.ap-southeast-2.s3
-    route_table_ids:
-      - rtb-12345678
-      - rtb-87654321
-  register: new_vpc_endpoint
-
-- name: Create new vpc endpoint with json file
-  amazon.aws.ec2_vpc_endpoint:
-    state: present
-    region: ap-southeast-2
-    vpc_id: vpc-12345678
-    service: com.amazonaws.ap-southeast-2.s3
-    policy_file: "{{ role_path }}/files/endpoint_policy.json"
     route_table_ids:
       - rtb-12345678
       - rtb-87654321
@@ -333,14 +309,6 @@ def create_vpc_endpoint(client, module):
             module.fail_json(msg=str(e), exception=traceback.format_exc(),
                              **camel_dict_to_snake_dict(e.response))
 
-    elif module.params.get('policy_file'):
-        try:
-            with open(module.params.get('policy_file'), 'r') as json_data:
-                policy = json.load(json_data)
-        except (OSError, json.JSONDecodeError) as e:
-            module.fail_json(msg=str(e), exception=traceback.format_exc(),
-                             **camel_dict_to_snake_dict(e.response))
-
     if policy:
         params['PolicyDocument'] = json.dumps(policy)
 
@@ -421,7 +389,6 @@ def main():
         vpc_endpoint_subnets=dict(type='list', elements='str'),
         service=dict(),
         policy=dict(type='json'),
-        policy_file=dict(type='path', aliases=['policy_path']),
         state=dict(default='present', choices=['present', 'absent']),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=320, required=False),
@@ -434,7 +401,6 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[['policy', 'policy_file']],
         required_if=[
             ['state', 'present', ['vpc_id', 'service']],
             ['state', 'absent', ['vpc_endpoint_id']],
@@ -443,10 +409,6 @@ def main():
 
     # Validate Requirements
     state = module.params.get('state')
-
-    if module.params.get('policy_file'):
-        module.deprecate('The policy_file option has been deprecated',
-                         version='6.0.0', collection_name='amazon.aws')
 
     if module.params.get('vpc_endpoint_type'):
         if module.params.get('vpc_endpoint_type') == 'Gateway':
