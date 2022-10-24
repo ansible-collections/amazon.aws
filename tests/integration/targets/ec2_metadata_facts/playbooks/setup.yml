@@ -119,6 +119,7 @@
           instance_metadata_tags: enabled
       tags:
         snake_case_key: a_snake_case_value
+        camelCaseKey: aCamelCaseValue
       wait: True
     register: ec2_instance
 
