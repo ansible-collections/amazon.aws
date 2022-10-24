@@ -122,6 +122,8 @@
         camelCaseKey: aCamelCaseValue
       wait: True
     register: ec2_instance
+    vars:
+      ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
 
   - set_fact:
       ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
