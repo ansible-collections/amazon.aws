@@ -1,0 +1,7 @@
+# Create cluster
+cluster_id: ansible-test-{{ tiny_prefix }}
+username: testrdsusername
+password: "{{ lookup('password', 'dev/null length=12 chars=ascii_letters,digits') }}"
+tags_create:
+  Name: ansible-test-cluster-{{ tiny_prefix }}
+  Created_By: Ansible_rds_cluster_integration_test
