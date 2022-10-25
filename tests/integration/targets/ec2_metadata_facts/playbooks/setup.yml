@@ -25,6 +25,11 @@
   - include_role:
       name: '../setup_ec2_facts'
 
+  - include_role:
+      name: '../setup_botocore_pip'
+    vars:
+      botocore_version: '1.23.30'
+
   - set_fact:
       availability_zone: '{{ ec2_availability_zone_names[0] }}'
 
@@ -123,7 +128,7 @@
       wait: True
     register: ec2_instance
     vars:
-      ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - set_fact:
       ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
