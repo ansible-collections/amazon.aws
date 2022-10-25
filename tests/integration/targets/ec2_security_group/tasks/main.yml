@@ -1356,6 +1356,8 @@
         state: absent
         group_id: '{{ item.group_id }}'
       loop: '{{ remaining_groups.security_groups }}'
+      when:
+      - item.group_name != 'default'
       ignore_errors: yes
 
     # ============================================================
