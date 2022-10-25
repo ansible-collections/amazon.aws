@@ -747,16 +747,8 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
 
     group_name = rule['group_name']
 
-    params = dict(GroupName=group_name, Description=rule['group_desc'])
-    if vpc_id:
-        params['VpcId'] = vpc_id
     try:
-        created_group = client.create_security_group(aws_retry=True, **params)
-        get_waiter(
-            client, 'security_group_exists',
-        ).wait(
-            GroupIds=[created_group['GroupId']],
-        )
+        created_group = _create_security_group_with_wait(client, group_name, rule['group_desc'], vpc_id)
     except is_boto3_error_code('InvalidGroup.Duplicate'):
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
@@ -1086,29 +1078,42 @@ def update_rule_descriptions(module, client, group_id, present_ingress, named_tu
     return changed
 
 
+def _create_security_group_with_wait(client, name, description, vpc_id):
+    params = dict(GroupName=name, Description=description)
+    if vpc_id:
+        params['VpcId'] = vpc_id
+
+    created_group = client.create_security_group(aws_retry=True, **params)
+    get_waiter(
+        client, 'security_group_exists',
+    ).wait(
+        GroupIds=[created_group['GroupId']],
+    )
+    return created_group
+
+
 def create_security_group(client, module, name, description, vpc_id):
-    if not module.check_mode:
-        params = dict(GroupName=name, Description=description)
-        if vpc_id:
-            params['VpcId'] = vpc_id
-        try:
-            group = client.create_security_group(aws_retry=True, **params)
-        except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Unable to create security group")
-        # When a group is created, an egress_rule ALLOW ALL
-        # to 0.0.0.0/0 is added automatically but it's not
-        # reflected in the object returned by the AWS API
-        # call. We re-read the group for getting an updated object
-        # amazon sometimes takes a couple seconds to update the security group so wait till it exists
-        while True:
-            sleep(3)
-            group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
-            if group.get('VpcId') and not group.get('IpPermissionsEgress'):
-                pass
-            else:
-                break
-        return group
-    return None
+    if module.check_mode:
+        return None
+
+    try:
+        group = _create_security_group_with_wait(client, name, description, vpc_id)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Unable to create security group")
+
+    # When a group is created, an egress_rule ALLOW ALL
+    # to 0.0.0.0/0 is added automatically but it's not
+    # reflected in the object returned by the AWS API
+    # call. We re-read the group for getting an updated object
+    # amazon sometimes takes a couple seconds to update the security group so wait till it exists
+    while True:
+        sleep(3)
+        group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
+        if group.get('VpcId') and not group.get('IpPermissionsEgress'):
+            pass
+        else:
+            break
+    return group
 
 
 def wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
