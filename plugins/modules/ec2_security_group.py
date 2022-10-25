@@ -694,6 +694,124 @@ def validate_rule(rule):
         raise SecurityGroupError(msg='Specify proto: icmp or icmpv6 when using icmp_type/icmp_code')
 
 
+def _target_from_rule_with_group_id(rule, groups):
+    owner_id = current_account_id
+    FOREIGN_SECURITY_GROUP_REGEX = r'^([^/]+)/?(sg-\S+)?/(\S+)'
+    foreign_rule = re.match(FOREIGN_SECURITY_GROUP_REGEX, rule['group_id'])
+
+    if not foreign_rule:
+        return 'group', (owner_id, rule['group_id'], None), False
+
+    # this is a foreign Security Group. Since you can't fetch it you must create an instance of it
+    # Matches on groups like amazon-elb/sg-5a9c116a/amazon-elb-sg, amazon-elb/amazon-elb-sg,
+    # and peer-VPC groups like 0987654321/sg-1234567890/example
+    owner_id, group_id, group_name = foreign_rule.groups()
+    group_instance = dict(UserId=owner_id, GroupId=group_id, GroupName=group_name)
+    groups[group_id] = group_instance
+    groups[group_name] = group_instance
+    if group_id and group_name:
+        if group_name.startswith('amazon-'):
+            # amazon-elb and amazon-prefix rules don't need group_id specified,
+            group_id = None
+        else:
+            # For cross-VPC references we'll use group_id as it is more specific
+            group_name = None
+    return 'group', (owner_id, group_id, group_name), False
+
+
+def _lookup_target_or_fail(client, group_name, vpc_id, groups, msg):
+    owner_id = current_account_id
+    filters = {'group-name': group_name}
+    if vpc_id:
+        filters['vpc-id'] = vpc_id
+
+    filters = ansible_dict_to_boto3_filter_list(filters)
+    try:
+        found_group = get_security_groups_with_backoff(client, Filters=filters).get('SecurityGroups', [])[0]
+    except (is_boto3_error_code('InvalidGroup.NotFound'), IndexError):
+        raise SecurityGroupError(msg=msg)
+    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
+        raise SecurityGroupError(msg="Failed to get security group", e=e)
+
+    group_id = found_group['GroupId']
+    groups[group_id] = found_group
+    groups[group_name] = found_group
+    return 'group', (owner_id, group_id, None), False
+
+
+def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
+    owner_id = current_account_id
+    # We can't create a group in check mode...
+    if check_mode:
+        return 'group', (owner_id, None, None), True
+
+    group_name = rule['group_name']
+
+    params = dict(GroupName=group_name, Description=rule['group_desc'])
+    if vpc_id:
+        params['VpcId'] = vpc_id
+    try:
+        created_group = client.create_security_group(aws_retry=True, **params)
+        get_waiter(
+            client, 'security_group_exists',
+        ).wait(
+            GroupIds=[created_group['GroupId']],
+        )
+    except is_boto3_error_code('InvalidGroup.Duplicate'):
+        # The group exists, but didn't show up in any of our previous describe-security-groups calls
+        # Try searching on a filter for the name, and allow a retry window for AWS to update
+        # the model on their end.
+        fail_msg = "Could not create or use existing group '{0}' in rule {1}.  " \
+                   "Make sure the group exists and try using the group_id " \
+                   "instead of the name".format(group_name, rule)
+        return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
+    except (BotoCoreError, ClientError) as e:
+        raise SecurityGroupError(msg="Failed to create security group '{0}' in rule {1}", e=e)
+
+    group_id = created_group['GroupId']
+    groups[group_id] = created_group
+    groups[group_name] = created_group
+
+    return 'group', (owner_id, group_id, None), True
+
+
+def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, check_mode):
+    group_name = rule['group_name']
+    owner_id = current_account_id
+    if group_name == name:
+        # Simplest case, the rule references itself
+        group_id = group['GroupId']
+        groups[group_id] = group
+        groups[group_name] = group
+        return 'group', (owner_id, group_id, None), False
+
+    # Already cached groups
+    if group_name in groups and group.get('VpcId') and groups[group_name].get('VpcId'):
+        # both are VPC groups, this is ok
+        group_id = groups[group_name]['GroupId']
+        return 'group', (owner_id, group_id, None), False
+
+    if group_name in groups and not (group.get('VpcId') or groups[group_name].get('VpcId')):
+        # both are EC2 classic, this is ok
+        group_id = groups[group_name]['GroupId']
+        return 'group', (owner_id, group_id, None), False
+
+    # if we got here, either the target group does not exist, or there
+    # is a mix of EC2 classic + VPC groups. Mixing of EC2 classic + VPC
+    # is bad, so we have to create a new SG because no compatible group
+    # exists
+
+    # Without a group description we can't create a new group, try looking up the group, or fail
+    # with a descriptive error message
+    if not rule.get('group_desc', '').strip():
+        # retry describing the group
+        fail_msg = "group '{0}' not found and would be automatically created by rule {1} but " \
+                   "no description was provided".format(group_name, rule)
+        return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
+
+    return _create_target_from_rule(client, rule, groups, vpc_id, check_mode)
+
+
 def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
     """
     Returns tuple of (target_type, target, group_created) after validating rule params.
@@ -711,100 +829,20 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
     values that will be compared to current_rules (from current_ingress and
     current_egress) in wait_for_rule_propagation().
     """
-    FOREIGN_SECURITY_GROUP_REGEX = r'^([^/]+)/?(sg-\S+)?/(\S+)'
-    owner_id = current_account_id
-    group_id = None
-    group_name = None
-    target_group_created = False
-
     try:
         validate_rule(rule)
+        if rule.get('group_id'):
+            return _target_from_rule_with_group_id(rule, groups)
+        elif 'group_name' in rule:
+            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, module.check_mode)
+        elif 'cidr_ip' in rule:
+            return 'ipv4', validate_ip(module, rule['cidr_ip']), False
+        elif 'cidr_ipv6' in rule:
+            return 'ipv6', validate_ip(module, rule['cidr_ipv6']), False
+        elif 'ip_prefix' in rule:
+            return 'ip_prefix', rule['ip_prefix'], False
     except SecurityGroupError as e:
         e.fail(module)
-
-    if rule.get('group_id') and re.match(FOREIGN_SECURITY_GROUP_REGEX, rule['group_id']):
-        # this is a foreign Security Group. Since you can't fetch it you must create an instance of it
-        # Matches on groups like amazon-elb/sg-5a9c116a/amazon-elb-sg, amazon-elb/amazon-elb-sg,
-        # and peer-VPC groups like 0987654321/sg-1234567890/example
-        owner_id, group_id, group_name = re.match(FOREIGN_SECURITY_GROUP_REGEX, rule['group_id']).groups()
-        group_instance = dict(UserId=owner_id, GroupId=group_id, GroupName=group_name)
-        groups[group_id] = group_instance
-        groups[group_name] = group_instance
-        if group_id and group_name:
-            if group_name.startswith('amazon-'):
-                # amazon-elb and amazon-prefix rules don't need group_id specified,
-                group_id = None
-            else:
-                # group_id/group_name are mutually exclusive - give group_id more precedence as it is more specific
-                group_name = None
-        return 'group', (owner_id, group_id, group_name), False
-    elif 'group_id' in rule:
-        return 'group', (owner_id, rule['group_id'], None), False
-    elif 'group_name' in rule:
-        group_name = rule['group_name']
-        if group_name == name:
-            group_id = group['GroupId']
-            groups[group_id] = group
-            groups[group_name] = group
-        elif group_name in groups and group.get('VpcId') and groups[group_name].get('VpcId'):
-            # both are VPC groups, this is ok
-            group_id = groups[group_name]['GroupId']
-        elif group_name in groups and not (group.get('VpcId') or groups[group_name].get('VpcId')):
-            # both are EC2 classic, this is ok
-            group_id = groups[group_name]['GroupId']
-        else:
-            auto_group = None
-            filters = {'group-name': group_name}
-            if vpc_id:
-                filters['vpc-id'] = vpc_id
-            # if we got here, either the target group does not exist, or there
-            # is a mix of EC2 classic + VPC groups. Mixing of EC2 classic + VPC
-            # is bad, so we have to create a new SG because no compatible group
-            # exists
-            if not rule.get('group_desc', '').strip():
-                # retry describing the group once
-                try:
-                    auto_group = get_security_groups_with_backoff(client, Filters=ansible_dict_to_boto3_filter_list(filters)).get('SecurityGroups', [])[0]
-                except (is_boto3_error_code('InvalidGroup.NotFound'), IndexError):
-                    module.fail_json(msg="group %s will be automatically created by rule %s but "
-                                         "no description was provided" % (group_name, rule))
-                except ClientError as e:  # pylint: disable=duplicate-except
-                    module.fail_json_aws(e)
-            elif not module.check_mode:
-                params = dict(GroupName=group_name, Description=rule['group_desc'])
-                if vpc_id:
-                    params['VpcId'] = vpc_id
-                try:
-                    auto_group = client.create_security_group(aws_retry=True, **params)
-                    get_waiter(
-                        client, 'security_group_exists',
-                    ).wait(
-                        GroupIds=[auto_group['GroupId']],
-                    )
-                except is_boto3_error_code('InvalidGroup.Duplicate'):
-                    # The group exists, but didn't show up in any of our describe-security-groups calls
-                    # Try searching on a filter for the name, and allow a retry window for AWS to update
-                    # the model on their end.
-                    try:
-                        auto_group = get_security_groups_with_backoff(client, Filters=ansible_dict_to_boto3_filter_list(filters)).get('SecurityGroups', [])[0]
-                    except IndexError:
-                        module.fail_json(msg="Could not create or use existing group '{0}' in rule. Make sure the group exists".format(group_name))
-                    except ClientError as e:
-                        module.fail_json_aws(
-                            e,
-                            msg="Could not create or use existing group '{0}' in rule. Make sure the group exists".format(group_name))
-            if auto_group is not None:
-                group_id = auto_group['GroupId']
-                groups[group_id] = auto_group
-                groups[group_name] = auto_group
-            target_group_created = True
-        return 'group', (owner_id, group_id, None), target_group_created
-    elif 'cidr_ip' in rule:
-        return 'ipv4', validate_ip(module, rule['cidr_ip']), False
-    elif 'cidr_ipv6' in rule:
-        return 'ipv6', validate_ip(module, rule['cidr_ipv6']), False
-    elif 'ip_prefix' in rule:
-        return 'ip_prefix', rule['ip_prefix'], False
 
     module.fail_json(msg="Could not match target for rule", failed_rule=rule)
 
