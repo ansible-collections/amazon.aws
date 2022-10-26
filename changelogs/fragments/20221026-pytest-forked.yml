@@ -1,0 +1,2 @@
+trivial:
+- test-requirements - add pytest-forked to requirements for unit tests
