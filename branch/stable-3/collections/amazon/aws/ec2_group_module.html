@@ -221,8 +221,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -277,8 +277,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>Purge existing rules on security group that are not found in rules.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -289,8 +289,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>Purge existing rules_egress on security group that are not found in rules_egress.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -301,8 +301,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>If yes, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter. If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -513,8 +513,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>Create or delete a security group.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -534,8 +534,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -700,7 +700,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Description of security group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “My Security Group”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -709,7 +709,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Security group id</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “sg-abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sg-abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -718,7 +718,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Security group name</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “My Security Group”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -727,7 +727,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Inbound rules associated with the security group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“from_port”: 8182, “ip_protocol”: “tcp”, “ip_ranges”: [{“cidr_ip”: “198.51.100.1/32”}], “ipv6_ranges”: [], “prefix_list_ids”: [], “to_port”: 8182, “user_id_group_pairs”: []}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;from_port&quot;:</span> <span class="pre">8182,</span> <span class="pre">&quot;ip_protocol&quot;:</span> <span class="pre">&quot;tcp&quot;,</span> <span class="pre">&quot;ip_ranges&quot;:</span> <span class="pre">[{&quot;cidr_ip&quot;:</span> <span class="pre">&quot;198.51.100.1/32&quot;}],</span> <span class="pre">&quot;ipv6_ranges&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;prefix_list_ids&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;to_port&quot;:</span> <span class="pre">8182,</span> <span class="pre">&quot;user_id_group_pairs&quot;:</span> <span class="pre">[]}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -736,7 +736,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Outbound rules associated with the security group.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“ip_protocol”: -1, “ip_ranges”: [{“cidr_ip”: “0.0.0.0/0”, “ipv6_ranges”: [], “prefix_list_ids”: [], “user_id_group_pairs”: []}]}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;ip_protocol&quot;:</span> <span class="pre">-1,</span> <span class="pre">&quot;ip_ranges&quot;:</span> <span class="pre">[{&quot;cidr_ip&quot;:</span> <span class="pre">&quot;0.0.0.0/0&quot;,</span> <span class="pre">&quot;ipv6_ranges&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;prefix_list_ids&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;user_id_group_pairs&quot;:</span> <span class="pre">[]}]}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -745,7 +745,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS Account ID of the security group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 123456789012</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">123456789012</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -754,7 +754,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>Tags associated with the security group</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Name”: “My Security Group”, “Purpose”: “protecting stuff”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;,</span> <span class="pre">&quot;Purpose&quot;:</span> <span class="pre">&quot;protecting</span> <span class="pre">stuff&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -763,7 +763,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-grou
 </div></td>
 <td><div class="ansible-option-cell"><p>ID of VPC to which the security group belongs</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on create/update</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “vpc-abcd1234”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-abcd1234&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

@@ -221,8 +221,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -243,7 +243,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <td><div class="ansible-option-cell"><p>A dict of filters to apply. Each dict item consists of a filter key and a filter value.</p>
 <p>Filter names and values are case sensitive.</p>
 <p>See <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html</a> for possible filters.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">{}</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -295,8 +295,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -357,7 +357,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 </div></td>
 <td><div class="ansible-option-cell"><p>The gathered information about specified spot instance requests.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“create_time”: “2021-09-01T21:05:57+00:00”, “instance_id”: “i-08877936b801ac475”, “instance_interruption_behavior”: “terminate”, “launch_specification”: {“ebs_optimized”: false, “image_id”: “ami-0443305dabd4be2bc”, “instance_type”: “t2.medium”, “key_name”: “zuul”, “monitoring”: {“enabled”: false}, “placement”: {“availability_zone”: “us-east-2b”}, “security_groups”: [{“group_id”: “sg-01f9833207d53b937”, “group_name”: “default”}], “subnet_id”: “subnet-07d906b8358869bda”}, “launched_availability_zone”: “us-east-2b”, “product_description”: “Linux/UNIX”, “spot_instance_request_id”: “sir-c3cp9jsk”, “spot_price”: “0.046400”, “state”: “active”, “status”: {“code”: “fulfilled”, “message”: “Your spot request is fulfilled.”, “update_time”: “2021-09-01T21:05:59+00:00”}, “tags”: {}, “type”: “one-time”, “valid_until”: “2021-09-08T21:05:57+00:00”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;create_time&quot;:</span> <span class="pre">&quot;2021-09-01T21:05:57+00:00&quot;,</span> <span class="pre">&quot;instance_id&quot;:</span> <span class="pre">&quot;i-08877936b801ac475&quot;,</span> <span class="pre">&quot;instance_interruption_behavior&quot;:</span> <span class="pre">&quot;terminate&quot;,</span> <span class="pre">&quot;launch_specification&quot;:</span> <span class="pre">{&quot;ebs_optimized&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;image_id&quot;:</span> <span class="pre">&quot;ami-0443305dabd4be2bc&quot;,</span> <span class="pre">&quot;instance_type&quot;:</span> <span class="pre">&quot;t2.medium&quot;,</span> <span class="pre">&quot;key_name&quot;:</span> <span class="pre">&quot;zuul&quot;,</span> <span class="pre">&quot;monitoring&quot;:</span> <span class="pre">{&quot;enabled&quot;:</span> <span class="pre">false},</span> <span class="pre">&quot;placement&quot;:</span> <span class="pre">{&quot;availability_zone&quot;:</span> <span class="pre">&quot;us-east-2b&quot;},</span> <span class="pre">&quot;security_groups&quot;:</span> <span class="pre">[{&quot;group_id&quot;:</span> <span class="pre">&quot;sg-01f9833207d53b937&quot;,</span> <span class="pre">&quot;group_name&quot;:</span> <span class="pre">&quot;default&quot;}],</span> <span class="pre">&quot;subnet_id&quot;:</span> <span class="pre">&quot;subnet-07d906b8358869bda&quot;},</span> <span class="pre">&quot;launched_availability_zone&quot;:</span> <span class="pre">&quot;us-east-2b&quot;,</span> <span class="pre">&quot;product_description&quot;:</span> <span class="pre">&quot;Linux/UNIX&quot;,</span> <span class="pre">&quot;spot_instance_request_id&quot;:</span> <span class="pre">&quot;sir-c3cp9jsk&quot;,</span> <span class="pre">&quot;spot_price&quot;:</span> <span class="pre">&quot;0.046400&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;active&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">{&quot;code&quot;:</span> <span class="pre">&quot;fulfilled&quot;,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;Your</span> <span class="pre">spot</span> <span class="pre">request</span> <span class="pre">is</span> <span class="pre">fulfilled.&quot;,</span> <span class="pre">&quot;update_time&quot;:</span> <span class="pre">&quot;2021-09-01T21:05:59+00:00&quot;},</span> <span class="pre">&quot;tags&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;one-time&quot;,</span> <span class="pre">&quot;valid_until&quot;:</span> <span class="pre">&quot;2021-09-08T21:05:57+00:00&quot;}</span></code></p>
 </div></td>
 </tr>
 </tbody>

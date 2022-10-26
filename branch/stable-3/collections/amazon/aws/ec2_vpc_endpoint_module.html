@@ -230,8 +230,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -282,8 +282,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>Delete any tags not specified in the task that are on the instance. This means you have to specify all the desired tags on each task affecting an instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -336,8 +336,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>absent to remove resource</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -357,8 +357,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -395,9 +395,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>The type of endpoint.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“Interface”</span></p></li>
-<li><p><span class="ansible-option-default-bold">“Gateway”</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“GatewayLoadBalancer”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Interface&quot;</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;Gateway&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;GatewayLoadBalancer&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -415,8 +415,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>When specified, will wait for either available status for state present. Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -425,7 +425,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Used in conjunction with wait. Number of seconds to wait for status. Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">320</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">320</span></code></p>
 </div></td>
 </tr>
 </tbody>
@@ -506,7 +506,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>The resulting endpoints from the module call</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“creation_timestamp”: “2017-02-20T05:04:15+00:00”, “policy_document”: {“Id”: “Policy1450910922815”, “Statement”: [{“Action”: “s3:*”, “Effect”: “Allow”, “Principal”: “*”, “Resource”: [“arn:aws:s3:::*/*”, “arn:aws:s3:::*”], “Sid”: “Stmt1450910920641”}], “Version”: “2012-10-17”}, “route_table_ids”: [“rtb-abcd1234”], “service_name”: “com.amazonaws.ap-southeast-2.s3”, “vpc_endpoint_id”: “vpce-a1b2c3d4”, “vpc_id”: “vpc-abbad0d0”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;creation_timestamp&quot;:</span> <span class="pre">&quot;2017-02-20T05:04:15+00:00&quot;,</span> <span class="pre">&quot;policy_document&quot;:</span> <span class="pre">{&quot;Id&quot;:</span> <span class="pre">&quot;Policy1450910922815&quot;,</span> <span class="pre">&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;s3:*&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">[&quot;arn:aws:s3:::*/*&quot;,</span> <span class="pre">&quot;arn:aws:s3:::*&quot;],</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Stmt1450910920641&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;},</span> <span class="pre">&quot;route_table_ids&quot;:</span> <span class="pre">[&quot;rtb-abcd1234&quot;],</span> <span class="pre">&quot;service_name&quot;:</span> <span class="pre">&quot;com.amazonaws.ap-southeast-2.s3&quot;,</span> <span class="pre">&quot;vpc_endpoint_id&quot;:</span> <span class="pre">&quot;vpce-a1b2c3d4&quot;,</span> <span class="pre">&quot;vpc_id&quot;:</span> <span class="pre">&quot;vpc-abbad0d0&quot;}]</span></code></p>
 </div></td>
 </tr>
 </tbody>

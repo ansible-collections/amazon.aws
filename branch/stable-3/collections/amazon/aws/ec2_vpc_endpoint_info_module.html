@@ -221,8 +221,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -264,8 +264,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>The <em>query</em> option has been deprecated and will be removed after 2022-12-01.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“services”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“endpoints”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;services&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;endpoints&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -301,8 +301,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -382,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS VPC endpoint service names</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> <em>query</em> is <code class="docutils literal notranslate"><span class="pre">services</span></code></p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“service_names”: [“com.amazonaws.ap-southeast-2.s3”]}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;service_names&quot;:</span> <span class="pre">[&quot;com.amazonaws.ap-southeast-2.s3&quot;]}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -391,7 +391,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of endpoints that match the query. Each endpoint has the keys creation_timestamp, policy_document, route_table_ids, service_name, state, vpc_endpoint_id, vpc_id.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> <em>query</em> is <code class="docutils literal notranslate"><span class="pre">endpoints</span></code></p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“vpc_endpoints”: [{“creation_timestamp”: “2017-02-16T11:06:48+00:00”, “policy_document”: “\”{\\\”Version\\\”:\\\”2012-10-17\\\”,\\\”Id\\\”:\\\”Policy1450910922815\\\”, \\\”Statement\\\”:[{\\\”Sid\\\”:\\\”Stmt1450910920641\\\”,\\\”Effect\\\”:\\\”Allow\\\”, \\\”Principal\\\”:\\\”*\\\”,\\\”Action\\\”:\\\”s3:*\\\”,\\\”Resource\\\”:[\\\”arn:aws:s3:::*/*\\\”,\\\”arn:aws:s3:::*\\\”]}]}\”\n”, “route_table_ids”: [“rtb-abcd1234”], “service_name”: “com.amazonaws.ap-southeast-2.s3”, “state”: “available”, “vpc_endpoint_id”: “vpce-abbad0d0”, “vpc_id”: “vpc-1111ffff”}]}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;vpc_endpoints&quot;:</span> <span class="pre">[{&quot;creation_timestamp&quot;:</span> <span class="pre">&quot;2017-02-16T11:06:48+00:00&quot;,</span> <span class="pre">&quot;policy_document&quot;:</span> <span class="pre">&quot;\&quot;{\\\&quot;Version\\\&quot;:\\\&quot;2012-10-17\\\&quot;,\\\&quot;Id\\\&quot;:\\\&quot;Policy1450910922815\\\&quot;,</span> <span class="pre">\\\&quot;Statement\\\&quot;:[{\\\&quot;Sid\\\&quot;:\\\&quot;Stmt1450910920641\\\&quot;,\\\&quot;Effect\\\&quot;:\\\&quot;Allow\\\&quot;,</span> <span class="pre">\\\&quot;Principal\\\&quot;:\\\&quot;*\\\&quot;,\\\&quot;Action\\\&quot;:\\\&quot;s3:*\\\&quot;,\\\&quot;Resource\\\&quot;:[\\\&quot;arn:aws:s3:::*/*\\\&quot;,\\\&quot;arn:aws:s3:::*\\\&quot;]}]}\&quot;\n&quot;,</span> <span class="pre">&quot;route_table_ids&quot;:</span> <span class="pre">[&quot;rtb-abcd1234&quot;],</span> <span class="pre">&quot;service_name&quot;:</span> <span class="pre">&quot;com.amazonaws.ap-southeast-2.s3&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;available&quot;,</span> <span class="pre">&quot;vpc_endpoint_id&quot;:</span> <span class="pre">&quot;vpce-abbad0d0&quot;,</span> <span class="pre">&quot;vpc_id&quot;:</span> <span class="pre">&quot;vpc-1111ffff&quot;}]}</span></code></p>
 </div></td>
 </tr>
 </tbody>

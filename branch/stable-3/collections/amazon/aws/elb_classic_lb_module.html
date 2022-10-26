@@ -188,8 +188,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>When set to <code class="docutils literal notranslate"><span class="pre">False</span></code> will disable delivery of access logs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -200,8 +200,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The interval for publishing the access logs to S3.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">5</span></p></li>
-<li><p><span class="ansible-option-default-bold">60</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">5</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">60</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -220,7 +220,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Where in the S3 bucket to deliver the logs.</p>
 <p>If the prefix is not provided or set to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>, the log is placed at the root level of the bucket.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -281,8 +281,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -293,8 +293,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -428,8 +428,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Beware, ELB controls for the proxy protocol are based on the <em>instance_port</em>.  If you have multiple listeners talking to the same <em>instance_port</em>, this will affect all of them.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -465,8 +465,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Purge existing instance ids on ELB that are not found in <em>instance_ids</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -477,8 +477,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Purge existing listeners on ELB that are not found in listeners.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -490,8 +490,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Because it is not permitted to add multiple subnets from the same availability zone, subnets to be purged will be removed before new subnets are added.  This may cause a brief outage if you try to replace all subnets at once.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -503,8 +503,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Whether to remove existing tags that aren’t passed in the <em>tags</em> parameter.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -515,8 +515,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Purge existing availability zones on ELB that are not found in <em>zones</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -540,8 +540,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Defaults to <em>scheme=internet-facing</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“internal”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“internet-facing”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;internal&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;internet-facing&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -581,8 +581,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>Create or destroy the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“present”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -610,8 +610,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When <em>enabled=false</em> session stickiness will be disabled for all listeners.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -633,8 +633,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Ignored if <em>enabled=false</em>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“application”</span></p></li>
-<li><p><span class="ansible-option-choices-entry">“loadbalancer”</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;application&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;loadbalancer&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -661,8 +661,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -674,8 +674,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <p>Support for waiting when adding instances was added in release 2.1.0.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -685,7 +685,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-cell"><p>Used in conjunction with wait. Number of seconds to wait for the ELB to be terminated.</p>
 <p>A maximum of 600 seconds (10 minutes) is allowed.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">180</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">180</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -940,7 +940,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the policy used to control if the ELB is using a application cookie stickiness policy.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ec2-elb-lb-AppCookieStickinessPolicyType”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-elb-lb-AppCookieStickinessPolicyType&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -949,7 +949,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description of the backend policy applied to the ELB (instance-port:policy-name).</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “8181:ProxyProtocol-policy”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;8181:ProxyProtocol-policy&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -958,7 +958,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum time, in seconds, to keep the existing connections open before deregistering the instances.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 25</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">25</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -967,7 +967,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Either <code class="docutils literal notranslate"><span class="pre">'yes'</span></code> if cross-AZ load balancing is enabled, or <code class="docutils literal notranslate"><span class="pre">'no'</span></code> if cross-AZ load balancing is disabled.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “yes”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -976,7 +976,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The DNS name of the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -993,7 +993,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of consecutive successful health checks before marking an instance as healthy.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 2</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">2</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1002,7 +1002,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The time, in seconds, between each health check.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 10</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">10</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1011,7 +1011,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Protocol, Port, and for HTTP(S) health checks the path tested by the health check.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “<a class="reference external" href="TCP:22">TCP:22</a>”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;TCP:22&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1020,7 +1020,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The time, in seconds, after which an in progress health check is considered failed due to a timeout.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 5</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">5</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1029,7 +1029,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of consecutive failed health checks before marking an instance as unhealthy.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 2</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">2</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1038,7 +1038,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Amazon Route 53 hosted zone for the load balancer.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “Z35SXDOTRQ7X7K”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Z35SXDOTRQ7X7K&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1047,7 +1047,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The DNS name of the load balancer when using a custom hostname.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ansible-module.example”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ansible-module.example&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1056,7 +1056,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The length of of time before an idle connection is dropped by the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 50</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">50</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1065,7 +1065,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of instances attached to the ELB in an in-service state.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 1</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1082,7 +1082,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A human readable description of why the instance is not in service.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “N/A”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;N/A&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1091,7 +1091,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “i-03dcc8953a03d6435”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;i-03dcc8953a03d6435&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1100,7 +1100,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A code describing why the instance is not in service.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “N/A”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;N/A&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1109,7 +1109,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The current service state of the instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “InService”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;InService&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1118,7 +1118,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of the IDs of instances attached to the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“i-03dcc8953a03d6435”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;i-03dcc8953a03d6435&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1127,7 +1127,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the policy used to control if the ELB is using a cookie stickiness policy.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ec2-elb-lb-LBCookieStickinessPolicyType”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-elb-lb-LBCookieStickinessPolicyType&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1137,7 +1137,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of lists describing the listeners attached to the ELB.</p>
 <p>The nested list contains the listener port, the instance port, the listener protoco, the instance port, and where appropriate the ID of the SSL certificate for the port.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [[22, 22, “TCP”, “TCP”], [80, 8181, “HTTP”, “HTTP”]]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[[22,</span> <span class="pre">22,</span> <span class="pre">&quot;TCP&quot;,</span> <span class="pre">&quot;TCP&quot;],</span> <span class="pre">[80,</span> <span class="pre">8181,</span> <span class="pre">&quot;HTTP&quot;,</span> <span class="pre">&quot;HTTP&quot;]]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1146,7 +1146,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the ELB.  This name is unique per-region, per-account.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ansible-test-935c585850ac”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ansible-test-935c585850ac&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1155,7 +1155,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of instances attached to the ELB in an out-of-service state.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 0</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1164,7 +1164,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the policy used to control if the ELB operates using the Proxy protocol.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when the proxy protocol policy exists.</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ProxyProtocol-policy”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ProxyProtocol-policy&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1173,7 +1173,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS region in which the ELB is running.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “us-east-1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1182,7 +1182,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the ELB is an <code class="docutils literal notranslate"><span class="pre">'internal'</span></code> or a <code class="docutils literal notranslate"><span class="pre">'internet-facing'</span></code> load balancer.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “internal”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;internal&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1191,7 +1191,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of the IDs of the Security Groups attached to the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“sg-0c12ebd82f2fb97dc”, “sg-01ec7378d0c7342e6”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;sg-0c12ebd82f2fb97dc&quot;,</span> <span class="pre">&quot;sg-01ec7378d0c7342e6&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1200,7 +1200,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A minimal description of the current state of the ELB.  Valid values are <code class="docutils literal notranslate"><span class="pre">'exists'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gone'</span></code>, <code class="docutils literal notranslate"><span class="pre">'deleted'</span></code>, <code class="docutils literal notranslate"><span class="pre">'created'</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “exists”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;exists&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1209,7 +1209,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of the subnet IDs attached to the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“subnet-00d9d0f70c7e5f63c”, “subnet-03fa5253586b2d2d5”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;subnet-00d9d0f70c7e5f63c&quot;,</span> <span class="pre">&quot;subnet-03fa5253586b2d2d5&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1218,7 +1218,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A dictionary describing the tags attached to the ELB.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“ExampleTag”: “Example Value”, “Name”: “ansible-test-935c585850ac”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;ExampleTag&quot;:</span> <span class="pre">&quot;Example</span> <span class="pre">Value&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;ansible-test-935c585850ac&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1227,7 +1227,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of instances attached to the ELB in an unknown state.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> 0</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1236,7 +1236,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of the AWS regions in which the ELB is running.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when state is not ‘absent’</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“us-east-1b”, “us-east-1a”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;us-east-1b&quot;,</span> <span class="pre">&quot;us-east-1a&quot;]</span></code></p>
 </div></td>
 </tr>
 </tbody>

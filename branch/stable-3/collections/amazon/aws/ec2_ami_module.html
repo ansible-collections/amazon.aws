@@ -177,7 +177,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <a class="ansibleOptionLink" href="#parameter-architecture" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The target architecture of the image to register</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“x86_64”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -236,8 +236,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Use a botocore.endpoint logger to parse the unique (rather than total) “resource:action” API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -248,8 +248,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Delete snapshots when deregistering the AMI.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -274,8 +274,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the device should be automatically deleted when the Instance is terminated.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -295,8 +295,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the volume should be encrypted.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -317,8 +317,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <p>Alias <code class="docutils literal notranslate"><span class="pre">NoDevice</span></code> has been deprecated and will be removed after 2022-06-01.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -373,8 +373,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>A boolean representing whether enhanced networking with ENA is enabled or not.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -428,8 +428,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the responsibility of maintaining file system integrity is left to the owner of the instance.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -450,8 +450,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Whether to remove existing tags that aren’t passed in the <code class="docutils literal notranslate"><span class="pre">tags</span></code> parameter</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -508,8 +508,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Register or deregister an AMI.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">“absent”</span></p></li>
-<li><p><span class="ansible-option-default-bold">“present”</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -527,8 +527,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>When set to “no”, SSL certificates will not be validated for communication with the AWS APIs.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-choices-entry">false</span></p></li>
-<li><p><span class="ansible-option-default-bold">true</span> <span class="ansible-option-default">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -537,7 +537,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <a class="ansibleOptionLink" href="#parameter-virtualization_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The virtualization type of the image to register.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">“hvm”</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;hvm&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -547,8 +547,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <td><div class="ansible-option-cell"><p>Wait for the AMI to be in state ‘available’ before returning.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
-<li><p><span class="ansible-option-default-bold">false</span> <span class="ansible-option-default">← (default)</span></p></li>
-<li><p><span class="ansible-option-choices-entry">true</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -557,7 +557,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>How long before wait gives up, in seconds.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <span class="ansible-option-default">1200</span></p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1200</span></code></p>
 </div></td>
 </tr>
 </tbody>
@@ -678,7 +678,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Architecture of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “x86_64”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -687,7 +687,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Block device mapping associated with image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“/dev/sda1”: {“delete_on_termination”: true, “encrypted”: false, “size”: 10, “snapshot_id”: “snap-1a03b80e7”, “volume_type”: “standard”}}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;/dev/sda1&quot;:</span> <span class="pre">{&quot;delete_on_termination&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;encrypted&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;size&quot;:</span> <span class="pre">10,</span> <span class="pre">&quot;snapshot_id&quot;:</span> <span class="pre">&quot;snap-1a03b80e7&quot;,</span> <span class="pre">&quot;volume_type&quot;:</span> <span class="pre">&quot;standard&quot;}}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -696,7 +696,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Creation date of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “2015-10-15T22:43:44.000Z”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-10-15T22:43:44.000Z&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -705,7 +705,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Description of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “nat-server”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-server&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -714,7 +714,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Type of hypervisor.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “xen”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;xen&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -723,7 +723,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>ID of the image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ami-1234abcd”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ami-1234abcd&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -732,7 +732,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether image is public.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> false</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -741,7 +741,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Permissions allowing other accounts to access the AMI.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [{“group”: “all”}]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;group&quot;:</span> <span class="pre">&quot;all&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -750,7 +750,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Location of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “315210894379/nat-server”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;315210894379/nat-server&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -759,7 +759,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>AMI name of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “nat-server”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-server&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -768,7 +768,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Owner of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “435210894375”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;435210894375&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -785,7 +785,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Root device name of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “/dev/sda1”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sda1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -794,7 +794,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Root device type of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “ebs”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ebs&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -803,7 +803,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of snapshot ids deleted after deregistering image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> after AMI is deregistered, if <em>delete_snapshot=true</em></p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> [“snap-fbcccb8f”, “snap-cfe7cdb4”]</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;snap-fbcccb8f&quot;,</span> <span class="pre">&quot;snap-cfe7cdb4&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -812,7 +812,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>State of image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “available”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -821,7 +821,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary of tags assigned to image.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> {“Env”: “devel”, “Name”: “nat-server”}</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Env&quot;:</span> <span class="pre">&quot;devel&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;nat-server&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -830,7 +830,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div></td>
 <td><div class="ansible-option-cell"><p>Image virtualization type.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> “hvm”</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;hvm&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
