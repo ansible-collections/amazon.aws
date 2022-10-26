@@ -13,4 +13,4 @@ hostvars_prefix: '{{ inventory_prefix }}'
 hostvars_suffix: '{{ inventory_suffix }}'
 {% endif %}
 filters:
-  db-instance-id: "{{ resource_prefix }}-mariadb"
+  db-instance-id: "{{ instance_id }}"

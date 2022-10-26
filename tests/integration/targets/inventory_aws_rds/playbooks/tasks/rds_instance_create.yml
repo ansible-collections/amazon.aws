@@ -1,0 +1,12 @@
+---
+- name: Create minimal RDS instance in default VPC and default subnet group
+  rds_instance:
+    state: present
+    engine: "{{ instance_engine }}"
+    db_instance_class: db.t2.micro
+    allocated_storage: 20
+    instance_id: '{{ instance_id }}'
+    master_username: 'ansibletestuser'
+    master_user_password: 'password-{{ resource_prefix | regex_findall(".{8}$") | first }}'
+    tags: "{{ resource_tags | default(omit) }}"
+    wait: "{{ aws_api_wait | default(false) }}"

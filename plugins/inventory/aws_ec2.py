@@ -262,7 +262,6 @@ hostvars_suffix: '_ec2'
 import re
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
@@ -271,16 +270,16 @@ from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import missing_required_lib
+
+from ansible.template import Templar
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.plugins.inventory import Cacheable
 from ansible.plugins.inventory import Constructable
-from ansible.template import Templar
-
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.inventory import AnsibleAWSInventory
 
 
 # The mappings give an array of keys to get from the filter name to the value
@@ -376,21 +375,17 @@ instance_data_filter_to_boto_attr = {
 }
 
 
-class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
+class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable, AnsibleAWSInventory):
 
     NAME = 'amazon.aws.aws_ec2'
 
     def __init__(self):
+
         super(InventoryModule, self).__init__()
 
         self.group_prefix = 'aws_ec2_'
 
-        # credentials
-        self.boto_profile = None
-        self.aws_secret_access_key = None
-        self.aws_access_key_id = None
-        self.aws_security_token = None
-        self.iam_role_arn = None
+        AnsibleAWSInventory.__init__(self)
 
     def _compile_values(self, obj, attr):
         '''
@@ -438,112 +433,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             instance_value = self._compile_values(instance_value, attribute)
         return instance_value
 
-    def _get_credentials(self):
-        '''
-            :return A dictionary of boto client credentials
-        '''
-        boto_params = {}
-        for credential in (('aws_access_key_id', self.aws_access_key_id),
-                           ('aws_secret_access_key', self.aws_secret_access_key),
-                           ('aws_session_token', self.aws_security_token)):
-            if credential[1]:
-                boto_params[credential[0]] = credential[1]
-
-        return boto_params
-
-    def _get_connection(self, credentials, region='us-east-1'):
-        try:
-            connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **credentials)
-        except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-            if self.boto_profile:
-                try:
-                    connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
-                except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                    raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-            else:
-                raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-        return connection
-
-    def _boto3_assume_role(self, credentials, region=None):
-        """
-        Assume an IAM role passed by iam_role_arn parameter
-
-        :return: a dict containing the credentials of the assumed role
-        """
-
-        iam_role_arn = self.iam_role_arn
-
-        try:
-            sts_connection = boto3.session.Session(profile_name=self.boto_profile).client('sts', region, **credentials)
-            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName='ansible_aws_ec2_dynamic_inventory')
-            return dict(
-                aws_access_key_id=sts_session['Credentials']['AccessKeyId'],
-                aws_secret_access_key=sts_session['Credentials']['SecretAccessKey'],
-                aws_session_token=sts_session['Credentials']['SessionToken']
-            )
-        except botocore.exceptions.ClientError as e:
-            raise AnsibleError("Unable to assume IAM role: %s" % to_native(e))
-
-    def _boto3_conn(self, regions):
-        '''
-            :param regions: A list of regions to create a boto3 client
-
-            Generator that yields a boto3 client and the region
-        '''
-
-        credentials = self._get_credentials()
-        iam_role_arn = self.iam_role_arn
-
-        if not regions:
-            try:
-                # as per https://boto3.amazonaws.com/v1/documentation/api/latest/guide/ec2-example-regions-avail-zones.html
-                client = self._get_connection(credentials)
-                resp = client.describe_regions()
-                regions = [x['RegionName'] for x in resp.get('Regions', [])]
-            except botocore.exceptions.NoRegionError:
-                # above seems to fail depending on boto3 version, ignore and lets try something else
-                pass
-            except is_boto3_error_code('UnauthorizedOperation') as e:  # pylint: disable=duplicate-except
-                if iam_role_arn is not None:
-                    try:
-                        # Describe regions assuming arn role
-                        assumed_credentials = self._boto3_assume_role(credentials)
-                        client = self._get_connection(assumed_credentials)
-                        resp = client.describe_regions()
-                        regions = [x['RegionName'] for x in resp.get('Regions', [])]
-                    except botocore.exceptions.NoRegionError:
-                        # above seems to fail depending on boto3 version, ignore and lets try something else
-                        pass
-                else:
-                    raise AnsibleError("Unauthorized operation: %s" % to_native(e))
-
-        # fallback to local list hardcoded in boto3 if still no regions
-        if not regions:
-            session = boto3.Session()
-            regions = session.get_available_regions('ec2')
-
-        # I give up, now you MUST give me regions
-        if not regions:
-            raise AnsibleError('Unable to get regions list from available methods, you must specify the "regions" option to continue.')
-
-        for region in regions:
-            connection = self._get_connection(credentials, region)
-            try:
-                if iam_role_arn is not None:
-                    assumed_credentials = self._boto3_assume_role(credentials, region)
-                else:
-                    assumed_credentials = credentials
-                connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **assumed_credentials)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                if self.boto_profile:
-                    try:
-                        connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
-                    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                        raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-                else:
-                    raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-            yield connection, region
-
     def _get_instances_by_region(self, regions, filters, strict_permissions):
         '''
            :param regions: a list of regions in which to describe instances
@@ -553,7 +442,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         '''
         all_instances = []
 
-        for connection, _region in self._boto3_conn(regions):
+        for connection, _region in self._boto3_conn(regions, "ec2"):
             try:
                 # By default find non-terminated/terminating instances
                 if not any(f['Name'] == 'instance-state-name' for f in filters):
@@ -796,41 +685,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host_vars, name, strict=strict)
 
-    def _set_credentials(self, loader):
-        '''
-            :param config_data: contents of the inventory config file
-        '''
-
-        t = Templar(loader=loader)
-        credentials = {}
-
-        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
-            if t.is_template(self.get_option(credential_type)):
-                credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
-            else:
-                credentials[credential_type] = self.get_option(credential_type)
-
-        self.boto_profile = credentials['aws_profile']
-        self.aws_access_key_id = credentials['aws_access_key']
-        self.aws_secret_access_key = credentials['aws_secret_key']
-        self.aws_security_token = credentials['aws_security_token']
-        self.iam_role_arn = credentials['iam_role_arn']
-
-        if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            session = botocore.session.get_session()
-            try:
-                credentials = session.get_credentials().get_frozen_credentials()
-            except AttributeError:
-                pass
-            else:
-                self.aws_access_key_id = credentials.access_key
-                self.aws_secret_access_key = credentials.secret_key
-                self.aws_security_token = credentials.token
-
-        if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            raise AnsibleError("Insufficient boto credentials found. Please provide them in your "
-                               "inventory configuration file or set them as environment variables.")
-
     def verify_file(self, path):
         '''
             :param loader: an ansible.parsing.dataloader.DataLoader object
@@ -863,7 +717,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if self.get_option('use_contrib_script_compatible_sanitization'):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
 
-        self._set_credentials(loader)
+        templar = Templar(loader=loader)
+        self._set_credentials(templar)
 
         # get user specifications
         regions = self.get_option('regions')

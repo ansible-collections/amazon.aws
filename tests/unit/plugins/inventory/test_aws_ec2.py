@@ -149,19 +149,6 @@ def test_get_boto_attr_chain(inventory):
     assert inventory._get_boto_attr_chain('network-interface.addresses.private-ip-address', instance) == "098.76.54.321"
 
 
-def test_boto3_conn(inventory):
-    inventory._options = {"aws_profile": "first_precedence",
-                          "aws_access_key": "test_access_key",
-                          "aws_secret_key": "test_secret_key",
-                          "aws_security_token": "test_security_token",
-                          "iam_role_arn": None}
-    loader = DataLoader()
-    inventory._set_credentials(loader)
-    with pytest.raises(AnsibleError) as error_message:
-        for _connection, _region in inventory._boto3_conn(regions=['us-east-1']):
-            assert "Insufficient credentials found" in error_message
-
-
 def testget_all_hostnames_default(inventory):
     instance = instances['Instances'][0]
     assert inventory.get_all_hostnames(instance, hostnames=None) == ["ec2-12-345-67-890.compute-1.amazonaws.com", "ip-098-76-54-321.ec2.internal"]
@@ -206,36 +193,6 @@ def test_get_preferred_hostname_with_2_tags(inventory):
     hostnames = ['tag:ansible', 'tag:Name']
     instance = instances['Instances'][0]
     assert inventory._get_preferred_hostname(instance, hostnames) == "test"
-
-
-def test_set_credentials(inventory):
-    inventory._options = {'aws_access_key': 'test_access_key',
-                          'aws_secret_key': 'test_secret_key',
-                          'aws_security_token': 'test_security_token',
-                          'aws_profile': 'test_profile',
-                          'iam_role_arn': 'arn:aws:iam::123456789012:role/test-role'}
-    loader = DataLoader()
-    inventory._set_credentials(loader)
-
-    assert inventory.boto_profile == "test_profile"
-    assert inventory.aws_access_key_id == "test_access_key"
-    assert inventory.aws_secret_access_key == "test_secret_key"
-    assert inventory.aws_security_token == "test_security_token"
-    assert inventory.iam_role_arn == "arn:aws:iam::123456789012:role/test-role"
-
-
-def test_insufficient_credentials(inventory):
-    inventory._options = {
-        'aws_access_key': None,
-        'aws_secret_key': None,
-        'aws_security_token': None,
-        'aws_profile': None,
-        'iam_role_arn': None
-    }
-    with pytest.raises(AnsibleError) as error_message:
-        loader = DataLoader()
-        inventory._set_credentials(loader)
-        assert "Insufficient credentials found" in error_message
 
 
 def test_verify_file_bad_config(inventory):

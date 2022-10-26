@@ -20,16 +20,4 @@
       region: '{{ aws_region }}'
 
   tasks:
-    - name: refresh inventory to populate cache
-      meta: refresh_inventory
-
-    - name: assert group was populated with inventory but is empty
-      assert:
-        that:
-          - "'aws_rds' in groups"
-          - "groups.aws_rds | length == 1"
-
-    - name: Delete RDS instance
-      include_tasks: tasks/rds_instance_delete.yml
-      vars:
-        aws_api_wait: true
+    - include_tasks: 'tasks/rds_instance_{{ operation }}.yml'
