@@ -1,0 +1,5 @@
+instance_id: ansible-test-{{ tiny_prefix }}
+username: test
+password: test12345678
+db_instance_class: db.t3.micro
+allocated_storage: 20

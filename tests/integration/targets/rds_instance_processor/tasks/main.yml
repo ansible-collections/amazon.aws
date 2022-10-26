@@ -1,0 +1,141 @@
+- name: rds_instance / processor integration tests
+  collections:
+  - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+  - name: Ensure the resource doesn't exist
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+    ignore_errors: yes
+
+  - name: Create an oracle-ee DB instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: oracle-ee
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ oracle_ee_db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      storage_encrypted: true
+      processor_features: {}
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+
+  - name: Modify the processor features - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: oracle-ee
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ oracle_ee_db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      storage_encrypted: true
+      processor_features: '{{ modified_processor_features }}'
+      apply_immediately: true
+    register: result
+    check_mode: true
+
+  - assert:
+      that:
+      - result.changed
+
+  - name: Modify the processor features
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: oracle-ee
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ oracle_ee_db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      storage_encrypted: true
+      processor_features: '{{ modified_processor_features }}'
+      apply_immediately: true
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount
+        }}"
+      - result.pending_modified_values.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore
+        }}"
+
+  - name: Modify the processor features (idempotence) - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: oracle-ee
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ oracle_ee_db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      storage_encrypted: true
+      processor_features: '{{ modified_processor_features }}'
+      apply_immediately: true
+    register: result
+    check_mode: true
+
+  - assert:
+      that:
+      - not result.changed
+
+  - name: Modify the processor features (idempotence)
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: oracle-ee
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ oracle_ee_db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      storage_encrypted: true
+      processor_features: '{{ modified_processor_features }}'
+      apply_immediately: true
+    register: result
+
+      # Check if processor features either are pending or already changed
+  - assert:
+      that:
+      - not result.changed
+      - (result.pending_modified_values.processor_features.coreCount is defined and
+        result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount
+        }}") or (result.processor_features.coreCount is defined and result.processor_features.coreCount
+        == "{{ modified_processor_features.coreCount }}")
+      - (result.pending_modified_values.processor_features.threadsPerCore is defined
+        and result.pending_modified_values.processor_features.threadsPerCore == "{{
+        modified_processor_features.threadsPerCore }}") or (result.processor_features.threadsPerCore
+        is defined and result.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore
+        }}")
+
+  always:
+
+  - name: Delete the DB instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+      wait: false
+    register: result
+
+  - assert:
+      that:
+      - result.changed
