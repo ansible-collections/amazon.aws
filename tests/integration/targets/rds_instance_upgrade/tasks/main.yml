@@ -1,0 +1,128 @@
+- name: rds_instance / upgrade integration tests
+  collections:
+  - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  - name: Ensure the resource doesn't exist
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+    ignore_errors: yes
+
+  - name: Create a mariadb instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - result.db_instance_identifier == '{{ instance_id }}'
+
+    # Test upgrade of DB instance
+
+  - name: Upgrade a mariadb instance - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version_2 }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      apply_immediately: true
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - result.changed
+
+  - name: Upgrade a mariadb instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version_2 }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+      apply_immediately: true
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - '"engine_version" in result.pending_modified_values or result.engine_version
+        == mariadb_engine_version_2'
+
+  - name: Idempotence upgrading a mariadb instance - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version_2 }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+    register: result
+    check_mode: yes
+
+    ### Specifying allow_major_version_upgrade with check_mode will always result in changed=True
+    ### since it's not returned in describe_db_instances api call
+    # - assert:
+    #     that:
+    #       - not result.changed
+
+  - name: Idempotence upgrading a mariadb instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      engine: mariadb
+      engine_version: '{{ mariadb_engine_version_2 }}'
+      allow_major_version_upgrade: true
+      username: '{{ username }}'
+      password: '{{ password }}'
+      db_instance_class: '{{ db_instance_class }}'
+      allocated_storage: '{{ allocated_storage }}'
+    register: result
+
+  - assert:
+      that:
+      - not result.changed
+      - '"engine_version" in result.pending_modified_values or result.engine_version
+        == mariadb_engine_version_2'
+
+  always:
+  - name: Delete the instance
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: absent
+      skip_final_snapshot: true
+      wait: false
+    ignore_errors: yes
