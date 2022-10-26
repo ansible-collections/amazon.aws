@@ -168,7 +168,16 @@ options:
             origin_keepalive_timeout:
               description: A keep-alive timeout (in seconds).
               type: int
-
+        connection_attempts:
+          description: The number of times that CloudFront attempts to connect to the origin.
+                       The minimum number is C(1), the maximum is C(3).
+          type: int
+          default: 3
+        connection_timeout:
+          description: The number of seconds that CloudFront waits when trying to establish a connection to the origin.
+                       The minimum timeout is C(1) second, the maximum is C(10) seconds.
+          type: int
+          default: 10
     purge_origins:
       description: Whether to remove any origins that aren't listed in I(origins).
       default: false
@@ -1277,6 +1286,16 @@ origins:
           returned: always
           type: str
           sample: ''
+        connection_attempts:
+          description: The number of times that CloudFront attempts to connect to the origin.
+          returned: always
+          type: int
+          sample: 3
+        connection_timeout:
+          description: The number of seconds that CloudFront waits when trying to establish a connection to the origin.
+          returned: always
+          type: int
+          sample: 10
         s3_origin_config:
           description: Origin access identity configuration for S3 Origin.
           returned: when s3_origin_access_identity_enabled is true
