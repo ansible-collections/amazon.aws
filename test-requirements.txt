@@ -6,9 +6,10 @@ coverage==4.5.4
 placebo
 mock
 pytest
-pytest-xdist
-# We should avoid these two modules with py3
+pytest-forked
 pytest-mock
+pytest-xdist
+
 # Needed for ansible.utils.ipaddr in tests
 netaddr
 # Sometimes needed where we don't have features we need in modules
