@@ -1,0 +1,2 @@
+trivial:
+- ec2_eip - fix bad use of raise from 1194.

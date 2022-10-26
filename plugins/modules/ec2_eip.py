@@ -535,7 +535,7 @@ def check_is_instance(device_id, in_vpc):
         return True
 
     if device_id.startswith('eni-') and not in_vpc:
-        raise("If you are specifying an ENI, in_vpc must be true")
+        raise EipError("If you are specifying an ENI, in_vpc must be true")
 
     return False
 
