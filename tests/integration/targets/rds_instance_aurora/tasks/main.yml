@@ -16,27 +16,27 @@
       skip_final_snapshot: true
     register: result
 
-  - assert:
-      that:
-      - not result.changed
-    ignore_errors: yes
-
   - name: Create minimal aurora cluster in default VPC and default subnet group
     rds_cluster:
       state: present
-      engine: aurora
+      engine: aurora-postgresql
       engine_mode: provisioned
       cluster_id: '{{ cluster_id }}'
       username: '{{ username }}'
       password: '{{ password }}'
       tags:
         CreatedBy: rds_instance integration tests
+    register: my_cluster
+
+  - assert:
+      that:
+        - my_cluster.engine_mode == "provisioned"
 
   - name: Create an Aurora instance
     rds_instance:
       id: '{{ instance_id }}'
       cluster_id: '{{ cluster_id }}'
-      engine: aurora
+      engine: aurora-postgresql
       state: present
       db_instance_class: '{{ aurora_db_instance_class }}'
       tags:
@@ -53,7 +53,7 @@
     rds_instance:
       id: '{{ instance_id }}-new'
       cluster_id: '{{ cluster_id }}'
-      engine: aurora
+      engine: aurora-postgresql
       state: present
       username: '{{ username }}'
       password: '{{ password }}'

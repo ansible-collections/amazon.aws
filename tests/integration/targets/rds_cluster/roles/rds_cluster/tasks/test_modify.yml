@@ -14,11 +14,15 @@
       - not _result_delete_db_cluster.changed
     ignore_errors: yes
 
-  - name: Create a DB cluster
+  # Follow up to Aurora Serverless V2 release, we use an aurora-mysql to
+  # avoid the following error when we try to adjust the port:
+  # You currently can't modify EndpointPort with Aurora Serverless.
+  - name: Create an Aurora-MySQL DB cluster
     rds_cluster:
       id: '{{ cluster_id }}'
       state: present
-      engine: '{{ engine }}'
+      engine: aurora-mysql
+      engine_mode: provisioned
       username: '{{ username }}'
       password: '{{ password }}'
     register: _result_create_source_db_cluster
@@ -37,7 +41,7 @@
       - "'db_cluster_resource_id' in _result_create_source_db_cluster"
       - "'endpoint' in _result_create_source_db_cluster"
       - "'engine' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - _result_create_source_db_cluster.engine == "aurora-mysql"
       - "'engine_mode' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_source_db_cluster"
@@ -72,7 +76,7 @@
       - "'db_cluster_resource_id' in _result_modify_password"
       - "'endpoint' in _result_modify_password"
       - "'engine' in _result_modify_password"
-      - _result_modify_password.engine == "{{ engine }}"
+      - _result_modify_password.engine == "aurora-mysql"
       - "'engine_mode' in _result_modify_password"
       - _result_modify_password.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_password"
@@ -105,7 +109,7 @@
       - "'db_cluster_resource_id' in _result_modify_port"
       - "'endpoint' in _result_modify_port"
       - "'engine' in _result_modify_port"
-      - _result_modify_port.engine == "{{ engine }}"
+      - _result_modify_port.engine == "aurora-mysql"
       - "'engine_mode' in _result_modify_port"
       - _result_modify_port.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_port"
@@ -140,7 +144,7 @@
       - "'db_cluster_resource_id' in _result_modify_id"
       - "'endpoint' in _result_modify_id"
       - "'engine' in _result_modify_id"
-      - _result_modify_id.engine == "{{ engine }}"
+      - _result_modify_id.engine == "aurora-mysql"
       - "'engine_mode' in _result_modify_id"
       - _result_modify_id.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_id"
@@ -167,7 +171,7 @@
 
   - name: Create DB cluster parameter group if not exists
     command: aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name
-      {{ new_db_parameter_group_name }} --db-parameter-group-family aurora5.6 --description
+      {{ new_db_parameter_group_name }} --db-parameter-group-family aurora-mysql5.7 --description
       "Test DB cluster parameter group"
     environment:
       AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
@@ -199,7 +203,7 @@
       - "'db_cluster_resource_id' in _result_modify_db_parameter_group_name"
       - "'endpoint' in _result_modify_db_parameter_group_name"
       - "'engine' in _result_modify_db_parameter_group_name"
-      - _result_modify_db_parameter_group_name.engine == "{{ engine }}"
+      - _result_modify_db_parameter_group_name.engine == "aurora-mysql"
       - "'engine_mode' in _result_modify_db_parameter_group_name"
       - _result_modify_db_parameter_group_name.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_db_parameter_group_name"
