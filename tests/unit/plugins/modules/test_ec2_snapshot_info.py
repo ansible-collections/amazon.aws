@@ -10,7 +10,7 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_snapshot_info"
 
 
-def test__describe_snapshots():
+def test_describe_snapshots():
     module = MagicMock()
     connection = MagicMock()
 
@@ -37,11 +37,12 @@ def test__describe_snapshots():
         ]}
 
     params = {
-        "SnapshotIds": [ "snap-0f00cba1234567890" ]
+        "SnapshotIds": ["snap-0f00cba1234567890"]
     }
 
     snapshot_info = ec2_snapshot_info._describe_snapshots(connection, module, **params)
-    connection.describe_snapshots.called_with(aws_retry=True,  SnapshotIds=[ "snap-0f00cba1234567890" ])
+
+    connection.describe_snapshots.assert_called_with(aws_retry=True, SnapshotIds=["snap-0f00cba1234567890"])
     assert connection.describe_snapshots.call_count == 1
     assert len(snapshot_info['Snapshots']) > 0
     assert 'SnapshotId' in snapshot_info['Snapshots'][0]
@@ -75,7 +76,7 @@ def test_get_snapshot_info_by_id(mock__describe_snapshots):
         ]}
 
     module.params = {
-        "snapshot_ids": [ "snap-0f00cba1234567890" ]
+        "snapshot_ids": ["snap-0f00cba1234567890"]
     }
 
     ec2_snapshot_info.list_ec2_snapshots(connection, module)
@@ -83,7 +84,7 @@ def test_get_snapshot_info_by_id(mock__describe_snapshots):
     assert mock__describe_snapshots.call_count == 1
     mock__describe_snapshots.assert_has_calls(
         [
-            call(connection, module, SnapshotIds=[ "snap-0f00cba1234567890" ]),
+            call(connection, module, SnapshotIds=["snap-0f00cba1234567890"]),
         ]
     )
 
