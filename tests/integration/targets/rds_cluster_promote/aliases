@@ -1,0 +1,7 @@
+# TODO: Cannot be tested in the CI because:
+# An error occurred (InvalidParameterValue) when calling the CreateDBCluster operation: Replication from cluster in same region is not supported
+disabled
+time=20m
+cloud/aws
+rds_cluster
+rds_cluster_info

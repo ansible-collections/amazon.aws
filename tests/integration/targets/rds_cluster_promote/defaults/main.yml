@@ -1,0 +1,8 @@
+# defaults file for rds_cluster
+
+# Create cluster
+cluster_id: ansible-test-cluster-{{ tiny_prefix }}
+username: testrdsusername
+password: test-rds_password
+engine: aurora
+port: 3306

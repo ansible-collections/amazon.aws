@@ -7,7 +7,6 @@
       security_token: "{{ security_token | default(omit) }}"
   collections:
     - amazon.aws
-
   block:
   - name: Create a source DB cluster
     rds_cluster:
@@ -89,7 +88,7 @@
       - "'engine' in _result_cluster_snapshot"
       - _result_cluster_snapshot.engine == "{{ engine }}"
       # - "'engine_mode' in _result_cluster_snapshot"
-      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
@@ -181,7 +180,7 @@
       - "'engine' in _result_cluster_snapshot"
       - _result_cluster_snapshot.engine == "{{ engine }}"
       # - "'engine_mode' in _result_cluster_snapshot"
-      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
@@ -259,7 +258,7 @@
       - "'engine' in _result_cluster_snapshot"
       - _result_cluster_snapshot.engine == "{{ engine }}"
       # - "'engine_mode' in _result_cluster_snapshot"
-      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
@@ -314,7 +313,7 @@
       - "'engine' in _result_cluster_snapshot"
       - _result_cluster_snapshot.engine == "{{ engine }}"
       # - "'engine_mode' in _result_cluster_snapshot"
-      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
@@ -354,7 +353,7 @@
       - "'engine' in _result_cluster_snapshot"
       - _result_cluster_snapshot.engine == "{{ engine }}"
       # - "'engine_mode' in _result_cluster_snapshot"
-      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
