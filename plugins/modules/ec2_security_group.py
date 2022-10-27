@@ -33,7 +33,7 @@ options:
     type: str
   description:
     description:
-      - Description of the security group. Required when C(state) is C(present).
+      - Description of the security group. Required when I(state) is C(present).
     required: false
     type: str
   vpc_id:
@@ -51,38 +51,42 @@ options:
     elements: dict
     suboptions:
         cidr_ip:
-            type: str
-            description:
+          type: list
+          elements: raw
+          description:
             - The IPv4 CIDR range traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
             - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
               be removed in a release after 2024-12-01.
         cidr_ipv6:
-            type: str
-            description:
+          type: list
+          elements: raw
+          description:
             - The IPv6 CIDR range traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
             - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
               be removed in a release after 2024-12-01.
         ip_prefix:
-            type: str
-            description:
+          type: list
+          elements: str
+          description:
             - The IP Prefix U(https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html)
               that traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_id:
-            type: str
-            description:
+          type: list
+          elements: str
+          description:
             - The ID of the Security Group that traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_name:
-            type: list
-            elements: str
-            description:
+          type: list
+          elements: str
+          description:
             - Name of the Security Group that traffic is coming from.
             - If the Security Group doesn't exist a new Security Group will be
               created with I(group_desc) as the description.
@@ -90,47 +94,58 @@ options:
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_desc:
-            type: str
-            description:
+          type: str
+          description:
             - If the I(group_name) is set and the Security Group doesn't exist a new Security Group will be
               created with I(group_desc) as the description.
         proto:
-            type: str
-            description:
+          type: str
+          description:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
-            - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
-            - When using C(icmp) or C(icmpv6) as the protocol, you can pass
-            - the C(icmp_type) and C(icmp_code) parameters instead of
-            - C(from_port) and C(to_port).
+              number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers)).
+          default: 'tcp'
         from_port:
-            type: int
-            description:
-            - The start of the range of ports that traffic is coming from.
+          type: int
+          description:
+            - The start of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
-            - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+            - When I(proto=icmp) a value of C(-1) indicates all ports.
+            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
         to_port:
-            type: int
-            description:
-            - The end of the range of ports that traffic is coming from.
+          type: int
+          description:
+            - The end of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
-            - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+            - When I(proto=icmp) a value of C(-1) indicates all ports.
+            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+        ports:
+          type: list
+          elements: str
+          description:
+            - A list of ports that traffic is going to.
+            - Elements of the list can be a single port (for example C(8080)), or a range of ports
+              specified as C(<START>-<END>), (for example C(1011-1023)).
+            - Mutually exclusive with I(icmp_code), I(icmp_type), I(from_port) and I(to_port).
         icmp_type:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(icmp) or C(icmpv6) as the protocol, allows you to
-          - specify the ICMP type to use. The option is mutually exclusive with C(from_port).
-          - A value of C(-1) indicates all ICMP types.
+            - The ICMP type of the packet.
+            - A value of C(-1) indicates all ICMP types.
+            - Requires I(proto=icmp) or I(proto=icmpv6).
+            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
-          - the ICMP code to use. The option is mutually exclusive with C(to_port).
-          - A value of C(-1) indicates all ICMP codes.
+            - The ICMP code of the packet.
+            - A value of C(-1) indicates all ICMP codes.
+            - Requires I(proto=icmp) or I(proto=icmpv6).
+            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
         rule_desc:
-            type: str
-            description: A description for the rule.
+          type: str
+          description: A description for the rule.
+
   rules_egress:
     description:
       - List of firewall outbound rules to enforce in this group (see example). If none are supplied,
@@ -141,80 +156,96 @@ options:
     aliases: ['egress_rules']
     suboptions:
         cidr_ip:
-            type: str
-            description:
+          type: list
+          elements: raw
+          description:
             - The IPv4 CIDR range traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
             - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
               be removed in a release after 2024-12-01.
         cidr_ipv6:
-            type: str
-            description:
+          type: list
+          elements: raw
+          description:
             - The IPv6 CIDR range traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
             - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
               be removed in a release after 2024-12-01.
         ip_prefix:
-            type: str
-            description:
+          type: list
+          elements: str
+          description:
             - The IP Prefix U(https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html)
               that traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_id:
-            type: str
-            description:
+          type: list
+          elements: str
+          description:
             - The ID of the Security Group that traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_name:
-            type: str
-            description:
+          type: list
+          elements: str
+          description:
             - Name of the Security Group that traffic is going to.
             - If the Security Group doesn't exist a new Security Group will be
               created with I(group_desc) as the description.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
         group_desc:
-            type: str
-            description:
+          type: str
+          description:
             - If the I(group_name) is set and the Security Group doesn't exist a new Security Group will be
               created with I(group_desc) as the description.
         proto:
-            type: str
-            description:
+          type: str
+          description:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
-            - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
-            - When using C(icmp) or C(icmpv6) as the protocol, you can pass the
-            - C(icmp_type) and C(icmp_code) parameters instead of C(from_port) and C(to_port).
+              number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers)).
+          default: 'tcp'
         from_port:
-            type: int
-            description:
+          type: int
+          description:
             - The start of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
-            - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+            - When I(proto=icmp) a value of C(-1) indicates all ports.
+            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
         to_port:
-            type: int
-            description:
+          type: int
+          description:
             - The end of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
-            - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+            - When I(proto=icmp) a value of C(-1) indicates all ports.
+            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+        ports:
+          type: list
+          elements: str
+          description:
+            - A list of ports that traffic is going to.
+            - Elements of the list can be a single port (for example C(8080)), or a range of ports
+              specified as C(<START>-<END>), (for example C(1011-1023)).
+            - Mutually exclusive with I(icmp_code), I(icmp_type), I(from_port) and I(to_port).
         icmp_type:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
-          - the ICMP type to use. The option is mutually exclusive with C(from_port).
-          - A value of C(-1) indicates all ICMP types.
+            - The ICMP type of the packet.
+            - A value of C(-1) indicates all ICMP types.
+            - Requires I(proto=icmp) or I(proto=icmpv6).
+            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
-          - the ICMP code to use. The option is mutually exclusive with C(to_port).
-          - A value of C(-1) indicates all ICMP codes.
+            - The ICMP code of the packet.
+            - A value of C(-1) indicates all ICMP codes.
+            - Requires I(proto=icmp) or I(proto=icmpv6).
+            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
         rule_desc:
             type: str
             description: A description for the rule.
@@ -477,12 +508,28 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
 Rule = namedtuple('Rule', ['port_range', 'protocol', 'target', 'target_type', 'description'])
-valid_targets = set(['ipv4', 'ipv6', 'group', 'ip_prefix'])
+TARGET_TYPES_ALL = {'ipv4', 'ipv6', 'group', 'ip_prefix'}
+SOURCE_TYPES_ALL = {'cidr_ip', 'cidr_ipv6', 'group_id', 'group_name', 'ip_prefix'}
 current_account_id = None
+
+
+class SecurityGroupError(Exception):
+    def __init__(self, msg, e=None, **kwargs):
+        super(SecurityGroupError, self).__init__(msg)
+        self.message = msg
+        self.exception = e
+        self.kwargs = kwargs
+
+    # Simple helper to perform the module.fail_... call once we have module available to us
+    def fail(self, module):
+        if self.exception:
+            module.fail_json_aws(self.exception, msg=self.message, **self.kwargs)
+        module.fail_json(msg=self.message, **self.kwargs)
 
 
 def rule_cmp(a, b):
@@ -544,7 +591,7 @@ def to_permission(rule):
         }]
         if rule.description:
             perm['PrefixListIds'][0]['Description'] = rule.description
-    elif rule.target_type not in valid_targets:
+    elif rule.target_type not in TARGET_TYPES_ALL:
         raise ValueError('Invalid target type for rule {0}'.format(rule))
     return fix_port_and_protocol(perm)
 
@@ -638,46 +685,13 @@ def deduplicate_rules_args(rules):
     return list(dict(zip((json.dumps(r, sort_keys=True) for r in rules), rules)).values())
 
 
-def validate_rule(module, rule):
-    VALID_PARAMS = (
-        'cidr_ip',
-        'cidr_ipv6',
-        'ip_prefix',
-        'group_id',
-        'group_name',
-        'group_desc',
-        'proto',
-        'from_port',
-        'to_port',
-        'icmp_type',
-        'icmp_code',
-        'icmp_keys',
-        'rule_desc',
-    )
-    if not isinstance(rule, dict):
-        module.fail_json(msg='Invalid rule parameter type [%s].' % type(rule))
-    for k in rule:
-        if k not in VALID_PARAMS:
-            module.fail_json(msg='Invalid rule parameter \'{0}\' for rule: {1}'.format(k, rule))
+def validate_rule(rule):
 
-    if 'group_id' in rule and 'cidr_ip' in rule:
-        module.fail_json(msg='Specify group_id OR cidr_ip, not both')
-    elif 'group_name' in rule and 'cidr_ip' in rule:
-        module.fail_json(msg='Specify group_name OR cidr_ip, not both')
-    elif 'group_id' in rule and 'cidr_ipv6' in rule:
-        module.fail_json(msg="Specify group_id OR cidr_ipv6, not both")
-    elif 'group_name' in rule and 'cidr_ipv6' in rule:
-        module.fail_json(msg="Specify group_name OR cidr_ipv6, not both")
-    elif 'cidr_ip' in rule and 'cidr_ipv6' in rule:
-        module.fail_json(msg="Specify cidr_ip OR cidr_ipv6, not both")
-    elif 'group_id' in rule and 'group_name' in rule:
-        module.fail_json(msg='Specify group_id OR group_name, not both')
-    elif ('icmp_type' in rule or 'icmp_code' in rule) and 'ports' in rule:
-        module.fail_json(msg='Specify icmp_code/icmp_type OR ports, not both')
-    elif ('from_port' in rule or 'to_port' in rule) and ('icmp_type' in rule or 'icmp_code' in rule) and 'icmp_keys' not in rule:
-        module.fail_json(msg='Specify from_port/to_port OR icmp_type/icmp_code, not both')
-    elif ('icmp_type' in rule or 'icmp_code' in rule) and ('icmp' not in rule['proto']):
-        module.fail_json(msg='Specify proto: icmp or icmpv6 when using icmp_type/icmp_code')
+    icmp_type = rule.get('icmp_type', None)
+    icmp_code = rule.get('icmp_code', None)
+    proto = rule['proto']
+    if (icmp_type is not None or icmp_code is not None) and ('icmp' not in proto):
+        raise SecurityGroupError(msg='Specify proto: icmp or icmpv6 when using icmp_type/icmp_code')
 
 
 def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
@@ -703,7 +717,11 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
     group_name = None
     target_group_created = False
 
-    validate_rule(module, rule)
+    try:
+        validate_rule(rule)
+    except SecurityGroupError as e:
+        e.fail(module)
+
     if rule.get('group_id') and re.match(FOREIGN_SECURITY_GROUP_REGEX, rule['group_id']):
         # this is a foreign Security Group. Since you can't fetch it you must create an instance of it
         # Matches on groups like amazon-elb/sg-5a9c116a/amazon-elb-sg, amazon-elb/amazon-elb-sg,
@@ -788,7 +806,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
     elif 'ip_prefix' in rule:
         return 'ip_prefix', rule['ip_prefix'], False
 
-    module.fail_json(msg="Could not match target for rule {0}".format(rule), failed_rule=rule)
+    module.fail_json(msg="Could not match target for rule", failed_rule=rule)
 
 
 def ports_expand(ports):
@@ -809,7 +827,7 @@ def rule_expand_ports(rule):
     # takes a rule dict and returns a list of expanded rule dicts
     # uses icmp_code and icmp_type instead of from_ports and to_ports when
     # available.
-    if 'ports' not in rule:
+    if rule.get('ports', None) is None:
         non_icmp_params = any([
             rule.get('icmp_type', None) is None, rule.get('icmp_code', None) is None])
         conflict = not non_icmp_params and any([
@@ -854,12 +872,11 @@ def rules_expand_ports(rules):
 def rule_expand_source(rule, source_type):
     # takes a rule dict and returns a list of expanded rule dicts for specified source_type
     sources = rule[source_type] if isinstance(rule[source_type], list) else [rule[source_type]]
-    source_types_all = ('cidr_ip', 'cidr_ipv6', 'group_id', 'group_name', 'ip_prefix')
 
     rule_expanded = []
     for source in sources:
         temp_rule = rule.copy()
-        for s in source_types_all:
+        for s in SOURCE_TYPES_ALL:
             temp_rule.pop(s, None)
         temp_rule[source_type] = source
         rule_expanded.append(temp_rule)
@@ -868,18 +885,19 @@ def rule_expand_source(rule, source_type):
 
 
 def rule_expand_sources(rule):
-    # takes a rule dict and returns a list of expanded rule dicts
-    source_types = (stype for stype in ('cidr_ip', 'cidr_ipv6', 'group_id', 'group_name', 'ip_prefix') if stype in rule)
+    rule = scrub_none_parameters(rule)
+    source_types = SOURCE_TYPES_ALL.intersection(set(rule.keys()))
 
+    # takes a rule dict and returns a list of expanded rule dicts
     return [r for stype in source_types
             for r in rule_expand_source(rule, stype)]
 
 
 def rules_expand_sources(rules):
-    # takes a list of rules and expands it based on 'cidr_ip', 'group_id', 'group_name'
     if not rules:
         return rules
 
+    # takes a list of rules and expands it based on 'cidr_ip', 'group_id', 'group_name'
     return [rule for rule_complex in rules
             for rule in rule_expand_sources(rule_complex)]
 
@@ -1142,10 +1160,10 @@ def get_diff_final_resource(client, module, security_group):
         specified_rules = flatten_nested_targets(module, deepcopy(specified_rules))
         for rule in specified_rules:
             format_rule = {
-                'from_port': None, 'to_port': None, 'ip_protocol': rule.get('proto', 'tcp'),
+                'from_port': None, 'to_port': None, 'ip_protocol': rule.get('proto'),
                 'ip_ranges': [], 'ipv6_ranges': [], 'prefix_list_ids': [], 'user_id_group_pairs': []
             }
-            if rule.get('proto', 'tcp') in ('all', '-1', -1):
+            if rule.get('proto') in ('all', '-1', -1):
                 format_rule['ip_protocol'] = '-1'
                 format_rule.pop('from_port')
                 format_rule.pop('to_port')
@@ -1270,13 +1288,48 @@ def get_ip_permissions_sort_key(rule):
 
 
 def main():
+
+    rule_spec = dict(
+        rule_desc=dict(type='str'),
+        # We have historically allowed for lists of lists in cidr_ip and cidr_ipv6
+        # https://github.com/ansible-collections/amazon.aws/pull/1213
+        cidr_ip=dict(type='list', elements='raw'),
+        cidr_ipv6=dict(type='list', elements='raw'),
+        ip_prefix=dict(type='list', elements='str'),
+        group_id=dict(type='list', elements='str'),
+        group_name=dict(type='list', elements='str'),
+        group_desc=dict(type='str'),
+        proto=dict(type='str', default='tcp'),
+        ports=dict(type='list', elements='str'),
+        from_port=dict(type='int'),
+        to_port=dict(type='int'),
+        icmp_type=dict(type='int'),
+        icmp_code=dict(type='int'),
+    )
+    rule_requirements = dict(
+        mutually_exclusive=(
+            ('cidr_ip', 'cidr_ipv6', 'ip_prefix', 'group_id', 'group_name',),
+            # PORTS / ICMP_TYPE + ICMP_CODE / TO_PORT + FROM_PORT
+            ('ports', 'to_port',), ('ports', 'from_port',),
+            ('ports', 'icmp_type',), ('ports', 'icmp_code',),
+            ('icmp_type', 'to_port',), ('icmp_code', 'to_port',),
+            ('icmp_type', 'from_port',), ('icmp_code', 'from_port',),
+        ),
+        required_one_of=(
+            # A target must be specified
+            ('group_id', 'group_name', 'cidr_ip', 'cidr_ipv6', 'ip_prefix',),
+        ),
+    )
+
     argument_spec = dict(
         name=dict(),
         group_id=dict(),
         description=dict(),
         vpc_id=dict(),
-        rules=dict(type='list', elements='dict'),
-        rules_egress=dict(type='list', elements='dict', aliases=['egress_rules']),
+        rules=dict(type='list', elements='dict',
+                   options=rule_spec, **rule_requirements),
+        rules_egress=dict(type='list', elements='dict', aliases=['egress_rules'],
+                          options=rule_spec, **rule_requirements),
         state=dict(default='present', type='str', choices=['present', 'absent']),
         purge_rules=dict(default=True, required=False, type='bool'),
         purge_rules_egress=dict(default=True, required=False, type='bool', aliases=['purge_egress_rules']),
@@ -1374,14 +1427,14 @@ def main():
                 rule.pop('icmp_code', None)
                 rule.pop('icmp_keys', None)
 
-                if rule.get('proto', 'tcp') in ('all', '-1', -1):
+                if rule.get('proto') in ('all', '-1', -1):
                     rule['proto'] = '-1'
                     rule['from_port'] = None
                     rule['to_port'] = None
 
                 try:
-                    int(rule.get('proto', 'tcp'))
-                    rule['proto'] = to_text(rule.get('proto', 'tcp'))
+                    int(rule.get('proto'))
+                    rule['proto'] = to_text(rule.get('proto'))
                     rule['from_port'] = None
                     rule['to_port'] = None
                 except ValueError:
@@ -1390,7 +1443,7 @@ def main():
                 named_tuple_rule_list.append(
                     Rule(
                         port_range=(rule['from_port'], rule['to_port']),
-                        protocol=to_text(rule.get('proto', 'tcp')),
+                        protocol=to_text(rule.get('proto')),
                         target=target, target_type=target_type,
                         description=rule.get('rule_desc'),
                     )
