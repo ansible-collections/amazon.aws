@@ -1105,17 +1105,21 @@ def wait_for_rule_propagation(module, client, group, desired_ingress, desired_eg
 
 
 def group_exists(client, module, vpc_id, group_id, name):
-    params = {'Filters': []}
+    filters = dict()
+    params = dict()
     if group_id:
-        params['GroupIds'] = [group_id]
+        if isinstance(group_id, list):
+            params['GroupIds'] = group_id
+        else:
+            params['GroupIds'] = [group_id]
     if name:
         # Add name to filters rather than params['GroupNames']
         # because params['GroupNames'] only checks the default vpc if no vpc is provided
-        params['Filters'].append({'Name': 'group-name', 'Values': [name]})
+        filters['group-name'] = name
     if vpc_id:
-        params['Filters'].append({'Name': 'vpc-id', 'Values': [vpc_id]})
+        filters['vpc-id'] = vpc_id
     # Don't filter by description to maintain backwards compatibility
-
+    params['Filters'] = ansible_dict_to_boto3_filter_list(filters)
     try:
         security_groups = sg_exists_with_backoff(client, **params).get('SecurityGroups', [])
         all_groups = get_security_groups_with_backoff(client).get('SecurityGroups', [])
@@ -1188,6 +1192,7 @@ def get_diff_final_resource(client, module, security_group):
                             rule[source_type] = [rule[source_type]]
                         format_rule[rule_key] = [{source_type: target} for target in rule[source_type]]
             if rule.get('group_id') or rule.get('group_name'):
+                # XXX bug - doesn't cope with a list of ids/names
                 rule_sg = group_exists(client, module, module.params['vpc_id'], rule.get('group_id'), rule.get('group_name'))[0]
                 if rule_sg is None:
                     # --diff during --check
