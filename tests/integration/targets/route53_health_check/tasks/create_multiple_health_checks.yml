@@ -117,8 +117,61 @@
         - '"route53:UpdateHealthCheck" not in create_idem.results[0].resource_actions'
         - '"route53:UpdateHealthCheck" not in create_idem.results[1].resource_actions'
 
+    - name: 'Update HTTP health checks with different resource_path'
+      route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ updated_port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ item }}'
+        use_unique_names: true
+      register: update_health_check
+      with_items:
+        - '{{ resource_path }}'
+
+    - name: 'Check result - Update TCP health check - set threshold'
+      assert:
+        that:
+        - update_health_check is successful
+        - update_health_check is changed
+        - '"id" in _health_check'
+        - _health_check.id == health_check_1_id
+        - '"health_check_version" in _health_check'
+        - '"tags" in _health_check'
+        - '"health_check_config" in _health_check'
+        - '"type" in _check_config'
+        - '"disabled" in _check_config'
+        - '"failure_threshold" in _check_config'
+        - '"request_interval" in _check_config'
+        - '"fully_qualified_domain_name" not in _check_config'
+        - '"ip_address" in _check_config'
+        - '"port" in _check_config'
+        - '"search_string" not in _check_config'
+        - _check_config.disabled == false
+        - _check_config.type == 'HTTP'
+        - _check_config.request_interval == 30
+        - _check_config.ip_address == ip_address
+        - _check_config.port == updated_port
+      vars:
+        _health_check: '{{ update_health_check.results[0].health_check }}'
+        _check_config: '{{ update_health_check.results[0].health_check.health_check_config }}'
+
   always:
     # Cleanup starts here
+      - name: 'Delete multiple HTTP health checks with different resource_path'
+        route53_health_check:
+          state: absent
+          name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
+          ip_address: '{{ ip_address }}'
+          port: '{{ updated_port }}'
+          type: '{{ type_http }}'
+          resource_path: '{{ item }}'
+          use_unique_names: true
+        register: delete_result
+        with_items:
+          - '{{ resource_path }}'
+
       - name: 'Delete multiple HTTP health checks with different resource_path'
         route53_health_check:
           state: absent
@@ -130,5 +183,4 @@
           use_unique_names: true
         register: delete_result
         with_items:
-          - '{{ resource_path }}'
           - '{{ resource_path_1 }}'
