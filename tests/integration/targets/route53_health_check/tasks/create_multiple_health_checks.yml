@@ -117,7 +117,7 @@
         - '"route53:UpdateHealthCheck" not in create_idem.results[0].resource_actions'
         - '"route53:UpdateHealthCheck" not in create_idem.results[1].resource_actions'
 
-    - name: 'Update HTTP health checks with different resource_path'
+    - name: 'Update HTTP health check - update port'
       route53_health_check:
         state: present
         name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
@@ -130,7 +130,7 @@
       with_items:
         - '{{ resource_path }}'
 
-    - name: 'Check result - Update TCP health check - set threshold'
+    - name: 'Check result - Update TCP health check - update port'
       assert:
         that:
         - update_health_check is successful
@@ -159,7 +159,7 @@
 
   always:
     # Cleanup starts here
-      - name: 'Delete multiple HTTP health checks with different resource_path'
+      - name: 'Delete HTTP health check'
         route53_health_check:
           state: absent
           name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
@@ -172,7 +172,7 @@
         with_items:
           - '{{ resource_path }}'
 
-      - name: 'Delete multiple HTTP health checks with different resource_path'
+      - name: 'Delete HTTP health check'
         route53_health_check:
           state: absent
           name: '{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found'
