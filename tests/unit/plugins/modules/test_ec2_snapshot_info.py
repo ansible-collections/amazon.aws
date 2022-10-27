@@ -2,18 +2,12 @@
 
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
-from unittest.mock import MagicMock, Mock, patch, ANY, call
-import botocore.exceptions
 
+from unittest.mock import MagicMock, Mock, patch, ANY, call
+
+from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_snapshot_info"
-
-
-def a_boto_exception():
-    return botocore.exceptions.UnknownServiceError(
-        service_name="Whoops", known_service_names="Oula"
-    )
 
 
 def test__describe_snapshots():
@@ -46,9 +40,11 @@ def test__describe_snapshots():
         "SnapshotIds": [ "snap-0f00cba1234567890" ]
     }
 
-    snapshots = ec2_snapshot_info._describe_snapshots(connection, module, **params)
+    snapshot_info = ec2_snapshot_info._describe_snapshots(connection, module, **params)
     connection.describe_snapshots.called_with(aws_retry=True,  SnapshotIds=[ "snap-0f00cba1234567890" ])
     assert connection.describe_snapshots.call_count == 1
+    assert len(snapshot_info['Snapshots']) > 0
+    assert 'SnapshotId' in snapshot_info['Snapshots'][0]
 
 
 @patch(module_name + "._describe_snapshots")
