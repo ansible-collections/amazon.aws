@@ -56,12 +56,16 @@ options:
             - The IPv4 CIDR range traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
+            - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
+              be removed in a release after 2024-12-01.
         cidr_ipv6:
             type: str
             description:
             - The IPv6 CIDR range traffic is coming from.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
+            - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
+              be removed in a release after 2024-12-01.
         ip_prefix:
             type: str
             description:
@@ -142,12 +146,16 @@ options:
             - The IPv4 CIDR range traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
+            - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
+              be removed in a release after 2024-12-01.
         cidr_ipv6:
             type: str
             description:
             - The IPv6 CIDR range traffic is going to.
             - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
               and I(group_name).
+            - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
+              be removed in a release after 2024-12-01.
         ip_prefix:
             type: str
             description:
@@ -1213,6 +1221,9 @@ def flatten_nested_targets(module, rules):
     def _flatten(targets):
         for target in targets:
             if isinstance(target, list):
+                module.deprecate('Support for nested lists in cidr_ip and cidr_ipv6 has been '
+                                 'deprecated.  The flatten filter can be used instead.',
+                                 date='2024-12-01', collection_name='amazon.aws')
                 for t in _flatten(target):
                     yield t
             elif isinstance(target, string_types):
