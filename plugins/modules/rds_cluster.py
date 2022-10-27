@@ -407,7 +407,7 @@ EXAMPLES = r'''
     snapshot_identifier: "cluster-{{ resource_prefix }}-snapshot"
 
 - name: Create an Aurora PostgreSQL cluster and attach an intance
-  rds_cluster:
+  amazon.aws.rds_cluster:
     state: present
     engine: aurora-postgresql
     engine_mode: provisioned
@@ -416,7 +416,7 @@ EXAMPLES = r'''
     password: '{{ password }}'
 
 - name: Attach a new instance to the cluster
-  rds_instance:
+  amazon.aws.rds_instance:
     id: '{{ instance_id }}'
     cluster_id: '{{ cluster_id }}'
     engine: aurora-postgresql
