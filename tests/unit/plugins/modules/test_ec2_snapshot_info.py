@@ -4,13 +4,19 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from unittest.mock import MagicMock, Mock, patch, ANY, call
+import pytest
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_snapshot_info"
 
 
-def test_describe_snapshots():
+@pytest.mark.parametrize("snapshot_ids,owner_ids,restorable_by_user_ids,filters,max_results,next_token_id,expected", [([], [], [], {}, None, None, {})])
+def test_build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id, expected):
+    assert ec2_snapshot_info.build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id) == expected
+
+
+def test_get_snapshots():
     module = MagicMock()
     connection = MagicMock()
 
@@ -33,27 +39,45 @@ def test_describe_snapshots():
                 ],
                 "VolumeId": "vol-0ae6c5e1234567890",
                 "VolumeSize": 10
+            },
+            {
+                "Description": "Created by CreateImage(i-083b9dd1234567890) for ami-01486e111234567890",
+                "Encrypted": False,
+                "OwnerId": "123456789000",
+                "Progress": "100%",
+                "SnapshotId": "snap-0f00cba1234567890",
+                "StartTime": "2021-09-30T01:04:49.724000+00:00",
+                "State": "completed",
+                "StorageTier": "standard",
+                "Tags": [
+                    {
+                        'Key': 'TagKey',
+                        'Value': 'TagValue'
+                    },
+                ],
+                "VolumeId": "vol-0ae6c5e1234567890",
+                "VolumeSize": 10
             }
         ]}
 
-    params = {
+    request_args = {
         "SnapshotIds": ["snap-0f00cba1234567890"]
     }
 
-    snapshot_info = ec2_snapshot_info._describe_snapshots(connection, module, **params)
+    snapshot_info = ec2_snapshot_info.get_snapshots(connection, module, request_args)
 
-    connection.describe_snapshots.assert_called_with(aws_retry=True, SnapshotIds=["snap-0f00cba1234567890"])
     assert connection.describe_snapshots.call_count == 1
-    assert len(snapshot_info['Snapshots']) > 0
-    assert 'SnapshotId' in snapshot_info['Snapshots'][0]
+    connection.describe_snapshots.assert_called_with(aws_retry=True, SnapshotIds=["snap-0f00cba1234567890"])
+    assert len(snapshot_info['Snapshots']) == 2
 
 
-@patch(module_name + "._describe_snapshots")
-def test_get_snapshot_info_by_id(mock__describe_snapshots):
+@patch(module_name + ".build_request_args")
+@patch(module_name + ".get_snapshots")
+def test_list_ec2_snapshots(m_get_snapshots, m_build_request_args):
     module = MagicMock()
     connection = MagicMock()
 
-    mock__describe_snapshots.return_value = {
+    m_get_snapshots.return_value = {
         "Snapshots": [
             {
                 "Description": "Created by CreateImage(i-083b9dd1234567890) for ami-01486e111234567890",
@@ -75,16 +99,18 @@ def test_get_snapshot_info_by_id(mock__describe_snapshots):
             }
         ]}
 
-    module.params = {
-        "snapshot_ids": ["snap-0f00cba1234567890"]
+    m_build_request_args.return_value = {
+        'SnapshotIds': ["snap-0f00cba1234567890"]
     }
 
-    ec2_snapshot_info.list_ec2_snapshots(connection, module)
+    request_args = ec2_snapshot_info.build_request_args()
 
-    assert mock__describe_snapshots.call_count == 1
-    mock__describe_snapshots.assert_has_calls(
+    ec2_snapshot_info.list_ec2_snapshots(connection, module, request_args)
+
+    assert m_get_snapshots.call_count == 1
+    m_get_snapshots.assert_has_calls(
         [
-            call(connection, module, SnapshotIds=["snap-0f00cba1234567890"]),
+            call(connection, module, m_build_request_args.return_value),
         ]
     )
 

@@ -219,11 +219,26 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def _describe_snapshots(connection, module, **params):
-    snapshot_ids = module.params.get("snapshot_ids")
+def build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id):
 
+    request_args = {
+        'Filters': ansible_dict_to_boto3_filter_list(filters),
+        'MaxResults': max_results,
+        'NextToken': next_token_id,
+        'OwnerIds': owner_ids,
+        'RestorableByUserIds': [str(user_id) for user_id in restorable_by_user_ids],
+        'SnapshotIds': snapshot_ids
+    }
+
+    request_args = {k: v for k, v in request_args.items() if v}
+
+    return request_args
+
+
+def get_snapshots(connection, module, request_args):
+    snapshot_ids = request_args.get("snapshot_ids")
     try:
-        snapshots = connection.describe_snapshots(aws_retry=True, **params)
+        snapshots = connection.describe_snapshots(aws_retry=True, **request_args)
     except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
@@ -232,35 +247,10 @@ def _describe_snapshots(connection, module, **params):
     return snapshots
 
 
-def list_ec2_snapshots(connection, module):
-
-    params = {}
-    if module.params.get('snapshot_ids'):
-        snapshot_ids = module.params.get("snapshot_ids")
-        params['SnapshotIds'] = snapshot_ids
-
-    if module.params.get('owner_ids'):
-        owner_ids = [str(owner_id) for owner_id in module.params.get("owner_ids")]
-        params['OwnerIds'] = owner_ids
-
-    if module.params.get('restorable_by_user_ids'):
-        restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
-        params['RestorableByUserIds'] = restorable_by_user_ids
-
-    if module.params.get('filters'):
-        filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
-        params['Filters'] = filters
-
-    if module.params.get('max_results'):
-        max_results = module.params.get('max_results')
-        params['MaxResults'] = max_results
-
-    if module.params.get('next_token_id'):
-        next_token_id = module.params.get('next_token_id')
-        params['NextToken'] = next_token_id
+def list_ec2_snapshots(connection, module, request_args):
 
     try:
-        snapshots = _describe_snapshots(connection, module, **params)
+        snapshots = get_snapshots(connection, module, request_args)
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe snapshots')
 
@@ -286,12 +276,12 @@ def list_ec2_snapshots(connection, module):
 def main():
 
     argument_spec = dict(
-        snapshot_ids=dict(default=[], type='list', elements='str'),
-        owner_ids=dict(default=[], type='list', elements='str'),
-        restorable_by_user_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict'),
         max_results=dict(type='int'),
-        next_token_id=dict(type='str')
+        next_token_id=dict(type='str'),
+        owner_ids=dict(default=[], type='list', elements='str'),
+        restorable_by_user_ids=dict(default=[], type='list', elements='str'),
+        snapshot_ids=dict(default=[], type='list', elements='str'),
     )
 
     module = AnsibleAWSModule(
@@ -306,7 +296,16 @@ def main():
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
-    list_ec2_snapshots(connection, module)
+    request_args = build_request_args(
+        filters=module.params["filters"],
+        max_results=module.params["max_results"],
+        next_token_id=module.params["next_token_id"],
+        owner_ids=module.params["owner_ids"],
+        restorable_by_user_ids=module.params["restorable_by_user_ids"],
+        snapshot_ids=module.params["snapshot_ids"],
+    )
+
+    list_ec2_snapshots(connection, module, request_args)
 
 
 if __name__ == '__main__':
