@@ -116,7 +116,7 @@ options:
   measure_latency:
     description:
       - To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.
-      - Value of measure_latency is immutable and can not be modified after creating a health check.
+      - Value of I(measure_latency) is immutable and can not be modified after creating a health check.
         See U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html)
     type: bool
     required: False
