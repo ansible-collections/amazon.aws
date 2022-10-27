@@ -219,6 +219,19 @@ options:
           - mysql
           - postgres
         type: str
+    engine_mode:
+        description:
+          - The DB engine mode of the DB cluster. The combinaison of I(engine) and I(engine_mode) may not be supported.
+          - "See AWS documentation for details:
+            L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
+        choices:
+          - provisioned
+          - serverless
+          - parallelquery
+          - global
+          - multimaster
+        type: str
+        version_added: 5.1.0
     engine_version:
         description:
           - The version number of the database engine to use.
@@ -432,6 +445,23 @@ EXAMPLES = r'''
     username: "{{ username }}"
     cluster_id: "cluster-{{ resource_prefix }}-restored"
     snapshot_identifier: "cluster-{{ resource_prefix }}-snapshot"
+
+- name: Create an Aurora PostgreSQL cluster and attach an intance
+  amazon.aws.rds_cluster:
+    state: present
+    engine: aurora-postgresql
+    engine_mode: provisioned
+    cluster_id: '{{ cluster_id }}'
+    username: '{{ username }}'
+    password: '{{ password }}'
+
+- name: Attach a new instance to the cluster
+  amazon.aws.rds_instance:
+    id: '{{ instance_id }}'
+    cluster_id: '{{ cluster_id }}'
+    engine: aurora-postgresql
+    state: present
+    db_instance_class: 'db.t3.medium'
 '''
 
 RETURN = r'''
@@ -989,9 +1019,9 @@ def main():
         copy_tags_to_snapshot=dict(type='bool'),
         domain=dict(),
         domain_iam_role_name=dict(),
-        enable_global_write_forwarding=dict(type="bool"),
+        enable_global_write_forwarding=dict(type='bool'),
         db_cluster_instance_class=dict(type="str"),
-        enable_iam_database_authentication=dict(type="bool"),
+        enable_iam_database_authentication=dict(type='bool'),
         engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql", "mysql", "postgres"]),
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
