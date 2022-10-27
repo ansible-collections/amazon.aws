@@ -238,21 +238,26 @@ def list_ec2_snapshots(connection, module):
     if module.params.get('snapshot_ids'):
         snapshot_ids = module.params.get("snapshot_ids")
         params['SnapshotIds'] = snapshot_ids
+
     if module.params.get('owner_ids'):
         owner_ids = [str(owner_id) for owner_id in module.params.get("owner_ids")]
         params['OwnerIds'] = owner_ids
+
     if module.params.get('restorable_by_user_ids'):
         restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
         params['RestorableByUserIds'] = restorable_by_user_ids
+
     if module.params.get('filters'):
         filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
         params['Filters'] = filters
+
     if module.params.get('max_results'):
         max_results = module.params.get('max_results')
         params['MaxResults'] = max_results
-    if module.params.get('next_token'):
-        next_token = module.params.get('next_token')
-        params['NextToken'] = next_token
+
+    if module.params.get('next_token_id'):
+        next_token_id = module.params.get('next_token_id')
+        params['NextToken'] = next_token_id
 
     try:
         snapshots = _describe_snapshots(connection, module, **params)
