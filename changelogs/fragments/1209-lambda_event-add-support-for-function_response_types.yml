@@ -1,0 +1,2 @@
+minor_changes:
+  - lambda_event -  Added support to set FunctionResponseTypes when creating lambda event source mappings (https://github.com/ansible-collections/amazon.aws/pull/1209).
