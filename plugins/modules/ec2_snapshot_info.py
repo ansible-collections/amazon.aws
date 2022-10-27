@@ -219,30 +219,43 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def list_ec2_snapshots(connection, module):
-
+def _describe_snapshots(connection, module, **params):
     snapshot_ids = module.params.get("snapshot_ids")
-    owner_ids = [str(owner_id) for owner_id in module.params.get("owner_ids")]
-    restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
-    filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
-    max_results = module.params.get('max_results')
-    next_token = module.params.get('next_token_id')
-    optional_param = {}
-    if max_results:
-        optional_param['MaxResults'] = max_results
-    if next_token:
-        optional_param['NextToken'] = next_token
 
     try:
-        snapshots = connection.describe_snapshots(
-            aws_retry=True,
-            SnapshotIds=snapshot_ids, OwnerIds=owner_ids,
-            RestorableByUserIds=restorable_by_user_ids, Filters=filters,
-            **optional_param)
+        snapshots = connection.describe_snapshots(aws_retry=True, **params)
     except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
         snapshots = {'Snapshots': []}
+
+    return snapshots
+
+
+def list_ec2_snapshots(connection, module):
+
+    params = {}
+    if module.params.get('snapshot_ids'):
+        snapshot_ids = module.params.get("snapshot_ids")
+        params['SnapshotIds'] = snapshot_ids
+    if module.params.get('owner_ids'):
+        owner_ids = [str(owner_id) for owner_id in module.params.get("owner_ids")]
+        params['OwnerIds'] = owner_ids
+    if module.params.get('restorable_by_user_ids'):
+        restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
+        params['RestorableByUserIds'] = restorable_by_user_ids
+    if module.params.get('filters'):
+        filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        params['Filters'] = filters
+    if module.params.get('max_results'):
+        max_results = module.params.get('max_results')
+        params['MaxResults'] = max_results
+    if module.params.get('next_token'):
+        next_token = module.params.get('next_token')
+        params['NextToken'] = next_token
+
+    try:
+        snapshots = _describe_snapshots(connection, module, **params)
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe snapshots')
 
