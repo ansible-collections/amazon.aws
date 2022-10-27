@@ -32,6 +32,11 @@
   - include_role:
       name: '../setup_ec2_facts'
 
+  - include_role:
+      name: '../setup_botocore_pip'
+    vars:
+      botocore_version: '1.23.30'
+
   - set_fact:
       availability_zone: '{{ ec2_availability_zone_names[0] }}'
 
@@ -122,8 +127,15 @@
       network:
         assign_public_ip: true
         delete_on_termination: true
+      metadata_options:
+          instance_metadata_tags: enabled
+      tags:
+        snake_case_key: a_snake_case_value
+        camelCaseKey: aCamelCaseValue
       wait: True
     register: ec2_instance
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - set_fact:
       ec2_ami_id_py2: "{{ lookup('aws_ssm', '/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2', **connection_args) }}"

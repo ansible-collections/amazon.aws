@@ -1,3 +1,7 @@
 dependencies:
-- setup_ec2_facts
-- setup_sshkey
+  - setup_ec2_facts
+  - setup_sshkey
+  #required for run_instances with MetadataOptions.InstanceMetadataTags
+  - role: setup_botocore_pip
+    vars:
+      botocore_version: '1.23.30'
