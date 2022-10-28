@@ -1,3 +1,0 @@
-trivial:
-- various modules - bumped module ``version_added`` to match when they were added to the amazon.aws collection
-- various modules - added ``version_added_collection`` where features were added as part of community.aws

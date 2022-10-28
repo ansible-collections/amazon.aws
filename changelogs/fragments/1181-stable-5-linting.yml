@@ -1,3 +1,0 @@
-minor_changes:
-- aws_ec2 inventory - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
-- s3_object_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).

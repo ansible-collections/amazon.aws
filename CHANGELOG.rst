@@ -5,6 +5,61 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.1.0
+======
+
+Release Summary
+---------------
+
+This release brings some minor changes, bugfixes, security fixes and deprecated features.
+
+Minor Changes
+-------------
+
+- amazon.aws collection - The ``aws_access_key`` parameter has been renamed to ``access_key``, ``access_key`` was previously an alias for this parameter and ``aws_access_key`` remains as an alias.  This change should have no observable effect for users outside the module/plugin documentation. (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``aws_secret_key`` parameter has been renamed to ``secret_key``, ``secret_key`` was previously an alias for this parameter and ``aws_secret_key`` remains as an alias.  This change should have no observable effect for users outside the module/plugin documentation. (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``security_token`` parameter has been renamed to ``session_token``, ``security_token`` was previously an alias for this parameter and ``security_token`` remains as an alias.  This change should have no observable effect for users outside the module/plugin documentation. (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- aws_account_attribute lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+- aws_ec2 inventory - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- aws_ec2 inventory plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+- aws_rds inventory plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+- aws_secret lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+- aws_ssm lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+- ec2_instance - minor fix for launching an instance in specified AZ when ``vpc_subnet_id`` is not provided (https://github.com/ansible-collections/amazon.aws/pull/1150).
+- ec2_instance - refacter ``tower_callback`` code to handle parameter validation as part of the argument specification (https://github.com/ansible-collections/amazon.aws/pull/1199).
+- ec2_instance - the ``instance_role`` parameter has been renamed to ``iam_instance_profile`` to better reflect what it is, ``instance_role`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/1151).
+- ec2_instance - the ``tower_callback`` parameter has been renamed to ``aap_callback``, ``tower_callback`` remains as an alias.  This change should have no observable effect for users outside the module documentation (https://github.com/ansible-collections/amazon.aws/pull/1199).
+- s3_object_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+
+Deprecated Features
+-------------------
+
+- amazon.aws collection - Support for the ``EC2_ACCESS_KEY`` environment variable has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``access_key`` parameter or ``AWS_ACCESS_KEY_ID`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - Support for the ``EC2_REGION`` environment variable has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``region`` parameter or ``AWS_REGION`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - Support for the ``EC2_SECRET_KEY`` environment variable has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``secret_key`` parameter or ``AWS_SECRET_ACCESS_KEY`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - Support for the ``EC2_SECURITY_TOKEN`` environment variable has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``session_token`` parameter or ``AWS_SESSION_TOKEN`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - Support for the ``EC2_URL`` and ``S3_URL`` environment variables has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``endpoint_url`` parameter or ``AWS_ENDPOINT_URL`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``access_token`` alias for the ``session_token`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``session_token`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``access_token`` alias for the ``session_token`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``session_token`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``aws_security_token`` alias for the ``session_token`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``session_token`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``ec2_access_key`` alias for the ``access_key`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``access_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``ec2_region`` alias for the ``region`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``ec2_secret_key`` alias for the ``secret_key`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``secret_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- amazon.aws collection - The ``security_token`` alias for the ``session_token`` parameter has been deprecated and will be removed in a release after 2024-12-01.  Please use the ``session_token`` name instead (https://github.com/ansible-collections/amazon.aws/pull/1172).
+- ec2_security_group - support for passing nested lists to ``cidr_ip`` and ``cidr_ipv6`` has been deprecated. Nested lists can be passed through the ``flatten`` filter instead ``cidr_ip: '{{ my_cidrs | flatten }}'`` (https://github.com/ansible-collections/amazon.aws/pull/1213).
+- module_utils.url - ``ansible_collections.amazon.aws.module_utils.urls`` is believed to be unused and has been deprecated and will be removed in release 7.0.0.
+
+Security Fixes
+--------------
+
+- ec2_instance - fixes leak of password into logs when using ``tower_callback.windows=True`` and ``tower_callback.set_password`` (https://github.com/ansible-collections/amazon.aws/pull/1199).
+
+Bugfixes
+--------
+
+- ec2_instance - fixes ``Invalid type for parameter TagSpecifications, value None`` error when tags aren't specified (https://github.com/ansible-collections/amazon.aws/issues/1148).
+- module_utils.transformations - ensure that ``map_complex_type`` still returns transformed items if items exists that are not in the type_map (https://github.com/ansible-collections/amazon.aws/pull/1163).
+
 v5.0.2
 ======
 

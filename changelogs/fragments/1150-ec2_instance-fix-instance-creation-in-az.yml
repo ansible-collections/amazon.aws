@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_instance - minor fix for launching an instance in specified AZ when `vpc_subnet_id` is not provided (https://github.com/ansible-collections/amazon.aws/pull/1150).
