@@ -737,7 +737,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         if hostvars_prefix or hostvars_suffix:
             for hostvar, hostval in host_vars.copy().items():
-                del(host_vars[hostvar])
+                del host_vars[hostvar]
                 if hostvars_prefix:
                     hostvar = hostvars_prefix + hostvar
                 if hostvars_suffix:
