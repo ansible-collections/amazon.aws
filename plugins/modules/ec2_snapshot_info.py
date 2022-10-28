@@ -270,7 +270,7 @@ def list_ec2_snapshots(connection, module, request_args):
     if snapshots.get('NextToken'):
         result.update(camel_dict_to_snake_dict({'NextTokenId': snapshots.get('NextToken')}))
 
-    module.exit_json(**result)
+    return result
 
 
 def main():
@@ -305,7 +305,9 @@ def main():
         snapshot_ids=module.params["snapshot_ids"],
     )
 
-    list_ec2_snapshots(connection, module, request_args)
+    result = list_ec2_snapshots(connection, module, request_args)
+
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':
