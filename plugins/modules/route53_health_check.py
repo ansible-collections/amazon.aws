@@ -113,6 +113,14 @@ options:
     aliases: ['id']
     version_added: 4.1.0
     version_added_collection: community.aws
+  measure_latency:
+    description:
+      - To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.
+      - Value of I(measure_latency) is immutable and can not be modified after creating a health check.
+        See U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html)
+    type: bool
+    required: False
+    version_added: 5.1.0
 author:
   - "zimbatm (@zimbatm)"
 notes:
@@ -156,6 +164,16 @@ EXAMPLES = '''
     port: 443
     type: HTTPS
     use_unique_names: true
+
+- name: create a TCP health check with latency graphs enabled
+  amazon.aws.route53_health_check:
+    state: present
+    health_check_name: ansible
+    fqdn: ansible.com
+    port: 443
+    type: HTTPS
+    use_unique_names: true
+    measure_latency: true
 
 - name: Delete health-check
   amazon.aws.route53_health_check:
@@ -392,6 +410,9 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
         failure_threshold = 3
     health_check['FailureThreshold'] = failure_threshold
 
+    if module.params.get('measure_latency') is not None:
+        health_check['MeasureLatency'] = module.params.get('measure_latency')
+
     if missing_args:
         module.fail_json(msg='missing required arguments for creation: {0}'.format(
             ', '.join(missing_args)),
@@ -513,6 +534,7 @@ def main():
         health_check_id=dict(type='str', aliases=['id'], required=False),
         health_check_name=dict(type='str', aliases=['name'], required=False),
         use_unique_names=dict(type='bool', required=False),
+        measure_latency=dict(type='bool', required=False),
     )
 
     args_one_of = [
