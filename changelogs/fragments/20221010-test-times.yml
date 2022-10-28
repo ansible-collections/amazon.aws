@@ -1,4 +1,0 @@
-trivial:
-- ec2_metadata_facts - enable ec2_metadata_facts integration tests.
-- ec2_vol - add duration information to integration test metadata.
-- ec2_vpc_route_table - add duration information to integration test metadata.

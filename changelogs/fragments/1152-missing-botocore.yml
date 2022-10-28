@@ -1,6 +1,0 @@
-minor_changes:
-- aws_ec2 inventory plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
-- aws_rds inventory plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
-- aws_account_attribute lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
-- aws_secret lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
-- aws_ssm lookup plugin - use ``missing_required_lib`` for more consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
