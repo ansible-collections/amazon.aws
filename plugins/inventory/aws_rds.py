@@ -85,12 +85,9 @@ except ImportError:
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import missing_required_lib
-from ansible_collections.amazon.aws.plugins.module_utils.inventory import AnsibleAWSInventory
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
 from ansible.template import Templar
-from ansible.plugins.inventory import BaseInventoryPlugin
-from ansible.plugins.inventory import Cacheable
-from ansible.plugins.inventory import Constructable
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
@@ -167,15 +164,13 @@ def _describe_db_clusters(connection, filters):
     return connection.describe_db_clusters(Filters=filters)
 
 
-class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable, AnsibleAWSInventory):
+class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_rds'
 
     def __init__(self):
         super(InventoryModule, self).__init__()
         self.credentials = {}
-
-        AnsibleAWSInventory.__init__(self)
 
     def _populate(self, hosts):
         group = 'aws_rds'
@@ -189,12 +184,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable, AnsibleAWSI
         for group in source_data:
             if group == 'all':
                 continue
-            else:
-                self.inventory.add_group(group)
-                hosts = source_data[group].get('hosts', [])
-                for host in hosts:
-                    self._populate_host_vars([host], hostvars.get(host, {}), group)
-                self.inventory.add_child('all', group)
+            self.inventory.add_group(group)
+            hosts = source_data[group].get('hosts', [])
+            for host in hosts:
+                self._populate_host_vars([host], hostvars.get(host, {}), group)
+            self.inventory.add_child('all', group)
 
     def _format_inventory(self, hosts):
         results = {'_meta': {'hostvars': {}}}
@@ -213,7 +207,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable, AnsibleAWSI
             :param group: the name of the group to which the hosts belong
         '''
         for host in hosts:
-            print("")
             hostname = _get_rds_hostname(host)
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
@@ -283,12 +276,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable, AnsibleAWSI
         super(InventoryModule, self).parse(inventory, loader, path)
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            self.fail_aws(missing_required_lib('botocore and boto3'))
 
         self._read_config_data(path)
 
-        templar = Templar(loader=loader)
-        self._set_credentials(templar)
+        self._set_credentials(loader)
 
         # get user specifications
         regions = self.get_option('regions')

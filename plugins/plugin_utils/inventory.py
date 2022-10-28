@@ -10,19 +10,22 @@ try:
     import botocore
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
-from abc import ABCMeta, abstractmethod
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible.module_utils._text import to_native
+from ansible.template import Templar
+from ansible.plugins.inventory import BaseInventoryPlugin
+from ansible.plugins.inventory import Cacheable
+from ansible.plugins.inventory import Constructable
+from ansible_collections.amazon.aws.plugins.plugin_utils.botocore import boto3_conn
+from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBase
 
 
-class AWSInventoryFailure(Exception):
-    pass
-
-
-class AnsibleAWSInventory(metaclass=ABCMeta):
+class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginBase):
 
     def __init__(self):
+
+        super(AWSInventoryBase, self).__init__()
 
         self.boto_profile = None
         self.aws_secret_access_key = None
@@ -30,28 +33,23 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
         self.aws_security_token = None
         self.iam_role_arn = None
 
-    @abstractmethod
-    def get_option(self, option, hostvars=None):
-        pass
-
     def _get_credentials(self):
         '''
             :return A dictionary of boto client credentials
         '''
-        boto_params = {}
-        for credential in (('aws_access_key_id', self.aws_access_key_id),
-                           ('aws_secret_access_key', self.aws_secret_access_key),
-                           ('aws_session_token', self.aws_security_token)):
-            if credential[1]:
-                boto_params[credential[0]] = credential[1]
+        boto_params = {
+            'aws_access_key_id': self.aws_access_key_id,
+            'aws_secret_access_key': self.aws_secret_access_key,
+            'aws_session_token': self.aws_security_token,
+        }
+        return {k: v for k, v in boto_params.items() if v}
 
-        return boto_params
-
-    def _set_credentials(self, templar):
+    def _set_credentials(self, loader):
         '''
             :param config_data: contents of the inventory config file
         '''
 
+        templar = Templar(loader=loader)
         credentials = {}
 
         for credential_type in ('aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn'):
@@ -78,10 +76,10 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
                 self.aws_security_token = credentials.token
 
         if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            raise AWSInventoryFailure("Insufficient boto credentials found. Please provide them in your "
-                                      "inventory configuration file or set them as environment variables.")
+            self.fail_aws("Insufficient boto credentials found. Please provide them in your "
+                          "inventory configuration file or set them as environment variables.")
 
-    def _boto3_assume_role(self, credentials, service, region=None):
+    def _boto3_assume_role(self, credentials, resource, region=None):
         """
         Assume an IAM role passed by iam_role_arn parameter
 
@@ -92,7 +90,7 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
 
         try:
             sts_connection = boto3.session.Session(profile_name=self.boto_profile).client('sts', region, **credentials)
-            role_session_name = f"ansible_aws_{service}_dynamic_inventory"
+            role_session_name = f"ansible_aws_{resource}_dynamic_inventory"
             sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName=role_session_name)
             return dict(
                 aws_access_key_id=sts_session['Credentials']['AccessKeyId'],
@@ -100,22 +98,12 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
                 aws_session_token=sts_session['Credentials']['SessionToken']
             )
         except botocore.exceptions.ClientError as e:
-            raise AWSInventoryFailure("Unable to assume IAM role: %s" % to_native(e))
+            self.fail_aws("Unable to assume IAM role: %s" % to_native(e))
 
-    def _get_connection(self, credentials, service, region='us-east-1'):
-        try:
-            connection = boto3.session.Session(profile_name=self.boto_profile).client(service, region, **credentials)
-        except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-            if self.boto_profile:
-                try:
-                    connection = boto3.session.Session(profile_name=self.boto_profile).client(service, region)
-                except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                    raise AWSInventoryFailure("Insufficient credentials found: %s" % to_native(e))
-            else:
-                raise AWSInventoryFailure("Insufficient credentials found: %s" % to_native(e))
-        return connection
+    def _get_connection(self, credentials, resource, region='us-east-1'):
+        return boto3_conn(self, conn_type='client', resource=resource, region=region, **credentials)
 
-    def _boto3_conn(self, regions, service):
+    def _boto3_conn(self, regions, resource):
         '''
             :param regions: A list of regions to create a boto3 client
 
@@ -128,7 +116,7 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
         if not regions:
             try:
                 # as per https://boto3.amazonaws.com/v1/documentation/api/latest/guide/ec2-example-regions-avail-zones.html
-                client = self._get_connection(credentials, service)
+                client = self._get_connection(credentials=credentials, resource=resource)
                 resp = client.describe_regions()
                 regions = [x['RegionName'] for x in resp.get('Regions', [])]
             except botocore.exceptions.NoRegionError:
@@ -138,39 +126,37 @@ class AnsibleAWSInventory(metaclass=ABCMeta):
                 if iam_role_arn is not None:
                     try:
                         # Describe regions assuming arn role
-                        assumed_credentials = self._boto3_assume_role(credentials, service)
-                        client = self._get_connection(assumed_credentials, service)
+                        assumed_credentials = self._boto3_assume_role(credentials, resource)
+                        client = self._get_connection(credentials=assumed_credentials, resource=resource)
                         resp = client.describe_regions()
                         regions = [x['RegionName'] for x in resp.get('Regions', [])]
                     except botocore.exceptions.NoRegionError:
                         # above seems to fail depending on boto3 version, ignore and lets try something else
                         pass
                 else:
-                    raise AWSInventoryFailure("Unauthorized operation: %s" % to_native(e))
+                    self.fail_aws("Unauthorized operation: %s" % to_native(e))
 
         # fallback to local list hardcoded in boto3 if still no regions
         if not regions:
             session = boto3.Session()
-            regions = session.get_available_regions(service)
+            regions = session.get_available_regions(resource)
 
         # I give up, now you MUST give me regions
         if not regions:
-            raise AWSInventoryFailure('Unable to get regions list from available methods, you must specify the "regions" option to continue.')
+            self.fail_aws('Unable to get regions list from available methods, you must specify the "regions" option to continue.')
 
         for region in regions:
-            connection = self._get_connection(credentials, service, region)
             try:
+                assumed_credentials = credentials
                 if iam_role_arn is not None:
-                    assumed_credentials = self._boto3_assume_role(credentials, service, region)
-                else:
-                    assumed_credentials = credentials
-                connection = boto3.session.Session(profile_name=self.boto_profile).client(service, region, **assumed_credentials)
+                    assumed_credentials = self._boto3_assume_role(credentials, resource, region)
+                connection = boto3.session.Session(profile_name=self.boto_profile).client(resource, region, **assumed_credentials)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
                 if self.boto_profile:
                     try:
-                        connection = boto3.session.Session(profile_name=self.boto_profile).client(service, region)
+                        connection = boto3.session.Session(profile_name=self.boto_profile).client(resource, region)
                     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                        raise AWSInventoryFailure("Insufficient credentials found: %s" % to_native(e))
+                        self.fail_aws("Insufficient credentials found: %s" % to_native(e))
                 else:
-                    raise AWSInventoryFailure("Insufficient credentials found: %s" % to_native(e))
+                    self.fail_aws("Insufficient credentials found: %s" % to_native(e))
             yield connection, region

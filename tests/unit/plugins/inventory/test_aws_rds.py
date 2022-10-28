@@ -17,10 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (absolute_import, division, print_function)
-
-__metaclass__ = type
-
 import pytest
 from unittest.mock import MagicMock, patch, call, ANY
 import random
@@ -630,7 +626,7 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
 
 
 MOCK_HAS_BOTO3 = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.HAS_BOTO3"
-BASE_INVENTORY_PARSE = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.BaseInventoryPlugin.parse"
+BASE_INVENTORY_PARSE = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.AWSInventoryBase.parse"
 MISSING_REQUIRED_LIB = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.missing_required_lib"
 
 

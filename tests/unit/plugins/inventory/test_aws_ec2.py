@@ -18,91 +18,22 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
-import datetime
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, patch, call
+
+try:
+    import botocore
+except ImportError:
+    # Handled by HAS_BOTO3
+    pass
 
 from ansible.errors import AnsibleError
-from ansible.parsing.dataloader import DataLoader
-from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule, instance_data_filter_to_boto_attr
-
-
-instances = {
-    'Instances': [
-        {'Monitoring': {'State': 'disabled'},
-         'PublicDnsName': 'ec2-12-345-67-890.compute-1.amazonaws.com',
-         'State': {'Code': 16, 'Name': 'running'},
-         'EbsOptimized': False,
-         'LaunchTime': datetime.datetime(2017, 10, 31, 12, 59, 25),
-         'PublicIpAddress': '12.345.67.890',
-         'PrivateIpAddress': '098.76.54.321',
-         'ProductCodes': [],
-         'VpcId': 'vpc-12345678',
-         'StateTransitionReason': '',
-         'InstanceId': 'i-00000000000000000',
-         'EnaSupport': True,
-         'ImageId': 'ami-12345678',
-         'PrivateDnsName': 'ip-098-76-54-321.ec2.internal',
-         'KeyName': 'testkey',
-         'SecurityGroups': [{'GroupName': 'default', 'GroupId': 'sg-12345678'}],
-         'ClientToken': '',
-         'SubnetId': 'subnet-12345678',
-         'InstanceType': 't2.micro',
-         'NetworkInterfaces': [
-            {'Status': 'in-use',
-             'MacAddress': '12:a0:50:42:3d:a4',
-             'SourceDestCheck': True,
-             'VpcId': 'vpc-12345678',
-             'Description': '',
-             'NetworkInterfaceId': 'eni-12345678',
-             'PrivateIpAddresses': [
-                 {'PrivateDnsName': 'ip-098-76-54-321.ec2.internal',
-                  'PrivateIpAddress': '098.76.54.321',
-                  'Primary': True,
-                  'Association':
-                      {'PublicIp': '12.345.67.890',
-                       'PublicDnsName': 'ec2-12-345-67-890.compute-1.amazonaws.com',
-                       'IpOwnerId': 'amazon'}}],
-             'PrivateDnsName': 'ip-098-76-54-321.ec2.internal',
-             'Attachment':
-                 {'Status': 'attached',
-                  'DeviceIndex': 0,
-                  'DeleteOnTermination': True,
-                  'AttachmentId': 'eni-attach-12345678',
-                  'AttachTime': datetime.datetime(2017, 10, 31, 12, 59, 25)},
-             'Groups': [
-                 {'GroupName': 'default',
-                  'GroupId': 'sg-12345678'}],
-             'Ipv6Addresses': [],
-             'OwnerId': '123456789012',
-             'PrivateIpAddress': '098.76.54.321',
-             'SubnetId': 'subnet-12345678',
-             'Association':
-                {'PublicIp': '12.345.67.890',
-                 'PublicDnsName': 'ec2-12-345-67-890.compute-1.amazonaws.com',
-                 'IpOwnerId': 'amazon'}}],
-         'SourceDestCheck': True,
-         'Placement':
-            {'Tenancy': 'default',
-             'GroupName': '',
-             'AvailabilityZone': 'us-east-1c'},
-         'Hypervisor': 'xen',
-         'BlockDeviceMappings': [
-            {'DeviceName': '/dev/xvda',
-             'Ebs':
-                {'Status': 'attached',
-                 'DeleteOnTermination': True,
-                 'VolumeId': 'vol-01234567890000000',
-                 'AttachTime': datetime.datetime(2017, 10, 31, 12, 59, 26)}}],
-         'Architecture': 'x86_64',
-         'RootDeviceType': 'ebs',
-         'RootDeviceName': '/dev/xvda',
-         'VirtualizationType': 'hvm',
-         'Tags': [{'Value': 'test', 'Key': 'ansible'}, {'Value': 'aws_ec2', 'Key': 'Name'}],
-         'AmiLaunchIndex': 0}],
-    'ReservationId': 'r-01234567890000000',
-    'Groups': [],
-    'OwnerId': '123456789012'
-}
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import (
+    InventoryModule,
+    _get_tag_hostname,
+    _prepare_host_vars,
+    _compile_values,
+    _get_boto_attr_chain,
+)
 
 
 @pytest.fixture()
@@ -136,187 +67,203 @@ def inventory():
     return inventory
 
 
-def test_compile_values(inventory):
-    found_value = instances['Instances'][0]
-    chain_of_keys = instance_data_filter_to_boto_attr['instance.group-id']
-    for attr in chain_of_keys:
-        found_value = inventory._compile_values(found_value, attr)
-    assert found_value == "sg-12345678"
+@pytest.mark.parametrize(
+    "obj,expected",
+    [
+        (None, None),
+        ({}, None),
+        ({'GroupId': "test01"}, "test01"),
+        ({'GroupId': ["test01"]}, "test01"),
+        ({'GroupId': ("test01")}, "test01"),
+        ({'GroupId': ["test01", "test02"]}, ["test01", "test02"]),
+        ([{'GroupId': ["test01", "test02"]}], ["test01", "test02"]),
+        ([{'GroupId': ["test01"]}], "test01"),
+        (
+            [{'GroupId': ["test01", "test02"]}, {'GroupId': ["test03", "test04"]}],
+            [["test01", "test02"], ["test03", "test04"]]
+        ),
+        (
+            ({'GroupId': ["test01", "test02"]}, {'GroupId': ["test03", "test04"]}),
+            [["test01", "test02"], ["test03", "test04"]]),
+        (
+            ({'GroupId': ["test01", "test02"]}, {}),
+            ["test01", "test02"]
+        ),
+    ]
+)
+def test_compile_values(obj, expected):
+    assert _compile_values(obj, "GroupId") == expected
 
 
-def test_get_boto_attr_chain(inventory):
-    instance = instances['Instances'][0]
-    assert inventory._get_boto_attr_chain('network-interface.addresses.private-ip-address', instance) == "098.76.54.321"
+@pytest.mark.parametrize(
+    "filter_name,expected",
+    [
+        ("ansible.aws.unexpected.file", "ansible.aws.unexpected.file"),
+        ('instance.group-id', "sg-0123456789"),
+        ('instance.group-name', "default"),
+        ('owner-id', "id-012345678L"),
+    ]
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._compile_values")
+def test_get_boto_attr_chain(m_compile_values, filter_name, expected):
 
+    m_compile_values.side_effect = lambda obj, attr: obj.get(attr)
 
-def testget_all_hostnames_default(inventory):
-    instance = instances['Instances'][0]
-    assert inventory.get_all_hostnames(instance, hostnames=None) == ["ec2-12-345-67-890.compute-1.amazonaws.com", "ip-098-76-54-321.ec2.internal"]
-
-
-def testget_all_hostnames(inventory):
-    hostnames = ['ip-address', 'dns-name']
-    instance = instances['Instances'][0]
-    assert inventory.get_all_hostnames(instance, hostnames) == ["12.345.67.890", "ec2-12-345-67-890.compute-1.amazonaws.com"]
-
-
-def testget_all_hostnames_dict(inventory):
-    hostnames = [{'name': 'private-ip-address', 'separator': '_', 'prefix': 'tag:Name'}]
-    instance = instances['Instances'][0]
-    assert inventory.get_all_hostnames(instance, hostnames) == ["aws_ec2_098.76.54.321"]
-
-
-def testget_all_hostnames_with_2_tags(inventory):
-    hostnames = ['tag:ansible', 'tag:Name']
-    instance = instances['Instances'][0]
-    assert inventory.get_all_hostnames(instance, hostnames) == ["test", "aws_ec2"]
-
-
-def test_get_preferred_hostname_default(inventory):
-    instance = instances['Instances'][0]
-    assert inventory._get_preferred_hostname(instance, hostnames=None) == "ec2-12-345-67-890.compute-1.amazonaws.com"
-
-
-def test_get_preferred_hostname(inventory):
-    hostnames = ['ip-address', 'dns-name']
-    instance = instances['Instances'][0]
-    assert inventory._get_preferred_hostname(instance, hostnames) == "12.345.67.890"
-
-
-def test_get_preferred_hostname_dict(inventory):
-    hostnames = [{'name': 'private-ip-address', 'separator': '_', 'prefix': 'tag:Name'}]
-    instance = instances['Instances'][0]
-    assert inventory._get_preferred_hostname(instance, hostnames) == "aws_ec2_098.76.54.321"
-
-
-def test_get_preferred_hostname_with_2_tags(inventory):
-    hostnames = ['tag:ansible', 'tag:Name']
-    instance = instances['Instances'][0]
-    assert inventory._get_preferred_hostname(instance, hostnames) == "test"
-
-
-def test_verify_file_bad_config(inventory):
-    assert inventory.verify_file('not_aws_config.yml') is False
-
-
-def test_include_filters_with_no_filter(inventory):
-    inventory._options = {
-        'filters': {},
-        'include_filters': [],
-    }
-    print(inventory.build_include_filters())
-    assert inventory.build_include_filters() == [{}]
-
-
-def test_include_filters_with_include_filters_only(inventory):
-    inventory._options = {
-        'filters': {},
-        'include_filters': [{"foo": "bar"}],
-    }
-    assert inventory.build_include_filters() == [{"foo": "bar"}]
-
-
-def test_include_filters_with_filter_and_include_filters(inventory):
-    inventory._options = {
-        'filters': {"from_filter": 1},
-        'include_filters': [{"from_include_filter": "bar"}],
-    }
-    print(inventory.build_include_filters())
-    assert inventory.build_include_filters() == [
-        {"from_filter": 1},
-        {"from_include_filter": "bar"}]
-
-
-def test_add_host_empty_hostnames(inventory):
-    hosts = [
-        {
-            "Placement": {
-                "AvailabilityZone": "us-east-1a",
-            },
-            "PublicDnsName": "ip-10-85-0-4.ec2.internal"
+    instance = {
+        'SecurityGroups': {
+            'GroupName': 'default', 'GroupId': 'sg-0123456789'
         },
+        "OwnerId": "id-012345678L"
+    }
+
+    assert _get_boto_attr_chain(filter_name, instance) == expected
+
+
+@pytest.mark.parametrize(
+    "hostnames,expected",
+    [
+        ([], "test-instance.ansible.com"),
+        (["private-dns-name"], "test-instance.localhost"),
+        (["tag:os_version"], "RHEL"),
+        (["tag:os_version", "dns-name"], "RHEL"),
+        ([{"name": "Name", "prefix": "Phase"}], "dev_test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase", "separator": "-"}], "dev-test-instance-01"),
+        ([{"name": "Name", "prefix": "OSVersion", "separator": "-"}], "test-instance-01"),
+        ([{"name": "Name", "separator": "-"}], "test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase"}, "private-dns-name"], "dev_test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase"}, "tag:os_version"], "dev_test-instance-01"),
+        (["private-dns-name", "dns-name"], "test-instance.localhost"),
+        (["private-dns-name", {"name": "Name", "separator": "-"}], "test-instance.localhost"),
+        (["private-dns-name", "tag:os_version"], "test-instance.localhost"),
+        (["OSRelease"], None),
     ]
-    inventory._add_hosts(hosts, "aws_ec2", [])
-    inventory.inventory.add_host.assert_called_with("ip-10-85-0-4.ec2.internal", group="aws_ec2")
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname")
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain")
+def test_inventory_get_preferred_hostname(m_get_boto_attr_chain, m_get_tag_hostname, inventory, hostnames, expected):
+
+    instance = {
+        "Name": "test-instance-01",
+        "Phase": "dev",
+        "tag:os_version": ["RHEL", "CoreOS"],
+        "another_key": "another_value",
+        "dns-name": "test-instance.ansible.com",
+        "private-dns-name": "test-instance.localhost",
+    }
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    m_get_boto_attr_chain.side_effect = lambda pref, instance: instance.get(pref)
+    m_get_tag_hostname.side_effect = lambda pref, instance: instance.get(pref)
+
+    assert expected == inventory._get_preferred_hostname(instance, hostnames)
 
 
-def test_add_host_with_hostnames_no_criteria(inventory):
-    hosts = [{}]
+def test_inventory_get_preferred_hostname_failure(inventory):
 
-    inventory._add_hosts(
-        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
-    )
-    assert inventory.inventory.add_host.call_count == 0
+    instance = {}
+    hostnames = [{"value": "saome_value"}]
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    with pytest.raises(AnsibleError) as err:
+        inventory._get_preferred_hostname(instance, hostnames)
+        assert "A 'name' key must be defined in a hostnames dictionary." in err
 
 
-def test_add_host_with_hostnames_and_one_criteria(inventory):
-    hosts = [
-        {
-            "Placement": {
-                "AvailabilityZone": "us-east-1a",
+@pytest.mark.parametrize("base_verify_file_return", [True, False])
+@pytest.mark.parametrize(
+    "filename,result",
+    [
+        ('inventory_aws_ec2.yml', True),
+        ('inventory_aws_ec2.yaml', True),
+        ('inventory_aws_EC2.yaml', False),
+        ('inventory_Aws_ec2.yaml', False),
+        ('aws_ec2_inventory.yml', False),
+        ('aws_ec2.yml_inventory', False),
+        ('aws_ec2.yml', True),
+        ('aws_ec2.yaml', True),
+    ]
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.AWSInventoryBase.verify_file")
+def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_return, filename, result):
+    m_base_verify_file.return_value = base_verify_file_return
+    if not base_verify_file_return:
+        assert not inventory.verify_file(filename)
+    else:
+        assert result == inventory.verify_file(filename)
+
+
+@pytest.mark.parametrize(
+    "preference,instance,expected",
+    [
+        ("tag:os_provider", {"Tags": []}, []),
+        ("tag:os_provider", {}, []),
+        ("tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["RedHat"]),
+        ("tag:OS_Provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
+        ("tag:tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
+        ("tag:os_provider=RedHat", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["os_provider_RedHat"]),
+        ("tag:os_provider=CoreOS", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
+        (
+            "tag:os_provider=RedHat,os_release=7",
+            {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "8"}]},
+            ["os_provider_RedHat"]
+        ),
+        (
+            "tag:os_provider=RedHat,os_release=7",
+            {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
+            ["os_provider_RedHat", "os_release_7"]
+        ),
+        (
+            "tag:os_provider,os_release",
+            {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
+            ["RedHat", "7"]
+        ),
+        (
+            "tag:os_provider=RedHat,os_release",
+            {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
+            ["os_provider_RedHat", "7"]
+        ),
+    ]
+)
+def test_get_tag_hostname(preference, instance, expected):
+    assert expected == _get_tag_hostname(preference, instance)
+
+
+@pytest.mark.parametrize(
+    "_options, expected",
+    [
+        ({'filters': {}, 'include_filters': []}, [{}]),
+        ({'filters': {}, 'include_filters': [{"foo": "bar"}]}, [{"foo": "bar"}]),
+        (
+            {
+                'filters': {"from_filter": 1},
+                'include_filters': [{"from_include_filter": "bar"}],
             },
-            "PublicDnsName": "sample-host",
-        }
+            [
+                {"from_filter": 1}, {"from_include_filter": "bar"}
+            ]
+        ),
     ]
-
-    inventory._add_hosts(
-        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
-    )
-    assert inventory.inventory.add_host.call_count == 1
-    inventory.inventory.add_host.assert_called_with("sample-host", group="aws_ec2")
+)
+def test_inventory_build_include_filters(inventory, _options, expected):
+    inventory._options = _options
+    assert inventory.build_include_filters() == expected
 
 
-def test_add_host_with_hostnames_and_two_matching_criteria(inventory):
-    hosts = [
-        {
-            "Placement": {
-                "AvailabilityZone": "us-east-1a",
-            },
-            "PublicDnsName": "name-from-PublicDnsName",
-            "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
-        }
+@pytest.mark.parametrize(
+    "hostname,expected",
+    [
+        (1, "1"),
+        ("a:b", "a_b"),
+        ("a:/b", "a__b"),
+        ("example", "example")
     ]
-
-    inventory._add_hosts(
-        hosts, "aws_ec2", hostnames=["tag:Name", "private-dns-name", "dns-name"]
-    )
-    assert inventory.inventory.add_host.call_count == 1
-    inventory.inventory.add_host.assert_called_with(
-        "name-from-tag-Name", group="aws_ec2"
-    )
-
-
-def test_add_host_with_hostnames_and_two_matching_criteria_and_allow_duplicated_hosts(
-    inventory,
-):
-    hosts = [
-        {
-            "Placement": {
-                "AvailabilityZone": "us-east-1a",
-            },
-            "PublicDnsName": "name-from-PublicDnsName",
-            "Tags": [{"Value": "name-from-tag-Name", "Key": "Name"}],
-        }
-    ]
-
-    inventory._add_hosts(
-        hosts,
-        "aws_ec2",
-        hostnames=["tag:Name", "private-dns-name", "dns-name"],
-        allow_duplicated_hosts=True,
-    )
-    assert inventory.inventory.add_host.call_count == 2
-    inventory.inventory.add_host.assert_any_call(
-        "name-from-PublicDnsName", group="aws_ec2"
-    )
-    inventory.inventory.add_host.assert_any_call("name-from-tag-Name", group="aws_ec2")
-
-
-def test_sanitize_hostname(inventory):
-    assert inventory._sanitize_hostname(1) == "1"
-    assert inventory._sanitize_hostname("a:b") == "a_b"
-    assert inventory._sanitize_hostname("a:/b") == "a__b"
-    assert inventory._sanitize_hostname("example") == "example"
+)
+def test_sanitize_hostname(inventory, hostname, expected):
+    assert inventory._sanitize_hostname(hostname) == expected
 
 
 def test_sanitize_hostname_legacy(inventory):
@@ -366,7 +313,6 @@ def test_sanitize_hostname_legacy(inventory):
     ],
 )
 def test_prepare_host_vars(
-    inventory,
     hostvars_prefix,
     hostvars_suffix,
     use_contrib_script_compatible_ec2_tag_keys,
@@ -378,7 +324,7 @@ def test_prepare_host_vars(
         "Tags": [{"Key": "Name", "Value": "my-name"}],
     }
     assert (
-        inventory.prepare_host_vars(
+        _prepare_host_vars(
             original_host_vars,
             hostvars_prefix,
             hostvars_suffix,
@@ -425,43 +371,258 @@ def test_iter_entry(inventory):
     assert entries[1][1]["a_tags_b"]["Name"] == "my-name"
 
 
-def test_query_empty(inventory):
-    result = inventory._query("us-east-1", [], [], strict_permissions=True)
-    assert result == {"aws_ec2": []}
+@pytest.mark.parametrize(
+    "include_filters,exclude_filters,instances_by_region,instances",
+    [
+        (
+            [], [], [], []
+        ),
+        (
+            [4, 1, 2],
+            [],
+            [
+                [{'InstanceId': 4, 'name': 'instance-4'}],
+                [{'InstanceId': 1, 'name': 'instance-1'}],
+                [{'InstanceId': 2, 'name': 'instance-2'}]
+            ],
+            [
+                {'InstanceId': 1, 'name': 'instance-1'},
+                {'InstanceId': 2, 'name': 'instance-2'},
+                {'InstanceId': 4, 'name': 'instance-4'}
+            ],
+        ),
+        (
+            [],
+            [4, 1, 2],
+            [
+                [{'InstanceId': 4, 'name': 'instance-4'}],
+                [{'InstanceId': 1, 'name': 'instance-1'}],
+                [{'InstanceId': 2, 'name': 'instance-2'}]
+            ],
+            [],
+        ),
+        (
+            [1, 2],
+            [4],
+            [
+                [{'InstanceId': 4, 'name': 'instance-4'}],
+                [{'InstanceId': 1, 'name': 'instance-1'}],
+                [{'InstanceId': 2, 'name': 'instance-2'}]
+            ],
+            [
+                {'InstanceId': 1, 'name': 'instance-1'},
+                {'InstanceId': 2, 'name': 'instance-2'}
+            ],
+        ),
+        (
+            [1, 2],
+            [1],
+            [
+                [{'InstanceId': 1, 'name': 'instance-1'}],
+                [{'InstanceId': 1, 'name': 'instance-1'}],
+                [{'InstanceId': 2, 'name': 'instance-2'}]
+            ],
+            [
+                {'InstanceId': 2, 'name': 'instance-2'}
+            ],
+        )
+    ]
+)
+def test_inventory_query(inventory, include_filters, exclude_filters, instances_by_region, instances):
+    inventory._get_instances_by_region = MagicMock()
+    inventory._get_instances_by_region.side_effect = instances_by_region
+
+    regions = ['us-east-1', 'us-east-2']
+    strict = False
+
+    params = {
+        'regions': regions,
+        'strict_permissions': strict,
+        'include_filters': [],
+        'exclude_filters': [],
+    }
+
+    for u in include_filters:
+        params["include_filters"].append({'Name': 'in_filters_%d' % u, 'Values': [u]})
+
+    for u in exclude_filters:
+        params["exclude_filters"].append({'Name': 'ex_filters_%d' % u, 'Values': [u]})
+
+    assert inventory._query(**params) == {'aws_ec2': instances}
+    if not instances_by_region:
+        inventory._get_instances_by_region.assert_not_called()
 
 
-instance_foobar = {"InstanceId": "foobar"}
-instance_barfoo = {"InstanceId": "barfoo"}
+@pytest.mark.parametrize(
+    "filters",
+    [
+        [],
+        [
+            {'Name': 'provider', 'Values': 'sample'},
+            {'Name': 'instance-state-name', 'Values': ['active']}
+        ],
+        [
+            {'Name': 'tags', 'Values': 'one_tag'},
+        ],
+    ]
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
+def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, filters):
+
+    boto3_conn = [
+        (MagicMock(), "us-east-1"), (MagicMock(), "us-east-2")
+    ]
+
+    inventory._boto3_conn = MagicMock()
+    inventory._boto3_conn.return_value = boto3_conn
+
+    m_describe_ec2_instances.side_effect = [
+        {
+            'Reservations': [
+                {
+                    'OwnerId': "owner01",
+                    'RequesterId': "requester01",
+                    'ReservationId': "id-0123",
+                    'Instances': [
+                        {'name': 'id-1-0', 'os': 'RedHat'},
+                        {'name': 'id-1-1', 'os': 'CoreOS'},
+                        {'name': 'id-1-2', 'os': 'Fedora'}
+                    ]
+                },
+                {
+                    'OwnerId': "owner01",
+                    'ReservationId': "id-0456",
+                    'Instances': [
+                        {'name': 'id-2-0', 'phase': 'uat'},
+                        {'name': 'id-2-1', 'phase': 'prod'}
+                    ]
+                }
+            ]
+        },
+        {
+            'Reservations': [
+                {
+                    'OwnerId': "owner02",
+                    'ReservationId': "id-0789",
+                    'Instances': [
+                        {'name': 'id012345789', 'tags': {'phase': 'units'}},
+                    ]
+                }
+            ],
+            'Metadata': {'Status': 'active'}
+        }
+    ]
+
+    expected = [
+        {'name': 'id-1-0', 'os': 'RedHat', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
+        {'name': 'id-1-1', 'os': 'CoreOS', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
+        {'name': 'id-1-2', 'os': 'Fedora', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
+        {'name': 'id-2-0', 'phase': 'uat', 'OwnerId': "owner01", 'ReservationId': "id-0456", 'RequesterId': ''},
+        {'name': 'id-2-1', 'phase': 'prod', 'OwnerId': "owner01", 'ReservationId': "id-0456", 'RequesterId': ''},
+        {'name': 'id012345789', 'tags': {'phase': 'units'}, 'OwnerId': "owner02", 'ReservationId': "id-0789", 'RequesterId': ''}
+    ]
+
+    default_filter = {'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']}
+    regions = ["us-east-2", "us-east-4"]
+
+    assert inventory._get_instances_by_region(regions, filters, False) == expected
+    inventory._boto3_conn.assert_called_with(regions, "ec2")
+
+    if any((f['Name'] == 'instance-state-name' for f in filters)):
+        filters.append(default_filter)
+
+    m_describe_ec2_instances.assert_has_calls(
+        [call(conn, filters) for conn, region in boto3_conn], any_order=True
+    )
 
 
-def test_query_empty_include_only(inventory):
-    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar]])
-    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [], strict_permissions=True)
-    assert result == {"aws_ec2": [instance_foobar]}
+@pytest.mark.parametrize("strict", [True, False])
+@pytest.mark.parametrize(
+    "error",
+    [
+        botocore.exceptions.ClientError(
+            {
+                'Error': {'Code': 1, 'Message': 'Something went wrong'},
+                'ResponseMetadata': {
+                    'HTTPStatusCode': 404
+                }
+            },
+            "some_botocore_client_error"
+        ),
+        botocore.exceptions.ClientError(
+            {
+                'Error': {'Code': 1, 'Message': 'Something went wrong'},
+                'ResponseMetadata': {
+                    'HTTPStatusCode': 403
+                }
+            },
+            "some_botocore_client_error"
+        ),
+        botocore.exceptions.PaginationError(message="some pagination error")
+    ]
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
+def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, inventory, strict, error):
+
+    inventory._boto3_conn = MagicMock()
+    inventory._boto3_conn.return_value = [(MagicMock(), "us-west-2")]
+    inventory.fail_aws = MagicMock()
+    inventory.fail_aws.side_effect = SystemExit(1)
+
+    m_describe_ec2_instances.side_effect = error
+    regions = ["us-east-2", "us-east-4"]
+
+    if isinstance(error, botocore.exceptions.ClientError) and error.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict:
+        assert inventory._get_instances_by_region(regions, [], strict) == []
+    else:
+        with pytest.raises(SystemExit):
+            inventory._get_instances_by_region(regions, [], strict)
 
 
-def test_query_empty_include_ordered(inventory):
-    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_barfoo]])
-    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}, {"tag:Name": ["barfoo"]}], [], strict_permissions=True)
-    assert result == {"aws_ec2": [instance_barfoo, instance_foobar]}
-    inventory._get_instances_by_region.assert_called_with('us-east-1', [{'Name': 'tag:Name', 'Values': ['barfoo']}], True)
+@pytest.mark.parametrize(
+    "hostnames,expected",
+    [
+        ([], ["test-instance.ansible.com", "test-instance.localhost"]),
+        (["private-dns-name"], ["test-instance.localhost"]),
+        (["tag:os_version"], ["RHEL", "CoreOS"]),
+        (["tag:os_version", "dns-name"], ["RHEL", "CoreOS", "test-instance.ansible.com"]),
+        ([{"name": "Name", "prefix": "Phase"}], ["dev_test-instance-01"]),
+        ([{"name": "Name", "prefix": "Phase", "separator": "-"}], ["dev-test-instance-01"]),
+        ([{"name": "Name", "prefix": "OSVersion", "separator": "-"}], ["test-instance-01"]),
+        ([{"name": "Name", "separator": "-"}], ["test-instance-01"]),
+        ([{"name": "Name", "prefix": "Phase"}, "private-dns-name"], ["dev_test-instance-01", "test-instance.localhost"]),
+        ([{"name": "Name", "prefix": "Phase"}, "tag:os_version"], ["dev_test-instance-01", "RHEL", "CoreOS"]),
+        (["private-dns-name", {"name": "Name", "separator": "-"}], ["test-instance.localhost", "test-instance-01"]),
+        (["OSRelease"], []),
+    ]
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname")
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain")
+def test_inventory_get_all_hostnames(m_get_boto_attr_chain, m_get_tag_hostname, inventory, hostnames, expected):
+
+    instance = {
+        "Name": "test-instance-01",
+        "Phase": "dev",
+        "tag:os_version": ["RHEL", "CoreOS"],
+        "another_key": "another_value",
+        "dns-name": "test-instance.ansible.com",
+        "private-dns-name": "test-instance.localhost",
+    }
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    m_get_boto_attr_chain.side_effect = lambda pref, instance: instance.get(pref)
+    m_get_tag_hostname.side_effect = lambda pref, instance: instance.get(pref)
+
+    assert expected == inventory._get_all_hostnames(instance, hostnames)
 
 
-def test_query_empty_include_exclude(inventory):
-    inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_foobar]])
-    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [{"tag:Name": ["foobar"]}], strict_permissions=True)
-    assert result == {"aws_ec2": []}
+def test_inventory_get_all_hostnames_failure(inventory):
 
+    instance = {}
+    hostnames = [{"value": "some_value"}]
 
-def test_include_extra_api_calls_deprecated(inventory):
-    inventory.display.deprecate = Mock()
-    inventory._read_config_data = Mock()
-    inventory._set_credentials = Mock()
-    inventory._query = Mock(return_value=[])
-
-    inventory.parse(inventory=[], loader=None, path=None)
-    assert inventory.display.deprecate.call_count == 0
-
-    inventory._options["include_extra_api_calls"] = True
-    inventory.parse(inventory=[], loader=None, path=None)
-    assert inventory.display.deprecate.call_count == 1
+    with pytest.raises(AnsibleError) as err:
+        inventory._get_all_hostnames(instance, hostnames)
+        assert "A 'name' key must be defined in a hostnames dictionary." in err

@@ -18,27 +18,18 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import pytest
 from unittest.mock import MagicMock
 
+from ansible.errors import AnsibleError
 from ansible.template import Templar
 from ansible.parsing.dataloader import DataLoader
-from ansible_collections.amazon.aws.plugins.module_utils.inventory import AnsibleAWSInventory, AWSInventoryFailure
-from ansible.plugins.inventory import BaseInventoryPlugin
-
-
-class AnsibleAWSInventoryInstance(BaseInventoryPlugin, AnsibleAWSInventory):
-
-    def __init__(self):
-        super(AnsibleAWSInventoryInstance, self).__init__()
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
 
 @pytest.fixture()
 def inventory():
-    inventory = AnsibleAWSInventoryInstance()
+    inventory = AWSInventoryBase()
     inventory._options = {
         "aws_profile": "first_precedence",
         "aws_access_key": "test_access_key",
@@ -68,30 +59,29 @@ def inventory():
 
 
 @pytest.fixture()
-def templar():
-    loader = DataLoader()
-    return Templar(loader=loader)
+def loader():
+    return DataLoader()
 
 
-def test_boto3_conn(inventory, templar):
+def test_boto3_conn(inventory, loader):
     inventory._options = {"aws_profile": "first_precedence",
                           "aws_access_key": "test_access_key",
                           "aws_secret_key": "test_secret_key",
                           "aws_security_token": "test_security_token",
                           "iam_role_arn": None}
-    inventory._set_credentials(templar)
-    with pytest.raises(AWSInventoryFailure) as error_message:
-        for _connection, _region in inventory._boto3_conn(regions=['us-east-1'], service="test"):
+    inventory._set_credentials(loader)
+    with pytest.raises(AnsibleError) as error_message:
+        for _connection, _region in inventory._boto3_conn(regions=['us-east-1'], resource="test"):
             assert "Insufficient credentials found" in error_message
 
 
-def test_set_credentials(inventory, templar):
+def test_set_credentials(inventory, loader):
     inventory._options = {'aws_access_key': 'test_access_key',
                           'aws_secret_key': 'test_secret_key',
                           'aws_security_token': 'test_security_token',
                           'aws_profile': 'test_profile',
                           'iam_role_arn': 'arn:aws:iam::123456789012:role/test-role'}
-    inventory._set_credentials(templar)
+    inventory._set_credentials(loader)
 
     assert inventory.boto_profile == "test_profile"
     assert inventory.aws_access_key_id == "test_access_key"
@@ -100,7 +90,7 @@ def test_set_credentials(inventory, templar):
     assert inventory.iam_role_arn == "arn:aws:iam::123456789012:role/test-role"
 
 
-def test_insufficient_credentials(inventory, templar):
+def test_insufficient_credentials(inventory, loader):
     inventory._options = {
         'aws_access_key': None,
         'aws_secret_key': None,
@@ -108,6 +98,6 @@ def test_insufficient_credentials(inventory, templar):
         'aws_profile': None,
         'iam_role_arn': None
     }
-    with pytest.raises(AWSInventoryFailure) as error_message:
-        inventory._set_credentials(templar)
+    with pytest.raises(AnsibleError) as error_message:
+        inventory._set_credentials(loader)
         assert "Insufficient credentials found" in error_message
