@@ -1696,11 +1696,66 @@
       - delete_complex is successful
       - delete_complex is not changed
 
+  # Minimum possible definition
+  - name: 'Create a TCP health check with latency graphs enabled'
+    route53_health_check:
+      state: present
+      health_check_name: '{{ tiny_prefix }}-hc-latency-graph'
+      use_unique_names: true
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      measure_latency: true
+    register: create_check
+
+  - name: Get health check info
+    amazon.aws.route53_info:
+      query: health_check
+      health_check_id: "{{ create_check.health_check.id }}"
+      health_check_method: details
+    register: health_check_info
+
+  - name: 'Check result - Create a TCP health check with latency graphs enabled'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is changed
+      - health_check_info.health_check.health_check_config.measure_latency == true
+
+  - name: 'Update above health check to disable latency graphs - immutable, no change'
+    route53_health_check:
+      state: present
+      health_check_name: '{{ tiny_prefix }}-hc-latency-graph'
+      use_unique_names: true
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      measure_latency: false
+    register: update_check
+
+  - name: 'Check result - Update TCP health check to disable latency graphs'
+    assert:
+      that:
+      - update_check is successful
+      - update_check is not changed
+      - health_check_info.health_check.health_check_config.measure_latency == true
+
   always:
 
     ################################################
     # TEARDOWN STARTS HERE
     ################################################
+
+  - name: 'Delete TCP health check with latency graphs enabled'
+    route53_health_check:
+      state: absent
+      health_check_name: '{{ tiny_prefix }}-hc-latency-graph'
+      use_unique_names: true
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      measure_latency: true
+    ignore_errors: true
 
   - name: 'Delete TCP health check'
     route53_health_check:
