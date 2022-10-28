@@ -734,4 +734,5 @@ def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster
         inventory._populate_from_source.assert_called_with(cache_key_value)
 
     if cache and user_cache_directive and not cache_hit or (not cache and user_cache_directive):
-        assert inventory.cache[cache_key] == format_cache_key_value
+        # validate that cache was populated
+        assert inventory._cache[cache_key] == format_cache_key_value
