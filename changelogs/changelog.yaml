@@ -1477,6 +1477,7 @@ releases:
         (https://github.com/ansible-collections/amazon.aws/pull/1172).
       - aws_account_attribute lookup plugin - use ``missing_required_lib`` for more
         consistent error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
+      - aws_ec2 inventory - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
       - aws_ec2 inventory plugin - use ``missing_required_lib`` for more consistent
         error message when boto3/botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/1152).
       - aws_rds inventory plugin - use ``missing_required_lib`` for more consistent
@@ -1494,6 +1495,7 @@ releases:
       - ec2_instance - the ``tower_callback`` parameter has been renamed to ``aap_callback``,
         ``tower_callback`` remains as an alias.  This change should have no observable
         effect for users outside the module documentation (https://github.com/ansible-collections/amazon.aws/pull/1199).
+      - s3_object_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
       release_summary: This release brings some minor changes, bugfixes, security
         fixes and deprecated features.
       security_fixes:
@@ -1505,6 +1507,7 @@ releases:
     - 1152-missing-botocore.yml
     - 1163-map_complex_type.yml
     - 1172-credentials_parameters.yml
+    - 1181-stable-5-linting.yml
     - 20221010-test-times.yml
     - 20221021-ec2_instance-tower_callback.yml
     - 20221026-pytest-forked.yml
@@ -1513,4 +1516,4 @@ releases:
     - summary.yml
     - version_added-5.yml
     - workflows-add-intersphinx.yml
-    release_date: '2022-10-27'
+    release_date: '2022-10-28'
