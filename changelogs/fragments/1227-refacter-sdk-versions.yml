@@ -1,0 +1,2 @@
+minor_changes:
+- module_utils - refacter botocore version validation into module_utils.botocore for future reuse (https://github.com/ansible-collections/amazon.aws/pull/1227).

@@ -53,7 +53,12 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
 
+from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
+from .version import LooseVersion
+
+MINIMUM_BOTOCORE_VERSION = '1.21.0'
+MINIMUM_BOTO3_VERSION = '1.18.0'
 
 
 def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
@@ -245,8 +250,7 @@ def gather_sdk_versions():
     """
     if not HAS_BOTO3:
         return {}
-    import boto3
-    import botocore
+
     return dict(boto3_version=boto3.__version__,
                 botocore_version=botocore.__version__)
 
@@ -355,3 +359,63 @@ def enable_placebo(session):
             os.rmdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])
         pill = placebo.attach(session, data_path="_tmp")
         pill.playback()
+
+
+def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=None):
+    """ Checks to see if the available boto3 / botocore versions are supported
+    args:
+        botocore_version: (str) overrides the minimum version of botocore supported by the collection
+        boto3_version: (str) overrides the minimum version of boto3 supported by the collection
+        warn: (Callable) invoked with a string message if boto3/botocore are less than the
+            supported versions
+    raises:
+        AnsibleBotocoreError - If botocore/boto3 is missing
+    returns
+        False if boto3 or botocore is less than the minimum supported versions
+        True if boto3 and botocore are greater than or equal the the minimum supported versions
+    """
+
+    botocore_version = botocore_version or MINIMUM_BOTOCORE_VERSION
+    boto3_version = boto3_version or MINIMUM_BOTO3_VERSION
+
+    if not HAS_BOTO3:
+        raise AnsibleBotocoreError(message=missing_required_lib('botocore and boto3'))
+
+    supported = True
+
+    if not botocore_at_least(botocore_version):
+        supported = False
+        if warn:
+            warn('botocore < {0} is not supported or tested.  Some features may not work.'.format(MINIMUM_BOTOCORE_VERSION))
+    if not boto3_at_least(boto3_version):
+        supported = False
+        if warn:
+            warn('boto3 < {0} is not supported or tested.  Some features may not work.'.format(MINIMUM_BOTO3_VERSION))
+
+    return supported
+
+
+def boto3_at_least(desired):
+    """Check if the available boto3 version is greater than or equal to a desired version.
+
+    Usage:
+        if module.params.get('assign_ipv6_address') and not module.boto3_at_least('1.4.4'):
+            # conditionally fail on old boto3 versions if a specific feature is not supported
+            module.fail_json(msg="Boto3 can't deal with EC2 IPv6 addresses before version 1.4.4.")
+    """
+    existing = gather_sdk_versions()
+    return LooseVersion(existing['boto3_version']) >= LooseVersion(desired)
+
+
+def botocore_at_least(desired):
+    """Check if the available botocore version is greater than or equal to a desired version.
+
+    Usage:
+        if not module.botocore_at_least('1.2.3'):
+            module.fail_json(msg='The Serverless Elastic Load Compute Service is not in botocore before v1.2.3')
+        if not module.botocore_at_least('1.5.3'):
+            module.warn('Botocore did not include waiters for Service X before 1.5.3. '
+                        'To wait until Service X resources are fully available, update botocore.')
+    """
+    existing = gather_sdk_versions()
+    return LooseVersion(existing['botocore_version']) >= LooseVersion(desired)
