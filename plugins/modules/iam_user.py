@@ -62,6 +62,7 @@ options:
     required: false
     type: list
     elements: str
+    default: []
     aliases: ['managed_policy']
   state:
     description:

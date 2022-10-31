@@ -18,6 +18,7 @@ options:
   trail_names:
     type: list
     elements: str
+    default: []
     description:
       - Specifies a list of trail names, trail ARNs, or both, of the trails to describe.
       - If an empty list is specified, information for the trail in the current region is returned.
