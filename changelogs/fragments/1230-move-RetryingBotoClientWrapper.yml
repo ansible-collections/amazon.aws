@@ -1,0 +1,2 @@
+minor_changes:
+- Move RetryingBotoClientWrapper into module_utils.retries for reuse with other plugin types (https://github.com/ansible-collections/amazon.aws/pull/1230).
