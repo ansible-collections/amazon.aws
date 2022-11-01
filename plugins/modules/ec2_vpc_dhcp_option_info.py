@@ -20,6 +20,7 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeDhcpOptions.html) for possible filters.
     type: dict
+    default: {}
   dhcp_options_ids:
     description:
       - Get details of specific DHCP option IDs.

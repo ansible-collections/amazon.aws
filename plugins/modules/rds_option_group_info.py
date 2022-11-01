@@ -27,7 +27,6 @@ options:
         description:
             - If this parameter is specified, the response includes only records beyond the marker, up to the value specified by I(max_records).
             - Allowed values are between C(20) and C(100).
-        default: ''
         required: false
         type: str
     max_records:

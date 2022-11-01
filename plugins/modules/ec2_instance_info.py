@@ -23,6 +23,7 @@ options:
     required: false
     type: list
     elements: str
+    default: []
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. See

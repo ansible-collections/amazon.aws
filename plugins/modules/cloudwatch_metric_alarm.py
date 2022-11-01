@@ -57,6 +57,7 @@ options:
         required: false
         version_added: "5.1.0"
         elements: dict
+        default: []
         suboptions:
             id:
                 description:
@@ -222,18 +223,21 @@ options:
         required: false
         type: list
         elements: str
+        default: []
     insufficient_data_actions:
         description:
           - A list of the names of action(s) to take when the alarm is in the C(insufficient_data) status.
         required: false
         type: list
         elements: str
+        default: []
     ok_actions:
         description:
           - A list of the names of action(s) to take when the alarm is in the C(ok) status, denoted as Amazon Resource Name(s).
         required: false
         type: list
         elements: str
+        default: []
     treat_missing_data:
         description:
           - Sets how the alarm handles missing data points.

@@ -25,6 +25,7 @@ options:
       - Mutually exclusive with I(exact_count).
     type: list
     elements: str
+    default: []
   state:
     description:
       - Goal state for the instances.
@@ -143,6 +144,7 @@ options:
       - Mutually exclusive with I(security_group).
     type: list
     elements: str
+    default: []
   security_group:
     description:
       - A security group ID or name.

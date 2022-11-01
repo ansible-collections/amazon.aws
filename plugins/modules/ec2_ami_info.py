@@ -21,12 +21,14 @@ options:
     aliases: [image_id]
     type: list
     elements: str
+    default: []
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImages.html) for possible filters.
       - Filter names and values are case sensitive.
     type: dict
+    default: {}
   owners:
     description:
       - Filter the images by the owner. Valid options are an AWS account ID, self,
@@ -34,12 +36,14 @@ options:
     aliases: [owner]
     type: list
     elements: str
+    default: []
   executable_users:
     description:
       - Filter images by users with explicit launch permissions. Valid options are an AWS account ID, self, or all (public AMIs).
     aliases: [executable_user]
     type: list
     elements: str
+    default: []
   describe_image_attributes:
     description:
       - Describe attributes (like launchPermission) of the images found.

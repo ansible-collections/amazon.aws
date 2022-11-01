@@ -68,6 +68,7 @@ options:
     description:
       - A short, user-defined function description. Lambda does not use this value. Assign a meaningful description as you see fit.
     type: str
+    default: ''
   timeout:
     description:
       - The function maximum execution time in seconds after which Lambda should terminate the function.

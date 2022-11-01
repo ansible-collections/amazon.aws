@@ -45,6 +45,7 @@ options:
       - Version of the Lambda function.
       - Mutually exclusive with I(alias).
     type: int
+    default: 0
   event_source:
     description:
       - Source of the event that triggers the lambda function.
