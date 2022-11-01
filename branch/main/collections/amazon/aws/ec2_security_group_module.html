@@ -223,7 +223,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Description of the security group. Required when <code class="docutils literal notranslate"><span class="pre">state</span></code> is <code class="docutils literal notranslate"><span class="pre">present</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Description of the security group. Required when <em>state</em> is <code class="docutils literal notranslate"><span class="pre">present</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -333,7 +333,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/cidr_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><strong>cidr_ip</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR range traffic is coming from.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
@@ -342,7 +342,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/cidr_ipv6"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><strong>cidr_ipv6</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR range traffic is coming from.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
@@ -353,9 +353,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-rules/from_port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-from-port"><strong>from_port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/from_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The start of the range of ports that traffic is coming from.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The start of the range of ports that traffic is going to.</p>
 <p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports (only supported when <em>proto=icmp</em>).</p>
+<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -367,7 +368,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><strong>group_id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Security Group that traffic is coming from.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
@@ -388,9 +389,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/icmp_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
-<p>the ICMP code to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP code of the packet.</p>
 <p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
+<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
+<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -398,47 +400,55 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/icmp_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to</p>
-<p>specify the ICMP type to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">from_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP type of the packet.</p>
 <p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP types.</p>
+<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
+<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/ip_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><strong>ip_prefix</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP Prefix <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html">https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html</a> that traffic is coming from.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-rules/proto"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><strong>proto</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules/proto" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-rules/ports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ports"><strong>ports</strong></p>
+<a class="ansibleOptionLink" href="#parameter-rules/ports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or</p>
-<p>number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</p>
-<p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, you can pass</p>
-<p>the <code class="docutils literal notranslate"><span class="pre">icmp_type</span></code> and <code class="docutils literal notranslate"><span class="pre">icmp_code</span></code> parameters instead of</p>
-<p><code class="docutils literal notranslate"><span class="pre">from_port</span></code> and <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of ports that traffic is going to.</p>
+<p>Elements of the list can be a single port (for example <code class="docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-rules/proto"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><strong>proto</strong></p>
+<a class="ansibleOptionLink" href="#parameter-rules/proto" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;tcp&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/rule_desc"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-rule-desc"><strong>rule_desc</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/rule_desc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description for the rule.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/to_port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-to-port"><strong>to_port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/to_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The end of the range of ports that traffic is coming from.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The end of the range of ports that traffic is going to.</p>
 <p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports (only supported when <em>proto=icmp</em>).</p>
+<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules"></span><strong>rules_egress</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: egress_rules</span></p>
@@ -447,37 +457,38 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <td><div class="ansible-option-cell"><p>List of firewall outbound rules to enforce in this group (see example). If none are supplied, a default all-out rule is assumed. If an empty list is supplied, no outbound rules will be enabled.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/cidr_ip"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/cidr_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-cidr-ip"></span><strong>cidr_ip</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR range traffic is going to.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
 <p>Support for passing nested lists of strings to <em>cidr_ip</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/cidr_ipv6"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/cidr_ipv6"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-cidr-ipv6"></span><strong>cidr_ipv6</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR range traffic is going to.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
 <p>Support for passing nested lists of strings to <em>cidr_ipv6</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/from_port"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/from_port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-from-port"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-from-port"></span><strong>from_port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/from_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The start of the range of ports that traffic is going to.</p>
 <p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports (only supported when <em>proto=icmp</em>).</p>
+<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/group_desc"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/group_desc"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-desc"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-group-desc"></span><strong>group_desc</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/group_desc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
@@ -485,54 +496,66 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the <em>group_name</em> is set and the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/group_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-group-id"></span><strong>group_id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules_egress/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Security Group that traffic is going to.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/group_name"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-group-name"></span><strong>group_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules_egress/group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the Security Group that traffic is going to.</p>
 <p>If the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/icmp_code"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/icmp_code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-code"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-icmp-code"></span><strong>icmp_code</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/icmp_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
-<p>the ICMP code to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP code of the packet.</p>
 <p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
+<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
+<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/icmp_type"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/icmp_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-type"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-icmp-type"></span><strong>icmp_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/icmp_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.3.0</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, allows you to specify</p>
-<p>the ICMP type to use. The option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">from_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP type of the packet.</p>
 <p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP types.</p>
+<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
+<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules_egress/ip_prefix"></div>
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/ip_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-ip-prefix"></span><strong>ip_prefix</strong></p>
-<a class="ansibleOptionLink" href="#parameter-rules_egress/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP Prefix <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html">https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html</a> that traffic is going to.</p>
 <p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-rules_egress/ports"></div>
+<div class="ansibleOptionAnchor" id="parameter-egress_rules/ports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ports"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-ports"></span><strong>ports</strong></p>
+<a class="ansibleOptionLink" href="#parameter-rules_egress/ports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of ports that traffic is going to.</p>
+<p>Elements of the list can be a single port (for example <code class="docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em>, <em>from_port</em> and <em>to_port</em>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -540,10 +563,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/proto"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-proto"></span><strong>proto</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/proto" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or</p>
-<p>number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</p>
-<p>When using <code class="docutils literal notranslate"><span class="pre">icmp</span></code> or <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code> as the protocol, you can pass the</p>
-<p><code class="docutils literal notranslate"><span class="pre">icmp_type</span></code> and <code class="docutils literal notranslate"><span class="pre">icmp_code</span></code> parameters instead of <code class="docutils literal notranslate"><span class="pre">from_port</span></code> and <code class="docutils literal notranslate"><span class="pre">to_port</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;tcp&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -561,7 +582,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The end of the range of ports that traffic is going to.</p>
 <p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports (only supported when <em>proto=icmp</em>).</p>
+<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
