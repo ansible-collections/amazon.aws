@@ -651,7 +651,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <ul class="simple">
 <li><p>If a rule declares a group_name and that group doesn’t exist, it will be automatically created. In that case, group_desc should be provided as well. The module will refuse to create a depended-on group without a description.</p></li>
 <li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">amazon.aws.ec2_group_info</span></code>.  The usage did not change.</p></li>
-<li><p><strong>Caution:</strong> Environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context.  Files may need to be explicitly copied to the ‘host’.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>
