@@ -1,2 +1,0 @@
-deprecated_features:
-- module_utils.url - ``ansible_collections.amazon.aws.module_utils.urls`` is believed to be unused and has been deprecated and will be removed in release 7.0.0.
