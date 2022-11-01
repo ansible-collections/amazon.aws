@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_security_group - added rule options to argument specifications to improve handling of inputs (https://github.com/ansible-collections/amazon.aws/pull/1214).
