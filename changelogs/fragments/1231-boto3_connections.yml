@@ -1,0 +1,2 @@
+minor_changes:
+- module_utils.botocore - refactorization of ``get_aws_region``, ``get_aws_connection_info`` so that the code can be reused by non-module plugins (https://github.com/ansible-collections/amazon.aws/pull/1231).

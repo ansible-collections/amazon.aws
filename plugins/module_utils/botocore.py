@@ -53,6 +53,7 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
 
+from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
 
 
@@ -137,42 +138,55 @@ def boto_exception(err):
     return error
 
 
-def get_aws_region(module, boto3=None):
-    region = module.params.get('region')
+def _aws_region(params):
+    region = params.get('region')
 
     if region:
         return region
 
     if not HAS_BOTO3:
-        module.fail_json(msg=missing_required_lib('boto3'), exception=BOTO3_IMP_ERR)
+        raise AnsibleBotocoreError(
+            message=missing_required_lib('boto3 and botocore'),
+            exception=BOTO3_IMP_ERR
+        )
 
     # here we don't need to make an additional call, will default to 'us-east-1' if the below evaluates to None.
     try:
         # Botocore doesn't like empty strings, make sure we default to None in the case of an empty
         # string.
-        profile_name = module.params.get('profile') or None
+        profile_name = params.get('profile') or None
         return botocore.session.Session(profile=profile_name).get_config_variable('region')
     except botocore.exceptions.ProfileNotFound:
         return None
 
 
-def get_aws_connection_info(module, boto3=None):
+def get_aws_region(module, boto3=None):
 
-    # Check module args for credentials, then check environment vars
-    # access_key
+    try:
+        return _aws_region(module.params)
+    except AnsibleBotocoreError as e:
+        if e.exception:
+            module.fail_json(msg=e.message, exception=e.exception)
+        else:
+            module.fail_json(msg=e.message)
 
-    endpoint_url = module.params.get('endpoint_url')
-    access_key = module.params.get('access_key')
-    secret_key = module.params.get('secret_key')
-    session_token = module.params.get('session_token')
-    region = get_aws_region(module)
-    profile_name = module.params.get('profile')
-    validate_certs = module.params.get('validate_certs')
-    ca_bundle = module.params.get('aws_ca_bundle')
-    config = module.params.get('aws_config')
 
+def _aws_connection_info(params):
+
+    endpoint_url = params.get('endpoint_url')
+    access_key = params.get('access_key')
+    secret_key = params.get('secret_key')
+    session_token = params.get('session_token')
+    region = _aws_region(params)
+    profile_name = params.get('profile')
+    validate_certs = params.get('validate_certs')
+    ca_bundle = params.get('aws_ca_bundle')
+    config = params.get('aws_config')
+
+    # Caught here so that they can be deliberately set to '' to avoid conflicts when environment
+    # variables are also being used
     if profile_name and (access_key or secret_key or session_token):
-        module.fail_json(msg="Passing both a profile and access tokens is not supported.")
+        raise AnsibleBotocoreError(message="Passing both a profile and access tokens is not supported.")
 
     # Botocore doesn't like empty strings, make sure we default to None in the case of an empty
     # string.
@@ -210,6 +224,16 @@ def get_aws_connection_info(module, boto3=None):
             boto_params[param] = text_type(value, 'utf-8', 'strict')
 
     return region, endpoint_url, boto_params
+
+
+def get_aws_connection_info(module, boto3=None):
+    try:
+        return _aws_connection_info(module.params)
+    except AnsibleBotocoreError as e:
+        if e.exception:
+            module.fail_json(msg=e.message, exception=e.exception)
+        else:
+            module.fail_json(msg=e.message)
 
 
 def _paginated_query(client, paginator_name, **params):
