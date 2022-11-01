@@ -60,6 +60,7 @@ options:
     description:
       - Human-readable string describing the contents and purpose of the AMI.
     type: str
+    default: ''
   no_reboot:
     description:
       - Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the

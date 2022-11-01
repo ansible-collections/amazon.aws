@@ -33,12 +33,14 @@ options:
       - The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range.
       - Required if I(assign_instances_ipv6=true)
     type: str
+    default: ''
   outpost_arn:
     description:
       - The Amazon Resource Name (ARN) of the Outpost.
       - If set, allows to create subnet in an Outpost.
       - If I(outpost_arn) is set, I(az) must also be specified.
     type: str
+    default: ''
   state:
     description:
       - Create or remove the subnet.
@@ -72,6 +74,8 @@ options:
       - Ignored unless I(wait=True).
     default: 300
     type: int
+  tags:
+    default: {}
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2

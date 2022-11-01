@@ -85,7 +85,6 @@ options:
         description:
           - The target backtrack window, in seconds. To disable backtracking, set this value to C(0).
           - If specified, this value must be set to a number from C(0) to C(259,200) (72 hours).
-        default: 0
         type: int
     backup_retention_period:
         description:

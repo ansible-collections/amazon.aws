@@ -46,6 +46,7 @@ options:
       - Ignored when I(state=absent).
     type: list
     elements: str
+    default: []
   state:
     description:
       - Create or delete ENI.

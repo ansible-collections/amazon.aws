@@ -89,6 +89,7 @@ options:
       - 'U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_grant)'
     type: list
     elements: dict
+    default: []
     suboptions:
         grantee_principal:
             description: The full ARN of the principal being granted permissions.

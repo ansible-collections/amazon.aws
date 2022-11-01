@@ -193,6 +193,7 @@ options:
         matching the current launch configuration.
     type: list
     elements: str
+    default: []
   detach_instances:
     description:
       - Removes one or more instances from the specified AutoScalingGroup.
@@ -201,6 +202,7 @@ options:
       - If there are target groups attached to the AutoScalingGroup, the instances are also deregistered from the target groups.
     type: list
     elements: str
+    default: []
     version_added: 3.2.0
     version_added_collection: community.aws
   decrement_desired_capacity:
@@ -233,6 +235,7 @@ options:
       - When I(propagate_at_launch) is true the tags will be propagated to the Instances created.
     type: list
     elements: dict
+    default: []
   purge_tags:
     description:
       - If C(true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.

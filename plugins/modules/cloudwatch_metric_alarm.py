@@ -130,24 +130,28 @@ options:
           - U(https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
         required: false
         type: dict
+        default: {}
     alarm_actions:
         description:
           - A list of the names action(s) taken when the alarm is in the C(alarm) status, denoted as Amazon Resource Name(s).
         required: false
         type: list
         elements: str
+        default: []
     insufficient_data_actions:
         description:
           - A list of the names of action(s) to take when the alarm is in the C(insufficient_data) status.
         required: false
         type: list
         elements: str
+        default: []
     ok_actions:
         description:
           - A list of the names of action(s) to take when the alarm is in the C(ok) status, denoted as Amazon Resource Name(s).
         required: false
         type: list
         elements: str
+        default: []
     treat_missing_data:
         description:
           - Sets how the alarm handles missing data points.
