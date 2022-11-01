@@ -1,3 +1,5 @@
+disabled # https://github.com/ansible-collections/amazon.aws/issues/1228
+
 time=20m
 cloud/aws
 rds_cluster
