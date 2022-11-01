@@ -89,6 +89,14 @@ options:
     required: false
     choices: [ 'http', 'https', 'tcp', 'tls', 'udp', 'tcp_udp', 'HTTP', 'HTTPS', 'TCP', 'TLS', 'UDP', 'TCP_UDP']
     type: str
+  protocol_version:
+    description:
+      - Specifies protocol version.
+      - The protocol_version parameter is immutable and cannot be changed when updating an elb_target_group.
+    required: false
+    choices: ['GRPC', 'HTTP1', 'HTTP2']
+    type: str
+    version_added: 5.1.0
   state:
     description:
       - Create or destroy the target group.
@@ -215,6 +223,15 @@ EXAMPLES = r'''
     protocol: http
     port: 80
     vpc_id: vpc-01234567
+    state: present
+
+- name: Create a target group with protocol_version 'GRPC'
+  community.aws.elb_target_group:
+    name: mytargetgroup
+    protocol: http
+    port: 80
+    vpc_id: vpc-01234567
+    protocol_version: GRPC
     state: present
 
 - name: Modify the target group with a custom health check
@@ -567,6 +584,8 @@ def create_or_update_target_group(connection, module):
     params['TargetType'] = target_type
     if target_type != "lambda":
         params['Protocol'] = module.params.get("protocol").upper()
+        if module.params.get('protocol_version') is not None:
+            params['ProtocolVersion'] = module.params.get('protocol_version')
         params['Port'] = module.params.get("port")
         params['VpcId'] = module.params.get("vpc_id")
     tags = module.params.get("tags")
@@ -608,7 +627,11 @@ def create_or_update_target_group(connection, module):
 
             if module.params.get("successful_response_codes") is not None:
                 params['Matcher'] = {}
-                params['Matcher']['HttpCode'] = module.params.get("successful_response_codes")
+                code_key = 'HttpCode'
+                protocol_version = module.params.get('protocol_version')
+                if protocol_version is not None and protocol_version.upper() == "GRPC":
+                    code_key = 'GrpcCode'
+                params['Matcher'][code_key] = module.params.get("successful_response_codes")
 
     # Get target group
     target_group = get_target_group(connection, module)
@@ -658,11 +681,14 @@ def create_or_update_target_group(connection, module):
                 # Matcher (successful response codes)
                 # TODO: required and here?
                 if 'Matcher' in params:
-                    current_matcher_list = target_group['Matcher']['HttpCode'].split(',')
-                    requested_matcher_list = params['Matcher']['HttpCode'].split(',')
+                    code_key = 'HttpCode'
+                    if target_group['ProtocolVersion'] == 'GRPC':
+                        code_key = 'GrpcCode'
+                    current_matcher_list = target_group['Matcher'][code_key].split(',')
+                    requested_matcher_list = params['Matcher'][code_key].split(',')
                     if set(current_matcher_list) != set(requested_matcher_list):
                         health_check_params['Matcher'] = {}
-                        health_check_params['Matcher']['HttpCode'] = ','.join(requested_matcher_list)
+                        health_check_params['Matcher'][code_key] = ','.join(requested_matcher_list)
 
             try:
                 if health_check_params:
@@ -913,6 +939,7 @@ def main():
         name=dict(required=True),
         port=dict(type='int'),
         protocol=dict(choices=protocols_list),
+        protocol_version=dict(type='str', choices=['GRPC', 'HTTP1', 'HTTP2']),
         purge_tags=dict(default=True, type='bool'),
         stickiness_enabled=dict(type='bool'),
         stickiness_type=dict(),
