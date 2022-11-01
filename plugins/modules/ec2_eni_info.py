@@ -205,23 +205,31 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def list_eni(connection, module):
+def build_request_args(eni_id, filters):
+    request_args = {
+        'NetworkInterfaceIds': [eni_id] if eni_id else '',
+        'Filters': ansible_dict_to_boto3_filter_list(filters),
+    }
 
-    params = {}
-    # Options are mutually exclusive
-    if module.params.get("eni_id"):
-        params['NetworkInterfaceIds'] = [module.params.get("eni_id")]
-    elif module.params.get("filters"):
-        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
-    else:
-        params['Filters'] = []
+    request_args = {k: v for k, v in request_args.items() if v}
 
+    return request_args
+
+
+def get_network_interfaces(connection, module, request_args):
     try:
-        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **params)['NetworkInterfaces']
+        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **request_args)['NetworkInterfaces']
     except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
         module.exit_json(network_interfaces=[])
     except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
+
+    return network_interfaces_result
+
+
+def list_eni(connection, module, request_args):
+
+    network_interfaces_result = get_network_interfaces(connection, module, request_args)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
@@ -234,51 +242,13 @@ def list_eni(connection, module):
         network_interface['Id'] = network_interface['NetworkInterfaceId']
         camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=['Tags', 'TagSet']))
 
-    module.exit_json(network_interfaces=camel_network_interfaces)
-
-
-def get_eni_info(interface):
-
-    # Private addresses
-    private_addresses = []
-    for ip in interface.private_ip_addresses:
-        private_addresses.append({'private_ip_address': ip.private_ip_address, 'primary_address': ip.primary})
-
-    interface_info = {'id': interface.id,
-                      'subnet_id': interface.subnet_id,
-                      'vpc_id': interface.vpc_id,
-                      'description': interface.description,
-                      'owner_id': interface.owner_id,
-                      'status': interface.status,
-                      'mac_address': interface.mac_address,
-                      'private_ip_address': interface.private_ip_address,
-                      'source_dest_check': interface.source_dest_check,
-                      'groups': dict((group.id, group.name) for group in interface.groups),
-                      'private_ip_addresses': private_addresses
-                      }
-
-    if hasattr(interface, 'publicDnsName'):
-        interface_info['association'] = {'public_ip_address': interface.publicIp,
-                                         'public_dns_name': interface.publicDnsName,
-                                         'ip_owner_id': interface.ipOwnerId
-                                         }
-
-    if interface.attachment is not None:
-        interface_info['attachment'] = {'attachment_id': interface.attachment.id,
-                                        'instance_id': interface.attachment.instance_id,
-                                        'device_index': interface.attachment.device_index,
-                                        'status': interface.attachment.status,
-                                        'attach_time': interface.attachment.attach_time,
-                                        'delete_on_termination': interface.attachment.delete_on_termination,
-                                        }
-
-    return interface_info
+    return camel_network_interfaces
 
 
 def main():
     argument_spec = dict(
         eni_id=dict(type='str'),
-        filters=dict(default=None, type='dict')
+        filters=dict(default={}, type='dict'),
     )
     mutually_exclusive = [
         ['eni_id', 'filters']
@@ -292,7 +262,14 @@ def main():
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
-    list_eni(connection, module)
+    request_args = build_request_args(
+        eni_id=module.params["eni_id"],
+        filters=module.params["filters"],
+    )
+
+    result = list_eni(connection, module, request_args)
+
+    module.exit_json(network_interfaces=result)
 
 
 if __name__ == '__main__':
