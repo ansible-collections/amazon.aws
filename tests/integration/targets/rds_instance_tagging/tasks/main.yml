@@ -62,7 +62,7 @@
       - result.tags.Name == '{{ instance_id }}'
       - result.tags.Created_by == 'Ansible rds_instance tests'
       - result.kms_key_id
-      - result.storage_encrypted == false
+      - result.storage_encrypted == true
 
   - name: Test impotency omitting tags - check_mode
     rds_instance:
