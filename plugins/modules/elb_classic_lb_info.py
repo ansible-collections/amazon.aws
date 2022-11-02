@@ -33,6 +33,7 @@ options:
       - List of ELB names to gather information about. Pass this option to gather information about a set of ELBs, otherwise, all ELBs are returned.
     type: list
     elements: str
+    default: []
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
