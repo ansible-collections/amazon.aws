@@ -34,6 +34,7 @@ options:
     description:
       - An optional human-readable string describing the contents and purpose of the new AMI.
     type: str
+    default: ''
   encrypted:
     description:
       - Whether or not the destination snapshots of the copied AMI should be encrypted.
