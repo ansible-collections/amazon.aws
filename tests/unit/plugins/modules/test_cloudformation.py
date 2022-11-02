@@ -13,7 +13,7 @@ import pytest
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
-from ansible_collections.amazon.aws.plugins.module_utils.modules import _RetryingBotoClientWrapper
+from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
@@ -84,7 +84,7 @@ class FakeModule(object):
 def _create_wrapped_client(placeboify):
     connection = placeboify.client('cloudformation')
     retry_decorator = AWSRetry.jittered_backoff()
-    wrapped_conn = _RetryingBotoClientWrapper(connection, retry_decorator)
+    wrapped_conn = RetryingBotoClientWrapper(connection, retry_decorator)
     return wrapped_conn
 
 
