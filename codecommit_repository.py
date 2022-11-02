@@ -31,6 +31,7 @@ options:
     aliases:
       - comment
     type: str
+    default: ''
   state:
     description:
       - Specifies the state of repository.

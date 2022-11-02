@@ -40,6 +40,7 @@ options:
     required: false
     aliases: ['filter_tag']
     type: dict
+    default: {}
   state:
     description:
       - "Create or delete metrics configuration"

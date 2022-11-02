@@ -29,6 +29,7 @@ options:
     description:
       - An optional human-readable string describing purpose of the new Snapshot.
     type: str
+    default: ''
   encrypted:
     description:
       - Whether or not the destination Snapshot should be encrypted.

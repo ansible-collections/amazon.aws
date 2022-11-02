@@ -36,6 +36,7 @@ options:
     description:
       - A user-specified description for the cache parameter group.
     type: str
+    default: ''
   state:
     description:
       - Idempotent actions that will create/modify, destroy, or reset a cache parameter group as needed.

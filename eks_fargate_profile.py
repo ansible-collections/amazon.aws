@@ -48,6 +48,7 @@ options:
       labels:
         description: A dictionary of labels used in fargate profile.
         type: dict
+        default: {}
   state:
     description: Create or delete the Fargate Profile.
     choices:

@@ -31,9 +31,11 @@ options:
     description:
         description: The description of the configuration.
         type: str
+        default: ''
     config:
         description: Contents of the server.properties file.
         type: dict
+        default: {}
         aliases: ['configuration']
     kafka_versions:
         description:

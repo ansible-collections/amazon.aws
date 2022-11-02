@@ -53,6 +53,7 @@ options:
     - In addition to file path, prepend s3 path with this prefix. Module will add slash at end of prefix if necessary.
     required: false
     type: str
+    default: ''
   file_root:
     description:
     - File/directory path for synchronization. This is a local path.
@@ -102,6 +103,7 @@ options:
     - Directives are separated by commas.
     required: false
     type: str
+    default: ''
   storage_class:
     description:
     - Storage class to be associated to each object added to the S3 bucket.

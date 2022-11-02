@@ -139,6 +139,7 @@ options:
     description:
     - Settings to change what is considered "failed" when running stack instance updates, and how many to do at a time.
     type: dict
+    default: {}
     suboptions:
       fail_count:
         description:

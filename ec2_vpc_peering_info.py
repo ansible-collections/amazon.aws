@@ -24,6 +24,7 @@ options:
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcPeeringConnections.html)
         for possible filters.
     type: dict
+    default: {}
 author: Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
 - amazon.aws.aws

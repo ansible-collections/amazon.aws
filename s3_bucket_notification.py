@@ -74,6 +74,7 @@ options:
       - Version of the Lambda function.
       - Mutually exclusive with I(lambda_alias).
     type: int
+    default: 0
   events:
     description:
       - Events that will be triggering a notification. You can select multiple events to send
@@ -89,16 +90,19 @@ options:
               's3:ObjectRestore:Completed', 's3:ReducedRedundancyLostObject']
     type: list
     elements: str
+    default: []
   prefix:
     description:
       - Optional prefix to limit the notifications to objects with keys that start with matching
         characters.
     type: str
+    default: ''
   suffix:
     description:
       - Optional suffix to limit the notifications to objects with keys that end with matching
         characters.
     type: str
+    default: ''
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2

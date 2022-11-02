@@ -39,6 +39,7 @@ options:
     description:
       - The version number of the cache engine.
     type: str
+    default: ''
   node_type:
     description:
       - The compute and memory capacity of the nodes in the cache cluster.
@@ -61,22 +62,26 @@ options:
         for the specified engine will be used.
     aliases: [ 'parameter_group' ]
     type: str
+    default: ''
   cache_subnet_group:
     description:
       - The subnet group name to associate with. Only use if inside a VPC.
       - Required if inside a VPC.
     type: str
+    default: ''
   security_group_ids:
     description:
       - A list of VPC security group IDs to associate with this cache cluster. Only use if inside a VPC.
     type: list
     elements: str
+    default: []
   cache_security_groups:
     description:
       - A list of cache security group names to associate with this cache cluster.
       - Don't use if your Cache is inside a VPC. In that case use I(security_group_ids) instead!
     type: list
     elements: str
+    default: []
   zone:
     description:
       - The EC2 Availability Zone in which the cache cluster will be created.

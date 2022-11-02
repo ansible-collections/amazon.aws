@@ -49,6 +49,7 @@ options:
     description:
       - Launch script that can configure the instance with additional data.
     type: str
+    default: ''
   key_pair_name:
     description:
       - Name of the key pair to use with the instance.

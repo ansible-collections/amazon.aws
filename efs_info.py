@@ -30,12 +30,14 @@ options:
       description:
       - List of tags of Amazon EFS. Should be defined as dictionary.
       type: dict
+      default: {}
     targets:
       description:
       - List of targets on which to filter the returned results.
       - Result must match all of the specified targets, each of which can be a security group ID, a subnet ID or an IP address.
       type: list
       elements: str
+      default: []
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

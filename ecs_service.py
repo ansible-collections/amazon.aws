@@ -57,6 +57,7 @@ options:
         required: false
         type: list
         elements: dict
+        default: []
     desired_count:
         description:
           - The count of how many instances of the service.
@@ -68,6 +69,7 @@ options:
           - Unique, case-sensitive identifier you provide to ensure the idempotency of the request. Up to 32 ASCII characters are allowed.
         required: false
         type: str
+        default: ''
     role:
         description:
           - The name or full Amazon Resource Name (ARN) of the IAM role that allows your Amazon ECS container agent to make calls to your load balancer
@@ -75,6 +77,7 @@ options:
           - This parameter is only required if you are using a load balancer with your service in a network mode other than C(awsvpc).
         required: false
         type: str
+        default: ''
     delay:
         description:
           - The time to wait before checking that the service is available.
@@ -99,6 +102,7 @@ options:
         required: false
         version_added: 4.1.0
         type: dict
+        default: {}
         suboptions:
           type:
             type: str
@@ -110,6 +114,7 @@ options:
           - Format is '{"maximum_percent":<integer>, "minimum_healthy_percent":<integer>}
         required: false
         type: dict
+        default: {}
         suboptions:
           maximum_percent:
             type: int
@@ -134,6 +139,7 @@ options:
         required: false
         type: list
         elements: dict
+        default: []
         suboptions:
           type:
             description: The type of constraint.
@@ -148,6 +154,7 @@ options:
         required: false
         type: list
         elements: dict
+        default: []
         suboptions:
           type:
             description: The type of placement strategy.
@@ -193,6 +200,7 @@ options:
         required: false
         type: list
         elements: dict
+        default: []
         suboptions:
             capacity_provider:
                 description:
@@ -223,6 +231,7 @@ options:
           - Describes service discovery registries this service will register with.
         type: list
         elements: dict
+        default: []
         required: false
         suboptions:
             container_name:

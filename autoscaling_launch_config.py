@@ -59,6 +59,7 @@ options:
       - You can specify either security group names or IDs or a mix.
     type: list
     elements: str
+    default: []
   volumes:
     description:
       - A list dictionaries defining the volumes to create.

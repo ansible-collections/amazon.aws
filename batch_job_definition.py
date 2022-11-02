@@ -78,6 +78,7 @@ options:
         see U(https://docs.docker.com/engine/reference/builder/#cmd).
     type: list
     elements: str
+    default: []
   job_role_arn:
     description:
       - The Amazon Resource Name (ARN) of the IAM role that the container can assume for AWS permissions.
@@ -104,6 +105,7 @@ options:
             allowed. This name is referenced in the sourceVolume parameter of container definition mountPoints.
     type: list
     elements: dict
+    default: []
   environment:
     description:
       - The environment variables to pass to a container. This parameter maps to Env in the Create a container section
@@ -117,6 +119,7 @@ options:
           - The value of the key value pair. For environment variables, this is the value of the environment variable.
     type: list
     elements: dict
+    default: []
   mount_points:
     description:
       - The mount points for data volumes in your container. This parameter maps to Volumes in the Create a container
@@ -134,6 +137,7 @@ options:
           - The name of the volume to mount.
     type: list
     elements: dict
+    default: []
   readonly_root_filesystem:
     description:
       - When this parameter is true, the container is given read-only access to its root file system. This parameter
@@ -162,6 +166,7 @@ options:
           - The soft limit for the ulimit type.
     type: list
     elements: dict
+    default: []
   user:
     description:
       - The user name to use inside the container. This parameter maps to User in the Create a container section of

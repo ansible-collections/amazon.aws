@@ -59,6 +59,7 @@ options:
                This data may be modified for existing EFS using state 'present' and new list of mount targets."
         type: list
         elements: dict
+        default: []
         suboptions:
             subnet_id:
                 required: true

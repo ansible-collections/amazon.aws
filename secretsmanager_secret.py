@@ -40,6 +40,7 @@ options:
     description:
     - Specifies a user-provided description of the secret.
     type: str
+    default: ''
   kms_key_id:
     description:
     - Specifies the ARN or alias of the AWS KMS customer master key (CMK) to be

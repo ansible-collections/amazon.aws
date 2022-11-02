@@ -40,6 +40,7 @@ options:
     required: false
     type: list
     elements: str
+    default: []
   egress:
     description:
       - A list of rules for outgoing traffic. Each rule must be specified as a list.

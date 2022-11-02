@@ -61,6 +61,7 @@ options:
     required: false
     type: list
     elements: dict
+    default: []
     suboptions:
         TunnelInsideCidr:
             type: str
@@ -110,11 +111,13 @@ options:
         description:
           - The customer gateway id as a string or a list of those strings.
     type: dict
+    default: {}
   routes:
     description:
       - Routes to add to the connection.
     type: list
     elements: str
+    default: []
   purge_routes:
     description:
       - Whether or not to delete VPN connections routes that are not specified in the task.

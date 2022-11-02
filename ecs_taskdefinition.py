@@ -508,11 +508,13 @@ options:
               the permissions that are specified in this role.
         required: false
         type: str
+        default: ''
     execution_role_arn:
         description:
             - The Amazon Resource Name (ARN) of the task execution role that the Amazon ECS container agent and the Docker daemon can assume.
         required: false
         type: str
+        default: ''
     volumes:
         description:
             - A list of names of volumes to be attached.

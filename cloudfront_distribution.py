@@ -72,6 +72,7 @@ options:
         - Each alias must be unique across all distribution for the AWS account.
       type: list
       elements: str
+      default: []
 
     purge_aliases:
       description:
