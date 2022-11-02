@@ -94,7 +94,7 @@ class RetryingBotoClientWrapper(object):
         retrying_wrapper = self.retry(unwrapped)
 
         @wraps(unwrapped)
-        def deciding_wrapper(aws_retry=False, *args, **kwargs):
+        def deciding_wrapper(*args, aws_retry=False, **kwargs):
             if aws_retry:
                 return retrying_wrapper(*args, **kwargs)
             else:
