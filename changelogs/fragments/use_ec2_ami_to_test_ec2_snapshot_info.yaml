@@ -1,0 +1,3 @@
+---
+trivial:
+- "ec2_snapshot_info - Use ec2_ami integration to cover the module in the CI (https://github.com/ansible-collections/amazon.aws/pull/1234)." 
