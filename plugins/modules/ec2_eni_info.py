@@ -218,7 +218,7 @@ def build_request_args(eni_id, filters):
 
 def get_network_interfaces(connection, module, request_args):
     try:
-        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **request_args)['NetworkInterfaces']
+        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **request_args)
     except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
         module.exit_json(network_interfaces=[])
     except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
@@ -233,7 +233,7 @@ def list_eni(connection, module, request_args):
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
-    for network_interface in network_interfaces_result:
+    for network_interface in network_interfaces_result['NetworkInterfaces']:
         network_interface['TagSet'] = boto3_tag_list_to_ansible_dict(network_interface['TagSet'])
         network_interface['Tags'] = network_interface['TagSet']
         if 'Name' in network_interface['Tags']:
