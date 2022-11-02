@@ -41,6 +41,7 @@ options:
     required: false
     type: list
     elements: str
+    default: []
     aliases: ['managed_policy']
   users:
     description:
@@ -48,6 +49,7 @@ options:
     required: false
     type: list
     elements: str
+    default: []
   state:
     description:
       - Create or remove the IAM group.
