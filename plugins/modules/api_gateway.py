@@ -76,6 +76,7 @@ options:
     description:
       - ENV variables for the stage. Define a dict of key values pairs for variables.
     type: dict
+    default: {}
   stage_canary_settings:
     description:
       - Canary settings for the deployment of the stage.
@@ -86,6 +87,7 @@ options:
       - 'C(useStageCache): A Boolean flag to indicate whether the canary deployment uses the stage cache or not.'
       - See docs U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigateway.html#APIGateway.Client.create_stage)
     type: dict
+    default: {}
   tracing_enabled:
     description:
       - Specifies whether active tracing with X-ray is enabled for the API GW stage.
