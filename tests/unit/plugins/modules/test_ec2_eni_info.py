@@ -27,8 +27,8 @@ def test_get_network_interfaces():
                 "Description": "",
                 "Groups": [
                     {
-                    "GroupId": "sg-05db20a1234567890",
-                    "GroupName": "TestGroup1"
+                        "GroupId": "sg-05db20a1234567890",
+                        "GroupName": "TestGroup1"
                     }
                 ],
                 "InterfaceType": "interface",
@@ -39,8 +39,8 @@ def test_get_network_interfaces():
                 "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
-                    "Primary": "True",
-                    "PrivateIpAddress": "11.22.33.44"
+                        "Primary": "True",
+                        "PrivateIpAddress": "11.22.33.44"
                     }
                 ],
                 "RequesterManaged": False,
@@ -68,7 +68,7 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
     connection = MagicMock()
     module = MagicMock()
 
-    m_build_request_args.return_value ={
+    m_build_request_args.return_value = {
         'Filters': [{
             'Name': 'owner-id',
             'Values': [
@@ -84,8 +84,8 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
                 "Description": "",
                 "Groups": [
                     {
-                    "GroupId": "sg-05db20a1234567890",
-                    "GroupName": "TestGroup1"
+                        "GroupId": "sg-05db20a1234567890",
+                        "GroupName": "TestGroup1"
                     }
                 ],
                 "InterfaceType": "interface",
@@ -96,8 +96,8 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
                 "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
-                    "Primary": "True",
-                    "PrivateIpAddress": "11.22.33.44"
+                        "Primary": "True",
+                        "PrivateIpAddress": "11.22.33.44"
                     }
                 ],
                 "RequesterManaged": False,
@@ -112,8 +112,8 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
                 "Description": "",
                 "Groups": [
                     {
-                    "GroupId": "sg-05db20a1234567890",
-                    "GroupName": "TestGroup1"
+                        "GroupId": "sg-05db20a1234567890",
+                        "GroupName": "TestGroup1"
                     }
                 ],
                 "InterfaceType": "interface",
@@ -124,8 +124,8 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
                 "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
-                    "Primary": "True",
-                    "PrivateIpAddress": "11.22.33.44"
+                        "Primary": "True",
+                        "PrivateIpAddress": "11.22.33.44"
                     }
                 ],
                 "RequesterManaged": False,
@@ -133,9 +133,9 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
                 "Status": "available",
                 "SubnetId": "subnet-07d906b8358869bda",
                 "TagSet": [{
-                        'Key': 'Name',
-                        'Value': 'my-test-eni-name'
-                    },],
+                    'Key': 'Name',
+                    'Value': 'my-test-eni-name'
+                }, ],
                 "VpcId": "vpc-0cb60952be96c9cd8"
             },
         ]
@@ -155,10 +155,10 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
 
     assert camel_network_interfaces[0].get('id', None) == 'eni-1234567890'
     assert camel_network_interfaces[0].get('tags', None) == {}
-    assert camel_network_interfaces[0].get('name', None) == None
+    assert camel_network_interfaces[0].get('name', None) is None
 
     assert camel_network_interfaces[1].get('id', None) == 'eni-0987654321'
-    assert camel_network_interfaces[1].get('tags', None) == {'Name' : 'my-test-eni-name'}
+    assert camel_network_interfaces[1].get('tags', None) == {'Name': 'my-test-eni-name'}
     assert camel_network_interfaces[1].get('name', None) == 'my-test-eni-name'
 
 
