@@ -21,12 +21,14 @@ options:
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpnConnections.html) for possible filters.
     required: false
     type: dict
+    default: {}
   vpn_connection_ids:
     description:
       - Get details of a specific VPN connections using vpn connection ID/IDs. This value should be provided as a list.
     required: false
     type: list
     elements: str
+    default: []
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
