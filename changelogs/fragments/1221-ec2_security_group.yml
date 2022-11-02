@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_security_group - refacter ``get_target_from_rule()`` (https://github.com/ansible-collections/amazon.aws/pull/1221).

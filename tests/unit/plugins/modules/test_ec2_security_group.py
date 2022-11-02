@@ -66,18 +66,3 @@ def test_rule_to_permission():
         perm = group_module.to_permission(test)
         assert perm['FromPort'], perm['ToPort'] == test.port_range
         assert perm['IpProtocol'] == test.protocol
-
-
-def test_validate_ip():
-    class Warner(object):
-        def warn(self, msg):
-            return
-    ips = [
-        ('10.1.1.1/24', '10.1.1.0/24'),
-        ('192.168.56.101/16', '192.168.0.0/16'),
-        # Don't modify IPv6 CIDRs, AWS supports /128 and device ranges
-        ('fc00:8fe0:fe80:b897:8990:8a7c:99bf:323d/128', 'fc00:8fe0:fe80:b897:8990:8a7c:99bf:323d/128'),
-    ]
-
-    for ip, net in ips:
-        assert group_module.validate_ip(Warner(), ip) == net
