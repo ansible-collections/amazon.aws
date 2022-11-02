@@ -148,7 +148,7 @@
       - "'engine' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.engine == "{{ engine }}"
       - "'engine_mode' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.engine_mode == "serverless"
+      - _result_create_source_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_source_db_cluster"
       - "'master_username' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.master_username == "{{ username }}"
