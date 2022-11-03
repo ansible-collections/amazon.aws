@@ -1,0 +1,20 @@
+---
+extends: default
+
+ignore: |
+  .tox
+  changelogs/*
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: error
+  brackets:
+    max-spaces-inside: 1
+    level: error
+  comments-indentation: disable
+  comments: disable
+  document-start: disable
+  indentation: disable
+  truthy: disable
+  line-length: disable
