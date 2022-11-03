@@ -1,2 +1,0 @@
-trivial:
-- rds_cluster - disable integration tests (https://github.com/ansible-collections/amazon.aws/pull/1229)
