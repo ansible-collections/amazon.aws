@@ -247,12 +247,20 @@ def build_request_args(executable_users, filters, image_ids, owners):
     return request_args
 
 
-def list_ec2_images(ec2_client, module, request_args):
+def get_images(ec2_client, module, request_args):
     try:
         images = ec2_client.describe_images(aws_retry=True, **request_args)
-        images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
+
+    return images
+
+
+def list_ec2_images(ec2_client, module, request_args):
+
+    images = get_images(ec2_client, module, request_args)
+    images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
+
     for image in images:
         try:
             image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
