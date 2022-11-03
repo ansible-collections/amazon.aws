@@ -636,7 +636,6 @@
       option: '{{ new_rds_mysql_option_group.options[0] }}'
       option_settings: '{{ new_rds_mysql_option_group.options[0].option_settings }}'
 
-  
   - name: RDS Mysql option group - update tags
     rds_option_group:
       state: present

@@ -381,7 +381,7 @@
   - assert:
       that:
       - not _result_cluster_snapshot.changed
-  
+
   # ------------------------------------------------------------------------------------------
    # Test copying a snapshot
    ### Copying a DB cluster snapshot from a different region is supported, but not in CI,

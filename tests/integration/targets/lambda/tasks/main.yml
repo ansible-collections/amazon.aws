@@ -639,7 +639,7 @@
     assert:
       that:
       - result is not failed
-  
+
   # Test creation with layers
   - name: Create temporary directory for testing
     tempfile:

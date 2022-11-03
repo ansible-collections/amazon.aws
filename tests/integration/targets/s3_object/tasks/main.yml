@@ -985,7 +985,7 @@
             - result.tags["tag_three"] == '{{ resource_prefix }} Three'
             - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
-      - name:  Update tags for an S3 object with purge_tags False (idempotency)
+      - name: Update tags for an S3 object with purge_tags False (idempotency)
         s3_object:
           bucket: "{{ bucket_name }}"
           object: put-content.txt

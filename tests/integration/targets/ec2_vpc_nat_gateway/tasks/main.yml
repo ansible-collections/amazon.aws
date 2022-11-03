@@ -314,13 +314,12 @@
       - '"allocation_id" in eip_result'
       - eip_result.allocation_id.startswith("eipalloc-")
       - '"public_ip" in eip_result'
-  
+
   - name: 'Set fact: EIP allocation ID and EIP public IP'
     set_fact:
       second_eip_address: '{{ eip_result.public_ip }}'
       second_allocation_id: '{{ eip_result.allocation_id }}'
 
-  
   # ============================================================
   - name: Create new nat gateway with eip address - CHECK_MODE
     ec2_vpc_nat_gateway:
