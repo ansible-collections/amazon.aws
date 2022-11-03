@@ -87,7 +87,7 @@ def get_dependencies():
 def setup_mod_conn(placeboify, params):
     conn = placeboify.client('ec2')
     retry_decorator = aws_retries.AWSRetry.jittered_backoff()
-    wrapped_conn = aws_modules._RetryingBotoClientWrapper(conn, retry_decorator)
+    wrapped_conn = aws_retries.RetryingBotoClientWrapper(conn, retry_decorator)
     m = FakeModule(**params)
     return m, wrapped_conn
 
