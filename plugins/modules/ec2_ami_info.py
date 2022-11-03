@@ -252,9 +252,13 @@ def get_images(ec2_client, module, request_args):
         images = ec2_client.describe_images(aws_retry=True, **request_args)
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
-
     return images
 
+
+def get_image_attribute(ec2_client, image):
+    launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
+                                        ImageId=image['image_id'])['LaunchPermissions']
+    return launch_permissions
 
 def list_ec2_images(ec2_client, module, request_args):
 
@@ -265,8 +269,7 @@ def list_ec2_images(ec2_client, module, request_args):
         try:
             image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
-                                                                         ImageId=image['image_id'])['LaunchPermissions']
+                launch_permissions = get_image_attribute(ec2_client, image)
                 image['launch_permissions'] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code('AuthFailure'):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
