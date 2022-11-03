@@ -2,11 +2,12 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: s3_object
 version_added: 1.0.0
@@ -249,9 +250,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: Simple PUT operation
   amazon.aws.s3_object:
     bucket: mybucket
@@ -359,9 +360,9 @@ EXAMPLES = '''
     copy_src:
         bucket: srcbucket
         object: /source/key.txt
-'''
+"""
 
-RETURN = '''
+RETURN = """
 msg:
   description: Message indicating the status of the operation.
   returned: always
@@ -391,7 +392,7 @@ s3_keys:
   - prefix1/
   - prefix1/key1
   - prefix1/key2
-'''
+"""
 
 import mimetypes
 import os
@@ -408,24 +409,51 @@ except ImportError:
 
 from ansible.module_utils.basic import to_native
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    AnsibleAWSModule,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_code,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_connection
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import (
+    get_s3_connection,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_aws_connection_info,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import (
+    calculate_etag,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import (
+    calculate_etag_content,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import (
+    validate_bucket_name,
+)
 
-IGNORE_S3_DROP_IN_EXCEPTIONS = ['XNotImplemented', 'NotImplemented']
+IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented"]
 
 
 class Sigv4Required(Exception):
     pass
+
+
+class S3ObjectFailure(Exception):
+    def __init__(self, message=None, original_e=None):
+        super().__init__(message)
+        self.original_e = original_e
+        self.message = message
 
 
 def key_check(module, s3, bucket, obj, version=None, validate=True):
@@ -434,37 +462,53 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
             s3.head_object(Bucket=bucket, Key=obj, VersionId=version)
         else:
             s3.head_object(Bucket=bucket, Key=obj)
-    except is_boto3_error_code('404'):
+    except is_boto3_error_code("404"):
         return False
-    except is_boto3_error_code('403') as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
         if validate is True:
-            module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
+            module.fail_json_aws(
+                e,
+                msg="Failed while looking up object (during key check) %s."
+                % obj,
+            )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            "Failed while looking up object (during key check) %s." % obj, e
+        )
 
     return True
 
 
-def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
+def etag_compare(
+    module, s3, bucket, obj, version=None, local_file=None, content=None
+):
     s3_etag = get_etag(s3, bucket, obj, version=version)
     if local_file is not None:
-        local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
+        local_etag = calculate_etag(
+            module, local_file, s3_etag, s3, bucket, obj, version
+        )
     else:
-        local_etag = calculate_etag_content(module, content, s3_etag, s3, bucket, obj, version)
-
+        local_etag = calculate_etag_content(
+            module, content, s3_etag, s3, bucket, obj, version
+        )
     return s3_etag == local_etag
 
 
 def get_etag(s3, bucket, obj, version=None):
     try:
         if version:
-            key_check = s3.head_object(Bucket=bucket, Key=obj, VersionId=version)
+            key_check = s3.head_object(
+                Bucket=bucket, Key=obj, VersionId=version
+            )
         else:
             key_check = s3.head_object(Bucket=bucket, Key=obj)
         if not key_check:
             return None
-        return key_check['ETag']
-    except is_boto3_error_code('404'):
+        return key_check["ETag"]
+    except is_boto3_error_code("404"):
         return None
 
 
@@ -475,159 +519,226 @@ def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
         key_check = s3.head_object(Bucket=bucket, Key=obj)
     if not key_check:
         return None
-    return key_check['LastModified'].timestamp()
+    return key_check["LastModified"].timestamp()
 
 
-def is_local_object_latest(module, s3, bucket, obj, version=None, local_file=None):
+def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
     s3_last_modified = get_s3_last_modified_timestamp(s3, bucket, obj, version)
-    if os.path.exists(local_file) is False:
+    if not os.path.exists(local_file):
         return False
-    else:
-        local_last_modified = os.path.getmtime(local_file)
-
+    local_last_modified = os.path.getmtime(local_file)
     return s3_last_modified <= local_last_modified
 
 
 def bucket_check(module, s3, bucket, validate=True):
-    exists = True
     try:
         s3.head_bucket(Bucket=bucket)
-    except is_boto3_error_code('404'):
+    except is_boto3_error_code("404"):
         return False
-    except is_boto3_error_code('403') as e:  # pylint: disable=duplicate-except
-        if validate is True:
-            module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
-    except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
-    return exists
+    except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
+        if validate:
+            module.fail_json_aws(
+                e,
+                msg="Failed while looking up bucket (during bucket_check) %s."
+                % bucket,
+            )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            "Failed while looking up bucket (during bucket_check) %s."
+            % bucket,
+            e,
+        )
+    return True
 
 
 def create_bucket(module, s3, bucket, location=None):
-    module.deprecate('Support for creating S3 buckets using the s3_object module'
-                     ' has been deprecated.  Please use the ``s3_bucket`` module'
-                     ' instead.', version='6.0.0', collection_name='amazon.aws')
+    module.deprecate(
+        "Support for creating S3 buckets using the s3_object module"
+        " has been deprecated.  Please use the ``s3_bucket`` module"
+        " instead.",
+        version="6.0.0",
+        collection_name="amazon.aws",
+    )
     if module.check_mode:
-        module.exit_json(msg="CREATE operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="CREATE operation skipped - running in check mode",
+            changed=True,
+        )
     configuration = {}
-    if location not in ('us-east-1', None):
-        configuration['LocationConstraint'] = location
+    if location not in ("us-east-1", None):
+        configuration["LocationConstraint"] = location
     try:
         if len(configuration) > 0:
-            s3.create_bucket(Bucket=bucket, CreateBucketConfiguration=configuration)
+            s3.create_bucket(
+                Bucket=bucket, CreateBucketConfiguration=configuration
+            )
         else:
             s3.create_bucket(Bucket=bucket)
-        if module.params.get('permission'):
+        if module.params.get("permission"):
             # Wait for the bucket to exist before setting ACLs
-            s3.get_waiter('bucket_exists').wait(Bucket=bucket)
-        for acl in module.params.get('permission'):
+            s3.get_waiter("bucket_exists").wait(Bucket=bucket)
+        for acl in module.params.get("permission"):
             AWSRetry.jittered_backoff(
-                max_delay=120, catch_extra_error_codes=['NoSuchBucket']
+                max_delay=120, catch_extra_error_codes=["NoSuchBucket"]
             )(s3.put_bucket_acl)(ACL=acl, Bucket=bucket)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).")
-
+        module.warn(
+            "PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning"
+        )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            "Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).",
+            e,
+        )
     if bucket:
         return True
 
 
 def paginated_list(s3, **pagination_params):
-    pg = s3.get_paginator('list_objects_v2')
+    pg = s3.get_paginator("list_objects_v2")
     for page in pg.paginate(**pagination_params):
-        yield [data['Key'] for data in page.get('Contents', [])]
+        for data in page.get("Contents", []):
+            yield data["Key"]
 
 
 def paginated_versioned_list_with_fallback(s3, **pagination_params):
     try:
-        versioned_pg = s3.get_paginator('list_object_versions')
+        versioned_pg = s3.get_paginator("list_object_versions")
         for page in versioned_pg.paginate(**pagination_params):
-            delete_markers = [{'Key': data['Key'], 'VersionId': data['VersionId']} for data in page.get('DeleteMarkers', [])]
-            current_objects = [{'Key': data['Key'], 'VersionId': data['VersionId']} for data in page.get('Versions', [])]
+            delete_markers = [
+                {"Key": data["Key"], "VersionId": data["VersionId"]}
+                for data in page.get("DeleteMarkers", [])
+            ]
+            current_objects = [
+                {"Key": data["Key"], "VersionId": data["VersionId"]}
+                for data in page.get("Versions", [])
+            ]
             yield delete_markers + current_objects
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS + ['AccessDenied']):
-        for page in paginated_list(s3, **pagination_params):
-            yield [{'Key': data['Key']} for data in page]
+    except is_boto3_error_code(
+        IGNORE_S3_DROP_IN_EXCEPTIONS + ["AccessDenied"]
+    ):
+        for key in paginated_list(s3, **pagination_params):
+            yield [{"Key": key}]
 
 
 def list_keys(module, s3, bucket, prefix, marker, max_keys):
-    pagination_params = {'Bucket': bucket}
-    for param_name, param_value in (('Prefix', prefix), ('StartAfter', marker), ('MaxKeys', max_keys)):
-        pagination_params[param_name] = param_value
+    pagination_params = {
+        "Bucket": bucket,
+        "Prefix": prefix,
+        "StartAfter": marker,
+        "MaxKeys": max_keys,
+    }
+    pagination_params = {k: v for k, v in pagination_params.items() if v}
+
     try:
-        keys = sum(paginated_list(s3, **pagination_params), [])
+        keys = list(paginated_list(s3, **pagination_params))
         module.exit_json(msg="LIST operation complete", s3_keys=keys)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed while listing the keys in the bucket {0}".format(bucket))
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise S3ObjectFailure(
+            "Failed while listing the keys in the bucket {0}".format(bucket), e
+        )
 
 
 def delete_bucket(module, s3, bucket):
-    module.deprecate('Support for deleting S3 buckets using the s3_object module'
-                     ' has been deprecated.  Please use the ``s3_bucket`` module'
-                     ' instead.', version='6.0.0', collection_name='amazon.aws')
+    module.deprecate(
+        "Support for deleting S3 buckets using the s3_object module"
+        " has been deprecated.  Please use the ``s3_bucket`` module"
+        " instead.",
+        version="6.0.0",
+        collection_name="amazon.aws",
+    )
     if module.check_mode:
-        module.exit_json(msg="DELETE operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="DELETE operation skipped - running in check mode",
+            changed=True,
+        )
     try:
         exists = bucket_check(module, s3, bucket)
-        if exists is False:
+        if not exists:
             return False
         # if there are contents then we need to delete them before we can delete the bucket
         for keys in paginated_versioned_list_with_fallback(s3, Bucket=bucket):
             if keys:
-                s3.delete_objects(Bucket=bucket, Delete={'Objects': keys})
+                s3.delete_objects(Bucket=bucket, Delete={"Objects": keys})
         s3.delete_bucket(Bucket=bucket)
         return True
-    except is_boto3_error_code('NoSuchBucket'):
+    except is_boto3_error_code("NoSuchBucket"):
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while deleting bucket %s." % bucket)
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure("Failed while deleting bucket %s." % bucket, e)
 
 
 def delete_key(module, s3, bucket, obj):
     if module.check_mode:
-        module.exit_json(msg="DELETE operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="DELETE operation skipped - running in check mode",
+            changed=True,
+        )
     try:
         s3.delete_object(Bucket=bucket, Key=obj)
-        module.exit_json(msg="Object deleted from bucket %s." % (bucket), changed=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed while trying to delete %s." % obj)
+        module.exit_json(
+            msg="Object deleted from bucket %s." % (bucket), changed=True
+        )
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise S3ObjectFailure("Failed while trying to delete %s." % obj, e)
+
+
+def put_object_acl(module, s3, bucket, obj, params=None):
+    try:
+        if params:
+            s3.put_object(**params)
+        for acl in module.params.get("permission"):
+            s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+    except is_boto3_error_code("AccessControlListNotSupported"):
+        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure("Failed while creating object %s." % obj, e)
 
 
 def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
     if module.check_mode:
-        module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
-    try:
-        params = {'Bucket': bucket, 'Key': obj, 'Body': b''}
-        if encrypt:
-            params['ServerSideEncryption'] = module.params['encryption_mode']
-        if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
-            params['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
-
-        s3.put_object(**params)
-        for acl in module.params.get('permission'):
-            s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
-    except is_boto3_error_code('AccessControlListNotSupported'):
-        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
+        module.exit_json(
+            msg="PUT operation skipped - running in check mode", changed=True
+        )
+    params = {"Bucket": bucket, "Key": obj, "Body": b""}
+    params.update(
+        get_extra_params(
+            encrypt,
+            module.params.get("encryption_mode"),
+            module.params.get("encryption_kms_key_id"),
+        )
+    )
+    put_object_acl(module, s3, bucket, obj, params)
 
     # Tags
     tags, _changed = ensure_tags(s3, module, bucket, obj)
 
-    try:
-        url = s3.generate_presigned_url(ClientMethod='put_object',
-                                        Params={'Bucket': bucket, 'Key': obj},
-                                        ExpiresIn=expiry)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to generate presigned URL")
+    url = put_download_url(s3, bucket, obj, expiry)
 
-    url = put_download_url(module, s3, bucket, obj, expiry)
-
-    module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), url=url, tags=tags, changed=True)
+    module.exit_json(
+        msg="Virtual directory %s created in bucket %s" % (obj, bucket),
+        url=url,
+        tags=tags,
+        changed=True,
+    )
 
 
 def path_check(path):
@@ -637,86 +748,138 @@ def path_check(path):
         return False
 
 
-def option_in_extra_args(option):
-    temp_option = option.replace('-', '').lower()
+def get_content_type(src, present=True):
+    if not present:
+        content_type = None
+        if src:
+            content_type = mimetypes.guess_type(src)[0]
+        if content_type is None:
+            # s3 default content type
+            content_type = "binary/octet-stream"
+        return content_type
 
-    allowed_extra_args = {'acl': 'ACL', 'cachecontrol': 'CacheControl', 'contentdisposition': 'ContentDisposition',
-                          'contentencoding': 'ContentEncoding', 'contentlanguage': 'ContentLanguage',
-                          'contenttype': 'ContentType', 'expires': 'Expires', 'grantfullcontrol': 'GrantFullControl',
-                          'grantread': 'GrantRead', 'grantreadacp': 'GrantReadACP', 'grantwriteacp': 'GrantWriteACP',
-                          'metadata': 'Metadata', 'requestpayer': 'RequestPayer', 'serversideencryption': 'ServerSideEncryption',
-                          'storageclass': 'StorageClass', 'ssecustomeralgorithm': 'SSECustomerAlgorithm', 'ssecustomerkey': 'SSECustomerKey',
-                          'ssecustomerkeymd5': 'SSECustomerKeyMD5', 'ssekmskeyid': 'SSEKMSKeyId', 'websiteredirectlocation': 'WebsiteRedirectLocation'}
+
+def get_extra_params(
+    encrypt=None,
+    encryption_mode=None,
+    encryption_kms_key_id=None,
+    metadata=None,
+):
+    extra = {}
+    if encrypt:
+        extra["ServerSideEncryption"] = encryption_mode
+    if encryption_kms_key_id and encryption_mode == "aws:kms":
+        extra["SSEKMSKeyId"] = encryption_kms_key_id
+    if metadata:
+        extra["Metadata"] = {}
+        # determine object metadata and extra arguments
+        for option in metadata:
+            extra_args_option = option_in_extra_args(option)
+            if extra_args_option:
+                extra[extra_args_option] = metadata[option]
+            else:
+                extra["Metadata"][option] = metadata[option]
+    return extra
+
+
+def option_in_extra_args(option):
+    temp_option = option.replace("-", "").lower()
+
+    allowed_extra_args = {
+        "acl": "ACL",
+        "cachecontrol": "CacheControl",
+        "contentdisposition": "ContentDisposition",
+        "contentencoding": "ContentEncoding",
+        "contentlanguage": "ContentLanguage",
+        "contenttype": "ContentType",
+        "expires": "Expires",
+        "grantfullcontrol": "GrantFullControl",
+        "grantread": "GrantRead",
+        "grantreadacp": "GrantReadACP",
+        "grantwriteacp": "GrantWriteACP",
+        "metadata": "Metadata",
+        "requestpayer": "RequestPayer",
+        "serversideencryption": "ServerSideEncryption",
+        "storageclass": "StorageClass",
+        "ssecustomeralgorithm": "SSECustomerAlgorithm",
+        "ssecustomerkey": "SSECustomerKey",
+        "ssecustomerkeymd5": "SSECustomerKeyMD5",
+        "ssekmskeyid": "SSEKMSKeyId",
+        "websiteredirectlocation": "WebsiteRedirectLocation",
+    }
 
     if temp_option in allowed_extra_args:
         return allowed_extra_args[temp_option]
 
 
-def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None, acl_disabled=False):
+def upload_s3file(
+    module,
+    s3,
+    bucket,
+    obj,
+    expiry,
+    metadata,
+    encrypt,
+    headers,
+    src=None,
+    content=None,
+    acl_disabled=False,
+):
     if module.check_mode:
-        module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="PUT operation skipped - running in check mode", changed=True
+        )
     try:
-        extra = {}
-        if encrypt:
-            extra['ServerSideEncryption'] = module.params['encryption_mode']
-        if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
-            extra['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
-        if metadata:
-            extra['Metadata'] = {}
-
-            # determine object metadata and extra arguments
-            for option in metadata:
-                extra_args_option = option_in_extra_args(option)
-                if extra_args_option is not None:
-                    extra[extra_args_option] = metadata[option]
-                else:
-                    extra['Metadata'][option] = metadata[option]
-
-        if module.params.get('permission'):
-            permissions = module.params['permission']
+        extra = get_extra_params(
+            encrypt,
+            module.params.get("encryption_mode"),
+            module.params.get("encryption_kms_key_id"),
+            metadata,
+        )
+        if module.params.get("permission"):
+            permissions = module.params["permission"]
             if isinstance(permissions, str):
-                extra['ACL'] = permissions
+                extra["ACL"] = permissions
             elif isinstance(permissions, list):
-                extra['ACL'] = permissions[0]
+                extra["ACL"] = permissions[0]
 
-        if 'ContentType' not in extra:
-            content_type = None
-            if src is not None:
-                content_type = mimetypes.guess_type(src)[0]
-            if content_type is None:
-                # s3 default content type
-                content_type = 'binary/octet-stream'
-            extra['ContentType'] = content_type
+        extra["ContentType"] = get_content_type(
+            src, present=extra.get("ContentType")
+        )
 
-        if src is not None:
-            s3.upload_file(Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
+        if src:
+            s3.upload_file(
+                Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra
+            )
         else:
             f = io.BytesIO(content)
-            s3.upload_fileobj(Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to complete PUT operation.")
+            s3.upload_fileobj(
+                Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra
+            )
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise S3ObjectFailure("Unable to complete PUT operation.", e)
+
     if not acl_disabled:
-        try:
-            for acl in module.params.get('permission'):
-                s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
-        except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-            module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-        except is_boto3_error_code('AccessControlListNotSupported'):
-            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to set object ACL")
+        put_object_acl(module, s3, bucket, obj)
 
     # Tags
     tags, _changed = ensure_tags(s3, module, bucket, obj)
 
-    url = put_download_url(module, s3, bucket, obj, expiry)
+    url = put_download_url(s3, bucket, obj, expiry)
 
-    module.exit_json(msg="PUT operation complete", url=url, tags=tags, changed=True)
+    module.exit_json(
+        msg="PUT operation complete", url=url, tags=tags, changed=True
+    )
 
 
 def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
     if module.check_mode:
-        module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="GET operation skipped - running in check mode", changed=True
+        )
     # retries is the number of loops; range/xrange needs to be one
     # more to get that count of loops.
     try:
@@ -728,26 +891,36 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
             s3.get_object(Bucket=bucket, Key=obj, VersionId=version)
         else:
             s3.get_object(Bucket=bucket, Key=obj)
-    except is_boto3_error_code(['404', '403']) as e:
+    except is_boto3_error_code(["404", "403"]) as e:
         # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
         # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except is_boto3_error_message('require AWS Signature Version 4'):  # pylint: disable=duplicate-except
+    except is_boto3_error_message(
+        "require AWS Signature Version 4"
+    ):  # pylint: disable=duplicate-except
         raise Sigv4Required()
-    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code(
+        "InvalidArgument"
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Could not find the key %s." % obj)
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure("Could not find the key %s." % obj, e)
 
-    optional_kwargs = {'ExtraArgs': {'VersionId': version}} if version else {}
+    optional_kwargs = {"ExtraArgs": {"VersionId": version}} if version else {}
     for x in range(0, retries + 1):
         try:
             s3.download_file(bucket, obj, dest, **optional_kwargs)
             module.exit_json(msg="GET operation complete", changed=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             # actually fail on last pass through the loop.
             if x >= retries:
-                module.fail_json_aws(e, msg="Failed while downloading %s." % obj)
+                raise S3ObjectFailure("Failed while downloading %s." % obj, e)
             # otherwise, try again, this may be a transient timeout.
         except SSLError as e:  # will ClientError catch SSLError?
             # actually fail on last pass through the loop.
@@ -756,131 +929,215 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
             # otherwise, try again, this may be a transient timeout.
 
 
-def download_s3str(module, s3, bucket, obj, version=None, validate=True):
+def download_s3str(module, s3, bucket, obj, version=None):
     if module.check_mode:
-        module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="GET operation skipped - running in check mode", changed=True
+        )
     try:
         if version:
-            contents = to_native(s3.get_object(Bucket=bucket, Key=obj, VersionId=version)["Body"].read())
+            contents = to_native(
+                s3.get_object(Bucket=bucket, Key=obj, VersionId=version)[
+                    "Body"
+                ].read()
+            )
         else:
-            contents = to_native(s3.get_object(Bucket=bucket, Key=obj)["Body"].read())
-        module.exit_json(msg="GET operation complete", contents=contents, changed=True)
-    except is_boto3_error_message('require AWS Signature Version 4'):
+            contents = to_native(
+                s3.get_object(Bucket=bucket, Key=obj)["Body"].read()
+            )
+        module.exit_json(
+            msg="GET operation complete", contents=contents, changed=True
+        )
+    except is_boto3_error_message("require AWS Signature Version 4"):
         raise Sigv4Required()
-    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
+    except is_boto3_error_code(
+        "InvalidArgument"
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(
+            e,
+            msg="Failed while getting contents of object %s as a string."
+            % obj,
+        )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            "Failed while getting contents of object %s as a string." % obj, e
+        )
 
 
 def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
     try:
-        url = s3.generate_presigned_url(ClientMethod='get_object',
-                                        Params={'Bucket': bucket, 'Key': obj},
-                                        ExpiresIn=expiry)
-        module.exit_json(msg="Download url:", url=url, tags=tags, expiry=expiry, changed=changed)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed while getting download url.")
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": bucket, "Key": obj},
+            ExpiresIn=expiry,
+        )
+        module.exit_json(
+            msg="Download url:",
+            url=url,
+            tags=tags,
+            expiry=expiry,
+            changed=changed,
+        )
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise S3ObjectFailure("Failed while getting download url.", e)
 
 
-def put_download_url(module, s3, bucket, obj, expiry):
+def put_download_url(s3, bucket, obj, expiry):
     try:
-        url = s3.generate_presigned_url(ClientMethod='put_object',
-                                        Params={'Bucket': bucket, 'Key': obj},
-                                        ExpiresIn=expiry)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to generate presigned URL")
+        url = s3.generate_presigned_url(
+            ClientMethod="put_object",
+            Params={"Bucket": bucket, "Key": obj},
+            ExpiresIn=expiry,
+        )
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise S3ObjectFailure("Unable to generate presigned URL", e)
+
     return url
 
 
-def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag):
+def copy_object_to_bucket(
+    module, s3, bucket, obj, encrypt, metadata, validate, d_etag
+):
     if module.check_mode:
-        module.exit_json(msg="COPY operation skipped - running in check mode", changed=True)
+        module.exit_json(
+            msg="COPY operation skipped - running in check mode", changed=True
+        )
     try:
-        params = {'Bucket': bucket, 'Key': obj}
-        bucketsrc = {'Bucket': module.params['copy_src'].get('bucket'), 'Key': module.params['copy_src'].get('object')}
+        params = {"Bucket": bucket, "Key": obj}
+        bucketsrc = {
+            "Bucket": module.params["copy_src"].get("bucket"),
+            "Key": module.params["copy_src"].get("object"),
+        }
         version = None
-        if module.params['copy_src'].get('version_id') is not None:
-            version = module.params['copy_src'].get('version_id')
-            bucketsrc.update({'VersionId': version})
-        if not key_check(module, s3, bucketsrc['Bucket'], bucketsrc['Key'], version=version, validate=validate):
+        if module.params["copy_src"].get("version_id"):
+            version = module.params["copy_src"].get("version_id")
+            bucketsrc.update({"VersionId": version})
+        if not key_check(
+            module,
+            s3,
+            bucketsrc["Bucket"],
+            bucketsrc["Key"],
+            version=version,
+            validate=validate,
+        ):
             # Key does not exist in source bucket
-            module.exit_json(msg="Key %s does not exist in bucket %s." % (bucketsrc['Key'], bucketsrc['Bucket']), changed=False)
+            module.exit_json(
+                msg="Key %s does not exist in bucket %s."
+                % (bucketsrc["Key"], bucketsrc["Bucket"]),
+                changed=False,
+            )
 
-        s_etag = get_etag(s3, bucketsrc['Bucket'], bucketsrc['Key'], version=version)
+        s_etag = get_etag(
+            s3, bucketsrc["Bucket"], bucketsrc["Key"], version=version
+        )
         if s_etag == d_etag:
             # Tags
             tags, changed = ensure_tags(s3, module, bucket, obj)
             if not changed:
-                module.exit_json(msg="ETag from source and destination are the same", changed=False)
+                module.exit_json(
+                    msg="ETag from source and destination are the same",
+                    changed=False,
+                )
             else:
-                module.exit_json(msg="tags successfully updated.", changed=changed, tags=tags)
+                module.exit_json(
+                    msg="tags successfully updated.",
+                    changed=changed,
+                    tags=tags,
+                )
         else:
-            params.update({'CopySource': bucketsrc})
-            if encrypt:
-                params['ServerSideEncryption'] = module.params['encryption_mode']
-            if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
-                params['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
-            if metadata:
-                params['Metadata'] = {}
-                # determine object metadata and extra arguments
-                for option in metadata:
-                    extra_args_option = option_in_extra_args(option)
-                    if extra_args_option is not None:
-                        params[extra_args_option] = metadata[option]
-                    else:
-                        params['Metadata'][option] = metadata[option]
+            params.update({"CopySource": bucketsrc})
+            params.update(
+                get_extra_params(
+                    encrypt,
+                    module.params.get("encryption_mode"),
+                    module.params.get("encryption_kms_key_id"),
+                    metadata,
+                )
+            )
             s3.copy_object(**params)
-            for acl in module.params.get('permission'):
-                s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+            put_object_acl(module, s3, bucket, obj)
             # Tags
             tags, changed = ensure_tags(s3, module, bucket, obj)
-            module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), tags=tags, changed=True)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
-    except is_boto3_error_code('AccessControlListNotSupported'):
-        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
+            module.exit_json(
+                msg="Object copied from bucket %s to bucket %s."
+                % (bucketsrc["Bucket"], bucket),
+                tags=tags,
+                changed=True,
+            )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            "Failed while copying object %s from bucket %s."
+            % (obj, module.params["copy_src"].get("Bucket")),
+            e,
+        )
 
 
 def get_current_object_tags_dict(s3, bucket, obj, version=None):
-    try:
-        if version:
-            current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj, VersionId=version).get('TagSet')
-        else:
-            current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj).get('TagSet')
-    except is_boto3_error_code('NoSuchTagSet'):
-        return {}
-    except is_boto3_error_code('NoSuchTagSetError'):  # pylint: disable=duplicate-except
-        return {}
-
+    if version:
+        current_tags = s3.get_object_tagging(
+            Bucket=bucket, Key=obj, VersionId=version
+        ).get("TagSet")
+    else:
+        current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj).get(
+            "TagSet"
+        )
     return boto3_tag_list_to_ansible_dict(current_tags)
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(
+    max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"]
+)
 def put_object_tagging(s3, bucket, obj, tags):
-    s3.put_object_tagging(Bucket=bucket, Key=obj, Tagging={'TagSet': ansible_dict_to_boto3_tag_list(tags)})
+    s3.put_object_tagging(
+        Bucket=bucket,
+        Key=obj,
+        Tagging={"TagSet": ansible_dict_to_boto3_tag_list(tags)},
+    )
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(
+    max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"]
+)
 def delete_object_tagging(s3, bucket, obj):
     s3.delete_object_tagging(Bucket=bucket, Key=obj)
 
 
-def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict, version=None):
+def wait_tags_are_applied(
+    module, s3, bucket, obj, expected_tags_dict, version=None
+):
     for dummy in range(0, 12):
         try:
-            current_tags_dict = get_current_object_tags_dict(s3, bucket, obj, version)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to get object tags.")
+            current_tags_dict = get_current_object_tags_dict(
+                s3, bucket, obj, version
+            )
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
+            raise S3ObjectFailure("Failed to get object tags.", e)
+
         if current_tags_dict != expected_tags_dict:
             time.sleep(5)
         else:
             return current_tags_dict
 
-    module.fail_json(msg="Object tags failed to apply in the expected time.",
-                     requested_tags=expected_tags_dict, live_tags=current_tags_dict)
+    module.fail_json(
+        msg="Object tags failed to apply in the expected time.",
+        requested_tags=expected_tags_dict,
+        live_tags=current_tags_dict,
+    )
 
 
 def ensure_tags(client, module, bucket, obj):
@@ -890,10 +1147,13 @@ def ensure_tags(client, module, bucket, obj):
 
     try:
         current_tags_dict = get_current_object_tags_dict(client, bucket, obj)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get object tags.")
+
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure("Failed to get object tags.", e)
+
     else:
         if tags is not None:
             if not purge_tags:
@@ -905,17 +1165,548 @@ def ensure_tags(client, module, bucket, obj):
                 if tags:
                     try:
                         put_object_tagging(client, bucket, obj, tags)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                        module.fail_json_aws(e, msg="Failed to update object tags.")
+                    except (
+                        botocore.exceptions.BotoCoreError,
+                        botocore.exceptions.ClientError,
+                    ) as e:
+                        raise S3ObjectFailure(
+                            "Failed to update object tags.", e
+                        )
                 else:
                     if purge_tags:
                         try:
                             delete_object_tagging(client, bucket, obj)
-                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                            module.fail_json_aws(e, msg="Failed to delete object tags.")
-                current_tags_dict = wait_tags_are_applied(module, client, bucket, obj, tags)
+                        except (
+                            botocore.exceptions.BotoCoreError,
+                            botocore.exceptions.ClientError,
+                        ) as e:
+                            raise S3ObjectFailure(
+                                "Failed to delete object tags.", e
+                            )
+                current_tags_dict = wait_tags_are_applied(
+                    module, client, bucket, obj, tags
+                )
                 changed = True
     return current_tags_dict, changed
+
+
+def get_binary_content(vars):
+    # the content will be uploaded as a byte string, so we must encode it first
+    bincontent = None
+    if vars.get("content"):
+        bincontent = vars["content"].encode("utf-8")
+    if vars.get("content_base64"):
+        bincontent = base64.standard_b64decode(vars["content_base64"])
+    return bincontent
+
+
+def s3_object_do_get(module, connection, s3_vars):
+
+    keyrtn = key_check(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        version=s3_vars["version"],
+        validate=s3_vars["validate"],
+    )
+    if not keyrtn:
+        if s3_vars["version"]:
+            module.fail_json(
+                msg="Key %s with version id %s does not exist."
+                % (s3_vars["object"], s3_vars["version"])
+            )
+        module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+    if (
+        s3_vars["dest"]
+        and path_check(s3_vars["dest"])
+        and s3_vars["overwrite"] != "always"
+    ):
+        if s3_vars["overwrite"] == "never":
+            module.exit_json(
+                msg="Local object already exists and overwrite is disabled.",
+                changed=False,
+            )
+        if s3_vars["overwrite"] == "different" and etag_compare(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+            local_file=s3_vars["dest"],
+        ):
+
+            module.exit_json(
+                msg="Local and remote object are identical, ignoring. Use overwrite=always parameter to force.",
+                changed=False,
+            )
+        if s3_vars["overwrite"] == "latest" and is_local_object_latest(
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+            local_file=s3_vars["dest"],
+        ):
+            module.exit_json(
+                msg="Local object is latest, ignoreing. Use overwrite=always parameter to force.",
+                changed=False,
+            )
+
+    try:
+        download_s3file(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            s3_vars["dest"],
+            s3_vars["retries"],
+            version=s3_vars["version"],
+        )
+    except Sigv4Required:
+        connection = get_s3_connection(
+            module,
+            s3_vars["aws_connect_kwargs"],
+            s3_vars["location"],
+            s3_vars["ceph"],
+            s3_vars["endpoint_url"],
+            sig_4=True,
+        )
+        download_s3file(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["obj"],
+            s3_vars["dest"],
+            s3_vars["retries"],
+            version=s3_vars["version"],
+        )
+
+    module.exit_json(failed=False)
+
+
+def s3_object_do_put(module, connection, s3_vars):
+    # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
+    # these were separated into the variables bucket_acl and object_acl above
+
+    if (
+        s3_vars["content"] is None
+        and s3_vars["content_base64"] is None
+        and s3_vars["src"] is None
+    ):
+        module.fail_json(
+            msg="Either content, content_base64 or src must be specified for PUT operations"
+        )
+    if s3_vars["src"] is not None and not path_check(s3_vars["src"]):
+        module.fail_json(
+            msg='Local object "%s" does not exist for PUT operation'
+            % (s3_vars["src"])
+        )
+
+    keyrtn = None
+    if s3_vars["bucketrtn"]:
+        keyrtn = key_check(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+            validate=s3_vars["validate"],
+        )
+    else:
+        # If the bucket doesn't exist we should create it.
+        # only use valid bucket acls for create_bucket function
+        s3_vars["permission"] = s3_vars["bucket_acl"]
+        create_bucket(
+            module, connection, s3_vars["bucket"], s3_vars["location"]
+        )
+
+    # the content will be uploaded as a byte string, so we must encode it first
+    bincontent = get_binary_content(s3_vars)
+
+    if keyrtn and s3_vars["overwrite"] != "always":
+        if s3_vars["overwrite"] == "never" or etag_compare(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+            local_file=s3_vars["src"],
+            content=bincontent,
+        ):
+            # Return the download URL for the existing object and ensure tags are updated
+            tags, tags_update = ensure_tags(
+                connection, module, s3_vars["bucket"], s3_vars["object"]
+            )
+            get_download_url(
+                module,
+                connection,
+                s3_vars["bucket"],
+                s3_vars["object"],
+                s3_vars["expiry"],
+                tags,
+                changed=tags_update,
+            )
+
+    # only use valid object acls for the upload_s3file function
+    if not s3_vars["acl_disabled"]:
+        s3_vars["permission"] = s3_vars["object_acl"]
+    upload_s3file(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        s3_vars["expiry"],
+        s3_vars["metadata"],
+        s3_vars["encrypt"],
+        s3_vars["headers"],
+        src=s3_vars["src"],
+        content=bincontent,
+        acl_disabled=s3_vars["acl_disabled"],
+    )
+    module.exit_json(failed=False)
+
+
+def s3_object_do_delobj(module, connection, s3_vars):
+    # Delete an object from a bucket, not the entire bucket
+    if not s3_vars.get("object", None):
+        module.fail_json(msg="object parameter is required")
+    elif s3_vars["bucket"] and delete_key(
+        module, connection, s3_vars["bucket"], s3_vars["object"]
+    ):
+        module.exit_json(
+            msg="Object deleted from bucket %s." % s3_vars["bucket"],
+            changed=True,
+        )
+    else:
+        module.fail_json(msg="Bucket parameter is required.")
+
+
+def s3_object_do_delete(module, connection, s3_vars):
+    if not s3_vars.get("bucket"):
+        module.fail_json(msg="Bucket parameter is required.")
+    elif s3_vars["bucket"] and delete_bucket(
+        module, connection, s3_vars["bucket"]
+    ):
+        # Delete an entire bucket, including all objects in the bucket
+        module.exit_json(
+            msg="Bucket %s and all keys have been deleted."
+            % s3_vars["bucket"],
+            changed=True,
+        )
+
+
+def s3_object_do_list(module, connection, s3_vars):
+    # If the bucket does not exist then bail out
+    if not s3_vars.get("bucketrtn"):
+        module.fail_json(
+            msg="Target bucket (%s) cannot be found" % s3_vars["bucket"]
+        )
+    else:
+        list_keys(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["prefix"],
+            s3_vars["marker"],
+            s3_vars["max_keys"],
+        )
+
+
+def s3_object_do_create(module, connection, s3_vars):
+    # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
+    # these were separated above into the variables bucket_acl and object_acl
+
+    if s3_vars["bucket"] and not s3_vars["object"]:
+        if s3_vars["bucketrtn"]:
+            module.exit_json(msg="Bucket already exists.", changed=False)
+        # only use valid bucket acls when creating the bucket
+        s3_vars["permission"] = s3_vars["bucket_acl"]
+        module.exit_json(
+            msg="Bucket created successfully",
+            changed=create_bucket(
+                module, connection, s3_vars["bucket"], s3_vars["location"]
+            ),
+        )
+    if s3_vars["bucket"] and s3_vars["object"]:
+        if not s3_vars["object"].endswith("/"):
+            s3_vars["object"] = s3_vars["object"] + "/"
+
+        if s3_vars["bucketrtn"]:
+            if key_check(
+                module, connection, s3_vars["bucket"], s3_vars["object"]
+            ):
+                module.exit_json(
+                    msg="Bucket %s and key %s already exists."
+                    % (s3_vars["bucket"], s3_vars["object"]),
+                    changed=False,
+                )
+            if not s3_vars["acl_disabled"]:
+                # setting valid object acls for the create_dirkey function
+                s3_vars["permission"] = s3_vars["object_acl"]
+            create_dirkey(
+                module,
+                connection,
+                s3_vars["bucket"],
+                s3_vars["object"],
+                s3_vars["encrypt"],
+                s3_vars["expiry"],
+            )
+        else:
+            # only use valid bucket acls for the create_bucket function
+            s3_vars["permission"] = s3_vars["bucket_acl"]
+            create_bucket(
+                module, connection, s3_vars["bucket"], s3_vars["location"]
+            )
+            if not s3_vars["acl_disabled"]:
+                # only use valid object acls for the create_dirkey function
+                s3_vars["permission"] = s3_vars["object_acl"]
+            create_dirkey(
+                module,
+                connection,
+                s3_vars["bucket"],
+                s3_vars["object"],
+                s3_vars["encrypt"],
+                s3_vars["expiry"],
+            )
+
+
+def s3_object_do_geturl(module, connection, s3_vars):
+    # Support for grabbing the time-expired URL for an object in S3/Walrus.
+    if not s3_vars["bucket"] and not s3_vars["object"]:
+        module.fail_json(msg="Bucket and Object parameters must be set")
+
+    if key_check(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        version=s3_vars["version"],
+        validate=s3_vars["validate"],
+    ):
+        tags = get_current_object_tags_dict(
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+        )
+        get_download_url(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            s3_vars["expiry"],
+            tags,
+        )
+    module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+
+
+def s3_object_do_getstr(module, connection, s3_vars):
+    if s3_vars["bucket"] and s3_vars["object"]:
+        if key_check(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            version=s3_vars["version"],
+            validate=s3_vars["validate"],
+        ):
+            try:
+                download_s3str(
+                    module,
+                    connection,
+                    s3_vars["bucket"],
+                    s3_vars["object"],
+                    version=s3_vars["version"],
+                )
+            except Sigv4Required:
+                connection = get_s3_connection(
+                    module,
+                    s3_vars["aws_connect_kwargs"],
+                    s3_vars["location"],
+                    s3_vars["ceph"],
+                    s3_vars["endpoint_url"],
+                    sig_4=True,
+                )
+                download_s3str(
+                    module,
+                    connection,
+                    s3_vars["bucket"],
+                    s3_vars["object"],
+                    version=s3_vars["version"],
+                )
+        elif s3_vars["version"]:
+            module.fail_json(
+                msg="Key %s with version id %s does not exist."
+                % (s3_vars["object"], s3_vars["version"])
+            )
+        else:
+            module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+
+
+def s3_object_do_copy(module, connection, s3_vars):
+    # if copying an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
+    # these were separated into the variables bucket_acl and object_acl above
+    d_etag = None
+    if s3_vars["bucketrtn"]:
+        d_etag = get_etag(connection, s3_vars["bucket"], s3_vars["object"])
+    else:
+        # If the bucket doesn't exist we should create it.
+        # only use valid bucket acls for create_bucket function
+        s3_vars["permission"] = s3_vars["bucket_acl"]
+        create_bucket(
+            module, connection, s3_vars["bucket"], s3_vars["location"]
+        )
+    if not s3_vars["acl_disabled"]:
+        # only use valid object acls for the copy operation
+        s3_vars["permission"] = s3_vars["object_acl"]
+    copy_object_to_bucket(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        s3_vars["encrypt"],
+        s3_vars["metadata"],
+        s3_vars["validate"],
+        d_etag,
+    )
+
+
+def populate_facts(module, **variable_dict):
+
+    for k, v in module.params.items():
+        variable_dict[k] = v
+    variable_dict["object_canned_acl"] = [
+        "private",
+        "public-read",
+        "public-read-write",
+        "aws-exec-read",
+        "authenticated-read",
+        "bucket-owner-read",
+        "bucket-owner-full-control",
+    ]
+    variable_dict["bucket_canned_acl"] = [
+        "private",
+        "public-read",
+        "public-read-write",
+        "authenticated-read",
+    ]
+
+    if variable_dict["validate_bucket_name"]:
+        validate_bucket_name(variable_dict["bucket"])
+
+    if variable_dict.get("overwrite") == "different" and not HAS_MD5:
+        module.fail_json(
+            msg="overwrite=different is unavailable: ETag calculation requires MD5 support"
+        )
+
+    if variable_dict.get("overwrite") not in [
+        "always",
+        "never",
+        "different",
+        "latest",
+    ]:
+        if module.boolean(variable_dict["overwrite"]):
+            variable_dict["overwrite"] = "always"
+        else:
+            variable_dict["overwrite"] = "never"
+
+    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(
+        module, boto3=True
+    )
+    # Boto uses symbolic names for locations but region strings will
+    # actually work fine for everything except us-east-1 (US Standard)
+    variable_dict["location"] = region or "us-east-1"
+
+    # Bucket deletion does not require obj.  Prevents ambiguity with delobj.
+    if variable_dict["object"] and variable_dict.get("mode") == "delete":
+        module.fail_json(msg="Parameter obj cannot be used with mode=delete")
+
+    # allow eucarc environment variables to be used if ansible vars aren't set
+    if not variable_dict["endpoint_url"] and "S3_URL" in os.environ:
+        variable_dict["endpoint_url"] = os.environ["S3_URL"]
+        module.deprecate(
+            "Support for the 'S3_URL' environment variable has been "
+            "deprecated.  We recommend using the 'endpoint_url' module "
+            "parameter.  Alternatively, the 'AWS_URL' environment variable can "
+            "be used instead.",
+            date="2024-12-01",
+            collection_name="amazon.aws",
+        )
+
+    if (
+        variable_dict["dualstack"]
+        and variable_dict["endpoint_url"] is not None
+        and "amazonaws.com" not in variable_dict["endpoint_url"]
+    ):
+        module.fail_json(msg="dualstack only applies to AWS S3")
+
+    # Look at endpoint_url and tweak connection settings
+    # if connecting to RGW, Walrus or fakes3
+    if variable_dict["endpoint_url"]:
+        for key in ["validate_certs", "security_token", "profile_name"]:
+            aws_connect_kwargs.pop(key, None)
+    variable_dict["aws_connect_kwargs"] = aws_connect_kwargs
+
+    variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
+    variable_dict["acl_disabled"] = False
+
+    return variable_dict
+
+
+def validate_bucket(module, s3, var_dict):
+    exists = bucket_check(module, s3, var_dict["bucket"])
+
+    if exists:
+        try:
+            ownership_controls = s3.get_bucket_ownership_controls(
+                Bucket=var_dict["bucket"]
+            )["OwnershipControls"]
+            if ownership_controls.get("Rules"):
+                object_ownership = ownership_controls["Rules"][0][
+                    "ObjectOwnership"
+                ]
+                if object_ownership == "BucketOwnerEnforced":
+                    var_dict["acl_disabled"] = True
+        # if bucket ownership controls are not found
+        except botocore.exceptions.ClientError:
+            pass
+
+    if not var_dict["acl_disabled"]:
+        var_dict["bucket_acl"] = [
+            acl
+            for acl in var_dict.get("permission")
+            if acl in var_dict["bucket_canned_acl"]
+        ]
+        var_dict["object_acl"] = [
+            acl
+            for acl in var_dict.get("permission")
+            if acl in var_dict["object_canned_acl"]
+        ]
+        error_acl = [
+            acl
+            for acl in var_dict.get("permission")
+            if (
+                acl not in var_dict["bucket_canned_acl"]
+                and acl not in var_dict["object_canned_acl"]
+            )
+        ]
+        if error_acl:
+            module.fail_json(
+                msg="Unknown permission specified: %s" % error_acl
+            )
+
+    var_dict["bucketrtn"] = bucket_check(
+        module, s3, var_dict["bucket"], validate=var_dict["validate"]
+    )
+
+    if (
+        var_dict["validate"]
+        and var_dict["mode"] not in ("create", "put", "delete", "copy")
+        and not var_dict["bucketrtn"]
+    ):
+        module.fail_json(msg="Source bucket cannot be found.")
+
+    return var_dict
 
 
 def main():
@@ -925,332 +1716,121 @@ def main():
 
     argument_spec = dict(
         bucket=dict(required=True),
-        dest=dict(default=None, type='path'),
-        encrypt=dict(default=True, type='bool'),
-        encryption_mode=dict(choices=['AES256', 'aws:kms'], default='AES256'),
-        expiry=dict(default=600, type='int', aliases=['expiration']),
-        headers=dict(type='dict'),
+        dest=dict(default=None, type="path"),
+        encrypt=dict(default=True, type="bool"),
+        encryption_mode=dict(choices=["AES256", "aws:kms"], default="AES256"),
+        expiry=dict(default=600, type="int", aliases=["expiration"]),
+        headers=dict(type="dict"),
         marker=dict(default=""),
-        max_keys=dict(default=1000, type='int', no_log=False),
-        metadata=dict(type='dict'),
-        mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy'], required=True),
-        sig_v4=dict(default=True, type='bool'),
+        max_keys=dict(default=1000, type="int", no_log=False),
+        metadata=dict(type="dict"),
+        mode=dict(
+            choices=[
+                "get",
+                "put",
+                "delete",
+                "create",
+                "geturl",
+                "getstr",
+                "delobj",
+                "list",
+                "copy",
+            ],
+            required=True,
+        ),
+        sig_v4=dict(default=True, type="bool"),
         object=dict(),
-        permission=dict(type='list', elements='str', default=['private']),
+        permission=dict(type="list", elements="str", default=["private"]),
         version=dict(default=None),
-        overwrite=dict(aliases=['force'], default='different'),
+        overwrite=dict(aliases=["force"], default="different"),
         prefix=dict(default=""),
-        retries=dict(aliases=['retry'], type='int', default=0),
-        dualstack=dict(default=False, type='bool'),
-        ceph=dict(default=False, type='bool', aliases=['rgw']),
-        src=dict(type='path'),
+        retries=dict(aliases=["retry"], type="int", default=0),
+        dualstack=dict(default=False, type="bool"),
+        ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        src=dict(type="path"),
         content=dict(),
         content_base64=dict(),
-        ignore_nonexistent_bucket=dict(default=False, type='bool'),
+        ignore_nonexistent_bucket=dict(default=False, type="bool"),
         encryption_kms_key_id=dict(),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
-        validate_bucket_name=dict(type='bool', default=True),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        copy_src=dict(
+            type="dict",
+            options=dict(
+                bucket=dict(required=True),
+                object=dict(required=True),
+                version_id=dict(),
+            ),
+        ),
+        validate_bucket_name=dict(type="bool", default=True),
     )
 
     required_if = [
-        ['ceph', True, ['endpoint_url']],
-        ['mode', 'put', ['object']],
-        ['mode', 'get', ['dest', 'object']],
-        ['mode', 'getstr', ['object']],
-        ['mode', 'geturl', ['object']],
-        ['mode', 'copy', ['copy_src']],
+        ["ceph", True, ["endpoint_url"]],
+        ["mode", "put", ["object"]],
+        ["mode", "get", ["dest", "object"]],
+        ["mode", "getstr", ["object"]],
+        ["mode", "geturl", ["object"]],
+        ["mode", "copy", ["copy_src"]],
     ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_if=required_if,
-        mutually_exclusive=[['content', 'content_base64', 'src']],
+        mutually_exclusive=[["content", "content_base64", "src"]],
     )
 
-    bucket = module.params.get('bucket')
-    encrypt = module.params.get('encrypt')
-    expiry = module.params.get('expiry')
-    dest = module.params.get('dest', '')
-    headers = module.params.get('headers')
-    marker = module.params.get('marker')
-    max_keys = module.params.get('max_keys')
-    metadata = module.params.get('metadata')
-    mode = module.params.get('mode')
-    obj = module.params.get('object')
-    version = module.params.get('version')
-    overwrite = module.params.get('overwrite')
-    sig_v4 = module.params.get('sig_v4')
-    prefix = module.params.get('prefix')
-    retries = module.params.get('retries')
-    endpoint_url = module.params.get('endpoint_url')
-    dualstack = module.params.get('dualstack')
-    ceph = module.params.get('ceph')
-    src = module.params.get('src')
-    content = module.params.get('content')
-    content_base64 = module.params.get('content_base64')
-    ignore_nonexistent_bucket = module.params.get('ignore_nonexistent_bucket')
+    s3_object_params = populate_facts(module, **module.params)
+    s3 = get_s3_connection(
+        module,
+        s3_object_params["aws_connect_kwargs"],
+        s3_object_params["location"],
+        s3_object_params["ceph"],
+        s3_object_params["endpoint_url"],
+        s3_object_params["sig_v4"],
+    )
 
-    object_canned_acl = ["private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"]
-    bucket_canned_acl = ["private", "public-read", "public-read-write", "authenticated-read"]
+    s3_object_params.update(validate_bucket(module, s3, s3_object_params))
 
-    if module.params.get('validate_bucket_name'):
-        err = validate_bucket_name(bucket)
-        if err:
-            module.fail_json(msg=err)
-
-    if overwrite not in ['always', 'never', 'different', 'latest']:
-        if module.boolean(overwrite):
-            overwrite = 'always'
-        else:
-            overwrite = 'never'
-
-    if overwrite == 'different' and not HAS_MD5:
-        module.fail_json(msg='overwrite=different is unavailable: ETag calculation requires MD5 support')
-
-    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-
-    if region in ('us-east-1', '', None):
-        # default to US Standard region
-        location = 'us-east-1'
-    else:
-        # Boto uses symbolic names for locations but region strings will
-        # actually work fine for everything except us-east-1 (US Standard)
-        location = region
-
-    if module.params.get('object'):
-        obj = module.params['object']
-        # If there is a top level object, do nothing - if the object starts with /
-        # remove the leading character to maintain compatibility with Ansible versions < 2.4
-        if obj.startswith('/'):
-            obj = obj[1:]
-
-    # Bucket deletion does not require obj.  Prevents ambiguity with delobj.
-    if obj and mode == "delete":
-        module.fail_json(msg='Parameter obj cannot be used with mode=delete')
-
-    # allow eucarc environment variables to be used if ansible vars aren't set
-    if not endpoint_url and 'S3_URL' in os.environ:
-        endpoint_url = os.environ['S3_URL']
-        module.deprecate(
-            "Support for the 'S3_URL' environment variable has been "
-            "deprecated.  We recommend using the 'endpoint_url' module "
-            "parameter.  Alternatively, the 'AWS_URL' environment variable can "
-            "be used instead.",
-            date='2024-12-01', collection_name='amazon.aws',
+    func_mapping = {
+        "get": s3_object_do_get,
+        "put": s3_object_do_put,
+        "delobj": s3_object_do_delobj,
+        "delete": s3_object_do_delete,
+        "list": s3_object_do_list,
+        "create": s3_object_do_create,
+        "geturl": s3_object_do_geturl,
+        "getstr": s3_object_do_getstr,
+        "copy": s3_object_do_copy,
+    }
+    func = func_mapping[s3_object_params["mode"]]
+    try:
+        func(module, s3, s3_object_params)
+    except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Invalid endpoint provided")
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn(
+            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning"
         )
-
-    if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
-        module.fail_json(msg='dualstack only applies to AWS S3')
-
-    # Look at endpoint_url and tweak connection settings
-    # if connecting to RGW, Walrus or fakes3
-    if endpoint_url:
-        for key in ['validate_certs', 'security_token', 'profile_name']:
-            aws_connect_kwargs.pop(key, None)
-    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_v4)
-
-    validate = not ignore_nonexistent_bucket
-
-    # check if bucket exists, if yes, check if ACL is disabled
-    acl_disabled = False
-    exists = bucket_check(module, s3, bucket)
-
-    if exists:
-        try:
-            ownership_controls = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']
-            if ownership_controls.get('Rules'):
-                object_ownership = ownership_controls['Rules'][0]['ObjectOwnership']
-                if object_ownership == 'BucketOwnerEnforced':
-                    acl_disabled = True
-        # if bucket ownership controls are not found
-        except botocore.exceptions.ClientError:
-            pass
-
-    # separate types of ACLs
-    if not acl_disabled:
-        bucket_acl = [acl for acl in module.params.get('permission') if acl in bucket_canned_acl]
-        object_acl = [acl for acl in module.params.get('permission') if acl in object_canned_acl]
-        error_acl = [acl for acl in module.params.get('permission') if acl not in bucket_canned_acl and acl not in object_canned_acl]
-        if error_acl:
-            module.fail_json(msg='Unknown permission specified: %s' % error_acl)
-
-    # First, we check to see if the bucket exists, we get "bucket" returned.
-    bucketrtn = bucket_check(module, s3, bucket, validate=validate)
-
-    if validate and mode not in ('create', 'put', 'delete', 'copy') and not bucketrtn:
-        module.fail_json(msg="Source bucket cannot be found.")
-
-    if mode == 'get':
-        keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
-        if keyrtn is False:
-            if version:
-                module.fail_json(msg="Key %s with version id %s does not exist." % (obj, version))
-            else:
-                module.fail_json(msg="Key %s does not exist." % obj)
-
-        if dest and path_check(dest) and overwrite != 'always':
-            if overwrite == 'never':
-                module.exit_json(msg="Local object already exists and overwrite is disabled.", changed=False)
-            if overwrite == 'different' and etag_compare(module, s3, bucket, obj, version=version, local_file=dest):
-                module.exit_json(msg="Local and remote object are identical, ignoring. Use overwrite=always parameter to force.", changed=False)
-            if overwrite == 'latest' and is_local_object_latest(module, s3, bucket, obj, version=version, local_file=dest):
-                module.exit_json(msg="Local object is latest, ignoreing. Use overwrite=always parameter to force.", changed=False)
-
-        try:
-            download_s3file(module, s3, bucket, obj, dest, retries, version=version)
-        except Sigv4Required:
-            s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
-            download_s3file(module, s3, bucket, obj, dest, retries, version=version)
-
-    if mode == 'put':
-
-        # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
-        # these were separated into the variables bucket_acl and object_acl above
-
-        if content is None and content_base64 is None and src is None:
-            module.fail_json(msg='Either content, content_base64 or src must be specified for PUT operations')
-        if src is not None and not path_check(src):
-            module.fail_json(msg='Local object "%s" does not exist for PUT operation' % (src))
-
-        keyrtn = None
-        if bucketrtn:
-            keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
+    except is_boto3_error_code("NoSuchTagSet"):
+        return {}
+    except is_boto3_error_code(
+        "NoSuchTagSetError"
+    ):  # pylint: disable=duplicate-except
+        return {}
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn(
+            "GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning."
+        )
+    except S3ObjectFailure as e:
+        if e.original_e:
+            module.fail_json_aws(e.original_e, e.message)
         else:
-            # If the bucket doesn't exist we should create it.
-            # only use valid bucket acls for create_bucket function
-            module.params['permission'] = bucket_acl
-            create_bucket(module, s3, bucket, location)
-
-        # the content will be uploaded as a byte string, so we must encode it first
-        bincontent = None
-        if content is not None:
-            bincontent = content.encode('utf-8')
-        if content_base64 is not None:
-            bincontent = base64.standard_b64decode(content_base64)
-
-        if keyrtn and overwrite != 'always':
-            if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=bincontent):
-                # Return the download URL for the existing object and ensure tags are updated
-                tags, tags_update = ensure_tags(s3, module, bucket, obj)
-                get_download_url(module, s3, bucket, obj, expiry, tags, changed=tags_update)
-
-        # only use valid object acls for the upload_s3file function
-        if not acl_disabled:
-            module.params['permission'] = object_acl
-        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=bincontent, acl_disabled=acl_disabled)
-
-    # Delete an object from a bucket, not the entire bucket
-    if mode == 'delobj':
-        if obj is None:
-            module.fail_json(msg="object parameter is required")
-        if bucket:
-            deletertn = delete_key(module, s3, bucket, obj)
-            if deletertn is True:
-                module.exit_json(msg="Object deleted from bucket %s." % bucket, changed=True)
-        else:
-            module.fail_json(msg="Bucket parameter is required.")
-
-    # Delete an entire bucket, including all objects in the bucket
-    if mode == 'delete':
-        if bucket:
-            deletertn = delete_bucket(module, s3, bucket)
-            if deletertn is True:
-                module.exit_json(msg="Bucket %s and all keys have been deleted." % bucket, changed=True)
-        else:
-            module.fail_json(msg="Bucket parameter is required.")
-
-    # Support for listing a set of keys
-    if mode == 'list':
-
-        # If the bucket does not exist then bail out
-        if not bucketrtn:
-            module.fail_json(msg="Target bucket (%s) cannot be found" % bucket)
-
-        list_keys(module, s3, bucket, prefix, marker, max_keys)
-
-    # Need to research how to create directories without "populating" a key, so this should just do bucket creation for now.
-    # WE SHOULD ENABLE SOME WAY OF CREATING AN EMPTY KEY TO CREATE "DIRECTORY" STRUCTURE, AWS CONSOLE DOES THIS.
-    if mode == 'create':
-
-        # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
-        # these were separated above into the variables bucket_acl and object_acl
-
-        if bucket and not obj:
-            if bucketrtn:
-                module.exit_json(msg="Bucket already exists.", changed=False)
-            else:
-                # only use valid bucket acls when creating the bucket
-                module.params['permission'] = bucket_acl
-                module.exit_json(msg="Bucket created successfully", changed=create_bucket(module, s3, bucket, location))
-        if bucket and obj:
-            if obj.endswith('/'):
-                dirobj = obj
-            else:
-                dirobj = obj + "/"
-            if bucketrtn:
-                if key_check(module, s3, bucket, dirobj):
-                    module.exit_json(msg="Bucket %s and key %s already exists." % (bucket, obj), changed=False)
-                else:
-                    if not acl_disabled:
-                        # setting valid object acls for the create_dirkey function
-                        module.params['permission'] = object_acl
-                    create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
-            else:
-                # only use valid bucket acls for the create_bucket function
-                module.params['permission'] = bucket_acl
-                create_bucket(module, s3, bucket, location)
-                if not acl_disabled:
-                    # only use valid object acls for the create_dirkey function
-                    module.params['permission'] = object_acl
-                create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
-
-    # Support for grabbing the time-expired URL for an object in S3/Walrus.
-    if mode == 'geturl':
-        if not bucket and not obj:
-            module.fail_json(msg="Bucket and Object parameters must be set")
-
-        keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
-        if keyrtn:
-            tags = get_current_object_tags_dict(s3, bucket, obj, version=version)
-            get_download_url(module, s3, bucket, obj, expiry, tags)
-        else:
-            module.fail_json(msg="Key %s does not exist." % obj)
-
-    if mode == 'getstr':
-        if bucket and obj:
-            keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
-            if keyrtn:
-                try:
-                    download_s3str(module, s3, bucket, obj, version=version)
-                except Sigv4Required:
-                    s3 = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=True)
-                    download_s3str(module, s3, bucket, obj, version=version)
-            elif version is not None:
-                module.fail_json(msg="Key %s with version id %s does not exist." % (obj, version))
-            else:
-                module.fail_json(msg="Key %s does not exist." % obj)
-
-    if mode == 'copy':
-        # if copying an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
-        # these were separated into the variables bucket_acl and object_acl above
-        d_etag = None
-        if bucketrtn:
-            d_etag = get_etag(s3, bucket, obj)
-        else:
-            # If the bucket doesn't exist we should create it.
-            # only use valid bucket acls for create_bucket function
-            module.params['permission'] = bucket_acl
-            create_bucket(module, s3, bucket, location)
-        if not acl_disabled:
-            # only use valid object acls for the copy operation
-            module.params['permission'] = object_acl
-        copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag)
+            module.fail_json(e.message)
 
     module.exit_json(failed=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

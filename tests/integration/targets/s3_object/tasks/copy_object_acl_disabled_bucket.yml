@@ -98,7 +98,7 @@
           - permission_result is changed
           - upload_file_result is not failed
           - '"PutObjectAcl operation : The bucket does not allow ACLs." in permission_result.warnings'
-          - '"Virtual directory test_directory/ created" in permission_result.msg'
+          - '"Virtual directory /test_directory/ created" in permission_result.msg'
 
   always:
 
@@ -112,7 +112,7 @@
       ignore_errors: true
       loop:
         - "acl_disabled_upload_test.txt"
-        - "test_directory/"
+        - "/test_directory/"
 
     - name: List keys simple
       amazon.aws.s3_object:
@@ -122,7 +122,6 @@
     - name: Delete bucket created in this test
       s3_bucket:
         name: "{{ bucket_name }}-acl-disabled"
-        object_ownership: BucketOwnerEnforced
         state: absent
       register: delete_result
 
