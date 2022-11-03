@@ -209,9 +209,13 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    normalize_boto3_result,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
 
 
 @AWSRetry.jittered_backoff()
@@ -246,8 +250,14 @@ def get_endpoints(client, module):
         results = _describe_endpoints(client, **params)["VpcEndpoints"]
         results = normalize_boto3_result(results)
     except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
-        module.exit_json(msg="VpcEndpoint {0} does not exist".format(module.params.get("vpc_endpoint_ids")), vpc_endpoints=[])
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.exit_json(
+            msg="VpcEndpoint {0} does not exist".format(module.params.get("vpc_endpoint_ids")),
+            vpc_endpoints=[],
+        )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get endpoints")
 
     return dict(vpc_endpoints=[camel_dict_to_snake_dict(result) for result in results])

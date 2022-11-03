@@ -45,18 +45,48 @@ from .waiters import get_waiter
 
 
 MATCH_LOOKUP = {
-    "byte": {"method": "byte_match_set", "conditionset": "ByteMatchSet", "conditiontuple": "ByteMatchTuple", "type": "ByteMatch"},
-    "geo": {"method": "geo_match_set", "conditionset": "GeoMatchSet", "conditiontuple": "GeoMatchConstraint", "type": "GeoMatch"},
-    "ip": {"method": "ip_set", "conditionset": "IPSet", "conditiontuple": "IPSetDescriptor", "type": "IPMatch"},
-    "regex": {"method": "regex_match_set", "conditionset": "RegexMatchSet", "conditiontuple": "RegexMatchTuple", "type": "RegexMatch"},
-    "size": {"method": "size_constraint_set", "conditionset": "SizeConstraintSet", "conditiontuple": "SizeConstraint", "type": "SizeConstraint"},
+    "byte": {
+        "method": "byte_match_set",
+        "conditionset": "ByteMatchSet",
+        "conditiontuple": "ByteMatchTuple",
+        "type": "ByteMatch",
+    },
+    "geo": {
+        "method": "geo_match_set",
+        "conditionset": "GeoMatchSet",
+        "conditiontuple": "GeoMatchConstraint",
+        "type": "GeoMatch",
+    },
+    "ip": {
+        "method": "ip_set",
+        "conditionset": "IPSet",
+        "conditiontuple": "IPSetDescriptor",
+        "type": "IPMatch",
+    },
+    "regex": {
+        "method": "regex_match_set",
+        "conditionset": "RegexMatchSet",
+        "conditiontuple": "RegexMatchTuple",
+        "type": "RegexMatch",
+    },
+    "size": {
+        "method": "size_constraint_set",
+        "conditionset": "SizeConstraintSet",
+        "conditiontuple": "SizeConstraint",
+        "type": "SizeConstraint",
+    },
     "sql": {
         "method": "sql_injection_match_set",
         "conditionset": "SqlInjectionMatchSet",
         "conditiontuple": "SqlInjectionMatchTuple",
         "type": "SqlInjectionMatch",
     },
-    "xss": {"method": "xss_match_set", "conditionset": "XssMatchSet", "conditiontuple": "XssMatchTuple", "type": "XssMatch"},
+    "xss": {
+        "method": "xss_match_set",
+        "conditionset": "XssMatchSet",
+        "conditiontuple": "XssMatchTuple",
+        "type": "XssMatch",
+    },
 }
 
 
@@ -127,7 +157,10 @@ def get_web_acl(client, module, web_acl_id):
         try:
             for rule in web_acl["Rules"]:
                 rule.update(get_rule(client, module, rule["RuleId"]))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Couldn't obtain web acl rule")
     return camel_dict_to_snake_dict(web_acl)
 

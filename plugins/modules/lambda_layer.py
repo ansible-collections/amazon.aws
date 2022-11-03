@@ -258,7 +258,10 @@ def list_layer_versions(lambda_client, name):
 
 def create_layer_version(lambda_client, params, check_mode=False):
     if check_mode:
-        return {"msg": "Create operation skipped - running in check mode", "changed": True}
+        return {
+            "msg": "Create operation skipped - running in check mode",
+            "changed": True,
+        }
 
     opt = {"LayerName": params.get("name"), "Content": {}}
     keys = [
@@ -285,9 +288,15 @@ def create_layer_version(lambda_client, params, check_mode=False):
     try:
         layer_version = lambda_client.publish_layer_version(**opt)
         layer_version.pop("ResponseMetadata", None)
-        return {"changed": True, "layer_versions": [camel_dict_to_snake_dict(layer_version)]}
+        return {
+            "changed": True,
+            "layer_versions": [camel_dict_to_snake_dict(layer_version)],
+        }
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise LambdaLayerFailure(e, "Failed to publish a new layer version (check that you have required permissions).")
+        raise LambdaLayerFailure(
+            e,
+            "Failed to publish a new layer version (check that you have required permissions).",
+        )
 
 
 def delete_layer_version(lambda_client, params, check_mode=False):
@@ -303,8 +312,14 @@ def delete_layer_version(lambda_client, params, check_mode=False):
             if not check_mode:
                 try:
                     lambda_client.delete_layer_version(LayerName=name, VersionNumber=layer["version"])
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    LambdaLayerFailure(e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version))
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
+                    LambdaLayerFailure(
+                        e,
+                        "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version),
+                    )
     return {"changed": changed, "layer_versions": deleted_versions}
 
 

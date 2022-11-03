@@ -11,9 +11,30 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_snapshot_info"
 
 
-@pytest.mark.parametrize("snapshot_ids,owner_ids,restorable_by_user_ids,filters,max_results,next_token_id,expected", [([], [], [], {}, None, None, {})])
-def test_build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id, expected):
-    assert ec2_snapshot_info.build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id) == expected
+@pytest.mark.parametrize(
+    "snapshot_ids,owner_ids,restorable_by_user_ids,filters,max_results,next_token_id,expected",
+    [([], [], [], {}, None, None, {})],
+)
+def test_build_request_args(
+    snapshot_ids,
+    owner_ids,
+    restorable_by_user_ids,
+    filters,
+    max_results,
+    next_token_id,
+    expected,
+):
+    assert (
+        ec2_snapshot_info.build_request_args(
+            snapshot_ids,
+            owner_ids,
+            restorable_by_user_ids,
+            filters,
+            max_results,
+            next_token_id,
+        )
+        == expected
+    )
 
 
 def test_get_snapshots():

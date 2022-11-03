@@ -299,14 +299,23 @@ def main():
     argument_spec = dict(
         alarm_names=dict(type="list", elements="str", required=False),
         alarm_name_prefix=dict(type="str", required=False),
-        alarm_type=dict(type="str", choices=["CompositeAlarm", "MetricAlarm"], default="MetricAlarm", required=False),
+        alarm_type=dict(
+            type="str",
+            choices=["CompositeAlarm", "MetricAlarm"],
+            default="MetricAlarm",
+            required=False,
+        ),
         children_of_alarm_name=dict(type="str", required=False),
         parents_of_alarm_name=dict(type="str", required=False),
         state_value=dict(type="str", choices=["OK", "ALARM", "INSUFFICIENT_DATA"], required=False),
         action_prefix=dict(type="str", required=False),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=[["alarm_names", "alarm_name_prefix"]], supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["alarm_names", "alarm_name_prefix"]],
+        supports_check_mode=True,
+    )
 
     try:
         connection = module.client("cloudwatch", retry_decorator=AWSRetry.jittered_backoff())

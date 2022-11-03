@@ -96,7 +96,12 @@ class AnsibleAWSModule(object):
     features needed.
     """
 
-    default_settings = {"default_args": True, "check_boto3": True, "auto_retry": True, "module_class": AnsibleModule}
+    default_settings = {
+        "default_args": True,
+        "check_boto3": True,
+        "auto_retry": True,
+        "module_class": AnsibleModule,
+    }
 
     def __init__(self, **kwargs):
         local_settings = {}
@@ -125,7 +130,14 @@ class AnsibleAWSModule(object):
             if not self.boto3_at_least("1.18.0"):
                 self.warn("boto3 < 1.18.0 is not supported or tested." "  Some features may not work.")
 
-        deprecated_vars = {"EC2_REGION", "EC2_SECURITY_TOKEN", "EC2_SECRET_KEY", "EC2_ACCESS_KEY", "EC2_URL", "S3_URL"}
+        deprecated_vars = {
+            "EC2_REGION",
+            "EC2_SECURITY_TOKEN",
+            "EC2_SECRET_KEY",
+            "EC2_ACCESS_KEY",
+            "EC2_URL",
+            "S3_URL",
+        }
         if deprecated_vars.intersection(set(os.environ.keys())):
             self._module.deprecate(
                 "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
@@ -327,27 +339,57 @@ def _aws_common_argument_spec():
         access_key=dict(
             aliases=["aws_access_key_id", "aws_access_key", "ec2_access_key"],
             deprecated_aliases=[
-                dict(name="ec2_access_key", date="2024-12-01", collection_name="amazon.aws"),
+                dict(
+                    name="ec2_access_key",
+                    date="2024-12-01",
+                    collection_name="amazon.aws",
+                ),
             ],
-            fallback=(env_fallback, ["AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY", "EC2_ACCESS_KEY"]),
+            fallback=(
+                env_fallback,
+                ["AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY", "EC2_ACCESS_KEY"],
+            ),
             no_log=False,
         ),
         secret_key=dict(
             aliases=["aws_secret_access_key", "aws_secret_key", "ec2_secret_key"],
             deprecated_aliases=[
-                dict(name="ec2_secret_key", date="2024-12-01", collection_name="amazon.aws"),
+                dict(
+                    name="ec2_secret_key",
+                    date="2024-12-01",
+                    collection_name="amazon.aws",
+                ),
             ],
-            fallback=(env_fallback, ["AWS_SECRET_ACCESS_KEY", "AWS_SECRET_KEY", "EC2_SECRET_KEY"]),
+            fallback=(
+                env_fallback,
+                ["AWS_SECRET_ACCESS_KEY", "AWS_SECRET_KEY", "EC2_SECRET_KEY"],
+            ),
             no_log=True,
         ),
         session_token=dict(
-            aliases=["aws_session_token", "security_token", "access_token", "aws_security_token"],
+            aliases=[
+                "aws_session_token",
+                "security_token",
+                "access_token",
+                "aws_security_token",
+            ],
             deprecated_aliases=[
                 dict(name="access_token", date="2024-12-01", collection_name="amazon.aws"),
-                dict(name="security_token", date="2024-12-01", collection_name="amazon.aws"),
-                dict(name="aws_security_token", date="2024-12-01", collection_name="amazon.aws"),
+                dict(
+                    name="security_token",
+                    date="2024-12-01",
+                    collection_name="amazon.aws",
+                ),
+                dict(
+                    name="aws_security_token",
+                    date="2024-12-01",
+                    collection_name="amazon.aws",
+                ),
             ],
-            fallback=(env_fallback, ["AWS_SESSION_TOKEN", "AWS_SECURITY_TOKEN", "EC2_SECURITY_TOKEN"]),
+            fallback=(
+                env_fallback,
+                ["AWS_SESSION_TOKEN", "AWS_SECURITY_TOKEN", "EC2_SECURITY_TOKEN"],
+            ),
             no_log=True,
         ),
         profile=dict(

@@ -281,9 +281,15 @@ from ansible.plugins.inventory import Constructable
 from ansible.template import Templar
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
@@ -304,7 +310,11 @@ instance_data_filter_to_boto_attr = {
     "architecture": ("Architecture",),
     "availability-zone": ("Placement", "AvailabilityZone"),
     "block-device-mapping.attach-time": ("BlockDeviceMappings", "Ebs", "AttachTime"),
-    "block-device-mapping.delete-on-termination": ("BlockDeviceMappings", "Ebs", "DeleteOnTermination"),
+    "block-device-mapping.delete-on-termination": (
+        "BlockDeviceMappings",
+        "Ebs",
+        "DeleteOnTermination",
+    ),
     "block-device-mapping.device-name": ("BlockDeviceMappings", "DeviceName"),
     "block-device-mapping.status": ("BlockDeviceMappings", "Ebs", "Status"),
     "block-device-mapping.volume-id": ("BlockDeviceMappings", "Ebs", "VolumeId"),
@@ -327,31 +337,93 @@ instance_data_filter_to_boto_attr = {
     "launch-index": ("AmiLaunchIndex",),
     "launch-time": ("LaunchTime",),
     "monitoring-state": ("Monitoring", "State"),
-    "network-interface.addresses.private-ip-address": ("NetworkInterfaces", "PrivateIpAddress"),
-    "network-interface.addresses.primary": ("NetworkInterfaces", "PrivateIpAddresses", "Primary"),
-    "network-interface.addresses.association.public-ip": ("NetworkInterfaces", "PrivateIpAddresses", "Association", "PublicIp"),
-    "network-interface.addresses.association.ip-owner-id": ("NetworkInterfaces", "PrivateIpAddresses", "Association", "IpOwnerId"),
-    "network-interface.association.public-ip": ("NetworkInterfaces", "Association", "PublicIp"),
-    "network-interface.association.ip-owner-id": ("NetworkInterfaces", "Association", "IpOwnerId"),
-    "network-interface.association.allocation-id": ("ElasticGpuAssociations", "ElasticGpuId"),
-    "network-interface.association.association-id": ("ElasticGpuAssociations", "ElasticGpuAssociationId"),
-    "network-interface.attachment.attachment-id": ("NetworkInterfaces", "Attachment", "AttachmentId"),
+    "network-interface.addresses.private-ip-address": (
+        "NetworkInterfaces",
+        "PrivateIpAddress",
+    ),
+    "network-interface.addresses.primary": (
+        "NetworkInterfaces",
+        "PrivateIpAddresses",
+        "Primary",
+    ),
+    "network-interface.addresses.association.public-ip": (
+        "NetworkInterfaces",
+        "PrivateIpAddresses",
+        "Association",
+        "PublicIp",
+    ),
+    "network-interface.addresses.association.ip-owner-id": (
+        "NetworkInterfaces",
+        "PrivateIpAddresses",
+        "Association",
+        "IpOwnerId",
+    ),
+    "network-interface.association.public-ip": (
+        "NetworkInterfaces",
+        "Association",
+        "PublicIp",
+    ),
+    "network-interface.association.ip-owner-id": (
+        "NetworkInterfaces",
+        "Association",
+        "IpOwnerId",
+    ),
+    "network-interface.association.allocation-id": (
+        "ElasticGpuAssociations",
+        "ElasticGpuId",
+    ),
+    "network-interface.association.association-id": (
+        "ElasticGpuAssociations",
+        "ElasticGpuAssociationId",
+    ),
+    "network-interface.attachment.attachment-id": (
+        "NetworkInterfaces",
+        "Attachment",
+        "AttachmentId",
+    ),
     "network-interface.attachment.instance-id": ("InstanceId",),
-    "network-interface.attachment.device-index": ("NetworkInterfaces", "Attachment", "DeviceIndex"),
-    "network-interface.attachment.status": ("NetworkInterfaces", "Attachment", "Status"),
-    "network-interface.attachment.attach-time": ("NetworkInterfaces", "Attachment", "AttachTime"),
-    "network-interface.attachment.delete-on-termination": ("NetworkInterfaces", "Attachment", "DeleteOnTermination"),
+    "network-interface.attachment.device-index": (
+        "NetworkInterfaces",
+        "Attachment",
+        "DeviceIndex",
+    ),
+    "network-interface.attachment.status": (
+        "NetworkInterfaces",
+        "Attachment",
+        "Status",
+    ),
+    "network-interface.attachment.attach-time": (
+        "NetworkInterfaces",
+        "Attachment",
+        "AttachTime",
+    ),
+    "network-interface.attachment.delete-on-termination": (
+        "NetworkInterfaces",
+        "Attachment",
+        "DeleteOnTermination",
+    ),
     "network-interface.availability-zone": ("Placement", "AvailabilityZone"),
     "network-interface.description": ("NetworkInterfaces", "Description"),
     "network-interface.group-id": ("NetworkInterfaces", "Groups", "GroupId"),
     "network-interface.group-name": ("NetworkInterfaces", "Groups", "GroupName"),
-    "network-interface.ipv6-addresses.ipv6-address": ("NetworkInterfaces", "Ipv6Addresses", "Ipv6Address"),
+    "network-interface.ipv6-addresses.ipv6-address": (
+        "NetworkInterfaces",
+        "Ipv6Addresses",
+        "Ipv6Address",
+    ),
     "network-interface.mac-address": ("NetworkInterfaces", "MacAddress"),
-    "network-interface.network-interface-id": ("NetworkInterfaces", "NetworkInterfaceId"),
+    "network-interface.network-interface-id": (
+        "NetworkInterfaces",
+        "NetworkInterfaceId",
+    ),
     "network-interface.owner-id": ("NetworkInterfaces", "OwnerId"),
     "network-interface.private-dns-name": ("NetworkInterfaces", "PrivateDnsName"),
     # 'network-interface.requester-id': (),
-    "network-interface.requester-managed": ("NetworkInterfaces", "Association", "IpOwnerId"),
+    "network-interface.requester-managed": (
+        "NetworkInterfaces",
+        "Association",
+        "IpOwnerId",
+    ),
     "network-interface.status": ("NetworkInterfaces", "Status"),
     "network-interface.source-dest-check": ("NetworkInterfaces", "SourceDestCheck"),
     "network-interface.subnet-id": ("NetworkInterfaces", "SubnetId"),
@@ -460,11 +532,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
     def _get_connection(self, credentials, region="us-east-1"):
         try:
             connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region, **credentials)
-        except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+        except (
+            botocore.exceptions.ProfileNotFound,
+            botocore.exceptions.PartialCredentialsError,
+        ) as e:
             if self.boto_profile:
                 try:
                     connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region)
-                except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+                except (
+                    botocore.exceptions.ProfileNotFound,
+                    botocore.exceptions.PartialCredentialsError,
+                ) as e:
                     raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
             else:
                 raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
@@ -481,7 +559,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         try:
             sts_connection = boto3.session.Session(profile_name=self.boto_profile).client("sts", region, **credentials)
-            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName="ansible_aws_ec2_dynamic_inventory")
+            sts_session = sts_connection.assume_role(
+                RoleArn=iam_role_arn,
+                RoleSessionName="ansible_aws_ec2_dynamic_inventory",
+            )
             return dict(
                 aws_access_key_id=sts_session["Credentials"]["AccessKeyId"],
                 aws_secret_access_key=sts_session["Credentials"]["SecretAccessKey"],
@@ -540,11 +621,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 else:
                     assumed_credentials = credentials
                 connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region, **assumed_credentials)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+            except (
+                botocore.exceptions.ProfileNotFound,
+                botocore.exceptions.PartialCredentialsError,
+            ) as e:
                 if self.boto_profile:
                     try:
                         connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region)
-                    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+                    except (
+                        botocore.exceptions.ProfileNotFound,
+                        botocore.exceptions.PartialCredentialsError,
+                    ) as e:
                         raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
                 else:
                     raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
@@ -563,7 +650,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             try:
                 # By default find non-terminated/terminating instances
                 if not any(f["Name"] == "instance-state-name" for f in filters):
-                    filters.append({"Name": "instance-state-name", "Values": ["running", "pending", "stopping", "stopped"]})
+                    filters.append(
+                        {
+                            "Name": "instance-state-name",
+                            "Values": ["running", "pending", "stopping", "stopped"],
+                        }
+                    )
                 paginator = connection.get_paginator("describe_instances")
                 reservations = paginator.paginate(Filters=filters).build_full_result().get("Reservations")
                 instances = []
@@ -585,7 +677,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return all_instances
 
     def _get_reservation_details(self, reservation):
-        return {"OwnerId": reservation["OwnerId"], "RequesterId": reservation.get("RequesterId", ""), "ReservationId": reservation["ReservationId"]}
+        return {
+            "OwnerId": reservation["OwnerId"],
+            "RequesterId": reservation.get("RequesterId", ""),
+            "ReservationId": reservation["ReservationId"],
+        }
 
     @classmethod
     def _get_tag_hostname(cls, preference, instance):
@@ -701,7 +797,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return {"aws_ec2": instances}
 
     def _populate(
-        self, groups, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False
+        self,
+        groups,
+        hostnames,
+        allow_duplicated_hosts=False,
+        hostvars_prefix=None,
+        hostvars_suffix=None,
+        use_contrib_script_compatible_ec2_tag_keys=False,
     ):
         for group in groups:
             group = self.inventory.add_group(group)
@@ -717,7 +819,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             self.inventory.add_child("all", group)
 
     @classmethod
-    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def prepare_host_vars(
+        cls,
+        original_host_vars,
+        hostvars_prefix=None,
+        hostvars_suffix=None,
+        use_contrib_script_compatible_ec2_tag_keys=False,
+    ):
         host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
         host_vars["tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
 
@@ -740,7 +848,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return host_vars
 
     def iter_entry(
-        self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False
+        self,
+        hosts,
+        hostnames,
+        allow_duplicated_hosts=False,
+        hostvars_prefix=None,
+        hostvars_suffix=None,
+        use_contrib_script_compatible_ec2_tag_keys=False,
     ):
         for host in hosts:
             if allow_duplicated_hosts:
@@ -750,7 +864,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             if not hostname_list or hostname_list[0] is None:
                 continue
 
-            host_vars = self.prepare_host_vars(host, hostvars_prefix, hostvars_suffix, use_contrib_script_compatible_ec2_tag_keys)
+            host_vars = self.prepare_host_vars(
+                host,
+                hostvars_prefix,
+                hostvars_suffix,
+                use_contrib_script_compatible_ec2_tag_keys,
+            )
             for name in hostname_list:
                 yield to_text(name), host_vars
 
@@ -807,7 +926,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         t = Templar(loader=loader)
         credentials = {}
 
-        for credential_type in ["aws_profile", "aws_access_key", "aws_secret_key", "aws_security_token", "iam_role_arn"]:
+        for credential_type in [
+            "aws_profile",
+            "aws_access_key",
+            "aws_secret_key",
+            "aws_security_token",
+            "iam_role_arn",
+        ]:
             if t.is_template(self.get_option(credential_type)):
                 credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
             else:

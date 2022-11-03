@@ -221,10 +221,14 @@ def main():
         response = client.invoke(**invoke_params, aws_retry=True)
     except is_boto3_error_code("ResourceNotFoundException") as nfe:
         module.fail_json_aws(
-            nfe, msg="Could not find Lambda to execute. Make sure " "the ARN is correct and your profile has " "permissions to execute this function."
+            nfe,
+            msg="Could not find Lambda to execute. Make sure " "the ARN is correct and your profile has " "permissions to execute this function.",
         )
     except botocore.exceptions.ClientError as ce:  # pylint: disable=duplicate-except
-        module.fail_json_aws(ce, msg="Client-side error when invoking Lambda, check inputs and specific error")
+        module.fail_json_aws(
+            ce,
+            msg="Client-side error when invoking Lambda, check inputs and specific error",
+        )
     except botocore.exceptions.ParamValidationError as ve:  # pylint: disable=duplicate-except
         module.fail_json_aws(ve, msg="Parameters to `invoke` failed to validate")
     except botocore.exceptions.BotoCoreError as e:  # pylint: disable=duplicate-except

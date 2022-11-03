@@ -335,9 +335,13 @@ from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 
 # Set a default, mostly for our integration tests.  This will be overridden in
@@ -358,7 +362,10 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     except is_boto3_error_message("does not exist"):
         ret["log"].append("Stack does not exist.")
         return ret
-    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ValidationError,
+        botocore.exceptions.ClientError,
+    ) as err:  # pylint: disable=duplicate-except
         error_msg = boto_exception(err)
         ret["log"].append("Unknown error: " + str(error_msg))
         return ret
@@ -393,7 +400,14 @@ def create_stack(module, stack_params, cfn, events_limit):
     try:
         response = cfn.create_stack(aws_retry=True, **stack_params)
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
-        result = stack_operation(module, cfn, response["StackId"], "CREATE", events_limit, stack_params.get("ClientRequestToken", None))
+        result = stack_operation(
+            module,
+            cfn,
+            response["StackId"],
+            "CREATE",
+            events_limit,
+            stack_params.get("ClientRequestToken", None),
+        )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
         module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get("StackName")))
     if not result:
@@ -423,7 +437,11 @@ def create_changeset(module, stack_params, cfn, events_limit):
         pending_changesets = list_changesets(cfn, stack_params["StackName"])
         if changeset_name in pending_changesets:
             warning = "WARNING: %d pending changeset(s) exist(s) for this stack!" % len(pending_changesets)
-            result = dict(changed=False, output="ChangeSet %s already exists." % changeset_name, warnings=[warning])
+            result = dict(
+                changed=False,
+                output="ChangeSet %s already exists." % changeset_name,
+                warnings=[warning],
+            )
         else:
             cs = cfn.create_change_set(aws_retry=True, **stack_params)
             # Make sure we don't enter an infinite loop
@@ -439,7 +457,10 @@ def create_changeset(module, stack_params, cfn, events_limit):
                     "The submitted information didn't contain changes" in newcs["StatusReason"] or "No updates are to be performed" in newcs["StatusReason"]
                 ):
                     cfn.delete_change_set(aws_retry=True, ChangeSetName=cs["Id"])
-                    result = dict(changed=False, output="The created Change Set did not contain any changes to this stack and was deleted.")
+                    result = dict(
+                        changed=False,
+                        output="The created Change Set did not contain any changes to this stack and was deleted.",
+                    )
                     # a failed change set does not trigger any stack events so we just want to
                     # skip any further processing of result and just return it directly
                     return result
@@ -476,7 +497,14 @@ def update_stack(module, stack_params, cfn, events_limit):
     # don't need to be updated.
     try:
         cfn.update_stack(aws_retry=True, **stack_params)
-        result = stack_operation(module, cfn, stack_params["StackName"], "UPDATE", events_limit, stack_params.get("ClientRequestToken", None))
+        result = stack_operation(
+            module,
+            cfn,
+            stack_params["StackName"],
+            "UPDATE",
+            events_limit,
+            stack_params.get("ClientRequestToken", None),
+        )
     except is_boto3_error_message("No updates are to be performed."):
         result = dict(changed=False, output="Stack is already up-to-date.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
@@ -492,7 +520,11 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
     if stack:
         if stack["EnableTerminationProtection"] is not desired_termination_protection_state:
             try:
-                cfn.update_termination_protection(aws_retry=True, EnableTerminationProtection=desired_termination_protection_state, StackName=stack_name)
+                cfn.update_termination_protection(
+                    aws_retry=True,
+                    EnableTerminationProtection=desired_termination_protection_state,
+                    StackName=stack_name,
+                )
             except botocore.exceptions.ClientError as e:
                 module.fail_json_aws(e)
 
@@ -512,7 +544,12 @@ def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=N
                 ret.update({"changed": True, "output": "Stack Deleted"})
                 return ret
             else:
-                return {"changed": True, "failed": True, "output": "Stack Not Found", "exception": traceback.format_exc()}
+                return {
+                    "changed": True,
+                    "failed": True,
+                    "output": "Stack Not Found",
+                    "exception": traceback.format_exc(),
+                }
         ret = get_stack_events(cfn, stack_name, events_limit, op_token)
         if not stack:
             if "yes" in existed or operation == "DELETE":  # stacks may delete fast, look in a few ways.
@@ -525,21 +562,45 @@ def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=N
         # it covers ROLLBACK_COMPLETE and UPDATE_ROLLBACK_COMPLETE
         # Possible states: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w1ab2c15c17c21c13
         elif stack["StackStatus"].endswith("ROLLBACK_COMPLETE") and operation != "CREATE_CHANGESET":
-            ret.update({"changed": True, "failed": True, "output": "Problem with %s. Rollback complete" % operation})
+            ret.update(
+                {
+                    "changed": True,
+                    "failed": True,
+                    "output": "Problem with %s. Rollback complete" % operation,
+                }
+            )
             return ret
         elif stack["StackStatus"] == "DELETE_COMPLETE" and operation == "CREATE":
-            ret.update({"changed": True, "failed": True, "output": "Stack create failed. Delete complete."})
+            ret.update(
+                {
+                    "changed": True,
+                    "failed": True,
+                    "output": "Stack create failed. Delete complete.",
+                }
+            )
             return ret
         # note the ordering of ROLLBACK_COMPLETE, DELETE_COMPLETE, and COMPLETE, because otherwise COMPLETE will match all cases.
         elif stack["StackStatus"].endswith("_COMPLETE"):
             ret.update({"changed": True, "output": "Stack %s complete" % operation})
             return ret
         elif stack["StackStatus"].endswith("_ROLLBACK_FAILED"):
-            ret.update({"changed": True, "failed": True, "output": "Stack %s rollback failed" % operation})
+            ret.update(
+                {
+                    "changed": True,
+                    "failed": True,
+                    "output": "Stack %s rollback failed" % operation,
+                }
+            )
             return ret
         # note the ordering of ROLLBACK_FAILED and FAILED, because otherwise FAILED will match both cases.
         elif stack["StackStatus"].endswith("_FAILED"):
-            ret.update({"changed": True, "failed": True, "output": "Stack %s failed" % operation})
+            ret.update(
+                {
+                    "changed": True,
+                    "failed": True,
+                    "output": "Stack %s failed" % operation,
+                }
+            )
             return ret
         else:
             # this can loop forever :/
@@ -553,7 +614,10 @@ def build_changeset_name(stack_params):
 
     json_params = json.dumps(stack_params, sort_keys=True)
 
-    return "Ansible-{0}-{1}".format(stack_params["StackName"], sha1(to_bytes(json_params, errors="surrogate_or_strict")).hexdigest())
+    return "Ansible-{0}-{1}".format(
+        stack_params["StackName"],
+        sha1(to_bytes(json_params, errors="surrogate_or_strict")).hexdigest(),
+    )
 
 
 def check_mode_changeset(module, stack_params, cfn):
@@ -581,7 +645,10 @@ def check_mode_changeset(module, stack_params, cfn):
             return {"changed": False, "msg": reason, "meta": reason}
         return {"changed": True, "msg": reason, "meta": description["Changes"]}
 
-    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
+    except (
+        botocore.exceptions.ValidationError,
+        botocore.exceptions.ClientError,
+    ) as err:
         module.fail_json_aws(err)
 
 
@@ -591,7 +658,10 @@ def get_stack_facts(module, cfn, stack_name, raise_errors=False):
         stack_info = stack_response["Stacks"][0]
     except is_boto3_error_message("does not exist"):
         return None
-    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ValidationError,
+        botocore.exceptions.ClientError,
+    ) as err:  # pylint: disable=duplicate-except
         if raise_errors:
             raise err
         module.fail_json_aws(err, msg="Failed to describe stack")
@@ -628,19 +698,30 @@ def main():
         backoff_retries=dict(type="int", default=10, required=False),
         backoff_delay=dict(type="int", default=3, required=False),
         backoff_max_delay=dict(type="int", default=30, required=False),
-        capabilities=dict(type="list", elements="str", default=["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]),
+        capabilities=dict(
+            type="list",
+            elements="str",
+            default=["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
+        ),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[["template_url", "template", "template_body"], ["disable_rollback", "on_create_failure"]],
+        mutually_exclusive=[
+            ["template_url", "template", "template_body"],
+            ["disable_rollback", "on_create_failure"],
+        ],
         supports_check_mode=True,
     )
 
     invalid_capabilities = []
     user_capabilities = module.params.get("capabilities")
     for user_cap in user_capabilities:
-        if user_cap not in ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]:
+        if user_cap not in [
+            "CAPABILITY_IAM",
+            "CAPABILITY_NAMED_IAM",
+            "CAPABILITY_AUTO_EXPAND",
+        ]:
             invalid_capabilities.append(user_cap)
 
     if invalid_capabilities:
@@ -705,7 +786,9 @@ def main():
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes
     retry_decorator = AWSRetry.jittered_backoff(
-        retries=module.params.get("backoff_retries"), delay=module.params.get("backoff_delay"), max_delay=module.params.get("backoff_max_delay")
+        retries=module.params.get("backoff_retries"),
+        delay=module.params.get("backoff_delay"),
+        max_delay=module.params.get("backoff_max_delay"),
     )
     cfn = module.client("cloudformation", retry_decorator=retry_decorator)
 
@@ -728,7 +811,12 @@ def main():
             result = create_changeset(module, stack_params, cfn, module.params.get("events_limit"))
         else:
             if module.params.get("termination_protection") is not None:
-                update_termination_protection(module, cfn, stack_params["StackName"], bool(module.params.get("termination_protection")))
+                update_termination_protection(
+                    module,
+                    cfn,
+                    stack_params["StackName"],
+                    bool(module.params.get("termination_protection")),
+                )
             result = update_stack(module, stack_params, cfn, module.params.get("events_limit"))
 
         # format the stack output
@@ -768,11 +856,23 @@ def main():
                 if stack_params.get("RoleARN") is None:
                     cfn.delete_stack(aws_retry=True, StackName=stack_params["StackName"])
                 else:
-                    cfn.delete_stack(aws_retry=True, StackName=stack_params["StackName"], RoleARN=stack_params["RoleARN"])
+                    cfn.delete_stack(
+                        aws_retry=True,
+                        StackName=stack_params["StackName"],
+                        RoleARN=stack_params["RoleARN"],
+                    )
                 result = stack_operation(
-                    module, cfn, stack_params["StackName"], "DELETE", module.params.get("events_limit"), stack_params.get("ClientRequestToken", None)
+                    module,
+                    cfn,
+                    stack_params["StackName"],
+                    "DELETE",
+                    module.params.get("events_limit"),
+                    stack_params.get("ClientRequestToken", None),
                 )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as err:
             module.fail_json_aws(err)
 
     module.exit_json(**result)

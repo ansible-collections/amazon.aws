@@ -355,7 +355,10 @@ instances:
           sample: sg-abcd1234
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    AnsibleAWSModule,
+    is_boto3_error_code,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     ansible_dict_to_boto3_filter_list,
     boto3_tag_list_to_ansible_dict,
@@ -410,7 +413,10 @@ def instance_info(conn, instance_name, filters):
     for instance in results:
         instance["Tags"] = get_instance_tags(conn, arn=instance["DBInstanceArn"])
 
-    return {"changed": False, "instances": [camel_dict_to_snake_dict(instance, ignore_list=["Tags"]) for instance in results]}
+    return {
+        "changed": False,
+        "instances": [camel_dict_to_snake_dict(instance, ignore_list=["Tags"]) for instance in results],
+    }
 
 
 def main():

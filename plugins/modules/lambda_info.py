@@ -306,7 +306,10 @@ def alias_details(client, module, function_name):
         lambda_info.update(aliases=_paginate(client, "list_aliases", FunctionName=function_name)["Aliases"])
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(aliases=[])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get aliases")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -383,7 +386,10 @@ def config_details(client, module, function_name):
         lambda_info.update(client.get_function_configuration(aws_retry=True, FunctionName=function_name))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(function={})
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get {0} configuration".format(function_name))
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -411,7 +417,10 @@ def mapping_details(client, module, function_name):
         lambda_info.update(mappings=_paginate(client, "list_event_source_mappings", **params)["EventSourceMappings"])
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(mappings=[])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get source event mappings")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -434,7 +443,10 @@ def policy_details(client, module, function_name):
         lambda_info.update(policy=json.loads(client.get_policy(aws_retry=True, FunctionName=function_name)["Policy"]))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(policy={})
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get {0} policy".format(function_name))
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -456,7 +468,10 @@ def version_details(client, module, function_name):
         lambda_info.update(versions=_paginate(client, "list_versions_by_function", FunctionName=function_name)["Versions"])
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(versions=[])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get {0} versions".format(function_name))
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -478,7 +493,10 @@ def tags_details(client, module, function_name):
         lambda_info.update(tags=client.get_function(aws_retry=True, FunctionName=function_name).get("Tags", {}))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(function={})
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get {0} tags".format(function_name))
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -492,11 +510,28 @@ def main():
     """
     argument_spec = dict(
         function_name=dict(required=False, default=None, aliases=["function", "name"]),
-        query=dict(required=False, choices=["aliases", "all", "config", "mappings", "policy", "versions", "tags"], default=None),
+        query=dict(
+            required=False,
+            choices=[
+                "aliases",
+                "all",
+                "config",
+                "mappings",
+                "policy",
+                "versions",
+                "tags",
+            ],
+            default=None,
+        ),
         event_source_arn=dict(required=False, default=None),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, mutually_exclusive=[], required_together=[])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=[],
+        required_together=[],
+    )
 
     # validate function_name if present
     function_name = module.params["function_name"]

@@ -16,7 +16,9 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import (
+    is_boto3_error_code,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 if not HAS_BOTO3:
@@ -38,7 +40,11 @@ class TestIsBoto3ErrorCode:
 
     def _make_unexpected_exception(self):
         return botocore.exceptions.ClientError(
-            {"Error": {"Code": "SomeThingWentWrong", "Message": "Boom!"}, "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"}}, "someCall"
+            {
+                "Error": {"Code": "SomeThingWentWrong", "Message": "Boom!"},
+                "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+            },
+            "someCall",
         )
 
     def _make_encoded_exception(self):

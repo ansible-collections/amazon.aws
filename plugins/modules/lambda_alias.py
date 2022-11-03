@@ -225,7 +225,10 @@ def get_lambda_alias(module, client):
         results = client.get_alias(aws_retry=True, **api_params)
     except is_boto3_error_code("ResourceNotFoundException"):
         results = None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Error retrieving function alias")
 
     return results
@@ -268,7 +271,10 @@ def lambda_alias(module, client):
                 if not module.check_mode:
                     try:
                         results = client.update_alias(aws_retry=True, **api_params)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:
                         module.fail_json_aws(e, msg="Error updating function alias")
 
         else:
@@ -279,7 +285,10 @@ def lambda_alias(module, client):
                 if not module.check_mode:
                     results = client.create_alias(aws_retry=True, **api_params)
                 changed = True
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Error creating function alias")
 
     else:  # state = 'absent'
@@ -291,7 +300,10 @@ def lambda_alias(module, client):
                 if not module.check_mode:
                     results = client.delete_alias(aws_retry=True, **api_params)
                 changed = True
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Error deleting function alias")
 
     return dict(changed=changed, **dict(results or facts or {}))

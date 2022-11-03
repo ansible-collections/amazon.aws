@@ -429,7 +429,15 @@ def main():
         metric_name=dict(type="str", aliases=["metric"]),
         namespace=dict(type="str"),
         statistic=dict(type="str", choices=["SampleCount", "Average", "Sum", "Minimum", "Maximum"]),
-        comparison=dict(type="str", choices=["LessThanOrEqualToThreshold", "LessThanThreshold", "GreaterThanThreshold", "GreaterThanOrEqualToThreshold"]),
+        comparison=dict(
+            type="str",
+            choices=[
+                "LessThanOrEqualToThreshold",
+                "LessThanThreshold",
+                "GreaterThanThreshold",
+                "GreaterThanOrEqualToThreshold",
+            ],
+        ),
         threshold=dict(type="float"),
         period=dict(type="int"),
         unit=dict(
@@ -471,7 +479,11 @@ def main():
         alarm_actions=dict(type="list", default=[], elements="str"),
         insufficient_data_actions=dict(type="list", default=[], elements="str"),
         ok_actions=dict(type="list", default=[], elements="str"),
-        treat_missing_data=dict(type="str", choices=["breaching", "notBreaching", "ignore", "missing"], default="missing"),
+        treat_missing_data=dict(
+            type="str",
+            choices=["breaching", "notBreaching", "ignore", "missing"],
+            default="missing",
+        ),
         state=dict(default="present", choices=["present", "absent"]),
         metrics=dict(type="list", elements="dict", default=[]),
     )

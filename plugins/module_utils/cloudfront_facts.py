@@ -157,7 +157,16 @@ class CloudFrontFactsServiceManager(object):
     def summary_get_distribution_list(self, streaming=False):
         try:
             list_name = "streaming_distributions" if streaming else "distributions"
-            key_list = ["Id", "ARN", "Status", "LastModifiedTime", "DomainName", "Comment", "PriceClass", "Enabled"]
+            key_list = [
+                "Id",
+                "ARN",
+                "Status",
+                "LastModifiedTime",
+                "DomainName",
+                "Comment",
+                "PriceClass",
+                "Enabled",
+            ]
             distribution_list = {list_name: []}
             distributions = self.list_streaming_distributions(False) if streaming else self.list_distributions(False)
             for dist in distributions:
@@ -175,7 +184,10 @@ class CloudFrontFactsServiceManager(object):
                 temp_distribution["Tags"] = boto3_tag_list_to_ansible_dict(resource_tags["Tags"].get("Items", []))
                 distribution_list[list_name].append(temp_distribution)
             return distribution_list
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error generating summary of distributions")
 
     def get_etag_from_distribution_id(self, distribution_id, streaming):

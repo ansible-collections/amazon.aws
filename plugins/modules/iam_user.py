@@ -187,8 +187,12 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
@@ -263,9 +267,15 @@ def create_or_update_login_profile(connection, module):
         # Login profile does not yet exist - create it
         try:
             retval = connection.create_login_profile(**user_params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Unable to create user login profile")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to update user login profile")
 
     return True, retval
@@ -290,7 +300,10 @@ def delete_login_profile(connection, module):
     if not module.check_mode:
         try:
             connection.delete_login_profile(**user_params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Unable to delete user login profile")
 
     return True
@@ -324,7 +337,10 @@ def create_or_update_user(connection, module):
         try:
             connection.create_user(**params)
             changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Unable to create user")
 
         # Wait for user to be fully available before continuing
@@ -369,8 +385,14 @@ def create_or_update_user(connection, module):
                 if not module.check_mode:
                     try:
                         connection.detach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Unable to detach policy {0} from user {1}".format(policy_arn, params["UserName"]))
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:
+                        module.fail_json_aws(
+                            e,
+                            msg="Unable to detach policy {0} from user {1}".format(policy_arn, params["UserName"]),
+                        )
 
         # If there are policies to adjust that aren't in the current list, then things have changed
         # Otherwise the only changes were in purging above
@@ -381,8 +403,14 @@ def create_or_update_user(connection, module):
                 for policy_arn in managed_policies:
                     try:
                         connection.attach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Unable to attach policy {0} to user {1}".format(policy_arn, params["UserName"]))
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:
+                        module.fail_json_aws(
+                            e,
+                            msg="Unable to attach policy {0} to user {1}".format(policy_arn, params["UserName"]),
+                        )
 
     if module.check_mode:
         module.exit_json(changed=changed)
@@ -434,7 +462,8 @@ def destroy_user(connection, module):
         service_credentials = connection.list_service_specific_credentials(UserName=user_name)["ServiceSpecificCredentials"]
         for service_specific_credential in service_credentials:
             connection.delete_service_specific_credential(
-                UserName=user_name, ServiceSpecificCredentialId=service_specific_credential["ServiceSpecificCredentialId"]
+                UserName=user_name,
+                ServiceSpecificCredentialId=service_specific_credential["ServiceSpecificCredentialId"],
             )
 
         # Remove user's signing certificates
@@ -473,7 +502,10 @@ def get_user(connection, module, name):
         user = connection.get_user(**params)
     except is_boto3_error_code("NoSuchEntity"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
 
     tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
@@ -488,7 +520,10 @@ def get_attached_policy_list(connection, module, name):
         return connection.list_attached_user_policies(UserName=name)["AttachedPolicies"]
     except is_boto3_error_code("NoSuchEntity"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get policies for user {0}".format(name))
 
 
@@ -506,7 +541,10 @@ def user_has_login_profile(connection, module, name):
         connection.get_login_profile(UserName=name)
     except is_boto3_error_code("NoSuchEntity"):
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get login profile for user {0}".format(name))
     return True
 
@@ -529,7 +567,10 @@ def update_user_tags(connection, module, params, user):
                 connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
             if tags_to_add:
                 connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Unable to set tags for user %s" % user_name)
 
     changed = bool(tags_to_add) or bool(tags_to_remove)
@@ -546,7 +587,11 @@ def main():
         remove_password=dict(type="bool", no_log=False),
         managed_policies=dict(default=[], type="list", aliases=["managed_policy"], elements="str"),
         state=dict(choices=["present", "absent"], required=True),
-        purge_policies=dict(default=False, type="bool", aliases=["purge_policy", "purge_managed_policies"]),
+        purge_policies=dict(
+            default=False,
+            type="bool",
+            aliases=["purge_policy", "purge_managed_policies"],
+        ),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
         wait=dict(type="bool", default=True),

@@ -28,7 +28,10 @@ from unittest.mock import Mock, MagicMock
 
 from ansible.errors import AnsibleError
 from ansible.parsing.dataloader import DataLoader
-from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule, instance_data_filter_to_boto_attr
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import (
+    InventoryModule,
+    instance_data_filter_to_boto_attr,
+)
 
 
 instances = {
@@ -66,7 +69,11 @@ instances = {
                             "PrivateDnsName": "ip-098-76-54-321.ec2.internal",
                             "PrivateIpAddress": "098.76.54.321",
                             "Primary": True,
-                            "Association": {"PublicIp": "12.345.67.890", "PublicDnsName": "ec2-12-345-67-890.compute-1.amazonaws.com", "IpOwnerId": "amazon"},
+                            "Association": {
+                                "PublicIp": "12.345.67.890",
+                                "PublicDnsName": "ec2-12-345-67-890.compute-1.amazonaws.com",
+                                "IpOwnerId": "amazon",
+                            },
                         }
                     ],
                     "PrivateDnsName": "ip-098-76-54-321.ec2.internal",
@@ -82,11 +89,19 @@ instances = {
                     "OwnerId": "123456789012",
                     "PrivateIpAddress": "098.76.54.321",
                     "SubnetId": "subnet-12345678",
-                    "Association": {"PublicIp": "12.345.67.890", "PublicDnsName": "ec2-12-345-67-890.compute-1.amazonaws.com", "IpOwnerId": "amazon"},
+                    "Association": {
+                        "PublicIp": "12.345.67.890",
+                        "PublicDnsName": "ec2-12-345-67-890.compute-1.amazonaws.com",
+                        "IpOwnerId": "amazon",
+                    },
                 }
             ],
             "SourceDestCheck": True,
-            "Placement": {"Tenancy": "default", "GroupName": "", "AvailabilityZone": "us-east-1c"},
+            "Placement": {
+                "Tenancy": "default",
+                "GroupName": "",
+                "AvailabilityZone": "us-east-1c",
+            },
             "Hypervisor": "xen",
             "BlockDeviceMappings": [
                 {
@@ -103,7 +118,10 @@ instances = {
             "RootDeviceType": "ebs",
             "RootDeviceName": "/dev/xvda",
             "VirtualizationType": "hvm",
-            "Tags": [{"Value": "test", "Key": "ansible"}, {"Value": "aws_ec2", "Key": "Name"}],
+            "Tags": [
+                {"Value": "test", "Key": "ansible"},
+                {"Value": "aws_ec2", "Key": "Name"},
+            ],
             "AmiLaunchIndex": 0,
         }
     ],
@@ -174,13 +192,19 @@ def test_boto3_conn(inventory):
 
 def testget_all_hostnames_default(inventory):
     instance = instances["Instances"][0]
-    assert inventory.get_all_hostnames(instance, hostnames=None) == ["ec2-12-345-67-890.compute-1.amazonaws.com", "ip-098-76-54-321.ec2.internal"]
+    assert inventory.get_all_hostnames(instance, hostnames=None) == [
+        "ec2-12-345-67-890.compute-1.amazonaws.com",
+        "ip-098-76-54-321.ec2.internal",
+    ]
 
 
 def testget_all_hostnames(inventory):
     hostnames = ["ip-address", "dns-name"]
     instance = instances["Instances"][0]
-    assert inventory.get_all_hostnames(instance, hostnames) == ["12.345.67.890", "ec2-12-345-67-890.compute-1.amazonaws.com"]
+    assert inventory.get_all_hostnames(instance, hostnames) == [
+        "12.345.67.890",
+        "ec2-12-345-67-890.compute-1.amazonaws.com",
+    ]
 
 
 def testget_all_hostnames_dict(inventory):
@@ -237,7 +261,13 @@ def test_set_credentials(inventory):
 
 
 def test_insufficient_credentials(inventory):
-    inventory._options = {"aws_access_key": None, "aws_secret_key": None, "aws_security_token": None, "aws_profile": None, "iam_role_arn": None}
+    inventory._options = {
+        "aws_access_key": None,
+        "aws_secret_key": None,
+        "aws_security_token": None,
+        "aws_profile": None,
+        "iam_role_arn": None,
+    }
     with pytest.raises(AnsibleError) as error_message:
         loader = DataLoader()
         inventory._set_credentials(loader)
@@ -271,7 +301,10 @@ def test_include_filters_with_filter_and_include_filters(inventory):
         "include_filters": [{"from_include_filter": "bar"}],
     }
     print(inventory.build_include_filters())
-    assert inventory.build_include_filters() == [{"from_filter": 1}, {"from_include_filter": "bar"}]
+    assert inventory.build_include_filters() == [
+        {"from_filter": 1},
+        {"from_include_filter": "bar"},
+    ]
 
 
 def test_add_host_empty_hostnames(inventory):
@@ -477,14 +510,24 @@ def test_query_empty_include_only(inventory):
 
 def test_query_empty_include_ordered(inventory):
     inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_barfoo]])
-    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}, {"tag:Name": ["barfoo"]}], [], strict_permissions=True)
+    result = inventory._query(
+        "us-east-1",
+        [{"tag:Name": ["foobar"]}, {"tag:Name": ["barfoo"]}],
+        [],
+        strict_permissions=True,
+    )
     assert result == {"aws_ec2": [instance_barfoo, instance_foobar]}
     inventory._get_instances_by_region.assert_called_with("us-east-1", [{"Name": "tag:Name", "Values": ["barfoo"]}], True)
 
 
 def test_query_empty_include_exclude(inventory):
     inventory._get_instances_by_region = Mock(side_effect=[[instance_foobar], [instance_foobar]])
-    result = inventory._query("us-east-1", [{"tag:Name": ["foobar"]}], [{"tag:Name": ["foobar"]}], strict_permissions=True)
+    result = inventory._query(
+        "us-east-1",
+        [{"tag:Name": ["foobar"]}],
+        [{"tag:Name": ["foobar"]}],
+        strict_permissions=True,
+    )
     assert result == {"aws_ec2": []}
 
 

@@ -662,9 +662,15 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_cluster_status
-from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.rds import (
+    wait_for_cluster_status,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.rds import (
+    arg_spec_to_rds_params,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
@@ -683,12 +689,19 @@ def get_add_role_options(params_dict, cluster):
     current_role_arns = [role["RoleArn"] for role in cluster.get("AssociatedRoles", [])]
     role = params_dict["RoleArn"]
     if role is not None and role not in current_role_arns:
-        return {"RoleArn": role, "DBClusterIdentifier": params_dict["DBClusterIdentifier"]}
+        return {
+            "RoleArn": role,
+            "DBClusterIdentifier": params_dict["DBClusterIdentifier"],
+        }
     return {}
 
 
 def get_backtrack_options(params_dict):
-    options = ["BacktrackTo", "DBClusterIdentifier", "UseEarliestTimeOnPointInTimeUnavailable"]
+    options = [
+        "BacktrackTo",
+        "DBClusterIdentifier",
+        "UseEarliestTimeOnPointInTimeUnavailable",
+    ]
     if params_dict["BacktrackTo"] is not None:
         options = dict((k, params_dict[k]) for k in options if params_dict[k] is not None)
         if "ForceBacktrack" in params_dict:
@@ -896,8 +909,14 @@ def add_role(params):
     if not module.check_mode:
         try:
             client.add_role_to_db_cluster(**params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg=f"Unable to add role {params['RoleArn']} to cluster {params['DBClusterIdentifier']}")
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            module.fail_json_aws(
+                e,
+                msg=f"Unable to add role {params['RoleArn']} to cluster {params['DBClusterIdentifier']}",
+            )
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
 
@@ -905,7 +924,10 @@ def backtrack_cluster(params):
     if not module.check_mode:
         try:
             client.backtrack_db_cluster(**params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg=f"Unable to backtrack cluster {params['DBClusterIdentifier']}")
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
@@ -924,7 +946,10 @@ def changing_cluster_options(modify_params, current_cluster):
 
     enable_cloudwatch_logs_export = modify_params.pop("EnableCloudwatchLogsExports", None)
     if enable_cloudwatch_logs_export is not None:
-        desired_cloudwatch_logs_configuration = {"EnableLogTypes": [], "DisableLogTypes": []}
+        desired_cloudwatch_logs_configuration = {
+            "EnableLogTypes": [],
+            "DisableLogTypes": [],
+        }
         provided_cloudwatch_logs = set(enable_cloudwatch_logs_export)
         current_cloudwatch_logs_export = set(current_cluster["EnabledCloudwatchLogsExports"])
 
@@ -996,7 +1021,14 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
                 changed = True
             if module.params["tags"] is not None:
                 existing_tags = get_tags(client, module, cluster["DBClusterArn"])
-                changed |= ensure_tags(client, module, cluster["DBClusterArn"], existing_tags, module.params["tags"], module.params["purge_tags"])
+                changed |= ensure_tags(
+                    client,
+                    module,
+                    cluster["DBClusterArn"],
+                    existing_tags,
+                    module.params["tags"],
+                    module.params["purge_tags"],
+                )
 
     add_role_params = get_add_role_options(parameters, cluster)
     if add_role_params:
@@ -1004,7 +1036,12 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
         changed = True
 
     if module.params["promote"] and cluster.get("ReplicationSourceIdentifier"):
-        call_method(client, module, "promote_read_replica_db_cluster", parameters={"DBClusterIdentifier": module.params["db_cluster_identifier"]})
+        call_method(
+            client,
+            module,
+            "promote_read_replica_db_cluster",
+            parameters={"DBClusterIdentifier": module.params["db_cluster_identifier"]},
+        )
         changed = True
 
     return changed
@@ -1046,7 +1083,15 @@ def main():
         enable_global_write_forwarding=dict(type="bool"),
         enable_iam_database_authentication=dict(type="bool"),
         engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql"]),
-        engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
+        engine_mode=dict(
+            choices=[
+                "provisioned",
+                "serverless",
+                "parallelquery",
+                "global",
+                "multimaster",
+            ]
+        ),
         engine_version=dict(),
         final_snapshot_identifier=dict(),
         force_backtrack=dict(type="bool"),
@@ -1086,7 +1131,15 @@ def main():
             (
                 "creation_source",
                 "s3",
-                ("s3_bucket_name", "engine", "master_username", "master_user_password", "source_engine", "source_engine_version", "s3_ingestion_role_arn"),
+                (
+                    "s3_bucket_name",
+                    "engine",
+                    "master_username",
+                    "master_user_password",
+                    "source_engine",
+                    "source_engine_version",
+                    "s3_ingestion_role_arn",
+                ),
             ),
         ],
         mutually_exclusive=[

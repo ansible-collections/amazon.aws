@@ -167,8 +167,12 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 def describe_vpcs(connection, module):
@@ -239,7 +243,10 @@ def describe_classic_links(module, connection, vpc, attribute, error_message):
         result = {"Vpcs": [{"VpcId": vpc}]}
     except is_boto3_error_code("InvalidVpcID.NotFound"):
         module.warn(error_message.format(attribute, vpc))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to describe if {0} is enabled".format(attribute))
     return result
 
@@ -256,7 +263,10 @@ def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
 
 
 def main():
-    argument_spec = dict(vpc_ids=dict(type="list", elements="str", default=[]), filters=dict(type="dict", default={}))
+    argument_spec = dict(
+        vpc_ids=dict(type="list", elements="str", default=[]),
+        filters=dict(type="dict", default={}),
+    )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 

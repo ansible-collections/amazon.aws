@@ -146,9 +146,15 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -180,7 +186,10 @@ def _get_most_recent_snapshot(snapshots, max_snapshot_age_secs=None, now=None):
 
 def get_volume_by_instance(module, ec2, device_name, instance_id):
     try:
-        _filter = {"attachment.instance-id": instance_id, "attachment.device": device_name}
+        _filter = {
+            "attachment.instance-id": instance_id,
+            "attachment.device": device_name,
+        }
         volumes = ec2.describe_volumes(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(_filter))["Volumes"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe Volume")
@@ -282,19 +291,31 @@ def create_snapshot(
         try:
             if module.check_mode:
                 module.exit_json(
-                    changed=True, msg="Would have created a snapshot if not in check mode", volume_id=volume["VolumeId"], volume_size=volume["Size"]
+                    changed=True,
+                    msg="Would have created a snapshot if not in check mode",
+                    volume_id=volume["VolumeId"],
+                    volume_size=volume["Size"],
                 )
             snapshot = _create_snapshot(ec2, **params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
         changed = True
     if wait:
         waiter = get_waiter(ec2, "snapshot_completed")
         try:
-            waiter.wait(SnapshotIds=[snapshot["SnapshotId"]], WaiterConfig=dict(Delay=3, MaxAttempts=wait_timeout // 3))
+            waiter.wait(
+                SnapshotIds=[snapshot["SnapshotId"]],
+                WaiterConfig=dict(Delay=3, MaxAttempts=wait_timeout // 3),
+            )
         except botocore.exceptions.WaiterError as e:
             module.fail_json_aws(e, msg="Timed out while creating snapshot")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Error while waiting for snapshot creation")
 
     _tags = boto3_tag_list_to_ansible_dict(snapshot["Tags"])
@@ -322,7 +343,10 @@ def delete_snapshot(module, ec2, snapshot_id):
         ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
     except is_boto3_error_code("InvalidSnapshot.NotFound"):
         module.exit_json(changed=False)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete snapshot")
 
     # successful delete

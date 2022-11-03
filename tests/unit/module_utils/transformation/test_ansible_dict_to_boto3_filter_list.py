@@ -7,7 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import (
+    ansible_dict_to_boto3_filter_list,
+)
 
 
 class TestAnsibleDictToBoto3FilterList:

@@ -73,7 +73,11 @@ def _linux_callback_script(tower_address, template_id, host_config_key):
     exit 1
     """
     tpl = string.Template(textwrap.dedent(script_tpl))
-    return tpl.safe_substitute(tower_address=tower_address, template_id=template_id, host_config_key=host_config_key)
+    return tpl.safe_substitute(
+        tower_address=tower_address,
+        template_id=template_id,
+        host_config_key=host_config_key,
+    )
 
 
 def tower_callback_script(tower_address, job_template_id, host_config_key, windows, passwd):

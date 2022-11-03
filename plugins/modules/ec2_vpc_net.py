@@ -219,13 +219,23 @@ from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -263,7 +273,10 @@ def get_classic_link_status(module, connection, vpc_id):
         return results["Vpcs"][0].get("ClassicLinkEnabled")
     except is_boto3_error_message("The functionality you requested is not available in this region."):
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe VPCs")
 
 
@@ -360,9 +373,19 @@ def create_vpc(connection, module, cidr_block, tenancy, tags, ipv6_cidr, name):
         module.fail_json_aws(e, "Failed to create the VPC")
 
     # wait up to 30 seconds for vpc to exist
-    wait_for_vpc_to_exist(module, connection, VpcIds=[vpc_obj["Vpc"]["VpcId"]], WaiterConfig=dict(MaxAttempts=30))
+    wait_for_vpc_to_exist(
+        module,
+        connection,
+        VpcIds=[vpc_obj["Vpc"]["VpcId"]],
+        WaiterConfig=dict(MaxAttempts=30),
+    )
     # Wait for the VPC to enter an 'Available' State
-    wait_for_vpc(module, connection, VpcIds=[vpc_obj["Vpc"]["VpcId"]], WaiterConfig=dict(MaxAttempts=30))
+    wait_for_vpc(
+        module,
+        connection,
+        VpcIds=[vpc_obj["Vpc"]["VpcId"]],
+        WaiterConfig=dict(MaxAttempts=30),
+    )
 
     return vpc_obj["Vpc"]["VpcId"]
 
@@ -473,15 +496,24 @@ def update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr):
     if ipv6_cidr:
         try:
             connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, "Unable to associate IPv6 CIDR")
     else:
         for ipv6_assoc in vpc_obj["Ipv6CidrBlockAssociationSet"]:
             if ipv6_assoc["Ipv6Pool"] == "Amazon" and ipv6_assoc["Ipv6CidrBlockState"]["State"] in ["associated", "associating"]:
                 try:
                     connection.disassociate_vpc_cidr_block(AssociationId=ipv6_assoc["AssociationId"], aws_retry=True)
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, "Unable to disassociate IPv6 CIDR {0}.".format(ipv6_assoc["AssociationId"]))
+                except (
+                    botocore.exceptions.ClientError,
+                    botocore.exceptions.BotoCoreError,
+                ) as e:
+                    module.fail_json_aws(
+                        e,
+                        "Unable to disassociate IPv6 CIDR {0}.".format(ipv6_assoc["AssociationId"]),
+                    )
     return True
 
 
@@ -512,14 +544,20 @@ def update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs):
     for cidr in cidrs_to_add:
         try:
             connection.associate_vpc_cidr_block(CidrBlock=cidr, VpcId=vpc_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(cidr))
 
     for cidr in cidrs_to_remove:
         association_id = associated_cidrs[cidr]
         try:
             connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(
                 e,
                 "Unable to disassociate {0}. You must detach or delete all gateways and resources that "
@@ -582,13 +620,28 @@ def delete_vpc(connection, module, vpc_id):
     return True
 
 
-def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_support, dns_hostnames, tags, dhcp_id):
+def wait_for_updates(
+    connection,
+    module,
+    vpc_id,
+    ipv6_cidr,
+    expected_cidrs,
+    dns_support,
+    dns_hostnames,
+    tags,
+    dhcp_id,
+):
 
     if module.check_mode:
         return
 
     if expected_cidrs:
-        wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=[{"Name": "cidr-block-association.cidr-block", "Values": expected_cidrs}])
+        wait_for_vpc(
+            module,
+            connection,
+            VpcIds=[vpc_id],
+            Filters=[{"Name": "cidr-block-association.cidr-block", "Values": expected_cidrs}],
+        )
     wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_cidr)
 
     if tags is not None:
@@ -628,7 +681,11 @@ def main():
         ["vpc_id", "cidr_block"],
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, required_one_of=required_one_of, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_one_of=required_one_of,
+        supports_check_mode=True,
+    )
 
     name = module.params.get("name")
     vpc_id = module.params.get("vpc_id")
@@ -694,7 +751,17 @@ def main():
         hostnames_changed = update_dns_hostnames(connection, module, vpc_id, dns_hostnames)
         changed |= hostnames_changed
 
-        wait_for_updates(connection, module, vpc_id, ipv6_cidr, desired_cidrs, dns_support, dns_hostnames, tags, dhcp_id)
+        wait_for_updates(
+            connection,
+            module,
+            vpc_id,
+            ipv6_cidr,
+            desired_cidrs,
+            dns_support,
+            dns_hostnames,
+            tags,
+            dhcp_id,
+        )
 
         updated_obj = get_vpc(module, connection, vpc_id)
         final_state = camel_dict_to_snake_dict(updated_obj)

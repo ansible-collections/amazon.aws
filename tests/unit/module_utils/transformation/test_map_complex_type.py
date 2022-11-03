@@ -7,7 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import map_complex_type
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import (
+    map_complex_type,
+)
 
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 

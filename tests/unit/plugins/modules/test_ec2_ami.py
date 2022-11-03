@@ -258,7 +258,10 @@ def test_UpdateImage_set_description():
     assert changed is True
     assert connection.modify_image_attribute.call_count == 1
     connection.modify_image_attribute.assert_called_with(
-        aws_retry=True, ImageId="ami-0c7a795306730b288", Attribute="Description", Description={"Value": "New description"}
+        aws_retry=True,
+        ImageId="ami-0c7a795306730b288",
+        Attribute="Description",
+        Description={"Value": "New description"},
     )
 
 

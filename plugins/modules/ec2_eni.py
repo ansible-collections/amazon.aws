@@ -290,9 +290,15 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_ec2_security_group_ids_from_names,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
@@ -303,7 +309,12 @@ def get_eni_info(interface):
     private_addresses = []
     if "PrivateIpAddresses" in interface:
         for ip in interface["PrivateIpAddresses"]:
-            private_addresses.append({"private_ip_address": ip["PrivateIpAddress"], "primary_address": ip["Primary"]})
+            private_addresses.append(
+                {
+                    "private_ip_address": ip["PrivateIpAddress"],
+                    "primary_address": ip["Primary"],
+                }
+            )
 
     groups = {}
     if "Groups" in interface:
@@ -428,7 +439,10 @@ def create_eni(connection, vpc_id, module):
             cidr_block = connection.describe_subnets(SubnetIds=[str(subnet_id)])["Subnets"][0]["CidrBlock"]
             valid_private_ip = ip_address(private_ip_address) in ip_network(cidr_block)
             if not valid_private_ip:
-                module.fail_json(changed=False, msg="Error: cannot create ENI - Address does not fall within the subnet's address range.")
+                module.fail_json(
+                    changed=False,
+                    msg="Error: cannot create ENI - Address does not fall within the subnet's address range.",
+                )
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created ENI if not in check mode.")
 
@@ -441,7 +455,10 @@ def create_eni(connection, vpc_id, module):
         if attached and instance_id is not None:
             try:
                 connection.attach_network_interface(
-                    aws_retry=True, InstanceId=instance_id, DeviceIndex=device_index, NetworkInterfaceId=eni["NetworkInterfaceId"]
+                    aws_retry=True,
+                    InstanceId=instance_id,
+                    DeviceIndex=device_index,
+                    NetworkInterfaceId=eni["NetworkInterfaceId"],
                 )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
@@ -451,17 +468,34 @@ def create_eni(connection, vpc_id, module):
         if secondary_private_ip_address_count is not None:
             try:
                 connection.assign_private_ip_addresses(
-                    aws_retry=True, NetworkInterfaceId=eni["NetworkInterfaceId"], SecondaryPrivateIpAddressCount=secondary_private_ip_address_count
+                    aws_retry=True,
+                    NetworkInterfaceId=eni["NetworkInterfaceId"],
+                    SecondaryPrivateIpAddressCount=secondary_private_ip_address_count,
                 )
-                wait_for(correct_ip_count, connection, secondary_private_ip_address_count, module, eni_id)
+                wait_for(
+                    correct_ip_count,
+                    connection,
+                    secondary_private_ip_address_count,
+                    module,
+                    eni_id,
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
 
         if secondary_private_ip_addresses is not None:
             try:
-                connection.assign_private_ip_addresses(NetworkInterfaceId=eni["NetworkInterfaceId"], PrivateIpAddresses=secondary_private_ip_addresses)
-                wait_for(correct_ips, connection, secondary_private_ip_addresses, module, eni_id)
+                connection.assign_private_ip_addresses(
+                    NetworkInterfaceId=eni["NetworkInterfaceId"],
+                    PrivateIpAddresses=secondary_private_ip_addresses,
+                )
+                wait_for(
+                    correct_ips,
+                    connection,
+                    secondary_private_ip_addresses,
+                    module,
+                    eni_id,
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
@@ -471,7 +505,10 @@ def create_eni(connection, vpc_id, module):
         changed = True
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to create eni {0} for {1} in {2} with {3}".format(name, subnet_id, vpc_id, private_ip_address))
+        module.fail_json_aws(
+            e,
+            "Failed to create eni {0} for {1} in {2} with {3}".format(name, subnet_id, vpc_id, private_ip_address),
+        )
 
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
@@ -501,7 +538,11 @@ def modify_eni(connection, module, eni):
         if description is not None:
             if "Description" not in eni or eni["Description"] != description:
                 if not module.check_mode:
-                    connection.modify_network_interface_attribute(aws_retry=True, NetworkInterfaceId=eni_id, Description={"Value": description})
+                    connection.modify_network_interface_attribute(
+                        aws_retry=True,
+                        NetworkInterfaceId=eni_id,
+                        Description={"Value": description},
+                    )
                 changed = True
         if len(security_groups) > 0:
             groups = get_ec2_security_group_ids_from_names(security_groups, connection, vpc_id=eni["VpcId"], boto3=True)
@@ -512,7 +553,11 @@ def modify_eni(connection, module, eni):
         if source_dest_check is not None:
             if "SourceDestCheck" not in eni or eni["SourceDestCheck"] != source_dest_check:
                 if not module.check_mode:
-                    connection.modify_network_interface_attribute(aws_retry=True, NetworkInterfaceId=eni_id, SourceDestCheck={"Value": source_dest_check})
+                    connection.modify_network_interface_attribute(
+                        aws_retry=True,
+                        NetworkInterfaceId=eni_id,
+                        SourceDestCheck={"Value": source_dest_check},
+                    )
                 changed = True
         if delete_on_termination is not None and "Attachment" in eni:
             if eni["Attachment"]["DeleteOnTermination"] is not delete_on_termination:
@@ -520,7 +565,10 @@ def modify_eni(connection, module, eni):
                     connection.modify_network_interface_attribute(
                         aws_retry=True,
                         NetworkInterfaceId=eni_id,
-                        Attachment={"AttachmentId": eni["Attachment"]["AttachmentId"], "DeleteOnTermination": delete_on_termination},
+                        Attachment={
+                            "AttachmentId": eni["Attachment"]["AttachmentId"],
+                            "DeleteOnTermination": delete_on_termination,
+                        },
                     )
                     if delete_on_termination:
                         waiter = "network_interface_delete_on_terminate"
@@ -542,15 +590,30 @@ def modify_eni(connection, module, eni):
                         NetworkInterfaceId=eni_id,
                         PrivateIpAddresses=list(set(current_secondary_addresses) - set(secondary_private_ip_addresses)),
                     )
-                    wait_for(absent_ips, connection, secondary_addresses_to_remove, module, eni_id)
+                    wait_for(
+                        absent_ips,
+                        connection,
+                        secondary_addresses_to_remove,
+                        module,
+                        eni_id,
+                    )
                 changed = True
             secondary_addresses_to_add = list(set(secondary_private_ip_addresses) - set(current_secondary_addresses))
             if secondary_addresses_to_add:
                 if not module.check_mode:
                     connection.assign_private_ip_addresses(
-                        aws_retry=True, NetworkInterfaceId=eni_id, PrivateIpAddresses=secondary_addresses_to_add, AllowReassignment=allow_reassignment
+                        aws_retry=True,
+                        NetworkInterfaceId=eni_id,
+                        PrivateIpAddresses=secondary_addresses_to_add,
+                        AllowReassignment=allow_reassignment,
                     )
-                    wait_for(correct_ips, connection, secondary_addresses_to_add, module, eni_id)
+                    wait_for(
+                        correct_ips,
+                        connection,
+                        secondary_addresses_to_add,
+                        module,
+                        eni_id,
+                    )
                 changed = True
 
         if secondary_private_ip_address_count is not None:
@@ -563,16 +626,30 @@ def modify_eni(connection, module, eni):
                         SecondaryPrivateIpAddressCount=(secondary_private_ip_address_count - current_secondary_address_count),
                         AllowReassignment=allow_reassignment,
                     )
-                    wait_for(correct_ip_count, connection, secondary_private_ip_address_count, module, eni_id)
+                    wait_for(
+                        correct_ip_count,
+                        connection,
+                        secondary_private_ip_address_count,
+                        module,
+                        eni_id,
+                    )
                 changed = True
             elif secondary_private_ip_address_count < current_secondary_address_count:
                 # How many of these addresses do we want to remove
                 if not module.check_mode:
                     secondary_addresses_to_remove_count = current_secondary_address_count - secondary_private_ip_address_count
                     connection.unassign_private_ip_addresses(
-                        aws_retry=True, NetworkInterfaceId=eni_id, PrivateIpAddresses=current_secondary_addresses[:secondary_addresses_to_remove_count]
+                        aws_retry=True,
+                        NetworkInterfaceId=eni_id,
+                        PrivateIpAddresses=current_secondary_addresses[:secondary_addresses_to_remove_count],
                     )
-                    wait_for(correct_ip_count, connection, secondary_private_ip_address_count, module, eni_id)
+                    wait_for(
+                        correct_ip_count,
+                        connection,
+                        secondary_private_ip_address_count,
+                        module,
+                        eni_id,
+                    )
                 changed = True
 
         if attached is True:
@@ -609,7 +686,10 @@ def modify_eni(connection, module, eni):
 
     eni = describe_eni(connection, module, eni_id)
     if module.check_mode and changed:
-        module.exit_json(changed=changed, msg="Would have modified ENI: {0} if not in check mode".format(eni["NetworkInterfaceId"]))
+        module.exit_json(
+            changed=changed,
+            msg="Would have modified ENI: {0} if not in check mode".format(eni["NetworkInterfaceId"]),
+        )
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
 
@@ -653,7 +733,10 @@ def delete_eni(connection, module):
         module.exit_json(changed=changed)
     except is_boto3_error_code("InvalidNetworkInterfaceID.NotFound"):
         module.exit_json(changed=False)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Failure during delete of {0}".format(eni_id))
 
 
@@ -802,7 +885,16 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[["secondary_private_ip_addresses", "secondary_private_ip_address_count"]],
-        required_if=([("attached", True, ["instance_id"]), ("purge_secondary_private_ip_addresses", True, ["secondary_private_ip_addresses"])]),
+        required_if=(
+            [
+                ("attached", True, ["instance_id"]),
+                (
+                    "purge_secondary_private_ip_addresses",
+                    True,
+                    ["secondary_private_ip_addresses"],
+                ),
+            ]
+        ),
         supports_check_mode=True,
     )
 

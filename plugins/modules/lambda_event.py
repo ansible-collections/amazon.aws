@@ -120,7 +120,11 @@ lambda_stream_events:
 import re
 
 try:
-    from botocore.exceptions import ClientError, ParamValidationError, MissingParametersError
+    from botocore.exceptions import (
+        ClientError,
+        ParamValidationError,
+        MissingParametersError,
+    )
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -128,7 +132,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_aws_connection_info,
+)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -155,7 +161,14 @@ class AWSConnection:
             resources.append("iam")
 
             for resource in resources:
-                aws_connect_kwargs.update(dict(region=self.region, endpoint=self.endpoint, conn_type="client", resource=resource))
+                aws_connect_kwargs.update(
+                    dict(
+                        region=self.region,
+                        endpoint=self.endpoint,
+                        conn_type="client",
+                        resource=resource,
+                    )
+                )
                 self.resource_client[resource] = boto3_conn(ansible_obj, **aws_connect_kwargs)
 
             # if region is not provided, then get default profile/session region

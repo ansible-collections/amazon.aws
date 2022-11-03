@@ -92,8 +92,18 @@ class YamlTestUtils(object):
             yaml.dump(obj_from_stream, stream_obj_from_stream, Dumper=AnsibleDumper)
             yaml.dump(obj_from_stream, stream_obj_from_string, Dumper=AnsibleDumper)
         else:
-            yaml.dump(obj_from_stream, stream_obj_from_stream, Dumper=AnsibleDumper, encoding=None)
-            yaml.dump(obj_from_stream, stream_obj_from_string, Dumper=AnsibleDumper, encoding=None)
+            yaml.dump(
+                obj_from_stream,
+                stream_obj_from_stream,
+                Dumper=AnsibleDumper,
+                encoding=None,
+            )
+            yaml.dump(
+                obj_from_stream,
+                stream_obj_from_string,
+                Dumper=AnsibleDumper,
+                encoding=None,
+            )
 
         yaml_string_stream_obj_from_stream = stream_obj_from_stream.getvalue()
         yaml_string_stream_obj_from_string = stream_obj_from_string.getvalue()

@@ -539,10 +539,16 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
     ApplicationLoadBalancer,
@@ -551,7 +557,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
     ELBListenerRules,
     ELBListeners,
 )
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import (
+    get_elb_listener_rules,
+)
 
 
 @AWSRetry.jittered_backoff()
@@ -604,7 +612,9 @@ def create_or_update_alb(alb_obj):
         if alb_obj.tags is not None:
 
             tags_need_modify, tags_to_delete = compare_aws_tags(
-                boto3_tag_list_to_ansible_dict(alb_obj.elb["tags"]), boto3_tag_list_to_ansible_dict(alb_obj.tags), alb_obj.purge_tags
+                boto3_tag_list_to_ansible_dict(alb_obj.elb["tags"]),
+                boto3_tag_list_to_ansible_dict(alb_obj.tags),
+                alb_obj.purge_tags,
             )
 
             # Exit on check_mode
@@ -627,7 +637,11 @@ def create_or_update_alb(alb_obj):
 
     # Listeners
     listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
-    listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
+    (
+        listeners_to_add,
+        listeners_to_modify,
+        listeners_to_delete,
+    ) = listeners_obj.compare_listeners()
 
     # Exit on check_mode
     if alb_obj.module.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
@@ -635,19 +649,34 @@ def create_or_update_alb(alb_obj):
 
     # Delete listeners
     for listener_to_delete in listeners_to_delete:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"])
+        listener_obj = ELBListener(
+            alb_obj.connection,
+            alb_obj.module,
+            listener_to_delete,
+            alb_obj.elb["LoadBalancerArn"],
+        )
         listener_obj.delete()
         listeners_obj.changed = True
 
     # Add listeners
     for listener_to_add in listeners_to_add:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_add, alb_obj.elb["LoadBalancerArn"])
+        listener_obj = ELBListener(
+            alb_obj.connection,
+            alb_obj.module,
+            listener_to_add,
+            alb_obj.elb["LoadBalancerArn"],
+        )
         listener_obj.add()
         listeners_obj.changed = True
 
     # Modify listeners
     for listener_to_modify in listeners_to_modify:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_modify, alb_obj.elb["LoadBalancerArn"])
+        listener_obj = ELBListener(
+            alb_obj.connection,
+            alb_obj.module,
+            listener_to_modify,
+            alb_obj.elb["LoadBalancerArn"],
+        )
         listener_obj.modify()
         listeners_obj.changed = True
 
@@ -658,7 +687,13 @@ def create_or_update_alb(alb_obj):
     # Rules of each listener
     for listener in listeners_obj.listeners:
         if "Rules" in listener:
-            rules_obj = ELBListenerRules(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"], listener["Rules"], listener["Port"])
+            rules_obj = ELBListenerRules(
+                alb_obj.connection,
+                alb_obj.module,
+                alb_obj.elb["LoadBalancerArn"],
+                listener["Rules"],
+                listener["Port"],
+            )
             rules_to_add, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
             # Exit on check_mode
@@ -668,7 +703,12 @@ def create_or_update_alb(alb_obj):
             # Delete rules
             if alb_obj.module.params["purge_rules"]:
                 for rule in rules_to_delete:
-                    rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, {"RuleArn": rule}, rules_obj.listener_arn)
+                    rule_obj = ELBListenerRule(
+                        alb_obj.connection,
+                        alb_obj.module,
+                        {"RuleArn": rule},
+                        rules_obj.listener_arn,
+                    )
                     rule_obj.delete()
                     alb_obj.changed = True
 
@@ -733,7 +773,12 @@ def delete_alb(alb_obj):
 
         listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
         for listener_to_delete in [i["ListenerArn"] for i in listeners_obj.current_listeners]:
-            listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"])
+            listener_obj = ELBListener(
+                alb_obj.connection,
+                alb_obj.module,
+                listener_to_delete,
+                alb_obj.elb["LoadBalancerArn"],
+            )
             listener_obj.delete()
 
         alb_obj.delete()

@@ -11,10 +11,15 @@ __metaclass__ = type
 import pytest
 
 # Magic...
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import (
+    maybe_sleep,
+    placeboify,
+)  # pylint: disable=unused-import
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
-from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
+from ansible_collections.amazon.aws.plugins.module_utils.retries import (
+    RetryingBotoClientWrapper,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
@@ -167,7 +172,10 @@ def test_on_create_failure_delete(maybe_sleep, placeboify):
         disable_rollback=False,
     )
     connection = _create_wrapped_client(placeboify)
-    params = {"StackName": "ansible-test-on-create-failure-delete", "TemplateBody": failing_yaml_tpl}
+    params = {
+        "StackName": "ansible-test-on-create-failure-delete",
+        "TemplateBody": failing_yaml_tpl,
+    }
     result = cfn_module.create_stack(m, params, connection, default_events_limit)
     assert result["changed"]
     assert result["failed"]
@@ -183,7 +191,10 @@ def test_on_create_failure_rollback(maybe_sleep, placeboify):
         disable_rollback=False,
     )
     connection = _create_wrapped_client(placeboify)
-    params = {"StackName": "ansible-test-on-create-failure-rollback", "TemplateBody": failing_yaml_tpl}
+    params = {
+        "StackName": "ansible-test-on-create-failure-rollback",
+        "TemplateBody": failing_yaml_tpl,
+    }
     result = cfn_module.create_stack(m, params, connection, default_events_limit)
     assert result["changed"]
     assert result["failed"]
@@ -200,7 +211,10 @@ def test_on_create_failure_do_nothing(maybe_sleep, placeboify):
         disable_rollback=False,
     )
     connection = _create_wrapped_client(placeboify)
-    params = {"StackName": "ansible-test-on-create-failure-do-nothing", "TemplateBody": failing_yaml_tpl}
+    params = {
+        "StackName": "ansible-test-on-create-failure-do-nothing",
+        "TemplateBody": failing_yaml_tpl,
+    }
     result = cfn_module.create_stack(m, params, connection, default_events_limit)
     assert result["changed"]
     assert result["failed"]

@@ -56,7 +56,10 @@ def test_s3_head_objects(parts, version):
 
 
 def raise_botoclient_exception():
-    params = {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"}}
+    params = {
+        "Error": {"Code": 1, "Message": "Something went wrong"},
+        "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+    }
     return botocore.exceptions.ClientError(params, "some_called_method")
 
 
@@ -203,8 +206,14 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
         ("doc", None),
         ("doc_example_bucket", "invalid character(s) found in the bucket name"),
         ("DocExampleBucket", "invalid character(s) found in the bucket name"),
-        ("doc-example-bucket-", "bucket names must begin and end with a letter or number"),
-        ("this.string.has.more.than.63.characters.so.it.should.not.passed.the.validated", "the length of an S3 bucket cannot exceed 63 characters"),
+        (
+            "doc-example-bucket-",
+            "bucket names must begin and end with a letter or number",
+        ),
+        (
+            "this.string.has.more.than.63.characters.so.it.should.not.passed.the.validated",
+            "the length of an S3 bucket cannot exceed 63 characters",
+        ),
         ("my", "the length of an S3 bucket must be at least 3 characters"),
     ],
 )
@@ -249,7 +258,11 @@ def test_is_fakes3(m_urlparse, url, scheme, result):
 @pytest.mark.parametrize(
     "url,urlinfo,endpoint",
     [
-        ("fakes3://test-s3.amazon.com", {"scheme": "fakes3", "hostname": "test-s3.amazon.com"}, {"endpoint": "http://test-s3.amazon.com:80", "use_ssl": False}),
+        (
+            "fakes3://test-s3.amazon.com",
+            {"scheme": "fakes3", "hostname": "test-s3.amazon.com"},
+            {"endpoint": "http://test-s3.amazon.com:80", "use_ssl": False},
+        ),
         (
             "fakes3://test-s3.amazon.com:8080",
             {"scheme": "fakes3", "hostname": "test-s3.amazon.com", "port": 8080},
@@ -328,7 +341,13 @@ def test_parse_default_endpoint(m_config, mode, encryption_mode, dualstack, sig_
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.parse_fakes3_endpoint")
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.is_fakes3")
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.parse_ceph_endpoint")
-def test_s3_conn_params(m_parse_ceph_endpoint, m_is_fakes3, m_parse_fakes3_endpoint, m_parse_default_endpoint, scenario):
+def test_s3_conn_params(
+    m_parse_ceph_endpoint,
+    m_is_fakes3,
+    m_parse_fakes3_endpoint,
+    m_parse_default_endpoint,
+    scenario,
+):
 
     url = "https://my-bucket.s3.us-west-2.amazonaws.com"
     region = "us-east-1"

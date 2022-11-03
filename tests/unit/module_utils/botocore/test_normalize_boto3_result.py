@@ -4,7 +4,9 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import (
+    normalize_boto3_result,
+)
 
 example_date_txt = "2020-12-30T00:00:00.000Z"
 example_date_iso = "2020-12-30T00:00:00+00:00"

@@ -125,7 +125,10 @@ list_layers_versions_result = [
 @pytest.mark.parametrize(
     "params,call_args",
     [
-        ({"compatible_runtime": "nodejs", "compatible_architecture": "arm64"}, {"CompatibleRuntime": "nodejs", "CompatibleArchitecture": "arm64"}),
+        (
+            {"compatible_runtime": "nodejs", "compatible_architecture": "arm64"},
+            {"CompatibleRuntime": "nodejs", "CompatibleArchitecture": "arm64"},
+        ),
         (
             {
                 "compatible_runtime": "nodejs",
@@ -154,8 +157,16 @@ def test_list_layers_with_latest_version(m__list_layers, params, call_args):
     "params,call_args",
     [
         (
-            {"name": "layer-01", "compatible_runtime": "nodejs", "compatible_architecture": "arm64"},
-            {"LayerName": "layer-01", "CompatibleRuntime": "nodejs", "CompatibleArchitecture": "arm64"},
+            {
+                "name": "layer-01",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64",
+            },
+            {
+                "LayerName": "layer-01",
+                "CompatibleRuntime": "nodejs",
+                "CompatibleArchitecture": "arm64",
+            },
         ),
         (
             {
@@ -167,7 +178,10 @@ def test_list_layers_with_latest_version(m__list_layers, params, call_args):
                 "CompatibleRuntime": "nodejs",
             },
         ),
-        ({"name": "layer-01", "compatible_architecture": "arm64"}, {"LayerName": "layer-01", "CompatibleArchitecture": "arm64"}),
+        (
+            {"name": "layer-01", "compatible_architecture": "arm64"},
+            {"LayerName": "layer-01", "CompatibleArchitecture": "arm64"},
+        ),
         ({"name": "layer-01"}, {"LayerName": "layer-01"}),
     ],
 )
@@ -190,7 +204,13 @@ def raise_botocore_exception():
 @pytest.mark.parametrize(
     "params",
     [
-        ({"name": "test-layer", "compatible_runtime": "nodejs", "compatible_architecture": "arm64"}),
+        (
+            {
+                "name": "test-layer",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64",
+            }
+        ),
         ({"compatible_runtime": "nodejs", "compatible_architecture": "arm64"}),
     ],
 )
@@ -218,9 +238,23 @@ def raise_layer_info_exception(exc, msg):
 @pytest.mark.parametrize(
     "params,failure",
     [
-        ({"name": "test-layer", "compatible_runtime": "nodejs", "compatible_architecture": "arm64"}, False),
+        (
+            {
+                "name": "test-layer",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64",
+            },
+            False,
+        ),
         ({"compatible_runtime": "nodejs", "compatible_architecture": "arm64"}, False),
-        ({"name": "test-layer", "compatible_runtime": "nodejs", "compatible_architecture": "arm64"}, True),
+        (
+            {
+                "name": "test-layer",
+                "compatible_runtime": "nodejs",
+                "compatible_architecture": "arm64",
+            },
+            True,
+        ),
     ],
 )
 @patch(mod_list_layers)

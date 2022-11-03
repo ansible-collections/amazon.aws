@@ -300,9 +300,13 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 class CloudFormationServiceManager:
@@ -326,7 +330,10 @@ class CloudFormationServiceManager:
             self.module.fail_json(msg="Error describing stack(s) - an empty response was returned")
         except is_boto3_error_message("does not exist"):
             return {}
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Error describing stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
@@ -337,7 +344,10 @@ class CloudFormationServiceManager:
     def list_stack_resources(self, stack_name):
         try:
             return self.list_stack_resources_with_backoff(stack_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error listing stack resources for stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
@@ -348,7 +358,10 @@ class CloudFormationServiceManager:
     def describe_stack_events(self, stack_name):
         try:
             return self.describe_stack_events_with_backoff(stack_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error listing stack events for stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
@@ -368,7 +381,10 @@ class CloudFormationServiceManager:
             for item in change_sets:
                 changes.append(self.describe_stack_change_set_with_backoff(StackName=stack_name, ChangeSetName=item["ChangeSetName"]))
             return changes
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error describing stack change sets for stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
@@ -382,7 +398,10 @@ class CloudFormationServiceManager:
             if stack_policy:
                 return json.loads(stack_policy)
             return dict()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error getting stack policy for stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
@@ -393,7 +412,10 @@ class CloudFormationServiceManager:
         try:
             response = self.get_template_with_backoff(stack_name)
             return response.get("TemplateBody")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Error getting stack template for stack " + stack_name)
 
 
@@ -428,14 +450,22 @@ def main():
         # Create stack output and stack parameter dictionaries
         if facts["stack_description"]:
             facts["stack_outputs"] = to_dict(facts["stack_description"].get("Outputs"), "OutputKey", "OutputValue")
-            facts["stack_parameters"] = to_dict(facts["stack_description"].get("Parameters"), "ParameterKey", "ParameterValue")
+            facts["stack_parameters"] = to_dict(
+                facts["stack_description"].get("Parameters"),
+                "ParameterKey",
+                "ParameterValue",
+            )
             facts["stack_tags"] = boto3_tag_list_to_ansible_dict(facts["stack_description"].get("Tags"))
 
         # Create optional stack outputs
         all_facts = module.params.get("all_facts")
         if all_facts or module.params.get("stack_resources"):
             facts["stack_resource_list"] = service_mgr.list_stack_resources(stack_name)
-            facts["stack_resources"] = to_dict(facts.get("stack_resource_list"), "LogicalResourceId", "PhysicalResourceId")
+            facts["stack_resources"] = to_dict(
+                facts.get("stack_resource_list"),
+                "LogicalResourceId",
+                "PhysicalResourceId",
+            )
         if all_facts or module.params.get("stack_template"):
             facts["stack_template"] = service_mgr.get_template(stack_name)
         if all_facts or module.params.get("stack_policy"):
@@ -446,7 +476,15 @@ def main():
             facts["stack_change_sets"] = service_mgr.describe_stack_change_sets(stack_name)
 
         result["cloudformation"][stack_name] = camel_dict_to_snake_dict(
-            facts, ignore_list=("stack_outputs", "stack_parameters", "stack_policy", "stack_resources", "stack_tags", "stack_template")
+            facts,
+            ignore_list=(
+                "stack_outputs",
+                "stack_parameters",
+                "stack_policy",
+                "stack_resources",
+                "stack_tags",
+                "stack_template",
+            ),
         )
     module.exit_json(changed=False, **result)
 

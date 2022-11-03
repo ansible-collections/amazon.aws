@@ -239,10 +239,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 
 
 @AWSRetry.jittered_backoff(retries=10)
@@ -315,7 +319,10 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
     if nat_gateway_id:
         params["NatGatewayIds"] = [nat_gateway_id]
     else:
-        params["Filter"] = [{"Name": "subnet-id", "Values": [subnet_id]}, {"Name": "state", "Values": states}]
+        params["Filter"] = [
+            {"Name": "subnet-id", "Values": [subnet_id]},
+            {"Name": "state", "Values": states},
+        ]
 
     try:
         gateways = _describe_nat_gateways(client, **params)
@@ -436,7 +443,10 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
     except is_boto3_error_code("InvalidAddress.NotFound"):  # pylint: disable=duplicate-except
         msg = "EIP {0} does not exist".format(eip_address)
         allocation_id = None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to describe EIP")
 
     return allocation_id, msg
@@ -515,7 +525,10 @@ def release_address(client, module, allocation_id):
         # Happens with gateway in 'deleted' state that
         # still lists associations
         return True, e
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     try:
@@ -613,7 +626,10 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
         msg = "NAT Gateway does not support update and token has already been provided:" + e
         changed = False
         result = None
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
@@ -621,7 +637,18 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
     return changed, result, msg
 
 
-def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, eip_address=None, if_exist_do_not_create=False, wait=False, client_token=None):
+def pre_create(
+    client,
+    module,
+    subnet_id,
+    tags,
+    purge_tags,
+    allocation_id=None,
+    eip_address=None,
+    if_exist_do_not_create=False,
+    wait=False,
+    client_token=None,
+):
     """Create an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -684,7 +711,14 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
 
         if len(existing_gateways) > 0 and if_exist_do_not_create:
             results = existing_gateways[0]
-            changed |= ensure_ec2_tags(client, module, results["nat_gateway_id"], resource_type="natgateway", tags=tags, purge_tags=purge_tags)
+            changed |= ensure_ec2_tags(
+                client,
+                module,
+                results["nat_gateway_id"],
+                resource_type="natgateway",
+                tags=tags,
+                purge_tags=purge_tags,
+            )
 
             results["tags"] = describe_ec2_tags(client, module, results["nat_gateway_id"], resource_type="natgateway")
 
@@ -711,7 +745,14 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
 
         if len(existing_gateways) > 0 and (allocation_id_exists or if_exist_do_not_create):
             results = existing_gateways[0]
-            changed |= ensure_ec2_tags(client, module, results["nat_gateway_id"], resource_type="natgateway", tags=tags, purge_tags=purge_tags)
+            changed |= ensure_ec2_tags(
+                client,
+                module,
+                results["nat_gateway_id"],
+                resource_type="natgateway",
+                tags=tags,
+                purge_tags=purge_tags,
+            )
 
             results["tags"] = describe_ec2_tags(client, module, results["nat_gateway_id"], resource_type="natgateway")
 
@@ -826,7 +867,10 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[["allocation_id", "eip_address"]],
-        required_if=[["state", "absent", ["nat_gateway_id"]], ["state", "present", ["subnet_id"]]],
+        required_if=[
+            ["state", "absent", ["nat_gateway_id"]],
+            ["state", "present", ["subnet_id"]],
+        ],
     )
 
     state = module.params.get("state").lower()
@@ -850,7 +894,18 @@ def main():
     msg = ""
 
     if state == "present":
-        changed, msg, results = pre_create(client, module, subnet_id, tags, purge_tags, allocation_id, eip_address, if_exist_do_not_create, wait, client_token)
+        changed, msg, results = pre_create(
+            client,
+            module,
+            subnet_id,
+            tags,
+            purge_tags,
+            allocation_id,
+            eip_address,
+            if_exist_do_not_create,
+            wait,
+            client_token,
+        )
     else:
         changed, msg, results = remove(client, module, nat_gateway_id, wait, release_eip)
 

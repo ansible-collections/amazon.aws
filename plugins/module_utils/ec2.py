@@ -46,10 +46,18 @@ from ansible.module_utils.six import string_types
 from ansible.module_utils.six import integer_types
 
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
-from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import (
+    _camel_to_snake,
+)  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import (
+    _snake_to_camel,
+)  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import (
+    camel_dict_to_snake_dict,
+)  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import (
+    snake_dict_to_camel_dict,
+)  # pylint: disable=unused-import
 
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.arn
 from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
@@ -69,8 +77,12 @@ from .core import AnsibleAWSError  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
 # The names have been changed in .modules to better reflect their applicability.
-from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
-from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
+from .modules import (
+    _aws_common_argument_spec as aws_common_argument_spec,
+)  # pylint: disable=unused-import
+from .modules import (
+    aws_argument_spec as ec2_argument_spec,
+)  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
@@ -78,7 +90,9 @@ from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-im
 from .tagging import compare_aws_tags  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
-from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
+from .transformation import (
+    ansible_dict_to_boto3_filter_list,
+)  # pylint: disable=unused-import
 from .transformation import map_complex_type  # pylint: disable=unused-import
 
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.policy
@@ -194,7 +208,10 @@ def remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes=None
     try:
         AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(client.delete_tags)(Resources=[resource_id], Tags=tags_to_remove)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to delete tags {0} from {1}".format(tags_to_unset, resource_id))
+        module.fail_json_aws(
+            e,
+            msg="Unable to delete tags {0} from {1}".format(tags_to_unset, resource_id),
+        )
     return True
 
 
@@ -224,7 +241,15 @@ def describe_ec2_tags(client, module, resource_id, resource_type=None, retry_cod
         module.fail_json_aws(e, msg="Failed to describe tags for EC2 Resource: {0}".format(resource_id))
 
 
-def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, purge_tags=True, retry_codes=None):
+def ensure_ec2_tags(
+    client,
+    module,
+    resource_id,
+    resource_type=None,
+    tags=None,
+    purge_tags=True,
+    retry_codes=None,
+):
     """
     Updates the tags on an EC2 resource.
 
@@ -296,7 +321,12 @@ def normalize_ec2_vpc_dhcp_config(option_config):
             elif isinstance(config_item["Values"], list):
                 config_data["netbios-node-type"] = str((config_item["Values"][0]["Value"]))
         # Handle actual lists of values
-        for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers"]:
+        for option in [
+            "domain-name",
+            "domain-name-servers",
+            "ntp-servers",
+            "netbios-name-servers",
+        ]:
             if config_item["Key"] == option:
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 

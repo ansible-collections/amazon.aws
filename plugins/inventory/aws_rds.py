@@ -96,9 +96,15 @@ from ansible.plugins.inventory import Constructable
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
@@ -114,11 +120,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
     def _get_connection(self, credentials, region="us-east-1"):
         try:
             connection = boto3.session.Session(profile_name=self.boto_profile).client("rds", region, **credentials)
-        except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+        except (
+            botocore.exceptions.ProfileNotFound,
+            botocore.exceptions.PartialCredentialsError,
+        ) as e:
             if self.boto_profile:
                 try:
                     connection = boto3.session.Session(profile_name=self.boto_profile).client("rds", region)
-                except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+                except (
+                    botocore.exceptions.ProfileNotFound,
+                    botocore.exceptions.PartialCredentialsError,
+                ) as e:
                     raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
             else:
                 raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
@@ -134,7 +146,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         try:
             sts_connection = boto3.session.Session(profile_name=self.boto_profile).client("sts", region, **credentials)
-            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName="ansible_aws_rds_dynamic_inventory")
+            sts_session = sts_connection.assume_role(
+                RoleArn=iam_role_arn,
+                RoleSessionName="ansible_aws_rds_dynamic_inventory",
+            )
             return dict(
                 aws_access_key_id=sts_session["Credentials"]["AccessKeyId"],
                 aws_secret_access_key=sts_session["Credentials"]["SecretAccessKey"],
@@ -158,11 +173,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 else:
                     assumed_credentials = credentials
                 connection = boto3.session.Session(profile_name=self.boto_profile).client("rds", region, **assumed_credentials)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+            except (
+                botocore.exceptions.ProfileNotFound,
+                botocore.exceptions.PartialCredentialsError,
+            ) as e:
                 if self.boto_profile:
                     try:
                         connection = boto3.session.Session(profile_name=self.boto_profile).client("rds", region)
-                    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+                    except (
+                        botocore.exceptions.ProfileNotFound,
+                        botocore.exceptions.PartialCredentialsError,
+                    ) as e:
                         raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
                 else:
                     raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
@@ -198,13 +219,24 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                     results = []
                 else:
                     raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:  # pylint: disable=duplicate-except
                 raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
             return results
 
         return wrapper
 
-    def _get_all_hosts(self, regions, instance_filters, cluster_filters, strict, statuses, gather_clusters=False):
+    def _get_all_hosts(
+        self,
+        regions,
+        instance_filters,
+        cluster_filters,
+        strict,
+        statuses,
+        gather_clusters=False,
+    ):
         """
         :param regions: a list of regions in which to describe hosts
         :param instance_filters: a list of boto3 filter dictionaries
@@ -388,7 +420,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 self._populate_from_source(results)
 
         if not cache or cache_needs_update:
-            results = self._get_all_hosts(regions, instance_filters, cluster_filters, strict_permissions, statuses, include_clusters)
+            results = self._get_all_hosts(
+                regions,
+                instance_filters,
+                cluster_filters,
+                strict_permissions,
+                statuses,
+                include_clusters,
+            )
             self._populate(results)
             formatted_inventory = self._format_inventory(results)
 

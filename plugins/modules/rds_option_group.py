@@ -353,8 +353,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
@@ -585,7 +589,10 @@ def remove_option_group(client, module):
         changed = True
         try:
             client.delete_option_group(aws_retry=True, **params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Unable to delete option group.")
 
     return changed, {}
@@ -600,22 +607,40 @@ def update_tags(client, module, option_group):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't obtain option group tags.")
 
-    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(existing_tags), module.params["tags"], module.params["purge_tags"])
+    to_update, to_delete = compare_aws_tags(
+        boto3_tag_list_to_ansible_dict(existing_tags),
+        module.params["tags"],
+        module.params["purge_tags"],
+    )
     changed = bool(to_update or to_delete)
 
     if to_update:
         try:
             if module.check_mode:
                 return changed
-            client.add_tags_to_resource(aws_retry=True, ResourceName=option_group["option_group_arn"], Tags=ansible_dict_to_boto3_tag_list(to_update))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            client.add_tags_to_resource(
+                aws_retry=True,
+                ResourceName=option_group["option_group_arn"],
+                Tags=ansible_dict_to_boto3_tag_list(to_update),
+            )
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Couldn't add tags to option group.")
     if to_delete:
         try:
             if module.check_mode:
                 return changed
-            client.remove_tags_from_resource(aws_retry=True, ResourceName=option_group["option_group_arn"], TagKeys=to_delete)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            client.remove_tags_from_resource(
+                aws_retry=True,
+                ResourceName=option_group["option_group_arn"],
+                TagKeys=to_delete,
+            )
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Couldn't remove tags from option group.")
 
     return changed
@@ -638,7 +663,13 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_if=[["state", "present", ["engine_name", "major_engine_version", "option_group_description"]]],
+        required_if=[
+            [
+                "state",
+                "present",
+                ["engine_name", "major_engine_version", "option_group_description"],
+            ]
+        ],
     )
 
     try:

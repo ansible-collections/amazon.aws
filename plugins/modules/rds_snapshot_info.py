@@ -292,8 +292,15 @@ cluster_snapshots:
       sample: vpc-abcd1234
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    AnsibleAWSModule,
+    is_boto3_error_code,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    AWSRetry,
+    boto3_tag_list_to_ansible_dict,
+    camel_dict_to_snake_dict,
+)
 
 try:
     import botocore
@@ -307,7 +314,10 @@ def common_snapshot_info(module, conn, method, prefix, params):
         results = paginator.paginate(**params).build_full_result()["%ss" % prefix]
     except is_boto3_error_code("%sNotFound" % prefix):
         results = []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "trying to get snapshot information")
 
     for snapshot in results:
@@ -316,8 +326,14 @@ def common_snapshot_info(module, conn, method, prefix, params):
                 snapshot["Tags"] = boto3_tag_list_to_ansible_dict(
                     conn.list_tags_for_resource(ResourceName=snapshot["%sArn" % prefix], aws_retry=True)["TagList"]
                 )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get tags for snapshot %s" % snapshot["%sIdentifier" % prefix])
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
+            module.fail_json_aws(
+                e,
+                "Couldn't get tags for snapshot %s" % snapshot["%sIdentifier" % prefix],
+            )
 
     return [camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]) for snapshot in results]
 
@@ -374,7 +390,14 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[["db_snapshot_identifier", "db_instance_identifier", "db_cluster_identifier", "db_cluster_snapshot_identifier"]],
+        mutually_exclusive=[
+            [
+                "db_snapshot_identifier",
+                "db_instance_identifier",
+                "db_cluster_identifier",
+                "db_cluster_snapshot_identifier",
+            ]
+        ],
     )
 
     conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))

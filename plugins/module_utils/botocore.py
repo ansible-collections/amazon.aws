@@ -68,7 +68,13 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
         botocore.exceptions.NoRegionError
     """
     try:
-        return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
+        return _boto3_conn(
+            conn_type=conn_type,
+            resource=resource,
+            region=region,
+            endpoint=endpoint,
+            **params,
+        )
     except ValueError as e:
         module.fail_json(msg="Couldn't connect to AWS: %s" % to_native(e))
     except (

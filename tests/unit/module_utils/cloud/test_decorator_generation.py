@@ -16,7 +16,10 @@ from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 
 if sys.version_info < (3, 8):
-    pytest.skip("accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True)
+    pytest.skip(
+        "accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8",
+        allow_module_level=True,
+    )
 
 
 @pytest.fixture

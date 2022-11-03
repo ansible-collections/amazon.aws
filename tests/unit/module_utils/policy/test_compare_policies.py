@@ -80,7 +80,12 @@ class TestComparePolicy:
                     "Sid": "AddCannedAcl2",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/username1", "arn:aws:iam::XXXXXXXXXXXX:user/username2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username2",
+                        ]
+                    },
                 }
             ],
         }
@@ -92,7 +97,12 @@ class TestComparePolicy:
                 {
                     "Effect": "Allow",
                     "Action": "s3:PutObjectAcl",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/username1", "arn:aws:iam::XXXXXXXXXXXX:user/username2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username2",
+                        ]
+                    },
                     "Resource": ["arn:aws:s3:::test_policy/*"],
                     "Sid": "AddCannedAcl2",
                 }
@@ -106,7 +116,12 @@ class TestComparePolicy:
                     "Sid": "AddCannedAcl2",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/username1", "arn:aws:iam::XXXXXXXXXXXX:user/username2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username2",
+                        ]
+                    },
                 }
             ]
         }
@@ -119,7 +134,12 @@ class TestComparePolicy:
                     "Sid": "AddCannedAcl2",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/username1", "arn:aws:iam::XXXXXXXXXXXX:user/username2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username2",
+                        ]
+                    },
                 }
             ],
         }
@@ -132,7 +152,12 @@ class TestComparePolicy:
                     "Sid": "AddCannedAcl2",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/username1", "arn:aws:iam::XXXXXXXXXXXX:user/username2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/username2",
+                        ]
+                    },
                 }
             ],
         }
@@ -143,7 +168,12 @@ class TestComparePolicy:
                 {
                     "Sid": "Test",
                     "Effect": "Allow",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/testuser1", "arn:aws:iam::XXXXXXXXXXXX:user/testuser2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser2",
+                        ]
+                    },
                     "Action": "s3:PutObjectAcl",
                     "Resource": "arn:aws:s3:::test_policy/*",
                 },
@@ -168,7 +198,12 @@ class TestComparePolicy:
                 },
                 {
                     "Action": "s3:PutObjectAcl",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/testuser1", "arn:aws:iam::XXXXXXXXXXXX:user/testuser2"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser2",
+                        ]
+                    },
                     "Sid": "Test",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
@@ -188,7 +223,12 @@ class TestComparePolicy:
                 },
                 {
                     "Action": "s3:PutObjectAcl",
-                    "Principal": {"AWS": ["arn:aws:iam::XXXXXXXXXXXX:user/testuser1", "arn:aws:iam::XXXXXXXXXXXX:user/testuser3"]},
+                    "Principal": {
+                        "AWS": [
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser1",
+                            "arn:aws:iam::XXXXXXXXXXXX:user/testuser3",
+                        ]
+                    },
                     "Sid": "Test",
                     "Resource": "arn:aws:s3:::test_policy/*",
                     "Effect": "Allow",
@@ -200,14 +240,26 @@ class TestComparePolicy:
         self.wildcard_policy_one = {
             "Version": "2012-10-17",
             "Statement": [
-                {"Principal": {"AWS": ["*"]}, "Effect": "Allow", "Resource": "arn:aws:s3:::test_policy/*", "Action": ["s3:PutObject", "s3:PutObjectAcl"]}
+                {
+                    "Principal": {"AWS": ["*"]},
+                    "Effect": "Allow",
+                    "Resource": "arn:aws:s3:::test_policy/*",
+                    "Action": ["s3:PutObject", "s3:PutObjectAcl"],
+                }
             ],
         }
 
         # Minimal policy using wildcarded Principal
         self.wildcard_policy_two = {
             "Version": "2012-10-17",
-            "Statement": [{"Principal": "*", "Effect": "Allow", "Resource": "arn:aws:s3:::test_policy/*", "Action": ["s3:PutObject", "s3:PutObjectAcl"]}],
+            "Statement": [
+                {
+                    "Principal": "*",
+                    "Effect": "Allow",
+                    "Resource": "arn:aws:s3:::test_policy/*",
+                    "Action": ["s3:PutObject", "s3:PutObjectAcl"],
+                }
+            ],
         }
 
     # ========================================================
@@ -256,19 +308,75 @@ class TestComparePolicy:
 
     def test_compare_version_policies_default_disabled(self):
         """Testing that a policy without Version not considered identical when default_version=None"""
-        assert compare_policies(self.version_policy_missing, self.version_policy_missing, default_version=None) is False
-        assert compare_policies(self.version_policy_old, self.version_policy_missing, default_version=None) is True
-        assert compare_policies(self.version_policy_new, self.version_policy_missing, default_version=None) is True
+        assert (
+            compare_policies(
+                self.version_policy_missing,
+                self.version_policy_missing,
+                default_version=None,
+            )
+            is False
+        )
+        assert (
+            compare_policies(
+                self.version_policy_old,
+                self.version_policy_missing,
+                default_version=None,
+            )
+            is True
+        )
+        assert (
+            compare_policies(
+                self.version_policy_new,
+                self.version_policy_missing,
+                default_version=None,
+            )
+            is True
+        )
 
     def test_compare_version_policies_default_set(self):
         """Testing that a policy without Version is only considered identical
         when default_version="2008-10-17"
         """
-        assert compare_policies(self.version_policy_missing, self.version_policy_missing, default_version="2012-10-17") is False
-        assert compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2012-10-17") is True
-        assert compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2008-10-17") is False
-        assert compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2012-10-17") is False
-        assert compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2008-10-17") is True
+        assert (
+            compare_policies(
+                self.version_policy_missing,
+                self.version_policy_missing,
+                default_version="2012-10-17",
+            )
+            is False
+        )
+        assert (
+            compare_policies(
+                self.version_policy_old,
+                self.version_policy_missing,
+                default_version="2012-10-17",
+            )
+            is True
+        )
+        assert (
+            compare_policies(
+                self.version_policy_old,
+                self.version_policy_missing,
+                default_version="2008-10-17",
+            )
+            is False
+        )
+        assert (
+            compare_policies(
+                self.version_policy_new,
+                self.version_policy_missing,
+                default_version="2012-10-17",
+            )
+            is False
+        )
+        assert (
+            compare_policies(
+                self.version_policy_new,
+                self.version_policy_missing,
+                default_version="2008-10-17",
+            )
+            is True
+        )
 
     def test_compare_version_policies_with_none(self):
         """Testing that comparing with no policy works"""

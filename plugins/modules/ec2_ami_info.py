@@ -212,8 +212,12 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 def list_ec2_images(ec2_client, module):
@@ -245,7 +249,13 @@ def list_ec2_images(ec2_client, module):
     filters = ansible_dict_to_boto3_filter_list(filters)
 
     try:
-        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param, ExecutableUsers=executable_users)
+        images = ec2_client.describe_images(
+            aws_retry=True,
+            ImageIds=image_ids,
+            Filters=filters,
+            Owners=owner_param,
+            ExecutableUsers=executable_users,
+        )
         images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
@@ -253,9 +263,11 @@ def list_ec2_images(ec2_client, module):
         try:
             image["tags"] = boto3_tag_list_to_ansible_dict(image.get("tags", []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute="launchPermission", ImageId=image["image_id"])[
-                    "LaunchPermissions"
-                ]
+                launch_permissions = ec2_client.describe_image_attribute(
+                    aws_retry=True,
+                    Attribute="launchPermission",
+                    ImageId=image["image_id"],
+                )["LaunchPermissions"]
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures

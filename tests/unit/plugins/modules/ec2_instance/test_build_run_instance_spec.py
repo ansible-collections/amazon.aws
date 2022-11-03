@@ -30,11 +30,19 @@ def ec2_instance(monkeypatch):
     # monkey patches various ec2_instance module functions, we'll separately test the operation of
     # these functions, we just care that it's passing the results into the right place in the
     # instance spec.
-    monkeypatch.setattr(ec2_instance_module, "build_top_level_options", lambda params: {"TOP_LEVEL_OPTIONS": sentinel.TOP_LEVEL})
+    monkeypatch.setattr(
+        ec2_instance_module,
+        "build_top_level_options",
+        lambda params: {"TOP_LEVEL_OPTIONS": sentinel.TOP_LEVEL},
+    )
     monkeypatch.setattr(ec2_instance_module, "build_network_spec", lambda params: sentinel.NETWORK_SPEC)
     monkeypatch.setattr(ec2_instance_module, "build_volume_spec", lambda params: sentinel.VOlUME_SPEC)
     monkeypatch.setattr(ec2_instance_module, "build_instance_tags", lambda params: sentinel.TAG_SPEC)
-    monkeypatch.setattr(ec2_instance_module, "determine_iam_role", lambda params: sentinel.IAM_PROFILE_ARN)
+    monkeypatch.setattr(
+        ec2_instance_module,
+        "determine_iam_role",
+        lambda params: sentinel.IAM_PROFILE_ARN,
+    )
     return ec2_instance_module
 
 

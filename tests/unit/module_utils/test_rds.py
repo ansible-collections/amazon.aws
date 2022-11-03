@@ -190,7 +190,15 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
         (
             "fake_method",
             {"wait": False},
-            *expected(rds.Boto3ClientMethod(name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[])),
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    resource="",
+                    retry_codes=[],
+                )
+            ),
         ),
         (
             "fake_method",
@@ -223,7 +231,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="db_instance_deleted",
                     operation_description="delete DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -238,7 +249,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="db_instance_available",
                     operation_description="create DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -253,7 +267,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="db_instance_stopped",
                     operation_description="stop DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -268,7 +285,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="read_replica_promoted",
                     operation_description="promote read replica",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -298,7 +318,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="db_instance_available",
                     operation_description="modify DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -313,7 +336,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="role_associated",
                     operation_description="add role to DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -328,7 +354,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="role_disassociated",
                     operation_description="remove role from DB instance",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
@@ -343,14 +372,25 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     waiter="db_instance_available",
                     operation_description="list tags for resource",
                     resource="instance",
-                    retry_codes=["InvalidDBInstanceState", "InvalidDBSecurityGroupState"],
+                    retry_codes=[
+                        "InvalidDBInstanceState",
+                        "InvalidDBSecurityGroupState",
+                    ],
                 )
             ),
         ),
         (
             "fake_method",
             {"wait": False},
-            *expected(rds.Boto3ClientMethod(name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[])),
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    resource="",
+                    retry_codes=[],
+                )
+            ),
         ),
         (
             "fake_method",
@@ -404,7 +444,10 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         ),
         (
             "copy_db_snapshot",
-            {"source_db_snapshot_identifier": "test", "db_snapshot_identifier": "test-copy"},
+            {
+                "source_db_snapshot_identifier": "test",
+                "db_snapshot_identifier": "test-copy",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="copy_db_snapshot",
@@ -462,7 +505,10 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         ),
         (
             "copy_db_cluster_snapshot",
-            {"source_db_cluster_snapshot_identifier": "test", "db_cluster_snapshot_identifier": "test-copy"},
+            {
+                "source_db_cluster_snapshot_identifier": "test",
+                "db_cluster_snapshot_identifier": "test-copy",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="copy_db_cluster_snapshot",
@@ -491,7 +537,15 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "fake_method",
             {"wait": False},
-            *expected(rds.Boto3ClientMethod(name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[])),
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    resource="",
+                    retry_codes=[],
+                )
+            ),
         ),
         (
             "fake_method",

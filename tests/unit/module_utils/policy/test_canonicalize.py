@@ -7,8 +7,12 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_root_arn
-from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_policy_dict_item
+from ansible_collections.amazon.aws.plugins.module_utils.policy import (
+    _canonify_root_arn,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.policy import (
+    _canonify_policy_dict_item,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _tuplify_list
 
 from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel

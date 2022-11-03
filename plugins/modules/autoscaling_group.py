@@ -666,10 +666,16 @@ from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    scrub_none_parameters,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    snake_dict_to_camel_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 
 ASG_ATTRIBUTES = (
     "AvailabilityZones",
@@ -688,7 +694,12 @@ ASG_ATTRIBUTES = (
     "VPCZoneIdentifier",
 )
 
-INSTANCE_ATTRIBUTES = ("instance_id", "health_status", "lifecycle_state", "launch_config_name")
+INSTANCE_ATTRIBUTES = (
+    "instance_id",
+    "health_status",
+    "lifecycle_state",
+    "launch_config_name",
+)
 
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
@@ -756,7 +767,11 @@ def create_asg(connection, **params):
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def put_notification_config(connection, asg_name, topic_arn, notification_types):
-    connection.put_notification_configuration(AutoScalingGroupName=asg_name, TopicARN=topic_arn, NotificationTypes=notification_types)
+    connection.put_notification_configuration(
+        AutoScalingGroupName=asg_name,
+        TopicARN=topic_arn,
+        NotificationTypes=notification_types,
+    )
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
@@ -801,7 +816,11 @@ def terminate_asg_instance(connection, instance_id, decrement_capacity):
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_asg_instances(connection, instance_ids, as_group_name, decrement_capacity):
-    connection.detach_instances(InstanceIds=instance_ids, AutoScalingGroupName=as_group_name, ShouldDecrementDesiredCapacity=decrement_capacity)
+    connection.detach_instances(
+        InstanceIds=instance_ids,
+        AutoScalingGroupName=as_group_name,
+        ShouldDecrementDesiredCapacity=decrement_capacity,
+    )
 
 
 def enforce_required_arguments_for_create():
@@ -819,14 +838,24 @@ def enforce_required_arguments_for_create():
 
 
 def get_properties(autoscaling_group):
-    properties = dict(healthy_instances=0, in_service_instances=0, unhealthy_instances=0, pending_instances=0, viable_instances=0, terminating_instances=0)
+    properties = dict(
+        healthy_instances=0,
+        in_service_instances=0,
+        unhealthy_instances=0,
+        pending_instances=0,
+        viable_instances=0,
+        terminating_instances=0,
+    )
     instance_facts = dict()
     autoscaling_group_instances = autoscaling_group.get("Instances")
 
     if autoscaling_group_instances:
         properties["instances"] = [i["InstanceId"] for i in autoscaling_group_instances]
         for i in autoscaling_group_instances:
-            instance_facts[i["InstanceId"]] = {"health_status": i["HealthStatus"], "lifecycle_state": i["LifecycleState"]}
+            instance_facts[i["InstanceId"]] = {
+                "health_status": i["HealthStatus"],
+                "lifecycle_state": i["LifecycleState"],
+            }
             if "LaunchConfigurationName" in i:
                 instance_facts[i["InstanceId"]]["launch_config_name"] = i["LaunchConfigurationName"]
             elif "LaunchTemplate" in i:
@@ -904,7 +933,10 @@ def get_launch_object(connection, ec2_connection):
     elif launch_config_name:
         try:
             launch_configs = describe_launch_configurations(connection, launch_config_name)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to describe launch configurations")
         if len(launch_configs["LaunchConfigurations"]) == 0:
             module.fail_json(msg="No launch config found with name %s" % launch_config_name)
@@ -913,9 +945,19 @@ def get_launch_object(connection, ec2_connection):
     elif launch_template:
         lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
         if launch_template["version"] is not None:
-            launch_object = {"LaunchTemplate": {"LaunchTemplateId": lt["LaunchTemplateId"], "Version": launch_template["version"]}}
+            launch_object = {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": lt["LaunchTemplateId"],
+                    "Version": launch_template["version"],
+                }
+            }
         else:
-            launch_object = {"LaunchTemplate": {"LaunchTemplateId": lt["LaunchTemplateId"], "Version": str(lt["LatestVersionNumber"])}}
+            launch_object = {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": lt["LaunchTemplateId"],
+                    "Version": str(lt["LatestVersionNumber"]),
+                }
+            }
 
         if mixed_instances_policy:
             instance_types = mixed_instances_policy.get("instance_types", [])
@@ -981,7 +1023,10 @@ def elb_healthy(asg_connection, elb_connection, group_name):
             lb_instances = describe_instance_health(elb_connection, lb, instances)
         except is_boto3_error_code("InvalidInstance"):
             return None
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to get load balancer.")
 
         for i in lb_instances.get("InstanceStates"):
@@ -1010,7 +1055,10 @@ def tg_healthy(asg_connection, elbv2_connection, group_name):
             tg_instances = describe_target_health(elbv2_connection, tg, instances)
         except is_boto3_error_code("InvalidInstance"):
             return None
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to get target group.")
 
         for i in tg_instances.get("TargetHealthDescriptions"):
@@ -1141,7 +1189,10 @@ def create_autoscaling_group(connection):
                 )
     if not as_groups:
         if module.check_mode:
-            module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+            module.exit_json(
+                changed=True,
+                msg="Would have created AutoScalingGroup if not in check_mode.",
+            )
 
         if not vpc_zone_identifier and not availability_zones:
             availability_zones = module.params["availability_zones"] = [
@@ -1190,7 +1241,11 @@ def create_autoscaling_group(connection):
         try:
             create_asg(connection, **ag)
             if metrics_collection:
-                connection.enable_metrics_collection(AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list)
+                connection.enable_metrics_collection(
+                    AutoScalingGroupName=group_name,
+                    Granularity=metrics_granularity,
+                    Metrics=metrics_list,
+                )
 
             all_ag = describe_autoscaling_groups(connection, group_name)
             if len(all_ag) == 0:
@@ -1198,7 +1253,13 @@ def create_autoscaling_group(connection):
             as_group = all_ag[0]
             suspend_processes(connection, as_group)
             if wait_for_instances:
-                wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+                wait_for_new_inst(
+                    connection,
+                    group_name,
+                    wait_timeout,
+                    desired_capacity,
+                    "viable_instances",
+                )
                 if load_balancers:
                     wait_for_elb(connection, group_name)
                 # Wait for target group health if target group(s)defined
@@ -1210,11 +1271,17 @@ def create_autoscaling_group(connection):
             asg_properties = get_properties(as_group)
             changed = True
             return changed, asg_properties
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to create Autoscaling Group.")
     else:
         if module.check_mode:
-            module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
+            module.exit_json(
+                changed=True,
+                msg="Would have modified AutoScalingGroup if required if not in check_mode.",
+            )
 
         as_group = as_groups[0]
         initial_asg_properties = get_properties(as_group)
@@ -1241,7 +1308,13 @@ def create_autoscaling_group(connection):
             for dead_tag in set(have_tag_keyvals).difference(want_tag_keyvals):
                 changed = True
                 if purge_tags:
-                    dead_tags.append(dict(ResourceId=as_group["AutoScalingGroupName"], ResourceType="auto-scaling-group", Key=dead_tag))
+                    dead_tags.append(
+                        dict(
+                            ResourceId=as_group["AutoScalingGroupName"],
+                            ResourceType="auto-scaling-group",
+                            Key=dead_tag,
+                        )
+                    )
                 have_tags = [have_tag for have_tag in have_tags if have_tag["Key"] != dead_tag]
 
             if dead_tags:
@@ -1258,7 +1331,10 @@ def create_autoscaling_group(connection):
             changed = True
             try:
                 attach_load_balancers(connection, group_name, load_balancers)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
 
         # Update load balancers if they are specified and one or more already exists
@@ -1278,8 +1354,14 @@ def create_autoscaling_group(connection):
                     changed = True
                     try:
                         detach_load_balancers(connection, group_name, list(elbs_to_detach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Failed to detach load balancers {0}".format(elbs_to_detach))
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:
+                        module.fail_json_aws(
+                            e,
+                            msg="Failed to detach load balancers {0}".format(elbs_to_detach),
+                        )
             if wanted_elbs - has_elbs:
                 # if has contains less than wanted, then we need to add some
                 elbs_to_attach = wanted_elbs.difference(has_elbs)
@@ -1287,8 +1369,14 @@ def create_autoscaling_group(connection):
                     changed = True
                     try:
                         attach_load_balancers(connection, group_name, list(elbs_to_attach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Failed to attach load balancers {0}".format(elbs_to_attach))
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:
+                        module.fail_json_aws(
+                            e,
+                            msg="Failed to attach load balancers {0}".format(elbs_to_attach),
+                        )
 
         # Handle target group attachments/detachments
         # Attach target groups if they are specified but none currently exist
@@ -1296,7 +1384,10 @@ def create_autoscaling_group(connection):
             changed = True
             try:
                 attach_lb_target_groups(connection, group_name, target_group_arns)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
         # Update target groups if they are specified and one or more already exists
         elif target_group_arns is not None and as_group["TargetGroupARNs"]:
@@ -1309,15 +1400,24 @@ def create_autoscaling_group(connection):
                 changed = True
                 try:
                     detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, msg="Failed to detach load balancer target groups {0}".format(tgs_to_detach))
+                except (
+                    botocore.exceptions.ClientError,
+                    botocore.exceptions.BotoCoreError,
+                ) as e:
+                    module.fail_json_aws(
+                        e,
+                        msg="Failed to detach load balancer target groups {0}".format(tgs_to_detach),
+                    )
 
             tgs_to_attach = wanted_tgs.difference(has_tgs)
             if tgs_to_attach:
                 changed = True
                 try:
                     attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                except (
+                    botocore.exceptions.ClientError,
+                    botocore.exceptions.BotoCoreError,
+                ) as e:
                     module.fail_json(msg="Failed to attach load balancer target groups {0}".format(tgs_to_attach))
 
         # check for attributes that aren't required for updating an existing ASG
@@ -1354,7 +1454,10 @@ def create_autoscaling_group(connection):
             except KeyError:
                 launch_template = as_group["LaunchTemplate"]
                 # Prefer LaunchTemplateId over Name as it's more specific.  Only one can be used for update_asg.
-                ag["LaunchTemplate"] = {"LaunchTemplateId": launch_template["LaunchTemplateId"], "Version": launch_template["Version"]}
+                ag["LaunchTemplate"] = {
+                    "LaunchTemplateId": launch_template["LaunchTemplateId"],
+                    "Version": launch_template["Version"],
+                }
 
         if availability_zones:
             ag["AvailabilityZones"] = availability_zones
@@ -1367,20 +1470,36 @@ def create_autoscaling_group(connection):
             update_asg(connection, **ag)
 
             if metrics_collection:
-                connection.enable_metrics_collection(AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list)
+                connection.enable_metrics_collection(
+                    AutoScalingGroupName=group_name,
+                    Granularity=metrics_granularity,
+                    Metrics=metrics_list,
+                )
             else:
                 connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
 
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to update autoscaling group")
 
         if notification_topic:
             try:
                 put_notification_config(connection, group_name, notification_topic, notification_types)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to update Autoscaling Group notifications.")
         if wait_for_instances:
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+            wait_for_new_inst(
+                connection,
+                group_name,
+                wait_timeout,
+                desired_capacity,
+                "viable_instances",
+            )
             # Wait for ELB health if ELB(s)defined
             if load_balancers:
                 module.debug("\tWAITING FOR ELB HEALTH")
@@ -1396,7 +1515,10 @@ def create_autoscaling_group(connection):
             asg_properties = get_properties(as_group)
             if asg_properties != initial_asg_properties:
                 changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to read existing Autoscaling Groups.")
         return changed, asg_properties
 
@@ -1412,7 +1534,10 @@ def delete_autoscaling_group(connection):
     groups = describe_autoscaling_groups(connection, group_name)
     if groups:
         if module.check_mode:
-            module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
+            module.exit_json(
+                changed=True,
+                msg="Would have deleted AutoScalingGroup if not in check_mode.",
+            )
         wait_timeout = time.time() + wait_timeout
         if not wait_for_instances:
             delete_asg(connection, group_name, force_delete=True)
@@ -1488,7 +1613,13 @@ def replace(connection):
         desired_capacity = as_group["DesiredCapacity"]
 
     if wait_for_instances:
-        wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"], "viable_instances")
+        wait_for_new_inst(
+            connection,
+            group_name,
+            wait_timeout,
+            as_group["MinSize"],
+            "viable_instances",
+        )
 
     props = get_properties(as_group)
     instances = props["instances"]
@@ -1535,10 +1666,22 @@ def replace(connection):
     # This should get overwritten if the number of instances left is less than the batch size.
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    update_size(connection, as_group, max_size + batch_size, min_size + batch_size, desired_capacity + batch_size)
+    update_size(
+        connection,
+        as_group,
+        max_size + batch_size,
+        min_size + batch_size,
+        desired_capacity + batch_size,
+    )
 
     if wait_for_instances:
-        wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size, "viable_instances")
+        wait_for_new_inst(
+            connection,
+            group_name,
+            wait_timeout,
+            as_group["MinSize"] + batch_size,
+            "viable_instances",
+        )
         wait_for_elb(connection, group_name)
         wait_for_target_group(connection, group_name)
 
@@ -1601,7 +1744,10 @@ def detach(connection):
     if instances_to_detach:
         try:
             detach_asg_instances(connection, instances_to_detach, group_name, decrement_desired_capacity)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to detach instances from AutoScaling Group")
 
     asg_properties = get_properties(as_group)

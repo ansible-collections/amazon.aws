@@ -70,11 +70,17 @@ def _boto3_conn(region, credentials):
 
     try:
         connection = boto3.session.Session(profile_name=boto_profile).client("ec2", region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
+    except (
+        botocore.exceptions.ProfileNotFound,
+        botocore.exceptions.PartialCredentialsError,
+    ):
         if boto_profile:
             try:
                 connection = boto3.session.Session(profile_name=boto_profile).client("ec2", region)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
+            except (
+                botocore.exceptions.ProfileNotFound,
+                botocore.exceptions.PartialCredentialsError,
+            ):
                 raise AnsibleError("Insufficient credentials found.")
         else:
             raise AnsibleError("Insufficient credentials found.")
@@ -120,7 +126,10 @@ class LookupModule(LookupBase):
 
         try:
             response = _describe_account_attributes(client, **params)["AccountAttributes"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
 
         if check_ec2_classic:

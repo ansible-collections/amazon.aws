@@ -198,12 +198,16 @@ from ansible.module_utils.six import string_types
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    normalize_boto3_result,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 
 
 def get_endpoints(client, module, endpoint_id=None):
@@ -261,7 +265,12 @@ def setup_creation(client, module):
         # If we have an endpoint now, just ensure tags and exit
         if module.params.get("tags"):
             changed |= ensure_ec2_tags(
-                client, module, endpoint_id, resource_type="vpc-endpoint", tags=module.params.get("tags"), purge_tags=module.params.get("purge_tags")
+                client,
+                module,
+                endpoint_id,
+                resource_type="vpc-endpoint",
+                tags=module.params.get("tags"),
+                purge_tags=module.params.get("purge_tags"),
             )
         normalized_result = get_endpoints(client, module, endpoint_id=endpoint_id)["VpcEndpoints"][0]
         return changed, camel_dict_to_snake_dict(normalized_result, ignore_list=["Tags"])
@@ -322,17 +331,26 @@ def create_vpc_endpoint(client, module):
         elif module.params.get("wait") and not module.check_mode:
             try:
                 waiter = get_waiter(client, "vpc_endpoint_exists")
-                waiter.wait(VpcEndpointIds=[result["VpcEndpointId"]], WaiterConfig=dict(Delay=15, MaxAttempts=module.params.get("wait_timeout") // 15))
+                waiter.wait(
+                    VpcEndpointIds=[result["VpcEndpointId"]],
+                    WaiterConfig=dict(Delay=15, MaxAttempts=module.params.get("wait_timeout") // 15),
+                )
             except botocore.exceptions.WaiterError as e:
                 module.fail_json_aws(msg="Error waiting for vpc endpoint to become available - please check the AWS console")
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Failure while waiting for status")
 
     except is_boto3_error_code("IdempotentParameterMismatch"):  # pylint: disable=duplicate-except
         module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
     except is_boto3_error_code("RouteAlreadyExists"):  # pylint: disable=duplicate-except
         module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to create VPC.")
 
     # describe and normalize iso datetime fields in result after adding tags
@@ -353,7 +371,10 @@ def setup_removal(client, module):
         except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
             result = {"msg": "Endpoint does not exist, nothing to delete."}
             changed = False
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to get endpoints")
 
         return changed, result
@@ -375,7 +396,10 @@ def setup_removal(client, module):
             except is_boto3_error_code("InvalidVpcEndpoint.NotFound"):
                 continue
 
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Failed to delete VPC endpoint")
     return changed, result
 

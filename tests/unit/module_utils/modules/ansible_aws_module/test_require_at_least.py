@@ -55,7 +55,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test botocore_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_botocore_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -70,7 +74,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test boto3_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_boto3_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         # Set botocore version to a known value (tests are on both sides) to make
         # sure we're comparing the right library
@@ -85,7 +93,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test require_botocore_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_require_botocore_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -118,7 +130,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test require_boto3_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_require_boto3_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", DUMMY_VERSION)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -151,7 +167,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test require_botocore_at_least with reason
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_require_botocore_at_least_with_reason(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -187,7 +207,11 @@ class TestRequireAtLeastTestSuite(object):
     # ========================================================
     #   Test require_boto3_at_least with reason
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least",
+        [({}, *d) for d in TEST_VERSIONS],
+        indirect=["stdin"],
+    )
     def test_require_boto3_at_least_with_reason(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", DUMMY_VERSION)
         # Set boto3 version to a known value (tests are on both sides) to make

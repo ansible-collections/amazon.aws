@@ -4,7 +4,9 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import (
+    scrub_none_parameters,
+)
 
 scrub_none_test_data = [
     (
@@ -63,44 +65,119 @@ scrub_none_test_data = [
         dict(param1="something", param4="something_else"),
     ),
     (
-        dict(param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")), param2=None, param3=None, param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")), param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")), param4="something_else"),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")),
+            param2=None,
+            param3=None,
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")),
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict(sub_sub_param1="another_thing")),
+            param4="something_else",
+        ),
     ),
     (
-        dict(param1=dict(sub_param1="something", sub_param2=dict()), param2=None, param3=None, param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=dict()), param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=dict()), param4="something_else"),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict()),
+            param2=None,
+            param3=None,
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict()),
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=dict()),
+            param4="something_else",
+        ),
     ),
     (
-        dict(param1=dict(sub_param1="something", sub_param2=False), param2=None, param3=None, param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=False), param4="something_else"),
-        dict(param1=dict(sub_param1="something", sub_param2=False), param4="something_else"),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=False),
+            param2=None,
+            param3=None,
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=False),
+            param4="something_else",
+        ),
+        dict(
+            param1=dict(sub_param1="something", sub_param2=False),
+            param4="something_else",
+        ),
     ),
     (
-        dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2="my_dict_nested_in_a_list_2")], param2=[]),
-        dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2="my_dict_nested_in_a_list_2")], param2=[]),
-        dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2="my_dict_nested_in_a_list_2")], param2=[]),
+        dict(
+            param1=[
+                dict(
+                    sub_param1="my_dict_nested_in_a_list_1",
+                    sub_param2="my_dict_nested_in_a_list_2",
+                )
+            ],
+            param2=[],
+        ),
+        dict(
+            param1=[
+                dict(
+                    sub_param1="my_dict_nested_in_a_list_1",
+                    sub_param2="my_dict_nested_in_a_list_2",
+                )
+            ],
+            param2=[],
+        ),
+        dict(
+            param1=[
+                dict(
+                    sub_param1="my_dict_nested_in_a_list_1",
+                    sub_param2="my_dict_nested_in_a_list_2",
+                )
+            ],
+            param2=[],
+        ),
     ),
     (
-        dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2=None)], param2=[]),
-        dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2=None)], param2=[]),
+        dict(
+            param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2=None)],
+            param2=[],
+        ),
+        dict(
+            param1=[dict(sub_param1="my_dict_nested_in_a_list_1", sub_param2=None)],
+            param2=[],
+        ),
         dict(param1=[dict(sub_param1="my_dict_nested_in_a_list_1")], param2=[]),
     ),
     (
-        dict(param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)], param2=[]),
-        dict(param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)], param2=[]),
+        dict(
+            param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)],
+            param2=[],
+        ),
+        dict(
+            param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)],
+            param2=[],
+        ),
         dict(param1=[dict(sub_param1=[dict()])], param2=[]),
     ),
     (
-        dict(param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)], param2=None),
+        dict(
+            param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)],
+            param2=None,
+        ),
         dict(param1=[dict(sub_param1=[dict(sub_sub_param1=None)], sub_param2=None)]),
         dict(param1=[dict(sub_param1=[dict()])]),
     ),
 ]
 
 
-@pytest.mark.parametrize("input_params, output_params_no_descend, output_params_descend", scrub_none_test_data)
+@pytest.mark.parametrize(
+    "input_params, output_params_no_descend, output_params_descend",
+    scrub_none_test_data,
+)
 def test_scrub_none_parameters(input_params, output_params_no_descend, output_params_descend):
     assert scrub_none_parameters(input_params) == output_params_descend
     assert scrub_none_parameters(input_params, descend_into_lists=False) == output_params_no_descend

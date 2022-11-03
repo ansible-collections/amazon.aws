@@ -865,17 +865,29 @@ from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.core import get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    get_boto3_client_method_parameters,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.rds import (
+    arg_spec_to_rds_params,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.rds import (
+    get_rds_method_attribute,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
 
@@ -949,7 +961,10 @@ def get_instance(client, module, db_instance_id):
                 sleep(3)
         else:
             instance = {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe DB instances")
     return instance
 
@@ -962,7 +977,10 @@ def get_final_snapshot(client, module, snapshot_identifier):
         return {}
     except is_boto3_error_code("DBSnapshotNotFound"):  # May not be using wait: True
         return {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to retrieve information about the final snapshot")
 
 
@@ -973,7 +991,10 @@ def get_parameters(client, module, parameters, method_name):
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
         module.fail_json(
-            msg="To {0} requires the parameters: {1}".format(get_rds_method_attribute(method_name, module).operation_description, required_options)
+            msg="To {0} requires the parameters: {1}".format(
+                get_rds_method_attribute(method_name, module).operation_description,
+                required_options,
+            )
         )
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
@@ -985,7 +1006,11 @@ def get_parameters(client, module, parameters, method_name):
     if parameters.get("ProcessorFeatures") == [] and not method_name == "modify_db_instance":
         parameters.pop("ProcessorFeatures")
 
-    if method_name in ["create_db_instance", "create_db_instance_read_replica", "restore_db_instance_from_db_snapshot"]:
+    if method_name in [
+        "create_db_instance",
+        "create_db_instance_read_replica",
+        "restore_db_instance_from_db_snapshot",
+    ]:
         if parameters.get("Tags"):
             parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
 
@@ -1046,9 +1071,15 @@ def get_current_attributes_with_inconsistent_keys(instance):
     if instance.get("PendingModifiedValues", {}).get("PendingCloudwatchLogsExports", {}).get("LogTypesToEnable", []):
         current_enabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToEnable"]
         current_disabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToDisable"]
-        options["CloudwatchLogsExportConfiguration"] = {"LogTypesToEnable": current_enabled, "LogTypesToDisable": current_disabled}
+        options["CloudwatchLogsExportConfiguration"] = {
+            "LogTypesToEnable": current_enabled,
+            "LogTypesToDisable": current_disabled,
+        }
     else:
-        options["CloudwatchLogsExportConfiguration"] = {"LogTypesToEnable": instance.get("EnabledCloudwatchLogsExports", []), "LogTypesToDisable": []}
+        options["CloudwatchLogsExportConfiguration"] = {
+            "LogTypesToEnable": instance.get("EnabledCloudwatchLogsExports", []),
+            "LogTypesToDisable": [],
+        }
     if instance.get("PendingModifiedValues", {}).get("Port"):
         options["DBPortNumber"] = instance["PendingModifiedValues"]["Port"]
     else:
@@ -1189,7 +1220,14 @@ def update_instance(client, module, instance, instance_id):
         instance = get_instance(client, module, instance_id)
 
     # Check tagging/promoting/rebooting/starting/stopping instance
-    changed |= ensure_tags(client, module, instance["DBInstanceArn"], instance["Tags"], module.params["tags"], module.params["purge_tags"])
+    changed |= ensure_tags(
+        client,
+        module,
+        instance["DBInstanceArn"],
+        instance["Tags"],
+        module.params["tags"],
+        module.params["purge_tags"],
+    )
     changed |= promote_replication_instance(client, module, instance, module.params["read_replica"])
     changed |= update_instance_state(client, module, instance, module.params["state"])
 
@@ -1204,7 +1242,10 @@ def promote_replication_instance(client, module, instance, read_replica):
         if bool(instance.get("StatusInfos")):
             try:
                 _result, changed = call_method(
-                    client, module, method_name="promote_read_replica", parameters={"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
+                    client,
+                    module,
+                    method_name="promote_read_replica",
+                    parameters={"DBInstanceIdentifier": instance["DBInstanceIdentifier"]},
                 )
             except is_boto3_error_message("DB Instance is not a read replica"):
                 pass
@@ -1223,7 +1264,10 @@ def ensure_iam_roles(client, module, instance_id):
         Returns:
             changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
     """
-    instance = camel_dict_to_snake_dict(get_instance(client, module, instance_id), ignore_list=["Tags", "ProcessorFeatures"])
+    instance = camel_dict_to_snake_dict(
+        get_instance(client, module, instance_id),
+        ignore_list=["Tags", "ProcessorFeatures"],
+    )
 
     # Ensure engine type supports associating IAM roles
     engine = instance.get("engine")
@@ -1267,18 +1311,37 @@ def reboot_running_db_instance(client, module, instance):
 def start_or_stop_instance(client, module, instance, state):
     changed = False
     parameters = {"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
-    if state == "stopped" and instance["DBInstanceStatus"] not in ["stopping", "stopped"]:
+    if state == "stopped" and instance["DBInstanceStatus"] not in [
+        "stopping",
+        "stopped",
+    ]:
         if module.params["db_snapshot_identifier"]:
             parameters["DBSnapshotIdentifier"] = module.params["db_snapshot_identifier"]
         _result, changed = call_method(client, module, "stop_db_instance", parameters)
-    elif state == "started" and instance["DBInstanceStatus"] not in ["available", "starting", "restarting"]:
+    elif state == "started" and instance["DBInstanceStatus"] not in [
+        "available",
+        "starting",
+        "restarting",
+    ]:
         _result, changed = call_method(client, module, "start_db_instance", parameters)
     return changed
 
 
 def main():
     arg_spec = dict(
-        state=dict(choices=["present", "absent", "terminated", "running", "started", "stopped", "rebooted", "restarted"], default="present"),
+        state=dict(
+            choices=[
+                "present",
+                "absent",
+                "terminated",
+                "running",
+                "started",
+                "stopped",
+                "rebooted",
+                "restarted",
+            ],
+            default="present",
+        ),
         creation_source=dict(choices=["snapshot", "s3", "instance"]),
         force_update_password=dict(type="bool", default=False, no_log=False),
         purge_cloudwatch_logs_exports=dict(type="bool", default=True),
@@ -1366,7 +1429,15 @@ def main():
         (
             "creation_source",
             "s3",
-            ("s3_bucket_name", "engine", "master_username", "master_user_password", "source_engine", "source_engine_version", "s3_ingestion_role_arn"),
+            (
+                "s3_bucket_name",
+                "engine",
+                "master_username",
+                "master_user_password",
+                "source_engine",
+                "source_engine_version",
+                "s3_ingestion_role_arn",
+            ),
         ),
     ]
     mutually_exclusive = [
@@ -1375,7 +1446,12 @@ def main():
         ("availability_zone", "multi_az"),
     ]
 
-    module = AnsibleAWSModule(argument_spec=arg_spec, required_if=required_if, mutually_exclusive=mutually_exclusive, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=arg_spec,
+        required_if=required_if,
+        mutually_exclusive=mutually_exclusive,
+        supports_check_mode=True,
+    )
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
@@ -1408,7 +1484,10 @@ def main():
     if method_name:
 
         # Exit on create/delete if check_mode
-        if module.check_mode and method_name in ["create_db_instance", "delete_db_instance"]:
+        if module.check_mode and method_name in [
+            "create_db_instance",
+            "delete_db_instance",
+        ]:
             module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=["Tags", "ProcessorFeatures"]))
 
         raw_parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))

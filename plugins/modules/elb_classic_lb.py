@@ -680,16 +680,30 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    scrub_none_parameters,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    snake_dict_to_camel_dict,
+)
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_ec2_security_group_ids_from_names,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -746,25 +760,43 @@ class ElbManager(object):
                 vpc_id = None
             try:
                 self.security_group_ids = self._get_ec2_security_group_ids_from_names(sec_group_list=security_group_names, vpc_id=vpc_id)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to convert security group names to IDs, try using security group IDs rather than names")
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:
+                module.fail_json_aws(
+                    e,
+                    msg="Failed to convert security group names to IDs, try using security group IDs rather than names",
+                )
 
     def _update_descriptions(self):
         try:
             self.elb = self._get_elb()
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Unable to describe load balancer")
         try:
             self.elb_attributes = self._get_elb_attributes()
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Unable to describe load balancer attributes")
         try:
             self.elb_policies = self._get_elb_policies()
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Unable to describe load balancer policies")
         try:
             self.elb_health = self._get_elb_instance_health()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Unable to describe load balancer instance health")
 
     # We have a number of complex parameters which can't be validated by
@@ -918,11 +950,17 @@ class ElbManager(object):
         if not self.elb:
             try:
                 self._create_elb()
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:
                 self.module.fail_json_aws(e, msg="Failed to create load balancer")
             try:
                 self.elb_attributes = self._get_elb_attributes()
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 self.module.fail_json_aws(e, msg="Unable to describe load balancer attributes")
             self._wait_created()
 
@@ -939,11 +977,17 @@ class ElbManager(object):
                 self._wait_gone(True)
                 try:
                     self._create_elb()
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
                     self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
                 try:
                     self.elb_attributes = self._get_elb_attributes()
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                except (
+                    botocore.exceptions.ClientError,
+                    botocore.exceptions.BotoCoreError,
+                ) as e:
                     self.module.fail_json_aws(e, msg="Unable to describe load balancer attributes")
             else:
                 self._set_subnets()
@@ -966,7 +1010,10 @@ class ElbManager(object):
         if self.elb:
             try:
                 self._delete_elb()
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:
                 self.module.fail_json_aws(e, msg="Failed to delete load balancer")
         self._wait_gone()
 
@@ -979,7 +1026,10 @@ class ElbManager(object):
             # the interfaces take longer so reliant security groups cannot
             # be deleted until the interface has registered as removed.
             self._wait_for_elb_interface_removed()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
     def _wait_created(self, wait=False):
@@ -989,7 +1039,10 @@ class ElbManager(object):
             self._wait_for_elb_created()
             # Can take longer than creation
             self._wait_for_elb_interface_created()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
     def get_load_balancer(self):
@@ -1003,7 +1056,10 @@ class ElbManager(object):
         load_balancer = camel_dict_to_snake_dict(elb)
         try:
             load_balancer["tags"] = self._get_tags()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
 
         return load_balancer
@@ -1091,7 +1147,10 @@ class ElbManager(object):
 
         try:
             info["tags"] = self._get_tags()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
 
         return info
@@ -1251,11 +1310,17 @@ class ElbManager(object):
         # Update is a delete then add, so do the deletion first
         try:
             changed |= self._delete_elb_listeners(ports_to_remove)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to remove listeners from load balancer")
         try:
             changed |= self._create_elb_listeners(listeners_to_add)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to remove listeners from load balancer")
 
         return changed
@@ -1308,11 +1373,17 @@ class ElbManager(object):
         # add.
         try:
             changed |= self._detach_subnets(subnets_to_detach)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to detach subnets from load balancer")
         try:
             changed |= self._attach_subnets(subnets_to_attach)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to attach subnets to load balancer")
 
         return changed
@@ -1337,7 +1408,10 @@ class ElbManager(object):
                 LoadBalancerName=self.name,
                 AvailabilityZones=zones,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to enable zones for load balancer")
         return True
 
@@ -1354,7 +1428,10 @@ class ElbManager(object):
                 LoadBalancerName=self.name,
                 AvailabilityZones=zones,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to disable zones for load balancer")
         return True
 
@@ -1376,11 +1453,17 @@ class ElbManager(object):
         # replaces all zones at once
         try:
             changed |= self._enable_zones(zones_to_enable)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to enable zone on load balancer")
         try:
             changed |= self._disable_zones(zones_to_disable)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to attach zone to load balancer")
 
         return changed
@@ -1403,7 +1486,10 @@ class ElbManager(object):
                 LoadBalancerName=self.name,
                 SecurityGroups=self.security_group_ids,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to apply security groups to load balancer")
         return True
 
@@ -1426,7 +1512,10 @@ class ElbManager(object):
                 LoadBalancerName=self.name,
                 HealthCheck=health_check_config,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to apply healthcheck to load balancer")
 
         return True
@@ -1477,8 +1566,15 @@ class ElbManager(object):
             return True
 
         try:
-            self.client.modify_load_balancer_attributes(aws_retry=True, LoadBalancerName=self.name, LoadBalancerAttributes=attributes)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.client.modify_load_balancer_attributes(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                LoadBalancerAttributes=attributes,
+            )
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to apply load balancer attrbutes")
 
     def _proxy_policy_name(self):
@@ -1507,8 +1603,16 @@ class ElbManager(object):
                 LoadBalancerPort=port,
                 PolicyNames=list(policies),
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to set load balancer listener policies", port=port, policies=policies)
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            self.module.fail_json_aws(
+                e,
+                msg="Failed to set load balancer listener policies",
+                port=port,
+                policies=policies,
+            )
 
         return True
 
@@ -1607,7 +1711,10 @@ class ElbManager(object):
         except is_boto3_error_code("InvalidConfigurationRequest"):
             # Already deleted
             return False
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Failed to load balancer policy {0}".format(policy_name))
         return True
 
@@ -1634,8 +1741,15 @@ class ElbManager(object):
 
         try:
             method(aws_retry=True, LoadBalancerName=self.name, **description)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to create load balancer stickiness policy", description=description)
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            self.module.fail_json_aws(
+                e,
+                msg="Failed to create load balancer stickiness policy",
+                description=description,
+            )
         return changed
 
     def _set_lb_stickiness_policy(self, listener, policy):
@@ -1738,8 +1852,16 @@ class ElbManager(object):
                 InstancePort=port,
                 PolicyNames=policies,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to set load balancer backend policies", port=port, policies=policies)
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            self.module.fail_json_aws(
+                e,
+                msg="Failed to set load balancer backend policies",
+                port=port,
+                policies=policies,
+            )
 
         return True
 
@@ -1775,7 +1897,10 @@ class ElbManager(object):
 
         try:
             self.client.create_load_balancer_policy(aws_retry=True, **proxy_policy)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to create load balancer policy", policy=proxy_policy)
 
         return True
@@ -1800,8 +1925,16 @@ class ElbManager(object):
                 LoadBalancerName=self.name,
                 Instances=instance_id_list,
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to change instance registration", instances=instance_id_list, name=self.name)
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            self.module.fail_json_aws(
+                e,
+                msg="Failed to change instance registration",
+                instances=instance_id_list,
+                name=self.name,
+            )
         return True
 
     def _set_instance_ids(self):
@@ -1863,7 +1996,10 @@ class ElbManager(object):
 
         try:
             current_tags = self._get_tags()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
 
         tags_to_set, tags_to_unset = compare_aws_tags(current_tags, self.tags, self.purge_tags)
@@ -1871,11 +2007,17 @@ class ElbManager(object):
         changed = False
         try:
             changed |= self._remove_tags(tags_to_unset)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to remove load balancer tags")
         try:
             changed |= self._add_tags(tags_to_set)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Failed to add load balancer tags")
 
         return changed
@@ -1941,7 +2083,10 @@ class ElbManager(object):
             problem = self._validate_protocol(value)
             problem_found |= problem
             if problem:
-                self.module.fail_json(msg="Invalid protocol ({0}) in listener".format(value), listener=listener)
+                self.module.fail_json(
+                    msg="Invalid protocol ({0}) in listener".format(value),
+                    listener=listener,
+                )
         return problem_found
 
     def _validate_health_check(self, health_check):
@@ -1981,7 +2126,11 @@ class ElbManager(object):
         if not vpc_ids:
             return None
         if len(vpc_ids) > 1:
-            self.module.fail_json("Subnets for an ELB may not span multiple VPCs", subnets=subnet_details, vpc_ids=vpc_ids)
+            self.module.fail_json(
+                "Subnets for an ELB may not span multiple VPCs",
+                subnets=subnet_details,
+                vpc_ids=vpc_ids,
+            )
         return vpc_ids.pop()
 
     @AWSRetry.jittered_backoff()

@@ -299,7 +299,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 # Caching lookup for aliases
 _aliases = dict()
@@ -444,7 +446,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
         module.warn("Permission denied fetching key metadata ({0})".format(key_id))
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain key metadata")
     result["KeyArn"] = result.pop("Arn")
 
@@ -453,7 +458,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):
         module.warn("Permission denied fetching key aliases")
         aliases = {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain aliases")
     # We can only get aliases for our own account, so we don't need the full ARN
     result["aliases"] = aliases.get(result["KeyId"], [])
@@ -467,7 +475,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):
         module.warn("Permission denied fetching key grants ({0})".format(key_id))
         result["grants"] = []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain key grants")
 
     tags = get_kms_tags(connection, module, key_id)
@@ -495,7 +506,10 @@ def get_kms_info(connection, module):
     else:
         try:
             keys = get_kms_keys_with_backoff(connection)["Keys"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to obtain keys")
         return [get_key_details(connection, module, key["KeyId"]) for key in keys]
 
@@ -508,7 +522,11 @@ def main():
         pending_deletion=dict(type="bool", default=False),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=[["alias", "filters", "key_id"]], supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["alias", "filters", "key_id"]],
+        supports_check_mode=True,
+    )
 
     try:
         connection = module.client("kms")

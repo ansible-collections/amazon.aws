@@ -60,13 +60,20 @@ IPS_GOOD = [
         "2001:db8::/32",
         "2001:db8::/32",
     ),
-    ("2001:db8:fe80:b897:8990:8a7c:99bf:323d/128", "2001:db8:fe80:b897:8990:8a7c:99bf:323d/128"),
+    (
+        "2001:db8:fe80:b897:8990:8a7c:99bf:323d/128",
+        "2001:db8:fe80:b897:8990:8a7c:99bf:323d/128",
+    ),
 ]
 
 IPS_WARN = [
     ("192.0.2.1/24", "192.0.2.0/24", "One of your CIDR addresses"),
     ("2001:DB8::1/32", "2001:DB8::/32", "One of your IPv6 CIDR addresses"),
-    ("2001:db8:fe80:b897:8990:8a7c:99bf:323d/64", "2001:db8:fe80:b897::/64", "One of your IPv6 CIDR addresses"),
+    (
+        "2001:db8:fe80:b897:8990:8a7c:99bf:323d/64",
+        "2001:db8:fe80:b897::/64",
+        "One of your IPv6 CIDR addresses",
+    ),
 ]
 
 

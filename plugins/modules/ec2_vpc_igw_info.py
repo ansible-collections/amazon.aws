@@ -113,9 +113,15 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 
 
 def get_internet_gateway_info(internet_gateway, convert_tags):
@@ -125,7 +131,11 @@ def get_internet_gateway_info(internet_gateway, convert_tags):
     else:
         tags = internet_gateway["Tags"]
         ignore_list = []
-    internet_gateway_info = {"InternetGatewayId": internet_gateway["InternetGatewayId"], "Attachments": internet_gateway["Attachments"], "Tags": tags}
+    internet_gateway_info = {
+        "InternetGatewayId": internet_gateway["InternetGatewayId"],
+        "Attachments": internet_gateway["Attachments"],
+        "Tags": tags,
+    }
 
     internet_gateway_info = camel_dict_to_snake_dict(internet_gateway_info, ignore_list=ignore_list)
     return internet_gateway_info
@@ -144,7 +154,10 @@ def list_internet_gateways(connection, module):
         all_internet_gateways = connection.describe_internet_gateways(aws_retry=True, **params)
     except is_boto3_error_code("InvalidInternetGatewayID.NotFound"):
         module.fail_json("InternetGateway not found")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Unable to describe internet gateways")
 
     return [get_internet_gateway_info(igw, convert_tags) for igw in all_internet_gateways["InternetGateways"]]

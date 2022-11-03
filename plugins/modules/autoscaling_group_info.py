@@ -421,7 +421,10 @@ def find_asgs(conn, module, name=None, tags=None):
                         asg["target_group_names"] = [tg["TargetGroupName"] for tg in tg_result["TargetGroups"]]
                     except is_boto3_error_code("TargetGroupNotFound"):
                         asg["target_group_names"] = []
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:  # pylint: disable=duplicate-except
                         module.fail_json_aws(e, msg="Failed to describe Target Groups")
             else:
                 asg["target_group_names"] = []
@@ -429,7 +432,10 @@ def find_asgs(conn, module, name=None, tags=None):
             try:
                 asg_lifecyclehooks = conn.describe_lifecycle_hooks(AutoScalingGroupName=asg["auto_scaling_group_name"])
                 asg["lifecycle_hooks"] = asg_lifecyclehooks["LifecycleHooks"]
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to fetch information about ASG lifecycle hooks")
             matched_asgs.append(asg)
 

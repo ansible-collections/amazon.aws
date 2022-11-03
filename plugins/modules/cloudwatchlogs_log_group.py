@@ -160,7 +160,12 @@ def create_log_group(client, log_group_name, kms_key_id, tags, retention, module
         module.fail_json_aws(e, msg="Unable to create log group")
 
     if retention:
-        input_retention_policy(client=client, log_group_name=log_group_name, retention=retention, module=module)
+        input_retention_policy(
+            client=client,
+            log_group_name=log_group_name,
+            retention=retention,
+            module=module,
+        )
 
     found_log_group = describe_log_group(client=client, log_group_name=log_group_name, module=module)
 
@@ -171,7 +176,25 @@ def create_log_group(client, log_group_name, kms_key_id, tags, retention, module
 
 def input_retention_policy(client, log_group_name, retention, module):
     try:
-        permited_values = [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+        permited_values = [
+            1,
+            3,
+            5,
+            7,
+            14,
+            30,
+            60,
+            90,
+            120,
+            150,
+            180,
+            365,
+            400,
+            545,
+            731,
+            1827,
+            3653,
+        ]
 
         if retention in permited_values:
             client.put_retention_policy(logGroupName=log_group_name, retentionInDays=retention)
@@ -179,7 +202,10 @@ def input_retention_policy(client, log_group_name, retention, module):
             delete_log_group(client=client, log_group_name=log_group_name, module=module)
             module.fail_json(msg="Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to put retention policy for log group {0}".format(log_group_name))
+        module.fail_json_aws(
+            e,
+            msg="Unable to put retention policy for log group {0}".format(log_group_name),
+        )
 
 
 def delete_retention_policy(client, log_group_name, module):
@@ -189,7 +215,10 @@ def delete_retention_policy(client, log_group_name, module):
     try:
         client.delete_retention_policy(logGroupName=log_group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to delete retention policy for log group {0}".format(log_group_name))
+        module.fail_json_aws(
+            e,
+            msg="Unable to delete retention policy for log group {0}".format(log_group_name),
+        )
 
 
 def delete_log_group(client, log_group_name, module):
@@ -200,7 +229,10 @@ def delete_log_group(client, log_group_name, module):
         client.delete_log_group(logGroupName=log_group_name)
     except is_boto3_error_code("ResourceNotFoundException"):
         return {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to delete log group {0}".format(log_group_name))
 
 
@@ -222,7 +254,10 @@ def describe_log_group(client, log_group_name, module):
     except is_boto3_error_code("AccessDeniedException"):
         tags = {}
         module.warn("Permission denied listing tags for log group {0}".format(log_group_name))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to describe tags for log group {0}".format(log_group_name))
 
     found_log_group["tags"] = tags.get("tags", {})
@@ -272,8 +307,15 @@ def main():
         overwrite=dict(required=False, type="bool", default=False),
     )
 
-    mutually_exclusive = [["retention", "purge_retention_policy"], ["purge_retention_policy", "overwrite"]]
-    module = AnsibleAWSModule(supports_check_mode=True, argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
+    mutually_exclusive = [
+        ["retention", "purge_retention_policy"],
+        ["purge_retention_policy", "overwrite"],
+    ]
+    module = AnsibleAWSModule(
+        supports_check_mode=True,
+        argument_spec=argument_spec,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     try:
         logs = module.client("logs")
@@ -290,7 +332,11 @@ def main():
         if found_log_group:
             if module.params["overwrite"] is True:
                 changed = True
-                delete_log_group(client=logs, log_group_name=module.params["log_group_name"], module=module)
+                delete_log_group(
+                    client=logs,
+                    log_group_name=module.params["log_group_name"],
+                    module=module,
+                )
                 found_log_group = create_log_group(
                     client=logs,
                     log_group_name=module.params["log_group_name"],
@@ -301,18 +347,35 @@ def main():
                 )
             else:
                 changed |= ensure_tags(
-                    client=logs, found_log_group=found_log_group, desired_tags=module.params["tags"], purge_tags=module.params["purge_tags"], module=module
+                    client=logs,
+                    found_log_group=found_log_group,
+                    desired_tags=module.params["tags"],
+                    purge_tags=module.params["purge_tags"],
+                    module=module,
                 )
                 if module.params["purge_retention_policy"]:
                     if found_log_group.get("retentionInDays"):
                         changed = True
-                        delete_retention_policy(client=logs, log_group_name=module.params["log_group_name"], module=module)
+                        delete_retention_policy(
+                            client=logs,
+                            log_group_name=module.params["log_group_name"],
+                            module=module,
+                        )
                 elif module.params["retention"] != found_log_group.get("retentionInDays"):
                     if module.params["retention"] is not None:
                         changed = True
-                        input_retention_policy(client=logs, log_group_name=module.params["log_group_name"], retention=module.params["retention"], module=module)
+                        input_retention_policy(
+                            client=logs,
+                            log_group_name=module.params["log_group_name"],
+                            retention=module.params["retention"],
+                            module=module,
+                        )
                 if changed:
-                    found_log_group = describe_log_group(client=logs, log_group_name=module.params["log_group_name"], module=module)
+                    found_log_group = describe_log_group(
+                        client=logs,
+                        log_group_name=module.params["log_group_name"],
+                        module=module,
+                    )
 
         elif not found_log_group:
             changed = True
@@ -331,7 +394,11 @@ def main():
     elif state == "absent":
         if found_log_group:
             changed = True
-            delete_log_group(client=logs, log_group_name=module.params["log_group_name"], module=module)
+            delete_log_group(
+                client=logs,
+                log_group_name=module.params["log_group_name"],
+                module=module,
+            )
 
     module.exit_json(changed=changed)
 

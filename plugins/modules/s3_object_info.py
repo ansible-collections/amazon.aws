@@ -443,10 +443,16 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_aws_connection_info,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_connection
 
 
@@ -662,14 +668,20 @@ def bucket_check(
     try:
         connection.head_bucket(Bucket=bucket_name)
     except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg="The bucket %s does not exist or is missing access permissions." % bucket_name)
+        module.fail_json_aws(
+            e,
+            msg="The bucket %s does not exist or is missing access permissions." % bucket_name,
+        )
 
 
 def object_check(connection, module, bucket_name, object_name):
     try:
         connection.head_object(Bucket=bucket_name, Key=object_name)
     except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
+        module.fail_json_aws(
+            e,
+            msg="The object %s does not exist or is missing access permissions." % object_name,
+        )
 
 
 def main():
@@ -684,7 +696,17 @@ def main():
                 object_retention=dict(type="bool", default=False),
                 object_tagging=dict(type="bool", default=False),
                 object_attributes=dict(type="bool", default=False),
-                attributes_list=dict(type="list", elements="str", choices=["ETag", "Checksum", "ObjectParts", "StorageClass", "ObjectSize"]),
+                attributes_list=dict(
+                    type="list",
+                    elements="str",
+                    choices=[
+                        "ETag",
+                        "Checksum",
+                        "ObjectParts",
+                        "StorageClass",
+                        "ObjectSize",
+                    ],
+                ),
             ),
             required_if=[
                 ("object_attributes", True, ["attributes_list"]),
@@ -744,7 +766,10 @@ def main():
     else:
         try:
             connection = module.client("s3", retry_decorator=AWSRetry.jittered_backoff())
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # check if specified bucket exists
@@ -763,7 +788,15 @@ def main():
         elif object_name is None:
             object_list = list_bucket_objects(connection, module, bucket_name)
             for object in object_list:
-                result.append(get_object_details(connection, module, bucket_name, object, requested_object_details))
+                result.append(
+                    get_object_details(
+                        connection,
+                        module,
+                        bucket_name,
+                        object,
+                        requested_object_details,
+                    )
+                )
 
     elif not requested_object_details and object_name:
         # if specific details are not requested, return object metadata

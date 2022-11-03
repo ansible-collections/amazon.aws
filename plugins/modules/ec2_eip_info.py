@@ -109,8 +109,12 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 def get_eips_details(module):
@@ -129,7 +133,10 @@ def get_eips_details(module):
 
 
 def main():
-    module = AnsibleAWSModule(argument_spec=dict(filters=dict(type="dict", default={})), supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=dict(filters=dict(type="dict", default={})),
+        supports_check_mode=True,
+    )
 
     module.exit_json(changed=False, addresses=get_eips_details(module))
 

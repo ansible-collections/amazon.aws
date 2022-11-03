@@ -32,7 +32,10 @@ def parse_aws_arn(arn):
     The specific formats depend on the resource.
     The ARNs for some resources omit the Region, the account ID, or both the Region and the account ID.
     """
-    m = re.search(r"arn:(aws(-([a-z\-]+))?):([\w-]+):([a-z0-9\-]*):(\d*|aws|aws-managed):(.*)", arn)
+    m = re.search(
+        r"arn:(aws(-([a-z\-]+))?):([\w-]+):([a-z0-9\-]*):(\d*|aws|aws-managed):(.*)",
+        arn,
+    )
     if m is None:
         return None
     result = dict()

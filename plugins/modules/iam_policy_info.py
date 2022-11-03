@@ -119,12 +119,23 @@ class Policy:
 
     def run(self):
         policy_list = self.list()
-        ret_val = {"changed": False, self._iam_type() + "_name": self.name, "all_policy_names": policy_list}
+        ret_val = {
+            "changed": False,
+            self._iam_type() + "_name": self.name,
+            "all_policy_names": policy_list,
+        }
         if self.policy_name is None:
             ret_val.update(policies=self.get_all())
             ret_val.update(policy_names=policy_list)
         elif self.policy_name in policy_list:
-            ret_val.update(policies=[{"policy_name": self.policy_name, "policy_document": self.get(self.policy_name)}])
+            ret_val.update(
+                policies=[
+                    {
+                        "policy_name": self.policy_name,
+                        "policy_document": self.get(self.policy_name),
+                    }
+                ]
+            )
             ret_val.update(policy_names=[self.policy_name])
         return ret_val
 
@@ -192,7 +203,10 @@ def main():
         module.exit_json(**(policy.run()))
     except is_boto3_error_code("NoSuchEntity") as e:
         module.exit_json(changed=False, msg=e.response["Error"]["Message"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 

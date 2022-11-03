@@ -17,8 +17,12 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 
 
 def main():
@@ -33,7 +37,13 @@ def main():
     filters = ansible_dict_to_boto3_filter_list({"name": "amzn2-ami-hvm-2.0.202006*-x86_64-gp2"})
 
     try:
-        images = client.describe_images(aws_retry=True, ImageIds=[], Filters=filters, Owners=["amazon"], ExecutableUsers=[])
+        images = client.describe_images(
+            aws_retry=True,
+            ImageIds=[],
+            Filters=filters,
+            Owners=["amazon"],
+            ExecutableUsers=[],
+        )
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Fail JSON AWS")
 

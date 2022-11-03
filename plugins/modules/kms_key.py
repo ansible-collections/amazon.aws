@@ -418,7 +418,11 @@ had_invalid_entries:
 
 # these mappings are used to go from simple labels to the actual 'Sid' values returned
 # by get_policy. They seem to be magic values.
-statement_label = {"role": "Allow use of the key", "role grant": "Allow attachment of persistent resources", "admin": "Allow access for Key Administrators"}
+statement_label = {
+    "role": "Allow use of the key",
+    "role grant": "Allow attachment of persistent resources",
+    "admin": "Allow access for Key Administrators",
+}
 
 import json
 
@@ -430,9 +434,15 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
@@ -508,7 +518,10 @@ def get_kms_tags(connection, module, key_id):
             tags.extend(tag_response["Tags"])
         except is_boto3_error_code("AccessDeniedException"):
             tag_response = {}
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to obtain key tags")
         if tag_response.get("NextMarker"):
             kwargs["Marker"] = tag_response["NextMarker"]
@@ -523,7 +536,10 @@ def get_kms_policies(connection, module, key_id):
         return [get_key_policy_with_backoff(connection, key_id, policy)["Policy"] for policy in policies]
     except is_boto3_error_code("AccessDeniedException"):
         return []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain key policies")
 
 
@@ -684,12 +700,18 @@ def ensure_enabled_disabled(connection, module, key, enabled):
         if enabled:
             try:
                 connection.enable_key(KeyId=key_id)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to enable key")
         else:
             try:
                 connection.disable_key(KeyId=key_id)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Failed to disable key")
 
     return True
@@ -710,7 +732,10 @@ def update_alias(connection, module, key, alias):
     if not module.check_mode:
         try:
             connection.create_alias(TargetKeyId=key_id, AliasName=alias)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed create key alias")
 
     return True
@@ -726,7 +751,10 @@ def update_description(connection, module, key, description):
     if not module.check_mode:
         try:
             connection.update_key_description(KeyId=key_id, Description=description)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to update key description")
 
     return True
@@ -745,13 +773,23 @@ def update_tags(connection, module, key, desired_tags, purge_tags):
         if to_remove:
             try:
                 connection.untag_resource(KeyId=key_id, TagKeys=to_remove)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Unable to remove tag")
         if to_add:
             try:
-                tags = ansible_dict_to_boto3_tag_list(module.params["tags"], tag_name_key_name="TagKey", tag_value_key_name="TagValue")
+                tags = ansible_dict_to_boto3_tag_list(
+                    module.params["tags"],
+                    tag_name_key_name="TagKey",
+                    tag_value_key_name="TagValue",
+                )
                 connection.tag_resource(KeyId=key_id, Tags=tags)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Unable to add tag to key")
 
     return True
@@ -780,7 +818,10 @@ def update_policy(connection, module, key, policy):
     if not module.check_mode:
         try:
             connection.put_key_policy(KeyId=key_id, PolicyName="default", Policy=policy)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Unable to update key policy")
 
     return True
@@ -797,7 +838,10 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
             return False
     except is_boto3_error_code("AccessDeniedException"):
         pass
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get current key rotation status")
 
     if not module.check_mode:
@@ -806,7 +850,10 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
                 connection.enable_key_rotation(KeyId=key_id)
             else:
                 connection.disable_key_rotation(KeyId=key_id)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to enable/disable key rotation")
 
     return True
@@ -824,13 +871,19 @@ def update_grants(connection, module, key, desired_grants, purge_grants):
         for grant in to_remove:
             try:
                 connection.retire_grant(KeyId=key_id, GrantId=grant["grant_id"])
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Unable to retire grant")
         for grant in to_add:
             grant_params = convert_grant_params(grant, key)
             try:
                 connection.create_grant(**grant_params)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 module.fail_json_aws(e, msg="Unable to create grant")
 
     return True
@@ -845,7 +898,13 @@ def update_key(connection, module, key):
     changed |= update_description(connection, module, key, module.params["description"])
     changed |= update_tags(connection, module, key, module.params["tags"], module.params.get("purge_tags"))
     changed |= update_policy(connection, module, key, module.params.get("policy"))
-    changed |= update_grants(connection, module, key, module.params.get("grants"), module.params.get("purge_grants"))
+    changed |= update_grants(
+        connection,
+        module,
+        key,
+        module.params.get("grants"),
+        module.params.get("purge_grants"),
+    )
     changed |= update_key_rotation(connection, module, key, module.params.get("enable_key_rotation"))
 
     # make results consistent with kms_facts before returning
@@ -863,7 +922,13 @@ def create_key(connection, module):
         tag_name_key_name="TagKey",
         tag_value_key_name="TagValue",
     )
-    params = dict(BypassPolicyLockoutSafetyCheck=False, Tags=tags_list, KeyUsage=key_usage, CustomerMasterKeySpec=key_spec, Origin="AWS_KMS")
+    params = dict(
+        BypassPolicyLockoutSafetyCheck=False,
+        Tags=tags_list,
+        KeyUsage=key_usage,
+        CustomerMasterKeySpec=key_spec,
+        Origin="AWS_KMS",
+    )
 
     if module.check_mode:
         return {"changed": True}
@@ -956,9 +1021,22 @@ def main():
             type="str",
             default="SYMMETRIC_DEFAULT",
             aliases=["customer_master_key_spec"],
-            choices=["SYMMETRIC_DEFAULT", "RSA_2048", "RSA_3072", "RSA_4096", "ECC_NIST_P256", "ECC_NIST_P384", "ECC_NIST_P521", "ECC_SECG_P256K1"],
+            choices=[
+                "SYMMETRIC_DEFAULT",
+                "RSA_2048",
+                "RSA_3072",
+                "RSA_4096",
+                "ECC_NIST_P256",
+                "ECC_NIST_P384",
+                "ECC_NIST_P521",
+                "ECC_SECG_P256K1",
+            ],
         ),
-        key_usage=dict(type="str", default="ENCRYPT_DECRYPT", choices=["ENCRYPT_DECRYPT", "SIGN_VERIFY"]),
+        key_usage=dict(
+            type="str",
+            default="ENCRYPT_DECRYPT",
+            choices=["ENCRYPT_DECRYPT", "SIGN_VERIFY"],
+        ),
     )
 
     module = AnsibleAWSModule(

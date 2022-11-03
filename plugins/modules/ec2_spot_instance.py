@@ -412,8 +412,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
@@ -512,23 +516,36 @@ def cancel_spot_instance_requests(module, connection):
     requests_exist = dict()
     try:
         paginator = connection.get_paginator("describe_spot_instance_requests").paginate(
-            SpotInstanceRequestIds=spot_instance_request_ids, Filters=[{"Name": "state", "Values": ["open", "active"]}]
+            SpotInstanceRequestIds=spot_instance_request_ids,
+            Filters=[{"Name": "state", "Values": ["open", "active"]}],
         )
         jittered_retry = AWSRetry.jittered_backoff()
         requests_exist = jittered_retry(paginator.build_full_result)()
     except is_boto3_error_code("InvalidSpotInstanceRequestID.NotFound"):
         requests_exist["SpotInstanceRequests"] = []
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failure when describing spot requests")
 
     try:
         if len(requests_exist["SpotInstanceRequests"]) > 0:
             changed = True
             if module.check_mode:
-                module.exit_json(changed=changed, msg="Would have cancelled Spot request {0}".format(spot_instance_request_ids))
+                module.exit_json(
+                    changed=changed,
+                    msg="Would have cancelled Spot request {0}".format(spot_instance_request_ids),
+                )
 
-            connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get("spot_instance_request_ids"))
-            module.exit_json(changed=changed, msg="Cancelled Spot request {0}".format(module.params.get("spot_instance_request_ids")))
+            connection.cancel_spot_instance_requests(
+                aws_retry=True,
+                SpotInstanceRequestIds=module.params.get("spot_instance_request_ids"),
+            )
+            module.exit_json(
+                changed=changed,
+                msg="Cancelled Spot request {0}".format(module.params.get("spot_instance_request_ids")),
+            )
         else:
             module.exit_json(changed=changed, msg="Spot request not found or already cancelled")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -565,7 +582,9 @@ def main():
     )
     monitoring_options = dict(enabled=dict(type="bool", default=False))
     placement_options = dict(
-        availability_zone=dict(type="str"), group_name=dict(type="str"), tenancy=dict(type="str", choices=["default", "dedicated", "host"], default="default")
+        availability_zone=dict(type="str"),
+        group_name=dict(type="str"),
+        tenancy=dict(type="str", choices=["default", "dedicated", "host"], default="default"),
     )
     iam_instance_profile_options = dict(arn=dict(type="str"), name=dict(type="str"))
     launch_specification_options = dict(

@@ -134,7 +134,9 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.lookup import LookupBase
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
@@ -143,11 +145,17 @@ def _boto3_conn(region, credentials):
 
     try:
         connection = boto3.session.Session(profile_name=boto_profile).client("secretsmanager", region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
+    except (
+        botocore.exceptions.ProfileNotFound,
+        botocore.exceptions.PartialCredentialsError,
+    ):
         if boto_profile:
             try:
                 connection = boto3.session.Session(profile_name=boto_profile).client("secretsmanager", region)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
+            except (
+                botocore.exceptions.ProfileNotFound,
+                botocore.exceptions.PartialCredentialsError,
+            ):
                 raise AnsibleError("Insufficient credentials found.")
         else:
             raise AnsibleError("Insufficient credentials found.")
@@ -197,15 +205,27 @@ class LookupModule(LookupBase):
             raise AnsibleError(missing_required_lib("botocore and boto3"))
 
         deleted = on_deleted.lower()
-        if not isinstance(deleted, string_types) or deleted not in ["error", "warn", "skip"]:
+        if not isinstance(deleted, string_types) or deleted not in [
+            "error",
+            "warn",
+            "skip",
+        ]:
             raise AnsibleError('"on_deleted" must be a string and one of "error", "warn" or "skip", not %s' % deleted)
 
         missing = on_missing.lower()
-        if not isinstance(missing, string_types) or missing not in ["error", "warn", "skip"]:
+        if not isinstance(missing, string_types) or missing not in [
+            "error",
+            "warn",
+            "skip",
+        ]:
             raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
 
         denied = on_denied.lower()
-        if not isinstance(denied, string_types) or denied not in ["error", "warn", "skip"]:
+        if not isinstance(denied, string_types) or denied not in [
+            "error",
+            "warn",
+            "skip",
+        ]:
             raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
         credentials = {}
@@ -236,16 +256,35 @@ class LookupModule(LookupBase):
                     for object in paginator_response:
                         if "SecretList" in object:
                             for secret_obj in object["SecretList"]:
-                                secrets.update({secret_obj["Name"]: self.get_secret_value(secret_obj["Name"], client, on_missing=missing, on_denied=denied)})
+                                secrets.update(
+                                    {
+                                        secret_obj["Name"]: self.get_secret_value(
+                                            secret_obj["Name"],
+                                            client,
+                                            on_missing=missing,
+                                            on_denied=denied,
+                                        )
+                                    }
+                                )
                     secrets = [secrets]
 
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                except (
+                    botocore.exceptions.ClientError,
+                    botocore.exceptions.BotoCoreError,
+                ) as e:
                     raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
         else:
             secrets = []
             for term in terms:
                 value = self.get_secret_value(
-                    term, client, version_stage=version_stage, version_id=version_id, on_missing=missing, on_denied=denied, on_deleted=deleted, nested=nested
+                    term,
+                    client,
+                    version_stage=version_stage,
+                    version_id=version_id,
+                    on_missing=missing,
+                    on_denied=denied,
+                    on_deleted=deleted,
+                    nested=nested,
                 )
                 if value:
                     secrets.append(value)
@@ -256,7 +295,17 @@ class LookupModule(LookupBase):
 
         return secrets
 
-    def get_secret_value(self, term, client, version_stage=None, version_id=None, on_missing=None, on_denied=None, on_deleted=None, nested=False):
+    def get_secret_value(
+        self,
+        term,
+        client,
+        version_stage=None,
+        version_id=None,
+        on_missing=None,
+        on_denied=None,
+        on_deleted=None,
+        nested=False,
+    ):
         params = {}
         params["SecretId"] = term
         if version_id:
@@ -301,7 +350,10 @@ class LookupModule(LookupBase):
                 raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
             elif on_denied == "warn":
                 self._display.warning("Skipping, access denied for secret %s" % term)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
         return None

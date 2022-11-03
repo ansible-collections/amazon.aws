@@ -43,7 +43,11 @@ class TestIamUtils:
 
     def _make_unexpected_exception(self):
         return botocore.exceptions.ClientError(
-            {"Error": {"Code": "SomeThingWentWrong", "Message": "Boom!"}, "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"}}, "someCall"
+            {
+                "Error": {"Code": "SomeThingWentWrong", "Message": "Boom!"},
+                "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+            },
+            "someCall",
         )
 
     def _make_encoded_exception(self):
@@ -91,7 +95,11 @@ class TestIamUtils:
     def test_get_aws_account_id__caller_success(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [
-            {"UserId": "AIDA12345EXAMPLE54321", "Account": "123456789012", "Arn": "arn:aws:iam::123456789012:user/ExampleUser"}
+            {
+                "UserId": "AIDA12345EXAMPLE54321",
+                "Account": "123456789012",
+                "Arn": "arn:aws:iam::123456789012:user/ExampleUser",
+            }
         ]
         # Run module
         return_value = utils_iam.get_aws_account_id(self.module)
@@ -106,7 +114,11 @@ class TestIamUtils:
     def test_get_aws_account_id__caller_success_cn(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [
-            {"UserId": "AIDA12345EXAMPLE54321", "Account": "123456789012", "Arn": "arn:aws-cn:iam::123456789012:user/ExampleUser"}
+            {
+                "UserId": "AIDA12345EXAMPLE54321",
+                "Account": "123456789012",
+                "Arn": "arn:aws-cn:iam::123456789012:user/ExampleUser",
+            }
         ]
         # Run module
         return_value = utils_iam.get_aws_account_id(self.module)
@@ -121,7 +133,11 @@ class TestIamUtils:
     def test_get_aws_account_info__caller_success(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [
-            {"UserId": "AIDA12345EXAMPLE54321", "Account": "123456789012", "Arn": "arn:aws:iam::123456789012:user/ExampleUser"}
+            {
+                "UserId": "AIDA12345EXAMPLE54321",
+                "Account": "123456789012",
+                "Arn": "arn:aws:iam::123456789012:user/ExampleUser",
+            }
         ]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)
@@ -138,7 +154,11 @@ class TestIamUtils:
     def test_get_aws_account_info__caller_success_cn(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [
-            {"UserId": "AIDA12345EXAMPLE54321", "Account": "123456789012", "Arn": "arn:aws-cn:iam::123456789012:user/ExampleUser"}
+            {
+                "UserId": "AIDA12345EXAMPLE54321",
+                "Account": "123456789012",
+                "Arn": "arn:aws-cn:iam::123456789012:user/ExampleUser",
+            }
         ]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)
@@ -155,7 +175,11 @@ class TestIamUtils:
     def test_get_aws_account_info__caller_success_gov(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [
-            {"UserId": "AIDA12345EXAMPLE54321", "Account": "123456789012", "Arn": "arn:aws-us-gov:iam::123456789012:user/ExampleUser"}
+            {
+                "UserId": "AIDA12345EXAMPLE54321",
+                "Account": "123456789012",
+                "Arn": "arn:aws-us-gov:iam::123456789012:user/ExampleUser",
+            }
         ]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)

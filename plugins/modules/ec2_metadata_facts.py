@@ -488,7 +488,10 @@ class Ec2Metadata(object):
         response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
 
         if info.get("status") in (401, 403):
-            self.module.fail_json(msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]), response=info)
+            self.module.fail_json(
+                msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]),
+                response=info,
+            )
         elif info.get("status") not in (200, 404):
             time.sleep(3)
             # request went bad, retry once then raise
@@ -496,7 +499,10 @@ class Ec2Metadata(object):
             response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
             if info.get("status") not in (200, 404):
                 # fail out now
-                self.module.fail_json(msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]), response=info)
+                self.module.fail_json(
+                    msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]),
+                    response=info,
+                )
         if response and info["status"] < 400:
             data = response.read()
         else:
@@ -568,7 +574,10 @@ class Ec2Metadata(object):
         response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
 
         if info.get("status") == 403:
-            self.module.fail_json(msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]), response=info)
+            self.module.fail_json(
+                msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]),
+                response=info,
+            )
         elif info.get("status") not in (200, 404):
             time.sleep(3)
             # request went bad, retry once then raise
@@ -576,7 +585,10 @@ class Ec2Metadata(object):
             response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
             if info.get("status") not in (200, 404):
                 # fail out now
-                self.module.fail_json(msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]), response=info)
+                self.module.fail_json(
+                    msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]),
+                    response=info,
+                )
         if response:
             token_data = response.read()
         else:

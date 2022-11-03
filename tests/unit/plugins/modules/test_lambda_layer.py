@@ -28,7 +28,12 @@ mod_delete_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.
 @pytest.mark.parametrize(
     "params,api_result,calls,ansible_result",
     [
-        ({"name": "testlayer", "version": 4}, [], [], {"changed": False, "layer_versions": []}),
+        (
+            {"name": "testlayer", "version": 4},
+            [],
+            [],
+            {"changed": False, "layer_versions": []},
+        ),
         (
             {"name": "testlayer", "version": 4},
             [
@@ -101,7 +106,10 @@ mod_delete_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.
                     "version": 1,
                 },
             ],
-            [call(LayerName="testlayer", VersionNumber=2), call(LayerName="testlayer", VersionNumber=1)],
+            [
+                call(LayerName="testlayer", VersionNumber=2),
+                call(LayerName="testlayer", VersionNumber=1),
+            ],
             {
                 "changed": True,
                 "layer_versions": [
@@ -213,7 +221,12 @@ def test_delete_layer_failure(m_list_layer):
 @pytest.mark.parametrize("b_s3content", [(True), (False)])
 @patch(mod_list_layer)
 def test_create_layer(m_list_layer, b_s3content, tmp_path):
-    params = {"name": "testlayer", "description": "ansible units testing sample layer", "content": {}, "license_info": "MIT"}
+    params = {
+        "name": "testlayer",
+        "description": "ansible units testing sample layer",
+        "content": {},
+        "license_info": "MIT",
+    }
 
     lambda_client = MagicMock()
 
@@ -259,8 +272,16 @@ def test_create_layer(m_list_layer, b_s3content, tmp_path):
     }
 
     if b_s3content:
-        params["content"] = {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"}
-        content_arg = {"S3Bucket": "mybucket", "S3Key": "mybucket-key", "S3ObjectVersion": "v1"}
+        params["content"] = {
+            "s3_bucket": "mybucket",
+            "s3_key": "mybucket-key",
+            "s3_object_version": "v1",
+        }
+        content_arg = {
+            "S3Bucket": "mybucket",
+            "S3Key": "mybucket-key",
+            "S3ObjectVersion": "v1",
+        }
     else:
         binary_data = b"simple lambda layer content"
         test_dir = tmp_path / "lambda_layer"
@@ -292,14 +313,21 @@ def test_create_layer_check_mode(m_list_layer):
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
-        "content": {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"},
+        "content": {
+            "s3_bucket": "mybucket",
+            "s3_key": "mybucket-key",
+            "s3_object_version": "v1",
+        },
         "license_info": "MIT",
     }
 
     lambda_client = MagicMock()
 
     result = lambda_layer.create_layer_version(lambda_client, params, check_mode=True)
-    assert result == {"msg": "Create operation skipped - running in check mode", "changed": True}
+    assert result == {
+        "msg": "Create operation skipped - running in check mode",
+        "changed": True,
+    }
 
     m_list_layer.assert_not_called()
     lambda_client.publish_layer_version.assert_not_called()
@@ -309,7 +337,11 @@ def test_create_layer_failure():
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
-        "content": {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"},
+        "content": {
+            "s3_bucket": "mybucket",
+            "s3_key": "mybucket-key",
+            "s3_object_version": "v1",
+        },
         "compatible_runtimes": ["nodejs", "python3.9"],
         "compatible_architectures": ["x86_64", "arm64"],
     }

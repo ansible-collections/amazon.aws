@@ -73,17 +73,38 @@ class ACMServiceManager(object):
             kwargs["CertificateStatuses"] = statuses
         return paginator.paginate(**kwargs).build_full_result()["CertificateSummaryList"]
 
-    @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=["RequestInProgressException", "ResourceNotFoundException"])
+    @AWSRetry.jittered_backoff(
+        delay=5,
+        catch_extra_error_codes=[
+            "RequestInProgressException",
+            "ResourceNotFoundException",
+        ],
+    )
     def get_certificate_with_backoff(self, client, certificate_arn):
         response = client.get_certificate(CertificateArn=certificate_arn)
         # strip out response metadata
-        return {"Certificate": response["Certificate"], "CertificateChain": response["CertificateChain"]}
+        return {
+            "Certificate": response["Certificate"],
+            "CertificateChain": response["CertificateChain"],
+        }
 
-    @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=["RequestInProgressException", "ResourceNotFoundException"])
+    @AWSRetry.jittered_backoff(
+        delay=5,
+        catch_extra_error_codes=[
+            "RequestInProgressException",
+            "ResourceNotFoundException",
+        ],
+    )
     def describe_certificate_with_backoff(self, client, certificate_arn):
         return client.describe_certificate(CertificateArn=certificate_arn)["Certificate"]
 
-    @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=["RequestInProgressException", "ResourceNotFoundException"])
+    @AWSRetry.jittered_backoff(
+        delay=5,
+        catch_extra_error_codes=[
+            "RequestInProgressException",
+            "ResourceNotFoundException",
+        ],
+    )
     def list_certificate_tags_with_backoff(self, client, certificate_arn):
         return client.list_tags_for_certificate(CertificateArn=certificate_arn)["Tags"]
 
@@ -113,26 +134,49 @@ class ACMServiceManager(object):
             except is_boto3_error_code("ResourceNotFoundException"):
                 # The certificate was deleted after the call to list_certificates_with_backoff.
                 continue
-            except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-                module.fail_json_aws(e, msg="Couldn't obtain certificate metadata for domain %s" % certificate["DomainName"])
+            except (
+                BotoCoreError,
+                ClientError,
+            ) as e:  # pylint: disable=duplicate-except
+                module.fail_json_aws(
+                    e,
+                    msg="Couldn't obtain certificate metadata for domain %s" % certificate["DomainName"],
+                )
 
             # in some states, ACM resources do not have a corresponding cert
-            if cert_data["Status"] not in ["PENDING_VALIDATION", "VALIDATION_TIMED_OUT", "FAILED"]:
+            if cert_data["Status"] not in [
+                "PENDING_VALIDATION",
+                "VALIDATION_TIMED_OUT",
+                "FAILED",
+            ]:
                 try:
                     cert_data.update(self.get_certificate_with_backoff(client, certificate["CertificateArn"]))
                 except is_boto3_error_code("ResourceNotFoundException"):
                     # The certificate was deleted after the call to list_certificates_with_backoff.
                     continue
-                except (BotoCoreError, ClientError, KeyError) as e:  # pylint: disable=duplicate-except
-                    module.fail_json_aws(e, msg="Couldn't obtain certificate data for domain %s" % certificate["DomainName"])
+                except (
+                    BotoCoreError,
+                    ClientError,
+                    KeyError,
+                ) as e:  # pylint: disable=duplicate-except
+                    module.fail_json_aws(
+                        e,
+                        msg="Couldn't obtain certificate data for domain %s" % certificate["DomainName"],
+                    )
             cert_data = camel_dict_to_snake_dict(cert_data)
             try:
                 tags = self.list_certificate_tags_with_backoff(client, certificate["CertificateArn"])
             except is_boto3_error_code("ResourceNotFoundException"):
                 # The certificate was deleted after the call to list_certificates_with_backoff.
                 continue
-            except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-                module.fail_json_aws(e, msg="Couldn't obtain tags for domain %s" % certificate["DomainName"])
+            except (
+                BotoCoreError,
+                ClientError,
+            ) as e:  # pylint: disable=duplicate-except
+                module.fail_json_aws(
+                    e,
+                    msg="Couldn't obtain tags for domain %s" % certificate["DomainName"],
+                )
 
             cert_data["tags"] = boto3_tag_list_to_ansible_dict(tags)
             results.append(cert_data)
@@ -166,27 +210,51 @@ class ACMServiceManager(object):
         if certificate_chain:
             if arn:
                 ret = client.import_certificate(
-                    Certificate=to_bytes(certificate), PrivateKey=to_bytes(private_key), CertificateChain=to_bytes(certificate_chain), CertificateArn=arn
+                    Certificate=to_bytes(certificate),
+                    PrivateKey=to_bytes(private_key),
+                    CertificateChain=to_bytes(certificate_chain),
+                    CertificateArn=arn,
                 )
             else:
                 ret = client.import_certificate(
-                    Certificate=to_bytes(certificate), PrivateKey=to_bytes(private_key), CertificateChain=to_bytes(certificate_chain)
+                    Certificate=to_bytes(certificate),
+                    PrivateKey=to_bytes(private_key),
+                    CertificateChain=to_bytes(certificate_chain),
                 )
         else:
             if arn:
-                ret = client.import_certificate(Certificate=to_bytes(certificate), PrivateKey=to_bytes(private_key), CertificateArn=arn)
+                ret = client.import_certificate(
+                    Certificate=to_bytes(certificate),
+                    PrivateKey=to_bytes(private_key),
+                    CertificateArn=arn,
+                )
             else:
                 ret = client.import_certificate(Certificate=to_bytes(certificate), PrivateKey=to_bytes(private_key))
         return ret["CertificateArn"]
 
     # Tags are a normal Ansible style dict
     # {'Key':'Value'}
-    @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=["RequestInProgressException", "ResourceNotFoundException"])
+    @AWSRetry.jittered_backoff(
+        delay=5,
+        catch_extra_error_codes=[
+            "RequestInProgressException",
+            "ResourceNotFoundException",
+        ],
+    )
     def tag_certificate_with_backoff(self, client, arn, tags):
         aws_tags = ansible_dict_to_boto3_tag_list(tags)
         client.add_tags_to_certificate(CertificateArn=arn, Tags=aws_tags)
 
-    def import_certificate(self, client, module, certificate, private_key, arn=None, certificate_chain=None, tags=None):
+    def import_certificate(
+        self,
+        client,
+        module,
+        certificate,
+        private_key,
+        arn=None,
+        certificate_chain=None,
+        tags=None,
+    ):
 
         original_arn = arn
 
@@ -211,7 +279,10 @@ class ACMServiceManager(object):
                 self.delete_certificate_with_backoff(client, arn)
             except (BotoCoreError, ClientError):
                 module.warn("Certificate %s exists, and is not tagged. So Ansible will not see it on the next run.")
-                module.fail_json_aws(e, msg="Couldn't tag certificate %s, couldn't delete it either" % arn)
+                module.fail_json_aws(
+                    e,
+                    msg="Couldn't tag certificate %s, couldn't delete it either" % arn,
+                )
             module.fail_json_aws(e, msg="Couldn't tag certificate %s" % arn)
 
         return arn

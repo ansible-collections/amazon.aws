@@ -186,7 +186,9 @@ subnet_group:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
@@ -223,7 +225,10 @@ def get_subnet_group(client, module):
         _result = _describe_db_subnet_groups_with_backoff(client, **params)
     except is_boto3_error_code("DBSubnetGroupNotFoundFault"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't describe subnet groups.")
 
     if _result:
@@ -290,7 +295,12 @@ def main():
 
             # Check if there is any tags update
             tags_update = ensure_tags(
-                connection, module, matching_groups["db_subnet_group_arn"], matching_groups["tags"], module.params.get("tags"), module.params["purge_tags"]
+                connection,
+                module,
+                matching_groups["db_subnet_group_arn"],
+                matching_groups["tags"],
+                module.params.get("tags"),
+                module.params["purge_tags"],
             )
 
             # Sort the subnet groups before we compare them
@@ -308,18 +318,31 @@ def main():
                     # Modify existing group.
                     try:
                         connection.modify_db_subnet_group(
-                            aws_retry=True, DBSubnetGroupName=group_name, DBSubnetGroupDescription=group_description, SubnetIds=group_subnets
+                            aws_retry=True,
+                            DBSubnetGroupName=group_name,
+                            DBSubnetGroupDescription=group_description,
+                            SubnetIds=group_subnets,
                         )
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    except (
+                        botocore.exceptions.BotoCoreError,
+                        botocore.exceptions.ClientError,
+                    ) as e:
                         module.fail_json_aws(e, "Failed to update a subnet group.")
                 subnet_update = True
         else:
             if not module.check_mode:
                 try:
                     connection.create_db_subnet_group(
-                        aws_retry=True, DBSubnetGroupName=group_name, DBSubnetGroupDescription=group_description, SubnetIds=group_subnets, Tags=_tags
+                        aws_retry=True,
+                        DBSubnetGroupName=group_name,
+                        DBSubnetGroupDescription=group_description,
+                        SubnetIds=group_subnets,
+                        Tags=_tags,
                     )
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
                     module.fail_json_aws(e, "Failed to create a new subnet group.")
             subnet_update = True
     elif state == "absent":
@@ -328,7 +351,10 @@ def main():
                 connection.delete_db_subnet_group(aws_retry=True, DBSubnetGroupName=group_name)
             except is_boto3_error_code("DBSubnetGroupNotFoundFault"):
                 module.exit_json(**result)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, "Failed to delete a subnet group.")
         else:
             subnet_group = get_subnet_group(connection, module)

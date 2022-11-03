@@ -368,7 +368,10 @@ def delete_health_check(check_id):
     except is_boto3_error_code("NoSuchHealthCheck"):
         # Handle the deletion race condition as cleanly as possible
         return False, None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to list health checks")
 
     return True, "delete"
@@ -612,8 +615,14 @@ def main():
         id_to_update_delete = module.params.get("health_check_id")
         try:
             existing_check = client.get_health_check(HealthCheckId=id_to_update_delete)["HealthCheck"]
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.exit_json(changed=False, msg="The specified health check with ID: {0} does not exist".format(id_to_update_delete))
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            module.exit_json(
+                changed=False,
+                msg="The specified health check with ID: {0} does not exist".format(id_to_update_delete),
+            )
     else:
         existing_check = find_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
         if existing_check:
@@ -656,7 +665,14 @@ def main():
                     changed, action = update_health_check(existing_check)
 
         if check_id:
-            changed |= manage_tags(module, client, "healthcheck", check_id, tags, module.params.get("purge_tags"))
+            changed |= manage_tags(
+                module,
+                client,
+                "healthcheck",
+                check_id,
+                tags,
+                module.params.get("purge_tags"),
+            )
 
     health_check = describe_health_check(id=check_id)
     health_check["action"] = action

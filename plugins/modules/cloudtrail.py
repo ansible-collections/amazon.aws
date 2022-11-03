@@ -254,8 +254,12 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
@@ -400,7 +404,16 @@ def get_trail_facts(module, client, name):
         trail["IsLogging"] = status_resp["IsLogging"]
         trail["tags"] = boto3_tag_list_to_ansible_dict(tags_list["ResourceTagList"][0]["TagsList"])
         # Check for non-existent values and populate with None
-        optional_vals = set(["S3KeyPrefix", "SnsTopicName", "SnsTopicARN", "CloudWatchLogsLogGroupArn", "CloudWatchLogsRoleArn", "KmsKeyId"])
+        optional_vals = set(
+            [
+                "S3KeyPrefix",
+                "SnsTopicName",
+                "SnsTopicARN",
+                "CloudWatchLogsLogGroupArn",
+                "CloudWatchLogsRoleArn",
+                "KmsKeyId",
+            ]
+        )
         for v in optional_vals - set(trail.keys()):
             trail[v] = None
         return trail
@@ -456,10 +469,18 @@ def main():
         purge_tags=dict(default=True, type="bool"),
     )
 
-    required_if = [("state", "present", ["s3_bucket_name"]), ("state", "enabled", ["s3_bucket_name"])]
+    required_if = [
+        ("state", "present", ["s3_bucket_name"]),
+        ("state", "enabled", ["s3_bucket_name"]),
+    ]
     required_together = [("cloudwatch_logs_role_arn", "cloudwatch_logs_log_group_arn")]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_together=required_together, required_if=required_if)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_together=required_together,
+        required_if=required_if,
+    )
 
     # collect parameters
     if module.params["state"] in ("present", "enabled"):
@@ -574,7 +595,14 @@ def main():
                 set_logging(module, client, name=ct_params["Name"], action="stop")
 
         # Check if we need to update tags on resource
-        tags_changed = tag_trail(module, client, tags=tags, trail_arn=trail["TrailARN"], curr_tags=trail["tags"], purge_tags=purge_tags)
+        tags_changed = tag_trail(
+            module,
+            client,
+            tags=tags,
+            trail_arn=trail["TrailARN"],
+            curr_tags=trail["tags"],
+            purge_tags=purge_tags,
+        )
         if tags_changed:
             updated_tags = dict()
             if not purge_tags:

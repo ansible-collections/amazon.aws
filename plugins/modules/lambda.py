@@ -591,13 +591,23 @@ def main():
             ),
             required_together=[["layer_name", "version"]],
             required_one_of=[["layer_version_arn", "layer_name"]],
-            mutually_exclusive=[["layer_name", "layer_version_arn"], ["version", "layer_version_arn"]],
+            mutually_exclusive=[
+                ["layer_name", "layer_version_arn"],
+                ["version", "layer_version_arn"],
+            ],
         ),
     )
 
-    mutually_exclusive = [["zip_file", "s3_key"], ["zip_file", "s3_bucket"], ["zip_file", "s3_object_version"]]
+    mutually_exclusive = [
+        ["zip_file", "s3_key"],
+        ["zip_file", "s3_bucket"],
+        ["zip_file", "s3_object_version"],
+    ]
 
-    required_together = [["s3_key", "s3_bucket"], ["vpc_subnet_ids", "vpc_security_group_ids"]]
+    required_together = [
+        ["s3_key", "s3_bucket"],
+        ["vpc_subnet_ids", "vpc_security_group_ids"],
+    ]
 
     required_if = [
         ["state", "present", ["runtime", "handler", "role"]],
@@ -636,7 +646,10 @@ def main():
     changed = False
 
     if architectures:
-        module.require_botocore_at_least("1.21.51", reason="to configure the architectures that the function supports.")
+        module.require_botocore_at_least(
+            "1.21.51",
+            reason="to configure the architectures that the function supports.",
+        )
 
     try:
         client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
@@ -711,7 +724,10 @@ def main():
                 vpc_security_group_ids_changed = sorted(vpc_security_group_ids) != sorted(current_vpc_security_group_ids)
 
             if "VpcConfig" not in current_config or subnet_net_id_changed or vpc_security_group_ids_changed:
-                new_vpc_config = {"SubnetIds": vpc_subnet_ids, "SecurityGroupIds": vpc_security_group_ids}
+                new_vpc_config = {
+                    "SubnetIds": vpc_subnet_ids,
+                    "SecurityGroupIds": vpc_security_group_ids,
+                }
                 func_kwargs.update({"VpcConfig": new_vpc_config})
         else:
             # No VPC configuration is desired, assure VPC config is empty when present in current config
@@ -807,7 +823,14 @@ def main():
 
         # If VPC configuration is given
         if vpc_subnet_ids:
-            func_kwargs.update({"VpcConfig": {"SubnetIds": vpc_subnet_ids, "SecurityGroupIds": vpc_security_group_ids}})
+            func_kwargs.update(
+                {
+                    "VpcConfig": {
+                        "SubnetIds": vpc_subnet_ids,
+                        "SecurityGroupIds": vpc_security_group_ids,
+                    }
+                }
+            )
 
         # Layers
         if layers:

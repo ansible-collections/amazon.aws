@@ -46,30 +46,78 @@ simplified_action = dict(Type="forward", TargetGroupArn=example_arn)
 # Examples of various minimalistic actions which are all the same
 simple_actions = [
     dict(Type="forward", TargetGroupArn=example_arn),
-    dict(Type="forward", TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn)])),
-    dict(Type="forward", ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn)])),
-    dict(Type="forward", TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
-    dict(Type="forward", ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
-    dict(Type="forward", TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
-    dict(Type="forward", ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
     dict(
         Type="forward",
         TargetGroupArn=example_arn,
-        ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn)]),
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn)]),
     ),
-    dict(Type="forward", ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn)])),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn)]),
+    ),
     dict(
         Type="forward",
         TargetGroupArn=example_arn,
-        ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)]),
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)]),
     ),
-    dict(Type="forward", ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)]),
+    ),
     dict(
         Type="forward",
         TargetGroupArn=example_arn,
-        ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)]),
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)]),
     ),
-    dict(Type="forward", ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)]),
+    ),
+    dict(
+        Type="forward",
+        TargetGroupArn=example_arn,
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn)],
+        ),
+    ),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn)],
+        ),
+    ),
+    dict(
+        Type="forward",
+        TargetGroupArn=example_arn,
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)],
+        ),
+    ),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)],
+        ),
+    ),
+    dict(
+        Type="forward",
+        TargetGroupArn=example_arn,
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)],
+        ),
+    ),
+    dict(
+        Type="forward",
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)],
+        ),
+    ),
 ]
 
 # Test that _prune_ForwardConfig() doesn't mangle things we don't expect
@@ -89,7 +137,13 @@ complex_actions = [
     ),
     dict(
         Type="redirect",
-        RedirectConfig=dict(Protocol="HTTPS", Port=443, Host="redirect.ansible.test", Path="/", StatusCode="HTTP_302"),
+        RedirectConfig=dict(
+            Protocol="HTTPS",
+            Port=443,
+            Host="redirect.ansible.test",
+            Path="/",
+            StatusCode="HTTP_302",
+        ),
     ),
     # Multiple TGs
     dict(
@@ -107,7 +161,10 @@ complex_actions = [
     dict(
         Type="forward",
         TargetGroupArn=example_arn,
-        ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=True, DurationSeconds=3600), TargetGroups=[dict(TargetGroupArn=example_arn)]),
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=True, DurationSeconds=3600),
+            TargetGroups=[dict(TargetGroupArn=example_arn)],
+        ),
     ),
 ]
 

@@ -420,8 +420,12 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    is_boto3_error_message,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.core import (
+    scrub_none_parameters,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
@@ -447,7 +451,10 @@ def get_record(route53, zone_id, record_name, record_type, record_identifier):
     for record_set in record_sets_results:
         record_set["Name"] = record_set["Name"].encode().decode("unicode_escape")
         # If the record name and type is not equal, move to the next record
-        if (record_name.lower(), record_type) != (record_set["Name"].lower(), record_set["Type"]):
+        if (record_name.lower(), record_type) != (
+            record_set["Name"].lower(),
+            record_set["Type"],
+        ):
             continue
 
         if record_identifier and record_identifier != record_set.get("SetIdentifier"):
@@ -527,21 +534,42 @@ def get_hosted_zone_nameservers(route53, zone_id):
     hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)["HostedZone"]["Name"]
     resource_records_sets = _list_record_sets(route53, HostedZoneId=zone_id)
 
-    nameservers_records = list(filter(lambda record: record["Name"] == hosted_zone_name and record["Type"] == "NS", resource_records_sets))[0][
-        "ResourceRecords"
-    ]
+    nameservers_records = list(filter(lambda record: record["Name"] == hosted_zone_name and record["Type"] == "NS", resource_records_sets,))[
+        0
+    ]["ResourceRecords"]
 
     return [ns_record["Value"] for ns_record in nameservers_records]
 
 
 def main():
     argument_spec = dict(
-        state=dict(type="str", required=True, choices=["absent", "create", "delete", "get", "present"], aliases=["command"]),
+        state=dict(
+            type="str",
+            required=True,
+            choices=["absent", "create", "delete", "get", "present"],
+            aliases=["command"],
+        ),
         zone=dict(type="str"),
         hosted_zone_id=dict(type="str"),
         record=dict(type="str", required=True),
         ttl=dict(type="int", default=3600),
-        type=dict(type="str", required=True, choices=["A", "AAAA", "CAA", "CNAME", "MX", "NS", "PTR", "SOA", "SPF", "SRV", "TXT"]),
+        type=dict(
+            type="str",
+            required=True,
+            choices=[
+                "A",
+                "AAAA",
+                "CAA",
+                "CNAME",
+                "MX",
+                "NS",
+                "PTR",
+                "SOA",
+                "SPF",
+                "SRV",
+                "TXT",
+            ],
+        ),
         alias=dict(type="bool"),
         alias_hosted_zone_id=dict(type="str"),
         alias_evaluate_target_health=dict(type="bool", default=False),
@@ -553,7 +581,13 @@ def main():
         weight=dict(type="int"),
         region=dict(type="str"),
         geo_location=dict(
-            type="dict", options=dict(continent_code=dict(type="str"), country_code=dict(type="str"), subdivision_code=dict(type="str")), required=False
+            type="dict",
+            options=dict(
+                continent_code=dict(type="str"),
+                country_code=dict(type="str"),
+                subdivision_code=dict(type="str"),
+            ),
+            required=False,
         ),
         health_check=dict(type="str"),
         failover=dict(type="str", choices=["PRIMARY", "SECONDARY"]),
@@ -675,13 +709,22 @@ def main():
         subdivision_code = geo_location.get("subdivision_code")
 
         if continent_code and (country_code or subdivision_code):
-            module.fail_json(changed=False, msg="While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.")
+            module.fail_json(
+                changed=False,
+                msg="While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.",
+            )
 
         if not any([continent_code, country_code, subdivision_code]):
-            module.fail_json(changed=False, msg="To use geo_location please specify either continent_code, country_code, or subdivision_code.")
+            module.fail_json(
+                changed=False,
+                msg="To use geo_location please specify either continent_code, country_code, or subdivision_code.",
+            )
 
         if geo_location.get("subdivision_code") and geo_location.get("country_code").lower() != "us":
-            module.fail_json(changed=False, msg="To use subdivision_code, you must specify country_code as US.")
+            module.fail_json(
+                changed=False,
+                msg="To use subdivision_code, you must specify country_code as US.",
+            )
 
         # Build geo_location suboptions specification
         resource_record_set["GeoLocation"] = {}
@@ -699,7 +742,9 @@ def main():
 
     if alias_in:
         resource_record_set["AliasTarget"] = dict(
-            HostedZoneId=alias_hosted_zone_id_in, DNSName=value_in[0], EvaluateTargetHealth=alias_evaluate_target_health_in
+            HostedZoneId=alias_hosted_zone_id_in,
+            DNSName=value_in[0],
+            EvaluateTargetHealth=alias_evaluate_target_health_in,
         )
         if "ResourceRecords" in resource_record_set:
             del resource_record_set["ResourceRecords"]
@@ -730,7 +775,12 @@ def main():
             module.exit_json(changed=False, set=[], nameservers=ns, resource_record_sets=[])
 
         rr_sets = [camel_dict_to_snake_dict(aws_record)]
-        module.exit_json(changed=False, set=formatted_aws, nameservers=ns, resource_record_sets=rr_sets)
+        module.exit_json(
+            changed=False,
+            set=formatted_aws,
+            nameservers=ns,
+            resource_record_sets=rr_sets,
+        )
 
     if command_in == "delete" and not aws_record:
         module.exit_json(changed=False)
@@ -746,7 +796,9 @@ def main():
     if not module.check_mode:
         try:
             change_resource_record_sets = route53.change_resource_record_sets(
-                aws_retry=True, HostedZoneId=zone_id, ChangeBatch=dict(Changes=[dict(Action=command, ResourceRecordSet=resource_record_set)])
+                aws_retry=True,
+                HostedZoneId=zone_id,
+                ChangeBatch=dict(Changes=[dict(Action=command, ResourceRecordSet=resource_record_set)]),
             )
 
             if wait_in:
@@ -762,7 +814,10 @@ def main():
             module.exit_json(changed=False)
         except botocore.exceptions.WaiterError as e:
             module.fail_json_aws(e, msg="Timeout waiting for resource records changes to be applied")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to update records")
         except Exception as e:
             module.fail_json(msg="Unhandled exception. (%s)" % to_native(e))

@@ -21,7 +21,12 @@ __metaclass__ = type
 
 import os
 
-from ansible.errors import AnsibleError, AnsibleAction, AnsibleActionFail, AnsibleFileNotFound
+from ansible.errors import (
+    AnsibleError,
+    AnsibleAction,
+    AnsibleActionFail,
+    AnsibleFileNotFound,
+)
 from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
 from ansible.utils.vars import merge_hash
@@ -65,7 +70,14 @@ class ActionModule(ActionBase):
 
             wrap_async = self._task.async_val and not self._connection.has_native_async
             # execute the s3_object module with the updated args
-            result = merge_hash(result, self._execute_module(module_args=new_module_args, task_vars=task_vars, wrap_async=wrap_async))
+            result = merge_hash(
+                result,
+                self._execute_module(
+                    module_args=new_module_args,
+                    task_vars=task_vars,
+                    wrap_async=wrap_async,
+                ),
+            )
 
             if not wrap_async:
                 # remove a temporary path we created

@@ -7,7 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.policy import sort_json_policy_dict
+from ansible_collections.amazon.aws.plugins.module_utils.policy import (
+    sort_json_policy_dict,
+)
 
 
 def test_nothing_to_sort():

@@ -251,9 +251,13 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 
 
@@ -284,7 +288,10 @@ def cluster_info(client, module):
     for cluster in result:
         cluster["Tags"] = get_tags(client, module, cluster["DBClusterArn"])
 
-    return dict(changed=False, clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result])
+    return dict(
+        changed=False,
+        clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result],
+    )
 
 
 def main():

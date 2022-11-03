@@ -359,12 +359,20 @@ from ansible.module_utils.six.moves.urllib.parse import urlparse
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    get_aws_connection_info,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    snake_dict_to_camel_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 
 
@@ -401,7 +409,10 @@ def create_or_update_bucket(s3_client, module, location):
             changed = changed or bucket_changed
         except botocore.exceptions.WaiterError as e:
             module.fail_json_aws(e, msg="An error occurred waiting for the bucket to become available")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed while creating bucket")
 
     # Versioning
@@ -410,7 +421,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if versioning is not None:
             module.fail_json_aws(e, msg="Failed to get bucket versioning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket versioning")
     else:
         if versioning is not None:
@@ -424,7 +438,10 @@ def create_or_update_bucket(s3_client, module, location):
                 try:
                     put_bucket_versioning(s3_client, name, required_versioning)
                     changed = True
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
                     module.fail_json_aws(e, msg="Failed to update bucket versioning")
 
                 versioning_status = wait_versioning_is_applied(module, s3_client, name, required_versioning)
@@ -441,7 +458,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if requester_pays is not None:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket request payment")
     else:
         if requester_pays is not None:
@@ -464,7 +484,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if policy is not None:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket policy")
     else:
         if policy is not None:
@@ -474,14 +497,20 @@ def create_or_update_bucket(s3_client, module, location):
             if not policy and current_policy:
                 try:
                     delete_bucket_policy(s3_client, name)
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
                     module.fail_json_aws(e, msg="Failed to delete bucket policy")
                 current_policy = wait_policy_is_applied(module, s3_client, name, policy)
                 changed = True
             elif compare_policies(current_policy, policy):
                 try:
                     put_bucket_policy(s3_client, name, policy)
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:
                     module.fail_json_aws(e, msg="Failed to update bucket policy")
                 current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=False)
                 if current_policy is None:
@@ -499,7 +528,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if tags is not None:
             module.fail_json_aws(e, msg="Failed to get bucket tags")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket tags")
     else:
         if tags is not None:
@@ -514,13 +546,19 @@ def create_or_update_bucket(s3_client, module, location):
                 if tags:
                     try:
                         put_bucket_tagging(s3_client, name, tags)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    except (
+                        botocore.exceptions.BotoCoreError,
+                        botocore.exceptions.ClientError,
+                    ) as e:
                         module.fail_json_aws(e, msg="Failed to update bucket tags")
                 else:
                     if purge_tags:
                         try:
                             delete_bucket_tagging(s3_client, name)
-                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        except (
+                            botocore.exceptions.BotoCoreError,
+                            botocore.exceptions.ClientError,
+                        ) as e:
                             module.fail_json_aws(e, msg="Failed to delete bucket tags")
                 current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
                 changed = True
@@ -533,7 +571,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if encryption is not None:
             module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
     else:
         if encryption is not None:
@@ -543,7 +584,10 @@ def create_or_update_bucket(s3_client, module, location):
                 if current_encryption_algorithm is not None:
                     try:
                         delete_bucket_encryption(s3_client, name)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    except (
+                        botocore.exceptions.BotoCoreError,
+                        botocore.exceptions.ClientError,
+                    ) as e:
                         module.fail_json_aws(e, msg="Failed to delete bucket encryption")
                     current_encryption = wait_encryption_is_applied(module, s3_client, name, None)
                     changed = True
@@ -574,7 +618,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if public_access is not None:
             module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
     else:
         # -- Create / Update public access block
@@ -610,7 +657,10 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
     else:
         if delete_object_ownership:
@@ -641,7 +691,10 @@ def create_or_update_bucket(s3_client, module, location):
             module.fail_json_aws(e, msg="Failed to update bucket ACL")
         except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to update bucket ACL")
 
     # Module exit
@@ -746,22 +799,40 @@ def put_bucket_encryption_with_retry(module, s3_client, name, expected_encryptio
     for retries in range(1, max_retries + 1):
         try:
             put_bucket_encryption(s3_client, name, expected_encryption)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to set bucket encryption")
-        current_encryption = wait_encryption_is_applied(module, s3_client, name, expected_encryption, should_fail=(retries == max_retries), retries=5)
+        current_encryption = wait_encryption_is_applied(
+            module,
+            s3_client,
+            name,
+            expected_encryption,
+            should_fail=(retries == max_retries),
+            retries=5,
+        )
         if current_encryption == expected_encryption:
             return current_encryption
 
     # We shouldn't get here, the only time this should happen is if
     # current_encryption != expected_encryption and retries == max_retries
     # Which should use module.fail_json and fail out first.
-    module.fail_json(msg="Failed to apply bucket encryption", current=current_encryption, expected=expected_encryption, retries=retries)
+    module.fail_json(
+        msg="Failed to apply bucket encryption",
+        current=current_encryption,
+        expected=expected_encryption,
+        retries=retries,
+    )
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def put_bucket_encryption(s3_client, bucket_name, encryption):
     server_side_encryption_configuration = {"Rules": [{"ApplyServerSideEncryptionByDefault": encryption}]}
-    s3_client.put_bucket_encryption(Bucket=bucket_name, ServerSideEncryptionConfiguration=server_side_encryption_configuration)
+    s3_client.put_bucket_encryption(
+        Bucket=bucket_name,
+        ServerSideEncryptionConfiguration=server_side_encryption_configuration,
+    )
 
 
 def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
@@ -769,16 +840,31 @@ def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
     for retries in range(1, max_retries + 1):
         try:
             put_bucket_key(s3_client, name, expected_encryption)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to set bucket Key")
-        current_encryption = wait_bucket_key_is_applied(module, s3_client, name, expected_encryption, should_fail=(retries == max_retries), retries=5)
+        current_encryption = wait_bucket_key_is_applied(
+            module,
+            s3_client,
+            name,
+            expected_encryption,
+            should_fail=(retries == max_retries),
+            retries=5,
+        )
         if current_encryption == expected_encryption:
             return current_encryption
 
     # We shouldn't get here, the only time this should happen is if
     # current_encryption != expected_encryption and retries == max_retries
     # Which should use module.fail_json and fail out first.
-    module.fail_json(msg="Failed to set bucket key", current=current_encryption, expected=expected_encryption, retries=retries)
+    module.fail_json(
+        msg="Failed to set bucket key",
+        current=current_encryption,
+        expected=expected_encryption,
+        retries=retries,
+    )
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -786,7 +872,10 @@ def put_bucket_key(s3_client, bucket_name, encryption):
     # server_side_encryption_configuration ={'Rules': [{'BucketKeyEnabled': encryption}]}
     encryption_status = s3_client.get_bucket_encryption(Bucket=bucket_name)
     encryption_status["ServerSideEncryptionConfiguration"]["Rules"][0]["BucketKeyEnabled"] = encryption
-    s3_client.put_bucket_encryption(Bucket=bucket_name, ServerSideEncryptionConfiguration=encryption_status["ServerSideEncryptionConfiguration"])
+    s3_client.put_bucket_encryption(
+        Bucket=bucket_name,
+        ServerSideEncryptionConfiguration=encryption_status["ServerSideEncryptionConfiguration"],
+    )
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -845,7 +934,10 @@ def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, shou
     for dummy in range(0, 12):
         try:
             current_policy = get_bucket_policy(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
 
         if compare_policies(current_policy, expected_policy):
@@ -853,7 +945,11 @@ def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, shou
         else:
             return current_policy
     if should_fail:
-        module.fail_json(msg="Bucket policy failed to apply in the expected time", requested_policy=expected_policy, live_policy=current_policy)
+        module.fail_json(
+            msg="Bucket policy failed to apply in the expected time",
+            requested_policy=expected_policy,
+            live_policy=current_policy,
+        )
     else:
         return None
 
@@ -862,14 +958,21 @@ def wait_payer_is_applied(module, s3_client, bucket_name, expected_payer, should
     for dummy in range(0, 12):
         try:
             requester_pays_status = get_bucket_request_payment(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
         if requester_pays_status != expected_payer:
             time.sleep(5)
         else:
             return requester_pays_status
     if should_fail:
-        module.fail_json(msg="Bucket request payment failed to apply in the expected time", requested_status=expected_payer, live_status=requester_pays_status)
+        module.fail_json(
+            msg="Bucket request payment failed to apply in the expected time",
+            requested_status=expected_payer,
+            live_status=requester_pays_status,
+        )
     else:
         return None
 
@@ -878,7 +981,10 @@ def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encrypti
     for dummy in range(0, retries):
         try:
             encryption = get_bucket_encryption(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get updated encryption for bucket")
         if encryption != expected_encryption:
             time.sleep(5)
@@ -886,7 +992,11 @@ def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encrypti
             return encryption
 
     if should_fail:
-        module.fail_json(msg="Bucket encryption failed to apply in the expected time", requested_encryption=expected_encryption, live_encryption=encryption)
+        module.fail_json(
+            msg="Bucket encryption failed to apply in the expected time",
+            requested_encryption=expected_encryption,
+            live_encryption=encryption,
+        )
 
     return encryption
 
@@ -895,7 +1005,10 @@ def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encrypti
     for dummy in range(0, retries):
         try:
             encryption = get_bucket_key(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get updated encryption for bucket")
         if encryption != expected_encryption:
             time.sleep(5)
@@ -903,7 +1016,11 @@ def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encrypti
             return encryption
 
     if should_fail:
-        module.fail_json(msg="Bucket Key failed to apply in the expected time", requested_encryption=expected_encryption, live_encryption=encryption)
+        module.fail_json(
+            msg="Bucket Key failed to apply in the expected time",
+            requested_encryption=expected_encryption,
+            live_encryption=encryption,
+        )
     return encryption
 
 
@@ -911,26 +1028,40 @@ def wait_versioning_is_applied(module, s3_client, bucket_name, required_versioni
     for dummy in range(0, 24):
         try:
             versioning_status = get_bucket_versioning(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get updated versioning for bucket")
         if versioning_status.get("Status") != required_versioning:
             time.sleep(8)
         else:
             return versioning_status
-    module.fail_json(msg="Bucket versioning failed to apply in the expected time", requested_versioning=required_versioning, live_versioning=versioning_status)
+    module.fail_json(
+        msg="Bucket versioning failed to apply in the expected time",
+        requested_versioning=required_versioning,
+        live_versioning=versioning_status,
+    )
 
 
 def wait_tags_are_applied(module, s3_client, bucket_name, expected_tags_dict):
     for dummy in range(0, 12):
         try:
             current_tags_dict = get_current_bucket_tags_dict(s3_client, bucket_name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
         if current_tags_dict != expected_tags_dict:
             time.sleep(5)
         else:
             return current_tags_dict
-    module.fail_json(msg="Bucket tags failed to apply in the expected time", requested_tags=expected_tags_dict, live_tags=current_tags_dict)
+    module.fail_json(
+        msg="Bucket tags failed to apply in the expected time",
+        requested_tags=expected_tags_dict,
+        live_tags=current_tags_dict,
+    )
 
 
 def get_current_bucket_tags_dict(s3_client, bucket_name):
@@ -1018,7 +1149,10 @@ def destroy_bucket(s3_client, module):
                             errors=resp["Errors"],
                             response=resp,
                         )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="Failed while deleting bucket")
 
     try:
@@ -1096,9 +1230,20 @@ def main():
             ),
         ),
         delete_public_access=dict(type="bool", default=False),
-        object_ownership=dict(type="str", choices=["BucketOwnerEnforced", "BucketOwnerPreferred", "ObjectWriter"]),
+        object_ownership=dict(
+            type="str",
+            choices=["BucketOwnerEnforced", "BucketOwnerPreferred", "ObjectWriter"],
+        ),
         delete_object_ownership=dict(type="bool", default=False),
-        acl=dict(type="str", choices=["private", "public-read", "public-read-write", "authenticated-read"]),
+        acl=dict(
+            type="str",
+            choices=[
+                "private",
+                "public-read",
+                "public-read-write",
+                "authenticated-read",
+            ],
+        ),
         validate_bucket_name=dict(type="bool", default=True),
     )
 
@@ -1106,13 +1251,21 @@ def main():
         encryption_key_id=("encryption",),
     )
 
-    mutually_exclusive = [["public_access", "delete_public_access"], ["delete_object_ownership", "object_ownership"]]
+    mutually_exclusive = [
+        ["public_access", "delete_public_access"],
+        ["delete_object_ownership", "object_ownership"],
+    ]
 
     required_if = [
         ["ceph", True, ["endpoint_url"]],
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, required_by=required_by, required_if=required_if, mutually_exclusive=mutually_exclusive)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_by=required_by,
+        required_if=required_if,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
 

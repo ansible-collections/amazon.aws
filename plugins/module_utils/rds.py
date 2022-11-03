@@ -22,7 +22,10 @@ from .ec2 import boto3_tag_list_to_ansible_dict
 from .ec2 import compare_aws_tags
 from .waiters import get_waiter
 
-Boto3ClientMethod = namedtuple("Boto3ClientMethod", ["name", "waiter", "operation_description", "resource", "retry_codes"])
+Boto3ClientMethod = namedtuple(
+    "Boto3ClientMethod",
+    ["name", "waiter", "operation_description", "resource", "retry_codes"],
+)
 # Whitelist boto3 client methods for cluster and instance resources
 cluster_method_names = [
     "create_db_cluster",
@@ -156,7 +159,13 @@ def get_rds_method_attribute(method_name, module):
         if module.params.get("wait"):
             raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
 
-    return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op, resource=resource, retry_codes=retry_codes)
+    return Boto3ClientMethod(
+        name=method_name,
+        waiter=waiter,
+        operation_description=readable_op,
+        resource=resource,
+        retry_codes=retry_codes,
+    )
 
 
 def get_final_identifier(method_name, module):
@@ -183,7 +192,10 @@ def get_final_identifier(method_name, module):
 def handle_errors(module, exception, method_name, parameters):
 
     if not isinstance(exception, ClientError):
-        module.fail_json_aws(exception, msg="Unexpected failure for method {0} with parameters {1}".format(method_name, parameters))
+        module.fail_json_aws(
+            exception,
+            msg="Unexpected failure for method {0} with parameters {1}".format(method_name, parameters),
+        )
 
     changed = True
     error_code = exception.response["Error"]["Code"]
@@ -191,27 +203,48 @@ def handle_errors(module, exception, method_name, parameters):
         if "No modifications were requested" in to_text(exception):
             changed = False
         elif "ModifyDbCluster API" in to_text(exception):
-            module.fail_json_aws(exception, msg="It appears you are trying to modify attributes that are managed at the cluster level. Please see rds_cluster")
+            module.fail_json_aws(
+                exception,
+                msg="It appears you are trying to modify attributes that are managed at the cluster level. Please see rds_cluster",
+            )
         else:
-            module.fail_json_aws(exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description))
+            module.fail_json_aws(
+                exception,
+                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+            )
     elif method_name == "promote_read_replica" and error_code == "InvalidDBInstanceState":
         if "DB Instance is not a read replica" in to_text(exception):
             changed = False
         else:
-            module.fail_json_aws(exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description))
+            module.fail_json_aws(
+                exception,
+                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+            )
     elif method_name == "promote_read_replica_db_cluster" and error_code == "InvalidDBClusterStateFault":
         if "DB Cluster that is not a read replica" in to_text(exception):
             changed = False
         else:
-            module.fail_json_aws(exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description))
+            module.fail_json_aws(
+                exception,
+                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+            )
     elif method_name == "create_db_cluster" and error_code == "InvalidParameterValue":
         accepted_engines = ["aurora", "aurora-mysql", "aurora-postgresql"]
         if parameters.get("Engine") not in accepted_engines:
-            module.fail_json_aws(exception, msg="DB engine {0} should be one of {1}".format(parameters.get("Engine"), accepted_engines))
+            module.fail_json_aws(
+                exception,
+                msg="DB engine {0} should be one of {1}".format(parameters.get("Engine"), accepted_engines),
+            )
         else:
-            module.fail_json_aws(exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description))
+            module.fail_json_aws(
+                exception,
+                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+            )
     else:
-        module.fail_json_aws(exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description))
+        module.fail_json_aws(
+            exception,
+            msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+        )
 
     return changed
 
@@ -241,7 +274,10 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
         except ValueError:
             # using a waiter in module_utils/waiters.py
             waiter = get_waiter(client, waiter_name)
-        waiter.wait(WaiterConfig={"Delay": 60, "MaxAttempts": 60}, DBInstanceIdentifier=db_instance_id)
+        waiter.wait(
+            WaiterConfig={"Delay": 60, "MaxAttempts": 60},
+            DBInstanceIdentifier=db_instance_id,
+        )
 
     waiter_expected_status = {
         "db_instance_deleted": "deleted",
@@ -257,9 +293,15 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
             if e.last_response.get("Error", {}).get("Code") == "DBInstanceNotFound":
                 sleep(10)
                 continue
-            module.fail_json_aws(e, msg="Error while waiting for DB instance {0} to be {1}".format(db_instance_id, expected_status))
+            module.fail_json_aws(
+                e,
+                msg="Error while waiting for DB instance {0} to be {1}".format(db_instance_id, expected_status),
+            )
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Unexpected error while waiting for DB instance {0} to be {1}".format(db_instance_id, expected_status))
+            module.fail_json_aws(
+                e,
+                msg="Unexpected error while waiting for DB instance {0} to be {1}".format(db_instance_id, expected_status),
+            )
 
 
 def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
@@ -272,7 +314,10 @@ def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
             msg = "Failed to wait for DB cluster {0} to be available".format(db_cluster_id)
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster {0}".format(db_cluster_id))
+        module.fail_json_aws(
+            e,
+            msg="Failed with an unexpected error while waiting for the DB cluster {0}".format(db_cluster_id),
+        )
 
 
 def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_name):
@@ -285,7 +330,10 @@ def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_nam
             msg = "Failed to wait for DB snapshot {0} to be available".format(db_snapshot_id)
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB snapshot {0}".format(db_snapshot_id))
+        module.fail_json_aws(
+            e,
+            msg="Failed with an unexpected error while waiting for the DB snapshot {0}".format(db_snapshot_id),
+        )
 
 
 def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name):
@@ -298,7 +346,10 @@ def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name
             msg = "Failed to wait for DB cluster snapshot {0} to be available".format(db_snapshot_id)
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster snapshot {0}".format(db_snapshot_id))
+        module.fail_json_aws(
+            e,
+            msg="Failed with an unexpected error while waiting for the DB cluster snapshot {0}".format(db_snapshot_id),
+        )
 
 
 def wait_for_status(client, module, identifier, method_name):
@@ -347,10 +398,21 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
     changed = bool(tags_to_add or tags_to_remove)
     if tags_to_add:
         call_method(
-            client, module, method_name="add_tags_to_resource", parameters={"ResourceName": resource_arn, "Tags": ansible_dict_to_boto3_tag_list(tags_to_add)}
+            client,
+            module,
+            method_name="add_tags_to_resource",
+            parameters={
+                "ResourceName": resource_arn,
+                "Tags": ansible_dict_to_boto3_tag_list(tags_to_add),
+            },
         )
     if tags_to_remove:
-        call_method(client, module, method_name="remove_tags_from_resource", parameters={"ResourceName": resource_arn, "TagKeys": tags_to_remove})
+        call_method(
+            client,
+            module,
+            method_name="remove_tags_from_resource",
+            parameters={"ResourceName": resource_arn, "TagKeys": tags_to_remove},
+        )
     return changed
 
 
@@ -388,9 +450,22 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
             changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
     """
     for role in roles_to_remove:
-        params = {"DBInstanceIdentifier": instance_id, "RoleArn": role["role_arn"], "FeatureName": role["feature_name"]}
-        _result, changed = call_method(client, module, method_name="remove_role_from_db_instance", parameters=params)
+        params = {
+            "DBInstanceIdentifier": instance_id,
+            "RoleArn": role["role_arn"],
+            "FeatureName": role["feature_name"],
+        }
+        _result, changed = call_method(
+            client,
+            module,
+            method_name="remove_role_from_db_instance",
+            parameters=params,
+        )
     for role in roles_to_add:
-        params = {"DBInstanceIdentifier": instance_id, "RoleArn": role["role_arn"], "FeatureName": role["feature_name"]}
+        params = {
+            "DBInstanceIdentifier": instance_id,
+            "RoleArn": role["role_arn"],
+            "FeatureName": role["feature_name"],
+        }
         _result, changed = call_method(client, module, method_name="add_role_to_db_instance", parameters=params)
     return changed

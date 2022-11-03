@@ -146,8 +146,22 @@ def parse_default_endpoint(url, mode, encryption_mode, dualstack, sig_4):
     return result
 
 
-def s3_conn_params(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
-    params = {"conn_type": "client", "resource": "s3", "region": location, **aws_connect_kwargs}
+def s3_conn_params(
+    mode,
+    encryption_mode,
+    dualstack,
+    aws_connect_kwargs,
+    location,
+    ceph,
+    endpoint_url,
+    sig_4=False,
+):
+    params = {
+        "conn_type": "client",
+        "resource": "s3",
+        "region": location,
+        **aws_connect_kwargs,
+    }
     if ceph:
         endpoint_p = parse_ceph_endpoint(endpoint_url)
     elif is_fakes3(endpoint_url):
@@ -161,6 +175,13 @@ def s3_conn_params(mode, encryption_mode, dualstack, aws_connect_kwargs, locatio
 
 def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
     s3_conn = s3_conn_params(
-        module.params.get("mode"), module.params.get("encryption_mode"), module.params.get("dualstack"), aws_connect_kwargs, location, ceph, endpoint_url, sig_4
+        module.params.get("mode"),
+        module.params.get("encryption_mode"),
+        module.params.get("dualstack"),
+        aws_connect_kwargs,
+        location,
+        ceph,
+        endpoint_url,
+        sig_4,
     )
     return boto3_conn(module, **s3_conn)

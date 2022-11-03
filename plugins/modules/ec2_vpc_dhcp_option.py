@@ -242,12 +242,22 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import normalize_ec2_vpc_dhcp_config
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    normalize_ec2_vpc_dhcp_config,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 def fetch_dhcp_options_for_vpc(client, module, vpc_id):
@@ -265,16 +275,25 @@ def fetch_dhcp_options_for_vpc(client, module, vpc_id):
 
     if len(dhcp_options["DhcpOptions"]) != 1:
         return None
-    return dhcp_options["DhcpOptions"][0]["DhcpConfigurations"], dhcp_options["DhcpOptions"][0]["DhcpOptionsId"]
+    return (
+        dhcp_options["DhcpOptions"][0]["DhcpConfigurations"],
+        dhcp_options["DhcpOptions"][0]["DhcpOptionsId"],
+    )
 
 
 def remove_dhcp_options_by_id(client, module, dhcp_options_id):
     changed = False
     # First, check if this dhcp option is associated to any other vpcs
     try:
-        associations = client.describe_vpcs(aws_retry=True, Filters=[{"Name": "dhcp-options-id", "Values": [dhcp_options_id]}])
+        associations = client.describe_vpcs(
+            aws_retry=True,
+            Filters=[{"Name": "dhcp-options-id", "Values": [dhcp_options_id]}],
+        )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to describe VPC associations for dhcp option id {0}".format(dhcp_options_id))
+        module.fail_json_aws(
+            e,
+            msg="Unable to describe VPC associations for dhcp option id {0}".format(dhcp_options_id),
+        )
     if len(associations["Vpcs"]) > 0:
         return changed
 
@@ -284,7 +303,10 @@ def remove_dhcp_options_by_id(client, module, dhcp_options_id):
             client.delete_dhcp_options(aws_retry=True, DhcpOptionsId=dhcp_options_id)
         except is_boto3_error_code("InvalidDhcpOptionsID.NotFound"):
             return False
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Unable to delete dhcp option {0}".format(dhcp_options_id))
 
     return changed
@@ -361,19 +383,33 @@ def create_dhcp_option_set(client, module, new_config):
     create_config = []
     tags_list = []
 
-    for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers"]:
+    for option in [
+        "domain-name",
+        "domain-name-servers",
+        "ntp-servers",
+        "netbios-name-servers",
+    ]:
         if desired_config.get(option):
             create_config.append({"Key": option, "Values": desired_config[option]})
     if desired_config.get("netbios-node-type"):
         # We need to listify this one
-        create_config.append({"Key": "netbios-node-type", "Values": [desired_config["netbios-node-type"]]})
+        create_config.append(
+            {
+                "Key": "netbios-node-type",
+                "Values": [desired_config["netbios-node-type"]],
+            }
+        )
 
     if module.params.get("tags"):
         tags_list = boto3_tag_specifications(module.params["tags"], ["dhcp-options"])
 
     try:
         if not module.check_mode:
-            dhcp_options = client.create_dhcp_options(aws_retry=True, DhcpConfigurations=create_config, TagSpecifications=tags_list)
+            dhcp_options = client.create_dhcp_options(
+                aws_retry=True,
+                DhcpConfigurations=create_config,
+                TagSpecifications=tags_list,
+            )
             return changed, dhcp_options["DhcpOptions"]["DhcpOptionsId"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to create dhcp option set")
@@ -395,7 +431,13 @@ def inherit_dhcp_config(existing_config, new_config):
     the right list index for a given config option first.
     """
     changed = False
-    for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers", "netbios-node-type"]:
+    for option in [
+        "domain-name",
+        "domain-name-servers",
+        "ntp-servers",
+        "netbios-name-servers",
+        "netbios-node-type",
+    ]:
         existing_index = find_opt_index(existing_config, option)
         new_index = find_opt_index(new_config, option)
         # `if existing_index` evaluates to False on index 0, so be very specific and verbose
@@ -432,7 +474,10 @@ def associate_options(client, module, vpc_id, dhcp_options_id):
         if not module.check_mode:
             client.associate_dhcp_options(aws_retry=True, DhcpOptionsId=dhcp_options_id, VpcId=vpc_id)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to associate dhcp option {0} to VPC {1}".format(dhcp_options_id, vpc_id))
+        module.fail_json_aws(
+            e,
+            msg="Unable to associate dhcp option {0} to VPC {1}".format(dhcp_options_id, vpc_id),
+        )
 
 
 def main():
@@ -493,10 +538,22 @@ def main():
                 if new_config == existing_config:
                     dhcp_options_id = existing_id
                     if tags or purge_tags:
-                        changed |= ensure_ec2_tags(client, module, dhcp_options_id, resource_type="dhcp-options", tags=tags, purge_tags=purge_tags)
+                        changed |= ensure_ec2_tags(
+                            client,
+                            module,
+                            dhcp_options_id,
+                            resource_type="dhcp-options",
+                            tags=tags,
+                            purge_tags=purge_tags,
+                        )
                     return_config = normalize_ec2_vpc_dhcp_config(new_config)
                     results = get_dhcp_options_info(client, module, dhcp_options_id)
-                    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
+                    module.exit_json(
+                        changed=changed,
+                        new_options=return_config,
+                        dhcp_options_id=dhcp_options_id,
+                        dhcp_options=results,
+                    )
         # If no vpc_id was given, or the options don't match then look for an existing set using tags
         found, dhcp_options_id = match_dhcp_options(client, module, new_config)
 
@@ -509,7 +566,10 @@ def main():
             client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[dhcp_options_id])
             # If that didn't fail, then we know the option ID exists
             found = True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             module.fail_json_aws(e, msg="a dhcp_options_id was supplied, but does not exist")
 
     if not found:
@@ -517,7 +577,14 @@ def main():
         changed, dhcp_options_id = create_dhcp_option_set(client, module, new_config)
     else:
         if tags or purge_tags:
-            changed |= ensure_ec2_tags(client, module, dhcp_options_id, resource_type="dhcp-options", tags=tags, purge_tags=purge_tags)
+            changed |= ensure_ec2_tags(
+                client,
+                module,
+                dhcp_options_id,
+                resource_type="dhcp-options",
+                tags=tags,
+                purge_tags=purge_tags,
+            )
 
     # If we were given a vpc_id, then attach the options we now have to that before we finish
     if vpc_id:
@@ -529,7 +596,13 @@ def main():
 
     return_config = normalize_ec2_vpc_dhcp_config(new_config)
     results = get_dhcp_options_info(client, module, dhcp_options_id)
-    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results, dhcp_config=return_config)
+    module.exit_json(
+        changed=changed,
+        new_options=return_config,
+        dhcp_options_id=dhcp_options_id,
+        dhcp_options=results,
+        dhcp_config=return_config,
+    )
 
 
 if __name__ == "__main__":

@@ -113,7 +113,9 @@ from ansible.module_utils.six import string_types
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import (
+    is_boto3_error_code,
+)
 
 
 class PolicyError(Exception):
@@ -254,7 +256,12 @@ class UserPolicy(Policy):
         return self.client.get_user_policy(aws_retry=True, UserName=name, PolicyName=policy_name)
 
     def _put(self, name, policy_name, policy_doc):
-        return self.client.put_user_policy(aws_retry=True, UserName=name, PolicyName=policy_name, PolicyDocument=policy_doc)
+        return self.client.put_user_policy(
+            aws_retry=True,
+            UserName=name,
+            PolicyName=policy_name,
+            PolicyDocument=policy_doc,
+        )
 
     def _delete(self, name, policy_name):
         return self.client.delete_user_policy(aws_retry=True, UserName=name, PolicyName=policy_name)
@@ -272,7 +279,12 @@ class RolePolicy(Policy):
         return self.client.get_role_policy(aws_retry=True, RoleName=name, PolicyName=policy_name)
 
     def _put(self, name, policy_name, policy_doc):
-        return self.client.put_role_policy(aws_retry=True, RoleName=name, PolicyName=policy_name, PolicyDocument=policy_doc)
+        return self.client.put_role_policy(
+            aws_retry=True,
+            RoleName=name,
+            PolicyName=policy_name,
+            PolicyDocument=policy_doc,
+        )
 
     def _delete(self, name, policy_name):
         return self.client.delete_role_policy(aws_retry=True, RoleName=name, PolicyName=policy_name)
@@ -290,7 +302,12 @@ class GroupPolicy(Policy):
         return self.client.get_group_policy(aws_retry=True, GroupName=name, PolicyName=policy_name)
 
     def _put(self, name, policy_name, policy_doc):
-        return self.client.put_group_policy(aws_retry=True, GroupName=name, PolicyName=policy_name, PolicyDocument=policy_doc)
+        return self.client.put_group_policy(
+            aws_retry=True,
+            GroupName=name,
+            PolicyName=policy_name,
+            PolicyDocument=policy_doc,
+        )
 
     def _delete(self, name, policy_name):
         return self.client.delete_group_policy(aws_retry=True, GroupName=name, PolicyName=policy_name)

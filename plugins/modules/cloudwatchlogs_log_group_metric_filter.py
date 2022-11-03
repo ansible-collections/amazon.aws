@@ -111,7 +111,12 @@ def metricTransformationHandler(metricTransformations, originMetricTransformatio
     if originMetricTransformations:
         change = False
         originMetricTransformations = camel_dict_to_snake_dict(originMetricTransformations)
-        for item in ["default_value", "metric_name", "metric_namespace", "metric_value"]:
+        for item in [
+            "default_value",
+            "metric_name",
+            "metric_namespace",
+            "metric_value",
+        ]:
             if metricTransformations.get(item) != originMetricTransformations.get(item):
                 change = True
     else:
@@ -148,11 +153,20 @@ def main():
         filter_pattern=dict(type="str"),
         metric_transformation=dict(
             type="dict",
-            options=dict(metric_name=dict(type="str"), metric_namespace=dict(type="str"), metric_value=dict(type="str"), default_value=dict(type="float")),
+            options=dict(
+                metric_name=dict(type="str"),
+                metric_namespace=dict(type="str"),
+                metric_value=dict(type="str"),
+                default_value=dict(type="float"),
+            ),
         ),
     )
 
-    module = AnsibleAWSModule(argument_spec=arg_spec, supports_check_mode=True, required_if=[("state", "present", ["metric_transformation", "filter_pattern"])])
+    module = AnsibleAWSModule(
+        argument_spec=arg_spec,
+        supports_check_mode=True,
+        required_if=[("state", "present", ["metric_transformation", "filter_pattern"])],
+    )
 
     log_group_name = module.params.get("log_group_name")
     filter_name = module.params.get("filter_name")
@@ -182,7 +196,8 @@ def main():
 
     elif state == "present":
         metricTransformation, change = metricTransformationHandler(
-            metricTransformations=metric_transformation, originMetricTransformations=originMetricTransformations
+            metricTransformations=metric_transformation,
+            originMetricTransformations=originMetricTransformations,
         )
 
         change = change or filter_pattern != originFilterPattern
@@ -190,7 +205,10 @@ def main():
         if change:
             if not module.check_mode:
                 response = cwl.put_metric_filter(
-                    logGroupName=log_group_name, filterName=filter_name, filterPattern=filter_pattern, metricTransformations=metricTransformation
+                    logGroupName=log_group_name,
+                    filterName=filter_name,
+                    filterPattern=filter_pattern,
+                    metricTransformations=metricTransformation,
                 )
 
         metricTransformation = [camel_dict_to_snake_dict(item) for item in metricTransformation]

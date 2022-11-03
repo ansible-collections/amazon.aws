@@ -403,8 +403,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -487,7 +491,10 @@ def get_image_by_id(connection, image_id):
         result["ProductCodes"] = connection.describe_image_attribute(aws_retry=True, Attribute="productCodes", ImageId=image_id)["ProductCodes"]
     except is_boto3_error_code("InvalidAMIID.Unavailable"):
         pass
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         raise Ec2AmiFailure("Error retrieving image attributes for image %s" % image_id, e)
     return result
 
@@ -512,7 +519,10 @@ def validate_params(module, image_id=None, instance_id=None, name=None, state=No
         module.fail_json("one of the following is required: name, image_id")
 
     if tpm_support or uefi_data:
-        module.require_botocore_at_least("1.26.0", reason="required for ec2.register_image with tpm_support or uefi_data")
+        module.require_botocore_at_least(
+            "1.26.0",
+            reason="required for ec2.register_image with tpm_support or uefi_data",
+        )
     if tpm_support and boot_mode != "uefi":
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
@@ -545,7 +555,10 @@ class DeregisterImage:
                     yield snapshot_id
             except is_boto3_error_code("InvalidSnapshot.NotFound"):
                 pass
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:  # pylint: disable=duplicate-except
                 raise Ec2AmiFailure("Failed to delete snapshot.", e)
 
         return purge_snapshots
@@ -580,7 +593,10 @@ class DeregisterImage:
         if "ImageId" in image:
             try:
                 connection.deregister_image(aws_retry=True, ImageId=image_id)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:
                 raise Ec2AmiFailure("Error deregistering image", e)
         else:
             module.exit_json(msg="Image %s has already been deregistered." % image_id, changed=False)
@@ -623,10 +639,16 @@ class UpdateImage:
         try:
             if not check_mode:
                 connection.modify_image_attribute(
-                    aws_retry=True, ImageId=image["ImageId"], Attribute="launchPermission", LaunchPermission=dict(Add=to_add, Remove=to_remove)
+                    aws_retry=True,
+                    ImageId=image["ImageId"],
+                    Attribute="launchPermission",
+                    LaunchPermission=dict(Add=to_add, Remove=to_remove),
                 )
             changed = True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             raise Ec2AmiFailure("Error updating launch permissions of image %s" % image["ImageId"], e)
         return changed
 
@@ -647,9 +669,17 @@ class UpdateImage:
 
         try:
             if not module.check_mode:
-                connection.modify_image_attribute(aws_retry=True, Attribute="Description", ImageId=image["ImageId"], Description={"Value": description})
+                connection.modify_image_attribute(
+                    aws_retry=True,
+                    Attribute="Description",
+                    ImageId=image["ImageId"],
+                    Description={"Value": description},
+                )
             return True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             raise Ec2AmiFailure("Error setting description for image %s" % image["ImageId"], e)
 
     @classmethod
@@ -662,7 +692,13 @@ class UpdateImage:
 
         changed = False
         changed |= cls.set_launch_permission(connection, image, launch_permissions, module.check_mode)
-        changed |= cls.set_tags(connection, module, image_id, module.params["tags"], module.params["purge_tags"])
+        changed |= cls.set_tags(
+            connection,
+            module,
+            image_id,
+            module.params["tags"],
+            module.params["purge_tags"],
+        )
         changed |= cls.set_description(connection, module, image, module.params["description"])
 
         if changed and module.check_mode:
@@ -680,7 +716,10 @@ class CreateImage:
         if not image["Images"]:
             module.exit_json(changed=True, msg="Would have created a AMI if not in check mode.")
         else:
-            module.exit_json(changed=False, msg="Error registering image: AMI name is already in use by another AMI")
+            module.exit_json(
+                changed=False,
+                msg="Error registering image: AMI name is already in use by another AMI",
+            )
 
     @staticmethod
     def wait(connection, wait_timeout, image_id):
@@ -690,7 +729,10 @@ class CreateImage:
         delay = 15
         max_attempts = wait_timeout // delay
         waiter = get_waiter(connection, "image_available")
-        waiter.wait(ImageIds=[image_id], WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts})
+        waiter.wait(
+            ImageIds=[image_id],
+            WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
+        )
 
     @staticmethod
     def set_tags(connection, module, tags, image_id):
@@ -712,14 +754,21 @@ class CreateImage:
             return
 
         try:
-            params = {"Attribute": "LaunchPermission", "ImageId": image_id, "LaunchPermission": {"Add": []}}
+            params = {
+                "Attribute": "LaunchPermission",
+                "ImageId": image_id,
+                "LaunchPermission": {"Add": []},
+            }
             for group_name in launch_permissions.get("group_names", []):
                 params["LaunchPermission"]["Add"].append(dict(Group=group_name))
             for user_id in launch_permissions.get("user_ids", []):
                 params["LaunchPermission"]["Add"].append(dict(UserId=str(user_id)))
             if params["LaunchPermission"]["Add"]:
                 connection.modify_image_attribute(aws_retry=True, **params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             raise Ec2AmiFailure("Error setting launch permissions for image %s" % image_id, e)
 
     @staticmethod
@@ -777,7 +826,11 @@ class CreateImage:
         uefi_data = kwargs.get("uefi_data")
         virtualization_type = kwargs.get("virtualization_type")
 
-        params = {"Name": name, "Description": description, "BlockDeviceMappings": CreateImage.build_block_device_mapping(device_mapping)}
+        params = {
+            "Name": name,
+            "Description": description,
+            "BlockDeviceMappings": CreateImage.build_block_device_mapping(device_mapping),
+        }
 
         # Remove empty values injected by using options
         if instance_id:
@@ -817,10 +870,17 @@ class CreateImage:
         try:
             image = func(aws_retry=True, **create_image_parameters)
             image_id = image.get("ImageId")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             raise Ec2AmiFailure("Error registering image", e)
 
-        cls.wait(connection, module.params.get("wait") and module.params.get("wait_timeout"), image_id)
+        cls.wait(
+            connection,
+            module.params.get("wait") and module.params.get("wait_timeout"),
+            image_id,
+        )
 
         if "TagSpecifications" not in create_image_parameters:
             CreateImage.set_tags(connection, module, module.params.get("tags"), image_id)
@@ -889,10 +949,19 @@ def main():
 
     func_mapping = {
         CHECK_MODE_TRUE: {
-            HAS_IMAGE_ID_TRUE: {"absent": DeregisterImage.do_check_mode, "present": UpdateImage.do},
+            HAS_IMAGE_ID_TRUE: {
+                "absent": DeregisterImage.do_check_mode,
+                "present": UpdateImage.do,
+            },
             HAS_IMAGE_ID_FALSE: {"present": CreateImage.do_check_mode},
         },
-        CHECK_MODE_FALSE: {HAS_IMAGE_ID_TRUE: {"absent": DeregisterImage.do, "present": UpdateImage.do}, HAS_IMAGE_ID_FALSE: {"present": CreateImage.do}},
+        CHECK_MODE_FALSE: {
+            HAS_IMAGE_ID_TRUE: {
+                "absent": DeregisterImage.do,
+                "present": UpdateImage.do,
+            },
+            HAS_IMAGE_ID_FALSE: {"present": CreateImage.do},
+        },
     }
     func = func_mapping[module.check_mode][bool(module.params.get("image_id"))][module.params["state"]]
     try:

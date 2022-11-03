@@ -62,7 +62,15 @@ class BackoffIterator:
         return return_value
 
 
-def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, found_f, status_code_from_except_f, base_class):
+def _retry_func(
+    func,
+    sleep_time_generator,
+    retries,
+    catch_extra_error_codes,
+    found_f,
+    status_code_from_except_f,
+    base_class,
+):
     counter = 0
     for sleep_time in sleep_time_generator:
         try:
@@ -112,7 +120,14 @@ class CloudRetry:
         return _is_iterable() and response_code in catch_extra_error_codes
 
     @classmethod
-    def base_decorator(cls, retries, found, status_code_from_exception, catch_extra_error_codes, sleep_time_generator):
+    def base_decorator(
+        cls,
+        retries,
+        found,
+        status_code_from_exception,
+        catch_extra_error_codes,
+        sleep_time_generator,
+    ):
         def retry_decorator(func):
             @functools.wraps(func)
             def _retry_wrapper(*args, **kwargs):
@@ -158,7 +173,14 @@ class CloudRetry:
         )
 
     @classmethod
-    def jittered_backoff(cls, retries=10, delay=3, backoff=2.0, max_delay=60, catch_extra_error_codes=None):
+    def jittered_backoff(
+        cls,
+        retries=10,
+        delay=3,
+        backoff=2.0,
+        max_delay=60,
+        catch_extra_error_codes=None,
+    ):
         """Wrap a callable with retry behavior.
         Args:
             retries (int): Number of times to retry a failed request before giving up

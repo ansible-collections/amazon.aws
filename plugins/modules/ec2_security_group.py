@@ -503,12 +503,20 @@ from ansible.module_utils.six import string_types
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_tag_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import (
+    scrub_none_parameters,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -537,7 +545,10 @@ def rule_cmp(a, b):
     for prop in ["port_range", "protocol", "target", "target_type"]:
         if prop == "port_range" and to_text(a.protocol) == to_text(b.protocol):
             # equal protocols can interchange `(-1, -1)` and `(None, None)`
-            if a.port_range in ((None, None), (-1, -1)) and b.port_range in ((None, None), (-1, -1)):
+            if a.port_range in ((None, None), (-1, -1)) and b.port_range in (
+                (None, None),
+                (-1, -1),
+            ):
                 continue
             elif getattr(a, prop) != getattr(b, prop):
                 return False
@@ -627,7 +638,13 @@ def rule_from_group_permission(perm):
             continue
         for r in perm[target_key]:
             # there may be several IP ranges here, which is ok
-            yield Rule(ports_from_permission(perm), to_text(perm["IpProtocol"]), r[target_subkey], target_type, r.get("Description"))
+            yield Rule(
+                ports_from_permission(perm),
+                to_text(perm["IpProtocol"]),
+                r[target_subkey],
+                target_type,
+                r.get("Description"),
+            )
     if "UserIdGroupPairs" in perm and perm["UserIdGroupPairs"]:
         for pair in perm["UserIdGroupPairs"]:
             target = (
@@ -655,7 +672,13 @@ def rule_from_group_permission(perm):
                     None,
                 )
 
-            yield Rule(ports_from_permission(perm), to_text(perm["IpProtocol"]), target, "group", pair.get("Description"))
+            yield Rule(
+                ports_from_permission(perm),
+                to_text(perm["IpProtocol"]),
+                target,
+                "group",
+                pair.get("Description"),
+            )
 
 
 # Wrap just this method so we can retry on missing groups
@@ -1030,21 +1053,37 @@ def update_tags(client, module, group_id, current_tags, tags, purge_tags):
     if not module.check_mode:
         if tags_to_delete:
             try:
-                client.delete_tags(aws_retry=True, Resources=[group_id], Tags=[{"Key": tag} for tag in tags_to_delete])
+                client.delete_tags(
+                    aws_retry=True,
+                    Resources=[group_id],
+                    Tags=[{"Key": tag} for tag in tags_to_delete],
+                )
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_delete))
 
         # Add/update tags
         if tags_need_modify:
             try:
-                client.create_tags(aws_retry=True, Resources=[group_id], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
+                client.create_tags(
+                    aws_retry=True,
+                    Resources=[group_id],
+                    Tags=ansible_dict_to_boto3_tag_list(tags_need_modify),
+                )
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to add tags {0}".format(tags_need_modify))
 
     return bool(tags_need_modify or tags_to_delete)
 
 
-def update_rule_descriptions(module, client, group_id, present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list):
+def update_rule_descriptions(
+    module,
+    client,
+    group_id,
+    present_ingress,
+    named_tuple_ingress_list,
+    present_egress,
+    named_tuple_egress_list,
+):
     changed = False
     ingress_needs_desc_update = []
     egress_needs_desc_update = []
@@ -1061,10 +1100,22 @@ def update_rule_descriptions(module, client, group_id, present_ingress, named_tu
         ingress_needs_desc_update.extend(needs_update)
 
     if ingress_needs_desc_update:
-        update_rules_description(module, client, "in", group_id, rules_to_permissions(ingress_needs_desc_update))
+        update_rules_description(
+            module,
+            client,
+            "in",
+            group_id,
+            rules_to_permissions(ingress_needs_desc_update),
+        )
         changed |= True
     if egress_needs_desc_update:
-        update_rules_description(module, client, "out", group_id, rules_to_permissions(egress_needs_desc_update))
+        update_rules_description(
+            module,
+            client,
+            "out",
+            group_id,
+            rules_to_permissions(egress_needs_desc_update),
+        )
         changed |= True
     return changed
 
@@ -1222,16 +1273,31 @@ def get_diff_final_resource(client, module, security_group):
                 format_rule["to_port"] = rule.get("to_port", rule.get("from_port"))
             for source_type in ("cidr_ip", "cidr_ipv6", "prefix_list_id"):
                 if rule.get(source_type):
-                    rule_key = {"cidr_ip": "ip_ranges", "cidr_ipv6": "ipv6_ranges", "prefix_list_id": "prefix_list_ids"}.get(source_type)
+                    rule_key = {
+                        "cidr_ip": "ip_ranges",
+                        "cidr_ipv6": "ipv6_ranges",
+                        "prefix_list_id": "prefix_list_ids",
+                    }.get(source_type)
                     if rule.get("rule_desc"):
-                        format_rule[rule_key] = [{source_type: rule[source_type], "description": rule["rule_desc"]}]
+                        format_rule[rule_key] = [
+                            {
+                                source_type: rule[source_type],
+                                "description": rule["rule_desc"],
+                            }
+                        ]
                     else:
                         if not isinstance(rule[source_type], list):
                             rule[source_type] = [rule[source_type]]
                         format_rule[rule_key] = [{source_type: target} for target in rule[source_type]]
             if rule.get("group_id") or rule.get("group_name"):
                 # XXX bug - doesn't cope with a list of ids/names
-                rule_sg = group_exists(client, module, module.params["vpc_id"], rule.get("group_id"), rule.get("group_name"))[0]
+                rule_sg = group_exists(
+                    client,
+                    module,
+                    module.params["vpc_id"],
+                    rule.get("group_id"),
+                    rule.get("group_name"),
+                )[0]
                 if rule_sg is None:
                     # --diff during --check
                     format_rule["user_id_group_pairs"] = [
@@ -1278,7 +1344,11 @@ def get_diff_final_resource(client, module, security_group):
         "ip_permissions": get_final_rules(client, module, security_group_ingress, specified_ingress, purge_ingress),
         "ip_permissions_egress": get_final_rules(client, module, security_group_egress, specified_egress, purge_egress),
         "owner_id": get_account_id(security_group, module),
-        "tags": get_final_tags(security_group.get("tags", {}), module.params["tags"], module.params["purge_tags"]),
+        "tags": get_final_tags(
+            security_group.get("tags", {}),
+            module.params["tags"],
+            module.params["purge_tags"],
+        ),
         "vpc_id": security_group.get("vpc_id", module.params["vpc_id"]),
     }
 
@@ -1502,9 +1572,15 @@ def main():
         named_tuple_ingress_list = []
         named_tuple_egress_list = []
         current_ingress = sum([list(rule_from_group_permission(p)) for p in group["IpPermissions"]], [])
-        current_egress = sum([list(rule_from_group_permission(p)) for p in group["IpPermissionsEgress"]], [])
+        current_egress = sum(
+            [list(rule_from_group_permission(p)) for p in group["IpPermissionsEgress"]],
+            [],
+        )
 
-        for new_rules, _rule_type, named_tuple_rule_list in [(rules, "in", named_tuple_ingress_list), (rules_egress, "out", named_tuple_egress_list)]:
+        for new_rules, _rule_type, named_tuple_rule_list in [
+            (rules, "in", named_tuple_ingress_list),
+            (rules_egress, "out", named_tuple_egress_list),
+        ]:
             if new_rules is None:
                 continue
             for rule in new_rules:
@@ -1583,7 +1659,13 @@ def main():
         desired_egress = deepcopy(named_tuple_egress_list)
 
         changed |= update_rule_descriptions(
-            module, client, group["GroupId"], present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list
+            module,
+            client,
+            group["GroupId"],
+            present_ingress,
+            named_tuple_ingress_list,
+            present_egress,
+            named_tuple_egress_list,
         )
 
         # Revoke old rules
@@ -1593,7 +1675,13 @@ def main():
         new_ingress_permissions = rules_to_permissions(set(named_tuple_ingress_list) - set(current_ingress))
         new_egress_permissions = rules_to_permissions(set(named_tuple_egress_list) - set(current_egress))
         # Authorize new rules
-        changed |= add_new_permissions(client, module, new_ingress_permissions, new_egress_permissions, group["GroupId"])
+        changed |= add_new_permissions(
+            client,
+            module,
+            new_ingress_permissions,
+            new_egress_permissions,
+            group["GroupId"],
+        )
 
         if group_created_new and module.params.get("rules") is None and module.params.get("rules_egress") is None:
             # A new group with no rules provided is already being awaited.
@@ -1601,7 +1689,15 @@ def main():
             security_group = get_security_groups_with_backoff(client, GroupIds=[group["GroupId"]])["SecurityGroups"][0]
         elif changed and not module.check_mode:
             # keep pulling until current security group rules match the desired ingress and egress rules
-            security_group = wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress)
+            security_group = wait_for_rule_propagation(
+                module,
+                client,
+                group,
+                desired_ingress,
+                desired_egress,
+                purge_rules,
+                purge_rules_egress,
+            )
         else:
             security_group = get_security_groups_with_backoff(client, GroupIds=[group["GroupId"]])["SecurityGroups"][0]
         security_group = camel_dict_to_snake_dict(security_group, ignore_list=["Tags"])

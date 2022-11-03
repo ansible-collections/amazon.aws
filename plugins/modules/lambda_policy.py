@@ -156,7 +156,13 @@ def pc(key):
 
 
 def policy_equal(module, current_statement):
-    for param in ("action", "principal", "source_arn", "source_account", "event_source_token"):
+    for param in (
+        "action",
+        "principal",
+        "source_arn",
+        "source_account",
+        "event_source_token",
+    ):
         if module.params.get(param) != current_statement.get(param):
             return False
 
@@ -282,7 +288,10 @@ def get_policy_statement(module, client):
         policy_results = client.get_policy(**api_params)
     except is_boto3_error_code("ResourceNotFoundException"):
         return {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="retrieving function policy")
 
     # get_policy returns a JSON string so must convert to dict before reassigning to its key
@@ -302,7 +311,15 @@ def add_policy_permission(module, client):
     changed = False
 
     # set API parameters
-    params = ("function_name", "statement_id", "action", "principal", "source_arn", "source_account", "event_source_token")
+    params = (
+        "function_name",
+        "statement_id",
+        "action",
+        "principal",
+        "source_arn",
+        "source_account",
+        "event_source_token",
+    )
     api_params = set_api_params(module, params)
     qualifier = get_qualifier(module)
     if qualifier:
@@ -311,7 +328,10 @@ def add_policy_permission(module, client):
     if not module.check_mode:
         try:
             client.add_permission(**api_params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="adding permission to policy")
         changed = True
 
@@ -393,7 +413,11 @@ def setup_module_object():
     return AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[["alias", "version"], ["event_source_token", "source_arn"], ["event_source_token", "source_account"]],
+        mutually_exclusive=[
+            ["alias", "version"],
+            ["event_source_token", "source_arn"],
+            ["event_source_token", "source_account"],
+        ],
     )
 
 

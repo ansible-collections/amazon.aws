@@ -61,7 +61,9 @@ from .arn import parse_aws_arn  # pylint: disable=unused-import
 from .botocore import HAS_BOTO3  # pylint: disable=unused-import
 from .botocore import is_boto3_error_code  # pylint: disable=unused-import
 from .botocore import is_boto3_error_message  # pylint: disable=unused-import
-from .botocore import get_boto3_client_method_parameters  # pylint: disable=unused-import
+from .botocore import (
+    get_boto3_client_method_parameters,
+)  # pylint: disable=unused-import
 from .botocore import normalize_boto3_result  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
@@ -71,7 +73,12 @@ from .modules import AnsibleAWSModule  # pylint: disable=unused-import
 from .transformation import scrub_none_parameters  # pylint: disable=unused-import
 
 # We will also export HAS_BOTO3 so end user modules can use it.
-__all__ = ("AnsibleAWSModule", "HAS_BOTO3", "is_boto3_error_code", "is_boto3_error_message")
+__all__ = (
+    "AnsibleAWSModule",
+    "HAS_BOTO3",
+    "is_boto3_error_code",
+    "is_boto3_error_message",
+)
 
 
 class AnsibleAWSError(Exception):

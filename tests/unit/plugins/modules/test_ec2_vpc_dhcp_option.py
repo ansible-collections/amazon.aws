@@ -8,11 +8,17 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 # Magic...  Incorrectly identified by pylint as unused
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import (
+    placeboify,
+)  # pylint: disable=unused-import
 from ansible_collections.amazon.aws.tests.unit.compat.mock import patch
 
-from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
-from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.amazon.aws.plugins.modules import (
+    ec2_vpc_dhcp_option as dhcp_module,
+)
+from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import (
+    ModuleTestCase,
+)
 
 test_module_params = {
     "domain_name": "us-west-2.compute.internal",
@@ -26,7 +32,10 @@ test_create_config = [
     {"Key": "domain-name", "Values": [{"Value": "us-west-2.compute.internal"}]},
     {"Key": "domain-name-servers", "Values": [{"Value": "AmazonProvidedDNS"}]},
     {"Key": "ntp-servers", "Values": [{"Value": "10.10.2.3"}, {"Value": "10.10.4.5"}]},
-    {"Key": "netbios-name-servers", "Values": [{"Value": "10.20.2.3"}, {"Value": "10.20.4.5"}]},
+    {
+        "Key": "netbios-name-servers",
+        "Values": [{"Value": "10.20.2.3"}, {"Value": "10.20.4.5"}],
+    },
     {"Key": "netbios-node-type", "Values": 2},
 ]
 

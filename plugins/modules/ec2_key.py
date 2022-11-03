@@ -165,8 +165,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 def extract_key_data(key, key_type=None):
@@ -213,7 +217,10 @@ def find_key_pair(module, ec2_client, name):
         key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])["KeyPairs"][0]
     except is_boto3_error_code("InvalidKeyPair.NotFound"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="error finding keypair")
     except IndexError:
         key = None
@@ -311,7 +318,11 @@ def main():
         key_type=dict(type="str", choices=["rsa", "ed25519"]),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=[["key_material", "key_type"]], supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["key_material", "key_type"]],
+        supports_check_mode=True,
+    )
 
     ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 

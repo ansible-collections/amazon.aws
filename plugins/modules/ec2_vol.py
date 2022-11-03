@@ -254,14 +254,22 @@ import time
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    boto3_tag_list_to_ansible_dict,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_specifications,
+)
 
 
 try:
@@ -313,7 +321,10 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         if is_boto3_error_code("InvalidVolume.NotFound"):
             module.exit_json(msg="Volume {0} does not exist".format(vol_id), changed=False)
-        module.fail_json_aws(e, msg="Error while getting EBS volumes with the parameters {0}".format(find_params))
+        module.fail_json_aws(
+            e,
+            msg="Error while getting EBS volumes with the parameters {0}".format(find_params),
+        )
 
     if not vols:
         if fail_on_not_found and vol_id:
@@ -325,7 +336,10 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
             return None
 
     if len(vols) > 1:
-        module.fail_json(msg="Found more than one volume in zone (if specified) with name: {0}".format(name), found=[v["VolumeId"] for v in vols])
+        module.fail_json(
+            msg="Found more than one volume in zone (if specified) with name: {0}".format(name),
+            found=[v["VolumeId"] for v in vols],
+        )
     vol = camel_dict_to_snake_dict(vols[0])
     return vol
 
@@ -354,7 +368,10 @@ def delete_volume(module, ec2_conn, volume_id=None):
             changed = True
         except is_boto3_error_code("InvalidVolume.NotFound"):
             module.exit_json(changed=False)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Error while deleting volume")
     return changed
 
@@ -508,7 +525,10 @@ def create_volume(module, ec2_conn, zone):
                 VolumeIds=[create_vol_response["VolumeId"]],
             )
             volume = get_volume(module, ec2_conn, vol_id=create_vol_response["VolumeId"])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             module.fail_json_aws(e, msg="Error while creating EBS volume")
 
     return volume, changed
@@ -528,13 +548,17 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
         if module.check_mode:
             if attachment_data[0].get("status") in ["attached", "attaching"]:
                 module.exit_json(
-                    changed=False, msg="IN CHECK MODE - volume already attached to instance: {0}.".format(attachment_data[0].get("instance_id", None))
+                    changed=False,
+                    msg="IN CHECK MODE - volume already attached to instance: {0}.".format(attachment_data[0].get("instance_id", None)),
                 )
         if not volume_dict["multi_attach_enabled"]:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get("instance_id", None) != instance_dict["instance_id"]:
                 module.fail_json(
-                    msg="Volume {0} is already attached to another instance: {1}.".format(volume_dict["volume_id"], attachment_data[0].get("instance_id", None))
+                    msg="Volume {0} is already attached to another instance: {1}.".format(
+                        volume_dict["volume_id"],
+                        attachment_data[0].get("instance_id", None),
+                    )
                 )
             else:
                 return volume_dict, changed
@@ -542,7 +566,12 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
     try:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have attached volume if not in check mode.")
-        attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name, InstanceId=instance_dict["instance_id"], VolumeId=volume_dict["volume_id"])
+        attach_response = ec2_conn.attach_volume(
+            aws_retry=True,
+            Device=device_name,
+            InstanceId=instance_dict["instance_id"],
+            VolumeId=volume_dict["volume_id"],
+        )
 
         waiter = ec2_conn.get_waiter("volume_in_use")
         waiter.wait(VolumeIds=[attach_response["VolumeId"]])
@@ -574,7 +603,11 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
         mapped_block_device = get_mapped_block_device(instance_dict=instance_dict, device_name=device_name)
         if mapped_block_device is None:
             if _attempt > 2:
-                module.fail_json(msg="Unable to find device on instance", device=device_name, instance=instance_dict)
+                module.fail_json(
+                    msg="Unable to find device on instance",
+                    device=device_name,
+                    instance=instance_dict,
+                )
             time.sleep(1)
 
     if delete_on_termination != mapped_block_device["ebs"].get("delete_on_termination"):
@@ -582,11 +615,22 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
             ec2_conn.modify_instance_attribute(
                 aws_retry=True,
                 InstanceId=instance_dict["instance_id"],
-                BlockDeviceMappings=[{"DeviceName": device_name, "Ebs": {"DeleteOnTermination": delete_on_termination}}],
+                BlockDeviceMappings=[
+                    {
+                        "DeviceName": device_name,
+                        "Ebs": {"DeleteOnTermination": delete_on_termination},
+                    }
+                ],
             )
             changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Error while modifying Block Device Mapping of instance {0}".format(instance_dict["instance_id"]))
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
+            module.fail_json_aws(
+                e,
+                msg="Error while modifying Block Device Mapping of instance {0}".format(instance_dict["instance_id"]),
+            )
 
     return changed
 
@@ -622,7 +666,11 @@ def detach_volume(module, ec2_conn, volume_dict):
     for attachment in attachment_data:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have detached volume if not in check mode.")
-        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment["instance_id"], VolumeId=volume_dict["volume_id"])
+        ec2_conn.detach_volume(
+            aws_retry=True,
+            InstanceId=attachment["instance_id"],
+            VolumeId=volume_dict["volume_id"],
+        )
         waiter = ec2_conn.get_waiter("volume_available")
         waiter.wait(
             VolumeIds=[volume_dict["volume_id"]],
@@ -675,7 +723,15 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
     if module.check_mode:
         return {}, True
-    changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ["InvalidVolume.NotFound"])
+    changed = ensure_ec2_tags(
+        connection,
+        module,
+        res_id,
+        res_type,
+        tags,
+        purge_tags,
+        ["InvalidVolume.NotFound"],
+    )
     final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 
     return final_tags, changed
@@ -687,7 +743,10 @@ def main():
         id=dict(),
         name=dict(),
         volume_size=dict(type="int"),
-        volume_type=dict(default="standard", choices=["standard", "gp2", "io1", "st1", "sc1", "gp3", "io2"]),
+        volume_type=dict(
+            default="standard",
+            choices=["standard", "gp2", "io1", "st1", "sc1", "gp3", "io2"],
+        ),
         iops=dict(type="int"),
         encrypted=dict(default=False, type="bool"),
         kms_key_id=dict(),
@@ -815,14 +874,27 @@ def main():
                 if not tags:
                     tags = boto3_tag_list_to_ansible_dict(volume.get("tags"))
                 tags["Name"] = name
-            final_tags, tags_changed = ensure_tags(module, ec2_conn, volume["volume_id"], "volume", tags, module.params.get("purge_tags"))
+            final_tags, tags_changed = ensure_tags(
+                module,
+                ec2_conn,
+                volume["volume_id"],
+                "volume",
+                tags,
+                module.params.get("purge_tags"),
+            )
         else:
             volume, changed = create_volume(module, ec2_conn, zone=zone)
 
         if detach_vol_flag:
             volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
         elif inst is not None:
-            volume, attach_changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
+            volume, attach_changed = attach_volume(
+                module,
+                ec2_conn,
+                volume_dict=volume,
+                instance_dict=inst,
+                device_name=device_name,
+            )
         else:
             attach_changed = False
 
@@ -832,7 +904,13 @@ def main():
         if tags_changed or attach_changed:
             changed = True
 
-        module.exit_json(changed=changed, volume=volume_info, device=device_name, volume_id=volume_info["id"], volume_type=volume_info["type"])
+        module.exit_json(
+            changed=changed,
+            volume=volume_info,
+            device=device_name,
+            volume_id=volume_info["id"],
+            volume_type=volume_info["type"],
+        )
     elif state == "absent":
         if not name and not param_id:
             module.fail_json("A volume name or id is required for deletion")

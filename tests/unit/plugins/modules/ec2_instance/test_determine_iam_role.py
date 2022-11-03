@@ -21,12 +21,18 @@ try:
 except ImportError:
     pass
 
-pytest.mark.skipif(not HAS_BOTO3, reason="test_determine_iam_role.py requires the python modules 'boto3' and 'botocore'")
+pytest.mark.skipif(
+    not HAS_BOTO3,
+    reason="test_determine_iam_role.py requires the python modules 'boto3' and 'botocore'",
+)
 
 
 def _client_error(code="GenericError"):
     return botocore.exceptions.ClientError(
-        {"Error": {"Code": code, "Message": "Something went wrong"}, "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"}},
+        {
+            "Error": {"Code": code, "Message": "Something went wrong"},
+            "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+        },
         "some_called_method",
     )
 

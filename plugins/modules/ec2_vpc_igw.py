@@ -99,10 +99,16 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+)
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    ansible_dict_to_boto3_filter_list,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import (
+    boto3_tag_list_to_ansible_dict,
+)
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10)
@@ -146,7 +152,10 @@ class AnsibleEc2Igw:
                 igws = describe_igws_with_backoff(self._connection, Filters=filters)
             else:
                 igws = describe_igws_with_backoff(self._connection, InternetGatewayIds=[gateway_id])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self._module.fail_json_aws(e)
 
         igw = None
@@ -159,7 +168,11 @@ class AnsibleEc2Igw:
 
     @staticmethod
     def get_igw_info(igw, vpc_id):
-        return {"gateway_id": igw["internet_gateway_id"], "tags": boto3_tag_list_to_ansible_dict(igw["tags"]), "vpc_id": vpc_id}
+        return {
+            "gateway_id": igw["internet_gateway_id"],
+            "tags": boto3_tag_list_to_ansible_dict(igw["tags"]),
+            "vpc_id": vpc_id,
+        }
 
     def ensure_igw_absent(self, vpc_id):
         igw = self.get_matching_igw(vpc_id)
@@ -172,9 +185,16 @@ class AnsibleEc2Igw:
 
         try:
             self._results["changed"] = True
-            self._connection.detach_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=vpc_id)
+            self._connection.detach_internet_gateway(
+                aws_retry=True,
+                InternetGatewayId=igw["internet_gateway_id"],
+                VpcId=vpc_id,
+            )
             self._connection.delete_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:
             self._module.fail_json_aws(e, msg="Unable to delete Internet Gateway")
 
         return self._results
@@ -196,7 +216,11 @@ class AnsibleEc2Igw:
                 waiter.wait(InternetGatewayIds=[response["InternetGateway"]["InternetGatewayId"]])
 
                 igw = camel_dict_to_snake_dict(response["InternetGateway"])
-                self._connection.attach_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=vpc_id)
+                self._connection.attach_internet_gateway(
+                    aws_retry=True,
+                    InternetGatewayId=igw["internet_gateway_id"],
+                    VpcId=vpc_id,
+                )
 
                 # Ensure the gateway is attached before proceeding
                 waiter = get_waiter(self._connection, "internet_gateway_attached")
@@ -204,7 +228,10 @@ class AnsibleEc2Igw:
                 self._results["changed"] = True
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:
                 self._module.fail_json_aws(e, msg="Unable to create Internet Gateway")
 
         # Modify tags

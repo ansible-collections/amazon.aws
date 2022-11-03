@@ -3,7 +3,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.modules import ec2_security_group as group_module
+from ansible_collections.amazon.aws.plugins.modules import (
+    ec2_security_group as group_module,
+)
 
 
 def test_from_permission():
@@ -27,7 +29,13 @@ def test_from_permission():
     assert perms[0].description == "Foo Bar Baz"
     assert perms[1].target == "fe80::94cc:8aff:fef6:9cc/64"
 
-    global_egress = {"IpProtocol": "-1", "IpRanges": [{"CidrIp": "0.0.0.0/0"}], "Ipv6Ranges": [], "PrefixListIds": [], "UserIdGroupPairs": []}
+    global_egress = {
+        "IpProtocol": "-1",
+        "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "UserIdGroupPairs": [],
+    }
     perms = list(group_module.rule_from_group_permission(global_egress))
     assert len(perms) == 1
     assert perms[0].target == "0.0.0.0/0"

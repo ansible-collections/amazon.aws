@@ -194,7 +194,9 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import (
+    scrub_none_parameters,
+)
 
 
 def _format_json(json_string):
@@ -207,7 +209,16 @@ def _format_json(json_string):
 
 
 class CloudWatchEventRule(object):
-    def __init__(self, module, name, client, schedule_expression=None, event_pattern=None, description=None, role_arn=None):
+    def __init__(
+        self,
+        module,
+        name,
+        client,
+        schedule_expression=None,
+        event_pattern=None,
+        description=None,
+        role_arn=None,
+    ):
         self.name = name
         self.client = client
         self.changed = False
@@ -223,7 +234,10 @@ class CloudWatchEventRule(object):
             rule_info = self.client.describe_rule(Name=self.name)
         except is_boto3_error_code("ResourceNotFoundException"):
             return {}
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Could not describe rule %s" % self.name)
         return self._snakify(rule_info)
 
@@ -243,7 +257,10 @@ class CloudWatchEventRule(object):
             request["RoleArn"] = self.role_arn
         try:
             response = self.client.put_rule(**request)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not create/update rule %s" % self.name)
         self.changed = True
         return response
@@ -254,7 +271,10 @@ class CloudWatchEventRule(object):
 
         try:
             response = self.client.delete_rule(Name=self.name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not delete rule %s" % self.name)
         self.changed = True
         return response
@@ -263,7 +283,10 @@ class CloudWatchEventRule(object):
         """Enables the rule in AWS"""
         try:
             response = self.client.enable_rule(Name=self.name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not enable rule %s" % self.name)
         self.changed = True
         return response
@@ -272,7 +295,10 @@ class CloudWatchEventRule(object):
         """Disables the rule in AWS"""
         try:
             response = self.client.disable_rule(Name=self.name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not disable rule %s" % self.name)
         self.changed = True
         return response
@@ -283,7 +309,10 @@ class CloudWatchEventRule(object):
             targets = self.client.list_targets_by_rule(Rule=self.name)
         except is_boto3_error_code("ResourceNotFoundException"):
             return []
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Could not find target for rule %s" % self.name)
         return self._snakify(targets)["targets"]
 
@@ -297,7 +326,10 @@ class CloudWatchEventRule(object):
         }
         try:
             response = self.client.put_targets(**request)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not create/update rule targets for rule %s" % self.name)
         self.changed = True
         return response
@@ -309,7 +341,10 @@ class CloudWatchEventRule(object):
         request = {"Rule": self.name, "Ids": target_ids}
         try:
             response = self.client.remove_targets(**request)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
             self.module.fail_json_aws(e, msg="Could not remove rule targets from rule %s" % self.name)
         self.changed = True
         return response
@@ -340,7 +375,13 @@ class CloudWatchEventRule(object):
 
 
 class CloudWatchEventRuleManager(object):
-    RULE_FIELDS = ["name", "event_pattern", "schedule_expression", "description", "role_arn"]
+    RULE_FIELDS = [
+        "name",
+        "event_pattern",
+        "schedule_expression",
+        "description",
+        "role_arn",
+    ]
 
     def __init__(self, rule, targets):
         self.rule = rule

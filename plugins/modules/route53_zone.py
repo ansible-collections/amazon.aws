@@ -242,7 +242,10 @@ def create_or_update_private(matching_zones, record):
                     try:
                         client.update_hosted_zone_comment(Id=zone_details["Id"], Comment=record["comment"])
                     except (BotoCoreError, ClientError) as e:
-                        module.fail_json_aws(e, msg="Could not update comment for hosted zone %s" % zone_details["Id"])
+                        module.fail_json_aws(
+                            e,
+                            msg="Could not update comment for hosted zone %s" % zone_details["Id"],
+                        )
                 return True, record
             else:
                 record[
@@ -284,13 +287,19 @@ def create_or_update_public(matching_zones, record):
             zone_details = zone["HostedZone"]
             zone_delegation_set_details = zone.get("DelegationSet", {})
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Could not get details about hosted zone %s" % matching_zone["Id"])
+            module.fail_json_aws(
+                e,
+                msg="Could not get details about hosted zone %s" % matching_zone["Id"],
+            )
         if "Comment" in zone_details["Config"] and zone_details["Config"]["Comment"] != record["comment"]:
             if not module.check_mode:
                 try:
                     client.update_hosted_zone_comment(Id=zone_details["Id"], Comment=record["comment"])
                 except (BotoCoreError, ClientError) as e:
-                    module.fail_json_aws(e, msg="Could not update comment for hosted zone %s" % zone_details["Id"])
+                    module.fail_json_aws(
+                        e,
+                        msg="Could not update comment for hosted zone %s" % zone_details["Id"],
+                    )
             changed = True
         else:
             changed = False
@@ -367,7 +376,10 @@ def delete_public(matching_zones):
             try:
                 client.delete_hosted_zone(Id=matching_zones[0]["Id"])
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Could not get delete hosted zone %s" % matching_zones[0]["Id"])
+                module.fail_json_aws(
+                    e,
+                    msg="Could not get delete hosted zone %s" % matching_zones[0]["Id"],
+                )
         changed = True
         msg = "Successfully deleted %s" % matching_zones[0]["Id"]
     return changed, msg

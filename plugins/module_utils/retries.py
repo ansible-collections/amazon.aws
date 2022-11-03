@@ -71,7 +71,15 @@ class AWSRetry(CloudRetry):
         # botocore/boto3 bug open to fix this.
         #
         # https://github.com/boto/boto3/issues/876 (and linked PRs etc)
-        retry_on = ["RequestLimitExceeded", "Unavailable", "ServiceUnavailable", "InternalFailure", "InternalError", "TooManyRequestsException", "Throttling"]
+        retry_on = [
+            "RequestLimitExceeded",
+            "Unavailable",
+            "ServiceUnavailable",
+            "InternalFailure",
+            "InternalError",
+            "TooManyRequestsException",
+            "Throttling",
+        ]
         if catch_extra_error_codes:
             retry_on.extend(catch_extra_error_codes)
 
