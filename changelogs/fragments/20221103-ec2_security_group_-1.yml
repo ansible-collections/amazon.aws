@@ -1,0 +1,2 @@
+trivial:
+- 'ec2_security_group - fix unreleased bug in support for ``ports: -1`` (https://github.com/ansible-collections/amazon.aws/pull/1241).'
