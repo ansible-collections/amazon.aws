@@ -25,18 +25,7 @@ def test_get_network_interfaces():
             {
                 "AvailabilityZone": "us-east-2b",
                 "Description": "",
-                "Groups": [
-                    {
-                        "GroupId": "sg-05db20a1234567890",
-                        "GroupName": "TestGroup1"
-                    }
-                ],
-                "InterfaceType": "interface",
-                "Ipv6Addresses": [],
-                "MacAddress": "00:11:66:77:11:bb",
                 "NetworkInterfaceId": "eni-1234567890",
-                "OwnerId": "1234567890",
-                "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
                         "Primary": "True",
@@ -63,37 +52,16 @@ def test_get_network_interfaces():
 
 
 @patch(module_name + '.get_network_interfaces')
-@patch(module_name + '.build_request_args')
-def test_list_eni(m_build_request_args, m_get_network_interfaces):
+def test_list_eni(m_get_network_interfaces):
     connection = MagicMock()
     module = MagicMock()
-
-    m_build_request_args.return_value = {
-        'Filters': [{
-            'Name': 'owner-id',
-            'Values': [
-                '1234567890'
-            ]
-        }]
-    }
 
     m_get_network_interfaces.return_value = {
         'NetworkInterfaces': [
             {
                 "AvailabilityZone": "us-east-2b",
                 "Description": "",
-                "Groups": [
-                    {
-                        "GroupId": "sg-05db20a1234567890",
-                        "GroupName": "TestGroup1"
-                    }
-                ],
-                "InterfaceType": "interface",
-                "Ipv6Addresses": [],
-                "MacAddress": "00:11:66:77:11:bb",
                 "NetworkInterfaceId": "eni-1234567890",
-                "OwnerId": "1234567890",
-                "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
                         "Primary": "True",
@@ -110,18 +78,7 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
             {
                 "AvailabilityZone": "us-east-2b",
                 "Description": "",
-                "Groups": [
-                    {
-                        "GroupId": "sg-05db20a1234567890",
-                        "GroupName": "TestGroup1"
-                    }
-                ],
-                "InterfaceType": "interface",
-                "Ipv6Addresses": [],
-                "MacAddress": "00:11:66:77:11:bb",
                 "NetworkInterfaceId": "eni-0987654321",
-                "OwnerId": "1234567890",
-                "PrivateIpAddress": "11.22.33.44",
                 "PrivateIpAddresses": [
                     {
                         "Primary": "True",
@@ -141,7 +98,14 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
         ]
     }
 
-    request_args = ec2_eni_info.build_request_args()
+    request_args = {
+        'Filters': [{
+            'Name': 'owner-id',
+            'Values': [
+                '1234567890'
+            ]
+        }]
+    }
 
     camel_network_interfaces = ec2_eni_info.list_eni(connection, module, request_args)
 
@@ -153,20 +117,10 @@ def test_list_eni(m_build_request_args, m_get_network_interfaces):
     )
     assert len(camel_network_interfaces) == 2
 
-    assert camel_network_interfaces[0].get('id', None) == 'eni-1234567890'
-    assert camel_network_interfaces[0].get('tags', None) == {}
-    assert camel_network_interfaces[0].get('name', None) is None
+    assert camel_network_interfaces[0]['id'] == 'eni-1234567890'
+    assert camel_network_interfaces[0]['tags'] == {}
+    assert camel_network_interfaces[0].get('name') is None
 
-    assert camel_network_interfaces[1].get('id', None) == 'eni-0987654321'
-    assert camel_network_interfaces[1].get('tags', None) == {'Name': 'my-test-eni-name'}
-    assert camel_network_interfaces[1].get('name', None) == 'my-test-eni-name'
-
-
-@patch(module_name + ".AnsibleAWSModule")
-def test_main_success(m_AnsibleAWSModule):
-    m_module = MagicMock()
-    m_AnsibleAWSModule.return_value = m_module
-
-    ec2_eni_info.main()
-
-    m_module.client.assert_called_with("ec2", retry_decorator=ANY)
+    assert camel_network_interfaces[1]['id'] == 'eni-0987654321'
+    assert camel_network_interfaces[1]['tags'] == {'Name': 'my-test-eni-name'}
+    assert camel_network_interfaces[1]['name'] == 'my-test-eni-name'

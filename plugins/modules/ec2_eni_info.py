@@ -206,8 +206,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 
 def build_request_args(eni_id, filters):
+
     request_args = {
-        'NetworkInterfaceIds': [eni_id] if eni_id else '',
+        'NetworkInterfaceIds': [eni_id] if eni_id else [],
         'Filters': ansible_dict_to_boto3_filter_list(filters),
     }
 
