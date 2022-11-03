@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_tag_info
 version_added: 1.0.0
@@ -28,9 +29,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: Retrieve all tags on an instance
   amazon.aws.ec2_tag_info:
     region: eu-west-1
@@ -42,14 +43,14 @@ EXAMPLES = '''
     region: eu-west-1
     resource: vpc-xxxxxxxxxxxxxxxxx
   register: vpc_tags
-'''
+"""
 
-RETURN = '''
+RETURN = """
 tags:
   description: A dict containing the tags on the resource
   returned: always
   type: dict
-'''
+"""
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
@@ -61,13 +62,13 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    resource = module.params['resource']
-    ec2 = module.client('ec2')
+    resource = module.params["resource"]
+    ec2 = module.client("ec2")
 
     current_tags = describe_ec2_tags(ec2, module, resource)
 
     module.exit_json(changed=False, tags=current_tags)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

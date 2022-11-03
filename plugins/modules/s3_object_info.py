@@ -2,11 +2,12 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://wwww.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_object_info
 version_added: 5.0.0
@@ -106,9 +107,9 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.boto3
 
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Retrieve a list of objects in S3 bucket
@@ -150,9 +151,9 @@ EXAMPLES = r'''
         - ETag
         - ObjectSize
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 s3_keys:
   description: List of object keys.
   returned: when only I(bucket_name) is specified and I(object_name), I(object_details) are not specified.
@@ -431,7 +432,7 @@ object_info:
                             returned: if it was upload with the object.
                             type: str
                             sample: "xxxxxxxxxxxx"
-'''
+"""
 
 import os
 
@@ -451,8 +452,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_connec
 
 def describe_s3_object_acl(connection, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
 
     object_acl_info = {}
 
@@ -463,7 +464,7 @@ def describe_s3_object_acl(connection, bucket_name, object_name):
 
     if len(object_acl_info) != 0:
         # Remove ResponseMetadata from object_acl_info, convert to snake_case
-        del object_acl_info['ResponseMetadata']
+        del object_acl_info["ResponseMetadata"]
         object_acl_info = camel_dict_to_snake_dict(object_acl_info)
 
     return object_acl_info
@@ -471,20 +472,20 @@ def describe_s3_object_acl(connection, bucket_name, object_name):
 
 def describe_s3_object_attributes(connection, module, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
-    params['ObjectAttributes'] = module.params.get('object_details')['attributes_list']
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
+    params["ObjectAttributes"] = module.params.get("object_details")["attributes_list"]
 
     object_attributes_info = {}
 
     try:
         object_attributes_info = connection.get_object_attributes(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        object_attributes_info['msg'] = 'Object attributes not found'
+        object_attributes_info["msg"] = "Object attributes not found"
 
-    if len(object_attributes_info) != 0 and 'msg' not in object_attributes_info.keys():
+    if len(object_attributes_info) != 0 and "msg" not in object_attributes_info.keys():
         # Remove ResponseMetadata from object_attributes_info, convert to snake_case
-        del object_attributes_info['ResponseMetadata']
+        del object_attributes_info["ResponseMetadata"]
         object_attributes_info = camel_dict_to_snake_dict(object_attributes_info)
 
     return object_attributes_info
@@ -492,8 +493,8 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_name):
 
 def describe_s3_object_legal_hold(connection, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
 
     object_legal_hold_info = {}
 
@@ -504,7 +505,7 @@ def describe_s3_object_legal_hold(connection, bucket_name, object_name):
 
     if len(object_legal_hold_info) != 0:
         # Remove ResponseMetadata from object_legal_hold_info, convert to snake_case
-        del object_legal_hold_info['ResponseMetadata']
+        del object_legal_hold_info["ResponseMetadata"]
         object_legal_hold_info = camel_dict_to_snake_dict(object_legal_hold_info)
 
     return object_legal_hold_info
@@ -512,7 +513,7 @@ def describe_s3_object_legal_hold(connection, bucket_name, object_name):
 
 def describe_s3_object_lock_configuration(connection, bucket_name):
     params = {}
-    params['Bucket'] = bucket_name
+    params["Bucket"] = bucket_name
 
     object_legal_lock_configuration_info = {}
 
@@ -523,7 +524,7 @@ def describe_s3_object_lock_configuration(connection, bucket_name):
 
     if len(object_legal_lock_configuration_info) != 0:
         # Remove ResponseMetadata from object_legal_lock_configuration_info, convert to snake_case
-        del object_legal_lock_configuration_info['ResponseMetadata']
+        del object_legal_lock_configuration_info["ResponseMetadata"]
         object_legal_lock_configuration_info = camel_dict_to_snake_dict(object_legal_lock_configuration_info)
 
     return object_legal_lock_configuration_info
@@ -531,8 +532,8 @@ def describe_s3_object_lock_configuration(connection, bucket_name):
 
 def describe_s3_object_retention(connection, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
 
     object_retention_info = {}
 
@@ -543,7 +544,7 @@ def describe_s3_object_retention(connection, bucket_name, object_name):
 
     if len(object_retention_info) != 0:
         # Remove ResponseMetadata from object_retention_info, convert to snake_case
-        del object_retention_info['ResponseMetadata']
+        del object_retention_info["ResponseMetadata"]
         object_retention_info = camel_dict_to_snake_dict(object_retention_info)
 
     return object_retention_info
@@ -551,8 +552,8 @@ def describe_s3_object_retention(connection, bucket_name, object_name):
 
 def describe_s3_object_tagging(connection, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
 
     object_tagging_info = {}
 
@@ -563,8 +564,8 @@ def describe_s3_object_tagging(connection, bucket_name, object_name):
 
     if len(object_tagging_info) != 0:
         # Remove ResponseMetadata from object_tagging_info, convert to snake_case
-        del object_tagging_info['ResponseMetadata']
-        object_tagging_info = boto3_tag_list_to_ansible_dict(object_tagging_info['TagSet'])
+        del object_tagging_info["ResponseMetadata"]
+        object_tagging_info = boto3_tag_list_to_ansible_dict(object_tagging_info["TagSet"])
 
     return object_tagging_info
 
@@ -576,28 +577,28 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
     # Remove non-requested facts
     requested_facts = {fact: value for fact, value in requested_facts.items() if value is True}
 
-    all_facts['object_data'] = get_object(connection, bucket_name, object_name)['object_data']
+    all_facts["object_data"] = get_object(connection, bucket_name, object_name)["object_data"]
 
     # Below APIs do not return object_name, need to add it manually
-    all_facts['object_name'] = object_name
+    all_facts["object_name"] = object_name
 
     for key in requested_facts:
-        if key == 'object_acl':
+        if key == "object_acl":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_acl(connection, bucket_name, object_name)
-        elif key == 'object_attributes':
+        elif key == "object_attributes":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_attributes(connection, module, bucket_name, object_name)
-        elif key == 'object_legal_hold':
+        elif key == "object_legal_hold":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_legal_hold(connection, bucket_name, object_name)
-        elif key == 'object_lock_configuration':
+        elif key == "object_lock_configuration":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_lock_configuration(connection, bucket_name)
-        elif key == 'object_retention':
+        elif key == "object_retention":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_retention(connection, bucket_name, object_name)
-        elif key == 'object_tagging':
+        elif key == "object_tagging":
             all_facts[key] = {}
             all_facts[key] = describe_s3_object_tagging(connection, bucket_name, object_name)
 
@@ -606,8 +607,8 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
 
 def get_object(connection, bucket_name, object_name):
     params = {}
-    params['Bucket'] = bucket_name
-    params['Key'] = object_name
+    params["Bucket"] = bucket_name
+    params["Key"] = object_name
 
     result = {}
     object_info = {}
@@ -619,23 +620,23 @@ def get_object(connection, bucket_name, object_name):
 
     if len(object_info) != 0:
         # Remove ResponseMetadata from object_info, convert to snake_case
-        del object_info['ResponseMetadata']
+        del object_info["ResponseMetadata"]
         object_info = camel_dict_to_snake_dict(object_info)
 
-    result['object_data'] = object_info
+    result["object_data"] = object_info
 
     return result
 
 
 @AWSRetry.jittered_backoff(retries=10)
 def _list_bucket_objects(connection, **params):
-    paginator = connection.get_paginator('list_objects')
+    paginator = connection.get_paginator("list_objects")
     return paginator.paginate(**params).build_full_result()
 
 
 def list_bucket_objects(connection, module, bucket_name):
     params = {}
-    params['Bucket'] = bucket_name
+    params["Bucket"] = bucket_name
 
     result = []
     list_objects_response = {}
@@ -643,53 +644,60 @@ def list_bucket_objects(connection, module, bucket_name):
     try:
         list_objects_response = _list_bucket_objects(connection, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to list bucket objects.')
+        module.fail_json_aws(e, msg="Failed to list bucket objects.")
 
     if len(list_objects_response) != 0:
         # convert to snake_case
-        for response_list_item in list_objects_response['Contents']:
-            result.append(response_list_item['Key'])
+        for response_list_item in list_objects_response["Contents"]:
+            result.append(response_list_item["Key"])
 
     return result
 
 
-def bucket_check(connection, module, bucket_name,):
+def bucket_check(
+    connection,
+    module,
+    bucket_name,
+):
     try:
         connection.head_bucket(Bucket=bucket_name)
-    except is_boto3_error_code(['404', '403']) as e:
+    except is_boto3_error_code(["404", "403"]) as e:
         module.fail_json_aws(e, msg="The bucket %s does not exist or is missing access permissions." % bucket_name)
 
 
 def object_check(connection, module, bucket_name, object_name):
     try:
         connection.head_object(Bucket=bucket_name, Key=object_name)
-    except is_boto3_error_code(['404', '403']) as e:
+    except is_boto3_error_code(["404", "403"]) as e:
         module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
 
 
 def main():
 
     argument_spec = dict(
-        object_details=dict(type='dict', options=dict(
-            object_acl=dict(type='bool', default=False),
-            object_legal_hold=dict(type='bool', default=False),
-            object_lock_configuration=dict(type='bool', default=False),
-            object_retention=dict(type='bool', default=False),
-            object_tagging=dict(type='bool', default=False),
-            object_attributes=dict(type='bool', default=False),
-            attributes_list=dict(type='list', elements='str', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])),
+        object_details=dict(
+            type="dict",
+            options=dict(
+                object_acl=dict(type="bool", default=False),
+                object_legal_hold=dict(type="bool", default=False),
+                object_lock_configuration=dict(type="bool", default=False),
+                object_retention=dict(type="bool", default=False),
+                object_tagging=dict(type="bool", default=False),
+                object_attributes=dict(type="bool", default=False),
+                attributes_list=dict(type="list", elements="str", choices=["ETag", "Checksum", "ObjectParts", "StorageClass", "ObjectSize"]),
+            ),
             required_if=[
                 ("object_attributes", True, ["attributes_list"]),
-        ]
+            ],
         ),
-        bucket_name=dict(required=True, type='str'),
-        object_name=dict(type='str'),
-        dualstack=dict(default=False, type='bool'),
-        ceph=dict(default=False, type='bool', aliases=['rgw']),
+        bucket_name=dict(required=True, type="str"),
+        object_name=dict(type="str"),
+        dualstack=dict(default=False, type="bool"),
+        ceph=dict(default=False, type="bool", aliases=["rgw"]),
     )
 
     required_if = [
-        ['ceph', True, ['endpoint_url']],
+        ["ceph", True, ["endpoint_url"]],
     ]
 
     module = AnsibleAWSModule(
@@ -698,45 +706,46 @@ def main():
         required_if=required_if,
     )
 
-    bucket_name = module.params.get('bucket_name')
-    object_name = module.params.get('object_name')
-    requested_object_details = module.params.get('object_details')
-    endpoint_url = module.params.get('endpoint_url')
-    dualstack = module.params.get('dualstack')
-    ceph = module.params.get('ceph')
+    bucket_name = module.params.get("bucket_name")
+    object_name = module.params.get("object_name")
+    requested_object_details = module.params.get("object_details")
+    endpoint_url = module.params.get("endpoint_url")
+    dualstack = module.params.get("dualstack")
+    ceph = module.params.get("ceph")
 
-    if not endpoint_url and 'S3_URL' in os.environ:
-        endpoint_url = os.environ['S3_URL']
+    if not endpoint_url and "S3_URL" in os.environ:
+        endpoint_url = os.environ["S3_URL"]
         module.deprecate(
             "Support for the 'S3_URL' environment variable has been "
             "deprecated.  We recommend using the 'endpoint_url' module "
             "parameter.  Alternatively, the 'AWS_URL' environment variable can "
             "be used instead.",
-            date='2024-12-01', collection_name='amazon.aws',
+            date="2024-12-01",
+            collection_name="amazon.aws",
         )
 
-    if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
-        module.fail_json(msg='dualstack only applies to AWS S3')
+    if dualstack and endpoint_url is not None and "amazonaws.com" not in endpoint_url:
+        module.fail_json(msg="dualstack only applies to AWS S3")
 
     result = []
 
     if endpoint_url:
         region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        if region in ('us-east-1', '', None):
+        if region in ("us-east-1", "", None):
             # default to US Standard region
-            location = 'us-east-1'
+            location = "us-east-1"
         else:
             # Boto uses symbolic names for locations but region strings will
             # actually work fine for everything except us-east-1 (US Standard)
             location = region
-        for key in ['validate_certs', 'security_token', 'profile_name']:
+        for key in ["validate_certs", "security_token", "profile_name"]:
             aws_connect_kwargs.pop(key, None)
         connection = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
     else:
         try:
-            connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+            connection = module.client("s3", retry_decorator=AWSRetry.jittered_backoff())
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
+            module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # check if specified bucket exists
     bucket_check(connection, module, bucket_name)
@@ -744,8 +753,8 @@ def main():
     if object_name:
         object_check(connection, module, bucket_name, object_name)
 
-    if requested_object_details and requested_object_details['object_attributes']:
-        module.require_botocore_at_least('1.24.7', reason='required for s3.get_object_attributes')
+    if requested_object_details and requested_object_details["object_attributes"]:
+        module.require_botocore_at_least("1.24.7", reason="required for s3.get_object_attributes")
 
     if requested_object_details:
         if object_name:
@@ -768,5 +777,5 @@ def main():
     module.exit_json(object_info=result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

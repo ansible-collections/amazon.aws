@@ -1,10 +1,11 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 name: aws_ec2
 short_description: EC2 inventory source
 extends_documentation_fragment:
@@ -142,9 +143,9 @@ options:
       - The suffix for host variables names coming from AWS.
     type: str
     version_added: 3.1.0
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Minimal example using environment vars or instance role credentials
 # Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address
 plugin: aws_ec2
@@ -260,7 +261,7 @@ regions:
   - us-east-1
 hostvars_prefix: 'aws_'
 hostvars_suffix: '_ec2'
-'''
+"""
 
 import re
 
@@ -290,103 +291,103 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 # returned by boto3's EC2 describe_instances method.
 
 instance_meta_filter_to_boto_attr = {
-    'group-id': ('Groups', 'GroupId'),
-    'group-name': ('Groups', 'GroupName'),
-    'network-interface.attachment.instance-owner-id': ('OwnerId',),
-    'owner-id': ('OwnerId',),
-    'requester-id': ('RequesterId',),
-    'reservation-id': ('ReservationId',),
+    "group-id": ("Groups", "GroupId"),
+    "group-name": ("Groups", "GroupName"),
+    "network-interface.attachment.instance-owner-id": ("OwnerId",),
+    "owner-id": ("OwnerId",),
+    "requester-id": ("RequesterId",),
+    "reservation-id": ("ReservationId",),
 }
 
 instance_data_filter_to_boto_attr = {
-    'affinity': ('Placement', 'Affinity'),
-    'architecture': ('Architecture',),
-    'availability-zone': ('Placement', 'AvailabilityZone'),
-    'block-device-mapping.attach-time': ('BlockDeviceMappings', 'Ebs', 'AttachTime'),
-    'block-device-mapping.delete-on-termination': ('BlockDeviceMappings', 'Ebs', 'DeleteOnTermination'),
-    'block-device-mapping.device-name': ('BlockDeviceMappings', 'DeviceName'),
-    'block-device-mapping.status': ('BlockDeviceMappings', 'Ebs', 'Status'),
-    'block-device-mapping.volume-id': ('BlockDeviceMappings', 'Ebs', 'VolumeId'),
-    'client-token': ('ClientToken',),
-    'dns-name': ('PublicDnsName',),
-    'host-id': ('Placement', 'HostId'),
-    'hypervisor': ('Hypervisor',),
-    'iam-instance-profile.arn': ('IamInstanceProfile', 'Arn'),
-    'image-id': ('ImageId',),
-    'instance-id': ('InstanceId',),
-    'instance-lifecycle': ('InstanceLifecycle',),
-    'instance-state-code': ('State', 'Code'),
-    'instance-state-name': ('State', 'Name'),
-    'instance-type': ('InstanceType',),
-    'instance.group-id': ('SecurityGroups', 'GroupId'),
-    'instance.group-name': ('SecurityGroups', 'GroupName'),
-    'ip-address': ('PublicIpAddress',),
-    'kernel-id': ('KernelId',),
-    'key-name': ('KeyName',),
-    'launch-index': ('AmiLaunchIndex',),
-    'launch-time': ('LaunchTime',),
-    'monitoring-state': ('Monitoring', 'State'),
-    'network-interface.addresses.private-ip-address': ('NetworkInterfaces', 'PrivateIpAddress'),
-    'network-interface.addresses.primary': ('NetworkInterfaces', 'PrivateIpAddresses', 'Primary'),
-    'network-interface.addresses.association.public-ip': ('NetworkInterfaces', 'PrivateIpAddresses', 'Association', 'PublicIp'),
-    'network-interface.addresses.association.ip-owner-id': ('NetworkInterfaces', 'PrivateIpAddresses', 'Association', 'IpOwnerId'),
-    'network-interface.association.public-ip': ('NetworkInterfaces', 'Association', 'PublicIp'),
-    'network-interface.association.ip-owner-id': ('NetworkInterfaces', 'Association', 'IpOwnerId'),
-    'network-interface.association.allocation-id': ('ElasticGpuAssociations', 'ElasticGpuId'),
-    'network-interface.association.association-id': ('ElasticGpuAssociations', 'ElasticGpuAssociationId'),
-    'network-interface.attachment.attachment-id': ('NetworkInterfaces', 'Attachment', 'AttachmentId'),
-    'network-interface.attachment.instance-id': ('InstanceId',),
-    'network-interface.attachment.device-index': ('NetworkInterfaces', 'Attachment', 'DeviceIndex'),
-    'network-interface.attachment.status': ('NetworkInterfaces', 'Attachment', 'Status'),
-    'network-interface.attachment.attach-time': ('NetworkInterfaces', 'Attachment', 'AttachTime'),
-    'network-interface.attachment.delete-on-termination': ('NetworkInterfaces', 'Attachment', 'DeleteOnTermination'),
-    'network-interface.availability-zone': ('Placement', 'AvailabilityZone'),
-    'network-interface.description': ('NetworkInterfaces', 'Description'),
-    'network-interface.group-id': ('NetworkInterfaces', 'Groups', 'GroupId'),
-    'network-interface.group-name': ('NetworkInterfaces', 'Groups', 'GroupName'),
-    'network-interface.ipv6-addresses.ipv6-address': ('NetworkInterfaces', 'Ipv6Addresses', 'Ipv6Address'),
-    'network-interface.mac-address': ('NetworkInterfaces', 'MacAddress'),
-    'network-interface.network-interface-id': ('NetworkInterfaces', 'NetworkInterfaceId'),
-    'network-interface.owner-id': ('NetworkInterfaces', 'OwnerId'),
-    'network-interface.private-dns-name': ('NetworkInterfaces', 'PrivateDnsName'),
+    "affinity": ("Placement", "Affinity"),
+    "architecture": ("Architecture",),
+    "availability-zone": ("Placement", "AvailabilityZone"),
+    "block-device-mapping.attach-time": ("BlockDeviceMappings", "Ebs", "AttachTime"),
+    "block-device-mapping.delete-on-termination": ("BlockDeviceMappings", "Ebs", "DeleteOnTermination"),
+    "block-device-mapping.device-name": ("BlockDeviceMappings", "DeviceName"),
+    "block-device-mapping.status": ("BlockDeviceMappings", "Ebs", "Status"),
+    "block-device-mapping.volume-id": ("BlockDeviceMappings", "Ebs", "VolumeId"),
+    "client-token": ("ClientToken",),
+    "dns-name": ("PublicDnsName",),
+    "host-id": ("Placement", "HostId"),
+    "hypervisor": ("Hypervisor",),
+    "iam-instance-profile.arn": ("IamInstanceProfile", "Arn"),
+    "image-id": ("ImageId",),
+    "instance-id": ("InstanceId",),
+    "instance-lifecycle": ("InstanceLifecycle",),
+    "instance-state-code": ("State", "Code"),
+    "instance-state-name": ("State", "Name"),
+    "instance-type": ("InstanceType",),
+    "instance.group-id": ("SecurityGroups", "GroupId"),
+    "instance.group-name": ("SecurityGroups", "GroupName"),
+    "ip-address": ("PublicIpAddress",),
+    "kernel-id": ("KernelId",),
+    "key-name": ("KeyName",),
+    "launch-index": ("AmiLaunchIndex",),
+    "launch-time": ("LaunchTime",),
+    "monitoring-state": ("Monitoring", "State"),
+    "network-interface.addresses.private-ip-address": ("NetworkInterfaces", "PrivateIpAddress"),
+    "network-interface.addresses.primary": ("NetworkInterfaces", "PrivateIpAddresses", "Primary"),
+    "network-interface.addresses.association.public-ip": ("NetworkInterfaces", "PrivateIpAddresses", "Association", "PublicIp"),
+    "network-interface.addresses.association.ip-owner-id": ("NetworkInterfaces", "PrivateIpAddresses", "Association", "IpOwnerId"),
+    "network-interface.association.public-ip": ("NetworkInterfaces", "Association", "PublicIp"),
+    "network-interface.association.ip-owner-id": ("NetworkInterfaces", "Association", "IpOwnerId"),
+    "network-interface.association.allocation-id": ("ElasticGpuAssociations", "ElasticGpuId"),
+    "network-interface.association.association-id": ("ElasticGpuAssociations", "ElasticGpuAssociationId"),
+    "network-interface.attachment.attachment-id": ("NetworkInterfaces", "Attachment", "AttachmentId"),
+    "network-interface.attachment.instance-id": ("InstanceId",),
+    "network-interface.attachment.device-index": ("NetworkInterfaces", "Attachment", "DeviceIndex"),
+    "network-interface.attachment.status": ("NetworkInterfaces", "Attachment", "Status"),
+    "network-interface.attachment.attach-time": ("NetworkInterfaces", "Attachment", "AttachTime"),
+    "network-interface.attachment.delete-on-termination": ("NetworkInterfaces", "Attachment", "DeleteOnTermination"),
+    "network-interface.availability-zone": ("Placement", "AvailabilityZone"),
+    "network-interface.description": ("NetworkInterfaces", "Description"),
+    "network-interface.group-id": ("NetworkInterfaces", "Groups", "GroupId"),
+    "network-interface.group-name": ("NetworkInterfaces", "Groups", "GroupName"),
+    "network-interface.ipv6-addresses.ipv6-address": ("NetworkInterfaces", "Ipv6Addresses", "Ipv6Address"),
+    "network-interface.mac-address": ("NetworkInterfaces", "MacAddress"),
+    "network-interface.network-interface-id": ("NetworkInterfaces", "NetworkInterfaceId"),
+    "network-interface.owner-id": ("NetworkInterfaces", "OwnerId"),
+    "network-interface.private-dns-name": ("NetworkInterfaces", "PrivateDnsName"),
     # 'network-interface.requester-id': (),
-    'network-interface.requester-managed': ('NetworkInterfaces', 'Association', 'IpOwnerId'),
-    'network-interface.status': ('NetworkInterfaces', 'Status'),
-    'network-interface.source-dest-check': ('NetworkInterfaces', 'SourceDestCheck'),
-    'network-interface.subnet-id': ('NetworkInterfaces', 'SubnetId'),
-    'network-interface.vpc-id': ('NetworkInterfaces', 'VpcId'),
-    'placement-group-name': ('Placement', 'GroupName'),
-    'platform': ('Platform',),
-    'private-dns-name': ('PrivateDnsName',),
-    'private-ip-address': ('PrivateIpAddress',),
-    'product-code': ('ProductCodes', 'ProductCodeId'),
-    'product-code.type': ('ProductCodes', 'ProductCodeType'),
-    'ramdisk-id': ('RamdiskId',),
-    'reason': ('StateTransitionReason',),
-    'root-device-name': ('RootDeviceName',),
-    'root-device-type': ('RootDeviceType',),
-    'source-dest-check': ('SourceDestCheck',),
-    'spot-instance-request-id': ('SpotInstanceRequestId',),
-    'state-reason-code': ('StateReason', 'Code'),
-    'state-reason-message': ('StateReason', 'Message'),
-    'subnet-id': ('SubnetId',),
-    'tag': ('Tags',),
-    'tag-key': ('Tags',),
-    'tag-value': ('Tags',),
-    'tenancy': ('Placement', 'Tenancy'),
-    'virtualization-type': ('VirtualizationType',),
-    'vpc-id': ('VpcId',),
+    "network-interface.requester-managed": ("NetworkInterfaces", "Association", "IpOwnerId"),
+    "network-interface.status": ("NetworkInterfaces", "Status"),
+    "network-interface.source-dest-check": ("NetworkInterfaces", "SourceDestCheck"),
+    "network-interface.subnet-id": ("NetworkInterfaces", "SubnetId"),
+    "network-interface.vpc-id": ("NetworkInterfaces", "VpcId"),
+    "placement-group-name": ("Placement", "GroupName"),
+    "platform": ("Platform",),
+    "private-dns-name": ("PrivateDnsName",),
+    "private-ip-address": ("PrivateIpAddress",),
+    "product-code": ("ProductCodes", "ProductCodeId"),
+    "product-code.type": ("ProductCodes", "ProductCodeType"),
+    "ramdisk-id": ("RamdiskId",),
+    "reason": ("StateTransitionReason",),
+    "root-device-name": ("RootDeviceName",),
+    "root-device-type": ("RootDeviceType",),
+    "source-dest-check": ("SourceDestCheck",),
+    "spot-instance-request-id": ("SpotInstanceRequestId",),
+    "state-reason-code": ("StateReason", "Code"),
+    "state-reason-message": ("StateReason", "Message"),
+    "subnet-id": ("SubnetId",),
+    "tag": ("Tags",),
+    "tag-key": ("Tags",),
+    "tag-value": ("Tags",),
+    "tenancy": ("Placement", "Tenancy"),
+    "virtualization-type": ("VirtualizationType",),
+    "vpc-id": ("VpcId",),
 }
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
-    NAME = 'amazon.aws.aws_ec2'
+    NAME = "amazon.aws.aws_ec2"
 
     def __init__(self):
         super(InventoryModule, self).__init__()
 
-        self.group_prefix = 'aws_ec2_'
+        self.group_prefix = "aws_ec2_"
 
         # credentials
         self.boto_profile = None
@@ -396,11 +397,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         self.iam_role_arn = None
 
     def _compile_values(self, obj, attr):
-        '''
-            :param obj: A list or dict of instance attributes
-            :param attr: A key
-            :return The value(s) found via the attr
-        '''
+        """
+        :param obj: A list or dict of instance attributes
+        :param attr: A key
+        :return The value(s) found via the attr
+        """
         if obj is None:
             return
 
@@ -421,10 +422,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return temp_obj
 
     def _get_boto_attr_chain(self, filter_name, instance):
-        '''
-            :param filter_name: The filter
-            :param instance: instance dict returned by boto3 ec2 describe_instances()
-        '''
+        """
+        :param filter_name: The filter
+        :param instance: instance dict returned by boto3 ec2 describe_instances()
+        """
         allowed_filters = sorted(list(instance_data_filter_to_boto_attr.keys()) + list(instance_meta_filter_to_boto_attr.keys()))
 
         # If filter not in allow_filters -> use it as a literal string
@@ -442,25 +443,27 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return instance_value
 
     def _get_credentials(self):
-        '''
-            :return A dictionary of boto client credentials
-        '''
+        """
+        :return A dictionary of boto client credentials
+        """
         boto_params = {}
-        for credential in (('aws_access_key_id', self.aws_access_key_id),
-                           ('aws_secret_access_key', self.aws_secret_access_key),
-                           ('aws_session_token', self.aws_security_token)):
+        for credential in (
+            ("aws_access_key_id", self.aws_access_key_id),
+            ("aws_secret_access_key", self.aws_secret_access_key),
+            ("aws_session_token", self.aws_security_token),
+        ):
             if credential[1]:
                 boto_params[credential[0]] = credential[1]
 
         return boto_params
 
-    def _get_connection(self, credentials, region='us-east-1'):
+    def _get_connection(self, credentials, region="us-east-1"):
         try:
-            connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **credentials)
+            connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region, **credentials)
         except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
             if self.boto_profile:
                 try:
-                    connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
+                    connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region)
                 except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
                     raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
             else:
@@ -477,22 +480,22 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         iam_role_arn = self.iam_role_arn
 
         try:
-            sts_connection = boto3.session.Session(profile_name=self.boto_profile).client('sts', region, **credentials)
-            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName='ansible_aws_ec2_dynamic_inventory')
+            sts_connection = boto3.session.Session(profile_name=self.boto_profile).client("sts", region, **credentials)
+            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName="ansible_aws_ec2_dynamic_inventory")
             return dict(
-                aws_access_key_id=sts_session['Credentials']['AccessKeyId'],
-                aws_secret_access_key=sts_session['Credentials']['SecretAccessKey'],
-                aws_session_token=sts_session['Credentials']['SessionToken']
+                aws_access_key_id=sts_session["Credentials"]["AccessKeyId"],
+                aws_secret_access_key=sts_session["Credentials"]["SecretAccessKey"],
+                aws_session_token=sts_session["Credentials"]["SessionToken"],
             )
         except botocore.exceptions.ClientError as e:
             raise AnsibleError("Unable to assume IAM role: %s" % to_native(e))
 
     def _boto3_conn(self, regions):
-        '''
-            :param regions: A list of regions to create a boto3 client
+        """
+        :param regions: A list of regions to create a boto3 client
 
-            Generator that yields a boto3 client and the region
-        '''
+        Generator that yields a boto3 client and the region
+        """
 
         credentials = self._get_credentials()
         iam_role_arn = self.iam_role_arn
@@ -502,18 +505,18 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 # as per https://boto3.amazonaws.com/v1/documentation/api/latest/guide/ec2-example-regions-avail-zones.html
                 client = self._get_connection(credentials)
                 resp = client.describe_regions()
-                regions = [x['RegionName'] for x in resp.get('Regions', [])]
+                regions = [x["RegionName"] for x in resp.get("Regions", [])]
             except botocore.exceptions.NoRegionError:
                 # above seems to fail depending on boto3 version, ignore and lets try something else
                 pass
-            except is_boto3_error_code('UnauthorizedOperation') as e:  # pylint: disable=duplicate-except
+            except is_boto3_error_code("UnauthorizedOperation") as e:  # pylint: disable=duplicate-except
                 if iam_role_arn is not None:
                     try:
                         # Describe regions assuming arn role
                         assumed_credentials = self._boto3_assume_role(credentials)
                         client = self._get_connection(assumed_credentials)
                         resp = client.describe_regions()
-                        regions = [x['RegionName'] for x in resp.get('Regions', [])]
+                        regions = [x["RegionName"] for x in resp.get("Regions", [])]
                     except botocore.exceptions.NoRegionError:
                         # above seems to fail depending on boto3 version, ignore and lets try something else
                         pass
@@ -523,7 +526,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         # fallback to local list hardcoded in boto3 if still no regions
         if not regions:
             session = boto3.Session()
-            regions = session.get_available_regions('ec2')
+            regions = session.get_available_regions("ec2")
 
         # I give up, now you MUST give me regions
         if not regions:
@@ -536,11 +539,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                     assumed_credentials = self._boto3_assume_role(credentials, region)
                 else:
                     assumed_credentials = credentials
-                connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **assumed_credentials)
+                connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region, **assumed_credentials)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
                 if self.boto_profile:
                     try:
-                        connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
+                        connection = boto3.session.Session(profile_name=self.boto_profile).client("ec2", region)
                     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
                         raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
                 else:
@@ -548,29 +551,29 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             yield connection, region
 
     def _get_instances_by_region(self, regions, filters, strict_permissions):
-        '''
-           :param regions: a list of regions in which to describe instances
-           :param filters: a list of boto3 filter dictionaries
-           :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
-           :return A list of instance dictionaries
-        '''
+        """
+        :param regions: a list of regions in which to describe instances
+        :param filters: a list of boto3 filter dictionaries
+        :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+        :return A list of instance dictionaries
+        """
         all_instances = []
 
         for connection, _region in self._boto3_conn(regions):
             try:
                 # By default find non-terminated/terminating instances
-                if not any(f['Name'] == 'instance-state-name' for f in filters):
-                    filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
-                paginator = connection.get_paginator('describe_instances')
-                reservations = paginator.paginate(Filters=filters).build_full_result().get('Reservations')
+                if not any(f["Name"] == "instance-state-name" for f in filters):
+                    filters.append({"Name": "instance-state-name", "Values": ["running", "pending", "stopping", "stopped"]})
+                paginator = connection.get_paginator("describe_instances")
+                reservations = paginator.paginate(Filters=filters).build_full_result().get("Reservations")
                 instances = []
                 for r in reservations:
-                    new_instances = r['Instances']
+                    new_instances = r["Instances"]
                     for instance in new_instances:
                         instance.update(self._get_reservation_details(r))
                     instances.extend(new_instances)
             except botocore.exceptions.ClientError as e:
-                if e.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict_permissions:
+                if e.response["ResponseMetadata"]["HTTPStatusCode"] == 403 and not strict_permissions:
                     instances = []
                 else:
                     raise AnsibleError("Failed to describe instances: %s" % to_native(e))
@@ -582,25 +585,21 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return all_instances
 
     def _get_reservation_details(self, reservation):
-        return {
-            'OwnerId': reservation['OwnerId'],
-            'RequesterId': reservation.get('RequesterId', ''),
-            'ReservationId': reservation['ReservationId']
-        }
+        return {"OwnerId": reservation["OwnerId"], "RequesterId": reservation.get("RequesterId", ""), "ReservationId": reservation["ReservationId"]}
 
     @classmethod
     def _get_tag_hostname(cls, preference, instance):
-        tag_hostnames = preference.split('tag:', 1)[1]
-        if ',' in tag_hostnames:
-            tag_hostnames = tag_hostnames.split(',')
+        tag_hostnames = preference.split("tag:", 1)[1]
+        if "," in tag_hostnames:
+            tag_hostnames = tag_hostnames.split(",")
         else:
             tag_hostnames = [tag_hostnames]
 
-        tags = boto3_tag_list_to_ansible_dict(instance.get('Tags', []))
+        tags = boto3_tag_list_to_ansible_dict(instance.get("Tags", []))
         tag_values = []
         for v in tag_hostnames:
-            if '=' in v:
-                tag_name, tag_value = v.split('=')
+            if "=" in v:
+                tag_name, tag_value = v.split("=")
                 if tags.get(tag_name) == tag_value:
                     tag_values.append(to_text(tag_name) + "_" + to_text(tag_value))
             else:
@@ -610,31 +609,31 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return tag_values
 
     def _sanitize_hostname(self, hostname):
-        if ':' in to_text(hostname):
+        if ":" in to_text(hostname):
             return self._sanitize_group_name(to_text(hostname))
         else:
             return to_text(hostname)
 
     def _get_preferred_hostname(self, instance, hostnames):
-        '''
-            :param instance: an instance dict returned by boto3 ec2 describe_instances()
-            :param hostnames: a list of hostname destination variables in order of preference
-            :return the preferred identifer for the host
-        '''
+        """
+        :param instance: an instance dict returned by boto3 ec2 describe_instances()
+        :param hostnames: a list of hostname destination variables in order of preference
+        :return the preferred identifer for the host
+        """
         if not hostnames:
-            hostnames = ['dns-name', 'private-dns-name']
+            hostnames = ["dns-name", "private-dns-name"]
 
         hostname = None
         for preference in hostnames:
             if isinstance(preference, dict):
-                if 'name' not in preference:
+                if "name" not in preference:
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
                 hostname = self._get_preferred_hostname(instance, [preference["name"]])
                 hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
-                if hostname and hostname_from_prefix and 'prefix' in preference:
+                if hostname and hostname_from_prefix and "prefix" in preference:
                     hostname = hostname_from_prefix + separator + hostname
-            elif preference.startswith('tag:'):
+            elif preference.startswith("tag:"):
                 tags = self._get_tag_hostname(preference, instance)
                 hostname = tags[0] if tags else None
             else:
@@ -645,26 +644,26 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             return self._sanitize_hostname(hostname)
 
     def get_all_hostnames(self, instance, hostnames):
-        '''
-            :param instance: an instance dict returned by boto3 ec2 describe_instances()
-            :param hostnames: a list of hostname destination variables
-            :return all the candidats matching the expectation
-        '''
+        """
+        :param instance: an instance dict returned by boto3 ec2 describe_instances()
+        :param hostnames: a list of hostname destination variables
+        :return all the candidats matching the expectation
+        """
         if not hostnames:
-            hostnames = ['dns-name', 'private-dns-name']
+            hostnames = ["dns-name", "private-dns-name"]
 
         hostname = None
         hostname_list = []
         for preference in hostnames:
             if isinstance(preference, dict):
-                if 'name' not in preference:
+                if "name" not in preference:
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
                 hostname = self.get_all_hostnames(instance, [preference["name"]])
                 hostname_from_prefix = self.get_all_hostnames(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
-                if hostname and hostname_from_prefix and 'prefix' in preference:
+                if hostname and hostname_from_prefix and "prefix" in preference:
                     hostname = hostname_from_prefix[0] + separator + hostname[0]
-            elif preference.startswith('tag:'):
+            elif preference.startswith("tag:"):
                 hostname = self._get_tag_hostname(preference, instance)
             else:
                 hostname = self._get_boto_attr_chain(preference, instance)
@@ -679,37 +678,31 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return hostname_list
 
     def _query(self, regions, include_filters, exclude_filters, strict_permissions):
-        '''
-            :param regions: a list of regions to query
-            :param include_filters: a list of boto3 filter dictionaries
-            :param exclude_filters: a list of boto3 filter dictionaries
-            :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+        """
+        :param regions: a list of regions to query
+        :param include_filters: a list of boto3 filter dictionaries
+        :param exclude_filters: a list of boto3 filter dictionaries
+        :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
 
-        '''
+        """
         instances = []
         ids_to_ignore = []
         for filter in exclude_filters:
-            for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
-                ids_to_ignore.append(i['InstanceId'])
+            for i in self._get_instances_by_region(regions, ansible_dict_to_boto3_filter_list(filter), strict_permissions):
+                ids_to_ignore.append(i["InstanceId"])
         for filter in include_filters:
-            for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
-                if i['InstanceId'] not in ids_to_ignore:
+            for i in self._get_instances_by_region(regions, ansible_dict_to_boto3_filter_list(filter), strict_permissions):
+                if i["InstanceId"] not in ids_to_ignore:
                     instances.append(i)
-                    ids_to_ignore.append(i['InstanceId'])
+                    ids_to_ignore.append(i["InstanceId"])
 
-        instances = sorted(instances, key=lambda x: x['InstanceId'])
+        instances = sorted(instances, key=lambda x: x["InstanceId"])
 
-        return {'aws_ec2': instances}
+        return {"aws_ec2": instances}
 
-    def _populate(self, groups, hostnames, allow_duplicated_hosts=False,
-                  hostvars_prefix=None, hostvars_suffix=None,
-                  use_contrib_script_compatible_ec2_tag_keys=False):
+    def _populate(
+        self, groups, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False
+    ):
         for group in groups:
             group = self.inventory.add_group(group)
             self._add_hosts(
@@ -719,20 +712,20 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 allow_duplicated_hosts=allow_duplicated_hosts,
                 hostvars_prefix=hostvars_prefix,
                 hostvars_suffix=hostvars_suffix,
-                use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys)
-            self.inventory.add_child('all', group)
+                use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+            )
+            self.inventory.add_child("all", group)
 
     @classmethod
-    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None,
-                          use_contrib_script_compatible_ec2_tag_keys=False):
-        host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=['Tags'])
-        host_vars['tags'] = boto3_tag_list_to_ansible_dict(original_host_vars.get('Tags', []))
+    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+        host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
+        host_vars["tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
 
         # Allow easier grouping by region
-        host_vars['placement']['region'] = host_vars['placement']['availability_zone'][:-1]
+        host_vars["placement"]["region"] = host_vars["placement"]["availability_zone"][:-1]
 
         if use_contrib_script_compatible_ec2_tag_keys:
-            for k, v in host_vars['tags'].items():
+            for k, v in host_vars["tags"].items():
                 host_vars["ec2_tag_%s" % k] = v
 
         if hostvars_prefix or hostvars_suffix:
@@ -746,8 +739,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         return host_vars
 
-    def iter_entry(self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None,
-                   hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
+    def iter_entry(
+        self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False
+    ):
         for host in hosts:
             if allow_duplicated_hosts:
                 hostname_list = self.get_all_hostnames(host, hostnames)
@@ -756,68 +750,74 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             if not hostname_list or hostname_list[0] is None:
                 continue
 
-            host_vars = self.prepare_host_vars(
-                host,
-                hostvars_prefix,
-                hostvars_suffix,
-                use_contrib_script_compatible_ec2_tag_keys)
+            host_vars = self.prepare_host_vars(host, hostvars_prefix, hostvars_suffix, use_contrib_script_compatible_ec2_tag_keys)
             for name in hostname_list:
                 yield to_text(name), host_vars
 
-    def _add_hosts(self, hosts, group, hostnames, allow_duplicated_hosts=False,
-                   hostvars_prefix=None, hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
-        '''
-            :param hosts: a list of hosts to be added to a group
-            :param group: the name of the group to which the hosts belong
-            :param hostnames: a list of hostname destination variables in order of preference
-            :param bool allow_duplicated_hosts: if true, accept same host with different names
-            :param str hostvars_prefix: starts the hostvars variable name with this prefix
-            :param str hostvars_suffix: ends the hostvars variable name with this suffix
-            :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
-        '''
+    def _add_hosts(
+        self,
+        hosts,
+        group,
+        hostnames,
+        allow_duplicated_hosts=False,
+        hostvars_prefix=None,
+        hostvars_suffix=None,
+        use_contrib_script_compatible_ec2_tag_keys=False,
+    ):
+        """
+        :param hosts: a list of hosts to be added to a group
+        :param group: the name of the group to which the hosts belong
+        :param hostnames: a list of hostname destination variables in order of preference
+        :param bool allow_duplicated_hosts: if true, accept same host with different names
+        :param str hostvars_prefix: starts the hostvars variable name with this prefix
+        :param str hostvars_suffix: ends the hostvars variable name with this suffix
+        :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
+        """
 
         for name, host_vars in self.iter_entry(
-                hosts, hostnames,
-                allow_duplicated_hosts=allow_duplicated_hosts,
-                hostvars_prefix=hostvars_prefix,
-                hostvars_suffix=hostvars_suffix,
-                use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys):
+            hosts,
+            hostnames,
+            allow_duplicated_hosts=allow_duplicated_hosts,
+            hostvars_prefix=hostvars_prefix,
+            hostvars_suffix=hostvars_suffix,
+            use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+        ):
             self.inventory.add_host(name, group=group)
             for k, v in host_vars.items():
                 self.inventory.set_variable(name, k, v)
 
             # Use constructed if applicable
 
-            strict = self.get_option('strict')
+            strict = self.get_option("strict")
 
             # Composed variables
-            self._set_composite_vars(self.get_option('compose'), host_vars, name, strict=strict)
+            self._set_composite_vars(self.get_option("compose"), host_vars, name, strict=strict)
 
             # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
-            self._add_host_to_composed_groups(self.get_option('groups'), host_vars, name, strict=strict)
+            self._add_host_to_composed_groups(self.get_option("groups"), host_vars, name, strict=strict)
 
             # Create groups based on variable values and add the corresponding hosts to it
-            self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host_vars, name, strict=strict)
+            self._add_host_to_keyed_groups(self.get_option("keyed_groups"), host_vars, name, strict=strict)
 
     def _set_credentials(self, loader):
-        '''
-            :param config_data: contents of the inventory config file
-        '''
+        """
+        :param config_data: contents of the inventory config file
+        """
 
         t = Templar(loader=loader)
         credentials = {}
 
-        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
+        for credential_type in ["aws_profile", "aws_access_key", "aws_secret_key", "aws_security_token", "iam_role_arn"]:
             if t.is_template(self.get_option(credential_type)):
                 credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
             else:
                 credentials[credential_type] = self.get_option(credential_type)
 
-        self.boto_profile = credentials['aws_profile']
-        self.aws_access_key_id = credentials['aws_access_key']
-        self.aws_secret_access_key = credentials['aws_secret_key']
-        self.aws_security_token = credentials['aws_security_token']
-        self.iam_role_arn = credentials['iam_role_arn']
+        self.boto_profile = credentials["aws_profile"]
+        self.aws_access_key_id = credentials["aws_access_key"]
+        self.aws_secret_access_key = credentials["aws_secret_key"]
+        self.aws_security_token = credentials["aws_security_token"]
+        self.iam_role_arn = credentials["iam_role_arn"]
 
         if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
             session = botocore.session.get_session()
@@ -831,26 +831,27 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 self.aws_security_token = credentials.token
 
         if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            raise AnsibleError("Insufficient boto credentials found. Please provide them in your "
-                               "inventory configuration file or set them as environment variables.")
+            raise AnsibleError(
+                "Insufficient boto credentials found. Please provide them in your " "inventory configuration file or set them as environment variables."
+            )
 
     def verify_file(self, path):
-        '''
-            :param loader: an ansible.parsing.dataloader.DataLoader object
-            :param path: the path to the inventory config file
-            :return the contents of the config file
-        '''
+        """
+        :param loader: an ansible.parsing.dataloader.DataLoader object
+        :param path: the path to the inventory config file
+        :return the contents of the config file
+        """
         if super(InventoryModule, self).verify_file(path):
-            if path.endswith(('aws_ec2.yml', 'aws_ec2.yaml')):
+            if path.endswith(("aws_ec2.yml", "aws_ec2.yaml")):
                 return True
         self.display.debug("aws_ec2 inventory filename must end with 'aws_ec2.yml' or 'aws_ec2.yaml'")
         return False
 
     def build_include_filters(self):
-        if self.get_option('filters'):
-            return [self.get_option('filters')] + self.get_option('include_filters')
-        elif self.get_option('include_filters'):
-            return self.get_option('include_filters')
+        if self.get_option("filters"):
+            return [self.get_option("filters")] + self.get_option("include_filters")
+        elif self.get_option("include_filters"):
+            return self.get_option("include_filters")
         else:  # no filter
             return [{}]
 
@@ -859,38 +860,39 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleError(missing_required_lib("botocore and boto3"))
 
         self._read_config_data(path)
 
-        if self.get_option('use_contrib_script_compatible_sanitization'):
+        if self.get_option("use_contrib_script_compatible_sanitization"):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
 
         self._set_credentials(loader)
 
         # get user specifications
-        regions = self.get_option('regions')
+        regions = self.get_option("regions")
         include_filters = self.build_include_filters()
-        exclude_filters = self.get_option('exclude_filters')
-        hostnames = self.get_option('hostnames')
-        strict_permissions = self.get_option('strict_permissions')
-        allow_duplicated_hosts = self.get_option('allow_duplicated_hosts')
+        exclude_filters = self.get_option("exclude_filters")
+        hostnames = self.get_option("hostnames")
+        strict_permissions = self.get_option("strict_permissions")
+        allow_duplicated_hosts = self.get_option("allow_duplicated_hosts")
 
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
-        use_contrib_script_compatible_ec2_tag_keys = self.get_option('use_contrib_script_compatible_ec2_tag_keys')
+        use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
 
         cache_key = self.get_cache_key(path)
         # false when refresh_cache or --flush-cache is used
         if cache:
             # get the user-specified directive
-            cache = self.get_option('cache')
+            cache = self.get_option("cache")
 
-        if self.get_option('include_extra_api_calls'):
+        if self.get_option("include_extra_api_calls"):
             self.display.deprecate(
-                "The include_extra_api_calls option has been deprecated "
-                " and will be removed in release 6.0.0.",
-                date='2024-09-01', collection_name='amazon.aws')
+                "The include_extra_api_calls option has been deprecated " " and will be removed in release 6.0.0.",
+                date="2024-09-01",
+                collection_name="amazon.aws",
+            )
 
         # Generate inventory
         cache_needs_update = False
@@ -910,11 +912,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             allow_duplicated_hosts=allow_duplicated_hosts,
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
-            use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys)
+            use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+        )
 
         # If the cache has expired/doesn't exist or if refresh_inventory/flush cache is used
         # when the user is using caching, update the cached inventory
-        if cache_needs_update or (not cache and self.get_option('cache')):
+        if cache_needs_update or (not cache and self.get_option("cache")):
             self._cache[cache_key] = results
 
     @staticmethod
@@ -923,4 +926,4 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         # note that while this mirrors what the script used to do, it has many issues with unicode and usability in python
         regex = re.compile(r"[^A-Za-z0-9\_\-]")
 
-        return regex.sub('_', name)
+        return regex.sub("_", name)

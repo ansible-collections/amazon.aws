@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: cloudtrail_info
 version_added: 5.0.0
@@ -30,9 +31,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all trails
@@ -43,9 +44,9 @@ EXAMPLES = '''
     trail_names:
       - arn:aws:cloudtrail:us-east-2:123456789012:trail/MyTrail
 
-'''
+"""
 
-RETURN = '''
+RETURN = """
 trail_list:
     description: List of trail objects. Each element consists of a dict with all the information related to that cloudtrail.
     type: list
@@ -152,7 +153,7 @@ trail_list:
             returned: always
             sample: "{ 'my_tag_key': 'my_tag_value' }"
 
-'''
+"""
 
 try:
     import botocore
@@ -169,7 +170,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 def get_trails(connection, module):
     all_trails = []
     try:
-        result = connection.get_paginator('list_trails')
+        result = connection.get_paginator("list_trails")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the trails.")
     for trail in result.paginate():
@@ -193,7 +194,7 @@ def get_trail_detail(connection, module):
         module.fail_json_aws(e, msg="Failed to get the trails.")
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_cloud_trail = []
-    for cloud_trail in result['trailList']:
+    for cloud_trail in result["trailList"]:
         try:
             status_dict = connection.get_trail_status(Name=cloud_trail["TrailARN"], aws_retry=True)
             cloud_trail.update(status_dict)
@@ -209,30 +210,30 @@ def get_trail_detail(connection, module):
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for tr in snaked_cloud_trail:
-        if 'tags_list' in tr:
-            tr['tags'] = boto3_tag_list_to_ansible_dict(tr['tags_list'], 'key', 'value')
-            del (tr['tags_list'])
-        if 'response_metadata' in tr:
-            del (tr['response_metadata'])
-    output['trail_list'] = snaked_cloud_trail
+        if "tags_list" in tr:
+            tr["tags"] = boto3_tag_list_to_ansible_dict(tr["tags_list"], "key", "value")
+            del tr["tags_list"]
+        if "response_metadata" in tr:
+            del tr["response_metadata"]
+    output["trail_list"] = snaked_cloud_trail
     return output
 
 
 def main():
     argument_spec = dict(
-        trail_names=dict(type='list', elements='str', default=[]),
-        include_shadow_trails=dict(type='bool', default=True),
+        trail_names=dict(type="list", elements="str", default=[]),
+        include_shadow_trails=dict(type="bool", default=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        connection = module.client('cloudtrail', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("cloudtrail", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
     result = get_trail_detail(connection, module)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

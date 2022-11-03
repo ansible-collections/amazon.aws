@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import re
@@ -59,11 +60,11 @@ def is_outpost_arn(arn):
     if not details:
         return False
 
-    service = details.get('service') or ""
-    if service.lower() != 'outposts':
+    service = details.get("service") or ""
+    if service.lower() != "outposts":
         return False
-    resource = details.get('resource') or ""
-    if not re.match('^outpost/op-[a-f0-9]{17}$', resource):
+    resource = details.get("resource") or ""
+    if not re.match("^outpost/op-[a-f0-9]{17}$", resource):
         return False
 
     return True

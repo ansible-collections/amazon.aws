@@ -4,7 +4,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
@@ -38,7 +39,7 @@ one_action_two_tg = [
                 {
                     "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-dadf7b62/be2f50b4041f11ed",
                     "Weight": 1,
-                }
+                },
             ],
         },
         "Type": "forward",
@@ -50,8 +51,7 @@ def _sort_actions_one_entry():
     assert elbv2._sort_actions(one_action) == one_action
 
 
-class TestElBV2Utils():
-
+class TestElBV2Utils:
     def setup_method(self):
         self.connection = MagicMock(name="connection")
         self.module = MagicMock(name="module")
@@ -69,94 +69,37 @@ class TestElBV2Utils():
             "Scheme": "internet-facing",
             "IpAddressType": "ipv4",
             "VpcId": "vpc-3ac0fb5f",
-            "AvailabilityZones": [
-                {
-                    "ZoneName": "us-west-2a",
-                    "SubnetId": "subnet-8360a9e7"
-                },
-                {
-                    "ZoneName": "us-west-2b",
-                    "SubnetId": "subnet-b7d581c0"
-                }
-            ],
+            "AvailabilityZones": [{"ZoneName": "us-west-2a", "SubnetId": "subnet-8360a9e7"}, {"ZoneName": "us-west-2b", "SubnetId": "subnet-b7d581c0"}],
             "CreatedTime": "2016-03-25T21:26:12.920Z",
             "CanonicalHostedZoneId": "Z2P70J7EXAMPLE",
             "DNSName": "my-load-balancer-424835706.us-west-2.elb.amazonaws.com",
-            "SecurityGroups": [
-                "sg-5943793c"
-            ],
+            "SecurityGroups": ["sg-5943793c"],
             "LoadBalancerName": "my-load-balancer",
-            "State": {
-                "Code": "active"
-            },
-            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188"
+            "State": {"Code": "active"},
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188",
         }
-        self.paginate.build_full_result.return_value = {
-            'LoadBalancers': [self.loadbalancer]
-        }
+        self.paginate.build_full_result.return_value = {"LoadBalancers": [self.loadbalancer]}
 
         self.connection.describe_load_balancer_attributes.return_value = {
             "Attributes": [
-                {
-                    "Value": "false",
-                    "Key": "access_logs.s3.enabled"
-                },
-                {
-                    "Value": "",
-                    "Key": "access_logs.s3.bucket"
-                },
-                {
-                    "Value": "",
-                    "Key": "access_logs.s3.prefix"
-                },
-                {
-                    "Value": "60",
-                    "Key": "idle_timeout.timeout_seconds"
-                },
-                {
-                    "Value": "false",
-                    "Key": "deletion_protection.enabled"
-                },
-                {
-                    "Value": "true",
-                    "Key": "routing.http2.enabled"
-                },
-                {
-                    "Value": "defensive",
-                    "Key": "routing.http.desync_mitigation_mode"
-                },
-                {
-                    "Value": "true",
-                    "Key": "routing.http.drop_invalid_header_fields.enabled"
-                },
-                {
-                    "Value": "true",
-                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
-                },
-                {
-                    "Value": "true",
-                    "Key": "routing.http.xff_client_port.enabled"
-                },
-                {
-                    "Value": "true",
-                    "Key": "waf.fail_open.enabled"
-                },
+                {"Value": "false", "Key": "access_logs.s3.enabled"},
+                {"Value": "", "Key": "access_logs.s3.bucket"},
+                {"Value": "", "Key": "access_logs.s3.prefix"},
+                {"Value": "60", "Key": "idle_timeout.timeout_seconds"},
+                {"Value": "false", "Key": "deletion_protection.enabled"},
+                {"Value": "true", "Key": "routing.http2.enabled"},
+                {"Value": "defensive", "Key": "routing.http.desync_mitigation_mode"},
+                {"Value": "true", "Key": "routing.http.drop_invalid_header_fields.enabled"},
+                {"Value": "true", "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"},
+                {"Value": "true", "Key": "routing.http.xff_client_port.enabled"},
+                {"Value": "true", "Key": "waf.fail_open.enabled"},
             ]
         }
         self.connection.describe_tags.return_value = {
             "TagDescriptions": [
                 {
                     "ResourceArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188",
-                    "Tags": [
-                        {
-                            "Value": "ansible",
-                            "Key": "project"
-                        },
-                        {
-                            "Value": "RedHat",
-                            "Key": "company"
-                        }
-                    ]
+                    "Tags": [{"Value": "ansible", "Key": "project"}, {"Value": "RedHat", "Key": "company"}],
                 }
             ]
         }
@@ -172,7 +115,7 @@ class TestElBV2Utils():
         self.connection.describe_tags.assert_called_once()
         self.conn_paginator.paginate.assert_called_once()
         # assert we got the expected value
-        assert return_value == 'ipv4'
+        assert return_value == "ipv4"
 
     # Test modify_ip_address_type idempotency
     def test_modify_ip_address_type_idempotency(self):
@@ -206,7 +149,7 @@ class TestElBV2Utils():
             "routing_http_drop_invalid_header_fields_enabled": "true",
             "routing_http_x_amzn_tls_version_and_cipher_suite_enabled": "true",
             "routing_http_xff_client_port_enabled": "true",
-            "waf_fail_open_enabled": "true"
+            "waf_fail_open_enabled": "true",
         }
         # Run module
         actual_elb_attributes = self.elbv2obj.get_elb_attributes()

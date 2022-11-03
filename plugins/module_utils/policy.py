@@ -26,7 +26,8 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from functools import cmp_to_key
@@ -41,8 +42,8 @@ import ansible.module_utils.common.warnings as ansible_warnings
 def _canonify_root_arn(arn):
     # There are multiple ways to specifiy delegation of access to an account
     # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-accounts
-    if arn.startswith('arn:aws:iam::') and arn.endswith(':root'):
-        arn = arn.split(':')[4]
+    if arn.startswith("arn:aws:iam::") and arn.endswith(":root"):
+        arn = arn.split(":")[4]
     return arn
 
 
@@ -66,21 +67,21 @@ def _tuplify_list(element):
 
 def _hashable_policy(policy, policy_list):
     """
-        Takes a policy and returns a list, the contents of which are all hashable and sorted.
-        Example input policy:
-        {'Version': '2012-10-17',
-         'Statement': [{'Action': 's3:PutObjectAcl',
-                        'Sid': 'AddCannedAcl2',
-                        'Resource': 'arn:aws:s3:::test_policy/*',
-                        'Effect': 'Allow',
-                        'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
-                       }]}
-        Returned value:
-        [('Statement',  ((('Action', ('s3:PutObjectAcl',)),
-                          ('Effect', ('Allow',)),
-                          ('Principal', ('AWS', (('arn:aws:iam::XXXXXXXXXXXX:user/username1',), ('arn:aws:iam::XXXXXXXXXXXX:user/username2',)))),
-                          ('Resource', ('arn:aws:s3:::test_policy/*',)), ('Sid', ('AddCannedAcl2',)))),
-         ('Version', ('2012-10-17',)))]
+    Takes a policy and returns a list, the contents of which are all hashable and sorted.
+    Example input policy:
+    {'Version': '2012-10-17',
+     'Statement': [{'Action': 's3:PutObjectAcl',
+                    'Sid': 'AddCannedAcl2',
+                    'Resource': 'arn:aws:s3:::test_policy/*',
+                    'Effect': 'Allow',
+                    'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
+                   }]}
+    Returned value:
+    [('Statement',  ((('Action', ('s3:PutObjectAcl',)),
+                      ('Effect', ('Allow',)),
+                      ('Principal', ('AWS', (('arn:aws:iam::XXXXXXXXXXXX:user/username1',), ('arn:aws:iam::XXXXXXXXXXXX:user/username2',)))),
+                      ('Resource', ('arn:aws:s3:::test_policy/*',)), ('Sid', ('AddCannedAcl2',)))),
+     ('Version', ('2012-10-17',)))]
 
     """
     # Amazon will automatically convert bool and int to strings for us
@@ -118,7 +119,7 @@ def _hashable_policy(policy, policy_list):
 
 
 def _py3cmp(a, b):
-    """ Python 2 can sort lists of mixed types. Strings < tuples. Without this function this fails on Python 3."""
+    """Python 2 can sort lists of mixed types. Strings < tuples. Without this function this fails on Python 3."""
     try:
         if a > b:
             return 1
@@ -129,8 +130,8 @@ def _py3cmp(a, b):
     except TypeError as e:
         # check to see if they're tuple-string
         # always say strings are less than tuples (to maintain compatibility with python2)
-        str_ind = to_text(e).find('str')
-        tup_ind = to_text(e).find('tuple')
+        str_ind = to_text(e).find("str")
+        tup_ind = to_text(e).find("tuple")
         if -1 not in (str_ind, tup_ind):
             if str_ind < tup_ind:
                 return -1
@@ -140,8 +141,8 @@ def _py3cmp(a, b):
 
 
 def compare_policies(current_policy, new_policy, default_version="2008-10-17"):
-    """ Compares the existing policy and the updated policy
-        Returns True if there is a difference between policies.
+    """Compares the existing policy and the updated policy
+    Returns True if there is a difference between policies.
     """
     # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html
     if default_version:
@@ -177,9 +178,10 @@ def sort_json_policy_dict(policy_dict):
     """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.policy.sort_json_policy_dict has been deprecated, consider using '
-        'amazon.aws.module_utils.policy.compare_policies instead',
-        version='8.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.policy.sort_json_policy_dict has been deprecated, consider using " "amazon.aws.module_utils.policy.compare_policies instead",
+        version="8.0.0",
+        collection_name="amazon.aws",
+    )
 
     def value_is_list(my_list):
 

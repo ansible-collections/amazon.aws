@@ -2,10 +2,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_endpoint_service_info
 short_description: Retrieves AWS VPC endpoint service details
 version_added: 1.5.0
@@ -31,17 +32,17 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all supported AWS services for VPC endpoints
 - name: List supported AWS endpoint services
   amazon.aws.ec2_vpc_endpoint_service_info:
     region: ap-southeast-2
   register: supported_endpoint_services
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service_names:
   description: List of supported AWS VPC endpoint service names.
   returned: success
@@ -110,7 +111,7 @@ service_details:
       - The verification state of the VPC endpoint service.
       - Consumers of an endpoint service cannot use the private name when the state is not C(verified).
       type: str
-'''
+"""
 
 try:
     import botocore
@@ -128,53 +129,53 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 # We're using a paginator so we can't use the client decorators
 @AWSRetry.jittered_backoff()
 def get_services(client, module):
-    paginator = client.get_paginator('describe_vpc_endpoint_services')
+    paginator = client.get_paginator("describe_vpc_endpoint_services")
     params = {}
     if module.params.get("filters"):
-        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     if module.params.get("service_names"):
-        params['ServiceNames'] = module.params.get("service_names")
+        params["ServiceNames"] = module.params.get("service_names")
 
     results = paginator.paginate(**params).build_full_result()
     return results
 
 
 def normalize_service(service):
-    normalized = camel_dict_to_snake_dict(service, ignore_list=['Tags'])
-    normalized["tags"] = boto3_tag_list_to_ansible_dict(service.get('Tags'))
+    normalized = camel_dict_to_snake_dict(service, ignore_list=["Tags"])
+    normalized["tags"] = boto3_tag_list_to_ansible_dict(service.get("Tags"))
     return normalized
 
 
 def normalize_result(result):
     normalized = {}
-    normalized['service_details'] = [normalize_service(service) for service in result.get('ServiceDetails')]
-    normalized['service_names'] = result.get('ServiceNames', [])
+    normalized["service_details"] = [normalize_service(service) for service in result.get("ServiceDetails")]
+    normalized["service_names"] = result.get("ServiceNames", [])
     return normalized
 
 
 def main():
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        service_names=dict(type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        service_names=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     # Validate Requirements
     try:
-        client = module.client('ec2')
+        client = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     try:
         results = get_services(client, module)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to retrieve service details')
+        module.fail_json_aws(e, msg="Failed to connect to retrieve service details")
     normalized_result = normalize_result(results)
 
     module.exit_json(changed=False, **normalized_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

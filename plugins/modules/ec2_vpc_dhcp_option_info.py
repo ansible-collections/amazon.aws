@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_vpc_dhcp_option_info
 version_added: 1.0.0
@@ -36,9 +37,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all DHCP Option sets for an account or profile
@@ -62,9 +63,9 @@ EXAMPLES = '''
     dhcp_options_ids: dopt-123fece2
   register: dhcp_info
 
-'''
+"""
 
-RETURN = '''
+RETURN = """
 dhcp_options:
     description: The DHCP options created, associated or found.
     returned: always
@@ -150,7 +151,7 @@ changed:
     description: True if listing the dhcp options succeeds.
     type: bool
     returned: always
-'''
+"""
 
 try:
     import botocore
@@ -167,44 +168,43 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import normalize_ec
 
 
 def get_dhcp_options_info(dhcp_option):
-    dhcp_option_info = {'DhcpOptionsId': dhcp_option['DhcpOptionsId'],
-                        'DhcpConfigurations': dhcp_option['DhcpConfigurations'],
-                        'Tags': boto3_tag_list_to_ansible_dict(dhcp_option.get('Tags', [{'Value': '', 'Key': 'Name'}]))}
+    dhcp_option_info = {
+        "DhcpOptionsId": dhcp_option["DhcpOptionsId"],
+        "DhcpConfigurations": dhcp_option["DhcpConfigurations"],
+        "Tags": boto3_tag_list_to_ansible_dict(dhcp_option.get("Tags", [{"Value": "", "Key": "Name"}])),
+    }
     return dhcp_option_info
 
 
 def list_dhcp_options(client, module):
-    params = dict(Filters=ansible_dict_to_boto3_filter_list(module.params.get('filters')))
+    params = dict(Filters=ansible_dict_to_boto3_filter_list(module.params.get("filters")))
 
     if module.params.get("dry_run"):
-        params['DryRun'] = True
+        params["DryRun"] = True
 
     if module.params.get("dhcp_options_ids"):
-        params['DhcpOptionsIds'] = module.params.get("dhcp_options_ids")
+        params["DhcpOptionsIds"] = module.params.get("dhcp_options_ids")
 
     try:
         all_dhcp_options = client.describe_dhcp_options(aws_retry=True, **params)
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
-    normalized_config = [normalize_ec2_vpc_dhcp_config(config['DhcpConfigurations']) for config in all_dhcp_options['DhcpOptions']]
-    raw_config = [camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=['Tags']) for option in all_dhcp_options['DhcpOptions']]
+    normalized_config = [normalize_ec2_vpc_dhcp_config(config["DhcpConfigurations"]) for config in all_dhcp_options["DhcpOptions"]]
+    raw_config = [camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=["Tags"]) for option in all_dhcp_options["DhcpOptions"]]
     return raw_config, normalized_config
 
 
 def main():
     argument_spec = dict(
-        filters=dict(type='dict', default={}),
-        dry_run=dict(type='bool', default=False),
-        dhcp_options_ids=dict(type='list', elements='str'),
+        filters=dict(type="dict", default={}),
+        dry_run=dict(type="bool", default=False),
+        dhcp_options_ids=dict(type="list", elements="str"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     # call your function here
     results, normalized_config = list_dhcp_options(client, module)
@@ -212,5 +212,5 @@ def main():
     module.exit_json(dhcp_options=results, dhcp_config=normalized_config)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

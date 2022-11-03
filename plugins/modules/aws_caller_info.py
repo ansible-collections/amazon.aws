@@ -2,11 +2,12 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: aws_caller_info
 version_added: 1.0.0
@@ -23,17 +24,17 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get the current caller identity information
   amazon.aws.aws_caller_info:
   register: caller_info
-'''
+"""
 
-RETURN = '''
+RETURN = """
 account:
     description: The account id the access credentials are associated with.
     returned: success
@@ -56,7 +57,7 @@ user_id:
     returned: success
     type: str
     sample: 123456789012:my-federated-user-name
-'''
+"""
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
@@ -75,34 +76,32 @@ def main():
         supports_check_mode=True,
     )
 
-    client = module.client('sts', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("sts", retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         caller_info = client.get_caller_identity(aws_retry=True)
-        caller_info.pop('ResponseMetadata', None)
+        caller_info.pop("ResponseMetadata", None)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to retrieve caller identity')
+        module.fail_json_aws(e, msg="Failed to retrieve caller identity")
 
-    iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    iam_client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         # Although a list is returned by list_account_aliases AWS supports maximum one alias per account.
         # If an alias is defined it will be returned otherwise a blank string is filled in as account_alias.
         # see https://docs.aws.amazon.com/cli/latest/reference/iam/list-account-aliases.html#output
         response = iam_client.list_account_aliases(aws_retry=True)
-        if response and response['AccountAliases']:
-            caller_info['account_alias'] = response['AccountAliases'][0]
+        if response and response["AccountAliases"]:
+            caller_info["account_alias"] = response["AccountAliases"][0]
         else:
-            caller_info['account_alias'] = ''
+            caller_info["account_alias"] = ""
     except (BotoCoreError, ClientError):
         # The iam:ListAccountAliases permission is required for this operation to succeed.
         # Lacking this permission is handled gracefully by not returning the account_alias.
         pass
 
-    module.exit_json(
-        changed=False,
-        **camel_dict_to_snake_dict(caller_info))
+    module.exit_json(changed=False, **camel_dict_to_snake_dict(caller_info))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

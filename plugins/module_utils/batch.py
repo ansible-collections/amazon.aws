@@ -29,7 +29,8 @@
 This module adds shared support for Batch modules.
 """
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
@@ -43,7 +44,7 @@ def cc(key):
     :param key:
     :return:
     """
-    components = key.split('_')
+    components = key.split("_")
     return components[0] + "".join([token.capitalize() for token in components[1:]])
 
 

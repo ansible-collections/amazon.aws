@@ -4,10 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_cluster_snapshot
 version_added: 5.0.0
@@ -77,9 +78,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a DB cluster snapshot
   amazon.aws.rds_cluster_snapshot:
     db_cluster_identifier: "{{ cluster_id }}"
@@ -97,9 +98,9 @@ EXAMPLES = r'''
     source_id: "{{ snapshot.db_snapshot_arn }}"
     source_region: us-east-2
     copy_tags: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 availability_zone:
   description: Availability zone of the database from which the snapshot was created.
   returned: always
@@ -214,7 +215,7 @@ tags:
   returned: always
   type: complex
   contains: {}
-'''
+"""
 
 try:
     import botocore
@@ -248,13 +249,14 @@ def get_snapshot(snapshot_id):
 
 
 def get_parameters(parameters, method_name):
-    if method_name == 'copy_db_cluster_snapshot':
-        parameters['TargetDBClusterSnapshotIdentifier'] = module.params['db_cluster_snapshot_identifier']
+    if method_name == "copy_db_cluster_snapshot":
+        parameters["TargetDBClusterSnapshotIdentifier"] = module.params["db_cluster_snapshot_identifier"]
 
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
-        module.fail_json(msg='To {0} requires the parameters: {1}'.format(
-            get_rds_method_attribute(method_name, module).operation_description, required_options))
+        module.fail_json(
+            msg="To {0} requires the parameters: {1}".format(get_rds_method_attribute(method_name, module).operation_description, required_options)
+        )
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 
@@ -277,20 +279,20 @@ def ensure_snapshot_absent():
 
 def copy_snapshot(params):
     changed = False
-    snapshot_id = module.params.get('db_cluster_snapshot_identifier')
+    snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     snapshot = get_snapshot(snapshot_id)
 
     if not snapshot:
-        method_params = get_parameters(params, 'copy_db_cluster_snapshot')
-        if method_params.get('Tags'):
-            method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-        _result, changed = call_method(client, module, 'copy_db_cluster_snapshot', method_params)
+        method_params = get_parameters(params, "copy_db_cluster_snapshot")
+        if method_params.get("Tags"):
+            method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+        _result, changed = call_method(client, module, "copy_db_cluster_snapshot", method_params)
 
     return changed
 
 
 def ensure_snapshot_present(params):
-    source_id = module.params.get('source_db_cluster_snapshot_identifier')
+    source_id = module.params.get("source_db_cluster_snapshot_identifier")
     snapshot_name = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
@@ -309,14 +311,14 @@ def ensure_snapshot_present(params):
         changed |= modify_snapshot()
 
     snapshot = get_snapshot(snapshot_name)
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=['Tags']))
+    module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]))
 
 
 def create_snapshot(params):
-    method_params = get_parameters(params, 'create_db_cluster_snapshot')
-    if method_params.get('Tags'):
-        method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-    _snapshot, changed = call_method(client, module, 'create_db_cluster_snapshot', method_params)
+    method_params = get_parameters(params, "create_db_cluster_snapshot")
+    if method_params.get("Tags"):
+        method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+    _snapshot, changed = call_method(client, module, "create_db_cluster_snapshot", method_params)
 
     return changed
 
@@ -324,11 +326,11 @@ def create_snapshot(params):
 def modify_snapshot():
     # TODO - add other modifications aside from purely tags
     changed = False
-    snapshot_id = module.params.get('db_cluster_snapshot_identifier')
+    snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     snapshot = get_snapshot(snapshot_id)
 
-    if module.params.get('tags'):
-        changed |= ensure_tags(client, module, snapshot['DBClusterSnapshotArn'], snapshot['Tags'], module.params['tags'], module.params['purge_tags'])
+    if module.params.get("tags"):
+        changed |= ensure_tags(client, module, snapshot["DBClusterSnapshotArn"], snapshot["Tags"], module.params["tags"], module.params["purge_tags"])
 
     return changed
 
@@ -338,16 +340,16 @@ def main():
     global module
 
     argument_spec = dict(
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
-        db_cluster_snapshot_identifier=dict(type='str', aliases=['id', 'snapshot_id', 'snapshot_name'], required=True),
-        db_cluster_identifier=dict(type='str', aliases=['cluster_id', 'cluster_name']),
-        source_db_cluster_snapshot_identifier=dict(type='str', aliases=['source_id', 'source_snapshot_id']),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=300),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        copy_tags=dict(type='bool', default=False),
-        source_region=dict(type='str'),
+        state=dict(type="str", choices=["present", "absent"], default="present"),
+        db_cluster_snapshot_identifier=dict(type="str", aliases=["id", "snapshot_id", "snapshot_name"], required=True),
+        db_cluster_identifier=dict(type="str", aliases=["cluster_id", "cluster_name"]),
+        source_db_cluster_snapshot_identifier=dict(type="str", aliases=["source_id", "source_snapshot_id"]),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=300),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        copy_tags=dict(type="bool", default=False),
+        source_region=dict(type="str"),
     )
 
     module = AnsibleAWSModule(
@@ -357,7 +359,7 @@ def main():
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
     try:
-        client = module.client('rds', retry_decorator=retry_decorator)
+        client = module.client("rds", retry_decorator=retry_decorator)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
@@ -370,5 +372,5 @@ def main():
         ensure_snapshot_present(params)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

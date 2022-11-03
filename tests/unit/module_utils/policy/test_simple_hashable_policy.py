@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _hashable_policy
@@ -14,14 +15,14 @@ def test_hashable_policy_none():
 
 
 def test_hashable_policy_boolean():
-    assert _hashable_policy(True, []) == ("true", )
-    assert _hashable_policy(False, []) == ("false", )
+    assert _hashable_policy(True, []) == ("true",)
+    assert _hashable_policy(False, []) == ("false",)
 
 
 def test_hashable_policy_int():
-    assert _hashable_policy(1, []) == ("1", )
-    assert _hashable_policy(42, []) == ("42", )
-    assert _hashable_policy(0, []) == ("0", )
+    assert _hashable_policy(1, []) == ("1",)
+    assert _hashable_policy(42, []) == ("42",)
+    assert _hashable_policy(0, []) == ("0",)
 
 
 def test_hashable_policy_string():

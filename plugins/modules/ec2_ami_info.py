@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_ami_info
 version_added: 1.0.0
@@ -54,9 +55,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: gather information about an AMI using ami-id
@@ -78,9 +79,9 @@ EXAMPLES = '''
     owners: 099720109477
     filters:
       name: "ubuntu/images/ubuntu-zesty-17.04-*"
-'''
+"""
 
-RETURN = '''
+RETURN = """
 images:
   description: A list of images.
   returned: always
@@ -199,7 +200,7 @@ images:
       returned: always
       type: str
       sample: hvm
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
@@ -230,58 +231,58 @@ def list_ec2_images(ec2_client, module):
     # Implementation based on aioue's suggestion in #24886
     for owner in owners:
         if owner.isdigit():
-            if 'owner-id' not in filters:
-                filters['owner-id'] = list()
-            filters['owner-id'].append(owner)
-        elif owner == 'self':
+            if "owner-id" not in filters:
+                filters["owner-id"] = list()
+            filters["owner-id"].append(owner)
+        elif owner == "self":
             # self not a valid owner-alias filter (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImages.html)
             owner_param.append(owner)
         else:
-            if 'owner-alias' not in filters:
-                filters['owner-alias'] = list()
-            filters['owner-alias'].append(owner)
+            if "owner-alias" not in filters:
+                filters["owner-alias"] = list()
+            filters["owner-alias"].append(owner)
 
     filters = ansible_dict_to_boto3_filter_list(filters)
 
     try:
-        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param,
-                                            ExecutableUsers=executable_users)
+        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param, ExecutableUsers=executable_users)
         images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
     for image in images:
         try:
-            image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
+            image["tags"] = boto3_tag_list_to_ansible_dict(image.get("tags", []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
-                                                                         ImageId=image['image_id'])['LaunchPermissions']
-                image['launch_permissions'] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
-        except is_boto3_error_code('AuthFailure'):
+                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute="launchPermission", ImageId=image["image_id"])[
+                    "LaunchPermissions"
+                ]
+                image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
+        except is_boto3_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
         except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
-            module.fail_json_aws(err, 'Failed to describe AMI')
+            module.fail_json_aws(err, "Failed to describe AMI")
 
-    images.sort(key=lambda e: e.get('creation_date', ''))  # it may be possible that creation_date does not always exist
+    images.sort(key=lambda e: e.get("creation_date", ""))  # it may be possible that creation_date does not always exist
     module.exit_json(images=images)
 
 
 def main():
 
     argument_spec = dict(
-        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
-        filters=dict(default={}, type='dict'),
-        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
-        executable_users=dict(default=[], type='list', elements='str', aliases=['executable_user']),
-        describe_image_attributes=dict(default=False, type='bool')
+        image_ids=dict(default=[], type="list", elements="str", aliases=["image_id"]),
+        filters=dict(default={}, type="dict"),
+        owners=dict(default=[], type="list", elements="str", aliases=["owner"]),
+        executable_users=dict(default=[], type="list", elements="str", aliases=["executable_user"]),
+        describe_image_attributes=dict(default=False, type="bool"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     list_ec2_images(ec2_client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

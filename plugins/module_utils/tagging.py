@@ -26,7 +26,8 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.module_utils._text import to_native
@@ -36,7 +37,7 @@ from ansible.module_utils.six import string_types
 
 def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_key_name=None):
 
-    """ Convert a boto3 list of resource tags to a flat dict of key:value pairs
+    """Convert a boto3 list of resource tags to a flat dict of key:value pairs
     Args:
         tags_list (list): List of dicts representing AWS tags.
         tag_name_key_name (str): Value to use as the key for all tag keys (useful because boto3 doesn't always use "Key")
@@ -60,7 +61,7 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
     if tag_name_key_name and tag_value_key_name:
         tag_candidates = {tag_name_key_name: tag_value_key_name}
     else:
-        tag_candidates = {'key': 'value', 'Key': 'Value'}
+        tag_candidates = {"key": "value", "Key": "Value"}
 
     # minio seems to return [{}] as an empty tags_list
     if not tags_list or not any(tag for tag in tags_list):
@@ -71,9 +72,9 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
     raise ValueError("Couldn't find tag key (candidates %s) in tag list %s" % (str(tag_candidates), str(tags_list)))
 
 
-def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name='Key', tag_value_key_name='Value'):
+def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value_key_name="Value"):
 
-    """ Convert a flat dict of key:value pairs representing AWS resource tags to a boto3 list of dicts
+    """Convert a flat dict of key:value pairs representing AWS resource tags to a boto3 list of dicts
     Args:
         tags_dict (dict): Dict representing AWS resource tags.
         tag_name_key_name (str): Value to use as the key for all tag keys (useful because boto3 doesn't always use "Key")
@@ -105,7 +106,7 @@ def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name='Key', tag_value
 
 
 def boto3_tag_specifications(tags_dict, types=None):
-    """ Converts a list of resource types and a flat dictionary of key:value pairs representing AWS
+    """Converts a list of resource types and a flat dictionary of key:value pairs representing AWS
     resource tags to a TagSpecification object.
 
     https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TagSpecification.html
@@ -170,7 +171,7 @@ def compare_aws_tags(current_tags_dict, new_tags_dict, purge_tags=True):
                 continue
             # Amazon have reserved 'aws:*' tags, we should avoid purging them as
             # this probably isn't what people want to do...
-            if key.startswith('aws:'):
+            if key.startswith("aws:"):
                 continue
             tag_keys_to_unset.append(key)
 

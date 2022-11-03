@@ -2,10 +2,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_endpoint_info
 short_description: Retrieves AWS VPC endpoints details using AWS methods
 version_added: 1.0.0
@@ -42,9 +43,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all support AWS services for VPC endpoints
 - name: List supported AWS endpoint services
   amazon.aws.ec2_vpc_endpoint_info:
@@ -78,9 +79,9 @@ EXAMPLES = r'''
     vpc_endpoint_ids:
       - vpce-12345678
   register: endpoint_details
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service_names:
   description: AWS VPC endpoint service names.
   returned: I(query) is C(services)
@@ -197,7 +198,7 @@ vpc_endpoints:
       state: "available"
       vpc_endpoint_id: "vpce-abbad0d0"
       vpc_id: "vpc-1111ffff"
-'''
+"""
 
 try:
     import botocore
@@ -215,13 +216,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 
 @AWSRetry.jittered_backoff()
 def _describe_endpoints(client, **params):
-    paginator = client.get_paginator('describe_vpc_endpoints')
+    paginator = client.get_paginator("describe_vpc_endpoints")
     return paginator.paginate(**params).build_full_result()
 
 
 @AWSRetry.jittered_backoff()
 def _describe_endpoint_services(client, **params):
-    paginator = client.get_paginator('describe_vpc_endpoint_services')
+    paginator = client.get_paginator("describe_vpc_endpoint_services")
     return paginator.paginate(**params).build_full_result()
 
 
@@ -231,21 +232,21 @@ def get_supported_services(client, module):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to get endpoint servicess")
 
-    results = list(services['ServiceNames'])
+    results = list(services["ServiceNames"])
     return dict(service_names=results)
 
 
 def get_endpoints(client, module):
     results = list()
     params = dict()
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    if module.params.get('vpc_endpoint_ids'):
-        params['VpcEndpointIds'] = module.params.get('vpc_endpoint_ids')
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    if module.params.get("vpc_endpoint_ids"):
+        params["VpcEndpointIds"] = module.params.get("vpc_endpoint_ids")
     try:
-        results = _describe_endpoints(client, **params)['VpcEndpoints']
+        results = _describe_endpoints(client, **params)["VpcEndpoints"]
         results = normalize_boto3_result(results)
-    except is_boto3_error_code('InvalidVpcEndpointId.NotFound'):
-        module.exit_json(msg='VpcEndpoint {0} does not exist'.format(module.params.get('vpc_endpoint_ids')), vpc_endpoints=[])
+    except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
+        module.exit_json(msg="VpcEndpoint {0} does not exist".format(module.params.get("vpc_endpoint_ids")), vpc_endpoints=[])
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get endpoints")
 
@@ -254,45 +255,51 @@ def get_endpoints(client, module):
 
 def main():
     argument_spec = dict(
-        query=dict(choices=['services', 'endpoints'], required=False),
-        filters=dict(default={}, type='dict'),
-        vpc_endpoint_ids=dict(type='list', elements='str'),
+        query=dict(choices=["services", "endpoints"], required=False),
+        filters=dict(default={}, type="dict"),
+        vpc_endpoint_ids=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     # Validate Requirements
     try:
-        connection = module.client('ec2')
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    query = module.params.get('query')
-    if query == 'endpoints':
-        module.deprecate('The query option has been deprecated and'
-                         ' will be removed in release 6.0.0.  Searching for'
-                         ' `endpoints` is now the default and after'
-                         ' release 6.0.0 this module will only support fetching'
-                         ' endpoints.',
-                         version='6.0.0', collection_name='amazon.aws')
-    elif query == 'services':
-        module.deprecate('Support for fetching service information with this '
-                         'module has been deprecated and will be removed in '
-                         'release 6.0.0.  '
-                         'Please use the ec2_vpc_endpoint_service_info module '
-                         'instead.', version='6.0.0',
-                         collection_name='amazon.aws')
+    query = module.params.get("query")
+    if query == "endpoints":
+        module.deprecate(
+            "The query option has been deprecated and"
+            " will be removed in release 6.0.0.  Searching for"
+            " `endpoints` is now the default and after"
+            " release 6.0.0 this module will only support fetching"
+            " endpoints.",
+            version="6.0.0",
+            collection_name="amazon.aws",
+        )
+    elif query == "services":
+        module.deprecate(
+            "Support for fetching service information with this "
+            "module has been deprecated and will be removed in "
+            "release 6.0.0.  "
+            "Please use the ec2_vpc_endpoint_service_info module "
+            "instead.",
+            version="6.0.0",
+            collection_name="amazon.aws",
+        )
     else:
-        query = 'endpoints'
+        query = "endpoints"
 
     invocations = {
-        'services': get_supported_services,
-        'endpoints': get_endpoints,
+        "services": get_supported_services,
+        "endpoints": get_endpoints,
     }
     results = invocations[query](connection, module)
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

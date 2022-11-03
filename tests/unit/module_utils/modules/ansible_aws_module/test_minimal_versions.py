@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from pprint import pprint
@@ -28,10 +29,10 @@ class TestMinimalVersionTestSuite(object):
     # Prepare some data for use in our testing
     # ========================================================
     def setup_method(self):
-        self.MINIMAL_BOTO3 = '1.18.0'
-        self.MINIMAL_BOTOCORE = '1.21.0'
-        self.OLD_BOTO3 = '1.17.999'
-        self.OLD_BOTOCORE = '1.20.999'
+        self.MINIMAL_BOTO3 = "1.18.0"
+        self.MINIMAL_BOTOCORE = "1.21.0"
+        self.OLD_BOTO3 = "1.17.999"
+        self.OLD_BOTOCORE = "1.20.999"
 
     # ========================================================
     #   Test we don't warn when using valid versions
@@ -109,7 +110,7 @@ class TestMinimalVersionTestSuite(object):
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        assert 'boto3' in warnings[0]
+        assert "boto3" in warnings[0]
         assert self.MINIMAL_BOTO3 in warnings[0]
 
     # ========================================================
@@ -142,7 +143,7 @@ class TestMinimalVersionTestSuite(object):
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        assert 'botocore' in warnings[0]
+        assert "botocore" in warnings[0]
         assert self.MINIMAL_BOTOCORE in warnings[0]
 
     # ========================================================
@@ -177,14 +178,14 @@ class TestMinimalVersionTestSuite(object):
 
         warning_dict = dict()
         for warning in warnings:
-            if 'boto3' in warning:
-                warning_dict['boto3'] = warning
-            if 'botocore' in warning:
-                warning_dict['botocore'] = warning
+            if "boto3" in warning:
+                warning_dict["boto3"] = warning
+            if "botocore" in warning:
+                warning_dict["botocore"] = warning
 
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        assert warning_dict.get('boto3') is not None
-        assert self.MINIMAL_BOTO3 in warning_dict.get('boto3')
-        assert warning_dict.get('botocore') is not None
-        assert self.MINIMAL_BOTOCORE in warning_dict.get('botocore')
+        assert warning_dict.get("boto3") is not None
+        assert self.MINIMAL_BOTO3 in warning_dict.get("boto3")
+        assert warning_dict.get("botocore") is not None
+        assert self.MINIMAL_BOTOCORE in warning_dict.get("botocore")

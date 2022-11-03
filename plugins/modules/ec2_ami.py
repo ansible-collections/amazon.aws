@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_ami
 version_added: 1.0.0
@@ -175,11 +176,11 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
 # Thank you to iAcquire for sponsoring development of this module.
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Basic AMI Creation
@@ -278,9 +279,9 @@ EXAMPLES = '''
     state: present
     launch_permissions:
       user_ids: ['123456789012']
-'''
+"""
 
-RETURN = '''
+RETURN = """
 architecture:
     description: Architecture of image.
     returned: when AMI is created or already exists
@@ -386,7 +387,7 @@ snapshots_deleted:
         "snap-fbcccb8f",
         "snap-cfe7cdb4"
     ]
-'''
+"""
 
 import time
 
@@ -416,21 +417,21 @@ class Ec2AmiFailure(Exception):
 
 def get_block_device_mapping(image):
     bdm_dict = {}
-    if image is not None and image.get('block_device_mappings') is not None:
-        bdm = image.get('block_device_mappings')
+    if image is not None and image.get("block_device_mappings") is not None:
+        bdm = image.get("block_device_mappings")
         for device in bdm:
-            device_name = device.get('device_name')
-            if 'ebs' in device:
+            device_name = device.get("device_name")
+            if "ebs" in device:
                 ebs = device.get("ebs")
                 bdm_dict_item = {
-                    'size': ebs.get("volume_size"),
-                    'snapshot_id': ebs.get("snapshot_id"),
-                    'volume_type': ebs.get("volume_type"),
-                    'encrypted': ebs.get("encrypted"),
-                    'delete_on_termination': ebs.get("delete_on_termination")
+                    "size": ebs.get("volume_size"),
+                    "snapshot_id": ebs.get("snapshot_id"),
+                    "volume_type": ebs.get("volume_type"),
+                    "encrypted": ebs.get("encrypted"),
+                    "delete_on_termination": ebs.get("delete_on_termination"),
                 }
-            elif 'virtual_name' in device:
-                bdm_dict_item = dict(virtual_name=device['virtual_name'])
+            elif "virtual_name" in device:
+                bdm_dict_item = dict(virtual_name=device["virtual_name"])
             bdm_dict[device_name] = bdm_dict_item
     return bdm_dict
 
@@ -452,7 +453,7 @@ def get_ami_info(camel_image):
         root_device_type=image.get("root_device_type"),
         virtualization_type=image.get("virtualization_type"),
         name=image.get("name"),
-        tags=boto3_tag_list_to_ansible_dict(image.get('tags')),
+        tags=boto3_tag_list_to_ansible_dict(image.get("tags")),
         platform=image.get("platform"),
         enhanced_networking=image.get("ena_support"),
         image_owner_alias=image.get("image_owner_alias"),
@@ -462,7 +463,7 @@ def get_ami_info(camel_image):
         ramdisk_id=image.get("ramdisk_id"),
         sriov_net_support=image.get("sriov_net_support"),
         state_reason=image.get("state_reason"),
-        launch_permissions=image.get('launch_permissions')
+        launch_permissions=image.get("launch_permissions"),
     )
 
 
@@ -472,7 +473,7 @@ def get_image_by_id(connection, image_id):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         raise Ec2AmiFailure("Error retrieving image by image_id", e)
 
-    images = images_response.get('Images', [])
+    images = images_response.get("Images", [])
     image_counter = len(images)
     if image_counter == 0:
         return None
@@ -482,11 +483,9 @@ def get_image_by_id(connection, image_id):
 
     result = images[0]
     try:
-        result['LaunchPermissions'] = connection.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
-                                                                          ImageId=image_id)['LaunchPermissions']
-        result['ProductCodes'] = connection.describe_image_attribute(aws_retry=True, Attribute='productCodes',
-                                                                     ImageId=image_id)['ProductCodes']
-    except is_boto3_error_code('InvalidAMIID.Unavailable'):
+        result["LaunchPermissions"] = connection.describe_image_attribute(aws_retry=True, Attribute="launchPermission", ImageId=image_id)["LaunchPermissions"]
+        result["ProductCodes"] = connection.describe_image_attribute(aws_retry=True, Attribute="productCodes", ImageId=image_id)["ProductCodes"]
+    except is_boto3_error_code("InvalidAMIID.Unavailable"):
         pass
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         raise Ec2AmiFailure("Error retrieving image attributes for image %s" % image_id, e)
@@ -506,25 +505,22 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
     return dict_object
 
 
-def validate_params(module, image_id=None, instance_id=None, name=None, state=None,
-                    tpm_support=None, uefi_data=None, boot_mode=None, device_mapping=None, **_):
+def validate_params(module, image_id=None, instance_id=None, name=None, state=None, tpm_support=None, uefi_data=None, boot_mode=None, device_mapping=None, **_):
     # Using a required_one_of=[['name', 'image_id']] overrides the message that should be provided by
     # the required_if for state=absent, so check manually instead
     if not (image_id or name):
         module.fail_json("one of the following is required: name, image_id")
 
     if tpm_support or uefi_data:
-        module.require_botocore_at_least('1.26.0', reason='required for ec2.register_image with tpm_support or uefi_data')
-    if tpm_support and boot_mode != 'uefi':
+        module.require_botocore_at_least("1.26.0", reason="required for ec2.register_image with tpm_support or uefi_data")
+    if tpm_support and boot_mode != "uefi":
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     if state == "present" and not image_id and not (instance_id or device_mapping):
-        module.fail_json("The parameters instance_id or device_mapping "
-                         "(register from EBS snapshot) are required for a new image.")
+        module.fail_json("The parameters instance_id or device_mapping " "(register from EBS snapshot) are required for a new image.")
 
 
 class DeregisterImage:
-
     @staticmethod
     def do_check_mode(module, connection, image_id):
         image = get_image_by_id(connection, image_id)
@@ -532,8 +528,8 @@ class DeregisterImage:
         if image is None:
             module.exit_json(changed=False)
 
-        if 'ImageId' in image:
-            module.exit_json(changed=True, msg='Would have deregistered AMI if not in check mode.')
+        if "ImageId" in image:
+            module.exit_json(changed=True, msg="Would have deregistered AMI if not in check mode.")
         else:
             module.exit_json(msg="Image %s has already been deregistered." % image_id, changed=False)
 
@@ -541,16 +537,17 @@ class DeregisterImage:
     def defer_purge_snapshots(image):
         def purge_snapshots(connection):
             try:
-                for mapping in image.get('BlockDeviceMappings') or []:
-                    snapshot_id = mapping.get('Ebs', {}).get('SnapshotId')
+                for mapping in image.get("BlockDeviceMappings") or []:
+                    snapshot_id = mapping.get("Ebs", {}).get("SnapshotId")
                     if snapshot_id is None:
                         continue
                     connection.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
                     yield snapshot_id
-            except is_boto3_error_code('InvalidSnapshot.NotFound'):
+            except is_boto3_error_code("InvalidSnapshot.NotFound"):
                 pass
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-                raise Ec2AmiFailure('Failed to delete snapshot.', e)
+                raise Ec2AmiFailure("Failed to delete snapshot.", e)
+
         return purge_snapshots
 
     @staticmethod
@@ -567,10 +564,10 @@ class DeregisterImage:
 
     @classmethod
     def do(cls, module, connection, image_id):
-        '''Entry point to deregister an image'''
-        delete_snapshot = module.params.get('delete_snapshot')
-        wait = module.params.get('wait')
-        wait_timeout = module.params.get('wait_timeout')
+        """Entry point to deregister an image"""
+        delete_snapshot = module.params.get("delete_snapshot")
+        wait = module.params.get("wait")
+        wait_timeout = module.params.get("wait_timeout")
         image = get_image_by_id(connection, image_id)
 
         if image is None:
@@ -580,7 +577,7 @@ class DeregisterImage:
         purge_snapshots = cls.defer_purge_snapshots(image)
 
         # When trying to re-deregister an already deregistered image it doesn't raise an exception, it just returns an object without image attributes.
-        if 'ImageId' in image:
+        if "ImageId" in image:
             try:
                 connection.deregister_image(aws_retry=True, ImageId=image_id)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -591,10 +588,10 @@ class DeregisterImage:
         if wait:
             cls.timeout(connection, image_id, wait_timeout)
 
-        exit_params = {'msg': "AMI deregister operation complete.", 'changed': True}
+        exit_params = {"msg": "AMI deregister operation complete.", "changed": True}
 
         if delete_snapshot:
-            exit_params['snapshots_deleted'] = list(purge_snapshots(connection))
+            exit_params["snapshots_deleted"] = list(purge_snapshots(connection))
 
         module.exit_json(**exit_params)
 
@@ -605,12 +602,12 @@ class UpdateImage:
         if launch_permissions is None:
             return False
 
-        current_permissions = image['LaunchPermissions']
+        current_permissions = image["LaunchPermissions"]
 
-        current_users = set(permission['UserId'] for permission in current_permissions if 'UserId' in permission)
-        desired_users = set(str(user_id) for user_id in launch_permissions.get('user_ids', []))
-        current_groups = set(permission['Group'] for permission in current_permissions if 'Group' in permission)
-        desired_groups = set(launch_permissions.get('group_names', []))
+        current_users = set(permission["UserId"] for permission in current_permissions if "UserId" in permission)
+        desired_users = set(str(user_id) for user_id in launch_permissions.get("user_ids", []))
+        current_groups = set(permission["Group"] for permission in current_permissions if "Group" in permission)
+        desired_groups = set(launch_permissions.get("group_names", []))
 
         to_add_users = desired_users - current_users
         to_remove_users = current_users - desired_users
@@ -625,9 +622,9 @@ class UpdateImage:
 
         try:
             if not check_mode:
-                connection.modify_image_attribute(aws_retry=True,
-                                                  ImageId=image["ImageId"], Attribute='launchPermission',
-                                                  LaunchPermission=dict(Add=to_add, Remove=to_remove))
+                connection.modify_image_attribute(
+                    aws_retry=True, ImageId=image["ImageId"], Attribute="launchPermission", LaunchPermission=dict(Add=to_add, Remove=to_remove)
+                )
             changed = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2AmiFailure("Error updating launch permissions of image %s" % image["ImageId"], e)
@@ -645,12 +642,12 @@ class UpdateImage:
         if not description:
             return False
 
-        if description == image['Description']:
+        if description == image["Description"]:
             return False
 
         try:
             if not module.check_mode:
-                connection.modify_image_attribute(aws_retry=True, Attribute='Description', ImageId=image["ImageId"], Description={"Value": description})
+                connection.modify_image_attribute(aws_retry=True, Attribute="Description", ImageId=image["ImageId"], Description={"Value": description})
             return True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2AmiFailure("Error setting description for image %s" % image["ImageId"], e)
@@ -658,35 +655,32 @@ class UpdateImage:
     @classmethod
     def do(cls, module, connection, image_id):
         """Entry point to update an image"""
-        launch_permissions = module.params.get('launch_permissions')
+        launch_permissions = module.params.get("launch_permissions")
         image = get_image_by_id(connection, image_id)
         if image is None:
             raise Ec2AmiFailure("Image %s does not exist" % image_id)
 
         changed = False
         changed |= cls.set_launch_permission(connection, image, launch_permissions, module.check_mode)
-        changed |= cls.set_tags(connection, module, image_id, module.params['tags'], module.params['purge_tags'])
-        changed |= cls.set_description(connection, module, image, module.params['description'])
+        changed |= cls.set_tags(connection, module, image_id, module.params["tags"], module.params["purge_tags"])
+        changed |= cls.set_description(connection, module, image, module.params["description"])
 
         if changed and module.check_mode:
-            module.exit_json(changed=True, msg='Would have updated AMI if not in check mode.')
+            module.exit_json(changed=True, msg="Would have updated AMI if not in check mode.")
         elif changed:
-            module.exit_json(msg="AMI updated.", changed=True,
-                             **get_ami_info(get_image_by_id(connection, image_id)))
+            module.exit_json(msg="AMI updated.", changed=True, **get_ami_info(get_image_by_id(connection, image_id)))
         else:
-            module.exit_json(msg="AMI not updated.", changed=False,
-                             **get_ami_info(image))
+            module.exit_json(msg="AMI not updated.", changed=False, **get_ami_info(image))
 
 
 class CreateImage:
-
     @staticmethod
     def do_check_mode(module, connection, _image_id):
-        image = connection.describe_images(Filters=[{'Name': 'name', 'Values': [str(module.params["name"])]}])
-        if not image['Images']:
-            module.exit_json(changed=True, msg='Would have created a AMI if not in check mode.')
+        image = connection.describe_images(Filters=[{"Name": "name", "Values": [str(module.params["name"])]}])
+        if not image["Images"]:
+            module.exit_json(changed=True, msg="Would have created a AMI if not in check mode.")
         else:
-            module.exit_json(changed=False, msg='Error registering image: AMI name is already in use by another AMI')
+            module.exit_json(changed=False, msg="Error registering image: AMI name is already in use by another AMI")
 
     @staticmethod
     def wait(connection, wait_timeout, image_id):
@@ -695,7 +689,7 @@ class CreateImage:
 
         delay = 15
         max_attempts = wait_timeout // delay
-        waiter = get_waiter(connection, 'image_available')
+        waiter = get_waiter(connection, "image_available")
         waiter.wait(ImageIds=[image_id], WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts})
 
     @staticmethod
@@ -705,12 +699,12 @@ class CreateImage:
 
         image_info = get_image_by_id(connection, image_id)
         add_ec2_tags(connection, module, image_id, module.params["tags"])
-        if image_info and image_info.get('BlockDeviceMappings'):
-            for mapping in image_info.get('BlockDeviceMappings'):
+        if image_info and image_info.get("BlockDeviceMappings"):
+            for mapping in image_info.get("BlockDeviceMappings"):
                 # We can only tag Ebs volumes
-                if 'Ebs' not in mapping:
+                if "Ebs" not in mapping:
                     continue
-                add_ec2_tags(connection, module, mapping.get('Ebs').get('SnapshotId'), tags)
+                add_ec2_tags(connection, module, mapping.get("Ebs").get("SnapshotId"), tags)
 
     @staticmethod
     def set_launch_permissions(connection, launch_permissions, image_id):
@@ -718,12 +712,12 @@ class CreateImage:
             return
 
         try:
-            params = {"Attribute": 'LaunchPermission', "ImageId": image_id, "LaunchPermission": {"Add": []}}
-            for group_name in launch_permissions.get('group_names', []):
-                params['LaunchPermission']['Add'].append(dict(Group=group_name))
-            for user_id in launch_permissions.get('user_ids', []):
-                params['LaunchPermission']['Add'].append(dict(UserId=str(user_id)))
-            if params['LaunchPermission']['Add']:
+            params = {"Attribute": "LaunchPermission", "ImageId": image_id, "LaunchPermission": {"Add": []}}
+            for group_name in launch_permissions.get("group_names", []):
+                params["LaunchPermission"]["Add"].append(dict(Group=group_name))
+            for user_id in launch_permissions.get("user_ids", []):
+                params["LaunchPermission"]["Add"].append(dict(UserId=str(user_id)))
+            if params["LaunchPermission"]["Add"]:
                 connection.modify_image_attribute(aws_retry=True, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2AmiFailure("Error setting launch permissions for image %s" % image_id, e)
@@ -740,77 +734,77 @@ class CreateImage:
         block_device_mapping = []
         for device in device_mapping:
             device = {k: v for k, v in device.items() if v is not None}
-            device['Ebs'] = {}
-            rename_item_if_exists(device, 'delete_on_termination', 'DeleteOnTermination', 'Ebs')
-            rename_item_if_exists(device, 'device_name', 'DeviceName')
-            rename_item_if_exists(device, 'encrypted', 'Encrypted', 'Ebs')
-            rename_item_if_exists(device, 'iops', 'Iops', 'Ebs')
-            rename_item_if_exists(device, 'no_device', 'NoDevice')
-            rename_item_if_exists(device, 'size', 'VolumeSize', 'Ebs', attribute_type=int)
-            rename_item_if_exists(device, 'snapshot_id', 'SnapshotId', 'Ebs')
-            rename_item_if_exists(device, 'virtual_name', 'VirtualName')
-            rename_item_if_exists(device, 'volume_size', 'VolumeSize', 'Ebs', attribute_type=int)
-            rename_item_if_exists(device, 'volume_type', 'VolumeType', 'Ebs')
+            device["Ebs"] = {}
+            rename_item_if_exists(device, "delete_on_termination", "DeleteOnTermination", "Ebs")
+            rename_item_if_exists(device, "device_name", "DeviceName")
+            rename_item_if_exists(device, "encrypted", "Encrypted", "Ebs")
+            rename_item_if_exists(device, "iops", "Iops", "Ebs")
+            rename_item_if_exists(device, "no_device", "NoDevice")
+            rename_item_if_exists(device, "size", "VolumeSize", "Ebs", attribute_type=int)
+            rename_item_if_exists(device, "snapshot_id", "SnapshotId", "Ebs")
+            rename_item_if_exists(device, "virtual_name", "VirtualName")
+            rename_item_if_exists(device, "volume_size", "VolumeSize", "Ebs", attribute_type=int)
+            rename_item_if_exists(device, "volume_type", "VolumeType", "Ebs")
 
             # The NoDevice parameter in Boto3 is a string. Empty string omits the device from block device mapping
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.create_image
-            if 'NoDevice' in device:
-                if device['NoDevice'] is True:
-                    device['NoDevice'] = ""
+            if "NoDevice" in device:
+                if device["NoDevice"] is True:
+                    device["NoDevice"] = ""
                 else:
-                    del device['NoDevice']
+                    del device["NoDevice"]
             block_device_mapping.append(device)
         return block_device_mapping
 
     @staticmethod
     def build_create_image_parameters(**kwargs):
-        architecture = kwargs.get('architecture')
-        billing_products = kwargs.get('billing_products')
-        boot_mode = kwargs.get('boot_mode')
-        description = kwargs.get('description')
-        device_mapping = kwargs.get('device_mapping') or []
-        enhanced_networking = kwargs.get('enhanced_networking')
-        image_location = kwargs.get('image_location')
-        instance_id = kwargs.get('instance_id')
-        kernel_id = kwargs.get('kernel_id')
-        name = kwargs.get('name')
-        no_reboot = kwargs.get('no_reboot')
-        ramdisk_id = kwargs.get('ramdisk_id')
-        root_device_name = kwargs.get('root_device_name')
-        sriov_net_support = kwargs.get('sriov_net_support')
-        tags = kwargs.get('tags')
-        tpm_support = kwargs.get('tpm_support')
-        uefi_data = kwargs.get('uefi_data')
-        virtualization_type = kwargs.get('virtualization_type')
+        architecture = kwargs.get("architecture")
+        billing_products = kwargs.get("billing_products")
+        boot_mode = kwargs.get("boot_mode")
+        description = kwargs.get("description")
+        device_mapping = kwargs.get("device_mapping") or []
+        enhanced_networking = kwargs.get("enhanced_networking")
+        image_location = kwargs.get("image_location")
+        instance_id = kwargs.get("instance_id")
+        kernel_id = kwargs.get("kernel_id")
+        name = kwargs.get("name")
+        no_reboot = kwargs.get("no_reboot")
+        ramdisk_id = kwargs.get("ramdisk_id")
+        root_device_name = kwargs.get("root_device_name")
+        sriov_net_support = kwargs.get("sriov_net_support")
+        tags = kwargs.get("tags")
+        tpm_support = kwargs.get("tpm_support")
+        uefi_data = kwargs.get("uefi_data")
+        virtualization_type = kwargs.get("virtualization_type")
 
-        params = {
-            'Name': name,
-            'Description': description,
-            'BlockDeviceMappings': CreateImage.build_block_device_mapping(device_mapping)
-        }
+        params = {"Name": name, "Description": description, "BlockDeviceMappings": CreateImage.build_block_device_mapping(device_mapping)}
 
         # Remove empty values injected by using options
         if instance_id:
-            params.update({
-                'InstanceId': instance_id,
-                'NoReboot': no_reboot,
-                'TagSpecifications': boto3_tag_specifications(tags, types=['image', 'snapshot']),
-            })
+            params.update(
+                {
+                    "InstanceId": instance_id,
+                    "NoReboot": no_reboot,
+                    "TagSpecifications": boto3_tag_specifications(tags, types=["image", "snapshot"]),
+                }
+            )
         else:
-            params.update({
-                'Architecture': architecture,
-                'BillingProducts': billing_products,
-                'BootMode': boot_mode,
-                'EnaSupport': enhanced_networking,
-                'ImageLocation': image_location,
-                'KernelId': kernel_id,
-                'RamdiskId': ramdisk_id,
-                'RootDeviceName': root_device_name,
-                'SriovNetSupport': sriov_net_support,
-                'TpmSupport': tpm_support,
-                'UefiData': uefi_data,
-                'VirtualizationType': virtualization_type,
-            })
+            params.update(
+                {
+                    "Architecture": architecture,
+                    "BillingProducts": billing_products,
+                    "BootMode": boot_mode,
+                    "EnaSupport": enhanced_networking,
+                    "ImageLocation": image_location,
+                    "KernelId": kernel_id,
+                    "RamdiskId": ramdisk_id,
+                    "RootDeviceName": root_device_name,
+                    "SriovNetSupport": sriov_net_support,
+                    "TpmSupport": tpm_support,
+                    "UefiData": uefi_data,
+                    "VirtualizationType": virtualization_type,
+                }
+            )
 
         return {k: v for k, v in params.items() if v}
 
@@ -822,72 +816,71 @@ class CreateImage:
         func = cls.create_or_register(connection, create_image_parameters)
         try:
             image = func(aws_retry=True, **create_image_parameters)
-            image_id = image.get('ImageId')
+            image_id = image.get("ImageId")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2AmiFailure("Error registering image", e)
 
         cls.wait(connection, module.params.get("wait") and module.params.get("wait_timeout"), image_id)
 
-        if 'TagSpecifications' not in create_image_parameters:
+        if "TagSpecifications" not in create_image_parameters:
             CreateImage.set_tags(connection, module, module.params.get("tags"), image_id)
 
-        cls.set_launch_permissions(connection, module.params.get('launch_permissions'), image_id)
+        cls.set_launch_permissions(connection, module.params.get("launch_permissions"), image_id)
 
-        module.exit_json(msg="AMI creation operation complete.", changed=True,
-                         **get_ami_info(get_image_by_id(connection, image_id)))
+        module.exit_json(msg="AMI creation operation complete.", changed=True, **get_ami_info(get_image_by_id(connection, image_id)))
 
 
 def main():
     mapping_options = {
-        "delete_on_termination": {"type": 'bool'},
-        "device_name": {"type": 'str', "required": True},
-        "encrypted": {"type": 'bool'},
-        "iops": {"type": 'int'},
-        "no_device": {"type": 'bool'},
-        "snapshot_id": {"type": 'str'},
-        "virtual_name": {"type": 'str'},
-        "volume_size": {"type": 'int', "aliases": ['size']},
-        "volume_type": {"type": 'str'},
+        "delete_on_termination": {"type": "bool"},
+        "device_name": {"type": "str", "required": True},
+        "encrypted": {"type": "bool"},
+        "iops": {"type": "int"},
+        "no_device": {"type": "bool"},
+        "snapshot_id": {"type": "str"},
+        "virtual_name": {"type": "str"},
+        "volume_size": {"type": "int", "aliases": ["size"]},
+        "volume_type": {"type": "str"},
     }
     argument_spec = dict(
-        architecture={"default": 'x86_64'},
-        billing_products={"type": 'list', "elements": 'str'},
-        boot_mode={"type": 'str', "choices": ['legacy-bios', 'uefi']},
-        delete_snapshot={"default": False, "type": 'bool'},
-        description={"default": ''},
-        device_mapping={"type": 'list', "elements": 'dict', "options": mapping_options},
-        enhanced_networking={"type": 'bool'},
+        architecture={"default": "x86_64"},
+        billing_products={"type": "list", "elements": "str"},
+        boot_mode={"type": "str", "choices": ["legacy-bios", "uefi"]},
+        delete_snapshot={"default": False, "type": "bool"},
+        description={"default": ""},
+        device_mapping={"type": "list", "elements": "dict", "options": mapping_options},
+        enhanced_networking={"type": "bool"},
         image_id={},
         image_location={},
         instance_id={},
         kernel_id={},
-        launch_permissions={"type": 'dict'},
+        launch_permissions={"type": "dict"},
         name={},
-        no_reboot={"default": False, "type": 'bool'},
-        purge_tags={"type": 'bool', "default": True},
+        no_reboot={"default": False, "type": "bool"},
+        purge_tags={"type": "bool", "default": True},
         ramdisk_id={},
         root_device_name={},
         sriov_net_support={},
-        state={"default": 'present', "choices": ['present', 'absent']},
-        tags={"type": 'dict', "aliases": ['resource_tags']},
-        tpm_support={"type": 'str'},
-        uefi_data={"type": 'str'},
-        virtualization_type={"default": 'hvm'},
-        wait={"type": 'bool', "default": False},
-        wait_timeout={"default": 1200, "type": 'int'},
+        state={"default": "present", "choices": ["present", "absent"]},
+        tags={"type": "dict", "aliases": ["resource_tags"]},
+        tpm_support={"type": "str"},
+        uefi_data={"type": "str"},
+        virtualization_type={"default": "hvm"},
+        wait={"type": "bool", "default": False},
+        wait_timeout={"default": 1200, "type": "int"},
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[
-            ['state', 'absent', ['image_id']],
+            ["state", "absent", ["image_id"]],
         ],
         supports_check_mode=True,
     )
 
     validate_params(module, **module.params)
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     CHECK_MODE_TRUE = True
     CHECK_MODE_FALSE = False
@@ -896,27 +889,14 @@ def main():
 
     func_mapping = {
         CHECK_MODE_TRUE: {
-            HAS_IMAGE_ID_TRUE: {
-                "absent": DeregisterImage.do_check_mode,
-                "present": UpdateImage.do
-            },
-            HAS_IMAGE_ID_FALSE: {
-                "present": CreateImage.do_check_mode
-            }
+            HAS_IMAGE_ID_TRUE: {"absent": DeregisterImage.do_check_mode, "present": UpdateImage.do},
+            HAS_IMAGE_ID_FALSE: {"present": CreateImage.do_check_mode},
         },
-        CHECK_MODE_FALSE: {
-            HAS_IMAGE_ID_TRUE: {
-                "absent": DeregisterImage.do,
-                "present": UpdateImage.do
-            },
-            HAS_IMAGE_ID_FALSE: {
-                "present": CreateImage.do
-            }
-        }
+        CHECK_MODE_FALSE: {HAS_IMAGE_ID_TRUE: {"absent": DeregisterImage.do, "present": UpdateImage.do}, HAS_IMAGE_ID_FALSE: {"present": CreateImage.do}},
     }
-    func = func_mapping[module.check_mode][bool(module.params.get('image_id'))][module.params['state']]
+    func = func_mapping[module.check_mode][bool(module.params.get("image_id"))][module.params["state"]]
     try:
-        func(module, connection, module.params.get('image_id'))
+        func(module, connection, module.params.get("image_id"))
     except Ec2AmiFailure as e:
         if e.original_e:
             module.fail_json_aws(e.original_e, e.message)
@@ -924,5 +904,5 @@ def main():
             module.fail_json(e.message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

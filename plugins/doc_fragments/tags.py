@@ -3,14 +3,15 @@
 # Copyright: (c) 2022,  Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
 class ModuleDocFragment(object):
 
     # Standard Tagging related parameters
-    DOCUMENTATION = r'''
+    DOCUMENTATION = r"""
 options:
   tags:
     description:
@@ -32,11 +33,11 @@ options:
     type: bool
     default: true
     required: false
-'''
+"""
 
     # Some modules had a default of purge_tags=False, this was generally
     # deprecated in release 4.0.0
-    DEPRECATED_PURGE = r'''
+    DEPRECATED_PURGE = r"""
 options:
   tags:
     description:
@@ -59,4 +60,4 @@ options:
         value will change to C(True) in release 5.0.0.
     type: bool
     required: false
-'''
+"""

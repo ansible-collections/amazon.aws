@@ -2,11 +2,12 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: iam_policy_info
 version_added: 5.0.0
@@ -38,9 +39,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.boto3
 
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: Describe all inline IAM policies on an IAM User
   amazon.aws.iam_policy_info:
     iam_type: user
@@ -52,8 +53,8 @@ EXAMPLES = '''
     iam_name: example_role
     policy_name: example_policy
 
-'''
-RETURN = '''
+"""
+RETURN = """
 policies:
     description: A list containing the matching IAM inline policy names and their data
     returned: success
@@ -75,7 +76,7 @@ all_policy_names:
     description: A list of names of all of the IAM inline policies on the queried object
     returned: success
     type: list
-'''
+"""
 
 try:
     import botocore
@@ -88,7 +89,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class Policy:
-
     def __init__(self, client, name, policy_name):
         self.client = client
         self.name = name
@@ -97,19 +97,19 @@ class Policy:
 
     @staticmethod
     def _iam_type():
-        return ''
+        return ""
 
     def _list(self, name):
         return {}
 
     def list(self):
-        return self._list(self.name).get('PolicyNames', [])
+        return self._list(self.name).get("PolicyNames", [])
 
     def _get(self, name, policy_name):
-        return '{}'
+        return "{}"
 
     def get(self, policy_name):
-        return self._get(self.name, policy_name)['PolicyDocument']
+        return self._get(self.name, policy_name)["PolicyDocument"]
 
     def get_all(self):
         policies = list()
@@ -119,27 +119,20 @@ class Policy:
 
     def run(self):
         policy_list = self.list()
-        ret_val = {
-            'changed': False,
-            self._iam_type() + '_name': self.name,
-            'all_policy_names': policy_list
-        }
+        ret_val = {"changed": False, self._iam_type() + "_name": self.name, "all_policy_names": policy_list}
         if self.policy_name is None:
             ret_val.update(policies=self.get_all())
             ret_val.update(policy_names=policy_list)
         elif self.policy_name in policy_list:
-            ret_val.update(policies=[{
-                "policy_name": self.policy_name,
-                "policy_document": self.get(self.policy_name)}])
+            ret_val.update(policies=[{"policy_name": self.policy_name, "policy_document": self.get(self.policy_name)}])
             ret_val.update(policy_names=[self.policy_name])
         return ret_val
 
 
 class UserPolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'user'
+        return "user"
 
     def _list(self, name):
         return self.client.list_user_policies(aws_retry=True, UserName=name)
@@ -149,10 +142,9 @@ class UserPolicy(Policy):
 
 
 class RolePolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'role'
+        return "role"
 
     def _list(self, name):
         return self.client.list_role_policies(aws_retry=True, RoleName=name)
@@ -162,10 +154,9 @@ class RolePolicy(Policy):
 
 
 class GroupPolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'group'
+        return "group"
 
     def _list(self, name):
         return self.client.list_group_policies(aws_retry=True, GroupName=name)
@@ -176,7 +167,7 @@ class GroupPolicy(Policy):
 
 def main():
     argument_spec = dict(
-        iam_type=dict(required=True, choices=['user', 'group', 'role']),
+        iam_type=dict(required=True, choices=["user", "group", "role"]),
         iam_name=dict(required=True),
         policy_name=dict(default=None, required=False),
     )
@@ -184,26 +175,26 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     args = dict(
-        client=module.client('iam', retry_decorator=AWSRetry.jittered_backoff()),
-        name=module.params.get('iam_name'),
-        policy_name=module.params.get('policy_name'),
+        client=module.client("iam", retry_decorator=AWSRetry.jittered_backoff()),
+        name=module.params.get("iam_name"),
+        policy_name=module.params.get("policy_name"),
     )
-    iam_type = module.params.get('iam_type')
+    iam_type = module.params.get("iam_type")
 
     try:
-        if iam_type == 'user':
+        if iam_type == "user":
             policy = UserPolicy(**args)
-        elif iam_type == 'role':
+        elif iam_type == "role":
             policy = RolePolicy(**args)
-        elif iam_type == 'group':
+        elif iam_type == "group":
             policy = GroupPolicy(**args)
 
         module.exit_json(**(policy.run()))
-    except is_boto3_error_code('NoSuchEntity') as e:
-        module.exit_json(changed=False, msg=e.response['Error']['Message'])
+    except is_boto3_error_code("NoSuchEntity") as e:
+        module.exit_json(changed=False, msg=e.response["Error"]["Message"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -4,10 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_metadata_facts
 version_added: 1.0.0
@@ -26,18 +27,18 @@ description:
       is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.
 notes:
     - Parameters to filter on ec2_metadata_facts may be added later.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Gather EC2 metadata facts
 - amazon.aws.ec2_metadata_facts:
 
 - debug:
     msg: "This instance is a t1.micro"
   when: ansible_ec2_instance_type == "t1.micro"
-'''
+"""
 
-RETURN = '''
+RETURN = """
 ansible_facts:
     description: Dictionary of new facts representing discovered properties of the EC2 instance.
     returned: changed
@@ -435,7 +436,7 @@ ansible_facts:
             description: The instance user data.
             type: str
             sample: "#!/bin/bash"
-'''
+"""
 
 import json
 import re
@@ -451,12 +452,12 @@ socket.setdefaulttimeout(5)
 
 
 class Ec2Metadata(object):
-    ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
-    ec2_metadata_uri = 'http://169.254.169.254/latest/meta-data/'
-    ec2_metadata_instance_tags_uri = 'http://169.254.169.254/latest/meta-data/tags/instance'
-    ec2_sshdata_uri = 'http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key'
-    ec2_userdata_uri = 'http://169.254.169.254/latest/user-data/'
-    ec2_dynamicdata_uri = 'http://169.254.169.254/latest/dynamic/'
+    ec2_metadata_token_uri = "http://169.254.169.254/latest/api/token"
+    ec2_metadata_uri = "http://169.254.169.254/latest/meta-data/"
+    ec2_metadata_instance_tags_uri = "http://169.254.169.254/latest/meta-data/tags/instance"
+    ec2_sshdata_uri = "http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key"
+    ec2_userdata_uri = "http://169.254.169.254/latest/user-data/"
+    ec2_dynamicdata_uri = "http://169.254.169.254/latest/dynamic/"
 
     def __init__(
         self,
@@ -477,39 +478,39 @@ class Ec2Metadata(object):
         self.uri_dynamic = ec2_dynamicdata_uri or self.ec2_dynamicdata_uri
         self._data = {}
         self._token = None
-        self._prefix = 'ansible_ec2_%s'
+        self._prefix = "ansible_ec2_%s"
 
     def _fetch(self, url):
-        encoded_url = quote(url, safe='%/:=&?~#+!$,;\'@()*[]')
+        encoded_url = quote(url, safe="%/:=&?~#+!$,;'@()*[]")
         headers = {}
         if self._token:
-            headers = {'X-aws-ec2-metadata-token': self._token}
+            headers = {"X-aws-ec2-metadata-token": self._token}
         response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
 
-        if info.get('status') in (401, 403):
-            self.module.fail_json(msg='Failed to retrieve metadata from AWS: {0}'.format(info['msg']), response=info)
-        elif info.get('status') not in (200, 404):
+        if info.get("status") in (401, 403):
+            self.module.fail_json(msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]), response=info)
+        elif info.get("status") not in (200, 404):
             time.sleep(3)
             # request went bad, retry once then raise
-            self.module.warn('Retrying query to metadata service. First attempt failed: {0}'.format(info['msg']))
+            self.module.warn("Retrying query to metadata service. First attempt failed: {0}".format(info["msg"]))
             response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
-            if info.get('status') not in (200, 404):
+            if info.get("status") not in (200, 404):
                 # fail out now
-                self.module.fail_json(msg='Failed to retrieve metadata from AWS: {0}'.format(info['msg']), response=info)
-        if response and info['status'] < 400:
+                self.module.fail_json(msg="Failed to retrieve metadata from AWS: {0}".format(info["msg"]), response=info)
+        if response and info["status"] < 400:
             data = response.read()
         else:
             data = None
         return to_text(data)
 
     def _mangle_fields(self, fields, uri, filter_patterns=None):
-        filter_patterns = ['public-keys-0'] if filter_patterns is None else filter_patterns
+        filter_patterns = ["public-keys-0"] if filter_patterns is None else filter_patterns
 
         new_fields = {}
         for key, value in fields.items():
-            split_fields = key[len(uri):].split('/')
+            split_fields = key[len(uri) :].split("/")
             # Parse out the IAM role name (which is _not_ the same as the instance profile name)
-            if len(split_fields) == 3 and split_fields[0:2] == ['iam', 'security-credentials'] and ':' not in split_fields[2]:
+            if len(split_fields) == 3 and split_fields[0:2] == ["iam", "security-credentials"] and ":" not in split_fields[2]:
                 new_fields[self._prefix % "iam-instance-profile-role"] = split_fields[2]
             if len(split_fields) > 1 and split_fields[1]:
                 new_key = "-".join(split_fields)
@@ -528,34 +529,34 @@ class Ec2Metadata(object):
         raw_subfields = self._fetch(uri)
         if not raw_subfields:
             return
-        subfields = raw_subfields.split('\n')
+        subfields = raw_subfields.split("\n")
         for field in subfields:
-            if field.endswith('/') and recurse:
+            if field.endswith("/") and recurse:
                 self.fetch(uri + field)
-            if uri.endswith('/'):
+            if uri.endswith("/"):
                 new_uri = uri + field
             else:
-                new_uri = uri + '/' + field
-            if new_uri not in self._data and not new_uri.endswith('/'):
+                new_uri = uri + "/" + field
+            if new_uri not in self._data and not new_uri.endswith("/"):
                 content = self._fetch(new_uri)
-                if field == 'security-groups' or field == 'security-group-ids':
-                    sg_fields = ",".join(content.split('\n'))
-                    self._data['%s' % (new_uri)] = sg_fields
+                if field == "security-groups" or field == "security-group-ids":
+                    sg_fields = ",".join(content.split("\n"))
+                    self._data["%s" % (new_uri)] = sg_fields
                 else:
                     try:
                         json_dict = json.loads(content)
-                        self._data['%s' % (new_uri)] = content
+                        self._data["%s" % (new_uri)] = content
                         for (key, value) in json_dict.items():
-                            self._data['%s:%s' % (new_uri, key.lower())] = value
+                            self._data["%s:%s" % (new_uri, key.lower())] = value
                     except (json.JSONDecodeError, AttributeError):
-                        self._data['%s' % (new_uri)] = content  # not a stringified JSON string
+                        self._data["%s" % (new_uri)] = content  # not a stringified JSON string
 
     def fix_invalid_varnames(self, data):
         """Change ':'' and '-' to '_' to ensure valid template variable names"""
         new_data = data.copy()
         for key, value in data.items():
-            if ':' in key or '-' in key:
-                newkey = re.sub(':|-', '_', key)
+            if ":" in key or "-" in key:
+                newkey = re.sub(":|-", "_", key)
                 new_data[newkey] = value
                 del new_data[key]
 
@@ -563,19 +564,19 @@ class Ec2Metadata(object):
 
     def fetch_session_token(self, uri_token):
         """Used to get a session token for IMDSv2"""
-        headers = {'X-aws-ec2-metadata-token-ttl-seconds': '60'}
-        response, info = fetch_url(self.module, uri_token, method='PUT', headers=headers, force=True)
+        headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
+        response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
 
-        if info.get('status') == 403:
-            self.module.fail_json(msg='Failed to retrieve metadata token from AWS: {0}'.format(info['msg']), response=info)
-        elif info.get('status') not in (200, 404):
+        if info.get("status") == 403:
+            self.module.fail_json(msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]), response=info)
+        elif info.get("status") not in (200, 404):
             time.sleep(3)
             # request went bad, retry once then raise
-            self.module.warn('Retrying query to metadata service. First attempt failed: {0}'.format(info['msg']))
-            response, info = fetch_url(self.module, uri_token, method='PUT', headers=headers, force=True)
-            if info.get('status') not in (200, 404):
+            self.module.warn("Retrying query to metadata service. First attempt failed: {0}".format(info["msg"]))
+            response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
+            if info.get("status") not in (200, 404):
                 # fail out now
-                self.module.fail_json(msg='Failed to retrieve metadata token from AWS: {0}'.format(info['msg']), response=info)
+                self.module.fail_json(msg="Failed to retrieve metadata token from AWS: {0}".format(info["msg"]), response=info)
         if response:
             token_data = response.read()
         else:
@@ -586,8 +587,8 @@ class Ec2Metadata(object):
         self._token = self.fetch_session_token(self.uri_token)  # create session token for IMDS
         self.fetch(self.uri_meta)  # populate _data with metadata
         data = self._mangle_fields(self._data, self.uri_meta)
-        data[self._prefix % 'user-data'] = self._fetch(self.uri_user)
-        data[self._prefix % 'public-key'] = self._fetch(self.uri_ssh)
+        data[self._prefix % "user-data"] = self._fetch(self.uri_user)
+        data[self._prefix % "public-key"] = self._fetch(self.uri_ssh)
 
         self._data = {}  # clear out metadata in _data
         self.fetch(self.uri_dynamic)  # populate _data with dynamic data
@@ -596,12 +597,12 @@ class Ec2Metadata(object):
         data = self.fix_invalid_varnames(data)
 
         instance_tags_keys = self._fetch(self.uri_instance_tags)
-        instance_tags_keys = instance_tags_keys.split('\n') if instance_tags_keys != "None" else []
-        data[self._prefix % 'instance_tags_keys'] = instance_tags_keys
+        instance_tags_keys = instance_tags_keys.split("\n") if instance_tags_keys != "None" else []
+        data[self._prefix % "instance_tags_keys"] = instance_tags_keys
 
         # Maintain old key for backwards compatibility
-        if 'ansible_ec2_instance_identity_document_region' in data:
-            data['ansible_ec2_placement_region'] = data['ansible_ec2_instance_identity_document_region']
+        if "ansible_ec2_instance_identity_document_region" in data:
+            data["ansible_ec2_placement_region"] = data["ansible_ec2_instance_identity_document_region"]
         return data
 
 
@@ -617,5 +618,5 @@ def main():
     module.exit_json(**ec2_metadata_facts_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

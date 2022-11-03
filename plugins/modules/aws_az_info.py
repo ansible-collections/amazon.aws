@@ -2,11 +2,12 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 module: aws_az_info
 short_description: Gather information about availability zones in AWS
 version_added: 1.0.0
@@ -29,9 +30,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all availability zones
@@ -41,9 +42,9 @@ EXAMPLES = '''
   amazon.aws.aws_az_info:
     filters:
       zone-name: eu-west-1a
-'''
+"""
 
-RETURN = '''
+RETURN = """
 availability_zones:
     returned: on success
     description: >
@@ -141,7 +142,7 @@ availability_zones:
             "zone_type": "availability-zone"
         }
     ]
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
@@ -156,19 +157,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 
 
 def main():
-    argument_spec = dict(
-        filters=dict(default={}, type='dict')
-    )
+    argument_spec = dict(filters=dict(default={}, type="dict"))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     # Replace filter key underscores with dashes, for compatibility
-    sanitized_filters = dict(module.params.get('filters'))
-    for k in module.params.get('filters').keys():
+    sanitized_filters = dict(module.params.get("filters"))
+    for k in module.params.get("filters").keys():
         if "_" in k:
-            sanitized_filters[k.replace('_', '-')] = sanitized_filters[k]
+            sanitized_filters[k.replace("_", "-")] = sanitized_filters[k]
             del sanitized_filters[k]
 
     try:
@@ -177,10 +176,10 @@ def main():
         module.fail_json_aws(e, msg="Unable to describe availability zones.")
 
     # Turn the boto3 result into ansible_friendly_snaked_names
-    snaked_availability_zones = [camel_dict_to_snake_dict(az) for az in availability_zones['AvailabilityZones']]
+    snaked_availability_zones = [camel_dict_to_snake_dict(az) for az in availability_zones["AvailabilityZones"]]
 
     module.exit_json(availability_zones=snaked_availability_zones)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

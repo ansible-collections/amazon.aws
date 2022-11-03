@@ -17,7 +17,8 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import sys
@@ -31,7 +32,7 @@ from ansible.module_utils._text import to_bytes
 
 
 @contextmanager
-def swap_stdin_and_argv(stdin_data='', argv_data=tuple()):
+def swap_stdin_and_argv(stdin_data="", argv_data=tuple()):
     """
     context manager that temporarily masks the test runner's values for stdin and argv
     """
@@ -77,7 +78,7 @@ def swap_stdout():
 class ModuleTestCase(unittest.TestCase):
     def setUp(self, module_args=None):
         if module_args is None:
-            module_args = {'_ansible_remote_tmp': '/tmp', '_ansible_keep_remote_files': False}
+            module_args = {"_ansible_remote_tmp": "/tmp", "_ansible_keep_remote_files": False}
 
         args = json.dumps(dict(ANSIBLE_MODULE_ARGS=module_args))
 

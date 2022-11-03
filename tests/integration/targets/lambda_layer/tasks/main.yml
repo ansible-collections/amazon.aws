@@ -98,7 +98,7 @@
     - name: Retrieve all layers with latest version
       lambda_layer_info:
       register: layers
-    
+  
     - name: Ensure layer created above was found
       assert:
         that:

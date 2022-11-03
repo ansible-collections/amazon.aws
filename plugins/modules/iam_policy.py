@@ -2,11 +2,12 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: iam_policy
 version_added: 5.0.0
@@ -57,9 +58,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
@@ -92,14 +93,14 @@ EXAMPLES = '''
       - user: s3_user
         prefix: s3_user_prefix
 
-'''
-RETURN = '''
+"""
+RETURN = """
 policy_names:
     description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
     returned: always
     type: list
     elements: str
-'''
+"""
 
 import json
 
@@ -120,7 +121,6 @@ class PolicyError(Exception):
 
 
 class Policy:
-
     def __init__(self, client, name, policy_name, policy_json, skip_duplicates, state, check_mode):
         self.client = client
         self.name = name
@@ -136,24 +136,24 @@ class Policy:
 
     @staticmethod
     def _iam_type():
-        return ''
+        return ""
 
     def _list(self, name):
         return {}
 
     def list(self):
         try:
-            return self._list(self.name).get('PolicyNames', [])
-        except is_boto3_error_code('AccessDenied'):
+            return self._list(self.name).get("PolicyNames", [])
+        except is_boto3_error_code("AccessDenied"):
             return []
 
     def _get(self, name, policy_name):
-        return '{}'
+        return "{}"
 
     def get(self, policy_name):
         try:
-            return self._get(self.name, policy_name)['PolicyDocument']
-        except is_boto3_error_code('AccessDenied'):
+            return self._get(self.name, policy_name)["PolicyDocument"]
+        except is_boto3_error_code("AccessDenied"):
             return {}
 
     def _put(self, name, policy_name, policy_doc):
@@ -190,7 +190,7 @@ class Policy:
             if self.policy_json is not None:
                 return self.get_policy_from_json()
         except json.JSONDecodeError as e:
-            raise PolicyError('Failed to decode the policy as valid JSON: %s' % str(e))
+            raise PolicyError("Failed to decode the policy as valid JSON: %s" % str(e))
         return None
 
     def get_policy_from_json(self):
@@ -226,16 +226,16 @@ class Policy:
         self.updated_policies[self.policy_name] = policy_doc
 
     def run(self):
-        if self.state == 'present':
+        if self.state == "present":
             self.create()
-        elif self.state == 'absent':
+        elif self.state == "absent":
             self.delete()
         return {
-            'changed': self.changed,
-            self._iam_type() + '_name': self.name,
-            'policies': self.list(),
-            'policy_names': self.list(),
-            'diff': dict(
+            "changed": self.changed,
+            self._iam_type() + "_name": self.name,
+            "policies": self.list(),
+            "policy_names": self.list(),
+            "diff": dict(
                 before=self.original_policies,
                 after=self.updated_policies,
             ),
@@ -243,10 +243,9 @@ class Policy:
 
 
 class UserPolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'user'
+        return "user"
 
     def _list(self, name):
         return self.client.list_user_policies(aws_retry=True, UserName=name)
@@ -262,10 +261,9 @@ class UserPolicy(Policy):
 
 
 class RolePolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'role'
+        return "role"
 
     def _list(self, name):
         return self.client.list_role_policies(aws_retry=True, RoleName=name)
@@ -281,10 +279,9 @@ class RolePolicy(Policy):
 
 
 class GroupPolicy(Policy):
-
     @staticmethod
     def _iam_type():
-        return 'group'
+        return "group"
 
     def _list(self, name):
         return self.client.list_group_policies(aws_retry=True, GroupName=name)
@@ -301,44 +298,43 @@ class GroupPolicy(Policy):
 
 def main():
     argument_spec = dict(
-        iam_type=dict(required=True, choices=['user', 'group', 'role']),
-        state=dict(default='present', choices=['present', 'absent']),
+        iam_type=dict(required=True, choices=["user", "group", "role"]),
+        state=dict(default="present", choices=["present", "absent"]),
         iam_name=dict(required=True),
         policy_name=dict(required=True),
-        policy_json=dict(type='json', default=None, required=False),
-        skip_duplicates=dict(type='bool', default=False, required=False)
+        policy_json=dict(type="json", default=None, required=False),
+        skip_duplicates=dict(type="bool", default=False, required=False),
     )
     required_if = [
-        ('state', 'present', ('policy_json',), True),
+        ("state", "present", ("policy_json",), True),
     ]
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        required_if=required_if,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if, supports_check_mode=True)
 
     args = dict(
-        client=module.client('iam', retry_decorator=AWSRetry.jittered_backoff()),
-        name=module.params.get('iam_name'),
-        policy_name=module.params.get('policy_name'),
-        policy_json=module.params.get('policy_json'),
-        skip_duplicates=module.params.get('skip_duplicates'),
-        state=module.params.get('state'),
+        client=module.client("iam", retry_decorator=AWSRetry.jittered_backoff()),
+        name=module.params.get("iam_name"),
+        policy_name=module.params.get("policy_name"),
+        policy_json=module.params.get("policy_json"),
+        skip_duplicates=module.params.get("skip_duplicates"),
+        state=module.params.get("state"),
         check_mode=module.check_mode,
     )
-    iam_type = module.params.get('iam_type')
+    iam_type = module.params.get("iam_type")
 
     try:
-        if iam_type == 'user':
+        if iam_type == "user":
             policy = UserPolicy(**args)
-        elif iam_type == 'role':
+        elif iam_type == "role":
             policy = RolePolicy(**args)
-        elif iam_type == 'group':
+        elif iam_type == "group":
             policy = GroupPolicy(**args)
 
-        module.deprecate("The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are returned for now.",
-                         date='2024-08-01', collection_name='amazon.aws')
+        module.deprecate(
+            "The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are returned for now.",
+            date="2024-08-01",
+            collection_name="amazon.aws",
+        )
 
         module.exit_json(**(policy.run()))
     except (BotoCoreError, ClientError) as e:
@@ -347,5 +343,5 @@ def main():
         module.fail_json(msg=str(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

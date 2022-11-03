@@ -2,10 +2,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     name: aws_resource_actions
     type: aggregate
     short_description: summarizes all "resource:actions" completed
@@ -15,9 +16,9 @@ DOCUMENTATION = '''
         be done easily by setting debug_botocore_endpoint_logs to True for group/aws using module_defaults.
     requirements:
       - whitelisting in configuration - see examples section below for details.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 example: >
   To enable, add this to your ansible.cfg file in the defaults block
     [defaults]
@@ -33,7 +34,7 @@ sample output: >
 # AWS ACTIONS: ['ec2:DescribeVpcAttribute', 'ec2:DescribeVpcClassicLink', 'ec2:ModifyVpcAttribute', 'ec2:CreateTags',
 #               'sts:GetCallerIdentity', 'ec2:DescribeSecurityGroups', 'ec2:DescribeTags', 'ec2:DescribeVpcs', 'ec2:CreateVpc']
 #
-'''
+"""
 
 from ansible.plugins.callback import CallbackBase
 from ansible.module_utils._text import to_native
@@ -41,8 +42,8 @@ from ansible.module_utils._text import to_native
 
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.8
-    CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'amazon.aws.aws_resource_actions'
+    CALLBACK_TYPE = "aggregate"
+    CALLBACK_NAME = "amazon.aws.aws_resource_actions"
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):
@@ -50,8 +51,8 @@ class CallbackModule(CallbackBase):
         super(CallbackModule, self).__init__()
 
     def extend_aws_resource_actions(self, result):
-        if result.get('resource_actions'):
-            self.aws_resource_actions.extend(result['resource_actions'])
+        if result.get("resource_actions"):
+            self.aws_resource_actions.extend(result["resource_actions"])
 
     def runner_on_ok(self, host, res):
         self.extend_aws_resource_actions(res)

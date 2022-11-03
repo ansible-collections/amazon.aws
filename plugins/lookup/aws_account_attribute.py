@@ -1,9 +1,10 @@
 # (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 name: aws_account_attribute
 author:
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
@@ -26,7 +27,7 @@ options:
       - max-elastic-ips
       - vpc-max-elastic-ips
       - has-ec2-classic
-'''
+"""
 
 EXAMPLES = """
 vars:
@@ -65,14 +66,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
 def _boto3_conn(region, credentials):
-    boto_profile = credentials.pop('aws_profile', None)
+    boto_profile = credentials.pop("aws_profile", None)
 
     try:
-        connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region, **credentials)
+        connection = boto3.session.Session(profile_name=boto_profile).client("ec2", region, **credentials)
     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
         if boto_profile:
             try:
-                connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region)
+                connection = boto3.session.Session(profile_name=boto_profile).client("ec2", region)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
                 raise AnsibleError("Insufficient credentials found.")
         else:
@@ -82,11 +83,11 @@ def _boto3_conn(region, credentials):
 
 def _get_credentials(options):
     credentials = {}
-    credentials['aws_profile'] = options['aws_profile']
-    credentials['aws_secret_access_key'] = options['aws_secret_key']
-    credentials['aws_access_key_id'] = options['aws_access_key']
-    if options['aws_security_token']:
-        credentials['aws_session_token'] = options['aws_security_token']
+    credentials["aws_profile"] = options["aws_profile"]
+    credentials["aws_secret_access_key"] = options["aws_secret_key"]
+    credentials["aws_access_key_id"] = options["aws_access_key"]
+    if options["aws_security_token"]:
+        credentials["aws_session_token"] = options["aws_security_token"]
 
     return credentials
 
@@ -100,37 +101,37 @@ class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleError(missing_required_lib("botocore and boto3"))
 
         self.set_options(var_options=variables, direct=kwargs)
         boto_credentials = _get_credentials(self._options)
 
-        region = self._options['region']
+        region = self._options["region"]
         client = _boto3_conn(region, boto_credentials)
 
-        attribute = kwargs.get('attribute')
-        params = {'AttributeNames': []}
+        attribute = kwargs.get("attribute")
+        params = {"AttributeNames": []}
         check_ec2_classic = False
-        if 'has-ec2-classic' == attribute:
+        if "has-ec2-classic" == attribute:
             check_ec2_classic = True
-            params['AttributeNames'] = ['supported-platforms']
+            params["AttributeNames"] = ["supported-platforms"]
         elif attribute:
-            params['AttributeNames'] = [attribute]
+            params["AttributeNames"] = [attribute]
 
         try:
-            response = _describe_account_attributes(client, **params)['AccountAttributes']
+            response = _describe_account_attributes(client, **params)["AccountAttributes"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
 
         if check_ec2_classic:
             attr = response[0]
-            return any(value['AttributeValue'] == 'EC2' for value in attr['AttributeValues'])
+            return any(value["AttributeValue"] == "EC2" for value in attr["AttributeValues"])
 
         if attribute:
             attr = response[0]
-            return [value['AttributeValue'] for value in attr['AttributeValues']]
+            return [value["AttributeValue"] for value in attr["AttributeValues"]]
 
         flattened = {}
         for k_v_dict in response:
-            flattened[k_v_dict['AttributeName']] = [value['AttributeValue'] for value in k_v_dict['AttributeValues']]
+            flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
         return flattened

@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_eni_info
 version_added: 1.0.0
@@ -32,9 +33,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all ENIs
@@ -45,9 +46,9 @@ EXAMPLES = '''
     filters:
       network-interface-id: eni-xxxxxxx
 
-'''
+"""
 
-RETURN = '''
+RETURN = """
 network_interfaces:
   description: List of matching elastic network interfaces.
   returned: always
@@ -188,7 +189,7 @@ network_interfaces:
       returned: always
       type: str
       sample: "vpc-b3f1f123"
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError
@@ -210,15 +211,15 @@ def list_eni(connection, module):
     params = {}
     # Options are mutually exclusive
     if module.params.get("eni_id"):
-        params['NetworkInterfaceIds'] = [module.params.get("eni_id")]
+        params["NetworkInterfaceIds"] = [module.params.get("eni_id")]
     elif module.params.get("filters"):
-        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
     else:
-        params['Filters'] = []
+        params["Filters"] = []
 
     try:
-        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **params)['NetworkInterfaces']
-    except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
+        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **params)["NetworkInterfaces"]
+    except is_boto3_error_code("InvalidNetworkInterfaceID.NotFound"):
         module.exit_json(network_interfaces=[])
     except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
@@ -226,13 +227,13 @@ def list_eni(connection, module):
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
     for network_interface in network_interfaces_result:
-        network_interface['TagSet'] = boto3_tag_list_to_ansible_dict(network_interface['TagSet'])
-        network_interface['Tags'] = network_interface['TagSet']
-        if 'Name' in network_interface['Tags']:
-            network_interface['Name'] = network_interface['Tags']['Name']
+        network_interface["TagSet"] = boto3_tag_list_to_ansible_dict(network_interface["TagSet"])
+        network_interface["Tags"] = network_interface["TagSet"]
+        if "Name" in network_interface["Tags"]:
+            network_interface["Name"] = network_interface["Tags"]["Name"]
         # Added id to interface info to be compatible with return values of ec2_eni module:
-        network_interface['Id'] = network_interface['NetworkInterfaceId']
-        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=['Tags', 'TagSet']))
+        network_interface["Id"] = network_interface["NetworkInterfaceId"]
+        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=["Tags", "TagSet"]))
 
     module.exit_json(network_interfaces=camel_network_interfaces)
 
@@ -242,47 +243,45 @@ def get_eni_info(interface):
     # Private addresses
     private_addresses = []
     for ip in interface.private_ip_addresses:
-        private_addresses.append({'private_ip_address': ip.private_ip_address, 'primary_address': ip.primary})
+        private_addresses.append({"private_ip_address": ip.private_ip_address, "primary_address": ip.primary})
 
-    interface_info = {'id': interface.id,
-                      'subnet_id': interface.subnet_id,
-                      'vpc_id': interface.vpc_id,
-                      'description': interface.description,
-                      'owner_id': interface.owner_id,
-                      'status': interface.status,
-                      'mac_address': interface.mac_address,
-                      'private_ip_address': interface.private_ip_address,
-                      'source_dest_check': interface.source_dest_check,
-                      'groups': dict((group.id, group.name) for group in interface.groups),
-                      'private_ip_addresses': private_addresses
-                      }
+    interface_info = {
+        "id": interface.id,
+        "subnet_id": interface.subnet_id,
+        "vpc_id": interface.vpc_id,
+        "description": interface.description,
+        "owner_id": interface.owner_id,
+        "status": interface.status,
+        "mac_address": interface.mac_address,
+        "private_ip_address": interface.private_ip_address,
+        "source_dest_check": interface.source_dest_check,
+        "groups": dict((group.id, group.name) for group in interface.groups),
+        "private_ip_addresses": private_addresses,
+    }
 
-    if hasattr(interface, 'publicDnsName'):
-        interface_info['association'] = {'public_ip_address': interface.publicIp,
-                                         'public_dns_name': interface.publicDnsName,
-                                         'ip_owner_id': interface.ipOwnerId
-                                         }
+    if hasattr(interface, "publicDnsName"):
+        interface_info["association"] = {
+            "public_ip_address": interface.publicIp,
+            "public_dns_name": interface.publicDnsName,
+            "ip_owner_id": interface.ipOwnerId,
+        }
 
     if interface.attachment is not None:
-        interface_info['attachment'] = {'attachment_id': interface.attachment.id,
-                                        'instance_id': interface.attachment.instance_id,
-                                        'device_index': interface.attachment.device_index,
-                                        'status': interface.attachment.status,
-                                        'attach_time': interface.attachment.attach_time,
-                                        'delete_on_termination': interface.attachment.delete_on_termination,
-                                        }
+        interface_info["attachment"] = {
+            "attachment_id": interface.attachment.id,
+            "instance_id": interface.attachment.instance_id,
+            "device_index": interface.attachment.device_index,
+            "status": interface.attachment.status,
+            "attach_time": interface.attachment.attach_time,
+            "delete_on_termination": interface.attachment.delete_on_termination,
+        }
 
     return interface_info
 
 
 def main():
-    argument_spec = dict(
-        eni_id=dict(type='str'),
-        filters=dict(default=None, type='dict')
-    )
-    mutually_exclusive = [
-        ['eni_id', 'filters']
-    ]
+    argument_spec = dict(eni_id=dict(type="str"), filters=dict(default=None, type="dict"))
+    mutually_exclusive = [["eni_id", "filters"]]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -290,10 +289,10 @@ def main():
         mutually_exclusive=mutually_exclusive,
     )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     list_eni(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

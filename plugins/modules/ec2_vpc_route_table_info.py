@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_route_table_info
 version_added: 1.0.0
@@ -26,9 +27,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all VPC route tables
@@ -48,9 +49,9 @@ EXAMPLES = r'''
   amazon.aws.ec2_vpc_route_table_info:
     filters:
       vpc-id: vpc-abcdef00
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 route_tables:
   description:
     - A list of dictionarys describing route tables.
@@ -186,7 +187,7 @@ route_tables:
       returned: always
       type: str
       sample: vpc-6e2d2407
-'''
+"""
 
 try:
     import botocore
@@ -205,35 +206,34 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 @AWSRetry.jittered_backoff()
 def describe_route_tables_with_backoff(connection, **params):
     try:
-        paginator = connection.get_paginator('describe_route_tables')
+        paginator = connection.get_paginator("describe_route_tables")
         return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code('InvalidRouteTableID.NotFound'):
+    except is_boto3_error_code("InvalidRouteTableID.NotFound"):
         return None
 
 
 def normalize_route(route):
     # Historically these were all there, but set to null when empty'
-    for legacy_key in ['DestinationCidrBlock', 'GatewayId', 'InstanceId',
-                       'Origin', 'State', 'NetworkInterfaceId']:
+    for legacy_key in ["DestinationCidrBlock", "GatewayId", "InstanceId", "Origin", "State", "NetworkInterfaceId"]:
         if legacy_key not in route:
             route[legacy_key] = None
-    route['InterfaceId'] = route['NetworkInterfaceId']
+    route["InterfaceId"] = route["NetworkInterfaceId"]
     return route
 
 
 def normalize_association(assoc):
     # Name change between boto v2 and boto v3, return both
-    assoc['Id'] = assoc['RouteTableAssociationId']
+    assoc["Id"] = assoc["RouteTableAssociationId"]
     return assoc
 
 
 def normalize_route_table(table):
-    table['tags'] = boto3_tag_list_to_ansible_dict(table['Tags'])
-    table['Associations'] = [normalize_association(assoc) for assoc in table['Associations']]
-    table['Routes'] = [normalize_route(route) for route in table['Routes']]
-    table['Id'] = table['RouteTableId']
-    del table['Tags']
-    return camel_dict_to_snake_dict(table, ignore_list=['tags'])
+    table["tags"] = boto3_tag_list_to_ansible_dict(table["Tags"])
+    table["Associations"] = [normalize_association(assoc) for assoc in table["Associations"]]
+    table["Routes"] = [normalize_route(route) for route in table["Routes"]]
+    table["Id"] = table["RouteTableId"]
+    del table["Tags"]
+    return camel_dict_to_snake_dict(table, ignore_list=["tags"])
 
 
 def normalize_results(results):
@@ -242,10 +242,10 @@ def normalize_results(results):
     maintained and the shape of the return values are what people expect
     """
 
-    routes = [normalize_route_table(route) for route in results['RouteTables']]
-    del results['RouteTables']
+    routes = [normalize_route_table(route) for route in results["RouteTables"]]
+    del results["RouteTables"]
     results = camel_dict_to_snake_dict(results)
-    results['route_tables'] = routes
+    results["route_tables"] = routes
     return results
 
 
@@ -264,16 +264,15 @@ def list_ec2_vpc_route_tables(connection, module):
 
 def main():
     argument_spec = dict(
-        filters=dict(default=None, type='dict'),
+        filters=dict(default=None, type="dict"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     list_ec2_vpc_route_tables(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

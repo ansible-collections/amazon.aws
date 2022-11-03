@@ -4,7 +4,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -19,141 +20,109 @@ def raise_lambdalayer_exception(e=None, m=None):
     return lambda_layer.LambdaLayerFailure(exc=e, msg=m)
 
 
-mod_list_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.list_layer_versions'
-mod_create_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.create_layer_version'
-mod_delete_layer = 'ansible_collections.amazon.aws.plugins.modules.lambda_layer.delete_layer_version'
+mod_list_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.list_layer_versions"
+mod_create_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.create_layer_version"
+mod_delete_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.delete_layer_version"
 
 
 @pytest.mark.parametrize(
     "params,api_result,calls,ansible_result",
     [
+        ({"name": "testlayer", "version": 4}, [], [], {"changed": False, "layer_versions": []}),
         (
-            {
-                "name": "testlayer",
-                "version": 4
-            },
-            [],
-            [],
-            {"changed": False, "layer_versions": []}
-        ),
-        (
-            {
-                "name": "testlayer",
-                "version": 4
-            },
+            {"name": "testlayer", "version": 4},
             [
                 {
-                    'compatible_runtimes': ["python3.7"],
-                    'created_date': "2022-09-29T10:31:35.977+0000",
-                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "compatible_runtimes": ["python3.7"],
+                    "created_date": "2022-09-29T10:31:35.977+0000",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                     "license_info": "MIT",
-                    'version': 2,
-                    'compatible_architectures': [
-                        'arm64'
-                    ]
+                    "version": 2,
+                    "compatible_architectures": ["arm64"],
                 },
                 {
                     "created_date": "2022-09-29T10:31:26.341+0000",
                     "description": "lambda layer first version",
                     "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                    "version": 1
-                }
+                    "version": 1,
+                },
             ],
             [],
-            {"changed": False, "layer_versions": []}
+            {"changed": False, "layer_versions": []},
         ),
         (
-            {
-                "name": "testlayer",
-                "version": 2
-            },
+            {"name": "testlayer", "version": 2},
             [
                 {
-                    'compatible_runtimes': ["python3.7"],
-                    'created_date': "2022-09-29T10:31:35.977+0000",
-                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "compatible_runtimes": ["python3.7"],
+                    "created_date": "2022-09-29T10:31:35.977+0000",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                     "license_info": "MIT",
-                    'version': 2,
-                    'compatible_architectures': [
-                        'arm64'
-                    ]
+                    "version": 2,
+                    "compatible_architectures": ["arm64"],
                 },
                 {
                     "created_date": "2022-09-29T10:31:26.341+0000",
                     "description": "lambda layer first version",
                     "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                    "version": 1
-                }
+                    "version": 1,
+                },
             ],
-            [
-                call(LayerName='testlayer', VersionNumber=2)
-            ],
+            [call(LayerName="testlayer", VersionNumber=2)],
             {
                 "changed": True,
                 "layer_versions": [
                     {
-                        'compatible_runtimes': ["python3.7"],
-                        'created_date': "2022-09-29T10:31:35.977+0000",
-                        'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                        "compatible_runtimes": ["python3.7"],
+                        "created_date": "2022-09-29T10:31:35.977+0000",
+                        "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                         "license_info": "MIT",
-                        'version': 2,
-                        'compatible_architectures': [
-                            'arm64'
-                        ]
+                        "version": 2,
+                        "compatible_architectures": ["arm64"],
                     }
-                ]
-            }
+                ],
+            },
         ),
         (
-            {
-                "name": "testlayer",
-                "version": -1
-            },
+            {"name": "testlayer", "version": -1},
             [
                 {
-                    'compatible_runtimes': ["python3.7"],
-                    'created_date': "2022-09-29T10:31:35.977+0000",
-                    'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                    "compatible_runtimes": ["python3.7"],
+                    "created_date": "2022-09-29T10:31:35.977+0000",
+                    "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                     "license_info": "MIT",
-                    'version': 2,
-                    'compatible_architectures': [
-                        'arm64'
-                    ]
+                    "version": 2,
+                    "compatible_architectures": ["arm64"],
                 },
                 {
                     "created_date": "2022-09-29T10:31:26.341+0000",
                     "description": "lambda layer first version",
                     "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                    "version": 1
-                }
+                    "version": 1,
+                },
             ],
-            [
-                call(LayerName='testlayer', VersionNumber=2),
-                call(LayerName='testlayer', VersionNumber=1)
-            ],
+            [call(LayerName="testlayer", VersionNumber=2), call(LayerName="testlayer", VersionNumber=1)],
             {
                 "changed": True,
                 "layer_versions": [
                     {
-                        'compatible_runtimes': ["python3.7"],
-                        'created_date': "2022-09-29T10:31:35.977+0000",
-                        'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                        "compatible_runtimes": ["python3.7"],
+                        "created_date": "2022-09-29T10:31:35.977+0000",
+                        "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                         "license_info": "MIT",
-                        'version': 2,
-                        'compatible_architectures': [
-                            'arm64'
-                        ]
+                        "version": 2,
+                        "compatible_architectures": ["arm64"],
                     },
                     {
                         "created_date": "2022-09-29T10:31:26.341+0000",
                         "description": "lambda layer first version",
                         "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                        "version": 1
-                    }
-                ]
-            }
-        )
-    ]
+                        "version": 1,
+                    },
+                ],
+            },
+        ),
+    ],
 )
 @patch(mod_list_layer)
 def test_delete_layer(m_list_layer, params, api_result, calls, ansible_result):
@@ -165,9 +134,7 @@ def test_delete_layer(m_list_layer, params, api_result, calls, ansible_result):
     result = lambda_layer.delete_layer_version(lambda_client, params)
     assert result == ansible_result
 
-    m_list_layer.assert_called_once_with(
-        lambda_client, params.get("name")
-    )
+    m_list_layer.assert_called_once_with(lambda_client, params.get("name"))
 
     if not calls:
         lambda_client.delete_layer_version.assert_not_called()
@@ -183,21 +150,19 @@ def test_delete_layer_check_mode(m_list_layer):
 
     m_list_layer.return_value = [
         {
-            'compatible_runtimes': ["python3.7"],
-            'created_date': "2022-09-29T10:31:35.977+0000",
-            'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+            "compatible_runtimes": ["python3.7"],
+            "created_date": "2022-09-29T10:31:35.977+0000",
+            "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
             "license_info": "MIT",
-            'version': 2,
-            'compatible_architectures': [
-                'arm64'
-            ]
+            "version": 2,
+            "compatible_architectures": ["arm64"],
         },
         {
             "created_date": "2022-09-29T10:31:26.341+0000",
             "description": "lambda layer first version",
             "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-            "version": 1
-        }
+            "version": 1,
+        },
     ]
     params = {"name": "testlayer", "version": -1}
     result = lambda_layer.delete_layer_version(lambda_client, params, check_mode=True)
@@ -205,28 +170,24 @@ def test_delete_layer_check_mode(m_list_layer):
         "changed": True,
         "layer_versions": [
             {
-                'compatible_runtimes': ["python3.7"],
-                'created_date': "2022-09-29T10:31:35.977+0000",
-                'layer_version_arn': "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
+                "compatible_runtimes": ["python3.7"],
+                "created_date": "2022-09-29T10:31:35.977+0000",
+                "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:2",
                 "license_info": "MIT",
-                'version': 2,
-                'compatible_architectures': [
-                    'arm64'
-                ]
+                "version": 2,
+                "compatible_architectures": ["arm64"],
             },
             {
                 "created_date": "2022-09-29T10:31:26.341+0000",
                 "description": "lambda layer first version",
                 "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-                "version": 1
-            }
-        ]
+                "version": 1,
+            },
+        ],
     }
     assert result == ansible_result
 
-    m_list_layer.assert_called_once_with(
-        lambda_client, params.get("name")
-    )
+    m_list_layer.assert_called_once_with(lambda_client, params.get("name"))
     lambda_client.delete_layer_version.assert_not_called()
 
 
@@ -241,7 +202,7 @@ def test_delete_layer_failure(m_list_layer):
             "created_date": "2022-09-29T10:31:26.341+0000",
             "description": "lambda layer first version",
             "layer_version_arn": "arn:aws:lambda:eu-west-2:123456789012:layer:testlayer:1",
-            "version": 1
+            "version": 1,
         }
     ]
     params = {"name": "testlayer", "version": 1}
@@ -249,42 +210,31 @@ def test_delete_layer_failure(m_list_layer):
         lambda_layer.delete_layer_version(lambda_client, params)
 
 
-@pytest.mark.parametrize(
-    "b_s3content",
-    [
-        (True),
-        (False)
-    ]
-)
+@pytest.mark.parametrize("b_s3content", [(True), (False)])
 @patch(mod_list_layer)
 def test_create_layer(m_list_layer, b_s3content, tmp_path):
-    params = {
-        "name": "testlayer",
-        "description": "ansible units testing sample layer",
-        "content": {},
-        "license_info": "MIT"
-    }
+    params = {"name": "testlayer", "description": "ansible units testing sample layer", "content": {}, "license_info": "MIT"}
 
     lambda_client = MagicMock()
 
     lambda_client.publish_layer_version.return_value = {
-        'CompatibleRuntimes': [
-            'python3.6',
-            'python3.7',
+        "CompatibleRuntimes": [
+            "python3.6",
+            "python3.7",
         ],
-        'Content': {
-            'CodeSha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
-            'CodeSize': 169,
-            'Location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb',
+        "Content": {
+            "CodeSha256": "tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=",
+            "CodeSize": 169,
+            "Location": "https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb",
         },
-        'CreatedDate': '2018-11-14T23:03:52.894+0000',
-        'Description': "ansible units testing sample layer",
-        'LayerArn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
-        'LayerVersionArn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
-        'LicenseInfo': 'MIT',
-        'Version': 1,
-        'ResponseMetadata': {
-            'http_header': 'true',
+        "CreatedDate": "2018-11-14T23:03:52.894+0000",
+        "Description": "ansible units testing sample layer",
+        "LayerArn": "arn:aws:lambda:us-west-2:123456789012:layer:my-layer",
+        "LayerVersionArn": "arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1",
+        "LicenseInfo": "MIT",
+        "Version": 1,
+        "ResponseMetadata": {
+            "http_header": "true",
         },
     }
 
@@ -292,33 +242,25 @@ def test_create_layer(m_list_layer, b_s3content, tmp_path):
         "changed": True,
         "layer_versions": [
             {
-                'compatible_runtimes': ['python3.6', 'python3.7'],
-                'content': {
-                    'code_sha256': 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=',
-                    'code_size': 169,
-                    'location': 'https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb'
+                "compatible_runtimes": ["python3.6", "python3.7"],
+                "content": {
+                    "code_sha256": "tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=",
+                    "code_size": 169,
+                    "location": "https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb",
                 },
-                'created_date': '2018-11-14T23:03:52.894+0000',
-                'description': 'ansible units testing sample layer',
-                'layer_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:my-layer',
-                'layer_version_arn': 'arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1',
-                'license_info': 'MIT',
-                'version': 1
+                "created_date": "2018-11-14T23:03:52.894+0000",
+                "description": "ansible units testing sample layer",
+                "layer_arn": "arn:aws:lambda:us-west-2:123456789012:layer:my-layer",
+                "layer_version_arn": "arn:aws:lambda:us-west-2:123456789012:layer:testlayer:1",
+                "license_info": "MIT",
+                "version": 1,
             }
-        ]
+        ],
     }
 
     if b_s3content:
-        params["content"] = {
-            "s3_bucket": "mybucket",
-            "s3_key": "mybucket-key",
-            "s3_object_version": "v1"
-        }
-        content_arg = {
-            "S3Bucket": "mybucket",
-            "S3Key": "mybucket-key",
-            "S3ObjectVersion": "v1"
-        }
+        params["content"] = {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"}
+        content_arg = {"S3Bucket": "mybucket", "S3Key": "mybucket-key", "S3ObjectVersion": "v1"}
     else:
         binary_data = b"simple lambda layer content"
         test_dir = tmp_path / "lambda_layer"
@@ -350,12 +292,8 @@ def test_create_layer_check_mode(m_list_layer):
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
-        "content": {
-            "s3_bucket": "mybucket",
-            "s3_key": "mybucket-key",
-            "s3_object_version": "v1"
-        },
-        "license_info": "MIT"
+        "content": {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"},
+        "license_info": "MIT",
     }
 
     lambda_client = MagicMock()
@@ -371,19 +309,9 @@ def test_create_layer_failure():
     params = {
         "name": "testlayer",
         "description": "ansible units testing sample layer",
-        "content": {
-            "s3_bucket": "mybucket",
-            "s3_key": "mybucket-key",
-            "s3_object_version": "v1"
-        },
-        "compatible_runtimes": [
-            "nodejs",
-            "python3.9"
-        ],
-        "compatible_architectures": [
-            'x86_64',
-            'arm64'
-        ]
+        "content": {"s3_bucket": "mybucket", "s3_key": "mybucket-key", "s3_object_version": "v1"},
+        "compatible_runtimes": ["nodejs", "python3.9"],
+        "compatible_architectures": ["x86_64", "arm64"],
     }
     lambda_client = MagicMock()
     lambda_client.publish_layer_version.side_effect = raise_lambdalayer_exception()
@@ -399,14 +327,8 @@ def test_create_layer_using_unexisting_file():
         "content": {
             "zip_file": "this_file_does_not_exist",
         },
-        "compatible_runtimes": [
-            "nodejs",
-            "python3.9"
-        ],
-        "compatible_architectures": [
-            'x86_64',
-            'arm64'
-        ]
+        "compatible_runtimes": ["nodejs", "python3.9"],
+        "compatible_architectures": ["x86_64", "arm64"],
     }
 
     lambda_client = MagicMock()
@@ -421,23 +343,11 @@ def test_create_layer_using_unexisting_file():
 @pytest.mark.parametrize(
     "params,failure",
     [
-        (
-            {"name": "test-layer"},
-            False
-        ),
-        (
-            {"name": "test-layer", "state": "absent"},
-            False
-        ),
-        (
-            {"name": "test-layer"},
-            True
-        ),
-        (
-            {"name": "test-layer", "state": "absent"},
-            True
-        ),
-    ]
+        ({"name": "test-layer"}, False),
+        ({"name": "test-layer", "state": "absent"}, False),
+        ({"name": "test-layer"}, True),
+        ({"name": "test-layer", "state": "absent"}, True),
+    ],
 )
 @patch(mod_create_layer)
 @patch(mod_delete_layer)
@@ -462,9 +372,7 @@ def test_execute_module(m_delete_layer, m_create_layer, params, failure):
 
             module.exit_json.assert_called_with(**result)
             module.fail_json_aws.assert_not_called()
-            m_create_layer.assert_called_with(
-                lambda_client, params, module.check_mode
-            )
+            m_create_layer.assert_called_with(lambda_client, params, module.check_mode)
             m_delete_layer.assert_not_called()
 
         elif state == "absent":
@@ -474,9 +382,7 @@ def test_execute_module(m_delete_layer, m_create_layer, params, failure):
 
             module.exit_json.assert_called_with(**result)
             module.fail_json_aws.assert_not_called()
-            m_delete_layer.assert_called_with(
-                lambda_client, params, module.check_mode
-            )
+            m_delete_layer.assert_called_with(lambda_client, params, module.check_mode)
             m_create_layer.assert_not_called()
     else:
         exc = "lambdalayer_execute_module_exception"
@@ -488,6 +394,4 @@ def test_execute_module(m_delete_layer, m_create_layer, params, failure):
             lambda_layer.execute_module(module, lambda_client)
 
         module.exit_json.assert_not_called()
-        module.fail_json_aws.assert_called_with(
-            exc, msg=msg
-        )
+        module.fail_json_aws.assert_called_with(exc, msg=msg)

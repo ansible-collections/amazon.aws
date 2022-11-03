@@ -50,7 +50,8 @@ The call will be retried the specified number of times, so the calling functions
 don't need to be wrapped in the backoff decorator.
 """
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import logging
@@ -94,12 +95,8 @@ class AnsibleAWSModule(object):
     (available on #ansible-aws on IRC) to request the additional
     features needed.
     """
-    default_settings = {
-        "default_args": True,
-        "check_boto3": True,
-        "auto_retry": True,
-        "module_class": AnsibleModule
-    }
+
+    default_settings = {"default_args": True, "check_boto3": True, "auto_retry": True, "module_class": AnsibleModule}
 
     def __init__(self, **kwargs):
         local_settings = {}
@@ -122,17 +119,13 @@ class AnsibleAWSModule(object):
 
         if local_settings["check_boto3"]:
             if not HAS_BOTO3:
-                self._module.fail_json(
-                    msg=missing_required_lib('botocore and boto3'))
-            if not self.botocore_at_least('1.21.0'):
-                self.warn('botocore < 1.21.0 is not supported or tested.'
-                          '  Some features may not work.')
+                self._module.fail_json(msg=missing_required_lib("botocore and boto3"))
+            if not self.botocore_at_least("1.21.0"):
+                self.warn("botocore < 1.21.0 is not supported or tested." "  Some features may not work.")
             if not self.boto3_at_least("1.18.0"):
-                self.warn('boto3 < 1.18.0 is not supported or tested.'
-                          '  Some features may not work.')
+                self.warn("boto3 < 1.18.0 is not supported or tested." "  Some features may not work.")
 
-        deprecated_vars = {'EC2_REGION', 'EC2_SECURITY_TOKEN', 'EC2_SECRET_KEY', 'EC2_ACCESS_KEY',
-                           'EC2_URL', 'S3_URL'}
+        deprecated_vars = {"EC2_REGION", "EC2_SECURITY_TOKEN", "EC2_SECRET_KEY", "EC2_ACCESS_KEY", "EC2_URL", "S3_URL"}
         if deprecated_vars.intersection(set(os.environ.keys())):
             self._module.deprecate(
                 "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
@@ -143,10 +136,11 @@ class AnsibleAWSModule(object):
                 "parameters or alternatively the 'AWS_REGION', 'AWS_ACCESS_KEY_ID', "
                 "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
                 "environment variables can be used instead.",
-                date='2024-12-01', collection_name='amazon.aws',
+                date="2024-12-01",
+                collection_name="amazon.aws",
             )
 
-        if 'AWS_SECURITY_TOKEN' in os.environ.keys():
+        if "AWS_SECURITY_TOKEN" in os.environ.keys():
             self._module.deprecate(
                 "Support for the 'AWS_SECURITY_TOKEN' environment variable "
                 "has been deprecated.  This variable was based on the original "
@@ -154,7 +148,8 @@ class AnsibleAWSModule(object):
                 "We recommend using the 'session_token' module parameter "
                 "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
                 "can be used instead.",
-                date='2024-12-01', collection_name='amazon.aws',
+                date="2024-12-01",
+                collection_name="amazon.aws",
             )
 
         self.check_mode = self._module.check_mode
@@ -163,8 +158,8 @@ class AnsibleAWSModule(object):
 
         self._botocore_endpoint_log_stream = StringIO()
         self.logger = None
-        if self.params.get('debug_botocore_endpoint_logs'):
-            self.logger = logging.getLogger('botocore.endpoint')
+        if self.params.get("debug_botocore_endpoint_logs"):
+            self.logger = logging.getLogger("botocore.endpoint")
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(logging.StreamHandler(self._botocore_endpoint_log_stream))
 
@@ -174,7 +169,7 @@ class AnsibleAWSModule(object):
 
     def _get_resource_action_list(self):
         actions = []
-        for ln in self._botocore_endpoint_log_stream.getvalue().split('\n'):
+        for ln in self._botocore_endpoint_log_stream.getvalue().split("\n"):
             ln = ln.strip()
             if not ln:
                 continue
@@ -186,13 +181,13 @@ class AnsibleAWSModule(object):
         return list(set(actions))
 
     def exit_json(self, *args, **kwargs):
-        if self.params.get('debug_botocore_endpoint_logs'):
-            kwargs['resource_actions'] = self._get_resource_action_list()
+        if self.params.get("debug_botocore_endpoint_logs"):
+            kwargs["resource_actions"] = self._get_resource_action_list()
         return self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs):
-        if self.params.get('debug_botocore_endpoint_logs'):
-            kwargs['resource_actions'] = self._get_resource_action_list()
+        if self.params.get("debug_botocore_endpoint_logs"):
+            kwargs["resource_actions"] = self._get_resource_action_list()
         return self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs):
@@ -212,14 +207,12 @@ class AnsibleAWSModule(object):
 
     def client(self, service, retry_decorator=None):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        conn = boto3_conn(self, conn_type='client', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        conn = boto3_conn(self, conn_type="client", resource=service, region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
     def resource(self, service):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        return boto3_conn(self, conn_type='resource', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        return boto3_conn(self, conn_type="resource", resource=service, region=region, endpoint=endpoint_url, **aws_connect_kwargs)
 
     @property
     def region(self):
@@ -241,7 +234,7 @@ class AnsibleAWSModule(object):
             except_msg = to_native(exception)
 
         if msg is not None:
-            message = '{0}: {1}'.format(msg, except_msg)
+            message = "{0}: {1}".format(msg, except_msg)
         else:
             message = except_msg
 
@@ -250,11 +243,7 @@ class AnsibleAWSModule(object):
         except AttributeError:
             response = None
 
-        failure = dict(
-            msg=message,
-            exception=last_traceback,
-            **self._gather_versions()
-        )
+        failure = dict(msg=message, exception=last_traceback, **self._gather_versions())
 
         failure.update(kwargs)
 
@@ -285,10 +274,7 @@ class AnsibleAWSModule(object):
         :param reason why the version is required (optional)
         """
         if not self.boto3_at_least(desired):
-            self._module.fail_json(
-                msg=missing_required_lib('boto3>={0}'.format(desired), **kwargs),
-                **self._gather_versions()
-            )
+            self._module.fail_json(msg=missing_required_lib("boto3>={0}".format(desired), **kwargs), **self._gather_versions())
 
     def boto3_at_least(self, desired):
         """Check if the available boto3 version is greater than or equal to a desired version.
@@ -299,7 +285,7 @@ class AnsibleAWSModule(object):
                 module.fail_json(msg="Boto3 can't deal with EC2 IPv6 addresses before version 1.4.4.")
         """
         existing = self._gather_versions()
-        return LooseVersion(existing['boto3_version']) >= LooseVersion(desired)
+        return LooseVersion(existing["boto3_version"]) >= LooseVersion(desired)
 
     def require_botocore_at_least(self, desired, **kwargs):
         """Check if the available botocore version is greater than or equal to a desired version.
@@ -315,10 +301,7 @@ class AnsibleAWSModule(object):
         :param reason why the version is required (optional)
         """
         if not self.botocore_at_least(desired):
-            self._module.fail_json(
-                msg=missing_required_lib('botocore>={0}'.format(desired), **kwargs),
-                **self._gather_versions()
-            )
+            self._module.fail_json(msg=missing_required_lib("botocore>={0}".format(desired), **kwargs), **self._gather_versions())
 
     def botocore_at_least(self, desired):
         """Check if the available botocore version is greater than or equal to a desired version.
@@ -331,7 +314,7 @@ class AnsibleAWSModule(object):
                             'To wait until Service X resources are fully available, update botocore.')
         """
         existing = self._gather_versions()
-        return LooseVersion(existing['botocore_version']) >= LooseVersion(desired)
+        return LooseVersion(existing["botocore_version"]) >= LooseVersion(desired)
 
 
 def _aws_common_argument_spec():
@@ -342,59 +325,58 @@ def _aws_common_argument_spec():
     """
     return dict(
         access_key=dict(
-            aliases=['aws_access_key_id', 'aws_access_key', 'ec2_access_key'],
+            aliases=["aws_access_key_id", "aws_access_key", "ec2_access_key"],
             deprecated_aliases=[
-                dict(name='ec2_access_key', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name="ec2_access_key", date="2024-12-01", collection_name="amazon.aws"),
             ],
-            fallback=(env_fallback, ['AWS_ACCESS_KEY_ID', 'AWS_ACCESS_KEY', 'EC2_ACCESS_KEY']),
+            fallback=(env_fallback, ["AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY", "EC2_ACCESS_KEY"]),
             no_log=False,
         ),
         secret_key=dict(
-            aliases=['aws_secret_access_key', 'aws_secret_key', 'ec2_secret_key'],
+            aliases=["aws_secret_access_key", "aws_secret_key", "ec2_secret_key"],
             deprecated_aliases=[
-                dict(name='ec2_secret_key', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name="ec2_secret_key", date="2024-12-01", collection_name="amazon.aws"),
             ],
-            fallback=(env_fallback, ['AWS_SECRET_ACCESS_KEY', 'AWS_SECRET_KEY', 'EC2_SECRET_KEY']),
+            fallback=(env_fallback, ["AWS_SECRET_ACCESS_KEY", "AWS_SECRET_KEY", "EC2_SECRET_KEY"]),
             no_log=True,
         ),
         session_token=dict(
-            aliases=['aws_session_token', 'security_token', 'access_token', 'aws_security_token'],
+            aliases=["aws_session_token", "security_token", "access_token", "aws_security_token"],
             deprecated_aliases=[
-                dict(name='access_token', date='2024-12-01', collection_name='amazon.aws'),
-                dict(name='security_token', date='2024-12-01', collection_name='amazon.aws'),
-                dict(name='aws_security_token', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name="access_token", date="2024-12-01", collection_name="amazon.aws"),
+                dict(name="security_token", date="2024-12-01", collection_name="amazon.aws"),
+                dict(name="aws_security_token", date="2024-12-01", collection_name="amazon.aws"),
             ],
-            fallback=(env_fallback, ['AWS_SESSION_TOKEN', 'AWS_SECURITY_TOKEN', 'EC2_SECURITY_TOKEN']),
+            fallback=(env_fallback, ["AWS_SESSION_TOKEN", "AWS_SECURITY_TOKEN", "EC2_SECURITY_TOKEN"]),
             no_log=True,
         ),
         profile=dict(
-            aliases=['aws_profile'],
-            fallback=(env_fallback, ['AWS_PROFILE', 'AWS_DEFAULT_PROFILE']),
+            aliases=["aws_profile"],
+            fallback=(env_fallback, ["AWS_PROFILE", "AWS_DEFAULT_PROFILE"]),
         ),
-
         endpoint_url=dict(
-            aliases=['aws_endpoint_url', 'ec2_url', 's3_url'],
+            aliases=["aws_endpoint_url", "ec2_url", "s3_url"],
             deprecated_aliases=[
-                dict(name='ec2_url', date='2024-12-01', collection_name='amazon.aws'),
-                dict(name='s3_url', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name="ec2_url", date="2024-12-01", collection_name="amazon.aws"),
+                dict(name="s3_url", date="2024-12-01", collection_name="amazon.aws"),
             ],
-            fallback=(env_fallback, ['AWS_URL', 'EC2_URL', 'S3_URL']),
+            fallback=(env_fallback, ["AWS_URL", "EC2_URL", "S3_URL"]),
         ),
         validate_certs=dict(
-            type='bool',
+            type="bool",
             default=True,
         ),
         aws_ca_bundle=dict(
-            type='path',
-            fallback=(env_fallback, ['AWS_CA_BUNDLE']),
+            type="path",
+            fallback=(env_fallback, ["AWS_CA_BUNDLE"]),
         ),
         aws_config=dict(
-            type='dict',
+            type="dict",
         ),
         debug_botocore_endpoint_logs=dict(
-            type='bool',
+            type="bool",
             default=False,
-            fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']),
+            fallback=(env_fallback, ["ANSIBLE_DEBUG_BOTOCORE_LOGS"]),
         ),
     )
 
@@ -405,11 +387,11 @@ def aws_argument_spec():
     """
     region_spec = dict(
         region=dict(
-            aliases=['aws_region', 'ec2_region'],
+            aliases=["aws_region", "ec2_region"],
             deprecated_aliases=[
-                dict(name='ec2_region', date='2024-12-01', collection_name='amazon.aws'),
+                dict(name="ec2_region", date="2024-12-01", collection_name="amazon.aws"),
             ],
-            fallback=(env_fallback, ['AWS_REGION', 'AWS_DEFAULT_REGION', 'EC2_REGION']),
+            fallback=(env_fallback, ["AWS_REGION", "AWS_DEFAULT_REGION", "EC2_REGION"]),
         ),
     )
     spec = _aws_common_argument_spec()

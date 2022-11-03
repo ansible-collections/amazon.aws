@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import json
@@ -31,21 +32,13 @@ class TestFailJsonAwsTestSuite(object):
     def setup_method(self):
         # Basic information that ClientError needs to spawn off an error
         self.EXAMPLE_EXCEPTION_DATA = {
-            "Error": {
-                "Code": "InvalidParameterValue",
-                "Message": "The filter 'exampleFilter' is invalid"
-            },
+            "Error": {"Code": "InvalidParameterValue", "Message": "The filter 'exampleFilter' is invalid"},
             "ResponseMetadata": {
                 "RequestId": "01234567-89ab-cdef-0123-456789abcdef",
                 "HTTPStatusCode": 400,
-                "HTTPHeaders": {
-                    "transfer-encoding": "chunked",
-                    "date": "Fri, 13 Nov 2020 00:00:00 GMT",
-                    "connection": "close",
-                    "server": "AmazonEC2"
-                },
-                "RetryAttempts": 0
-            }
+                "HTTPHeaders": {"transfer-encoding": "chunked", "date": "Fri, 13 Nov 2020 00:00:00 GMT", "connection": "close", "server": "AmazonEC2"},
+                "RetryAttempts": 0,
+            },
         }
         self.CAMEL_RESPONSE = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("ResponseMetadata"))
         self.CAMEL_ERROR = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("Error"))

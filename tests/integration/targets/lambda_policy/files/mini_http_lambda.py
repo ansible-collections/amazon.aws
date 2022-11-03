@@ -1,6 +1,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import json
@@ -21,9 +22,7 @@ def handler(event, context):
 
     name = event["pathParameters"]["greet_name"]
 
-    return {"statusCode": 200,
-            "body": 'hello: "' + name + '"',
-            "headers": {}}
+    return {"statusCode": 200, "body": 'hello: "' + name + '"', "headers": {}}
 
 
 def main():
@@ -36,5 +35,5 @@ def main():
     print(handler(event, context))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

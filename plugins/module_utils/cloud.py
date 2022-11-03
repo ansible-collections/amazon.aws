@@ -26,7 +26,8 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import time
@@ -107,6 +108,7 @@ class CloudRetry:
             else:
                 # iterable
                 return True
+
         return _is_iterable() and response_code in catch_extra_error_codes
 
     @classmethod
@@ -124,7 +126,9 @@ class CloudRetry:
                     status_code_from_except_f=status_code_from_exception,
                     base_class=cls.base_class,
                 )
+
             return _retry_wrapper
+
         return retry_decorator
 
     @classmethod

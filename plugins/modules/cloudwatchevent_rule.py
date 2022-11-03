@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: cloudwatchevent_rule
 version_added: 5.0.0
@@ -124,9 +124,9 @@ options:
             type: int
             description: The number of tasks to create based on I(task_definition).
     required: false
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     schedule_expression: "cron(0 20 * * ? *)"
@@ -162,9 +162,9 @@ EXAMPLES = r'''
 - amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 rule:
     description: CloudWatch Event rule data.
     returned: success
@@ -180,7 +180,7 @@ targets:
     returned: success
     type: list
     sample: "[{ 'arn': 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction', 'id': 'MyTargetId' }]"
-'''
+"""
 
 import json
 
@@ -207,8 +207,7 @@ def _format_json(json_string):
 
 
 class CloudWatchEventRule(object):
-    def __init__(self, module, name, client, schedule_expression=None,
-                 event_pattern=None, description=None, role_arn=None):
+    def __init__(self, module, name, client, schedule_expression=None, event_pattern=None, description=None, role_arn=None):
         self.name = name
         self.client = client
         self.changed = False
@@ -222,7 +221,7 @@ class CloudWatchEventRule(object):
         """Returns the existing details of the rule in AWS"""
         try:
             rule_info = self.client.describe_rule(Name=self.name)
-        except is_boto3_error_code('ResourceNotFoundException'):
+        except is_boto3_error_code("ResourceNotFoundException"):
             return {}
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Could not describe rule %s" % self.name)
@@ -231,17 +230,17 @@ class CloudWatchEventRule(object):
     def put(self, enabled=True):
         """Creates or updates the rule in AWS"""
         request = {
-            'Name': self.name,
-            'State': "ENABLED" if enabled else "DISABLED",
+            "Name": self.name,
+            "State": "ENABLED" if enabled else "DISABLED",
         }
         if self.schedule_expression:
-            request['ScheduleExpression'] = self.schedule_expression
+            request["ScheduleExpression"] = self.schedule_expression
         if self.event_pattern:
-            request['EventPattern'] = self.event_pattern
+            request["EventPattern"] = self.event_pattern
         if self.description:
-            request['Description'] = self.description
+            request["Description"] = self.description
         if self.role_arn:
-            request['RoleArn'] = self.role_arn
+            request["RoleArn"] = self.role_arn
         try:
             response = self.client.put_rule(**request)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -282,19 +281,19 @@ class CloudWatchEventRule(object):
         """Lists the existing targets for the rule in AWS"""
         try:
             targets = self.client.list_targets_by_rule(Rule=self.name)
-        except is_boto3_error_code('ResourceNotFoundException'):
+        except is_boto3_error_code("ResourceNotFoundException"):
             return []
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Could not find target for rule %s" % self.name)
-        return self._snakify(targets)['targets']
+        return self._snakify(targets)["targets"]
 
     def put_targets(self, targets):
         """Creates or updates the provided targets on the rule in AWS"""
         if not targets:
             return
         request = {
-            'Rule': self.name,
-            'Targets': self._targets_request(targets),
+            "Rule": self.name,
+            "Targets": self._targets_request(targets),
         }
         try:
             response = self.client.put_targets(**request)
@@ -307,10 +306,7 @@ class CloudWatchEventRule(object):
         """Removes the provided targets from the rule in AWS"""
         if not target_ids:
             return
-        request = {
-            'Rule': self.name,
-            'Ids': target_ids
-        }
+        request = {"Rule": self.name, "Ids": target_ids}
         try:
             response = self.client.remove_targets(**request)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -321,20 +317,20 @@ class CloudWatchEventRule(object):
     def remove_all_targets(self):
         """Removes all targets on rule"""
         targets = self.list_targets()
-        return self.remove_targets([t['id'] for t in targets])
+        return self.remove_targets([t["id"] for t in targets])
 
     def _targets_request(self, targets):
         """Formats each target for the request"""
         targets_request = []
         for target in targets:
             target_request = scrub_none_parameters(snake_dict_to_camel_dict(target, True))
-            if target_request.get('Input', None):
-                target_request['Input'] = _format_json(target_request['Input'])
-            if target_request.get('InputTransformer', None):
-                if target_request.get('InputTransformer').get('InputTemplate', None):
-                    target_request['InputTransformer']['InputTemplate'] = _format_json(target_request['InputTransformer']['InputTemplate'])
-                if target_request.get('InputTransformer').get('InputPathsMap', None):
-                    target_request['InputTransformer']['InputPathsMap'] = target['input_transformer']['input_paths_map']
+            if target_request.get("Input", None):
+                target_request["Input"] = _format_json(target_request["Input"])
+            if target_request.get("InputTransformer", None):
+                if target_request.get("InputTransformer").get("InputTemplate", None):
+                    target_request["InputTransformer"]["InputTemplate"] = _format_json(target_request["InputTransformer"]["InputTemplate"])
+                if target_request.get("InputTransformer").get("InputPathsMap", None):
+                    target_request["InputTransformer"]["InputPathsMap"] = target["input_transformer"]["input_paths_map"]
             targets_request.append(target_request)
         return targets_request
 
@@ -344,7 +340,7 @@ class CloudWatchEventRule(object):
 
 
 class CloudWatchEventRuleManager(object):
-    RULE_FIELDS = ['name', 'event_pattern', 'schedule_expression', 'description', 'role_arn']
+    RULE_FIELDS = ["name", "event_pattern", "schedule_expression", "description", "role_arn"]
 
     def __init__(self, rule, targets):
         self.rule = rule
@@ -376,20 +372,16 @@ class CloudWatchEventRuleManager(object):
 
     def fetch_aws_state(self):
         """Retrieves rule and target state from AWS"""
-        aws_state = {
-            'rule': {},
-            'targets': [],
-            'changed': self.rule.changed
-        }
+        aws_state = {"rule": {}, "targets": [], "changed": self.rule.changed}
         rule_description = self.rule.describe()
         if not rule_description:
             return aws_state
 
         # Don't need to include response metadata noise in response
-        del rule_description['response_metadata']
+        del rule_description["response_metadata"]
 
-        aws_state['rule'] = rule_description
-        aws_state['targets'].extend(self.rule.list_targets())
+        aws_state["rule"] = rule_description
+        aws_state["targets"].extend(self.rule.list_targets())
         return aws_state
 
     def _sync_rule(self, enabled=True):
@@ -412,9 +404,9 @@ class CloudWatchEventRuleManager(object):
     def _sync_state(self, enabled=True):
         """Syncs local rule state with AWS"""
         remote_state = self._remote_state()
-        if enabled and remote_state != 'ENABLED':
+        if enabled and remote_state != "ENABLED":
             self.rule.enable()
-        elif not enabled and remote_state != 'DISABLED':
+        elif not enabled and remote_state != "DISABLED":
             self.rule.disable()
 
     def _create(self, enabled=True):
@@ -428,10 +420,7 @@ class CloudWatchEventRuleManager(object):
 
         # The rule matches AWS only if all rule data fields are equal
         # to their corresponding local value defined in the task
-        return all(
-            getattr(self.rule, field) == aws_rule_data.get(field, None)
-            for field in self.RULE_FIELDS
-        )
+        return all(getattr(self.rule, field) == aws_rule_data.get(field, None) for field in self.RULE_FIELDS)
 
     def _targets_to_put(self):
         """Returns a list of targets that need to be updated or added remotely"""
@@ -440,41 +429,41 @@ class CloudWatchEventRuleManager(object):
 
     def _remote_target_ids_to_remove(self):
         """Returns a list of targets that need to be removed remotely"""
-        target_ids = [t['id'] for t in self.targets]
+        target_ids = [t["id"] for t in self.targets]
         remote_targets = self.rule.list_targets()
-        return [
-            rt['id'] for rt in remote_targets if rt['id'] not in target_ids
-        ]
+        return [rt["id"] for rt in remote_targets if rt["id"] not in target_ids]
 
     def _remote_state(self):
         """Returns the remote state from AWS"""
         description = self.rule.describe()
         if not description:
             return
-        return description['state']
+        return description["state"]
 
 
 def main():
     target_args = dict(
-        type='list', elements='dict', default=[],
+        type="list",
+        elements="dict",
+        default=[],
         options=dict(
-            id=dict(type='str', required=True),
-            arn=dict(type='str', required=True),
-            role_arn=dict(type='str'),
-            input=dict(type='json'),
-            input_path=dict(type='str'),
+            id=dict(type="str", required=True),
+            arn=dict(type="str", required=True),
+            role_arn=dict(type="str"),
+            input=dict(type="json"),
+            input_path=dict(type="str"),
             input_transformer=dict(
-                type='dict',
+                type="dict",
                 options=dict(
-                    input_paths_map=dict(type='dict'),
-                    input_template=dict(type='json'),
+                    input_paths_map=dict(type="dict"),
+                    input_template=dict(type="json"),
                 ),
             ),
             ecs_parameters=dict(
-                type='dict',
+                type="dict",
                 options=dict(
-                    task_definition_arn=dict(type='str', required=True),
-                    task_count=dict(type='int'),
+                    task_definition_arn=dict(type="str", required=True),
+                    task_count=dict(type="int"),
                 ),
             ),
         ),
@@ -482,30 +471,27 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         schedule_expression=dict(),
-        event_pattern=dict(type='json'),
-        state=dict(choices=['present', 'disabled', 'absent'],
-                   default='present'),
+        event_pattern=dict(type="json"),
+        state=dict(choices=["present", "disabled", "absent"], default="present"),
         description=dict(),
         role_arn=dict(),
         targets=target_args,
     )
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
-    rule_data = dict(
-        [(rf, module.params.get(rf)) for rf in CloudWatchEventRuleManager.RULE_FIELDS]
-    )
-    targets = module.params.get('targets')
-    state = module.params.get('state')
-    client = module.client('events')
+    rule_data = dict([(rf, module.params.get(rf)) for rf in CloudWatchEventRuleManager.RULE_FIELDS])
+    targets = module.params.get("targets")
+    state = module.params.get("state")
+    client = module.client("events")
 
     cwe_rule = CloudWatchEventRule(module, client=client, **rule_data)
     cwe_rule_manager = CloudWatchEventRuleManager(cwe_rule, targets)
 
-    if state == 'present':
+    if state == "present":
         cwe_rule_manager.ensure_present()
-    elif state == 'disabled':
+    elif state == "disabled":
         cwe_rule_manager.ensure_disabled()
-    elif state == 'absent':
+    elif state == "absent":
         cwe_rule_manager.ensure_absent()
     else:
         module.fail_json(msg="Invalid state '{0}' provided".format(state))
@@ -513,5 +499,5 @@ def main():
     module.exit_json(**cwe_rule_manager.fetch_aws_state())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,10 +1,11 @@
 # (c) 2016 James Turner <turnerjsm@gmail.com>
 # (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 name: aws_service_ip_ranges
 author:
   - James Turner (!UNKNOWN) <turnerjsm@gmail.com>
@@ -22,7 +23,7 @@ options:
   ipv6_prefixes:
     description: 'When I(ipv6_prefixes=True) the lookup will return ipv6 addresses instead of ipv4 addresses'
     version_added: 2.1.0
-'''
+"""
 
 EXAMPLES = """
 vars:
@@ -65,9 +66,9 @@ class LookupModule(LookupBase):
             ip_prefix_label = "ip_prefix"
 
         try:
-            resp = open_url('https://ip-ranges.amazonaws.com/ip-ranges.json')
+            resp = open_url("https://ip-ranges.amazonaws.com/ip-ranges.json")
             amazon_response = json.load(resp)[prefixes_label]
-        except getattr(json.decoder, 'JSONDecodeError', ValueError) as e:
+        except getattr(json.decoder, "JSONDecodeError", ValueError) as e:
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
             raise AnsibleError("Could not decode AWS IP ranges: %s" % to_native(e))
@@ -80,11 +81,11 @@ class LookupModule(LookupBase):
         except ConnectionError as e:
             raise AnsibleError("Error connecting to IP range service: %s" % to_native(e))
 
-        if 'region' in kwargs:
-            region = kwargs['region']
-            amazon_response = (item for item in amazon_response if item['region'] == region)
-        if 'service' in kwargs:
-            service = str.upper(kwargs['service'])
-            amazon_response = (item for item in amazon_response if item['service'] == service)
+        if "region" in kwargs:
+            region = kwargs["region"]
+            amazon_response = (item for item in amazon_response if item["region"] == region)
+        if "service" in kwargs:
+            service = str.upper(kwargs["service"])
+            amazon_response = (item for item in amazon_response if item["service"] == service)
         iprange = [item[ip_prefix_label] for item in amazon_response]
         return iprange

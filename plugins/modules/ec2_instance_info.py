@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_instance_info
 version_added: 1.0.0
@@ -44,9 +45,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all instances
@@ -81,9 +82,9 @@ EXAMPLES = r'''
       instance-state-name: [ "running"]
   register: ec2_node_info
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 instances:
     description: A list of ec2 instances.
     returned: always
@@ -504,7 +505,7 @@ instances:
             returned: always
             type: dict
             sample: vpc-0011223344
-'''
+"""
 
 import datetime
 
@@ -523,14 +524,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 @AWSRetry.jittered_backoff()
 def _describe_instances(connection, **params):
-    paginator = connection.get_paginator('describe_instances')
+    paginator = connection.get_paginator("describe_instances")
     return paginator.paginate(**params).build_full_result()
 
 
 def list_ec2_instances(connection, module):
 
     instance_ids = module.params.get("instance_ids")
-    uptime = module.params.get('minimum_uptime')
+    uptime = module.params.get("minimum_uptime")
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
@@ -544,18 +545,18 @@ def list_ec2_instances(connection, module):
         timedelta = int(uptime) if uptime else 0
         oldest_launch_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=timedelta)
         # Get instances from reservations
-        for reservation in reservations['Reservations']:
-            instances += [instance for instance in reservation['Instances'] if instance['LaunchTime'].replace(tzinfo=None) < oldest_launch_time]
+        for reservation in reservations["Reservations"]:
+            instances += [instance for instance in reservation["Instances"] if instance["LaunchTime"].replace(tzinfo=None) < oldest_launch_time]
     else:
-        for reservation in reservations['Reservations']:
-            instances = instances + reservation['Instances']
+        for reservation in reservations["Reservations"]:
+            instances = instances + reservation["Instances"]
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for instance in snaked_instances:
-        instance['tags'] = boto3_tag_list_to_ansible_dict(instance.get('tags', []), 'key', 'value')
+        instance["tags"] = boto3_tag_list_to_ansible_dict(instance.get("tags", []), "key", "value")
 
     module.exit_json(instances=snaked_instances)
 
@@ -563,26 +564,24 @@ def list_ec2_instances(connection, module):
 def main():
 
     argument_spec = dict(
-        minimum_uptime=dict(required=False, type='int', default=None, aliases=['uptime']),
-        instance_ids=dict(default=[], type='list', elements='str'),
-        filters=dict(default={}, type='dict')
+        minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
+        instance_ids=dict(default=[], type="list", elements="str"),
+        filters=dict(default={}, type="dict"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[
-            ['instance_ids', 'filters']
-        ],
+        mutually_exclusive=[["instance_ids", "filters"]],
         supports_check_mode=True,
     )
 
     try:
-        connection = module.client('ec2')
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     list_ec2_instances(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

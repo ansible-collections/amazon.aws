@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -26,25 +27,46 @@ def ec2_security_group(monkeypatch):
     # monkey patches various ec2_security_group module functions, we'll separately test the operation of
     # these functions, we just care that it's passing the results into the right place in the
     # instance spec.
-    monkeypatch.setattr(ec2_security_group_module, 'current_account_id', sentinel.CURRENT_ACCOUNT_ID)
+    monkeypatch.setattr(ec2_security_group_module, "current_account_id", sentinel.CURRENT_ACCOUNT_ID)
     return ec2_security_group_module
 
 
 IPS_GOOD = [
-    ('192.0.2.2', '192.0.2.2',),
-    ('192.0.2.1/32', '192.0.2.1/32',),
-    ('192.0.2.1/255.255.255.255', '192.0.2.1/32',),
-    ('192.0.2.0/24', '192.0.2.0/24',),
-    ('192.0.2.0/255.255.255.255', '192.0.2.0/32',),
-    ('2001:db8::1/128', '2001:db8::1/128',),
-    ('2001:db8::/32', '2001:db8::/32',),
-    ('2001:db8:fe80:b897:8990:8a7c:99bf:323d/128', '2001:db8:fe80:b897:8990:8a7c:99bf:323d/128'),
+    (
+        "192.0.2.2",
+        "192.0.2.2",
+    ),
+    (
+        "192.0.2.1/32",
+        "192.0.2.1/32",
+    ),
+    (
+        "192.0.2.1/255.255.255.255",
+        "192.0.2.1/32",
+    ),
+    (
+        "192.0.2.0/24",
+        "192.0.2.0/24",
+    ),
+    (
+        "192.0.2.0/255.255.255.255",
+        "192.0.2.0/32",
+    ),
+    (
+        "2001:db8::1/128",
+        "2001:db8::1/128",
+    ),
+    (
+        "2001:db8::/32",
+        "2001:db8::/32",
+    ),
+    ("2001:db8:fe80:b897:8990:8a7c:99bf:323d/128", "2001:db8:fe80:b897:8990:8a7c:99bf:323d/128"),
 ]
 
 IPS_WARN = [
-    ('192.0.2.1/24', '192.0.2.0/24', 'One of your CIDR addresses'),
-    ('2001:DB8::1/32', '2001:DB8::/32', 'One of your IPv6 CIDR addresses'),
-    ('2001:db8:fe80:b897:8990:8a7c:99bf:323d/64', '2001:db8:fe80:b897::/64', 'One of your IPv6 CIDR addresses'),
+    ("192.0.2.1/24", "192.0.2.0/24", "One of your CIDR addresses"),
+    ("2001:DB8::1/32", "2001:DB8::/32", "One of your IPv6 CIDR addresses"),
+    ("2001:db8:fe80:b897:8990:8a7c:99bf:323d/64", "2001:db8:fe80:b897::/64", "One of your IPv6 CIDR addresses"),
 ]
 
 

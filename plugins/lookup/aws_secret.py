@@ -1,10 +1,11 @@
 # Copyright: (c) 2018, Aaron Smith <ajsmith10381@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 name: aws_secret
 author:
   - Aaron Smith (!UNKNOWN) <ajsmith10381@gmail.com>
@@ -74,7 +75,7 @@ options:
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
-'''
+"""
 
 EXAMPLES = r"""
  - name: lookup secretsmanager secret in the current region
@@ -138,14 +139,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
 def _boto3_conn(region, credentials):
-    boto_profile = credentials.pop('aws_profile', None)
+    boto_profile = credentials.pop("aws_profile", None)
 
     try:
-        connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region, **credentials)
+        connection = boto3.session.Session(profile_name=boto_profile).client("secretsmanager", region, **credentials)
     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
         if boto_profile:
             try:
-                connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region)
+                connection = boto3.session.Session(profile_name=boto_profile).client("secretsmanager", region)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
                 raise AnsibleError("Insufficient credentials found.")
         else:
@@ -154,61 +155,75 @@ def _boto3_conn(region, credentials):
 
 
 class LookupModule(LookupBase):
-    def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
-            aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, nested=False, join=False, version_stage=None, version_id=None, on_missing='error',
-            on_denied='error', on_deleted='error'):
-        '''
-                   :arg terms: a list of lookups to run.
-                       e.g. ['parameter_name', 'parameter_name_too' ]
-                   :kwarg variables: ansible variables active at the time of the lookup
-                   :kwarg aws_secret_key: identity of the AWS key to use
-                   :kwarg aws_access_key: AWS secret key (matching identity)
-                   :kwarg aws_security_token: AWS session key if using STS
-                   :kwarg decrypt: Set to True to get decrypted parameters
-                   :kwarg region: AWS region in which to do the lookup
-                   :kwarg bypath: Set to True to do a lookup of variables under a path
-                   :kwarg nested: Set to True to do a lookup of nested secrets
-                   :kwarg join: Join two or more entries to form an extended secret
-                   :kwarg version_stage: Stage of the secret version
-                   :kwarg version_id: Version of the secret(s)
-                   :kwarg on_missing: Action to take if the secret is missing
-                   :kwarg on_deleted: Action to take if the secret is marked for deletion
-                   :kwarg on_denied: Action to take if access to the secret is denied
-                   :returns: A list of parameter values or a list of dictionaries if bypath=True.
-               '''
+    def run(
+        self,
+        terms,
+        variables=None,
+        boto_profile=None,
+        aws_profile=None,
+        aws_secret_key=None,
+        aws_access_key=None,
+        aws_security_token=None,
+        region=None,
+        bypath=False,
+        nested=False,
+        join=False,
+        version_stage=None,
+        version_id=None,
+        on_missing="error",
+        on_denied="error",
+        on_deleted="error",
+    ):
+        """
+        :arg terms: a list of lookups to run.
+            e.g. ['parameter_name', 'parameter_name_too' ]
+        :kwarg variables: ansible variables active at the time of the lookup
+        :kwarg aws_secret_key: identity of the AWS key to use
+        :kwarg aws_access_key: AWS secret key (matching identity)
+        :kwarg aws_security_token: AWS session key if using STS
+        :kwarg decrypt: Set to True to get decrypted parameters
+        :kwarg region: AWS region in which to do the lookup
+        :kwarg bypath: Set to True to do a lookup of variables under a path
+        :kwarg nested: Set to True to do a lookup of nested secrets
+        :kwarg join: Join two or more entries to form an extended secret
+        :kwarg version_stage: Stage of the secret version
+        :kwarg version_id: Version of the secret(s)
+        :kwarg on_missing: Action to take if the secret is missing
+        :kwarg on_deleted: Action to take if the secret is marked for deletion
+        :kwarg on_denied: Action to take if access to the secret is denied
+        :returns: A list of parameter values or a list of dictionaries if bypath=True.
+        """
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleError(missing_required_lib("botocore and boto3"))
 
         deleted = on_deleted.lower()
-        if not isinstance(deleted, string_types) or deleted not in ['error', 'warn', 'skip']:
+        if not isinstance(deleted, string_types) or deleted not in ["error", "warn", "skip"]:
             raise AnsibleError('"on_deleted" must be a string and one of "error", "warn" or "skip", not %s' % deleted)
 
         missing = on_missing.lower()
-        if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
+        if not isinstance(missing, string_types) or missing not in ["error", "warn", "skip"]:
             raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
 
         denied = on_denied.lower()
-        if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
+        if not isinstance(denied, string_types) or denied not in ["error", "warn", "skip"]:
             raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
         credentials = {}
         if aws_profile:
-            credentials['aws_profile'] = aws_profile
+            credentials["aws_profile"] = aws_profile
         else:
-            credentials['aws_profile'] = boto_profile
-        credentials['aws_secret_access_key'] = aws_secret_key
-        credentials['aws_access_key_id'] = aws_access_key
-        credentials['aws_session_token'] = aws_security_token
+            credentials["aws_profile"] = boto_profile
+        credentials["aws_secret_access_key"] = aws_secret_key
+        credentials["aws_access_key_id"] = aws_access_key
+        credentials["aws_session_token"] = aws_security_token
 
         # fallback to IAM role credentials
-        if not credentials['aws_profile'] and not (
-                credentials['aws_access_key_id'] and credentials['aws_secret_access_key']):
+        if not credentials["aws_profile"] and not (credentials["aws_access_key_id"] and credentials["aws_secret_access_key"]):
             session = botocore.session.get_session()
             if session.get_credentials() is not None:
-                credentials['aws_access_key_id'] = session.get_credentials().access_key
-                credentials['aws_secret_access_key'] = session.get_credentials().secret_key
-                credentials['aws_session_token'] = session.get_credentials().token
+                credentials["aws_access_key_id"] = session.get_credentials().access_key
+                credentials["aws_secret_access_key"] = session.get_credentials().secret_key
+                credentials["aws_session_token"] = session.get_credentials().token
 
         client = _boto3_conn(region, credentials)
 
@@ -216,14 +231,12 @@ class LookupModule(LookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    paginator = client.get_paginator('list_secrets')
-                    paginator_response = paginator.paginate(
-                        Filters=[{'Key': 'name', 'Values': [term]}])
+                    paginator = client.get_paginator("list_secrets")
+                    paginator_response = paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
                     for object in paginator_response:
-                        if 'SecretList' in object:
-                            for secret_obj in object['SecretList']:
-                                secrets.update({secret_obj['Name']: self.get_secret_value(
-                                    secret_obj['Name'], client, on_missing=missing, on_denied=denied)})
+                        if "SecretList" in object:
+                            for secret_obj in object["SecretList"]:
+                                secrets.update({secret_obj["Name"]: self.get_secret_value(secret_obj["Name"], client, on_missing=missing, on_denied=denied)})
                     secrets = [secrets]
 
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -231,40 +244,39 @@ class LookupModule(LookupBase):
         else:
             secrets = []
             for term in terms:
-                value = self.get_secret_value(term, client,
-                                              version_stage=version_stage, version_id=version_id,
-                                              on_missing=missing, on_denied=denied, on_deleted=deleted,
-                                              nested=nested)
+                value = self.get_secret_value(
+                    term, client, version_stage=version_stage, version_id=version_id, on_missing=missing, on_denied=denied, on_deleted=deleted, nested=nested
+                )
                 if value:
                     secrets.append(value)
             if join:
                 joined_secret = []
-                joined_secret.append(''.join(secrets))
+                joined_secret.append("".join(secrets))
                 return joined_secret
 
         return secrets
 
     def get_secret_value(self, term, client, version_stage=None, version_id=None, on_missing=None, on_denied=None, on_deleted=None, nested=False):
         params = {}
-        params['SecretId'] = term
+        params["SecretId"] = term
         if version_id:
-            params['VersionId'] = version_id
+            params["VersionId"] = version_id
         if version_stage:
-            params['VersionStage'] = version_stage
+            params["VersionStage"] = version_stage
         if nested:
-            if len(term.split('.')) < 2:
+            if len(term.split(".")) < 2:
                 raise AnsibleError("Nested query must use the following syntax: `aws_secret_name.<key_name>.<key_name>")
-            secret_name = term.split('.')[0]
-            params['SecretId'] = secret_name
+            secret_name = term.split(".")[0]
+            params["SecretId"] = secret_name
 
         try:
             response = client.get_secret_value(**params)
-            if 'SecretBinary' in response:
-                return response['SecretBinary']
-            if 'SecretString' in response:
+            if "SecretBinary" in response:
+                return response["SecretBinary"]
+            if "SecretString" in response:
                 if nested:
-                    query = term.split('.')[1:]
-                    secret_string = json.loads(response['SecretString'])
+                    query = term.split(".")[1:]
+                    secret_string = json.loads(response["SecretString"])
                     ret_val = secret_string
                     for key in query:
                         if key in ret_val:
@@ -273,22 +285,22 @@ class LookupModule(LookupBase):
                             raise AnsibleError("Successfully retrieved secret but there exists no key {0} in the secret".format(key))
                     return str(ret_val)
                 else:
-                    return response['SecretString']
-        except is_boto3_error_message('marked for deletion'):
-            if on_deleted == 'error':
+                    return response["SecretString"]
+        except is_boto3_error_message("marked for deletion"):
+            if on_deleted == "error":
                 raise AnsibleError("Failed to find secret %s (marked for deletion)" % term)
-            elif on_deleted == 'warn':
-                self._display.warning('Skipping, did not find secret (marked for deletion) %s' % term)
-        except is_boto3_error_code('ResourceNotFoundException'):  # pylint: disable=duplicate-except
-            if on_missing == 'error':
+            elif on_deleted == "warn":
+                self._display.warning("Skipping, did not find secret (marked for deletion) %s" % term)
+        except is_boto3_error_code("ResourceNotFoundException"):  # pylint: disable=duplicate-except
+            if on_missing == "error":
                 raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
-            elif on_missing == 'warn':
-                self._display.warning('Skipping, did not find secret %s' % term)
-        except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
-            if on_denied == 'error':
+            elif on_missing == "warn":
+                self._display.warning("Skipping, did not find secret %s" % term)
+        except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
+            if on_denied == "error":
                 raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
-            elif on_denied == 'warn':
-                self._display.warning('Skipping, access denied for secret %s' % term)
+            elif on_denied == "warn":
+                self._display.warning("Skipping, access denied for secret %s" % term)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 

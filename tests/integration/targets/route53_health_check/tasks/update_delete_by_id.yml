@@ -37,14 +37,14 @@
         port: 8888
       register: update_result
       check_mode: true
-    
+  
     - name: 'Check result - Update Health Check Port - check_mode'
       assert:
         that:
           - update_result is not failed
           - update_result is changed
           - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
-    
+  
     - name: 'Update Health Check by ID - Update Port'
       route53_health_check:
         id: "{{ health_check_id }}"
@@ -85,7 +85,7 @@
         id: "{{ health_check_id }}"
         port: 8888
       register: update_result
-    
+  
     - name: 'Check result - Update Health Check Port - idempotency'
       assert:
         that:
@@ -101,14 +101,14 @@
         fqdn: '{{ fqdn_1 }}'
       register: update_result
       check_mode: true
-    
+  
     - name: 'Check result - Update Health Check IP address and FQDN - check_mode'
       assert:
         that:
           - update_result is not failed
           - update_result is changed
           - '"route53:UpdateHealthCheck" not in update_result.resource_actions'
-    
+  
     - name: 'Update Health Check by ID - Update IP address and FQDN'
       route53_health_check:
         id: "{{ health_check_id }}"
@@ -153,7 +153,7 @@
         ip_address: 1.2.3.4
         fqdn: '{{ fqdn_1 }}'
       register: update_result
-    
+  
     - name: 'Check result - Update Health Check IP address and FQDN - idempotency'
       assert:
         that:

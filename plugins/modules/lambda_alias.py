@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: lambda_alias
 version_added: 5.0.0
@@ -54,9 +55,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.boto3
 
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 ---
 # Simple example to create a lambda function and publish a version
 - hosts: localhost
@@ -117,9 +118,9 @@ EXAMPLES = '''
       name: Prod
       version: "{{ production_version }}"
       description: "Production is version {{ production_version }}"
-'''
+"""
 
-RETURN = '''
+RETURN = """
 ---
 alias_arn:
     description: Full ARN of the function, including the alias
@@ -146,7 +147,7 @@ revision_id:
     returned: success
     type: str
     sample: 12345678-1234-1234-1234-123456789abc
-'''
+"""
 
 import re
 
@@ -190,21 +191,19 @@ def validate_params(module):
     :return:
     """
 
-    function_name = module.params['function_name']
+    function_name = module.params["function_name"]
 
     # validate function name
-    if not re.search(r'^[\w\-:]+$', function_name):
-        module.fail_json(
-            msg='Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.'.format(function_name)
-        )
+    if not re.search(r"^[\w\-:]+$", function_name):
+        module.fail_json(msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(function_name))
     if len(function_name) > 64:
         module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
 
     #  if parameter 'function_version' is zero, set it to $LATEST, else convert it to a string
-    if module.params['function_version'] == 0:
-        module.params['function_version'] = '$LATEST'
+    if module.params["function_version"] == 0:
+        module.params["function_version"] = "$LATEST"
     else:
-        module.params['function_version'] = str(module.params['function_version'])
+        module.params["function_version"] = str(module.params["function_version"])
 
     return
 
@@ -219,15 +218,15 @@ def get_lambda_alias(module, client):
     """
 
     # set API parameters
-    api_params = set_api_params(module, ('function_name', 'name'))
+    api_params = set_api_params(module, ("function_name", "name"))
 
     # check if alias exists and get facts
     try:
         results = client.get_alias(aws_retry=True, **api_params)
-    except is_boto3_error_code('ResourceNotFoundException'):
+    except is_boto3_error_code("ResourceNotFoundException"):
         results = None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Error retrieving function alias')
+        module.fail_json_aws(e, msg="Error retrieving function alias")
 
     return results
 
@@ -242,19 +241,19 @@ def lambda_alias(module, client):
     """
     results = dict()
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
+    current_state = "absent"
+    state = module.params["state"]
 
     facts = get_lambda_alias(module, client)
     if facts:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present':
+    if state == "present":
+        if current_state == "present":
             snake_facts = camel_dict_to_snake_dict(facts)
 
             # check if alias has changed -- only version and description can change
-            alias_params = ('function_version', 'description')
+            alias_params = ("function_version", "description")
             for param in alias_params:
                 if module.params.get(param) is None:
                     continue
@@ -263,37 +262,37 @@ def lambda_alias(module, client):
                     break
 
             if changed:
-                api_params = set_api_params(module, ('function_name', 'name'))
+                api_params = set_api_params(module, ("function_name", "name"))
                 api_params.update(set_api_params(module, alias_params))
 
                 if not module.check_mode:
                     try:
                         results = client.update_alias(aws_retry=True, **api_params)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg='Error updating function alias')
+                        module.fail_json_aws(e, msg="Error updating function alias")
 
         else:
             # create new function alias
-            api_params = set_api_params(module, ('function_name', 'name', 'function_version', 'description'))
+            api_params = set_api_params(module, ("function_name", "name", "function_version", "description"))
 
             try:
                 if not module.check_mode:
                     results = client.create_alias(aws_retry=True, **api_params)
                 changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Error creating function alias')
+                module.fail_json_aws(e, msg="Error creating function alias")
 
     else:  # state = 'absent'
-        if current_state == 'present':
+        if current_state == "present":
             # delete the function
-            api_params = set_api_params(module, ('function_name', 'name'))
+            api_params = set_api_params(module, ("function_name", "name"))
 
             try:
                 if not module.check_mode:
                     results = client.delete_alias(aws_retry=True, **api_params)
                 changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Error deleting function alias')
+                module.fail_json_aws(e, msg="Error deleting function alias")
 
     return dict(changed=changed, **dict(results or facts or {}))
 
@@ -305,10 +304,10 @@ def main():
     :return dict: ansible facts
     """
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
         function_name=dict(required=True),
-        name=dict(required=True, aliases=['alias_name']),
-        function_version=dict(type='int', required=False, default=0, aliases=['version']),
+        name=dict(required=True, aliases=["alias_name"]),
+        function_version=dict(type="int", required=False, default=0, aliases=["version"]),
         description=dict(required=False, default=None),
     )
 
@@ -319,7 +318,7 @@ def main():
         required_together=[],
     )
 
-    client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
 
     validate_params(module)
     results = lambda_alias(module, client)
@@ -327,5 +326,5 @@ def main():
     module.exit_json(**camel_dict_to_snake_dict(results))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -13,9 +13,7 @@ mod_name = "ansible_collections.amazon.aws.plugins.modules.rds_instance_info"
 
 
 def a_boto_exception():
-    return botocore.exceptions.UnknownServiceError(
-        service_name="Whoops", known_service_names="Oula"
-    )
+    return botocore.exceptions.UnknownServiceError(service_name="Whoops", known_service_names="Oula")
 
 
 @patch(mod_name + "._describe_db_instances")
@@ -33,9 +31,7 @@ def test_instance_info_one_instance(m_get_instance_tags, m_describe_db_instances
     rds_instance_info.instance_info(conn, instance_name, filters={})
 
     m_describe_db_instances.assert_called_with(conn, DBInstanceIdentifier=instance_name)
-    m_get_instance_tags.assert_called_with(
-        conn, arn="arn:aws:rds:us-east-2:123456789012:og:" + instance_name
-    )
+    m_get_instance_tags.assert_called_with(conn, arn="arn:aws:rds:us-east-2:123456789012:og:" + instance_name)
 
 
 @patch(mod_name + "._describe_db_instances")
@@ -53,13 +49,9 @@ def test_instance_info_all_instances(m_get_instance_tags, m_describe_db_instance
             "DBInstanceArn": "arn:aws:rds:us-east-2:123456789012:og:second-instance",
         },
     ]
-    rds_instance_info.instance_info(
-        conn, instance_name=None, filters={"engine": "postgres"}
-    )
+    rds_instance_info.instance_info(conn, instance_name=None, filters={"engine": "postgres"})
 
-    m_describe_db_instances.assert_called_with(
-        conn, Filters=[{"Name": "engine", "Values": ["postgres"]}]
-    )
+    m_describe_db_instances.assert_called_with(conn, Filters=[{"Name": "engine", "Values": ["postgres"]}])
     assert m_get_instance_tags.call_count == 2
     m_get_instance_tags.assert_has_calls(
         [
@@ -78,9 +70,7 @@ def test_get_instance_tags():
         "NextToken": "some-token",
     }
 
-    tags = rds_instance_info.get_instance_tags(
-        conn, "arn:aws:rds:us-east-2:123456789012:og:second-instance"
-    )
+    tags = rds_instance_info.get_instance_tags(conn, "arn:aws:rds:us-east-2:123456789012:og:second-instance")
     conn.list_tags_for_resource.assert_called_with(
         ResourceName="arn:aws:rds:us-east-2:123456789012:og:second-instance",
         aws_retry=True,

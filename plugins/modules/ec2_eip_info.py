@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_eip_info
 version_added: 5.0.0
@@ -30,9 +31,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.boto3
 
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details or the AWS region,
 # see the AWS Guide for details.
 
@@ -75,10 +76,10 @@ EXAMPLES = r'''
     eip_alloc: my_vms_eips.addresses[0].allocation_id
     my_pub_ip: my_vms_eips.addresses[0].public_ip
 
-'''
+"""
 
 
-RETURN = '''
+RETURN = """
 addresses:
   description: Properties of all Elastic IP addresses matching the provided filters. Each element is a dict with all the information related to an EIP.
   returned: on success
@@ -97,10 +98,10 @@ addresses:
         }
     }]
 
-'''
+"""
 
 try:
-    from botocore.exceptions import (BotoCoreError, ClientError)
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
@@ -113,35 +114,25 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 
 def get_eips_details(module):
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     filters = module.params.get("filters")
     try:
-        response = connection.describe_addresses(
-            aws_retry=True,
-            Filters=ansible_dict_to_boto3_filter_list(filters)
-        )
+        response = connection.describe_addresses(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(filters))
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(
-            e,
-            msg="Error retrieving EIPs")
+        module.fail_json_aws(e, msg="Error retrieving EIPs")
 
-    addresses = camel_dict_to_snake_dict(response)['addresses']
+    addresses = camel_dict_to_snake_dict(response)["addresses"]
     for address in addresses:
-        if 'tags' in address:
-            address['tags'] = boto3_tag_list_to_ansible_dict(address['tags'])
+        if "tags" in address:
+            address["tags"] = boto3_tag_list_to_ansible_dict(address["tags"])
     return addresses
 
 
 def main():
-    module = AnsibleAWSModule(
-        argument_spec=dict(
-            filters=dict(type='dict', default={})
-        ),
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=dict(filters=dict(type="dict", default={})), supports_check_mode=True)
 
     module.exit_json(changed=False, addresses=get_eips_details(module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

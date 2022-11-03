@@ -2,11 +2,12 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_vpc_subnet_info
 version_added: 1.0.0
@@ -32,9 +33,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all VPC subnets
@@ -70,9 +71,9 @@ EXAMPLES = '''
 
 - set_fact:
     subnet_ids: "{{ subnet_info.subnets|map(attribute='id')|list }}"
-'''
+"""
 
-RETURN = '''
+RETURN = """
 subnets:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -144,7 +145,7 @@ subnets:
                             description: The CIDR block association state.
                             returned: always
                             type: str
-'''
+"""
 
 try:
     import botocore
@@ -179,8 +180,8 @@ def describe_subnets(connection, module):
     connection  : boto3 client connection object
     """
     # collect parameters
-    filters = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    subnet_ids = module.params.get('subnet_ids')
+    filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    subnet_ids = module.params.get("subnet_ids")
 
     if subnet_ids is None:
         # Set subnet_ids to empty list if it is None
@@ -193,33 +194,27 @@ def describe_subnets(connection, module):
     try:
         response = describe_subnets_with_backoff(connection, subnet_ids, filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to describe subnets')
+        module.fail_json_aws(e, msg="Failed to describe subnets")
 
-    for subnet in response['Subnets']:
+    for subnet in response["Subnets"]:
         # for backwards compatibility
-        subnet['id'] = subnet['SubnetId']
+        subnet["id"] = subnet["SubnetId"]
         subnet_info.append(camel_dict_to_snake_dict(subnet))
         # convert tag list to ansible dict
-        subnet_info[-1]['tags'] = boto3_tag_list_to_ansible_dict(subnet.get('Tags', []))
+        subnet_info[-1]["tags"] = boto3_tag_list_to_ansible_dict(subnet.get("Tags", []))
 
     module.exit_json(subnets=subnet_info)
 
 
 def main():
-    argument_spec = dict(
-        subnet_ids=dict(type='list', elements='str', default=[], aliases=['subnet_id']),
-        filters=dict(type='dict', default={})
-    )
+    argument_spec = dict(subnet_ids=dict(type="list", elements="str", default=[], aliases=["subnet_id"]), filters=dict(type="dict", default={}))
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     describe_subnets(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

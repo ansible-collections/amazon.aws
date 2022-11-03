@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_vol_info
 version_added: 1.0.0
@@ -25,9 +26,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all volumes
@@ -57,9 +58,9 @@ EXAMPLES = '''
       attachment.instance-id: "i-000111222333"
   register: volumes
 
-'''
+"""
 
-RETURN = '''
+RETURN = """
 volumes:
     description: Volumes that match the provided filters. Each element consists of a dict with all the information related to that volume.
     type: list
@@ -125,7 +126,7 @@ volumes:
             description: The throughput that the volume supports, in MiB/s.
             type: int
             sample: 131
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError
@@ -144,38 +145,40 @@ def get_volume_info(volume, region):
 
     attachment_data = []
     for data in volume["attachments"]:
-        attachment_data.append({
-            'attach_time': data.get('attach_time', None),
-            'device': data.get('device', None),
-            'instance_id': data.get('instance_id', None),
-            'status': data.get('state', None),
-            'delete_on_termination': data.get('delete_on_termination', None)
-        })
+        attachment_data.append(
+            {
+                "attach_time": data.get("attach_time", None),
+                "device": data.get("device", None),
+                "instance_id": data.get("instance_id", None),
+                "status": data.get("state", None),
+                "delete_on_termination": data.get("delete_on_termination", None),
+            }
+        )
 
     volume_info = {
-        'create_time': volume["create_time"],
-        'id': volume["volume_id"],
-        'encrypted': volume["encrypted"],
-        'iops': volume["iops"] if "iops" in volume else None,
-        'size': volume["size"],
-        'snapshot_id': volume["snapshot_id"],
-        'status': volume["state"],
-        'type': volume["volume_type"],
-        'zone': volume["availability_zone"],
-        'region': region,
-        'attachment_set': attachment_data,
-        'tags': boto3_tag_list_to_ansible_dict(volume['tags']) if "tags" in volume else None
+        "create_time": volume["create_time"],
+        "id": volume["volume_id"],
+        "encrypted": volume["encrypted"],
+        "iops": volume["iops"] if "iops" in volume else None,
+        "size": volume["size"],
+        "snapshot_id": volume["snapshot_id"],
+        "status": volume["state"],
+        "type": volume["volume_type"],
+        "zone": volume["availability_zone"],
+        "region": region,
+        "attachment_set": attachment_data,
+        "tags": boto3_tag_list_to_ansible_dict(volume["tags"]) if "tags" in volume else None,
     }
 
-    if 'throughput' in volume:
-        volume_info['throughput'] = volume["throughput"]
+    if "throughput" in volume:
+        volume_info["throughput"] = volume["throughput"]
 
     return volume_info
 
 
 @AWSRetry.jittered_backoff()
 def describe_volumes_with_backoff(connection, filters):
-    paginator = connection.get_paginator('describe_volumes')
+    paginator = connection.get_paginator("describe_volumes")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
@@ -194,20 +197,20 @@ def list_ec2_volumes(connection, module):
         module.fail_json_aws(e, msg="Failed to describe volumes.")
 
     for volume in all_volumes["Volumes"]:
-        volume = camel_dict_to_snake_dict(volume, ignore_list=['Tags'])
+        volume = camel_dict_to_snake_dict(volume, ignore_list=["Tags"])
         volume_dict_array.append(get_volume_info(volume, module.region))
     module.exit_json(volumes=volume_dict_array)
 
 
 def main():
-    argument_spec = dict(filters=dict(default={}, type='dict'))
+    argument_spec = dict(filters=dict(default={}, type="dict"))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     list_ec2_volumes(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

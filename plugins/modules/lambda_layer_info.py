@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: lambda_layer_info
 version_added: 5.1.0
@@ -43,9 +44,9 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.boto3
 
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 ---
 # Display information about the versions for the layer named blank-java-lib
 - name: Retrieve layer versions
@@ -66,9 +67,9 @@ EXAMPLES = '''
 - name: list latest versions for all layers
   amazon.aws.lambda_layer_info:
     compatible_runtime: python3.7
-'''
+"""
 
-RETURN = '''
+RETURN = """
 layers_versions:
   description:
   - The layers versions that exists.
@@ -114,7 +115,7 @@ layers_versions:
         description: A list of compatible instruction set architectures.
         returned: if it was defined for the layer version.
         type: list
-'''
+"""
 
 try:
     import botocore
@@ -129,13 +130,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 @AWSRetry.jittered_backoff()
 def _list_layer_versions(client, **params):
-    paginator = client.get_paginator('list_layer_versions')
+    paginator = client.get_paginator("list_layer_versions")
     return paginator.paginate(**params).build_full_result()
 
 
 @AWSRetry.jittered_backoff()
 def _list_layers(client, **params):
-    paginator = client.get_paginator('list_layers')
+    paginator = client.get_paginator("list_layers")
     return paginator.paginate(**params).build_full_result()
 
 
@@ -154,7 +155,7 @@ def list_layer_versions(lambda_client, name, compatible_runtime=None, compatible
     if compatible_architecture:
         params["CompatibleArchitecture"] = compatible_architecture
     try:
-        layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, **params)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layer versions for name {0}".format(name))
@@ -168,7 +169,7 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
     if compatible_architecture:
         params["CompatibleArchitecture"] = compatible_architecture
     try:
-        layers = _list_layers(lambda_client, **params)['Layers']
+        layers = _list_layers(lambda_client, **params)["Layers"]
         layer_versions = []
         for item in layers:
             layer = {key: value for key, value in item.items() if key != "LatestMatchingVersion"}
@@ -213,9 +214,9 @@ def main():
         supports_check_mode=True,
     )
 
-    lambda_client = module.client('lambda')
+    lambda_client = module.client("lambda")
     execute_module(module, lambda_client)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

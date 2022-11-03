@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from copy import deepcopy
@@ -13,25 +14,77 @@ import ansible_collections.amazon.aws.plugins.modules.ec2_security_group as ec2_
 
 
 VALID_RULES = [
-    dict(proto='all',),
-    dict(proto='tcp', from_port='1', to_port='65535',),
-    dict(proto='icmpv6', from_port='-1', to_port='-1',),
-    dict(proto='icmp', from_port='-1', to_port='-1',),
-    dict(proto='icmpv6', icmp_type='8', icmp_code='1'),
-    dict(proto='icmpv6', icmp_code='1'),
-    dict(proto='icmpv6', icmp_type='8'),
-    dict(proto='icmp', icmp_type='8', icmp_code='1'),
-    dict(proto='icmp', icmp_code='1'),
-    dict(proto='icmp', icmp_type='8'),
+    dict(
+        proto="all",
+    ),
+    dict(
+        proto="tcp",
+        from_port="1",
+        to_port="65535",
+    ),
+    dict(
+        proto="icmpv6",
+        from_port="-1",
+        to_port="-1",
+    ),
+    dict(
+        proto="icmp",
+        from_port="-1",
+        to_port="-1",
+    ),
+    dict(proto="icmpv6", icmp_type="8", icmp_code="1"),
+    dict(proto="icmpv6", icmp_code="1"),
+    dict(proto="icmpv6", icmp_type="8"),
+    dict(proto="icmp", icmp_type="8", icmp_code="1"),
+    dict(proto="icmp", icmp_code="1"),
+    dict(proto="icmp", icmp_type="8"),
 ]
 
 INVALID_RULES = [
-    (dict(proto='tcp', icmp_code='1',), r"Specify proto: icmp or icmpv6",),
-    (dict(proto='tcp', icmp_type='8',), r"Specify proto: icmp or icmpv6",),
-    (dict(proto='tcp', icmp_type='8', icmp_code='1',), r"Specify proto: icmp or icmpv6",),
-    (dict(proto='all', icmp_code='1',), r"Specify proto: icmp or icmpv6",),
-    (dict(proto='all', icmp_type='8',), r"Specify proto: icmp or icmpv6",),
-    (dict(proto='all', icmp_type='8', icmp_code='1',), r"Specify proto: icmp or icmpv6",),
+    (
+        dict(
+            proto="tcp",
+            icmp_code="1",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
+    (
+        dict(
+            proto="tcp",
+            icmp_type="8",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
+    (
+        dict(
+            proto="tcp",
+            icmp_type="8",
+            icmp_code="1",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
+    (
+        dict(
+            proto="all",
+            icmp_code="1",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
+    (
+        dict(
+            proto="all",
+            icmp_type="8",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
+    (
+        dict(
+            proto="all",
+            icmp_type="8",
+            icmp_code="1",
+        ),
+        r"Specify proto: icmp or icmpv6",
+    ),
 ]
 
 

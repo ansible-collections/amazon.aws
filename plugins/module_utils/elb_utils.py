@@ -1,7 +1,8 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 try:
@@ -40,9 +41,9 @@ def _get_elb(connection, module, elb_name):
     """
 
     try:
-        load_balancer_paginator = connection.get_paginator('describe_load_balancers')
-        return (load_balancer_paginator.paginate(Names=[elb_name]).build_full_result())['LoadBalancers'][0]
-    except is_boto3_error_code('LoadBalancerNotFound'):
+        load_balancer_paginator = connection.get_paginator("describe_load_balancers")
+        return (load_balancer_paginator.paginate(Names=[elb_name]).build_full_result())["LoadBalancers"][0]
+    except is_boto3_error_code("LoadBalancerNotFound"):
         return None
 
 
@@ -58,15 +59,15 @@ def get_elb_listener(connection, module, elb_arn, listener_port):
     """
 
     try:
-        listener_paginator = connection.get_paginator('describe_listeners')
-        listeners = (AWSRetry.jittered_backoff()(listener_paginator.paginate)(LoadBalancerArn=elb_arn).build_full_result())['Listeners']
+        listener_paginator = connection.get_paginator("describe_listeners")
+        listeners = (AWSRetry.jittered_backoff()(listener_paginator.paginate)(LoadBalancerArn=elb_arn).build_full_result())["Listeners"]
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e)
 
     l = None
 
     for listener in listeners:
-        if listener['Port'] == listener_port:
+        if listener["Port"] == listener_port:
             l = listener
             break
 
@@ -84,7 +85,7 @@ def get_elb_listener_rules(connection, module, listener_arn):
     """
 
     try:
-        return AWSRetry.jittered_backoff()(connection.describe_rules)(ListenerArn=listener_arn)['Rules']
+        return AWSRetry.jittered_backoff()(connection.describe_rules)(ListenerArn=listener_arn)["Rules"]
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e)
 
@@ -104,6 +105,6 @@ def convert_tg_name_to_arn(connection, module, tg_name):
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e)
 
-    tg_arn = response['TargetGroups'][0]['TargetGroupArn']
+    tg_arn = response["TargetGroups"][0]["TargetGroupArn"]
 
     return tg_arn

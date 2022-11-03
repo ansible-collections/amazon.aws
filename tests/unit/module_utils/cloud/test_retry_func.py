@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -98,9 +99,7 @@ def test_no_match_with_extra_error_codes(retrier):
     catch_extra_error_codes = sentinel.extra_codes
 
     with pytest.raises(ExceptionA):
-        _f, _result = retrier(
-            func=func, found_f=found_f, catch_extra_error_codes=catch_extra_error_codes
-        )
+        _f, _result = retrier(func=func, found_f=found_f, catch_extra_error_codes=catch_extra_error_codes)
     assert func.called is True
     assert func.call_count == 1
     assert found_f.called is True

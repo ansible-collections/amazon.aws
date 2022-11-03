@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -448,7 +449,7 @@ options:
         version_added_collection: community.aws
 '''
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: create minimal aurora instance in default VPC and default subnet group
   amazon.aws.rds_instance:
@@ -544,9 +545,9 @@ EXAMPLES = r'''
     engine: mariadb
     state: present
   register: restored_db
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allocated_storage:
   description: The allocated storage size in gigabytes. This is always 1 for aurora database engines.
   returned: always
@@ -848,7 +849,7 @@ vpc_security_groups:
       returned: always
       type: str
       sample: sg-12345678
-'''
+"""
 
 from time import sleep
 
@@ -879,31 +880,55 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
 
 
-valid_engines = ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-ee-cdb',
-                 'oracle-se2', 'oracle-se2-cdb', 'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
+valid_engines = [
+    "aurora",
+    "aurora-mysql",
+    "aurora-postgresql",
+    "mariadb",
+    "mysql",
+    "oracle-ee",
+    "oracle-ee-cdb",
+    "oracle-se2",
+    "oracle-se2-cdb",
+    "postgres",
+    "sqlserver-ee",
+    "sqlserver-se",
+    "sqlserver-ex",
+    "sqlserver-web",
+]
 
-valid_engines_iam_roles = ['aurora-postgresql', 'oracle-ee', 'oracle-ee-cdb', 'oracle-se2', 'oracle-se2-cdb',
-                           'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
+valid_engines_iam_roles = [
+    "aurora-postgresql",
+    "oracle-ee",
+    "oracle-ee-cdb",
+    "oracle-se2",
+    "oracle-se2-cdb",
+    "postgres",
+    "sqlserver-ee",
+    "sqlserver-se",
+    "sqlserver-ex",
+    "sqlserver-web",
+]
 
 
 def get_rds_method_attribute_name(instance, state, creation_source, read_replica):
     method_name = None
-    if state == 'absent' or state == 'terminated':
-        if instance and instance['DBInstanceStatus'] not in ['deleting', 'deleted']:
-            method_name = 'delete_db_instance'
+    if state == "absent" or state == "terminated":
+        if instance and instance["DBInstanceStatus"] not in ["deleting", "deleted"]:
+            method_name = "delete_db_instance"
     else:
         if instance:
-            method_name = 'modify_db_instance'
+            method_name = "modify_db_instance"
         elif read_replica is True:
-            method_name = 'create_db_instance_read_replica'
-        elif creation_source == 'snapshot':
-            method_name = 'restore_db_instance_from_db_snapshot'
-        elif creation_source == 's3':
-            method_name = 'restore_db_instance_from_s3'
-        elif creation_source == 'instance':
-            method_name = 'restore_db_instance_to_point_in_time'
+            method_name = "create_db_instance_read_replica"
+        elif creation_source == "snapshot":
+            method_name = "restore_db_instance_from_db_snapshot"
+        elif creation_source == "s3":
+            method_name = "restore_db_instance_from_s3"
+        elif creation_source == "instance":
+            method_name = "restore_db_instance_to_point_in_time"
         else:
-            method_name = 'create_db_instance'
+            method_name = "create_db_instance"
     return method_name
 
 
@@ -911,143 +936,143 @@ def get_instance(client, module, db_instance_id):
     try:
         for _i in range(3):
             try:
-                instance = client.describe_db_instances(DBInstanceIdentifier=db_instance_id)['DBInstances'][0]
-                instance['Tags'] = get_tags(client, module, instance['DBInstanceArn'])
-                if instance.get('ProcessorFeatures'):
-                    instance['ProcessorFeatures'] = dict((feature['Name'], feature['Value']) for feature in instance['ProcessorFeatures'])
-                if instance.get('PendingModifiedValues', {}).get('ProcessorFeatures'):
-                    instance['PendingModifiedValues']['ProcessorFeatures'] = dict(
-                        (feature['Name'], feature['Value'])
-                        for feature in instance['PendingModifiedValues']['ProcessorFeatures']
+                instance = client.describe_db_instances(DBInstanceIdentifier=db_instance_id)["DBInstances"][0]
+                instance["Tags"] = get_tags(client, module, instance["DBInstanceArn"])
+                if instance.get("ProcessorFeatures"):
+                    instance["ProcessorFeatures"] = dict((feature["Name"], feature["Value"]) for feature in instance["ProcessorFeatures"])
+                if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):
+                    instance["PendingModifiedValues"]["ProcessorFeatures"] = dict(
+                        (feature["Name"], feature["Value"]) for feature in instance["PendingModifiedValues"]["ProcessorFeatures"]
                     )
                 break
-            except is_boto3_error_code('DBInstanceNotFound'):
+            except is_boto3_error_code("DBInstanceNotFound"):
                 sleep(3)
         else:
             instance = {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Failed to describe DB instances')
+        module.fail_json_aws(e, msg="Failed to describe DB instances")
     return instance
 
 
 def get_final_snapshot(client, module, snapshot_identifier):
     try:
         snapshots = AWSRetry.jittered_backoff()(client.describe_db_snapshots)(DBSnapshotIdentifier=snapshot_identifier)
-        if len(snapshots.get('DBSnapshots', [])) == 1:
-            return snapshots['DBSnapshots'][0]
+        if len(snapshots.get("DBSnapshots", [])) == 1:
+            return snapshots["DBSnapshots"][0]
         return {}
-    except is_boto3_error_code('DBSnapshotNotFound'):  # May not be using wait: True
+    except is_boto3_error_code("DBSnapshotNotFound"):  # May not be using wait: True
         return {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Failed to retrieve information about the final snapshot')
+        module.fail_json_aws(e, msg="Failed to retrieve information about the final snapshot")
 
 
 def get_parameters(client, module, parameters, method_name):
-    if method_name == 'restore_db_instance_to_point_in_time':
-        parameters['TargetDBInstanceIdentifier'] = module.params['db_instance_identifier']
+    if method_name == "restore_db_instance_to_point_in_time":
+        parameters["TargetDBInstanceIdentifier"] = module.params["db_instance_identifier"]
 
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
-        module.fail_json(msg='To {0} requires the parameters: {1}'.format(
-            get_rds_method_attribute(method_name, module).operation_description, required_options))
+        module.fail_json(
+            msg="To {0} requires the parameters: {1}".format(get_rds_method_attribute(method_name, module).operation_description, required_options)
+        )
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 
-    if parameters.get('ProcessorFeatures') is not None:
-        parameters['ProcessorFeatures'] = [{'Name': k, 'Value': to_text(v)} for k, v in parameters['ProcessorFeatures'].items()]
+    if parameters.get("ProcessorFeatures") is not None:
+        parameters["ProcessorFeatures"] = [{"Name": k, "Value": to_text(v)} for k, v in parameters["ProcessorFeatures"].items()]
 
     # If this parameter is an empty list it can only be used with modify_db_instance (as the parameter UseDefaultProcessorFeatures)
-    if parameters.get('ProcessorFeatures') == [] and not method_name == 'modify_db_instance':
-        parameters.pop('ProcessorFeatures')
+    if parameters.get("ProcessorFeatures") == [] and not method_name == "modify_db_instance":
+        parameters.pop("ProcessorFeatures")
 
-    if method_name in ['create_db_instance', 'create_db_instance_read_replica', 'restore_db_instance_from_db_snapshot']:
-        if parameters.get('Tags'):
-            parameters['Tags'] = ansible_dict_to_boto3_tag_list(parameters['Tags'])
+    if method_name in ["create_db_instance", "create_db_instance_read_replica", "restore_db_instance_from_db_snapshot"]:
+        if parameters.get("Tags"):
+            parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
 
-    if method_name == 'modify_db_instance':
+    if method_name == "modify_db_instance":
         parameters = get_options_with_changing_values(client, module, parameters)
 
     return parameters
 
 
 def get_options_with_changing_values(client, module, parameters):
-    instance_id = module.params['db_instance_identifier']
-    purge_cloudwatch_logs = module.params['purge_cloudwatch_logs_exports']
-    force_update_password = module.params['force_update_password']
-    port = module.params['port']
-    apply_immediately = parameters.pop('ApplyImmediately', None)
-    cloudwatch_logs_enabled = module.params['enable_cloudwatch_logs_exports']
-    purge_security_groups = module.params['purge_security_groups']
+    instance_id = module.params["db_instance_identifier"]
+    purge_cloudwatch_logs = module.params["purge_cloudwatch_logs_exports"]
+    force_update_password = module.params["force_update_password"]
+    port = module.params["port"]
+    apply_immediately = parameters.pop("ApplyImmediately", None)
+    cloudwatch_logs_enabled = module.params["enable_cloudwatch_logs_exports"]
+    purge_security_groups = module.params["purge_security_groups"]
 
     if port:
-        parameters['DBPortNumber'] = port
+        parameters["DBPortNumber"] = port
     if not force_update_password:
-        parameters.pop('MasterUserPassword', None)
+        parameters.pop("MasterUserPassword", None)
     if cloudwatch_logs_enabled:
-        parameters['CloudwatchLogsExportConfiguration'] = cloudwatch_logs_enabled
-    if not module.params['storage_type']:
-        parameters.pop('Iops', None)
+        parameters["CloudwatchLogsExportConfiguration"] = cloudwatch_logs_enabled
+    if not module.params["storage_type"]:
+        parameters.pop("Iops", None)
 
     instance = get_instance(client, module, instance_id)
     updated_parameters = get_changing_options_with_inconsistent_keys(parameters, instance, purge_cloudwatch_logs, purge_security_groups)
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
 
-    if instance.get('StorageType') == 'io1':
+    if instance.get("StorageType") == "io1":
         # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
-        current_iops = instance.get('PendingModifiedValues', {}).get('Iops', instance['Iops'])
-        current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
-        new_iops = module.params.get('iops')
-        new_allocated_storage = module.params.get('allocated_storage')
+        current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
+        current_allocated_storage = instance.get("PendingModifiedValues", {}).get("AllocatedStorage", instance["AllocatedStorage"])
+        new_iops = module.params.get("iops")
+        new_allocated_storage = module.params.get("allocated_storage")
 
         if current_iops != new_iops or current_allocated_storage != new_allocated_storage:
-            parameters['AllocatedStorage'] = new_allocated_storage
-            parameters['Iops'] = new_iops
+            parameters["AllocatedStorage"] = new_allocated_storage
+            parameters["Iops"] = new_iops
 
-    if parameters.get('NewDBInstanceIdentifier') and instance.get('PendingModifiedValues', {}).get('DBInstanceIdentifier'):
-        if parameters['NewDBInstanceIdentifier'] == instance['PendingModifiedValues']['DBInstanceIdentifier'] and not apply_immediately:
-            parameters.pop('NewDBInstanceIdentifier')
+    if parameters.get("NewDBInstanceIdentifier") and instance.get("PendingModifiedValues", {}).get("DBInstanceIdentifier"):
+        if parameters["NewDBInstanceIdentifier"] == instance["PendingModifiedValues"]["DBInstanceIdentifier"] and not apply_immediately:
+            parameters.pop("NewDBInstanceIdentifier")
 
     if parameters:
-        parameters['DBInstanceIdentifier'] = instance_id
+        parameters["DBInstanceIdentifier"] = instance_id
         if apply_immediately is not None:
-            parameters['ApplyImmediately'] = apply_immediately
+            parameters["ApplyImmediately"] = apply_immediately
 
     return parameters
 
 
 def get_current_attributes_with_inconsistent_keys(instance):
     options = {}
-    if instance.get('PendingModifiedValues', {}).get('PendingCloudwatchLogsExports', {}).get('LogTypesToEnable', []):
-        current_enabled = instance['PendingModifiedValues']['PendingCloudwatchLogsExports']['LogTypesToEnable']
-        current_disabled = instance['PendingModifiedValues']['PendingCloudwatchLogsExports']['LogTypesToDisable']
-        options['CloudwatchLogsExportConfiguration'] = {'LogTypesToEnable': current_enabled, 'LogTypesToDisable': current_disabled}
+    if instance.get("PendingModifiedValues", {}).get("PendingCloudwatchLogsExports", {}).get("LogTypesToEnable", []):
+        current_enabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToEnable"]
+        current_disabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToDisable"]
+        options["CloudwatchLogsExportConfiguration"] = {"LogTypesToEnable": current_enabled, "LogTypesToDisable": current_disabled}
     else:
-        options['CloudwatchLogsExportConfiguration'] = {'LogTypesToEnable': instance.get('EnabledCloudwatchLogsExports', []), 'LogTypesToDisable': []}
-    if instance.get('PendingModifiedValues', {}).get('Port'):
-        options['DBPortNumber'] = instance['PendingModifiedValues']['Port']
+        options["CloudwatchLogsExportConfiguration"] = {"LogTypesToEnable": instance.get("EnabledCloudwatchLogsExports", []), "LogTypesToDisable": []}
+    if instance.get("PendingModifiedValues", {}).get("Port"):
+        options["DBPortNumber"] = instance["PendingModifiedValues"]["Port"]
     else:
-        options['DBPortNumber'] = instance['Endpoint']['Port']
-    if instance.get('PendingModifiedValues', {}).get('DBSubnetGroupName'):
-        options['DBSubnetGroupName'] = instance['PendingModifiedValues']['DBSubnetGroupName']
+        options["DBPortNumber"] = instance["Endpoint"]["Port"]
+    if instance.get("PendingModifiedValues", {}).get("DBSubnetGroupName"):
+        options["DBSubnetGroupName"] = instance["PendingModifiedValues"]["DBSubnetGroupName"]
     else:
-        options['DBSubnetGroupName'] = instance['DBSubnetGroup']['DBSubnetGroupName']
-    if instance.get('PendingModifiedValues', {}).get('ProcessorFeatures'):
-        options['ProcessorFeatures'] = instance['PendingModifiedValues']['ProcessorFeatures']
+        options["DBSubnetGroupName"] = instance["DBSubnetGroup"]["DBSubnetGroupName"]
+    if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):
+        options["ProcessorFeatures"] = instance["PendingModifiedValues"]["ProcessorFeatures"]
     else:
-        options['ProcessorFeatures'] = instance.get('ProcessorFeatures', {})
-    options['OptionGroupName'] = [g['OptionGroupName'] for g in instance['OptionGroupMemberships']]
-    options['DBSecurityGroups'] = [sg['DBSecurityGroupName'] for sg in instance['DBSecurityGroups'] if sg['Status'] in ['adding', 'active']]
-    options['VpcSecurityGroupIds'] = [sg['VpcSecurityGroupId'] for sg in instance['VpcSecurityGroups'] if sg['Status'] in ['adding', 'active']]
-    options['DBParameterGroupName'] = [parameter_group['DBParameterGroupName'] for parameter_group in instance['DBParameterGroups']]
-    options['EnableIAMDatabaseAuthentication'] = instance['IAMDatabaseAuthenticationEnabled']
+        options["ProcessorFeatures"] = instance.get("ProcessorFeatures", {})
+    options["OptionGroupName"] = [g["OptionGroupName"] for g in instance["OptionGroupMemberships"]]
+    options["DBSecurityGroups"] = [sg["DBSecurityGroupName"] for sg in instance["DBSecurityGroups"] if sg["Status"] in ["adding", "active"]]
+    options["VpcSecurityGroupIds"] = [sg["VpcSecurityGroupId"] for sg in instance["VpcSecurityGroups"] if sg["Status"] in ["adding", "active"]]
+    options["DBParameterGroupName"] = [parameter_group["DBParameterGroupName"] for parameter_group in instance["DBParameterGroups"]]
+    options["EnableIAMDatabaseAuthentication"] = instance["IAMDatabaseAuthenticationEnabled"]
     # PerformanceInsightsEnabled is not returned on older RDS instances it seems
-    options['EnablePerformanceInsights'] = instance.get('PerformanceInsightsEnabled', False)
-    options['NewDBInstanceIdentifier'] = instance['DBInstanceIdentifier']
+    options["EnablePerformanceInsights"] = instance.get("PerformanceInsightsEnabled", False)
+    options["NewDBInstanceIdentifier"] = instance["DBInstanceIdentifier"]
 
     # Neither of these are returned via describe_db_instances, so if either is specified during a check_mode run, changed=True
-    options['AllowMajorVersionUpgrade'] = None
-    options['MasterUserPassword'] = None
+    options["AllowMajorVersionUpgrade"] = None
+    options["MasterUserPassword"] = None
 
     return options
 
@@ -1065,8 +1090,13 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
         if isinstance(current_option, list):
             if isinstance(desired_option, list):
                 if (
-                    set(desired_option) < set(current_option) and
-                    option in ('DBSecurityGroups', 'VpcSecurityGroupIds',) and purge_security_groups
+                    set(desired_option) < set(current_option)
+                    and option
+                    in (
+                        "DBSecurityGroups",
+                        "VpcSecurityGroupIds",
+                    )
+                    and purge_security_groups
                 ):
                     changing_params[option] = desired_option
                 elif set(desired_option) <= set(current_option):
@@ -1076,25 +1106,28 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
                     continue
 
         # Current option and desired option are the same - continue loop
-        if option != 'ProcessorFeatures' and current_option == desired_option:
+        if option != "ProcessorFeatures" and current_option == desired_option:
             continue
 
-        if option == 'ProcessorFeatures' and current_option == boto3_tag_list_to_ansible_dict(desired_option, 'Name', 'Value'):
+        if option == "ProcessorFeatures" and current_option == boto3_tag_list_to_ansible_dict(desired_option, "Name", "Value"):
             continue
 
         # Current option and desired option are different - add to changing_params list
-        if option == 'ProcessorFeatures' and desired_option == []:
-            changing_params['UseDefaultProcessorFeatures'] = True
-        elif option == 'CloudwatchLogsExportConfiguration':
-            current_option = set(current_option.get('LogTypesToEnable', []))
+        if option == "ProcessorFeatures" and desired_option == []:
+            changing_params["UseDefaultProcessorFeatures"] = True
+        elif option == "CloudwatchLogsExportConfiguration":
+            current_option = set(current_option.get("LogTypesToEnable", []))
             desired_option = set(desired_option)
-            format_option = {'EnableLogTypes': [], 'DisableLogTypes': []}
-            format_option['EnableLogTypes'] = list(desired_option.difference(current_option))
+            format_option = {"EnableLogTypes": [], "DisableLogTypes": []}
+            format_option["EnableLogTypes"] = list(desired_option.difference(current_option))
             if purge_cloudwatch_logs:
-                format_option['DisableLogTypes'] = list(current_option.difference(desired_option))
-            if format_option['EnableLogTypes'] or format_option['DisableLogTypes']:
+                format_option["DisableLogTypes"] = list(current_option.difference(desired_option))
+            if format_option["EnableLogTypes"] or format_option["DisableLogTypes"]:
                 changing_params[option] = format_option
-        elif option in ('DBSecurityGroups', 'VpcSecurityGroupIds',):
+        elif option in (
+            "DBSecurityGroups",
+            "VpcSecurityGroupIds",
+        ):
             if purge_security_groups:
                 changing_params[option] = desired_option
             else:
@@ -1109,7 +1142,7 @@ def get_changing_options_with_consistent_keys(modify_params, instance):
     changing_params = {}
 
     for param in modify_params:
-        current_option = instance.get('PendingModifiedValues', {}).get(param, None)
+        current_option = instance.get("PendingModifiedValues", {}).get(param, None)
         if current_option is None:
             current_option = instance.get(param, None)
         if modify_params[param] != current_option:
@@ -1119,15 +1152,15 @@ def get_changing_options_with_consistent_keys(modify_params, instance):
 
 
 def validate_options(client, module, instance):
-    state = module.params['state']
-    skip_final_snapshot = module.params['skip_final_snapshot']
-    snapshot_id = module.params['final_db_snapshot_identifier']
-    modified_id = module.params['new_db_instance_identifier']
-    engine = module.params['engine']
-    tde_options = bool(module.params['tde_credential_password'] or module.params['tde_credential_arn'])
-    read_replica = module.params['read_replica']
-    creation_source = module.params['creation_source']
-    source_instance = module.params['source_db_instance_identifier']
+    state = module.params["state"]
+    skip_final_snapshot = module.params["skip_final_snapshot"]
+    snapshot_id = module.params["final_db_snapshot_identifier"]
+    modified_id = module.params["new_db_instance_identifier"]
+    engine = module.params["engine"]
+    tde_options = bool(module.params["tde_credential_password"] or module.params["tde_credential_arn"])
+    read_replica = module.params["read_replica"]
+    creation_source = module.params["creation_source"]
+    source_instance = module.params["source_db_instance_identifier"]
 
     if modified_id:
         modified_instance = get_instance(client, module, modified_id)
@@ -1135,17 +1168,17 @@ def validate_options(client, module, instance):
         modified_instance = {}
 
     if modified_id and instance and modified_instance:
-        module.fail_json(msg='A new instance ID {0} was provided but it already exists'.format(modified_id))
+        module.fail_json(msg="A new instance ID {0} was provided but it already exists".format(modified_id))
     if modified_id and not instance and modified_instance:
-        module.fail_json(msg='A new instance ID {0} was provided but the instance to be renamed does not exist'.format(modified_id))
-    if state in ('absent', 'terminated') and instance and not skip_final_snapshot and snapshot_id is None:
-        module.fail_json(msg='skip_final_snapshot is false but all of the following are missing: final_db_snapshot_identifier')
-    if engine is not None and not (engine.startswith('mysql') or engine.startswith('oracle')) and tde_options:
-        module.fail_json(msg='TDE is available for MySQL and Oracle DB instances')
-    if read_replica is True and not instance and creation_source not in [None, 'instance']:
-        module.fail_json(msg='Cannot create a read replica from {0}. You must use a source DB instance'.format(creation_source))
+        module.fail_json(msg="A new instance ID {0} was provided but the instance to be renamed does not exist".format(modified_id))
+    if state in ("absent", "terminated") and instance and not skip_final_snapshot and snapshot_id is None:
+        module.fail_json(msg="skip_final_snapshot is false but all of the following are missing: final_db_snapshot_identifier")
+    if engine is not None and not (engine.startswith("mysql") or engine.startswith("oracle")) and tde_options:
+        module.fail_json(msg="TDE is available for MySQL and Oracle DB instances")
+    if read_replica is True and not instance and creation_source not in [None, "instance"]:
+        module.fail_json(msg="Cannot create a read replica from {0}. You must use a source DB instance".format(creation_source))
     if read_replica is True and not instance and not source_instance:
-        module.fail_json(msg='read_replica is true and the instance does not exist yet but all of the following are missing: source_db_instance_identifier')
+        module.fail_json(msg="read_replica is true and the instance does not exist yet but all of the following are missing: source_db_instance_identifier")
 
 
 def update_instance(client, module, instance, instance_id):
@@ -1156,11 +1189,9 @@ def update_instance(client, module, instance, instance_id):
         instance = get_instance(client, module, instance_id)
 
     # Check tagging/promoting/rebooting/starting/stopping instance
-    changed |= ensure_tags(
-        client, module, instance['DBInstanceArn'], instance['Tags'], module.params['tags'], module.params['purge_tags']
-    )
-    changed |= promote_replication_instance(client, module, instance, module.params['read_replica'])
-    changed |= update_instance_state(client, module, instance, module.params['state'])
+    changed |= ensure_tags(client, module, instance["DBInstanceArn"], instance["Tags"], module.params["tags"], module.params["purge_tags"])
+    changed |= promote_replication_instance(client, module, instance, module.params["read_replica"])
+    changed |= update_instance_state(client, module, instance, module.params["state"])
 
     return changed
 
@@ -1170,17 +1201,18 @@ def promote_replication_instance(client, module, instance, read_replica):
     if read_replica is False:
         # 'StatusInfos' only exists when the instance is a read replica
         # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/describe-db-instances.html
-        if bool(instance.get('StatusInfos')):
+        if bool(instance.get("StatusInfos")):
             try:
-                _result, changed = call_method(client, module, method_name='promote_read_replica',
-                                               parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
-            except is_boto3_error_message('DB Instance is not a read replica'):
+                _result, changed = call_method(
+                    client, module, method_name="promote_read_replica", parameters={"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
+                )
+            except is_boto3_error_message("DB Instance is not a read replica"):
                 pass
     return changed
 
 
 def ensure_iam_roles(client, module, instance_id):
-    '''
+    """
     Ensure specified IAM roles are associated with DB instance
 
         Parameters:
@@ -1190,18 +1222,18 @@ def ensure_iam_roles(client, module, instance_id):
 
         Returns:
             changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
-    '''
-    instance = camel_dict_to_snake_dict(get_instance(client, module, instance_id), ignore_list=['Tags', 'ProcessorFeatures'])
+    """
+    instance = camel_dict_to_snake_dict(get_instance(client, module, instance_id), ignore_list=["Tags", "ProcessorFeatures"])
 
     # Ensure engine type supports associating IAM roles
-    engine = instance.get('engine')
+    engine = instance.get("engine")
     if engine not in valid_engines_iam_roles:
-        module.fail_json(msg='DB engine {0} is not valid for adding IAM roles. Valid engines are {1}'.format(engine, valid_engines_iam_roles))
+        module.fail_json(msg="DB engine {0} is not valid for adding IAM roles. Valid engines are {1}".format(engine, valid_engines_iam_roles))
 
     changed = False
-    purge_iam_roles = module.params.get('purge_iam_roles')
-    target_roles = module.params.get('iam_roles') if module.params.get('iam_roles') else []
-    existing_roles = instance.get('associated_roles', [])
+    purge_iam_roles = module.params.get("purge_iam_roles")
+    target_roles = module.params.get("iam_roles") if module.params.get("iam_roles") else []
+    existing_roles = instance.get("associated_roles", [])
     roles_to_add, roles_to_remove = compare_iam_roles(existing_roles, target_roles, purge_iam_roles)
     if bool(roles_to_add or roles_to_remove):
         changed = True
@@ -1215,172 +1247,169 @@ def ensure_iam_roles(client, module, instance_id):
 
 def update_instance_state(client, module, instance, state):
     changed = False
-    if state in ['rebooted', 'restarted']:
+    if state in ["rebooted", "restarted"]:
         changed |= reboot_running_db_instance(client, module, instance)
-    if state in ['started', 'running', 'stopped']:
+    if state in ["started", "running", "stopped"]:
         changed |= start_or_stop_instance(client, module, instance, state)
     return changed
 
 
 def reboot_running_db_instance(client, module, instance):
-    parameters = {'DBInstanceIdentifier': instance['DBInstanceIdentifier']}
-    if instance['DBInstanceStatus'] in ['stopped', 'stopping']:
-        call_method(client, module, 'start_db_instance', parameters)
-    if module.params.get('force_failover') is not None:
-        parameters['ForceFailover'] = module.params['force_failover']
-    _results, changed = call_method(client, module, 'reboot_db_instance', parameters)
+    parameters = {"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
+    if instance["DBInstanceStatus"] in ["stopped", "stopping"]:
+        call_method(client, module, "start_db_instance", parameters)
+    if module.params.get("force_failover") is not None:
+        parameters["ForceFailover"] = module.params["force_failover"]
+    _results, changed = call_method(client, module, "reboot_db_instance", parameters)
     return changed
 
 
 def start_or_stop_instance(client, module, instance, state):
     changed = False
-    parameters = {'DBInstanceIdentifier': instance['DBInstanceIdentifier']}
-    if state == 'stopped' and instance['DBInstanceStatus'] not in ['stopping', 'stopped']:
-        if module.params['db_snapshot_identifier']:
-            parameters['DBSnapshotIdentifier'] = module.params['db_snapshot_identifier']
-        _result, changed = call_method(client, module, 'stop_db_instance', parameters)
-    elif state == 'started' and instance['DBInstanceStatus'] not in ['available', 'starting', 'restarting']:
-        _result, changed = call_method(client, module, 'start_db_instance', parameters)
+    parameters = {"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
+    if state == "stopped" and instance["DBInstanceStatus"] not in ["stopping", "stopped"]:
+        if module.params["db_snapshot_identifier"]:
+            parameters["DBSnapshotIdentifier"] = module.params["db_snapshot_identifier"]
+        _result, changed = call_method(client, module, "stop_db_instance", parameters)
+    elif state == "started" and instance["DBInstanceStatus"] not in ["available", "starting", "restarting"]:
+        _result, changed = call_method(client, module, "start_db_instance", parameters)
     return changed
 
 
 def main():
     arg_spec = dict(
-        state=dict(choices=['present', 'absent', 'terminated', 'running', 'started', 'stopped', 'rebooted', 'restarted'], default='present'),
-        creation_source=dict(choices=['snapshot', 's3', 'instance']),
-        force_update_password=dict(type='bool', default=False, no_log=False),
-        purge_cloudwatch_logs_exports=dict(type='bool', default=True),
-        purge_iam_roles=dict(type='bool', default=False),
-        purge_tags=dict(type='bool', default=True),
-        read_replica=dict(type='bool'),
-        wait=dict(type='bool', default=True),
-        purge_security_groups=dict(type='bool', default=True),
+        state=dict(choices=["present", "absent", "terminated", "running", "started", "stopped", "rebooted", "restarted"], default="present"),
+        creation_source=dict(choices=["snapshot", "s3", "instance"]),
+        force_update_password=dict(type="bool", default=False, no_log=False),
+        purge_cloudwatch_logs_exports=dict(type="bool", default=True),
+        purge_iam_roles=dict(type="bool", default=False),
+        purge_tags=dict(type="bool", default=True),
+        read_replica=dict(type="bool"),
+        wait=dict(type="bool", default=True),
+        purge_security_groups=dict(type="bool", default=True),
     )
 
     parameter_options = dict(
-        allocated_storage=dict(type='int'),
-        allow_major_version_upgrade=dict(type='bool'),
-        apply_immediately=dict(type='bool', default=False),
-        auto_minor_version_upgrade=dict(type='bool'),
-        availability_zone=dict(aliases=['az', 'zone']),
-        backup_retention_period=dict(type='int'),
+        allocated_storage=dict(type="int"),
+        allow_major_version_upgrade=dict(type="bool"),
+        apply_immediately=dict(type="bool", default=False),
+        auto_minor_version_upgrade=dict(type="bool"),
+        availability_zone=dict(aliases=["az", "zone"]),
+        backup_retention_period=dict(type="int"),
         ca_certificate_identifier=dict(),
         character_set_name=dict(),
-        copy_tags_to_snapshot=dict(type='bool'),
-        db_cluster_identifier=dict(aliases=['cluster_id']),
-        db_instance_class=dict(aliases=['class', 'instance_type']),
-        db_instance_identifier=dict(required=True, aliases=['instance_id', 'id']),
+        copy_tags_to_snapshot=dict(type="bool"),
+        db_cluster_identifier=dict(aliases=["cluster_id"]),
+        db_instance_class=dict(aliases=["class", "instance_type"]),
+        db_instance_identifier=dict(required=True, aliases=["instance_id", "id"]),
         db_name=dict(),
         db_parameter_group_name=dict(),
-        db_security_groups=dict(type='list', elements='str'),
-        db_snapshot_identifier=dict(type='str', aliases=['snapshot_identifier', 'snapshot_id']),
-        db_subnet_group_name=dict(aliases=['subnet_group']),
-        deletion_protection=dict(type='bool'),
+        db_security_groups=dict(type="list", elements="str"),
+        db_snapshot_identifier=dict(type="str", aliases=["snapshot_identifier", "snapshot_id"]),
+        db_subnet_group_name=dict(aliases=["subnet_group"]),
+        deletion_protection=dict(type="bool"),
         domain=dict(),
         domain_iam_role_name=dict(),
-        enable_cloudwatch_logs_exports=dict(type='list', aliases=['cloudwatch_log_exports'], elements='str'),
-        enable_iam_database_authentication=dict(type='bool'),
-        enable_performance_insights=dict(type='bool'),
-        engine=dict(type='str', choices=valid_engines),
+        enable_cloudwatch_logs_exports=dict(type="list", aliases=["cloudwatch_log_exports"], elements="str"),
+        enable_iam_database_authentication=dict(type="bool"),
+        enable_performance_insights=dict(type="bool"),
+        engine=dict(type="str", choices=valid_engines),
         engine_version=dict(),
-        final_db_snapshot_identifier=dict(aliases=['final_snapshot_identifier']),
-        force_failover=dict(type='bool'),
-        iam_roles=dict(type='list', elements='dict'),
-        iops=dict(type='int'),
+        final_db_snapshot_identifier=dict(aliases=["final_snapshot_identifier"]),
+        force_failover=dict(type="bool"),
+        iam_roles=dict(type="list", elements="dict"),
+        iops=dict(type="int"),
         kms_key_id=dict(),
         license_model=dict(),
-        master_user_password=dict(aliases=['password'], no_log=True),
-        master_username=dict(aliases=['username']),
-        max_allocated_storage=dict(type='int'),
-        monitoring_interval=dict(type='int'),
+        master_user_password=dict(aliases=["password"], no_log=True),
+        master_username=dict(aliases=["username"]),
+        max_allocated_storage=dict(type="int"),
+        monitoring_interval=dict(type="int"),
         monitoring_role_arn=dict(),
-        multi_az=dict(type='bool'),
-        new_db_instance_identifier=dict(aliases=['new_instance_id', 'new_id']),
+        multi_az=dict(type="bool"),
+        new_db_instance_identifier=dict(aliases=["new_instance_id", "new_id"]),
         option_group_name=dict(),
         performance_insights_kms_key_id=dict(),
-        performance_insights_retention_period=dict(type='int'),
-        port=dict(type='int'),
-        preferred_backup_window=dict(aliases=['backup_window']),
-        preferred_maintenance_window=dict(aliases=['maintenance_window']),
-        processor_features=dict(type='dict'),
+        performance_insights_retention_period=dict(type="int"),
+        port=dict(type="int"),
+        preferred_backup_window=dict(aliases=["backup_window"]),
+        preferred_maintenance_window=dict(aliases=["maintenance_window"]),
+        processor_features=dict(type="dict"),
         promotion_tier=dict(),
-        publicly_accessible=dict(type='bool'),
+        publicly_accessible=dict(type="bool"),
         restore_time=dict(),
         s3_bucket_name=dict(),
         s3_ingestion_role_arn=dict(),
         s3_prefix=dict(),
-        skip_final_snapshot=dict(type='bool', default=False),
+        skip_final_snapshot=dict(type="bool", default=False),
         source_db_instance_identifier=dict(),
-        source_engine=dict(choices=['mysql']),
+        source_engine=dict(choices=["mysql"]),
         source_engine_version=dict(),
         source_region=dict(),
-        storage_encrypted=dict(type='bool'),
-        storage_type=dict(choices=['standard', 'gp2', 'io1']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        tde_credential_arn=dict(aliases=['transparent_data_encryption_arn']),
-        tde_credential_password=dict(no_log=True, aliases=['transparent_data_encryption_password']),
+        storage_encrypted=dict(type="bool"),
+        storage_type=dict(choices=["standard", "gp2", "io1"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        tde_credential_arn=dict(aliases=["transparent_data_encryption_arn"]),
+        tde_credential_password=dict(no_log=True, aliases=["transparent_data_encryption_password"]),
         timezone=dict(),
-        use_latest_restorable_time=dict(type='bool', aliases=['restore_from_latest']),
-        vpc_security_group_ids=dict(type='list', elements='str')
+        use_latest_restorable_time=dict(type="bool", aliases=["restore_from_latest"]),
+        vpc_security_group_ids=dict(type="list", elements="str"),
     )
     arg_spec.update(parameter_options)
 
     required_if = [
-        ('engine', 'aurora', ('db_cluster_identifier',)),
-        ('engine', 'aurora-mysql', ('db_cluster_identifier',)),
-        ('engine', 'aurora-postresql', ('db_cluster_identifier',)),
-        ('storage_type', 'io1', ('iops', 'allocated_storage')),
-        ('creation_source', 'snapshot', ('db_snapshot_identifier', 'engine')),
-        ('creation_source', 's3', (
-            's3_bucket_name', 'engine', 'master_username', 'master_user_password',
-            'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
+        ("engine", "aurora", ("db_cluster_identifier",)),
+        ("engine", "aurora-mysql", ("db_cluster_identifier",)),
+        ("engine", "aurora-postresql", ("db_cluster_identifier",)),
+        ("storage_type", "io1", ("iops", "allocated_storage")),
+        ("creation_source", "snapshot", ("db_snapshot_identifier", "engine")),
+        (
+            "creation_source",
+            "s3",
+            ("s3_bucket_name", "engine", "master_username", "master_user_password", "source_engine", "source_engine_version", "s3_ingestion_role_arn"),
+        ),
     ]
     mutually_exclusive = [
-        ('s3_bucket_name', 'source_db_instance_identifier', 'db_snapshot_identifier'),
-        ('use_latest_restorable_time', 'restore_time'),
-        ('availability_zone', 'multi_az'),
+        ("s3_bucket_name", "source_db_instance_identifier", "db_snapshot_identifier"),
+        ("use_latest_restorable_time", "restore_time"),
+        ("availability_zone", "multi_az"),
     ]
 
-    module = AnsibleAWSModule(
-        argument_spec=arg_spec,
-        required_if=required_if,
-        mutually_exclusive=mutually_exclusive,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=arg_spec, required_if=required_if, mutually_exclusive=mutually_exclusive, supports_check_mode=True)
 
     # Sanitize instance identifiers
-    module.params['db_instance_identifier'] = module.params['db_instance_identifier'].lower()
-    if module.params['new_db_instance_identifier']:
-        module.params['new_db_instance_identifier'] = module.params['new_db_instance_identifier'].lower()
+    module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
+    if module.params["new_db_instance_identifier"]:
+        module.params["new_db_instance_identifier"] = module.params["new_db_instance_identifier"].lower()
 
     # Sanitize processor features
-    if module.params['processor_features'] is not None:
-        module.params['processor_features'] = dict((k, to_text(v)) for k, v in module.params['processor_features'].items())
+    if module.params["processor_features"] is not None:
+        module.params["processor_features"] = dict((k, to_text(v)) for k, v in module.params["processor_features"].items())
 
     # Ensure dates are in lowercase
-    if module.params['preferred_maintenance_window']:
-        module.params['preferred_maintenance_window'] = module.params['preferred_maintenance_window'].lower()
+    if module.params["preferred_maintenance_window"]:
+        module.params["preferred_maintenance_window"] = module.params["preferred_maintenance_window"].lower()
 
     # Throw warning regarding case when allow_major_version_upgrade is specified in check_mode
     # describe_rds_instance never returns this value, so on check_mode, it will always return changed=True
     # In non-check mode runs, changed will return the correct value, so no need to warn there.
     # see: amazon.aws.module_util.rds.handle_errors.
-    if module.params.get('allow_major_version_upgrade') and module.check_mode:
-        module.warn('allow_major_version_upgrade is not returned when describing db instances, so changed will always be `True` on check mode runs.')
+    if module.params.get("allow_major_version_upgrade") and module.check_mode:
+        module.warn("allow_major_version_upgrade is not returned when describing db instances, so changed will always be `True` on check mode runs.")
 
-    client = module.client('rds')
+    client = module.client("rds")
     changed = False
-    state = module.params['state']
-    instance_id = module.params['db_instance_identifier']
+    state = module.params["state"]
+    instance_id = module.params["db_instance_identifier"]
     instance = get_instance(client, module, instance_id)
     validate_options(client, module, instance)
-    method_name = get_rds_method_attribute_name(instance, state, module.params['creation_source'], module.params['read_replica'])
+    method_name = get_rds_method_attribute_name(instance, state, module.params["creation_source"], module.params["read_replica"])
 
     if method_name:
 
         # Exit on create/delete if check_mode
-        if module.check_mode and method_name in ['create_db_instance', 'delete_db_instance']:
-            module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures']))
+        if module.check_mode and method_name in ["create_db_instance", "delete_db_instance"]:
+            module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=["Tags", "ProcessorFeatures"]))
 
         raw_parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
         parameters_to_modify = get_parameters(client, module, raw_parameters, method_name)
@@ -1388,23 +1417,23 @@ def main():
         if parameters_to_modify:
             # Exit on check_mode when parameters to modify
             if module.check_mode:
-                module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures']))
+                module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=["Tags", "ProcessorFeatures"]))
             _result, changed = call_method(client, module, method_name, parameters_to_modify)
 
         instance_id = get_final_identifier(method_name, module)
 
-        if state != 'absent':
+        if state != "absent":
             # Check tagging/promoting/rebooting/starting/stopping instance
             if not module.check_mode or instance:
                 changed |= update_instance(client, module, instance, instance_id)
 
             # Check IAM roles
-            if module.params.get('iam_roles') or module.params.get('purge_iam_roles'):
+            if module.params.get("iam_roles") or module.params.get("purge_iam_roles"):
                 changed |= ensure_iam_roles(client, module, instance_id)
 
         if changed:
             instance = get_instance(client, module, instance_id)
-            if state != 'absent' and (instance or not module.check_mode):
+            if state != "absent" and (instance or not module.check_mode):
                 for _wait_attempt in range(0, 10):
                     instance = get_instance(client, module, instance_id)
                     if instance:
@@ -1412,18 +1441,18 @@ def main():
                     else:
                         sleep(5)
 
-        if state == 'absent' and changed and not module.params['skip_final_snapshot']:
-            instance.update(FinalSnapshot=get_final_snapshot(client, module, module.params['final_db_snapshot_identifier']))
+        if state == "absent" and changed and not module.params["skip_final_snapshot"]:
+            instance.update(FinalSnapshot=get_final_snapshot(client, module, module.params["final_db_snapshot_identifier"]))
 
     pending_processor_features = None
-    if instance.get('PendingModifiedValues', {}).get('ProcessorFeatures'):
-        pending_processor_features = instance['PendingModifiedValues'].pop('ProcessorFeatures')
-    instance = camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures'])
+    if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):
+        pending_processor_features = instance["PendingModifiedValues"].pop("ProcessorFeatures")
+    instance = camel_dict_to_snake_dict(instance, ignore_list=["Tags", "ProcessorFeatures"])
     if pending_processor_features is not None:
-        instance['pending_modified_values']['processor_features'] = pending_processor_features
+        instance["pending_modified_values"]["processor_features"] = pending_processor_features
 
     module.exit_json(changed=changed, **instance)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

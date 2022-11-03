@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: ec2_snapshot
 version_added: 1.0.0
@@ -77,9 +78,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Simple snapshot of volume using volume_id
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
@@ -108,9 +109,9 @@ EXAMPLES = '''
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     last_snapshot_min_age: 60
-'''
+"""
 
-RETURN = '''
+RETURN = """
 snapshot_id:
     description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
     type: str
@@ -131,7 +132,7 @@ volume_size:
     type: int
     returned: always
     sample: 8
-'''
+"""
 
 import datetime
 
@@ -166,8 +167,8 @@ def _get_most_recent_snapshot(snapshots, max_snapshot_age_secs=None, now=None):
     if not now:
         now = datetime.datetime.now(datetime.timezone.utc)
 
-    youngest_snapshot = max(snapshots, key=lambda s: s['StartTime'])
-    snapshot_start = youngest_snapshot['StartTime']
+    youngest_snapshot = max(snapshots, key=lambda s: s["StartTime"])
+    snapshot_start = youngest_snapshot["StartTime"]
     snapshot_age = now - snapshot_start
 
     if max_snapshot_age_secs is not None:
@@ -179,23 +180,13 @@ def _get_most_recent_snapshot(snapshots, max_snapshot_age_secs=None, now=None):
 
 def get_volume_by_instance(module, ec2, device_name, instance_id):
     try:
-        _filter = {
-            'attachment.instance-id': instance_id,
-            'attachment.device': device_name
-        }
-        volumes = ec2.describe_volumes(
-            aws_retry=True,
-            Filters=ansible_dict_to_boto3_filter_list(_filter)
-        )['Volumes']
+        _filter = {"attachment.instance-id": instance_id, "attachment.device": device_name}
+        volumes = ec2.describe_volumes(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(_filter))["Volumes"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
-        module.fail_json(
-            msg="Could not find volume with name {0} attached to instance {1}".format(
-                device_name, instance_id
-            )
-        )
+        module.fail_json(msg="Could not find volume with name {0} attached to instance {1}".format(device_name, instance_id))
 
     volume = volumes[0]
     return volume
@@ -206,14 +197,12 @@ def get_volume_by_id(module, ec2, volume):
         volumes = ec2.describe_volumes(
             aws_retry=True,
             VolumeIds=[volume],
-        )['Volumes']
+        )["Volumes"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
-        module.fail_json(
-            msg="Could not find volume with id {0}".format(volume)
-        )
+        module.fail_json(msg="Could not find volume with id {0}".format(volume))
 
     volume = volumes[0]
     return volume
@@ -221,103 +210,102 @@ def get_volume_by_id(module, ec2, volume):
 
 @AWSRetry.jittered_backoff()
 def _describe_snapshots(ec2, **params):
-    paginator = ec2.get_paginator('describe_snapshots')
+    paginator = ec2.get_paginator("describe_snapshots")
     return paginator.paginate(**params).build_full_result()
 
 
 # Handle SnapshotCreationPerVolumeRateExceeded separately because we need a much
 # longer delay than normal
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['SnapshotCreationPerVolumeRateExceeded'], delay=15)
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["SnapshotCreationPerVolumeRateExceeded"], delay=15)
 def _create_snapshot(ec2, **params):
     # Fast retry on common failures ('global' rate limits)
     return ec2.create_snapshot(aws_retry=True, **params)
 
 
 def get_snapshots_by_volume(module, ec2, volume_id):
-    _filter = {'volume-id': volume_id}
+    _filter = {"volume-id": volume_id}
     try:
-        results = _describe_snapshots(
-            ec2,
-            Filters=ansible_dict_to_boto3_filter_list(_filter)
-        )
+        results = _describe_snapshots(ec2, Filters=ansible_dict_to_boto3_filter_list(_filter))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe snapshots from volume")
 
-    return results['Snapshots']
+    return results["Snapshots"]
 
 
-def create_snapshot(module, ec2, description=None, wait=None,
-                    wait_timeout=None, volume_id=None, instance_id=None,
-                    snapshot_id=None, device_name=None, snapshot_tags=None,
-                    last_snapshot_min_age=None):
+def create_snapshot(
+    module,
+    ec2,
+    description=None,
+    wait=None,
+    wait_timeout=None,
+    volume_id=None,
+    instance_id=None,
+    snapshot_id=None,
+    device_name=None,
+    snapshot_tags=None,
+    last_snapshot_min_age=None,
+):
     snapshot = None
     changed = False
 
     if instance_id:
-        volume = get_volume_by_instance(
-            module, ec2, device_name, instance_id
-        )
-        volume_id = volume['VolumeId']
+        volume = get_volume_by_instance(module, ec2, device_name, instance_id)
+        volume_id = volume["VolumeId"]
     else:
         volume = get_volume_by_id(module, ec2, volume_id)
-    if 'Tags' not in volume:
-        volume['Tags'] = {}
+    if "Tags" not in volume:
+        volume["Tags"] = {}
     if last_snapshot_min_age > 0:
         current_snapshots = get_snapshots_by_volume(module, ec2, volume_id)
         last_snapshot_min_age = last_snapshot_min_age * 60  # Convert to seconds
-        snapshot = _get_most_recent_snapshot(
-            current_snapshots,
-            max_snapshot_age_secs=last_snapshot_min_age
-        )
+        snapshot = _get_most_recent_snapshot(current_snapshots, max_snapshot_age_secs=last_snapshot_min_age)
     # Create a new snapshot if we didn't find an existing one to use
     if snapshot is None:
-        volume_tags = boto3_tag_list_to_ansible_dict(volume['Tags'])
-        volume_name = volume_tags.get('Name')
+        volume_tags = boto3_tag_list_to_ansible_dict(volume["Tags"])
+        volume_name = volume_tags.get("Name")
         _tags = dict()
         if volume_name:
-            _tags['Name'] = volume_name
+            _tags["Name"] = volume_name
         if snapshot_tags:
             _tags.update(snapshot_tags)
 
-        params = {'VolumeId': volume_id}
+        params = {"VolumeId": volume_id}
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if _tags:
-            params['TagSpecifications'] = [{
-                'ResourceType': 'snapshot',
-                'Tags': ansible_dict_to_boto3_tag_list(_tags),
-            }]
+            params["TagSpecifications"] = [
+                {
+                    "ResourceType": "snapshot",
+                    "Tags": ansible_dict_to_boto3_tag_list(_tags),
+                }
+            ]
         try:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode',
-                                 volume_id=volume['VolumeId'], volume_size=volume['Size'])
+                module.exit_json(
+                    changed=True, msg="Would have created a snapshot if not in check mode", volume_id=volume["VolumeId"], volume_size=volume["Size"]
+                )
             snapshot = _create_snapshot(ec2, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
         changed = True
     if wait:
-        waiter = get_waiter(ec2, 'snapshot_completed')
+        waiter = get_waiter(ec2, "snapshot_completed")
         try:
-            waiter.wait(
-                SnapshotIds=[snapshot['SnapshotId']],
-                WaiterConfig=dict(Delay=3, MaxAttempts=wait_timeout // 3)
-            )
+            waiter.wait(SnapshotIds=[snapshot["SnapshotId"]], WaiterConfig=dict(Delay=3, MaxAttempts=wait_timeout // 3))
         except botocore.exceptions.WaiterError as e:
-            module.fail_json_aws(e, msg='Timed out while creating snapshot')
+            module.fail_json_aws(e, msg="Timed out while creating snapshot")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(
-                e, msg='Error while waiting for snapshot creation'
-            )
+            module.fail_json_aws(e, msg="Error while waiting for snapshot creation")
 
-    _tags = boto3_tag_list_to_ansible_dict(snapshot['Tags'])
+    _tags = boto3_tag_list_to_ansible_dict(snapshot["Tags"])
     _snapshot = camel_dict_to_snake_dict(snapshot)
-    _snapshot['tags'] = _tags
+    _snapshot["tags"] = _tags
     results = {
-        'snapshot_id': snapshot['SnapshotId'],
-        'volume_id': snapshot['VolumeId'],
-        'volume_size': snapshot['VolumeSize'],
-        'tags': _tags,
-        'snapshots': [_snapshot],
+        "snapshot_id": snapshot["SnapshotId"],
+        "volume_id": snapshot["VolumeId"],
+        "volume_size": snapshot["VolumeSize"],
+        "tags": _tags,
+        "snapshots": [_snapshot],
     }
 
     module.exit_json(changed=changed, **results)
@@ -327,12 +315,12 @@ def delete_snapshot(module, ec2, snapshot_id):
     if module.check_mode:
         try:
             _describe_snapshots(ec2, SnapshotIds=[(snapshot_id)])
-            module.exit_json(changed=True, msg='Would have deleted snapshot if not in check mode')
-        except is_boto3_error_code('InvalidSnapshot.NotFound'):
-            module.exit_json(changed=False, msg='Invalid snapshot ID - snapshot not found')
+            module.exit_json(changed=True, msg="Would have deleted snapshot if not in check mode")
+        except is_boto3_error_code("InvalidSnapshot.NotFound"):
+            module.exit_json(changed=False, msg="Invalid snapshot ID - snapshot not found")
     try:
         ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
-    except is_boto3_error_code('InvalidSnapshot.NotFound'):
+    except is_boto3_error_code("InvalidSnapshot.NotFound"):
         module.exit_json(changed=False)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete snapshot")
@@ -348,23 +336,23 @@ def create_snapshot_ansible_module():
         instance_id=dict(),
         snapshot_id=dict(),
         device_name=dict(),
-        wait=dict(type='bool', default=True),
-        wait_timeout=dict(type='int', default=600),
-        last_snapshot_min_age=dict(type='int', default=0),
-        snapshot_tags=dict(type='dict', default=dict()),
-        state=dict(choices=['absent', 'present'], default='present'),
+        wait=dict(type="bool", default=True),
+        wait_timeout=dict(type="int", default=600),
+        last_snapshot_min_age=dict(type="int", default=0),
+        snapshot_tags=dict(type="dict", default=dict()),
+        state=dict(choices=["absent", "present"], default="present"),
     )
     mutually_exclusive = [
-        ('instance_id', 'snapshot_id', 'volume_id'),
+        ("instance_id", "snapshot_id", "volume_id"),
     ]
     required_if = [
-        ('state', 'absent', ('snapshot_id',)),
+        ("state", "absent", ("snapshot_id",)),
     ]
     required_one_of = [
-        ('instance_id', 'snapshot_id', 'volume_id'),
+        ("instance_id", "snapshot_id", "volume_id"),
     ]
     required_together = [
-        ('instance_id', 'device_name'),
+        ("instance_id", "device_name"),
     ]
 
     module = AnsibleAWSModule(
@@ -382,20 +370,20 @@ def create_snapshot_ansible_module():
 def main():
     module = create_snapshot_ansible_module()
 
-    volume_id = module.params.get('volume_id')
-    snapshot_id = module.params.get('snapshot_id')
-    description = module.params.get('description')
-    instance_id = module.params.get('instance_id')
-    device_name = module.params.get('device_name')
-    wait = module.params.get('wait')
-    wait_timeout = module.params.get('wait_timeout')
-    last_snapshot_min_age = module.params.get('last_snapshot_min_age')
-    snapshot_tags = module.params.get('snapshot_tags')
-    state = module.params.get('state')
+    volume_id = module.params.get("volume_id")
+    snapshot_id = module.params.get("snapshot_id")
+    description = module.params.get("description")
+    instance_id = module.params.get("instance_id")
+    device_name = module.params.get("device_name")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
+    last_snapshot_min_age = module.params.get("last_snapshot_min_age")
+    snapshot_tags = module.params.get("snapshot_tags")
+    state = module.params.get("state")
 
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
-    if state == 'absent':
+    if state == "absent":
         delete_snapshot(
             module=module,
             ec2=ec2,
@@ -417,5 +405,5 @@ def main():
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

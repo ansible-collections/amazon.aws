@@ -3,7 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import json
@@ -19,25 +20,25 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
-DUMMY_VERSION = '5.5.5.5'
+DUMMY_VERSION = "5.5.5.5"
 
 TEST_VERSIONS = [
-    ['1.1.1', '2.2.2', True],
-    ['1.1.1', '0.0.1', False],
-    ['9.9.9', '9.9.9', True],
-    ['9.9.9', '9.9.10', True],
-    ['9.9.9', '9.10.9', True],
-    ['9.9.9', '10.9.9', True],
-    ['9.9.9', '9.9.8', False],
-    ['9.9.9', '9.8.9', False],
-    ['9.9.9', '8.9.9', False],
-    ['10.10.10', '10.10.10', True],
-    ['10.10.10', '10.10.11', True],
-    ['10.10.10', '10.11.10', True],
-    ['10.10.10', '11.10.10', True],
-    ['10.10.10', '10.10.9', False],
-    ['10.10.10', '10.9.10', False],
-    ['10.10.10', '9.19.10', False],
+    ["1.1.1", "2.2.2", True],
+    ["1.1.1", "0.0.1", False],
+    ["9.9.9", "9.9.9", True],
+    ["9.9.9", "9.9.10", True],
+    ["9.9.9", "9.10.9", True],
+    ["9.9.9", "10.9.9", True],
+    ["9.9.9", "9.9.8", False],
+    ["9.9.9", "9.8.9", False],
+    ["9.9.9", "8.9.9", False],
+    ["10.10.10", "10.10.10", True],
+    ["10.10.10", "10.10.11", True],
+    ["10.10.10", "10.11.10", True],
+    ["10.10.10", "11.10.10", True],
+    ["10.10.10", "10.10.9", False],
+    ["10.10.10", "10.9.10", False],
+    ["10.10.10", "9.19.10", False],
 ]
 
 if not HAS_BOTO3:
@@ -157,7 +158,7 @@ class TestRequireAtLeastTestSuite(object):
         # sure we're comparing the right library
         monkeypatch.setattr(boto3, "__version__", DUMMY_VERSION)
 
-        reason = 'testing in progress'
+        reason = "testing in progress"
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
@@ -193,7 +194,7 @@ class TestRequireAtLeastTestSuite(object):
         # sure we're comparing the right library
         monkeypatch.setattr(boto3, "__version__", compare_version)
 
-        reason = 'testing in progress'
+        reason = "testing in progress"
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())

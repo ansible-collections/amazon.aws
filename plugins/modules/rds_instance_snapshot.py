@@ -5,10 +5,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_instance_snapshot
 version_added: 5.0.0
@@ -82,9 +83,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create snapshot
   amazon.aws.rds_instance_snapshot:
     db_instance_identifier: new-database
@@ -103,9 +104,9 @@ EXAMPLES = r'''
   amazon.aws.rds_instance_snapshot:
     db_snapshot_identifier: new-database-snapshot
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allocated_storage:
   description: How much storage is allocated in GB.
   returned: always
@@ -228,7 +229,7 @@ vpc_id:
   returned: always
   type: str
   sample: vpc-09ff232e222710ae0
-'''
+"""
 
 try:
     import botocore
@@ -251,8 +252,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 
 def get_snapshot(snapshot_id):
     try:
-        snapshot = client.describe_db_snapshots(DBSnapshotIdentifier=snapshot_id)['DBSnapshots'][0]
-        snapshot['Tags'] = get_tags(client, module, snapshot['DBSnapshotArn'])
+        snapshot = client.describe_db_snapshots(DBSnapshotIdentifier=snapshot_id)["DBSnapshots"][0]
+        snapshot["Tags"] = get_tags(client, module, snapshot["DBSnapshotArn"])
     except is_boto3_error_code("DBSnapshotNotFound"):
         return {}
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
@@ -261,13 +262,14 @@ def get_snapshot(snapshot_id):
 
 
 def get_parameters(parameters, method_name):
-    if method_name == 'copy_db_snapshot':
-        parameters['TargetDBSnapshotIdentifier'] = module.params['db_snapshot_identifier']
+    if method_name == "copy_db_snapshot":
+        parameters["TargetDBSnapshotIdentifier"] = module.params["db_snapshot_identifier"]
 
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
-        module.fail_json(msg='To {0} requires the parameters: {1}'.format(
-            get_rds_method_attribute(method_name, module).operation_description, required_options))
+        module.fail_json(
+            msg="To {0} requires the parameters: {1}".format(get_rds_method_attribute(method_name, module).operation_description, required_options)
+        )
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 
@@ -289,8 +291,8 @@ def ensure_snapshot_absent():
 
 
 def ensure_snapshot_present(params):
-    source_id = module.params.get('source_db_snapshot_identifier')
-    snapshot_name = module.params.get('db_snapshot_identifier')
+    source_id = module.params.get("source_db_snapshot_identifier")
+    snapshot_name = module.params.get("db_snapshot_identifier")
     changed = False
     snapshot = get_snapshot(snapshot_name)
 
@@ -307,28 +309,28 @@ def ensure_snapshot_present(params):
         changed |= modify_snapshot()
 
     snapshot = get_snapshot(snapshot_name)
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=['Tags']))
+    module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]))
 
 
 def create_snapshot(params):
-    method_params = get_parameters(params, 'create_db_snapshot')
-    if method_params.get('Tags'):
-        method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-    _snapshot, changed = call_method(client, module, 'create_db_snapshot', method_params)
+    method_params = get_parameters(params, "create_db_snapshot")
+    if method_params.get("Tags"):
+        method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+    _snapshot, changed = call_method(client, module, "create_db_snapshot", method_params)
 
     return changed
 
 
 def copy_snapshot(params):
     changed = False
-    snapshot_id = module.params.get('db_snapshot_identifier')
+    snapshot_id = module.params.get("db_snapshot_identifier")
     snapshot = get_snapshot(snapshot_id)
 
     if not snapshot:
-        method_params = get_parameters(params, 'copy_db_snapshot')
-        if method_params.get('Tags'):
-            method_params['Tags'] = ansible_dict_to_boto3_tag_list(method_params['Tags'])
-        _result, changed = call_method(client, module, 'copy_db_snapshot', method_params)
+        method_params = get_parameters(params, "copy_db_snapshot")
+        if method_params.get("Tags"):
+            method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+        _result, changed = call_method(client, module, "copy_db_snapshot", method_params)
 
     return changed
 
@@ -336,11 +338,11 @@ def copy_snapshot(params):
 def modify_snapshot():
     # TODO - add other modifications aside from purely tags
     changed = False
-    snapshot_id = module.params.get('db_snapshot_identifier')
+    snapshot_id = module.params.get("db_snapshot_identifier")
     snapshot = get_snapshot(snapshot_id)
 
-    if module.params.get('tags'):
-        changed |= ensure_tags(client, module, snapshot['DBSnapshotArn'], snapshot['Tags'], module.params['tags'], module.params['purge_tags'])
+    if module.params.get("tags"):
+        changed |= ensure_tags(client, module, snapshot["DBSnapshotArn"], snapshot["Tags"], module.params["tags"], module.params["purge_tags"])
 
     return changed
 
@@ -350,37 +352,34 @@ def main():
     global module
 
     argument_spec = dict(
-        state=dict(choices=['present', 'absent'], default='present'),
-        db_snapshot_identifier=dict(aliases=['id', 'snapshot_id'], required=True),
-        db_instance_identifier=dict(aliases=['instance_id']),
-        source_db_snapshot_identifier=dict(aliases=['source_id', 'source_snapshot_id']),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=300),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        copy_tags=dict(type='bool', default=False),
-        source_region=dict(type='str'),
+        state=dict(choices=["present", "absent"], default="present"),
+        db_snapshot_identifier=dict(aliases=["id", "snapshot_id"], required=True),
+        db_instance_identifier=dict(aliases=["instance_id"]),
+        source_db_snapshot_identifier=dict(aliases=["source_id", "source_snapshot_id"]),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=300),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        copy_tags=dict(type="bool", default=False),
+        source_region=dict(type="str"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
     try:
-        client = module.client('rds', retry_decorator=retry_decorator)
+        client = module.client("rds", retry_decorator=retry_decorator)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     state = module.params.get("state")
-    if state == 'absent':
+    if state == "absent":
         ensure_snapshot_absent()
 
-    elif state == 'present':
+    elif state == "present":
         params = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in argument_spec))
         ensure_snapshot_present(params)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

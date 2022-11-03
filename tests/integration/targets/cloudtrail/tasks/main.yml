@@ -179,7 +179,7 @@
   - name: pause to ensure role exists before attaching policy
     pause:
       seconds: 15
-  
+
   - name: 'Add inline policy to CloudWatch Role'
     iam_policy:
       state: present
@@ -212,8 +212,6 @@
       - output is changed
       - output.exists == True
       - output.trail.name == cloudtrail_name
-
-  
 
   - name: 'No-op update to trail'
     cloudtrail:
@@ -248,13 +246,12 @@
       trail_arn: '{{ item.resource_id }}'
     when: item.name == cloudtrail_name
     loop: "{{ info.trail_list }}"
- 
+
   - name: 'Assert that the trail name is present in the info'
     assert:
       that:
       - trail_present is defined
       - trail_present == True
-      
 
   # ============================================================
 

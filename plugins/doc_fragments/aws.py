@@ -3,14 +3,15 @@
 # Copyright: (c) 2014, Will Thames <will@thames.id.au>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
 class ModuleDocFragment(object):
 
     # AWS only documentation fragment
-    DOCUMENTATION = r'''
+    DOCUMENTATION = r"""
 options:
   access_key:
     description:
@@ -130,4 +131,4 @@ notes:
     Ansible 'host' context (typically C(~/.aws/credentials)).
     See U(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html)
     for more information.
-'''
+"""
