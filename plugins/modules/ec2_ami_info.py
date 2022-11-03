@@ -215,13 +215,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def list_ec2_images(ec2_client, module):
+def build_request_args(executable_users, filters, image_ids, owners):
 
-    image_ids = module.params.get("image_ids")
-    owners = module.params.get("owners")
-    executable_users = module.params.get("executable_users")
-    filters = module.params.get("filters")
-    owner_param = []
+    request_args = {
+        'ExecutableUsers': [str(user) for user in executable_users],
+        'Filters': ansible_dict_to_boto3_filter_list(filters),
+        'ImageIds': [str(image_id) for image_id in image_ids],
+        'Owners': [str(owner) for owner in owners],
+    }
 
     # describe_images is *very* slow if you pass the `Owners`
     # param (unless it's self), for some reason.
@@ -235,17 +236,20 @@ def list_ec2_images(ec2_client, module):
             filters['owner-id'].append(owner)
         elif owner == 'self':
             # self not a valid owner-alias filter (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImages.html)
-            owner_param.append(owner)
+            request_args['Owners'].append(owner)
         else:
             if 'owner-alias' not in filters:
                 filters['owner-alias'] = list()
             filters['owner-alias'].append(owner)
 
-    filters = ansible_dict_to_boto3_filter_list(filters)
+    request_args = {k: v for k, v in request_args.items() if v}
 
+    return request_args
+
+
+def list_ec2_images(ec2_client, module, request_args):
     try:
-        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param,
-                                            ExecutableUsers=executable_users)
+        images = ec2_client.describe_images(aws_retry=True, **request_args)
         images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
@@ -263,25 +267,34 @@ def list_ec2_images(ec2_client, module):
             module.fail_json_aws(err, 'Failed to describe AMI')
 
     images.sort(key=lambda e: e.get('creation_date', ''))  # it may be possible that creation_date does not always exist
-    module.exit_json(images=images)
+
+    return images
 
 
 def main():
 
     argument_spec = dict(
-        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
-        filters=dict(default={}, type='dict'),
-        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
+        describe_image_attributes=dict(default=False, type='bool'),
         executable_users=dict(default=[], type='list', elements='str', aliases=['executable_user']),
-        describe_image_attributes=dict(default=False, type='bool')
+        filters=dict(default={}, type='dict'),
+        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
+        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
-    list_ec2_images(ec2_client, module)
+    request_args = build_request_args(
+        executable_users = module.params["executable_users"],
+        filters = module.params["filters"],
+        image_ids = module.params["image_ids"],
+        owners = module.params["owners"],
+    )
 
+    images = list_ec2_images(ec2_client, module, request_args)
+
+    module.exit_json(images=images)
 
 if __name__ == '__main__':
     main()
