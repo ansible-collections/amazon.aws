@@ -795,12 +795,14 @@ def ports_expand(ports):
     # takes a list of ports and returns a list of (port_from, port_to)
     ports_expanded = []
     for port in ports:
-        if not isinstance(port, string_types):
-            ports_expanded.append((port,) * 2)
-        elif '-' in port:
-            ports_expanded.append(tuple(int(p.strip()) for p in port.split('-', 1)))
-        else:
+        try:
             ports_expanded.append((int(port.strip()),) * 2)
+        except ValueError as e:
+            # Someone passed a range
+            if '-' in port:
+                ports_expanded.append(tuple(int(p.strip()) for p in port.split('-', 1)))
+            else:
+                raise e
 
     return ports_expanded
 
