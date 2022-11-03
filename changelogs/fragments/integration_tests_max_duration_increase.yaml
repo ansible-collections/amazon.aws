@@ -1,0 +1,3 @@
+---
+trivial:
+- "rds_instance_aurora - Increase the max duration of the job (https://github.com/ansible-collections/amazon.aws/pull/1239)."
