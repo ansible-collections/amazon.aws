@@ -6,5 +6,5 @@ db_instance_class: db.t3.micro
 allocated_storage: 20
 
 # For mariadb tests
-mariadb_engine_version: 10.3.31
+mariadb_engine_version: 10.4.26
 mariadb_engine_version_2: 10.4.21
