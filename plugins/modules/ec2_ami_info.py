@@ -256,9 +256,10 @@ def get_images(ec2_client, module, request_args):
 
 
 def get_image_attribute(ec2_client, image):
-    launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
-                                        ImageId=image['image_id'])['LaunchPermissions']
+    launch_permissions = ec2_client.describe_image_attribute(
+        aws_retry=True, Attribute='launchPermission', ImageId=image['image_id'])['LaunchPermissions']
     return launch_permissions
+
 
 def list_ec2_images(ec2_client, module, request_args):
 
@@ -297,15 +298,16 @@ def main():
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     request_args = build_request_args(
-        executable_users = module.params["executable_users"],
-        filters = module.params["filters"],
-        image_ids = module.params["image_ids"],
-        owners = module.params["owners"],
+        executable_users=module.params["executable_users"],
+        filters=module.params["filters"],
+        image_ids=module.params["image_ids"],
+        owners=module.params["owners"],
     )
 
     images = list_ec2_images(ec2_client, module, request_args)
 
     module.exit_json(images=images)
+
 
 if __name__ == '__main__':
     main()
