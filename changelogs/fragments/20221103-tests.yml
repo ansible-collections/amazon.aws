@@ -1,0 +1,3 @@
+trivial:
+- ec2_eip - mark tests as unstable, they keep failing when run in parallel with other tests
+- rds_instance_states - increase time allowed for integration test
