@@ -1,11 +1,16 @@
 minor_changes:
-- aws_account_attribute - the ``aws_account_attribute`` lookup plugin has been refactered to use
+- aws_secret - the ``aws_secret`` lookup plugin has been renamed ``secretsmanager_secret``, ``aws_secret`` remains as an alias
+  (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- aws_ssm - the ``aws_ssm`` lookup plugin has been renamed ``ssm_parameter``, ``aws_ssm`` remains as an alias
+  (https://github.com/ansible-collections/amazon.aws/pull/1225).
+
+- aws_account_attribute - the ``aws_account_attribute`` lookup plugin has been refactored to use
   ``AWSLookupBase`` as its base class
   (https://github.com/ansible-collections/amazon.aws/pull/1225).
-- aws_secret - the ``aws_secret`` lookup plugin has been refactered to use
+- aws_secret - the ``aws_secret`` lookup plugin has been refactored to use
   ``AWSLookupBase`` as its base class
   (https://github.com/ansible-collections/amazon.aws/pull/1225).
-- aws_ssm - the ``aws_ssm`` lookup plugin has been refactered to use
+- aws_ssm - the ``aws_ssm`` lookup plugin has been refactored to use
   ``AWSLookupBase`` as its base class
   (https://github.com/ansible-collections/amazon.aws/pull/1225).
 

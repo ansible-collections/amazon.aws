@@ -126,3 +126,10 @@ plugin_routing:
     execute_lambda:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.lambda_execute
+  lookup:
+    aws_ssm:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.ssm_parameter
+    aws_secret:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.secretsmanager_secret

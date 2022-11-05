@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-name: aws_secret
+name: secretsmanager_secret
 author:
   - Aaron Smith (!UNKNOWN) <ajsmith10381@gmail.com>
 
@@ -15,6 +15,8 @@ description:
     has the appropriate permissions to read the secret.
   - Lookup is based on the secret's I(Name) value.
   - Optional parameters can be passed into this lookup; I(version_id) and I(version_stage)
+  - Prior to release 6.0.0 this module was known as C(aws_ssm), the usage remains the same.
+
 options:
   _terms:
     description: Name of the secret to look up in AWS Secrets Manager.
