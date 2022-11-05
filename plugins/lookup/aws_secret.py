@@ -11,7 +11,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.aws_credentials
-  - amazon.aws.aws_region
+  - amazon.aws.region.plugins
 
 short_description: Look up secrets stored in AWS Secrets Manager
 description:

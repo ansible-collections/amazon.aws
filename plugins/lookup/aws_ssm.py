@@ -73,6 +73,7 @@ options:
     version_added: 3.3.0
 extends_documentation_fragment:
   - amazon.aws.boto3
+  - amazon.aws.region.plugins
 '''
 
 EXAMPLES = '''
