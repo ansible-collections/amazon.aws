@@ -71,13 +71,15 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils._text import to_native
 
-from .botocore import HAS_BOTO3
 from .botocore import boto3_conn
+from .botocore import boto3_at_least
+from .botocore import botocore_at_least
+from .botocore import check_sdk_version_supported
 from .botocore import get_aws_connection_info
 from .botocore import get_aws_region
 from .botocore import gather_sdk_versions
+from .exceptions import AnsibleBotocoreError
 from .retries import RetryingBotoClientWrapper
-from .version import LooseVersion
 
 # Currently only AnsibleAWSModule.  However we have a lot of Copy and Paste code
 # for Inventory and Lookup modules which we should refactor
@@ -121,15 +123,10 @@ class AnsibleAWSModule(object):
         self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
 
         if local_settings["check_boto3"]:
-            if not HAS_BOTO3:
-                self._module.fail_json(
-                    msg=missing_required_lib('botocore and boto3'))
-            if not self.botocore_at_least('1.21.0'):
-                self.warn('botocore < 1.21.0 is not supported or tested.'
-                          '  Some features may not work.')
-            if not self.boto3_at_least("1.18.0"):
-                self.warn('boto3 < 1.18.0 is not supported or tested.'
-                          '  Some features may not work.')
+            try:
+                check_sdk_version_supported(warn=self.warn)
+            except AnsibleBotocoreError as e:
+                self._module.fail_json(to_native(e))
 
         deprecated_vars = {'EC2_REGION', 'EC2_SECURITY_TOKEN', 'EC2_SECRET_KEY', 'EC2_ACCESS_KEY',
                            'EC2_URL', 'S3_URL'}
@@ -291,15 +288,7 @@ class AnsibleAWSModule(object):
             )
 
     def boto3_at_least(self, desired):
-        """Check if the available boto3 version is greater than or equal to a desired version.
-
-        Usage:
-            if module.params.get('assign_ipv6_address') and not module.boto3_at_least('1.4.4'):
-                # conditionally fail on old boto3 versions if a specific feature is not supported
-                module.fail_json(msg="Boto3 can't deal with EC2 IPv6 addresses before version 1.4.4.")
-        """
-        existing = self._gather_versions()
-        return LooseVersion(existing['boto3_version']) >= LooseVersion(desired)
+        return boto3_at_least(desired)
 
     def require_botocore_at_least(self, desired, **kwargs):
         """Check if the available botocore version is greater than or equal to a desired version.
@@ -321,17 +310,7 @@ class AnsibleAWSModule(object):
             )
 
     def botocore_at_least(self, desired):
-        """Check if the available botocore version is greater than or equal to a desired version.
-
-        Usage:
-            if not module.botocore_at_least('1.2.3'):
-                module.fail_json(msg='The Serverless Elastic Load Compute Service is not in botocore before v1.2.3')
-            if not module.botocore_at_least('1.5.3'):
-                module.warn('Botocore did not include waiters for Service X before 1.5.3. '
-                            'To wait until Service X resources are fully available, update botocore.')
-        """
-        existing = self._gather_versions()
-        return LooseVersion(existing['botocore_version']) >= LooseVersion(desired)
+        return botocore_at_least(desired)
 
 
 def _aws_common_argument_spec():
