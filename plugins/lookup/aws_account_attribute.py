@@ -10,7 +10,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.aws_credentials
-  - amazon.aws.aws_region
+  - amazon.aws.region.plugins
 short_description: Look up AWS account attributes
 description:
   - Describes attributes of your AWS account. You can specify one of the listed

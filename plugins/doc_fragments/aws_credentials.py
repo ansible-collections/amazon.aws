@@ -6,11 +6,16 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+#
+# The amazon.aws.aws_credentials docs fragment has been deprecated,
+# please migrate to amazon.aws.common.plugins.
+#
+
 
 class ModuleDocFragment(object):
 
     # Plugin options for AWS credentials
-    DOCUMENTATION = r'''
+    DOCUMENTATION = r"""
 options:
   aws_profile:
     description: The AWS profile
@@ -25,6 +30,11 @@ options:
     aliases: [ aws_access_key_id ]
     env:
       - name: EC2_ACCESS_KEY
+        deprecated:
+          removed_at_date: '2024-12-01'
+          collection_name: amazon.aws
+          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
+          alternatives: AWS_ACCESS_KEY_ID
       - name: AWS_ACCESS_KEY
       - name: AWS_ACCESS_KEY_ID
   aws_secret_key:
@@ -33,6 +43,11 @@ options:
     aliases: [ aws_secret_access_key ]
     env:
       - name: EC2_SECRET_KEY
+        deprecated:
+          removed_at_date: '2024-12-01'
+          collection_name: amazon.aws
+          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
+          alternatives: AWS_SECRET_ACCESS_KEY
       - name: AWS_SECRET_KEY
       - name: AWS_SECRET_ACCESS_KEY
   aws_security_token:
@@ -40,6 +55,16 @@ options:
     type: str
     env:
       - name: EC2_SECURITY_TOKEN
+        deprecated:
+          removed_at_date: '2024-12-01'
+          collection_name: amazon.aws
+          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
+          alternatives: AWS_SESSION_TOKEN
       - name: AWS_SESSION_TOKEN
       - name: AWS_SECURITY_TOKEN
-'''
+        deprecated:
+          removed_at_date: '2024-12-01'
+          collection_name: amazon.aws
+          why: 'AWS_SECURITY_TOKEN was used for compatability with the original boto SDK, support for which has been dropped'
+          alternatives: AWS_SESSION_TOKEN
+"""

@@ -297,10 +297,10 @@ Common Documentation Fragments for Connection Parameters
 There are four :ref:`common documentation fragments <module_docs_fragments>`
 that should be included into almost all AWS modules:
 
-* ``aws`` - contains the common boto3 connection parameters
-* ``ec2`` - contains the common region parameter required for many AWS modules
 * ``boto3`` - contains the minimum requirements for the collection
-* ``tags`` - contains the common tagging parameters used by many AWS modules
+* ``common.modules`` - contains the common boto3 connection parameters
+* ``region.modules`` - contains the common region parameter required for many AWS APIs
+* ``tags`` - contains the common tagging parameters
 
 These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:
@@ -311,9 +311,31 @@ and that the more esoteric connection options are documented. For example:
    module: my_module
    # some lines omitted here
    extends_documentation_fragment:
-       - amazon.aws.aws
-       - amazon.aws.ec2
        - amazon.aws.boto3
+       - amazon.aws.common.modules
+       - amazon.aws.region.modules
+   '''
+
+Other plugin types have a slightly different document fragment format, and should use
+the following fragments:
+
+* ``boto3`` - contains the minimum requirements for the collection
+* ``common.plugins`` - contains the common boto3 connection parameters
+* ``region.plugins`` - contains the common region parameter required for many AWS APIs
+* ``tags`` - contains the common tagging parameters
+
+These fragments should be used rather than re-documenting these properties to ensure consistency
+and that the more esoteric connection options are documented. For example:
+
+.. code-block:: python
+
+   DOCUMENTATION = '''
+   module: my_plugin
+   # some lines omitted here
+   extends_documentation_fragment:
+       - amazon.aws.boto3
+       - amazon.aws.common.plugins
+       - amazon.aws.region.plugins
    '''
 
 .. _ansible_collections.amazon.aws.docsite.dev_exceptions:

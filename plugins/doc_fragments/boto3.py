@@ -1,19 +1,28 @@
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2022,  Ansible Project
+# Copyright: (c) 2022, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+from ansible_collections.amazon.aws.plugins.module_utils import botocore as botocore_utils
+
 
 class ModuleDocFragment(object):
 
-    # Minimum requirements for the collection
-    DOCUMENTATION = r'''
-options: {}
+    # Modules and Plugins can (currently) use the same fragment
+    def __init__(self):
+
+        # Minimum requirements for the collection
+        requirements = f"""
+options: {{}}
 requirements:
   - python >= 3.6
-  - boto3 >= 1.18.0
-  - botocore >= 1.21.0
-'''
+  - boto3 >= {botocore_utils.MINIMUM_BOTO3_VERSION}
+  - botocore >= {botocore_utils.MINIMUM_BOTOCORE_VERSION}
+"""
+
+        self.DOCUMENTATION = requirements
+        self.MODULES = requirements
+        self.PLUGINS = requirements
