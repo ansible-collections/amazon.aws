@@ -299,8 +299,8 @@ that should be included into almost all AWS modules:
 
 * ``boto3`` - contains the minimum requirements for the collection
 * ``common.modules`` - contains the common boto3 connection parameters
-* ``region.modules`` - contains the common region parameter required for many AWS modules
-* ``tags`` - contains the common tagging parameters used by many AWS modules
+* ``region.modules`` - contains the common region parameter required for many AWS APIs
+* ``tags`` - contains the common tagging parameters
 
 These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:
@@ -321,8 +321,8 @@ the following fragments:
 
 * ``boto3`` - contains the minimum requirements for the collection
 * ``common.plugins`` - contains the common boto3 connection parameters
-* ``region.plugins`` - contains the common region parameter required for many AWS modules
-* ``tags`` - contains the common tagging parameters used by many AWS modules
+* ``region.plugins`` - contains the common region parameter required for many AWS APIs
+* ``tags`` - contains the common tagging parameters
 
 These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:
