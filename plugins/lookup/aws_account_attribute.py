@@ -3,14 +3,10 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_account_attribute
 author:
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
-extends_documentation_fragment:
-  - amazon.aws.boto3
-  - amazon.aws.aws_credentials
-  - amazon.aws.region.plugins
 short_description: Look up AWS account attributes
 description:
   - Describes attributes of your AWS account. You can specify one of the listed
@@ -26,9 +22,13 @@ options:
       - max-elastic-ips
       - vpc-max-elastic-ips
       - has-ec2-classic
-'''
+extends_documentation_fragment:
+  - amazon.aws.boto3
+  - amazon.aws.common.plugins
+  - amazon.aws.region.plugins
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 vars:
   has_ec2_classic: "{{ lookup('aws_account_attribute', attribute='has-ec2-classic') }}"
   # true | false
@@ -42,7 +42,7 @@ vars:
 
 """
 
-RETURN = """
+RETURN = r"""
 _raw:
   description:
     Returns a boolean when I(attribute) is check_ec2_classic. Otherwise returns the value(s) of the attribute
@@ -50,63 +50,26 @@ _raw:
 """
 
 try:
-    import boto3
     import botocore
 except ImportError:
-    pass  # will be captured by imported HAS_BOTO3
+    pass  # Handled by AWSLookupBase
 
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import missing_required_lib
-from ansible.plugins.lookup import LookupBase
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
 
-def _boto3_conn(region, credentials):
-    boto_profile = credentials.pop('aws_profile', None)
-
-    try:
-        connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-        if boto_profile:
-            try:
-                connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-                raise AnsibleError("Insufficient credentials found.")
-        else:
-            raise AnsibleError("Insufficient credentials found.")
-    return connection
-
-
-def _get_credentials(options):
-    credentials = {}
-    credentials['aws_profile'] = options['aws_profile']
-    credentials['aws_secret_access_key'] = options['aws_secret_key']
-    credentials['aws_access_key_id'] = options['aws_access_key']
-    if options['aws_security_token']:
-        credentials['aws_session_token'] = options['aws_security_token']
-
-    return credentials
-
-
-@AWSRetry.jittered_backoff(retries=10)
 def _describe_account_attributes(client, **params):
-    return client.describe_account_attributes(**params)
+    return client.describe_account_attributes(aws_retry=True, **params)
 
 
-class LookupModule(LookupBase):
+class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
+        super(LookupModule, self).run(terms, variables, **kwargs)
 
-        if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
-
-        self.set_options(var_options=variables, direct=kwargs)
-        boto_credentials = _get_credentials(self._options)
-
-        region = self._options['region']
-        client = _boto3_conn(region, boto_credentials)
+        client = self.client('ec2', AWSRetry.jittered_backoff())
 
         attribute = kwargs.get('attribute')
         params = {'AttributeNames': []}
@@ -120,7 +83,7 @@ class LookupModule(LookupBase):
         try:
             response = _describe_account_attributes(client, **params)['AccountAttributes']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
+            raise AnsibleLookupError("Failed to describe account attributes: {0}".format(to_native(e)))
 
         if check_ec2_classic:
             attr = response[0]
