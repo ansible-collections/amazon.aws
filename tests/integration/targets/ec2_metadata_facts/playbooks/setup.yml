@@ -89,6 +89,7 @@
         - proto: icmp
           from_port: -1
           to_port: -1
+          cidr_ip: 0.0.0.0/0
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_sg_result
