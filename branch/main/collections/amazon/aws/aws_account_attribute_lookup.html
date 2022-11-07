@@ -196,8 +196,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS access key to use.</p>
 <p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul class="simple">
-<li><p>Environment variable: EC2_ACCESS_KEY</p></li>
+<ul>
+<li><p>Environment variable: EC2_ACCESS_KEY</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_ACCESS_KEY_ID</p>
+</li>
 <li><p>Environment variable: AWS_ACCESS_KEY</p></li>
 <li><p>Environment variable: AWS_ACCESS_KEY_ID</p></li>
 </ul>
@@ -225,8 +229,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS secret key that corresponds to the access key.</p>
 <p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul class="simple">
-<li><p>Environment variable: EC2_SECRET_KEY</p></li>
+<ul>
+<li><p>Environment variable: EC2_SECRET_KEY</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_SECRET_ACCESS_KEY</p>
+</li>
 <li><p>Environment variable: AWS_SECRET_KEY</p></li>
 <li><p>Environment variable: AWS_SECRET_ACCESS_KEY</p></li>
 </ul>
@@ -238,22 +246,38 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS security token if using temporary access and secret keys.</p>
 <p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul class="simple">
-<li><p>Environment variable: EC2_SECURITY_TOKEN</p></li>
+<ul>
+<li><p>Environment variable: EC2_SECURITY_TOKEN</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_SESSION_TOKEN</p>
+</li>
 <li><p>Environment variable: AWS_SESSION_TOKEN</p></li>
-<li><p>Environment variable: AWS_SECURITY_TOKEN</p></li>
+<li><p>Environment variable: AWS_SECURITY_TOKEN</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: AWS_SECURITY_TOKEN was used for compatability with the original boto SDK, support for which has been dropped</p>
+<p>Alternative: AWS_SESSION_TOKEN</p>
+</li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-account-attribute-lookup-parameter-region"><strong>region</strong></p>
-<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-region"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-account-attribute-lookup-parameter-region"><span id="ansible-collections-amazon-aws-aws-account-attribute-lookup-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-aws-account-attribute-lookup-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The region for which to create the connection.</p>
+<td><div class="ansible-option-cell"><p>The AWS region to use.</p>
+<p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul class="simple">
-<li><p>Environment variable: EC2_REGION</p></li>
+<ul>
 <li><p>Environment variable: AWS_REGION</p></li>
+<li><p>Environment variable: EC2_REGION</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources, when it is used for all connections</p>
+<p>Alternative:</p>
+</li>
 </ul>
 </div></td>
 </tr>

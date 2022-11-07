@@ -252,6 +252,26 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-region"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-lookup-parameter-region"><span id="ansible-collections-amazon-aws-aws-ssm-lookup-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-aws-ssm-lookup-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AWS region to use.</p>
+<p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_REGION</p></li>
+<li><p>Environment variable: EC2_REGION</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources, when it is used for all connections</p>
+<p>Alternative:</p>
+</li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-shortnames"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-lookup-parameter-shortnames"><strong>shortnames</strong></p>
 <a class="ansibleOptionLink" href="#parameter-shortnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
