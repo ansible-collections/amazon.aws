@@ -217,13 +217,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 def build_request_args(executable_users, filters, image_ids, owners):
 
-    request_args = {
-        'ExecutableUsers': [str(user) for user in executable_users],
-        'Filters': ansible_dict_to_boto3_filter_list(filters),
-        'ImageIds': [str(image_id) for image_id in image_ids],
-        'Owners': [str(owner) for owner in owners],
-    }
-
     # describe_images is *very* slow if you pass the `Owners`
     # param (unless it's self), for some reason.
     # Converting the owners to filters and removing from the
@@ -241,6 +234,12 @@ def build_request_args(executable_users, filters, image_ids, owners):
             if 'owner-alias' not in filters:
                 filters['owner-alias'] = list()
             filters['owner-alias'].append(owner)
+
+    request_args = {
+        'ExecutableUsers': [str(user) for user in executable_users],
+        'Filters': ansible_dict_to_boto3_filter_list(filters),
+        'ImageIds': [str(image_id) for image_id in image_ids],
+    }
 
     request_args = {k: v for k, v in request_args.items() if v}
 
