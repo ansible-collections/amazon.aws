@@ -627,10 +627,7 @@ def main():
                         tags['Name'] = health_check_name
 
             else:
-                if update_delete_by_id:
-                    changed, action, check_id = update_health_check(existing_check)
-                else:
-                    changed, action, check_id = update_health_check(existing_check)
+                changed, action, check_id = update_health_check(existing_check)
 
         if check_id:
             changed |= manage_tags(module, client, 'healthcheck', check_id,
