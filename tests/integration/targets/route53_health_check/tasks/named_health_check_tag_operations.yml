@@ -1,7 +1,7 @@
 ---
 - block:
-
-    - name: 'Create HTTP health check with use_unique_names - check_mode'
+    # Create Health Check =================================================================
+    - name: 'Create Health Check with name and tags'
       amazon.aws.route53_health_check:
         state: present
         name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
@@ -10,70 +10,35 @@
         type: '{{ type_http }}'
         resource_path: '{{ resource_path }}'
         use_unique_names: true
+        fqdn: '{{ fqdn }}'
         tags:
           Service: my-service
           Owner: my-test-xyz
           Lifecycle: dev
-        fqdn: '{{ fqdn }}'
-      check_mode: true
       register: create_result
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_result.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tag_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
     - name: 'Check result - Create HTTP health check'
       assert:
         that:
         - create_result is not failed
         - create_result is changed
+        - tags_keys_list | length == 4
+        - '"Service" in tags_keys_list'
+        - '"Owner" in tags_keys_list'
+        - '"LifeCycle" in tags_keys_list'
+        - '"Name" in tags_keys_list'
 
-    - name: 'Create HTTP health check with use_unique_names'
-      amazon.aws.route53_health_check:
-        state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
-        ip_address: '{{ ip_address }}'
-        port: '{{ port }}'
-        type: '{{ type_http }}'
-        resource_path: '{{ resource_path }}'
-        use_unique_names: true
-        tags:
-          Service: my-service
-          Owner: my-test-xyz
-          Lifecycle: dev
-        fqdn: '{{ fqdn }}'
-      register: create_result
-
-    - name: Get ID's for health_check created in above task
-      set_fact:
-        health_check_1_id: "{{ create_result.health_check.id }}"
-
-    - name: 'Check result - Create HTTP health check'
-      assert:
-        that:
-        - create_result is not failed
-        - create_result is changed
-
-    - name: 'Create HTTP health check with use_unique_names - idempotency - check_mode'
-      amazon.aws.route53_health_check:
-        state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
-        ip_address: '{{ ip_address }}'
-        port: '{{ port }}'
-        type: '{{ type_http }}'
-        resource_path: '{{ resource_path }}'
-        use_unique_names: true
-        tags:
-          Service: my-service
-          Owner: my-test-xyz
-          Lifecycle: dev
-        fqdn: '{{ fqdn }}'
-      check_mode: true
-      register: create_idem
-
-    - name: 'Check result - Create HTTP health check - idempotency - check_mode'
-      assert:
-        that:
-        - create_idem is not failed
-        - create_idem is not changed
-
-    - name: 'Create HTTP health check with use_unique_names - idempotency'
+    # Create Health Check - check Idempotenty =================================================================
+    - name: 'Create Health Check with name and tags - idempotency'
       amazon.aws.route53_health_check:
         state: present
         name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
@@ -88,15 +53,29 @@
           Lifecycle: dev
         fqdn: '{{ fqdn }}'
       register: create_idem
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_idem.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tag_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
     - name: 'Check result - Create HTTP health check - idempotency'
       assert:
         that:
         - create_idem is not failed
         - create_idem is not changed
+        - tags_keys_list | length == 4
+        - '"Service" in tags_keys_list'
+        - '"Owner" in tags_keys_list'
+        - '"LifeCycle" in tags_keys_list'
+        - '"Name" in tags_keys_list'
 
+  # Cleanup starts here =================================================================
   always:
-    # Cleanup starts here
       - name: 'Delete HTTP health check with use_unique_names'
         amazon.aws.route53_health_check:
           state: absent
