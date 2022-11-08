@@ -1,0 +1,2 @@
+trivial:
+- ec2_metadata_facts - update integration test so ICMP SG rule is actually added.
