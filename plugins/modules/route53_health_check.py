@@ -632,17 +632,16 @@ def main():
             # If health_check_name is a unique identifier
             if module.params.get('use_unique_names'):
                 existing_checks_with_name = get_existing_checks_with_name()
+                # Add 'Name' tag to add name to health check
+                if not tags:
+                    tags = {}
+                tags['Name'] = health_check_name
                 # update the health_check if another health check with same name exists
                 if health_check_name in existing_checks_with_name:
                     changed, action, check_id = update_health_check(existing_checks_with_name[health_check_name])
                 else:
                     # create a new health_check if another health check with same name does not exists
                     changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
-                    # Add tag to add name to health check
-                    if check_id:
-                        if not tags:
-                            tags = {}
-                        tags['Name'] = health_check_name
 
             else:
                 changed, action, check_id = update_health_check(existing_check)
