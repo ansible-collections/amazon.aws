@@ -64,6 +64,7 @@
           Owner: my-test-xyz
           Lifecycle: dev
         fqdn: '{{ fqdn }}'
+      check_mode: true
       register: create_idem
 
     - name: 'Check result - Create HTTP health check - idempotency - check_mode'

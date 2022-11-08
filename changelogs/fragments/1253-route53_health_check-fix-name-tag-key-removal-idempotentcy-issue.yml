@@ -1,0 +1,3 @@
+---
+bugfixes:
+- route53_health_check - Fix "Name" tag key removal idempotentcy issue when creating health_check with `use_unique_names` and `tags` set (https://github.com/ansible-collections/amazon.aws/pull/1253).
