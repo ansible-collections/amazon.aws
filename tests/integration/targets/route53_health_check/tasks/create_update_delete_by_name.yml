@@ -1,0 +1,115 @@
+---
+- block:
+
+    - name: 'Create HTTP health check with use_unique_names - check_mode'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+        fqdn: '{{ fqdn }}'
+      check_mode: true
+      register: create_result
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_result is not failed
+        - create_result is changed
+
+    - name: 'Create HTTP health check with use_unique_names'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+        fqdn: '{{ fqdn }}'
+      register: create_result
+
+    - name: Get ID's for health_check created in above task
+      set_fact:
+        health_check_1_id: "{{ create_result.health_check.id }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_result is not failed
+        - create_result is changed
+
+    - name: 'Create HTTP health check with use_unique_names - idempotency - check_mode'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+        fqdn: '{{ fqdn }}'
+      register: create_idem
+
+    - name: 'Check result - Create HTTP health check - idempotency - check_mode'
+      assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+
+    - name: 'Create HTTP health check with use_unique_names - idempotency'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+        fqdn: '{{ fqdn }}'
+      register: create_idem
+
+    - name: 'Check result - Create HTTP health check - idempotency'
+      assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+
+  always:
+    # Cleanup starts here
+      - name: 'Delete HTTP health check with use_unique_names'
+        amazon.aws.route53_health_check:
+          state: absent
+          name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+          ip_address: '{{ ip_address }}'
+          port: '{{ port }}'
+          type: '{{ type_http }}'
+          resource_path: '{{ resource_path }}'
+          use_unique_names: true
+          tags:
+            Service: my-service
+            Owner: my-test-xyz
+            Lifecycle: dev
+          fqdn: '{{ fqdn_1 }}'
+        register: delete_result
+        with_items:
+          - '{{ resource_path }}'

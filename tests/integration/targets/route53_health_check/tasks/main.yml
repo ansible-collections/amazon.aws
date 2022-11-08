@@ -32,6 +32,9 @@
   - set_fact:
       ip_address: '{{ eip.public_ip }}'
 
+  - name: Run tests for create and delete health check with tags and name as unique identifier
+    include_tasks: create_update_delete_by_name.yml
+
   - name: Run tests for creating multiple health checks with name as unique identifier
     include_tasks: create_multiple_health_checks.yml
 
