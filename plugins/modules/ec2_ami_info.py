@@ -254,7 +254,7 @@ def build_request_args(executable_users, filters, image_ids, owners):
     return request_args
 
 
-def get_images(ec2_client, module, request_args):
+def get_images(ec2_client, request_args):
     try:
         images = ec2_client.describe_images(aws_retry=True, **request_args)
     except (ClientError, BotoCoreError) as err:
