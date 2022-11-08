@@ -3,14 +3,11 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from unittest.mock import sentinel
 
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_root_arn
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_policy_dict_item
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _tuplify_list
-
-from ansible_collections.amazon.aws.tests.unit.compat.mock import sentinel
 
 
 def test_tuplify_list():

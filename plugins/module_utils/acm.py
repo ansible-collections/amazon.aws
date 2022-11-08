@@ -24,9 +24,6 @@
 #   - acm_certificate
 #   - acm_certificate_info
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 """
 Common Amazon Certificate Manager facts shared between modules
 """

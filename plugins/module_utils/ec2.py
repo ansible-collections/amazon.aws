@@ -35,9 +35,6 @@ lived here.  Most of these functions were not specific to EC2, they ended
 up in this module because "that's where the AWS code was" (originally).
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import re
 
 from ansible.module_utils.ansible_release import __version__

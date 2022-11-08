@@ -1,6 +1,3 @@
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
