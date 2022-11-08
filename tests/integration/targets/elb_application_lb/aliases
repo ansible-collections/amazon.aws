@@ -1,3 +1,5 @@
+time=10m
+
 cloud/aws
-slow
+
 elb_application_lb_info
