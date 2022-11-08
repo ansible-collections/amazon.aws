@@ -19,10 +19,9 @@
 
 # Make coding more python3-ish
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch, call
 
 from ansible.errors import AnsibleError
-from ansible.template import Templar
 from ansible.parsing.dataloader import DataLoader
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
@@ -101,3 +100,44 @@ def test_insufficient_credentials(inventory, loader):
     with pytest.raises(AnsibleError) as error_message:
         inventory._set_credentials(loader)
         assert "Insufficient credentials found" in error_message
+
+
+@pytest.mark.skip(reason="skipping for now, will be reactivated later")
+@pytest.mark.parametrize("hasregions", [False])
+def test_boto3_conn(inventory, hasregions):
+
+    credentials = MagicMock()
+    iam_role_arn = MagicMock()
+    resource = MagicMock()
+
+    inventory._get_credentials = MagicMock()
+    inventory._get_credentials.return_value = credentials
+    inventory.iam_role_arn = iam_role_arn
+
+    regions = []
+    if hasregions:
+        regions = ["us-east-1", "us-west-1", "eu-east-1"]
+
+    inventory._boto3_regions = MagicMock()
+    inventory._boto3_regions.return_value = regions
+
+    inventory.fail_aws = MagicMock()
+    inventory.fail_aws.side_effect = SystemExit(1)
+
+    connections = [MagicMock(name="connection_%d" % c) for c in range(len(regions))]
+
+    inventory._get_boto3_connection = MagicMock()
+    inventory._get_boto3_connection.side_effect = connections
+
+    if hasregions:
+        assert list(inventory._boto3_conn(regions, resource)) == [(connections[i], regions[i]) for i in range(len(regions))]
+    else:
+        result = inventory._boto3_conn(regions, resource)
+
+    inventory._get_credentials.assert_called_once()
+    inventory._boto3_regions.assert_called_with(credentials, iam_role_arn, resource)
+    if hasregions:
+        inventory._get_boto3_connection.assert_has_calls(
+            [call(credentials, iam_role_arn, resource, region) for region in regions],
+            any_order=True
+        )
