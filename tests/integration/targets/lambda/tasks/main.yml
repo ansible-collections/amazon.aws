@@ -8,6 +8,11 @@
   collections:
   - community.general
   block:
+  # https://github.com/ansible/ansible/issues/77257
+  - name: Set async_dir for HOME env
+    ansible.builtin.set_fact:
+      ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async_{{ tiny_prefix }}/"
+    when: (lookup('env', 'HOME'))
   # Preparation
   - name: create minimal lambda role
     iam_role:

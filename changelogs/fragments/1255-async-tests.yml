@@ -1,0 +1,2 @@
+trivial:
+- integration tests - adds workaround for async test failures (https://github.com/ansible-collections/amazon.aws/pull/1255).

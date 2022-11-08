@@ -1,7 +1,4 @@
-# reason: slow
-# Tests take around 30 minutes
-
-slow
+time=30m
 cloud/aws
 
 autoscaling_group_info
