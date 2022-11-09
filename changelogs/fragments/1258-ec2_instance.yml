@@ -1,0 +1,2 @@
+trivial:
+- ec2_instance - changes to integration tests to fix failures
