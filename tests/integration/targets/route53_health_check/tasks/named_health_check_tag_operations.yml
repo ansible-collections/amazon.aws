@@ -24,7 +24,7 @@
         health_check_method: tags
       register: health_check_tags
     - set_fact:
-        tag_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
     - name: 'Check result - Create HTTP health check'
       assert:
@@ -61,7 +61,7 @@
         health_check_method: tags
       register: health_check_tags
     - set_fact:
-        tag_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
     - name: 'Check result - Create HTTP health check - idempotency'
       assert:
