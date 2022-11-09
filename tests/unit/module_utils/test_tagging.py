@@ -11,7 +11,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-class TestTagging():
+class TestTagging:
 
     # ========================================================
     # Setup some initial data that we can use within our tests

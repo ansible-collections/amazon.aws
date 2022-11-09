@@ -6,7 +6,7 @@
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-class TestAnsibleDictToBoto3FilterList():
+class TestAnsibleDictToBoto3FilterList:
 
     # ========================================================
     #   ec2.ansible_dict_to_boto3_filter_list

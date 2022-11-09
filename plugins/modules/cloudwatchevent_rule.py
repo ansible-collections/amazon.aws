@@ -202,7 +202,7 @@ def _format_json(json_string):
         return str(json.dumps(json_string))
 
 
-class CloudWatchEventRule(object):
+class CloudWatchEventRule:
     def __init__(self, module, name, client, schedule_expression=None,
                  event_pattern=None, description=None, role_arn=None):
         self.name = name
@@ -339,7 +339,7 @@ class CloudWatchEventRule(object):
         return camel_dict_to_snake_dict(dict)
 
 
-class CloudWatchEventRuleManager(object):
+class CloudWatchEventRuleManager:
     RULE_FIELDS = ['name', 'event_pattern', 'schedule_expression', 'description', 'role_arn']
 
     def __init__(self, rule, targets):

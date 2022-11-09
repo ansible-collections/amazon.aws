@@ -20,7 +20,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_iam.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestIamUtils():
+class TestIamUtils:
 
     def _make_denied_exception(self, partition):
         return botocore.exceptions.ClientError(

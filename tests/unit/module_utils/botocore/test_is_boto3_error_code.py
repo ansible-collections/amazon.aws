@@ -19,7 +19,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_is_boto3_error_code.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestIsBoto3ErrorCode():
+class TestIsBoto3ErrorCode:
 
     def _make_denied_exception(self):
         return botocore.exceptions.ClientError(

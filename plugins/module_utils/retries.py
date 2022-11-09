@@ -77,7 +77,7 @@ class AWSRetry(CloudRetry):
         return response_code in retry_on
 
 
-class RetryingBotoClientWrapper(object):
+class RetryingBotoClientWrapper:
     __never_wait = (
         'get_paginator', 'can_paginate',
         'get_waiter', 'generate_presigned_url',

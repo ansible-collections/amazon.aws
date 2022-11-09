@@ -106,7 +106,7 @@ def describe_igws_with_backoff(connection, **params):
     return paginator.paginate(**params).build_full_result()['InternetGateways']
 
 
-class AnsibleEc2Igw():
+class AnsibleEc2Igw:
 
     def __init__(self, module, results):
         self._module = module

@@ -42,7 +42,7 @@ from .ec2 import ansible_dict_to_boto3_tag_list
 from .ec2 import boto3_tag_list_to_ansible_dict
 
 
-class ACMServiceManager(object):
+class ACMServiceManager:
     """Handles ACM Facts Services"""
 
     def __init__(self, module):

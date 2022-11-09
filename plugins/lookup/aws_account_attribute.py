@@ -65,7 +65,7 @@ def _describe_account_attributes(client, **params):
 
 class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
-        super(LookupModule, self).run(terms, variables, **kwargs)
+        super().run(terms, variables, **kwargs)
 
         client = self.client('ec2', AWSRetry.jittered_backoff())
 

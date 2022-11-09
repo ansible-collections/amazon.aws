@@ -7,7 +7,7 @@ options: {}
 """
 
 
-class ModuleDocFragment(object):
+class ModuleDocFragment:
     # Common configuration for all AWS services
     # Note: If you're updating MODULES, PLUGINS probably needs updating too.
 

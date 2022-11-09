@@ -43,7 +43,7 @@ class CallbackModule(CallbackBase):
 
     def __init__(self):
         self.aws_resource_actions = []
-        super(CallbackModule, self).__init__()
+        super().__init__()
 
     def extend_aws_resource_actions(self, result):
         if result.get('resource_actions'):

@@ -515,7 +515,7 @@ current_account_id = None
 
 class SecurityGroupError(Exception):
     def __init__(self, msg, e=None, **kwargs):
-        super(SecurityGroupError, self).__init__(msg)
+        super().__init__(msg)
         self.message = msg
         self.exception = e
         self.kwargs = kwargs

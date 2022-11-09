@@ -12,6 +12,6 @@ from .common import ModuleDocFragment as CommonFragment
 #
 
 
-class ModuleDocFragment(object):
+class ModuleDocFragment:
     def __init__(self):
         self.DOCUMENTATION = CommonFragment.MODULES

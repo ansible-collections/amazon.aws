@@ -18,7 +18,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_awsretry.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestAWSRetry():
+class TestAWSRetry:
 
     def test_no_failures(self):
         self.counter = 0

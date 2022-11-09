@@ -12,6 +12,6 @@ from .region import ModuleDocFragment as RegionFragment
 #
 
 
-class ModuleDocFragment(object):
+class ModuleDocFragment:
     def __init__(self):
         self.DOCUMENTATION = RegionFragment.PLUGINS

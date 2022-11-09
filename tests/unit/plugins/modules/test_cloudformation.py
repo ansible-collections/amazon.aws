@@ -57,7 +57,7 @@ Resources:
 default_events_limit = 10
 
 
-class FakeModule(object):
+class FakeModule:
     def __init__(self, **kwargs):
         self.params = kwargs
 

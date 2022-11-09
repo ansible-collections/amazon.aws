@@ -5,7 +5,7 @@
 from ansible_collections.amazon.aws.plugins.module_utils import botocore as botocore_utils
 
 
-class ModuleDocFragment(object):
+class ModuleDocFragment:
 
     # Modules and Plugins can (currently) use the same fragment
     def __init__(self):

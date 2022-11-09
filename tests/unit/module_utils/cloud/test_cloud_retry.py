@@ -10,7 +10,7 @@ import pytest
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
-class TestCloudRetry():
+class TestCloudRetry:
 
     error_codes = [400, 500, 600]
     custom_error_codes = [100, 200, 300]

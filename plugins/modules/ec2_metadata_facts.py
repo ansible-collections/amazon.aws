@@ -446,7 +446,7 @@ from ansible.module_utils.six.moves.urllib.parse import quote
 socket.setdefaulttimeout(5)
 
 
-class Ec2Metadata(object):
+class Ec2Metadata:
     ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
     ec2_metadata_uri = 'http://169.254.169.254/latest/meta-data/'
     ec2_metadata_instance_tags_uri = 'http://169.254.169.254/latest/meta-data/tags/instance'

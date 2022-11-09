@@ -81,7 +81,7 @@ from .retries import RetryingBotoClientWrapper
 # for Inventory and Lookup modules which we should refactor
 
 
-class AnsibleAWSModule(object):
+class AnsibleAWSModule:
     """An ansible module class for AWS modules
 
     AnsibleAWSModule provides an a class for building modules which

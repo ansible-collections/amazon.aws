@@ -151,7 +151,7 @@ class LookupModule(AWSLookupBase):
             :returns: A list of parameter values or a list of dictionaries if bypath=True.
         '''
 
-        super(LookupModule, self).run(terms, variables, **kwargs)
+        super().run(terms, variables, **kwargs)
 
         on_missing = self.get_option('on_missing')
         on_denied = self.get_option('on_denied')

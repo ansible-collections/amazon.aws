@@ -20,7 +20,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_minimal_versions.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestMinimalVersionTestSuite(object):
+class TestMinimalVersionTestSuite:
     # ========================================================
     # Prepare some data for use in our testing
     # ========================================================

@@ -229,7 +229,7 @@ def test_validate_bucket_name(bucket_name, result):
 mod_urlparse = "ansible_collections.amazon.aws.plugins.module_utils.s3.urlparse"
 
 
-class UrlInfo(object):
+class UrlInfo:
 
     def __init__(self, scheme=None, hostname=None, port=None):
         self.hostname = hostname

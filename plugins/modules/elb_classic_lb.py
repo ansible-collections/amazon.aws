@@ -689,7 +689,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_secu
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
-class ElbManager(object):
+class ElbManager:
     """Handles ELB creation and destruction"""
 
     def __init__(self, module):

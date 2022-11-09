@@ -38,7 +38,7 @@ test_normalize_config = {'domain-name': ['us-west-2.compute.internal'],
                          }
 
 
-class FakeModule(object):
+class FakeModule:
     def __init__(self, **kwargs):
         self.params = kwargs
 

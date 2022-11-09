@@ -17,7 +17,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import Retrying
 display = Display()
 
 
-class AWSPluginBase():
+class AWSPluginBase:
 
     def warn(self, message):
         display.warning(message)

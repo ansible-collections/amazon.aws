@@ -8,7 +8,7 @@
 #
 
 
-class ModuleDocFragment(object):
+class ModuleDocFragment:
 
     # Plugin options for AWS credentials
     DOCUMENTATION = r"""

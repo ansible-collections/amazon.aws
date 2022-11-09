@@ -107,7 +107,7 @@ def _sort_actions(actions):
     return sorted(actions, key=lambda x: x.get('Order', 0))
 
 
-class ElasticLoadBalancerV2(object):
+class ElasticLoadBalancerV2:
 
     def __init__(self, connection, module):
 
@@ -417,7 +417,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         :param connection: boto3 connection
         :param module: Ansible module
         """
-        super(ApplicationLoadBalancer, self).__init__(connection, module)
+        super().__init__(connection, module)
 
         self.connection_ec2 = connection_ec2
 
@@ -585,7 +585,7 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         :param connection: boto3 connection
         :param module: Ansible module
         """
-        super(NetworkLoadBalancer, self).__init__(connection, module)
+        super().__init__(connection, module)
 
         self.connection_ec2 = connection_ec2
 
@@ -639,7 +639,7 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         self.module.fail_json(msg='Modifying subnets and elastic IPs is not supported for Network Load Balancer')
 
 
-class ELBListeners(object):
+class ELBListeners:
 
     def __init__(self, connection, module, elb_arn):
 
@@ -799,7 +799,7 @@ class ELBListeners(object):
             return None
 
 
-class ELBListener(object):
+class ELBListener:
 
     def __init__(self, connection, module, listener, elb_arn):
         """
@@ -853,7 +853,7 @@ class ELBListener(object):
             self.module.fail_json_aws(e)
 
 
-class ELBListenerRules(object):
+class ELBListenerRules:
 
     def __init__(self, connection, module, elb_arn, listener_rules, listener_port):
 
@@ -1045,7 +1045,7 @@ class ELBListenerRules(object):
         return rules_to_add, rules_to_modify, rules_to_delete
 
 
-class ELBListenerRule(object):
+class ELBListenerRule:
 
     def __init__(self, connection, module, rule, listener_arn):
 

@@ -6,7 +6,7 @@
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 
 
-class TestComparePolicy():
+class TestComparePolicy:
 
     # ========================================================
     # Setup some initial data that we can use within our tests

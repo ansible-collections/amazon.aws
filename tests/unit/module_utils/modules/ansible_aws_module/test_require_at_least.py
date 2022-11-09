@@ -41,7 +41,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_require_at_least.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestRequireAtLeastTestSuite(object):
+class TestRequireAtLeastTestSuite:
     # ========================================================
     # Prepare some data for use in our testing
     # ========================================================
