@@ -28,7 +28,6 @@
             security_groups: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
             wait: no
-          register: setup_instance_1
 
         - name: create a new host (2/3)
           ec2_instance:
@@ -40,19 +39,17 @@
             security_groups: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
             wait: no
-          register: setup_instance_2
 
         - name: create a new host (3/3)
           ec2_instance:
             image_id: '{{ image_id }}'
             name: '{{ resource_prefix }}_3'
             tags:
-              tag_instance2: bar
+              tag_instance3: bar
             instance_type: t2.micro
             security_groups: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
             wait: no
-          register: setup_instance_3
 
         - meta: refresh_inventory
 
@@ -64,40 +61,3 @@
               - "'{{ resource_prefix }}_1' in groups['all']"
               - "'{{ resource_prefix }}_2' in groups['all']"
               - "not ('{{ resource_prefix }}_3' in groups['all'])"
-
-      always:
-
-        - name: remove setup ec2 instance (1/3)
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance_1.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}_1'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: yes
-          when: setup_instance_1 is defined
-
-        - name: remove setup ec2 instance (2/3)
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance_2.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}_2'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: yes
-          when: setup_instance_2 is defined
-
-        - name: remove setup ec2 instance (3/3)
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance_3.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}_3'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: yes
-          when: setup_instance_3 is defined
-
-        - include_tasks: tear_down.yml

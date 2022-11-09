@@ -40,18 +40,3 @@
             that:
               - expected_hostname in hostvars
               - hostvars[expected_hostname].ec2_tag_OtherTag == "value"
-
-      always:
-
-        - name: remove setup ec2 instance
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: yes
-          when: setup_instance is defined
-
-        - include_tasks: tear_down.yml

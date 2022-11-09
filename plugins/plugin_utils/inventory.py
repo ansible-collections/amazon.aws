@@ -163,7 +163,10 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         credentials = self._get_credentials()
         iam_role_arn = self.iam_role_arn
 
-        regions = self._boto3_regions(credentials, iam_role_arn, resource)
+        if not regions:
+            # list regions as none was provided
+            regions = self._boto3_regions(credentials, iam_role_arn, resource)
+
         # I give up, now you MUST give me regions
         if not regions:
             self.fail_aws('Unable to get regions list from available methods, you must specify the "regions" option to continue.')

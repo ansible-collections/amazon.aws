@@ -1,0 +1,21 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  collections:
+    - amazon.aws
+    - community.aws
+
+  vars_files:
+    - vars/main.yml
+
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  tasks:
+    - include_tasks: "{{ task }}.yml"

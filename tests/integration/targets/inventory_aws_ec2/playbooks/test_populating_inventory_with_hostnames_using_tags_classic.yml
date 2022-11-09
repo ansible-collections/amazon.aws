@@ -24,6 +24,7 @@
             tags:
               Tag1: Test1
               Tag2: Test2
+            purge_tags: true
             instance_type: t2.micro
             security_groups: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
@@ -45,18 +46,3 @@
               - "'Test2' not in groups['aws_ec2']"
               - "'Test1' in hostvars"
               - "'Test2' not in hostvars"
-
-      always:
-
-        - name: remove ec2 instance
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: true
-          when: setup_instance is defined
-
-        - include_tasks: tear_down.yml

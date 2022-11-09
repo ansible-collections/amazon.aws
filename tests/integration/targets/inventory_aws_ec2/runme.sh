@@ -15,6 +15,10 @@ export ANSIBLE_INVENTORY=test.aws_ec2.yml
 # test empty inventory config
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 
+{
+# create minimal config for tests
+ansible-playbook playbooks/manage_ec2_instances.yml -e "task=setup" "$@"
+
 # generate inventory config and test using it
 ansible-playbook playbooks/create_inventory_config.yml "$@"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
@@ -24,14 +28,6 @@ ansible-playbook playbooks/create_environment_script.yml "$@"
 source access_key.sh
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_template.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
-
-# generate inventory config with caching and test using it
-ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_cache.yml.j2'" "$@"
-ansible-playbook playbooks/populate_cache.yml "$@"
-ansible-playbook playbooks/test_inventory_cache.yml "$@"
-
-# remove inventory cache
-rm -r aws_ec2_cache_dir/
 
 # generate inventory config with constructed features and test using it
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_constructed.yml.j2'" "$@"
@@ -45,10 +41,6 @@ ansible-playbook playbooks/test_populating_inventory_with_hostnames_using_tags_c
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostnames_using_tags.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_hostnames_using_tags.yml "$@"
 
-# generate inventory config with includes_entries_matching and prepare the tests
-ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_include_or_exclude_filters.yml.j2'" "$@"
-ansible-playbook playbooks/test_populating_inventory_with_include_or_exclude_filters.yml "$@"
-
 # generate inventory config with hostvars_prefix
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostvars_prefix_suffix.yml.j2'" -e "hostvars_prefix='aws_ec2_'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix.yml -e "hostvars_prefix='aws_ec2_'" "$@"
@@ -59,9 +51,29 @@ ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostvars_prefix_suffix.yml.j2'" -e "hostvars_prefix='aws_'" -e "hostvars_suffix='_ec2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix.yml -e "hostvars_prefix='aws_'" -e "hostvars_suffix='_ec2'" "$@"
 
+# generate inventory config with includes_entries_matching and prepare the tests
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_include_or_exclude_filters.yml.j2'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_include_or_exclude_filters.yml "$@"
+
 # generate inventory config with caching and test using it
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_use_contrib_script_keys.yml.j2'" "$@"
 ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=never ansible-playbook playbooks/test_populating_inventory_with_use_contrib_script_keys.yml "$@"
 
+# generate inventory config with caching and test using it
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_cache.yml.j2'" "$@"
+ansible-playbook playbooks/populate_cache.yml "$@"
+ansible-playbook playbooks/test_inventory_cache.yml "$@"
+
+# remove inventory cache
+rm -r aws_ec2_cache_dir/
+
 # cleanup inventory config
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
+
+# cleanup testing environment
+ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
+
+} || {
+    ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
+    exit 1
+}

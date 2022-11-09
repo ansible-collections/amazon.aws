@@ -487,7 +487,6 @@ class InventoryModule(AWSInventoryBase):
            :return A list of instance dictionaries
         '''
         all_instances = []
-
         # By default find non-terminated/terminating instances
         if not any(f['Name'] == 'instance-state-name' for f in filters):
             filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
