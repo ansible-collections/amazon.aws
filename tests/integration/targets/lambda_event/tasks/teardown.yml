@@ -1,7 +1,6 @@
 ---
 - debug: msg="Starting test Teardown......"
 
-
 - name: Delete DynamoDB stream event mapping (trigger)
   amazon.aws.lambda_event:
     state: absent
