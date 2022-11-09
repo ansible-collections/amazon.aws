@@ -164,6 +164,37 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
+class Ec2KeyFailure(Exception):
+    def __init__(self, message=None, original_e=None):
+        super().__init__(message)
+        self.original_e = original_e
+        self.message = message
+
+
+def _create_key_pair(ec2_client, name, tag_spec, key_type):
+    params = dict(KeyName=name)
+    if tag_spec:
+        params['TagSpecifications'] = tag_spec
+    if key_type:
+        params['KeyType'] = key_type
+    try:
+        key = ec2_client.create_key_pair(aws_retry=True, **params)
+    except botocore.exceptions.ClientError as err:
+        raise Ec2KeyFailure(err, "error creating key")
+    return key
+
+
+def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
+    params = dict(KeyName=name, PublicKeyMaterial=to_bytes(key_material))
+    if tag_spec:
+        params['TagSpecifications'] = tag_spec
+    try:
+        key = ec2_client.import_key_pair(aws_retry=True, **params)
+    except botocore.exceptions.ClientError as err:
+        raise Ec2KeyFailure(err, "error importing key")
+    return key
+
+
 def extract_key_data(key, key_type=None):
 
     data = {
@@ -202,14 +233,14 @@ def get_key_fingerprint(module, ec2_client, key_material):
     return temp_key['KeyFingerprint']
 
 
-def find_key_pair(module, ec2_client, name):
+def find_key_pair(ec2_client, name):
 
     try:
         key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])['KeyPairs'][0]
     except is_boto3_error_code('InvalidKeyPair.NotFound'):
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:  # pylint: disable=duplicate-except
-        module.fail_json_aws(err, msg="error finding keypair")
+        raise Ec2KeyFailure(err, "error finding keypair")
     except IndexError:
         key = None
     return key
@@ -255,43 +286,26 @@ def create_key_pair(module, ec2_client, name, key_material, force, key_type):
         module.exit_json(changed=True, key=key_data, msg="key pair created")
 
 
-def _create_key_pair(module, ec2_client, name, tag_spec, key_type):
-    params = dict(KeyName=name)
-    if tag_spec:
-        params['TagSpecifications'] = tag_spec
-    if key_type:
-        params['KeyType'] = key_type
+def _delete_key_pair(ec2_client, key_name):
     try:
-        key = ec2_client.create_key_pair(aws_retry=True, **params)
+        ec2_client.delete_key_pair(aws_retry=True, KeyName=key_name)
     except botocore.exceptions.ClientError as err:
-        module.fail_json_aws(err, msg="error creating key")
-    return key
-
-
-def _import_key_pair(module, ec2_client, name, key_material, tag_spec=None):
-    params = dict(KeyName=name, PublicKeyMaterial=to_bytes(key_material))
-    if tag_spec:
-        params['TagSpecifications'] = tag_spec
-    try:
-        key = ec2_client.import_key_pair(aws_retry=True, **params)
-    except botocore.exceptions.ClientError as err:
-        module.fail_json_aws(err, msg="error importing key")
-    return key
+        raise Ec2KeyFailure(err, "error deleting key")
 
 
 def delete_key_pair(module, ec2_client, name, finish_task=True):
 
     key = find_key_pair(module, ec2_client, name)
-    if key:
-        if not module.check_mode:
-            try:
-                ec2_client.delete_key_pair(aws_retry=True, KeyName=name)
-            except botocore.exceptions.ClientError as err:
-                module.fail_json_aws(err, msg="error deleting key")
+
+    if key and module.check_mode:
+        module.exit_json(changed=True, key=None, msg="key deleted")
+    elif not key:
+        module.exit_json(key=None, msg="key did not exist")
+    else:
+        _delete_key_pair(ec2_client, module, name)
         if not finish_task:
             return
         module.exit_json(changed=True, key=None, msg="key deleted")
-    module.exit_json(key=None, msg="key did not exist")
 
 
 def main():
