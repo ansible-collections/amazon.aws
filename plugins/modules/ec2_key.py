@@ -226,9 +226,9 @@ def get_key_fingerprint(module, ec2_client, key_material):
     name_in_use = True
     while name_in_use:
         random_name = "ansible-" + str(uuid.uuid4())
-        name_in_use = find_key_pair(module, ec2_client, random_name)
+        name_in_use = find_key_pair(ec2_client, random_name)
 
-    temp_key = _import_key_pair(module, ec2_client, random_name, key_material)
+    temp_key = _import_key_pair(ec2_client, random_name, key_material)
     delete_key_pair(module, ec2_client, random_name, finish_task=False)
     return temp_key['KeyFingerprint']
 
@@ -250,7 +250,7 @@ def create_key_pair(module, ec2_client, name, key_material, force, key_type):
 
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
-    key = find_key_pair(module, ec2_client, name)
+    key = find_key_pair(ec2_client, name)
     tag_spec = boto3_tag_specifications(tags, ['key-pair'])
     changed = False
     if key:
@@ -260,18 +260,18 @@ def create_key_pair(module, ec2_client, name, key_material, force, key_type):
                 changed = True
                 if not module.check_mode:
                     delete_key_pair(module, ec2_client, name, finish_task=False)
-                    key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
+                    key = _import_key_pair(ec2_client, name, key_material, tag_spec)
                 key_data = extract_key_data(key)
                 module.exit_json(changed=True, key=key_data, msg="key pair updated")
         if key_type and key_type != key['KeyType']:
             changed = True
             if not module.check_mode:
                 delete_key_pair(module, ec2_client, name, finish_task=False)
-                key = _create_key_pair(module, ec2_client, name, tag_spec, key_type)
+                key = _create_key_pair(ec2_client, name, tag_spec, key_type)
             key_data = extract_key_data(key, key_type)
             module.exit_json(changed=True, key=key_data, msg="key pair updated")
         changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
-        key = find_key_pair(module, ec2_client, name)
+        key = find_key_pair(ec2_client, name)
         key_data = extract_key_data(key)
         module.exit_json(changed=changed, key=key_data, msg="key pair already exists")
     else:
@@ -279,9 +279,9 @@ def create_key_pair(module, ec2_client, name, key_material, force, key_type):
         key_data = None
         if not module.check_mode:
             if key_material:
-                key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
+                key = _import_key_pair(ec2_client, name, key_material, tag_spec)
             else:
-                key = _create_key_pair(module, ec2_client, name, tag_spec, key_type)
+                key = _create_key_pair(ec2_client, name, tag_spec, key_type)
             key_data = extract_key_data(key, key_type)
         module.exit_json(changed=True, key=key_data, msg="key pair created")
 
@@ -295,14 +295,14 @@ def _delete_key_pair(ec2_client, key_name):
 
 def delete_key_pair(module, ec2_client, name, finish_task=True):
 
-    key = find_key_pair(module, ec2_client, name)
+    key = find_key_pair(ec2_client, name)
 
     if key and module.check_mode:
         module.exit_json(changed=True, key=None, msg="key deleted")
     elif not key:
         module.exit_json(key=None, msg="key did not exist")
     else:
-        _delete_key_pair(ec2_client, module, name)
+        _delete_key_pair(ec2_client, name)
         if not finish_task:
             return
         module.exit_json(changed=True, key=None, msg="key deleted")
