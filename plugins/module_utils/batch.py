@@ -29,9 +29,6 @@
 This module adds shared support for Batch modules.
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 

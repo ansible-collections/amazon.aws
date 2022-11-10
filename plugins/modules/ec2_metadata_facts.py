@@ -3,10 +3,6 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
 DOCUMENTATION = '''
 ---
 module: ec2_metadata_facts
@@ -450,7 +446,7 @@ from ansible.module_utils.six.moves.urllib.parse import quote
 socket.setdefaulttimeout(5)
 
 
-class Ec2Metadata(object):
+class Ec2Metadata:
     ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
     ec2_metadata_uri = 'http://169.254.169.254/latest/meta-data/'
     ec2_metadata_instance_tags_uri = 'http://169.254.169.254/latest/meta-data/tags/instance'

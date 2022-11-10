@@ -4,18 +4,14 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import pytest
+from unittest.mock import MagicMock
 
 try:
     import botocore
 except ImportError:
     # Handled by HAS_BOTO3
     pass
-
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 
 import ansible_collections.amazon.aws.plugins.module_utils.iam as utils_iam
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
@@ -24,7 +20,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_iam.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestIamUtils():
+class TestIamUtils:
 
     def _make_denied_exception(self, partition):
         return botocore.exceptions.ClientError(

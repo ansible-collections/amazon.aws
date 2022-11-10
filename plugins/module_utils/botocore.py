@@ -31,9 +31,6 @@ A set of helper functions designed to help with initializing boto3/botocore
 connections.
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import json
 import os
 import traceback

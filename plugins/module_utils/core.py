@@ -50,9 +50,6 @@ The call will be retried the specified number of times, so the calling functions
 don't need to be wrapped in the backoff decorator.
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
 from .arn import parse_aws_arn  # pylint: disable=unused-import
 

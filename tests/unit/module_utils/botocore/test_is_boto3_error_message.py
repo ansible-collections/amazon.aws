@@ -4,9 +4,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import pytest
 
 try:
@@ -22,7 +19,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_is_boto3_error_message.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestIsBoto3ErrorMessaged():
+class TestIsBoto3ErrorMessaged:
 
     def _make_denied_exception(self):
         return botocore.exceptions.ClientError(

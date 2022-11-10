@@ -50,14 +50,10 @@ The call will be retried the specified number of times, so the calling functions
 don't need to be wrapped in the backoff decorator.
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import logging
 import os
 import re
 import traceback
-
 
 try:
     from cStringIO import StringIO
@@ -85,7 +81,7 @@ from .retries import RetryingBotoClientWrapper
 # for Inventory and Lookup modules which we should refactor
 
 
-class AnsibleAWSModule(object):
+class AnsibleAWSModule:
     """An ansible module class for AWS modules
 
     AnsibleAWSModule provides an a class for building modules which

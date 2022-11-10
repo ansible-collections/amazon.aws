@@ -3,12 +3,10 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from unittest.mock import patch
 
 # Magic...  Incorrectly identified by pylint as unused
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
-from ansible_collections.amazon.aws.tests.unit.compat.mock import patch
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
 from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase
@@ -40,7 +38,7 @@ test_normalize_config = {'domain-name': ['us-west-2.compute.internal'],
                          }
 
 
-class FakeModule(object):
+class FakeModule:
     def __init__(self, **kwargs):
         self.params = kwargs
 

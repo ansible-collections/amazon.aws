@@ -3,9 +3,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import random
 from datetime import datetime
 import pytest
@@ -13,7 +10,7 @@ import pytest
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
-class TestCloudRetry():
+class TestCloudRetry:
 
     error_codes = [400, 500, 600]
     custom_error_codes = [100, 200, 300]

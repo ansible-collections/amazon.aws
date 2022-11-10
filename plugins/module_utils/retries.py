@@ -26,9 +26,6 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 from functools import wraps
 
 try:
@@ -80,7 +77,7 @@ class AWSRetry(CloudRetry):
         return response_code in retry_on
 
 
-class RetryingBotoClientWrapper(object):
+class RetryingBotoClientWrapper:
     __never_wait = (
         'get_paginator', 'can_paginate',
         'get_waiter', 'generate_presigned_url',

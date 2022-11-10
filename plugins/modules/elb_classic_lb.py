@@ -2,9 +2,6 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
 
 DOCUMENTATION = '''
 ---
@@ -692,7 +689,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_secu
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
-class ElbManager(object):
+class ElbManager:
     """Handles ELB creation and destruction"""
 
     def __init__(self, module):

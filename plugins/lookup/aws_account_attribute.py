@@ -1,7 +1,5 @@
 # (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
 
 DOCUMENTATION = r"""
 name: aws_account_attribute
@@ -67,7 +65,7 @@ def _describe_account_attributes(client, **params):
 
 class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
-        super(LookupModule, self).run(terms, variables, **kwargs)
+        super().run(terms, variables, **kwargs)
 
         client = self.client('ec2', AWSRetry.jittered_backoff())
 
