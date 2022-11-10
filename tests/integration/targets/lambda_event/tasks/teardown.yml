@@ -5,7 +5,7 @@
   amazon.aws.lambda_event:
     state: absent
     event_source: stream
-    function_name: '{{ lambda_function_name }}'
+    function_arn: '{{ lambda_function_arn }}'
     source_params:
       source_arn: "{{ dynamo_stream_arn }}"
       enabled: True
