@@ -34,7 +34,7 @@
         - tags_keys_list | length == 4
         - '"Service" in tags_keys_list'
         - '"Owner" in tags_keys_list'
-        - '"LifeCycle" in tags_keys_list'
+        - '"Lifecycle" in tags_keys_list'
         - '"Name" in tags_keys_list'
 
     # Create Health Check - check Idempotenty =================================================================
@@ -71,7 +71,7 @@
         - tags_keys_list | length == 4
         - '"Service" in tags_keys_list'
         - '"Owner" in tags_keys_list'
-        - '"LifeCycle" in tags_keys_list'
+        - '"Lifecycle" in tags_keys_list'
         - '"Name" in tags_keys_list'
 
   # Cleanup starts here =================================================================
