@@ -49,6 +49,8 @@ PORTS_EXPANSION = [
     (["41", "1"], [(41, 41), (1, 1)]),
     (["70", "39-0"], [(70, 70), (0, 39)]),
     (["57-6", "31"], [(6, 57), (31, 31)]),
+    # https://github.com/ansible-collections/amazon.aws/pull/1241
+    (["-1"], [(-1, -1)]),
 ]
 SOURCE_EXPANSION = [
     (
