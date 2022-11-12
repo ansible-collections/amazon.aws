@@ -13,6 +13,7 @@
 fqdn: '{{ tiny_prefix }}.route53-health.ansible.test'
 fqdn_1: '{{ tiny_prefix }}-1.route53-health.ansible.test'
 port: 8080
+updated_port: 8181
 type: 'TCP'
 request_interval: 30
 

@@ -442,6 +442,7 @@ def update_health_check(existing_check):
 
     changes = dict()
     existing_config = existing_check.get('HealthCheckConfig')
+    check_id = existing_check.get('Id')
 
     resource_path = module.params.get('resource_path', None)
     if resource_path and resource_path != existing_config.get('ResourcePath'):
@@ -475,11 +476,10 @@ def update_health_check(existing_check):
 
     # No changes...
     if not changes:
-        return False, None
+        return False, None, check_id
     if module.check_mode:
-        return True, 'update'
+        return True, 'update', check_id
 
-    check_id = existing_check.get('Id')
     # This makes sure we're starting from the version we think we are...
     version_id = existing_check.get('HealthCheckVersion', 1)
     try:
@@ -491,7 +491,7 @@ def update_health_check(existing_check):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg='Failed to update health check.', id=check_id)
 
-    return True, 'update'
+    return True, 'update', check_id
 
 
 def describe_health_check(id):
@@ -634,7 +634,7 @@ def main():
                 existing_checks_with_name = get_existing_checks_with_name()
                 # update the health_check if another health check with same name exists
                 if health_check_name in existing_checks_with_name:
-                    changed, action = update_health_check(existing_checks_with_name[health_check_name])
+                    changed, action, check_id = update_health_check(existing_checks_with_name[health_check_name])
                 else:
                     # create a new health_check if another health check with same name does not exists
                     changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
@@ -645,10 +645,7 @@ def main():
                         tags['Name'] = health_check_name
 
             else:
-                if update_delete_by_id:
-                    changed, action = update_health_check(existing_check)
-                else:
-                    changed, action = update_health_check(existing_check)
+                changed, action, check_id = update_health_check(existing_check)
 
         if check_id:
             changed |= manage_tags(module, client, 'healthcheck', check_id,
