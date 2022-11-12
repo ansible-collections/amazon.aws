@@ -273,14 +273,14 @@ def get_image_attribute(ec2_client, image):
 
 def list_ec2_images(ec2_client, module, request_args):
 
-    images = get_images(ec2_client, module, request_args)["Images"]
+    images = get_images(ec2_client, request_args)["Images"]
     images = [camel_dict_to_snake_dict(image) for image in images]
 
     for image in images:
         try:
             image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = get_image_attribute(ec2_client, image)['LaunchPermissions']
+                launch_permissions = get_image_attribute(ec2_client, image).get('LaunchPermissions', [])
                 image['launch_permissions'] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code('AuthFailure'):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures

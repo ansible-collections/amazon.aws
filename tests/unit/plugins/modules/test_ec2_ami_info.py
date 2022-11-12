@@ -13,6 +13,11 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_ami_info
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_ami_info"
 
 
+@pytest.fixture
+def ec2_client():
+    return MagicMock()
+
+
 @pytest.mark.parametrize("executable_users,filters,image_ids,owners,expected", [
     ([], {}, [], [], {}),
     ([], {}, ['ami-1234567890'], [], {'ImageIds': ['ami-1234567890']}),
@@ -20,15 +25,14 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_ami_info"
     ([], {'owner-alias': 'test_ami_owner'}, [], ['1234567890'], {'Filters': [{'Name': 'owner-alias',
      'Values': ['test_ami_owner']}, {'Name': 'owner-id', 'Values': ['1234567890']}]}),
     ([], {'is-public': True}, [], [], {'Filters': [{'Name': 'is-public', 'Values': ['true']}]}),
+    (['self'], {}, [], [], {'ExecutableUsers': ['self']}),
     ([], {}, [], ['self'], {'Owners': ['self']})])
 def test_build_request_args(executable_users, filters, image_ids, owners, expected):
     assert ec2_ami_info.build_request_args(
         executable_users, filters, image_ids, owners) == expected
 
 
-def test_get_images():
-    ec2_client = MagicMock()
-    module = MagicMock()
+def test_get_images(ec2_client):
 
     ec2_client.describe_images.return_value = {
         "Images": [
@@ -58,11 +62,11 @@ def test_get_images():
 
     request_args = {'ImageIds': ['ami-1234567890']}
 
-    get_images_result = ec2_ami_info.get_images(ec2_client, module, request_args)
+    get_images_result = ec2_ami_info.get_images(ec2_client, request_args)
 
     ec2_client.describe_images.call_count == 2
     ec2_client.describe_images.assert_called_with(aws_retry=True, **request_args)
-    assert len(get_images_result['Images']) == 1
+    assert get_images_result == ec2_client.describe_images.return_value
 
 
 def test_get_image_attribute():
@@ -112,7 +116,6 @@ def test_get_image_attribute():
 @patch(module_name + '.get_image_attribute')
 @patch(module_name + '.get_images')
 def test_list_ec2_images(m_get_images, m_get_image_attribute):
-    ec2_client = MagicMock()
     module = MagicMock()
 
     m_get_images.return_value = {
@@ -200,7 +203,7 @@ def test_list_ec2_images(m_get_images, m_get_image_attribute):
     list_ec2_images_result = ec2_ami_info.list_ec2_images(ec2_client, module, request_args)
 
     assert m_get_images.call_count == 1
-    m_get_images.assert_called_with(ec2_client, module, request_args)
+    m_get_images.assert_called_with(ec2_client, request_args)
 
     assert m_get_image_attribute.call_count == 2
     assert m_get_image_attribute.has_calls(
@@ -234,18 +237,15 @@ def a_boto_exception():
     )
 
 
-def test_api_failure_get_images():
-    ec2_client = MagicMock()
-    module = MagicMock()
+def test_api_failure_get_images(ec2_client):
     request_args = {}
     ec2_client.describe_images.side_effect = a_boto_exception()
 
     with pytest.raises(ec2_ami_info.AmiInfoFailure):
-        ec2_ami_info.get_images(ec2_client, module, request_args)
+        ec2_ami_info.get_images(ec2_client, request_args)
 
 
-def test_api_failure_get_image_attribute():
-    ec2_client = MagicMock()
+def test_api_failure_get_image_attribute(ec2_client):
     image = {'image_id': 'ami-1234567890'}
     ec2_client.describe_image_attribute.side_effect = a_boto_exception()
 
