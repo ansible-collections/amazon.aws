@@ -322,6 +322,9 @@ options:
     description:
       - The placement group that needs to be assigned to the instance.
     type: str
+  partition_number:
+    description:
+      - The number of the partition within the placement group - only valid with partition typle placement groups.
   metadata_options:
     description:
       - Modify the metadata options for the instance.
@@ -1259,6 +1262,8 @@ def build_top_level_options(params):
             spec['Placement']['GroupName'] = str(params.get('placement_group'))
         else:
             spec.setdefault('Placement', {'GroupName': str(params.get('placement_group'))})
+        if params.get('partition_number'):
+            spec['Placement']['PartitionNumber'] = int(params.get('partition_number'))
     if params.get('ebs_optimized') is not None:
         spec['EbsOptimized'] = params.get('ebs_optimized')
     if params.get('instance_initiated_shutdown_behavior'):
@@ -1468,7 +1473,7 @@ def diff_instance_and_params(instance, params, skip=None):
                 InstanceId=instance['InstanceId'],
                 SourceDestCheck={'Value': check},
             ))
-
+    
     return changes_to_apply
 
 
@@ -1494,6 +1499,33 @@ def change_network_attachments(instance, params):
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Could not attach interface {0} to instance {1}".format(eni_id, instance['InstanceId']))
         return bool(len(to_attach))
+    return False
+
+
+def change_placement(instance, params):
+    current_placement = instance['Placement']
+    desired_placement = dict()
+    if params.get('placement_group'):
+        desired_placement.update({'GroupName':params.get('placement_group')})
+    else:
+        desired_placement.update({'GroupName':current_placement['GroupName']})
+
+    if params.get('partition_number'):
+        desired_placement.update({'PartitionNumber':params.get('partition_number')})
+         
+    if (( desired_placement['GroupName'] != current_placement['GroupName']) or
+        ( desired_placement['PartitionNumber'] and ( desired_placement['PartitionNumber'] != current_placement['PartitionNumber']))):
+
+        try:
+            client.modify_instance_placement(
+                aws_retry=True,
+                InstanceId=instance['InstanceId'],
+                **desired_placement
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.fail_json_aws(e, msg="Could not change placement instance {0} to {1} - {2}".format(instance['InstanceId'],
+            desired_placement_group,desired_partition_number))
+        return True
     return False
 
 
@@ -1796,6 +1828,7 @@ def handle_existing(existing_matches, state, filters):
         changed |= bool(changes)
         changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('iam_instance_profile'))
         changed |= change_network_attachments(existing_matches[0], module.params)
+        changed |= change_placement(existing_matches[0], module.params)
 
     altered = find_instances(ids=[i['InstanceId'] for i in existing_matches])
     alter_config_result = dict(
@@ -2016,6 +2049,7 @@ def main():
         )),
         tenancy=dict(type='str', choices=['dedicated', 'default']),
         placement_group=dict(type='str'),
+        partition_number=dict(type='int', choices=[1,2,3,4,5,6,7]),
         instance_initiated_shutdown_behavior=dict(type='str', choices=['stop', 'terminate']),
         termination_protection=dict(type='bool'),
         hibernation_options=dict(type='bool', default=False),
