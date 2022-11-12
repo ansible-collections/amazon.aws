@@ -1514,7 +1514,7 @@ def change_placement(instance, params):
         desired_placement.update({'PartitionNumber':params.get('partition_number')})
          
     if (( desired_placement['GroupName'] != current_placement['GroupName']) or
-        ( desired_placement['PartitionNumber'] and ( desired_placement['PartitionNumber'] != current_placement['PartitionNumber']))):
+        ( 'PartitionNumber' in desired_placement and ( desired_placement['PartitionNumber'] != current_placement['PartitionNumber']))):
 
         try:
             client.modify_instance_placement(
@@ -1523,7 +1523,7 @@ def change_placement(instance, params):
                 **desired_placement
             )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Could not change placement instance {0} to {1} - {2}".format(instance['InstanceId'],
+            module.fail_json_aws(e, msg="Could not change placement instance {0} to {1}".format(instance['InstanceId'],
             desired_placement_group,desired_partition_number))
         return True
     return False
