@@ -402,8 +402,17 @@ options:
         choices:
           - standard
           - gp2
+          - gp3
           - io1
         type: str
+    storage_throughput:
+      description:
+        - The storage throughput when the I(storage_type) is gp3.
+        - When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.
+        - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
+        - Requires boto3 >= 1.26.0.
+      type: int
+      version_added: 5.1.0
     tde_credential_arn:
         description:
           - The ARN from the key store with which to associate the instance for Transparent Data Encryption. This is
@@ -1000,6 +1009,32 @@ def get_options_with_changing_values(client, module, parameters):
             parameters['AllocatedStorage'] = new_allocated_storage
             parameters['Iops'] = new_iops
 
+    if instance.get('StorageType') == 'gp3':
+        current_iops = instance.get('PendingModifiedValues', {}).get('Iops', instance['Iops'])
+        current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
+        current_storage_throughput = instance.get('PendingModifiedValues', {}).get('StorageThroughput', instance['StorageThroughput'])
+        # keep the defaults, if not set via parameters
+        new_iops = module.params.get('iops') or current_iops
+        new_allocated_storage = module.params.get('allocated_storage')
+        # keep the defaults, if not set via parameters
+        new_storage_throughput = module.params.get('storage_throughput') or current_storage_throughput
+
+        if current_allocated_storage != new_allocated_storage:
+            parameters['AllocatedStorage'] = new_allocated_storage
+
+        if new_allocated_storage >= 400:
+            if new_iops < 12000:
+                module.fail_json(msg='IOPS must be at least 12000 when the allocated storage is larger than or equal to 400 GB.')
+
+            if new_storage_throughput < 500:
+                module.fail_json(msg='Storage Throughput must be at least 500 when the allocated storage is larger than or equal to 400 GB.')
+
+            if current_iops != new_iops or current_storage_throughput != new_storage_throughput:
+                parameters['Iops'] = new_iops
+                parameters['StorageThroughput'] = new_storage_throughput
+                # must be always specified when changing iops
+                parameters['AllocatedStorage'] = new_allocated_storage
+
     if parameters.get('NewDBInstanceIdentifier') and instance.get('PendingModifiedValues', {}).get('DBInstanceIdentifier'):
         if parameters['NewDBInstanceIdentifier'] == instance['PendingModifiedValues']['DBInstanceIdentifier'] and not apply_immediately:
             parameters.pop('NewDBInstanceIdentifier')
@@ -1311,7 +1346,8 @@ def main():
         source_engine_version=dict(),
         source_region=dict(),
         storage_encrypted=dict(type='bool'),
-        storage_type=dict(choices=['standard', 'gp2', 'io1']),
+        storage_type=dict(choices=['standard', 'gp2', 'gp3', 'io1']),
+        storage_throughput=dict(type='int'),
         tags=dict(type='dict', aliases=['resource_tags']),
         tde_credential_arn=dict(aliases=['transparent_data_encryption_arn']),
         tde_credential_password=dict(no_log=True, aliases=['transparent_data_encryption_password']),
