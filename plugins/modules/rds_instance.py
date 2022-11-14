@@ -1015,7 +1015,8 @@ def get_options_with_changing_values(client, module, parameters):
             current_storage_throughput = instance.get('PendingModifiedValues', {}).get('StorageThroughput', instance['StorageThroughput'])
             new_storage_throughput = module.params.get('storage_throughput') or current_storage_throughput
             new_allocated_storage = module.params.get('allocated_storage')
-            parameters['StorageThroughput'] = new_storage_throughput
+            if new_storage_throughput != current_storage_throughput:
+                parameters['StorageThroughput'] = new_storage_throughput
         else:
             GP3_THROUGHPUT = False
             module.warn('gp3 volumes require boto3 >= 1.26.0. storage_throughput will be ignored.')
