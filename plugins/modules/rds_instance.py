@@ -1014,7 +1014,6 @@ def get_options_with_changing_values(client, module, parameters):
             GP3_THROUGHPUT = True
             current_storage_throughput = instance.get('PendingModifiedValues', {}).get('StorageThroughput', instance['StorageThroughput'])
             new_storage_throughput = module.params.get('storage_throughput') or current_storage_throughput
-            new_allocated_storage = module.params.get('allocated_storage')
             if new_storage_throughput != current_storage_throughput:
                 parameters['StorageThroughput'] = new_storage_throughput
         else:
@@ -1025,6 +1024,7 @@ def get_options_with_changing_values(client, module, parameters):
         # when you just change from gp2 to gp3, you may not add the iops parameter
         new_iops = module.params.get('iops') or current_iops
 
+        new_allocated_storage = module.params.get('allocated_storage')
         current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
 
         if current_allocated_storage != new_allocated_storage:
