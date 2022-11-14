@@ -96,6 +96,7 @@
   - assert:
       that:
       - result.changed
+      - 'result.storage_type == "gp2"'
 
   - name: Modify the storage type without immediate application
     rds_instance:
@@ -109,6 +110,7 @@
       that:
       - result.changed
       - 'result.pending_modified_values.storage_type == "gp3"'
+      - 'result.storage_type == "gp2"'
 
   - name: Modify the storage type without immediate application - idempotent
     rds_instance:
@@ -123,7 +125,7 @@
       that:
       - not result.changed
       - 'result.pending_modified_values.storage_type == "gp3"'
-
+      - 'result.storage_type == "gp2"'
 
   - name: Modify the storage type back to gp2 without immediate application
     rds_instance:
@@ -137,6 +139,7 @@
       that:
       - result.changed
       - 'result.pending_modified_values == {}'
+      - 'result.storage_type == "gp2"'
 
   - name: Modify the instance name without immediate application - check_mode
     rds_instance:
