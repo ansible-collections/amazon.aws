@@ -1014,6 +1014,8 @@ def get_options_with_changing_values(client, module, parameters):
             GP3_THROUGHPUT = True
             current_storage_throughput = instance.get('PendingModifiedValues', {}).get('StorageThroughput', instance['StorageThroughput'])
             new_storage_throughput = module.params.get('storage_throughput') or current_storage_throughput
+            new_allocated_storage = module.params.get('allocated_storage')
+            parameters['StorageThroughput'] = new_storage_throughput
         else:
             GP3_THROUGHPUT = False
             module.warn('gp3 volumes require boto3 >= 1.26.0. storage_throughput will be ignored.')
@@ -1023,7 +1025,6 @@ def get_options_with_changing_values(client, module, parameters):
         new_iops = module.params.get('iops') or current_iops
 
         current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
-        new_allocated_storage = module.params.get('allocated_storage')
 
         if current_allocated_storage != new_allocated_storage:
             parameters['AllocatedStorage'] = new_allocated_storage
@@ -1035,12 +1036,10 @@ def get_options_with_changing_values(client, module, parameters):
             if new_storage_throughput < 500 and GP3_THROUGHPUT:
                 module.fail_json(msg='Storage Throughput must be at least 500 when the allocated storage is larger than or equal to 400 GB.')
 
-            if current_iops != new_iops or current_storage_throughput != new_storage_throughput:
+            if current_iops != new_iops:
                 parameters['Iops'] = new_iops
                 # must be always specified when changing iops
                 parameters['AllocatedStorage'] = new_allocated_storage
-                if GP3_THROUGHPUT:
-                    parameters['StorageThroughput'] = new_storage_throughput
 
     if parameters.get('NewDBInstanceIdentifier') and instance.get('PendingModifiedValues', {}).get('DBInstanceIdentifier'):
         if parameters['NewDBInstanceIdentifier'] == instance['PendingModifiedValues']['DBInstanceIdentifier'] and not apply_immediately:
