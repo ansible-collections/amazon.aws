@@ -6,5 +6,9 @@ aws_security_token: '{{ security_token }}'
 {% endif %}
 regions:
   - '{{ aws_region }}'
+{% if inventory_statuses | default(false) %}
+statuses:
+  - stopped
+{% endif %}
 filters:
-  db-instance-id: "{{ resource_prefix }}-mariadb"
+  db-instance-id: "{{ instance_id }}"

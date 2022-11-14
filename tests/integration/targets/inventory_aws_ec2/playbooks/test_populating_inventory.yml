@@ -4,75 +4,9 @@
   gather_facts: no
   environment: "{{ ansible_test.environment }}"
   tasks:
-
-    - module_defaults:
-        group/aws:
-          aws_access_key: '{{ aws_access_key }}'
-          aws_secret_key: '{{ aws_secret_key }}'
-          security_token: '{{ security_token | default(omit) }}'
-          region: '{{ aws_region }}'
-
-      block:
-
-        # Create VPC, subnet, security group, and find image_id to create instance
-
-        - include_tasks: setup.yml
-
-        - name: assert group was populated with inventory but is empty
-          assert:
-            that:
-              - "'aws_ec2' in groups"
-              - "not groups.aws_ec2"
-
-        # Create new host, refresh inventory, remove host, refresh inventory
-
-        - name: create a new host
-          ec2_instance:
-            image_id: '{{ image_id }}'
-            name: '{{ resource_prefix }}'
-            instance_type: t2.micro
-            security_groups: '{{ sg_id }}'
-            vpc_subnet_id: '{{ subnet_id }}'
-            wait: no
-          register: setup_instance
-
-        - meta: refresh_inventory
-
-        - name: assert group was populated with inventory and is no longer empty
-          assert:
-            that:
-              - "'aws_ec2' in groups"
-              - "groups.aws_ec2 | length == 1"
-              - "groups.aws_ec2.0 == '{{ resource_prefix }}'"
-
-        - name: remove setup ec2 instance
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}'
-            security_groups: '{{ sg_id }}'
-            vpc_subnet_id: '{{ subnet_id }}'
-
-        - meta: refresh_inventory
-
-        - name: assert group was populated with inventory but is empty
-          assert:
-            that:
-              - "'aws_ec2' in groups"
-              - "not groups.aws_ec2"
-
-      always:
-
-        - name: remove setup ec2 instance
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}'
-            security_groups: '{{ sg_id }}'
-            vpc_subnet_id: '{{ subnet_id }}'
-          ignore_errors: yes
-          when: setup_instance is defined
-
-        - include_tasks: tear_down.yml
+    - name: assert group was populated with inventory and is no longer empty
+      assert:
+        that:
+          - "'aws_ec2' in groups"
+          - "groups.aws_ec2 | length == 1"
+          - "groups.aws_ec2.0 == '{{ resource_prefix }}'"

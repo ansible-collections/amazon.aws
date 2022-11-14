@@ -7,7 +7,7 @@
       assert:
         that:
           - "'aws_ec2' in groups"
-          - "groups.aws_ec2 | length == 1"
+          - "groups.aws_ec2 | length > 0"
 
     - meta: refresh_inventory
 

@@ -2,30 +2,54 @@
     vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
     subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
 
-- name: remove setup security group
-  ec2_security_group:
-    name: '{{ resource_prefix }}_setup'
-    description: 'created by Ansible integration tests'
-    state: absent
-    vpc_id: '{{ vpc_id }}'
-  ignore_errors: yes
+- name: describe vpc
+  ec2_vpc_net_info:
+    filters:
+      tag:Name: '{{ resource_prefix }}_setup'
+  register: vpc_info
 
-- name: remove setup subnet
-  ec2_vpc_subnet:
-    az: '{{ aws_region }}a'
-    tags: '{{ resource_prefix }}_setup'
-    vpc_id: '{{ vpc_id }}'
-    cidr: '{{ subnet_cidr }}'
-    state: absent
-    resource_tags:
-      Name: '{{ resource_prefix }}_setup'
-  ignore_errors: yes
+- block:
+    - set_fact:
+        vpc_id: "{{ vpc_info.vpcs.0.vpc_id }}"
 
-- name: remove setup VPC
-  ec2_vpc_net:
-    cidr_block: '{{ vpc_cidr }}'
-    state: absent
-    name: '{{ resource_prefix }}_setup'
-    resource_tags:
-      Name: '{{ resource_prefix }}_setup'
-  ignore_errors: yes
+    - name: list existing instances
+      ec2_instance_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: existing
+
+    - name: remove ec2 instances
+      ec2_instance:
+        instance_ids: "{{ existing.instances | map(attribute='instance_id') | list }}"
+        wait: yes
+        state: absent
+
+    - name: remove setup security group
+      ec2_security_group:
+        name: '{{ resource_prefix }}_setup'
+        description: 'created by Ansible integration tests'
+        state: absent
+        vpc_id: '{{ vpc_id }}'
+      ignore_errors: yes
+
+    - name: remove setup subnet
+      ec2_vpc_subnet:
+        az: '{{ aws_region }}a'
+        tags: '{{ resource_prefix }}_setup'
+        vpc_id: '{{ vpc_id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: absent
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      ignore_errors: yes
+
+    - name: remove setup VPC
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: absent
+        name: '{{ resource_prefix }}_setup'
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      ignore_errors: yes
+
+  when: vpc_info.vpcs | length > 0

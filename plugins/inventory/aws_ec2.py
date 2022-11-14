@@ -262,25 +262,20 @@ hostvars_suffix: '_ec2'
 import re
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
-from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import missing_required_lib
-from ansible.plugins.inventory import BaseInventoryPlugin
-from ansible.plugins.inventory import Cacheable
-from ansible.plugins.inventory import Constructable
-from ansible.template import Templar
 
+from ansible.template import Templar
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
 
 # The mappings give an array of keys to get from the filter name to the value
@@ -376,173 +371,113 @@ instance_data_filter_to_boto_attr = {
 }
 
 
-class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
+def _get_tag_hostname(preference, instance):
+    tag_hostnames = preference.split('tag:', 1)[1]
+    if ',' in tag_hostnames:
+        tag_hostnames = tag_hostnames.split(',')
+    else:
+        tag_hostnames = [tag_hostnames]
+
+    tags = boto3_tag_list_to_ansible_dict(instance.get('Tags', []))
+    tag_values = []
+    for v in tag_hostnames:
+        if '=' in v:
+            tag_name, tag_value = v.split('=')
+            if tags.get(tag_name) == tag_value:
+                tag_values.append(to_text(tag_name) + "_" + to_text(tag_value))
+        else:
+            tag_value = tags.get(v)
+            if tag_value:
+                tag_values.append(to_text(tag_value))
+    return tag_values
+
+
+def _prepare_host_vars(original_host_vars, hostvars_prefix=None, hostvars_suffix=None,
+                       use_contrib_script_compatible_ec2_tag_keys=False):
+    host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=['Tags'])
+    host_vars['tags'] = boto3_tag_list_to_ansible_dict(original_host_vars.get('Tags', []))
+
+    # Allow easier grouping by region
+    host_vars['placement']['region'] = host_vars['placement']['availability_zone'][:-1]
+
+    if use_contrib_script_compatible_ec2_tag_keys:
+        for k, v in host_vars['tags'].items():
+            host_vars["ec2_tag_%s" % k] = v
+
+    if hostvars_prefix or hostvars_suffix:
+        for hostvar, hostval in host_vars.copy().items():
+            del host_vars[hostvar]
+            if hostvars_prefix:
+                hostvar = hostvars_prefix + hostvar
+            if hostvars_suffix:
+                hostvar = hostvar + hostvars_suffix
+            host_vars[hostvar] = hostval
+
+    return host_vars
+
+
+def _compile_values(obj, attr):
+    '''
+        :param obj: A list or dict of instance attributes
+        :param attr: A key
+        :return The value(s) found via the attr
+    '''
+    if obj is None:
+        return
+
+    temp_obj = []
+
+    if isinstance(obj, list) or isinstance(obj, tuple):
+        for each in obj:
+            value = _compile_values(each, attr)
+            if value:
+                temp_obj.append(value)
+    else:
+        temp_obj = obj.get(attr)
+
+    has_indexes = any([isinstance(temp_obj, list), isinstance(temp_obj, tuple)])
+    if has_indexes and len(temp_obj) == 1:
+        return temp_obj[0]
+
+    return temp_obj
+
+
+def _get_boto_attr_chain(filter_name, instance):
+    '''
+        :param filter_name: The filter
+        :param instance: instance dict returned by boto3 ec2 describe_instances()
+    '''
+    allowed_filters = sorted(list(instance_data_filter_to_boto_attr.keys()) + list(instance_meta_filter_to_boto_attr.keys()))
+
+    # If filter not in allow_filters -> use it as a literal string
+    if filter_name not in allowed_filters:
+        return filter_name
+
+    if filter_name in instance_data_filter_to_boto_attr:
+        boto_attr_list = instance_data_filter_to_boto_attr[filter_name]
+    else:
+        boto_attr_list = instance_meta_filter_to_boto_attr[filter_name]
+
+    instance_value = instance
+    for attribute in boto_attr_list:
+        instance_value = _compile_values(instance_value, attribute)
+    return instance_value
+
+
+def _describe_ec2_instances(connection, filters):
+    paginator = connection.get_paginator('describe_instances')
+    return paginator.paginate(Filters=filters).build_full_result()
+
+
+class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_ec2'
 
     def __init__(self):
+
         super(InventoryModule, self).__init__()
 
         self.group_prefix = 'aws_ec2_'
-
-        # credentials
-        self.boto_profile = None
-        self.aws_secret_access_key = None
-        self.aws_access_key_id = None
-        self.aws_security_token = None
-        self.iam_role_arn = None
-
-    def _compile_values(self, obj, attr):
-        '''
-            :param obj: A list or dict of instance attributes
-            :param attr: A key
-            :return The value(s) found via the attr
-        '''
-        if obj is None:
-            return
-
-        temp_obj = []
-
-        if isinstance(obj, list) or isinstance(obj, tuple):
-            for each in obj:
-                value = self._compile_values(each, attr)
-                if value:
-                    temp_obj.append(value)
-        else:
-            temp_obj = obj.get(attr)
-
-        has_indexes = any([isinstance(temp_obj, list), isinstance(temp_obj, tuple)])
-        if has_indexes and len(temp_obj) == 1:
-            return temp_obj[0]
-
-        return temp_obj
-
-    def _get_boto_attr_chain(self, filter_name, instance):
-        '''
-            :param filter_name: The filter
-            :param instance: instance dict returned by boto3 ec2 describe_instances()
-        '''
-        allowed_filters = sorted(list(instance_data_filter_to_boto_attr.keys()) + list(instance_meta_filter_to_boto_attr.keys()))
-
-        # If filter not in allow_filters -> use it as a literal string
-        if filter_name not in allowed_filters:
-            return filter_name
-
-        if filter_name in instance_data_filter_to_boto_attr:
-            boto_attr_list = instance_data_filter_to_boto_attr[filter_name]
-        else:
-            boto_attr_list = instance_meta_filter_to_boto_attr[filter_name]
-
-        instance_value = instance
-        for attribute in boto_attr_list:
-            instance_value = self._compile_values(instance_value, attribute)
-        return instance_value
-
-    def _get_credentials(self):
-        '''
-            :return A dictionary of boto client credentials
-        '''
-        boto_params = {}
-        for credential in (('aws_access_key_id', self.aws_access_key_id),
-                           ('aws_secret_access_key', self.aws_secret_access_key),
-                           ('aws_session_token', self.aws_security_token)):
-            if credential[1]:
-                boto_params[credential[0]] = credential[1]
-
-        return boto_params
-
-    def _get_connection(self, credentials, region='us-east-1'):
-        try:
-            connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **credentials)
-        except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-            if self.boto_profile:
-                try:
-                    connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
-                except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                    raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-            else:
-                raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-        return connection
-
-    def _boto3_assume_role(self, credentials, region=None):
-        """
-        Assume an IAM role passed by iam_role_arn parameter
-
-        :return: a dict containing the credentials of the assumed role
-        """
-
-        iam_role_arn = self.iam_role_arn
-
-        try:
-            sts_connection = boto3.session.Session(profile_name=self.boto_profile).client('sts', region, **credentials)
-            sts_session = sts_connection.assume_role(RoleArn=iam_role_arn, RoleSessionName='ansible_aws_ec2_dynamic_inventory')
-            return dict(
-                aws_access_key_id=sts_session['Credentials']['AccessKeyId'],
-                aws_secret_access_key=sts_session['Credentials']['SecretAccessKey'],
-                aws_session_token=sts_session['Credentials']['SessionToken']
-            )
-        except botocore.exceptions.ClientError as e:
-            raise AnsibleError("Unable to assume IAM role: %s" % to_native(e))
-
-    def _boto3_conn(self, regions):
-        '''
-            :param regions: A list of regions to create a boto3 client
-
-            Generator that yields a boto3 client and the region
-        '''
-
-        credentials = self._get_credentials()
-        iam_role_arn = self.iam_role_arn
-
-        if not regions:
-            try:
-                # as per https://boto3.amazonaws.com/v1/documentation/api/latest/guide/ec2-example-regions-avail-zones.html
-                client = self._get_connection(credentials)
-                resp = client.describe_regions()
-                regions = [x['RegionName'] for x in resp.get('Regions', [])]
-            except botocore.exceptions.NoRegionError:
-                # above seems to fail depending on boto3 version, ignore and lets try something else
-                pass
-            except is_boto3_error_code('UnauthorizedOperation') as e:  # pylint: disable=duplicate-except
-                if iam_role_arn is not None:
-                    try:
-                        # Describe regions assuming arn role
-                        assumed_credentials = self._boto3_assume_role(credentials)
-                        client = self._get_connection(assumed_credentials)
-                        resp = client.describe_regions()
-                        regions = [x['RegionName'] for x in resp.get('Regions', [])]
-                    except botocore.exceptions.NoRegionError:
-                        # above seems to fail depending on boto3 version, ignore and lets try something else
-                        pass
-                else:
-                    raise AnsibleError("Unauthorized operation: %s" % to_native(e))
-
-        # fallback to local list hardcoded in boto3 if still no regions
-        if not regions:
-            session = boto3.Session()
-            regions = session.get_available_regions('ec2')
-
-        # I give up, now you MUST give me regions
-        if not regions:
-            raise AnsibleError('Unable to get regions list from available methods, you must specify the "regions" option to continue.')
-
-        for region in regions:
-            connection = self._get_connection(credentials, region)
-            try:
-                if iam_role_arn is not None:
-                    assumed_credentials = self._boto3_assume_role(credentials, region)
-                else:
-                    assumed_credentials = credentials
-                connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region, **assumed_credentials)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                if self.boto_profile:
-                    try:
-                        connection = boto3.session.Session(profile_name=self.boto_profile).client('ec2', region)
-                    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                        raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-                else:
-                    raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
-            yield connection, region
 
     def _get_instances_by_region(self, regions, filters, strict_permissions):
         '''
@@ -552,59 +487,35 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
            :return A list of instance dictionaries
         '''
         all_instances = []
+        # By default find non-terminated/terminating instances
+        if not any(f['Name'] == 'instance-state-name' for f in filters):
+            filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
 
-        for connection, _region in self._boto3_conn(regions):
+        for connection, _region in self._boto3_conn(regions, "ec2"):
             try:
-                # By default find non-terminated/terminating instances
-                if not any(f['Name'] == 'instance-state-name' for f in filters):
-                    filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
-                paginator = connection.get_paginator('describe_instances')
-                reservations = paginator.paginate(Filters=filters).build_full_result().get('Reservations')
+                reservations = _describe_ec2_instances(connection, filters).get('Reservations')
                 instances = []
                 for r in reservations:
                     new_instances = r['Instances']
+                    reservation_details = {
+                        'OwnerId': r['OwnerId'],
+                        'RequesterId': r.get('RequesterId', ''),
+                        'ReservationId': r['ReservationId']
+                    }
                     for instance in new_instances:
-                        instance.update(self._get_reservation_details(r))
+                        instance.update(reservation_details)
                     instances.extend(new_instances)
             except botocore.exceptions.ClientError as e:
                 if e.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict_permissions:
                     instances = []
                 else:
-                    raise AnsibleError("Failed to describe instances: %s" % to_native(e))
+                    self.fail_aws("Failed to describe instances: %s" % to_native(e))
             except botocore.exceptions.BotoCoreError as e:
-                raise AnsibleError("Failed to describe instances: %s" % to_native(e))
+                self.fail_aws("Failed to describe instances: %s" % to_native(e))
 
             all_instances.extend(instances)
 
         return all_instances
-
-    def _get_reservation_details(self, reservation):
-        return {
-            'OwnerId': reservation['OwnerId'],
-            'RequesterId': reservation.get('RequesterId', ''),
-            'ReservationId': reservation['ReservationId']
-        }
-
-    @classmethod
-    def _get_tag_hostname(cls, preference, instance):
-        tag_hostnames = preference.split('tag:', 1)[1]
-        if ',' in tag_hostnames:
-            tag_hostnames = tag_hostnames.split(',')
-        else:
-            tag_hostnames = [tag_hostnames]
-
-        tags = boto3_tag_list_to_ansible_dict(instance.get('Tags', []))
-        tag_values = []
-        for v in tag_hostnames:
-            if '=' in v:
-                tag_name, tag_value = v.split('=')
-                if tags.get(tag_name) == tag_value:
-                    tag_values.append(to_text(tag_name) + "_" + to_text(tag_value))
-            else:
-                tag_value = tags.get(v)
-                if tag_value:
-                    tag_values.append(to_text(tag_value))
-        return tag_values
 
     def _sanitize_hostname(self, hostname):
         if ':' in to_text(hostname):
@@ -625,23 +536,25 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         for preference in hostnames:
             if isinstance(preference, dict):
                 if 'name' not in preference:
-                    raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+                    self.fail_aws("A 'name' key must be defined in a hostnames dictionary.")
                 hostname = self._get_preferred_hostname(instance, [preference["name"]])
-                hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
+                hostname_from_prefix = None
+                if "prefix" in preference:
+                    hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and 'prefix' in preference:
                     hostname = hostname_from_prefix + separator + hostname
             elif preference.startswith('tag:'):
-                tags = self._get_tag_hostname(preference, instance)
+                tags = _get_tag_hostname(preference, instance)
                 hostname = tags[0] if tags else None
             else:
-                hostname = self._get_boto_attr_chain(preference, instance)
+                hostname = _get_boto_attr_chain(preference, instance)
             if hostname:
                 break
         if hostname:
             return self._sanitize_hostname(hostname)
 
-    def get_all_hostnames(self, instance, hostnames):
+    def _get_all_hostnames(self, instance, hostnames):
         '''
             :param instance: an instance dict returned by boto3 ec2 describe_instances()
             :param hostnames: a list of hostname destination variables
@@ -655,16 +568,18 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         for preference in hostnames:
             if isinstance(preference, dict):
                 if 'name' not in preference:
-                    raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
-                hostname = self.get_all_hostnames(instance, [preference["name"]])
-                hostname_from_prefix = self.get_all_hostnames(instance, [preference["prefix"]])
+                    self.fail_aws("A 'name' key must be defined in a hostnames dictionary.")
+                hostname = self._get_all_hostnames(instance, [preference["name"]])
+                hostname_from_prefix = None
+                if 'prefix' in preference:
+                    hostname_from_prefix = self._get_all_hostnames(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and 'prefix' in preference:
                     hostname = hostname_from_prefix[0] + separator + hostname[0]
             elif preference.startswith('tag:'):
-                hostname = self._get_tag_hostname(preference, instance)
+                hostname = _get_tag_hostname(preference, instance)
             else:
-                hostname = self._get_boto_attr_chain(preference, instance)
+                hostname = _get_boto_attr_chain(preference, instance)
 
             if hostname:
                 if isinstance(hostname, list):
@@ -719,41 +634,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys)
             self.inventory.add_child('all', group)
 
-    @classmethod
-    def prepare_host_vars(cls, original_host_vars, hostvars_prefix=None, hostvars_suffix=None,
-                          use_contrib_script_compatible_ec2_tag_keys=False):
-        host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=['Tags'])
-        host_vars['tags'] = boto3_tag_list_to_ansible_dict(original_host_vars.get('Tags', []))
-
-        # Allow easier grouping by region
-        host_vars['placement']['region'] = host_vars['placement']['availability_zone'][:-1]
-
-        if use_contrib_script_compatible_ec2_tag_keys:
-            for k, v in host_vars['tags'].items():
-                host_vars["ec2_tag_%s" % k] = v
-
-        if hostvars_prefix or hostvars_suffix:
-            for hostvar, hostval in host_vars.copy().items():
-                del host_vars[hostvar]
-                if hostvars_prefix:
-                    hostvar = hostvars_prefix + hostvar
-                if hostvars_suffix:
-                    hostvar = hostvar + hostvars_suffix
-                host_vars[hostvar] = hostval
-
-        return host_vars
-
     def iter_entry(self, hosts, hostnames, allow_duplicated_hosts=False, hostvars_prefix=None,
                    hostvars_suffix=None, use_contrib_script_compatible_ec2_tag_keys=False):
         for host in hosts:
             if allow_duplicated_hosts:
-                hostname_list = self.get_all_hostnames(host, hostnames)
+                hostname_list = self._get_all_hostnames(host, hostnames)
             else:
                 hostname_list = [self._get_preferred_hostname(host, hostnames)]
             if not hostname_list or hostname_list[0] is None:
                 continue
 
-            host_vars = self.prepare_host_vars(
+            host_vars = _prepare_host_vars(
                 host,
                 hostvars_prefix,
                 hostvars_suffix,
@@ -796,67 +687,31 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host_vars, name, strict=strict)
 
-    def _set_credentials(self, loader):
-        '''
-            :param config_data: contents of the inventory config file
-        '''
-
-        t = Templar(loader=loader)
-        credentials = {}
-
-        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
-            if t.is_template(self.get_option(credential_type)):
-                credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
-            else:
-                credentials[credential_type] = self.get_option(credential_type)
-
-        self.boto_profile = credentials['aws_profile']
-        self.aws_access_key_id = credentials['aws_access_key']
-        self.aws_secret_access_key = credentials['aws_secret_key']
-        self.aws_security_token = credentials['aws_security_token']
-        self.iam_role_arn = credentials['iam_role_arn']
-
-        if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            session = botocore.session.get_session()
-            try:
-                credentials = session.get_credentials().get_frozen_credentials()
-            except AttributeError:
-                pass
-            else:
-                self.aws_access_key_id = credentials.access_key
-                self.aws_secret_access_key = credentials.secret_key
-                self.aws_security_token = credentials.token
-
-        if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
-            raise AnsibleError("Insufficient boto credentials found. Please provide them in your "
-                               "inventory configuration file or set them as environment variables.")
-
     def verify_file(self, path):
         '''
             :param loader: an ansible.parsing.dataloader.DataLoader object
             :param path: the path to the inventory config file
             :return the contents of the config file
         '''
+        inventory_file_suffix = ('aws_ec2.yml', 'aws_ec2.yaml')
         if super(InventoryModule, self).verify_file(path):
-            if path.endswith(('aws_ec2.yml', 'aws_ec2.yaml')):
+            if path.endswith(inventory_file_suffix):
                 return True
-        self.display.debug("aws_ec2 inventory filename must end with 'aws_ec2.yml' or 'aws_ec2.yaml'")
+        self.display.debug(f"aws_ec2 inventory filename must end with {inventory_file_suffix}")
         return False
 
     def build_include_filters(self):
+        result = self.get_option('include_filters')
         if self.get_option('filters'):
-            return [self.get_option('filters')] + self.get_option('include_filters')
-        elif self.get_option('include_filters'):
-            return self.get_option('include_filters')
-        else:  # no filter
-            return [{}]
+            result = [self.get_option('filters')] + result
+        return result or [{}]
 
     def parse(self, inventory, loader, path, cache=True):
 
         super(InventoryModule, self).parse(inventory, loader, path)
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            self.fail_aws(missing_required_lib('botocore and boto3'))
 
         self._read_config_data(path)
 

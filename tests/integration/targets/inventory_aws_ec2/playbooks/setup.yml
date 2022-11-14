@@ -29,7 +29,6 @@
 - name: create a subnet to use for creating an ec2 instance
   ec2_vpc_subnet:
     az: '{{ aws_region }}a'
-    tags: '{{ resource_prefix }}_setup'
     vpc_id: '{{ setup_vpc.vpc.id }}'
     cidr: '{{ subnet_cidr }}'
     state: present
@@ -50,3 +49,13 @@
 
 - set_fact:
     sg_id: '{{ setup_sg.group_id }}'
+
+- name: Create ec2 instance
+  ec2_instance:
+    image_id: '{{ image_id }}'
+    name: '{{ resource_prefix }}'
+    instance_type: t2.micro
+    security_groups: '{{ sg_id }}'
+    vpc_subnet_id: '{{ subnet_id }}'
+    wait: no
+  register: setup_instance

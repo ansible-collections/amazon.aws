@@ -23,10 +23,11 @@
             name: '{{ resource_prefix }}'
             tags:
               OtherTag: value
+            purge_tags: true
             instance_type: t2.micro
             security_groups: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
-            wait: no
+            wait: false
           register: setup_instance
 
         - meta: refresh_inventory
@@ -39,18 +40,3 @@
           assert:
             that:
               - expected_hostname in hostvars
-
-      always:
-
-        - name: remove setup ec2 instance
-          ec2_instance:
-            instance_type: t2.micro
-            instance_ids: '{{ setup_instance.instance_ids }}'
-            state: absent
-            name: '{{ resource_prefix }}'
-            security_groups: "{{ sg_id }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-          ignore_errors: yes
-          when: setup_instance is defined
-
-        - include_tasks: tear_down.yml

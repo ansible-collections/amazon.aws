@@ -1,0 +1,8 @@
+---
+- name: remove mariadb instance
+  rds_instance:
+    state: absent
+    engine: "{{ instance_engine }}"
+    skip_final_snapshot: yes
+    instance_id: '{{ instance_id }}'
+    wait: "{{ aws_api_wait | default(false) }}"
