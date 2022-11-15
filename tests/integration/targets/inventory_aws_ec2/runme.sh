@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 
+# generate inventory with access_key provided through a templated variable
+ansible-playbook playbooks/create_environment_script.yml "$@"
+source access_key.sh
+
 set -eux
+
+function cleanup() {
+    set +x
+    source access_key.sh
+    set -x
+    ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
+    exit 1
+}
+
+trap 'cleanup "${@}"'  ERR
 
 # ensure test config is empty
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
@@ -15,7 +29,6 @@ export ANSIBLE_INVENTORY=test.aws_ec2.yml
 # test empty inventory config
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 
-{
 # create minimal config for tests
 ansible-playbook playbooks/manage_ec2_instances.yml -e "task=setup" "$@"
 
@@ -23,9 +36,6 @@ ansible-playbook playbooks/manage_ec2_instances.yml -e "task=setup" "$@"
 ansible-playbook playbooks/create_inventory_config.yml "$@"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
 
-# generate inventory with access_key provided through a templated variable
-ansible-playbook playbooks/create_environment_script.yml "$@"
-source access_key.sh
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_template.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
 
@@ -72,8 +82,3 @@ ansible-playbook playbooks/empty_inventory_config.yml "$@"
 
 # cleanup testing environment
 ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
-
-} || {
-    ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
-    exit 1
-}
