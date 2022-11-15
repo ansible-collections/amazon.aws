@@ -904,6 +904,7 @@
     assert:
       that:
       - create_ngw.changed
+      - '"ec2:CreateNatGateway" not in create_ngw.resource_actions'
 
   - name: Create new NAT gateway with eip connectivity_type = private
     ec2_vpc_nat_gateway:

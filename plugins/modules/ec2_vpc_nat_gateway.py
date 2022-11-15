@@ -39,7 +39,7 @@ options:
     description:
       - Indicates whether the NAT gateway supports public or private connectivity.
     choices: ["public", "private"]
-    default: ["public"]
+    default: "public"
     type: str
     version_added: 5.2.0
   eip_address:
