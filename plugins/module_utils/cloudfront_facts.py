@@ -42,19 +42,17 @@ class CloudFrontFactsServiceManagerFailure(Exception):
 
 
 def cloudfront_facts_keyed_list_helper(list_to_key):
-    keyed_list = dict()
+    result = dict()
     for item in list_to_key:
         distribution_id = item['Id']
         if 'Items' in item['Aliases']:
-            aliases = item['Aliases']['Items']
-            for alias in aliases:
-                keyed_list.update({alias: item})
-        keyed_list.update({distribution_id: item})
-    return keyed_list
+            result.update({alias: item for alias in item['Aliases']['Items']})
+        result.update({distribution_id: item})
+    return result
 
 
+@AWSRetry.jittered_backoff()
 def _cloudfront_paginate_build_full_result(client, client_method, **kwargs):
-    print("Inside this")
     paginator = client.get_paginator(client_method)
     return paginator.paginate(**kwargs).build_full_result()
 
@@ -119,26 +117,33 @@ class CloudFrontFactsServiceManager:
         self.client = module.client('cloudfront', retry_decorator=AWSRetry.jittered_backoff())
 
     def describe_cloudfront_property(self, client_method, error, post_process, **kwargs):
+        fail_if_error = kwargs.pop('fail_if_error', True)
         try:
             method = getattr(self.client, client_method)
             api_kwargs = snake_dict_to_camel_dict(kwargs, capitalize_first=True)
             result = method(aws_retry=True, **api_kwargs)
+            result.pop('ResponseMetadata', None)
             if post_process:
                 result = post_process(result)
             return result
-        except botocore.exceptions.ClientError as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            if not fail_if_error:
+                raise
             self.module.fail_json_aws(e, msg=error)
 
-    def paginate_list_cloudfront_property(self, client_method, key, keyed, error, **kwargs):
+    def paginate_list_cloudfront_property(self, client_method, key, default_keyed, error, **kwargs):
+        fail_if_error = kwargs.pop('fail_if_error', True)
         try:
-            keyed = kwargs.pop("keyed", keyed)
+            keyed = kwargs.pop("keyed", default_keyed)
             api_kwargs = snake_dict_to_camel_dict(kwargs, capitalize_first=True)
             result = _cloudfront_paginate_build_full_result(self.client, client_method, **api_kwargs)
             items = result.get(key, {}).get('Items', [])
             if keyed:
                 items = cloudfront_facts_keyed_list_helper(items)
             return items
-        except botocore.exceptions.ClientError as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            if not fail_if_error:
+                raise
             self.module.fail_json_aws(e, msg=error)
 
     def __getattr__(self, name):
@@ -185,7 +190,7 @@ class CloudFrontFactsServiceManager:
             list_name = 'streaming_distributions' if streaming else 'distributions'
             key_list = ['Id', 'ARN', 'Status', 'LastModifiedTime', 'DomainName', 'Comment', 'PriceClass', 'Enabled']
             distribution_list = {list_name: []}
-            distributions = self.list_streaming_distributions(False) if streaming else self.list_distributions(False)
+            distributions = self.list_streaming_distributions(keyed=False) if streaming else self.list_distributions(keyed=False)
             for dist in distributions:
                 temp_distribution = {k: dist[k] for k in key_list}
                 temp_distribution['Aliases'] = list(dist['Aliases'].get('Items', []))
@@ -219,8 +224,8 @@ class CloudFrontFactsServiceManager:
     def get_distribution_id_from_domain_name(self, domain_name):
         try:
             distribution_id = ""
-            distributions = self.list_distributions(False)
-            distributions += self.list_streaming_distributions(False)
+            distributions = self.list_distributions(keyed=False)
+            distributions += self.list_streaming_distributions(keyed=False)
             for dist in distributions:
                 if any(str(alias).lower() == domain_name.lower() for alias in dist['Aliases'].get('Items', [])):
                     distribution_id = dist['Id']
@@ -231,6 +236,6 @@ class CloudFrontFactsServiceManager:
     def get_aliases_from_distribution_id(self, distribution_id):
         try:
             distribution = self.get_distribution(id=distribution_id)
-            return distribution['DistributionConfig']['Aliases'].get('Items', [])
+            return distribution['Distribution']['DistributionConfig']['Aliases'].get('Items', [])
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error getting list of aliases from distribution_id")

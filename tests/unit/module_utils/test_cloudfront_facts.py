@@ -80,6 +80,17 @@ def test_get_distribution_failure(cloudfront_facts_service):
         )
 
 
+def test_get_distribution_fail_if_error(cloudfront_facts_service):
+    cloudfront_id = MagicMock()
+    cloudfront_facts_service.client.get_distribution.side_effect = raise_botocore_error()
+
+    with pytest.raises(botocore.exceptions.ClientError):
+        cloudfront_facts_service.get_distribution(id=cloudfront_id, fail_if_error=False)
+        cloudfront_facts_service.client.get_distribution.assert_called_with(
+            Id=cloudfront_id, aws_retry=True
+        )
+
+
 def test_get_invalidation(cloudfront_facts_service):
 
     cloudfront_facts = MagicMock()
@@ -178,6 +189,24 @@ def test_list_invalidations(m_cloudfront_paginate_build_full_result, m_cloudfron
     )
 
 
+@pytest.mark.parametrize("fail_if_error", [True, False])
+@patch(MODULE_NAME + "._cloudfront_paginate_build_full_result")
+def test_list_invalidations_failure(m_cloudfront_paginate_build_full_result, cloudfront_facts_service, fail_if_error):
+
+    distribution_id = MagicMock()
+    m_cloudfront_paginate_build_full_result.side_effect = raise_botocore_error()
+
+    if fail_if_error:
+        with pytest.raises(SystemExit):
+            cloudfront_facts_service.list_invalidations(distribution_id=distribution_id, fail_if_error=fail_if_error)
+    else:
+        with pytest.raises(botocore.exceptions.ClientError):
+            cloudfront_facts_service.list_invalidations(distribution_id=distribution_id, fail_if_error=fail_if_error)
+    m_cloudfront_paginate_build_full_result.assert_called_with(
+        cloudfront_facts_service.client, 'list_invalidations', DistributionId=distribution_id
+    )
+
+
 @pytest.mark.parametrize(
     "list_to_key,expected",
     [
@@ -204,11 +233,11 @@ def test_cloudfront_facts_keyed_list_helper(list_to_key, expected):
     "distribution,expected",
     [
         (
-            {'DistributionConfig': {'Aliases': {'Items': ["item_1", "item_2"]}}},
+            {'Distribution': {'DistributionConfig': {'Aliases': {'Items': ["item_1", "item_2"]}}}},
             ["item_1", "item_2"]
         ),
         (
-            {'DistributionConfig': {'Aliases': {}}}, []
+            {'Distribution': {'DistributionConfig': {'Aliases': {}}}}, []
         )
     ]
 )
@@ -216,24 +245,9 @@ def test_get_aliases_from_distribution_id(cloudfront_facts_service, distribution
 
     distribution_id = MagicMock()
 
-    cloudfront_facts_service.client.get_distribution.return_value = distribution
-    print(cloudfront_facts_service.get_aliases_from_distribution_id(distribution_id))
-    assert expected == cloudfront_facts_service.get_aliases_from_distribution_id(distribution_id)
-
-
-def test_get_aliases_from_distribution_id(cloudfront_facts_service):
-
-    items = [f"item_{d}" for d in range(10)]
-    distribution_id = MagicMock()
-    distribution = {
-        'DistributionConfig': {'Aliases': {'Items': items}}
-    }
-
     cloudfront_facts_service.get_distribution = MagicMock()
     cloudfront_facts_service.get_distribution.return_value = distribution
-
-    assert items == cloudfront_facts_service.get_aliases_from_distribution_id(distribution_id)
-    cloudfront_facts_service.get_distribution.assert_called_once_with(id=distribution_id)
+    assert expected == cloudfront_facts_service.get_aliases_from_distribution_id(distribution_id)
 
 
 def test_get_aliases_from_distribution_id_failure(cloudfront_facts_service):
@@ -278,8 +292,8 @@ def test_get_distribution_id_from_domain_name(cloudfront_facts_service, distribu
 
     assert expected == cloudfront_facts_service.get_distribution_id_from_domain_name(domain_name)
 
-    cloudfront_facts_service.list_distributions.assert_called_once_with(False)
-    cloudfront_facts_service.list_streaming_distributions.assert_called_once_with(False)
+    cloudfront_facts_service.list_distributions.assert_called_once_with(keyed=False)
+    cloudfront_facts_service.list_streaming_distributions.assert_called_once_with(keyed=False)
 
 
 @pytest.mark.parametrize("streaming", [True, False])
