@@ -604,9 +604,12 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
 
     params = {
         'SubnetId': subnet_id,
-        'AllocationId': allocation_id,
         'ConnectivityType': connectivity_type
     }
+
+    if connectivity_type == "public":
+        params.update({'AllocationId': allocation_id})
+
     request_time = datetime.datetime.utcnow()
     changed = False
     token_provided = False
@@ -623,9 +626,6 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
     if module.check_mode:
         changed = True
         return changed, result, msg
-
-    if connectivity_type == "private":
-        params.pop('AllocationId')
 
     try:
         result = camel_dict_to_snake_dict(
