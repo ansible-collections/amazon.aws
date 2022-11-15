@@ -211,13 +211,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def list_ec2_images(ec2_client, module):
+class AmiInfoFailure(Exception):
+    def __init__(self, original_e, user_message):
+        self.original_e = original_e
+        self.user_message = user_message
+        super().__init__(self)
 
-    image_ids = module.params.get("image_ids")
-    owners = module.params.get("owners")
-    executable_users = module.params.get("executable_users")
-    filters = module.params.get("filters")
-    owner_param = []
+
+def build_request_args(executable_users, filters, image_ids, owners):
+
+    request_args = {
+        'ExecutableUsers': [str(user) for user in executable_users],
+        'ImageIds': [str(image_id) for image_id in image_ids],
+    }
 
     # describe_images is *very* slow if you pass the `Owners`
     # param (unless it's self), for some reason.
@@ -231,52 +237,82 @@ def list_ec2_images(ec2_client, module):
             filters['owner-id'].append(owner)
         elif owner == 'self':
             # self not a valid owner-alias filter (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImages.html)
-            owner_param.append(owner)
+            request_args['Owners'] = [str(owner)]
         else:
             if 'owner-alias' not in filters:
                 filters['owner-alias'] = list()
             filters['owner-alias'].append(owner)
 
-    filters = ansible_dict_to_boto3_filter_list(filters)
+    request_args['Filters'] = ansible_dict_to_boto3_filter_list(filters)
 
+    request_args = {k: v for k, v in request_args.items() if v}
+
+    return request_args
+
+
+def get_images(ec2_client, request_args):
     try:
-        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param,
-                                            ExecutableUsers=executable_users)
-        images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
+        images = ec2_client.describe_images(aws_retry=True, **request_args)
     except (ClientError, BotoCoreError) as err:
-        module.fail_json_aws(err, msg="error describing images")
+        raise AmiInfoFailure(err, "error describing images")
+    return images
+
+
+def get_image_attribute(ec2_client, image):
+    try:
+        launch_permissions = ec2_client.describe_image_attribute(
+            aws_retry=True, Attribute='launchPermission', ImageId=image['image_id'])
+    except (ClientError, BotoCoreError) as err:
+        raise AmiInfoFailure(err, "error describing image attribute")
+    return launch_permissions
+
+
+def list_ec2_images(ec2_client, module, request_args):
+
+    images = get_images(ec2_client, request_args)["Images"]
+    images = [camel_dict_to_snake_dict(image) for image in images]
+
     for image in images:
         try:
             image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
-                                                                         ImageId=image['image_id'])['LaunchPermissions']
+                launch_permissions = get_image_attribute(ec2_client, image).get('LaunchPermissions', [])
                 image['launch_permissions'] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code('AuthFailure'):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
         except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
-            module.fail_json_aws(err, 'Failed to describe AMI')
+            raise AmiInfoFailure(err, 'Failed to describe AMI')
 
     images.sort(key=lambda e: e.get('creation_date', ''))  # it may be possible that creation_date does not always exist
-    module.exit_json(images=images)
+
+    return images
 
 
 def main():
 
     argument_spec = dict(
-        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
-        filters=dict(default={}, type='dict'),
-        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
+        describe_image_attributes=dict(default=False, type='bool'),
         executable_users=dict(default=[], type='list', elements='str', aliases=['executable_user']),
-        describe_image_attributes=dict(default=False, type='bool')
+        filters=dict(default={}, type='dict'),
+        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
+        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
-    list_ec2_images(ec2_client, module)
+    request_args = build_request_args(
+        executable_users=module.params["executable_users"],
+        filters=module.params["filters"],
+        image_ids=module.params["image_ids"],
+        owners=module.params["owners"],
+    )
+
+    images = list_ec2_images(ec2_client, module, request_args)
+
+    module.exit_json(images=images)
 
 
 if __name__ == '__main__':
