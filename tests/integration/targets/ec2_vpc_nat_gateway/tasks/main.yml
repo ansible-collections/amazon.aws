@@ -521,6 +521,7 @@
       - create_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
       - '"vpc_id" in create_ngw'
       - create_ngw.vpc_id == vpc_id
+      - create_ngw.connectivity_type == 'public'
 
   - name: 'Set facts: NAT gateway ID'
     set_fact:
@@ -881,6 +882,51 @@
 
 
   # ============================================================
+
+  - name: Delete NAT gateway
+    ec2_vpc_nat_gateway:
+      nat_gateway_id: '{{ nat_gateway_id }}'
+      state: absent
+      wait: yes
+    register: delete_nat_gateway
+
+  # ============================================================
+
+  - name: Create new NAT gateway with connectivity_type = private - CHECK_MODE
+    ec2_vpc_nat_gateway:
+      subnet_id: '{{ subnet_id }}'
+      connectivity_type: 'private'
+      wait: yes
+    register: create_ngw
+    check_mode: yes
+
+  - name: Assert creation happened (expected changed=true) - CHECK_MODE
+    assert:
+      that:
+      - create_ngw.changed
+
+  - name: Create new NAT gateway with eip connectivity_type = private
+    ec2_vpc_nat_gateway:
+      subnet_id: '{{ subnet_id }}'
+      connectivity_type: 'private'
+      wait: yes
+    register: create_ngw
+
+  - name: Assert creation happened (expected changed=true)
+    assert:
+      that:
+      - create_ngw.changed
+      - create_ngw.connectivity_type == 'private'
+      - '"create_time" in create_ngw'
+
+  - name: 'set facts: NAT gateway ID'
+    set_fact:
+      nat_gateway_id: '{{ create_ngw.nat_gateway_id }}'
+      network_interface_id: '{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}'
+ 
+  # ============================================================
+
+
   always:
   - name: Get NAT gateways
     ec2_vpc_nat_gateway_info:
@@ -894,6 +940,7 @@
     ec2_vpc_nat_gateway:
       subnet_id: '{{ item.subnet_id }}'
       nat_gateway_id: '{{ item.nat_gateway_id }}'
+      connectivity_type: '{{ item.connectivity_type }}'
       release_eip: yes
       state: absent
       wait: yes
