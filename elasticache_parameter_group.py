@@ -25,7 +25,7 @@ options:
     description:
       - The name of the cache parameter group family that the cache parameter group can be used with.
         Required when creating a cache parameter group.
-    choices: ['memcached1.4', 'memcached1.5', 'redis2.6', 'redis2.8', 'redis3.2', 'redis4.0', 'redis5.0']
+    choices: ['memcached1.4', 'memcached1.5', 'redis2.6', 'redis2.8', 'redis3.2', 'redis4.0', 'redis5.0', 'redis6.x']
     type: str
   name:
     description:
@@ -274,7 +274,7 @@ def get_info(conn, name):
 
 def main():
     argument_spec = dict(
-        group_family=dict(type='str', choices=['memcached1.4', 'memcached1.5', 'redis2.6', 'redis2.8', 'redis3.2', 'redis4.0', 'redis5.0']),
+        group_family=dict(type='str', choices=['memcached1.4', 'memcached1.5', 'redis2.6', 'redis2.8', 'redis3.2', 'redis4.0', 'redis5.0', 'redis6.x']),
         name=dict(required=True, type='str'),
         description=dict(default='', type='str'),
         state=dict(required=True, choices=['present', 'absent', 'reset']),
