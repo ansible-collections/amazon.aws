@@ -551,7 +551,7 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
         ),
         botocore.exceptions.ClientError(
             {
-                'Error': {'Code': 1, 'Message': 'Something went wrong'},
+                'Error': {'Code': 'UnauthorizedOperation', 'Message': 'Something went wrong'},
                 'ResponseMetadata': {
                     'HTTPStatusCode': 403
                 }

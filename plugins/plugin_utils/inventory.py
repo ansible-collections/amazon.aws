@@ -86,10 +86,11 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             role_session_name = f"ansible_aws_{self.ansible_name}_dynamic_inventory"
         else:
             role_session_name = "ansible_aws_dynamic_inventory"
+        assume_params = {"RoleArn": iam_role_arn, "RoleSessionName": role_session_name}
 
         try:
             sts = self.client("sts")
-            assumed_role = sts.assume_role(RoleArn=iam_role_arn, RoleSessionName=role_session_name)
+            assumed_role = sts.assume_role(**assume_params)
         except AnsibleBotocoreError as e:
             self.fail_aws(f"Unable to assume role {iam_role_arn}", exception=e)
 
@@ -106,7 +107,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
     def _set_frozen_credentials(self):
         options = self.get_options()
-        iam_role_arn = options.get("iam_role_arn")
+        iam_role_arn = options.get("assume_role_arn")
         if iam_role_arn:
             self._freeze_iam_role(iam_role_arn)
 
@@ -139,7 +140,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         # boto3 has hard coded lists of available regions for resources, however this does bit-rot
         # As such we try to query the service, and fall back to ec2 for a list of regions
         for resource_type in list({service, "ec2"}):
-            regions = self.describe_regions(resource_type)
+            regions = self._describe_regions(resource_type)
             if regions:
                 return regions
 

@@ -10,6 +10,7 @@ extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.common.plugins
   - amazon.aws.region.plugins
+  - amazon.aws.assume_role.plugins
 description:
   - Get inventory hosts from Amazon Web Services EC2.
   - Uses a YAML configuration file that ends with C(aws_ec2.{yml|yaml}).
@@ -19,14 +20,6 @@ notes:
 author:
   - Sloane Hertel (@s-hertel)
 options:
-  plugin:
-    description: Token that ensures this is a source file for the plugin.
-    required: True
-    choices: ['aws_ec2', 'amazon.aws.aws_ec2']
-  iam_role_arn:
-    description:
-      - The ARN of the IAM role to assume to perform the inventory lookup. You should still provide AWS
-        credentials with enough privilege to perform the AssumeRole action.
   regions:
     description:
       - A list of regions in which to describe EC2 instances.
@@ -268,10 +261,12 @@ except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
 from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
 
@@ -502,12 +497,11 @@ class InventoryModule(AWSInventoryBase):
                     for instance in new_instances:
                         instance.update(reservation_details)
                     instances.extend(new_instances)
-            except botocore.exceptions.ClientError as e:
-                if e.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict_permissions:
-                    instances = []
-                else:
-                    self.fail_aws("Failed to describe instances", exception=e)
-            except botocore.exceptions.BotoCoreError as e:
+            except is_boto3_error_code('UnauthorizedOperation') as e:
+                if not strict_permissions:
+                    continue
+                self.fail_aws("Failed to describe instances", exception=e)
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self.fail_aws("Failed to describe instances", exception=e)
 
             all_instances.extend(instances)

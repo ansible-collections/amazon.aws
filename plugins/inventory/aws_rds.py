@@ -36,10 +36,6 @@ options:
     default:
       - creating
       - available
-  iam_role_arn:
-    description:
-      - The ARN of the IAM role to assume to perform the inventory lookup. You should still provide
-        AWS credentials with enough privilege to perform the AssumeRole action.
   hostvars_prefix:
     description:
       - The prefix for host variables names coming from AWS.
@@ -58,6 +54,7 @@ extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.common.plugins
   - amazon.aws.region.plugins
+  - amazon.aws.assume_role.plugins
 author:
   - Sloane Hertel (@s-hertel)
 '''
@@ -142,11 +139,11 @@ def describe_resource_with_tags(func):
             _add_tags_for_rds_hosts(connection, results, strict)
         except is_boto3_error_code('AccessDenied') as e:  # pylint: disable=duplicate-except
             if not strict:
-                results = []
-            else:
-                raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+                return []
+            raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+
         return results
 
     return describe_wrapper
