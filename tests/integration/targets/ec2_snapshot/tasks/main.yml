@@ -236,9 +236,44 @@
         pause: 15
         label: "Generate extra snapshots - {{ item }}"
 
-    - name: Pause to allow creation to finish
-      pause:
-        minutes: 3
+    # Retrieve snapshots in paginated mode
+    - name: Get snapshots in paginated mode using max_results option
+      ec2_snapshot_info:
+        filters:
+          "tag:Name": '{{ resource_prefix }}'
+        max_results: 5
+      register: info_result
+      until: "info_result.snapshots | length == 5"
+      retries: 10
+      delay: 30
+
+    - assert:
+        that:
+          - info_result.next_token_id is defined
+
+    # Pagination : 2nd request
+    - name: Get snapshots for a second paginated request
+      ec2_snapshot_info:
+        filters:
+          "tag:Name": '{{ resource_prefix }}'
+        next_token_id: "{{ info_result.next_token_id }}"
+      register: info_result
+
+    - assert:
+        that:
+          - info_result.snapshots | length == 3
+
+    # delete the tagged snapshot - check mode
+    - name: Delete the tagged snapshot (check mode)
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ tagged_snapshot_id }}'
+      register: delete_result_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+          - delete_result_check_mode is changed
 
     # check that snapshot_ids and max_results are mutually exclusive
     - name: Check that max_results and snapshot_ids are mutually exclusive
@@ -267,43 +302,6 @@
       assert:
         that:
           - info_result is failed
-
-    # Retrieve snapshots in paginated mode
-    - name: Get snapshots in paginated mode using max_results option
-      ec2_snapshot_info:
-        filters:
-          "tag:Name": '{{ resource_prefix }}'
-        max_results: 5
-      register: info_result
-
-    - assert:
-        that:
-          - info_result.snapshots | length == 5
-          - info_result.next_token_id is defined
-
-    # Pagination : 2nd request
-    - name: Get snapshots for a second paginated request
-      ec2_snapshot_info:
-        filters:
-          "tag:Name": '{{ resource_prefix }}'
-        next_token_id: "{{ info_result.next_token_id }}"
-      register: info_result
-
-    - assert:
-        that:
-          - info_result.snapshots | length == 3
-
-    # delete the tagged snapshot - check mode
-    - name: Delete the tagged snapshot (check mode)
-      ec2_snapshot:
-        state: absent
-        snapshot_id: '{{ tagged_snapshot_id }}'
-      register: delete_result_check_mode
-      check_mode: true
-
-    - assert:
-        that:
-          - delete_result_check_mode is changed
 
     # delete the tagged snapshot
     - name: Delete the tagged snapshot
