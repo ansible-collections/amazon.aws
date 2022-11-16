@@ -2,6 +2,13 @@
 
 set -eux
 
+function cleanup() {
+    ansible-playbook playbooks/setup_instance.yml -e "operation=delete" "$@"
+    exit 1
+}
+
+trap 'cleanup "${@}"'  ERR
+
 # ensure test config is empty
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
 
@@ -17,8 +24,6 @@ ansible-playbook playbooks/test_invalid_aws_rds_inventory_config.yml "$@"
 
 # delete existing resources
 ansible-playbook playbooks/setup_instance.yml -e "operation=delete" -e "aws_api_wait=true" "$@"
-
-{
 
 # generate inventory config and test using it
 ansible-playbook playbooks/create_inventory_config.yml "$@" &&
@@ -63,7 +68,4 @@ rm -rf "${AWS_RDS_CACHE_DIR}" &&
 # cleanup inventory config
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
 
-} || {
-    ansible-playbook playbooks/setup_instance.yml -e "operation=delete" "$@"
-    exit 1
-}
+ansible-playbook playbooks/setup_instance.yml -e "operation=delete" "$@"

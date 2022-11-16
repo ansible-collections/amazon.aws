@@ -21,7 +21,7 @@
         - name: create a new host
           ec2_instance:
             image_id: '{{ image_id }}'
-            name: '{{ resource_prefix }}'
+            name: '{{ resource_prefix }}_1'
             tags:
               tag_instance1: foo
             purge_tags: true
@@ -36,16 +36,16 @@
         - name: assert the hostvars are defined with prefix and/or suffix
           assert:
             that:
-              - "hostvars['{{ resource_prefix }}'].{{ vars_prefix }}instance_type{{ vars_suffix }} == 't2.micro'"
-              - "'{{ vars_prefix }}instance_type{{ vars_suffix }}' in hostvars['{{ resource_prefix }}']"
-              - "'{{ vars_prefix }}image_id{{ vars_suffix }}' in hostvars['{{ resource_prefix }}']"
-              - "'{{ vars_prefix }}instance_id{{ vars_suffix }}' in hostvars['{{ resource_prefix }}']"
-              - "'instance_type' not in hostvars['{{ resource_prefix }}']"
-              - "'image_id' not in hostvars['{{ resource_prefix }}']"
-              - "'instance_id' not in hostvars['{{ resource_prefix }}']"
-              - "'ansible_diff_mode' in hostvars['{{ resource_prefix }}']"
-              - "'ansible_forks' in hostvars['{{ resource_prefix }}']"
-              - "'ansible_version' in hostvars['{{ resource_prefix }}']"
+              - "hostvars['{{ resource_prefix }}_1'].{{ vars_prefix }}instance_type{{ vars_suffix }} == 't2.micro'"
+              - "'{{ vars_prefix }}instance_type{{ vars_suffix }}' in hostvars['{{ resource_prefix }}_1']"
+              - "'{{ vars_prefix }}image_id{{ vars_suffix }}' in hostvars['{{ resource_prefix }}_1']"
+              - "'{{ vars_prefix }}instance_id{{ vars_suffix }}' in hostvars['{{ resource_prefix }}_1']"
+              - "'instance_type' not in hostvars['{{ resource_prefix }}_1']"
+              - "'image_id' not in hostvars['{{ resource_prefix }}_1']"
+              - "'instance_id' not in hostvars['{{ resource_prefix }}_1']"
+              - "'ansible_diff_mode' in hostvars['{{ resource_prefix }}_1']"
+              - "'ansible_forks' in hostvars['{{ resource_prefix }}_1']"
+              - "'ansible_version' in hostvars['{{ resource_prefix }}_1']"
           vars:
             vars_prefix: "{{ hostvars_prefix | default('') }}"
             vars_suffix: "{{ hostvars_suffix | default('') }}"
