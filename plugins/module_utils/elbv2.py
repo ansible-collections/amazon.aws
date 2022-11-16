@@ -96,8 +96,9 @@ def _prune_secret(action):
     if action['Type'] != 'authenticate-oidc':
         return action
 
-    action['AuthenticateOidcConfig'].pop('ClientSecret', None)
     if action['AuthenticateOidcConfig'].get('UseExistingClientSecret', False):
+        action['AuthenticateOidcConfig'].pop('ClientSecret', None)
+    else:
         action['AuthenticateOidcConfig'].pop('UseExistingClientSecret')
 
     return action
