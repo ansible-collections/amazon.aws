@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+import copy
 import pytest
-from unittest.mock import MagicMock, patch, call, ANY
 import random
 import string
-import copy
+from unittest.mock import MagicMock
+from unittest.mock import call
+from unittest.mock import patch
 
 try:
     import botocore
@@ -30,6 +32,7 @@ except ImportError:
     pass
 
 from ansible.errors import AnsibleError
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import (
     InventoryModule,
     _find_hosts_with_valid_statuses,
@@ -37,7 +40,6 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_rds import (
     _add_tags_for_rds_hosts,
     _describe_db_clusters,
     _describe_db_instances,
-    HAS_BOTO3,
     ansible_dict_to_boto3_filter_list,
 )
 
@@ -66,7 +68,7 @@ def inventory():
     inventory.inventory = MagicMock()
     inventory._populate_host_vars = MagicMock()
 
-    inventory._boto3_conn = MagicMock()
+    inventory.all_clients = MagicMock()
     inventory.get_option = MagicMock()
 
     inventory._set_composite_vars = MagicMock()
@@ -449,7 +451,7 @@ def test_inventory_get_all_db_hosts(m_find_hosts, m_describe_db_clusters, m_desc
 
     connections = [MagicMock() for i in range(regions)]
 
-    inventory._boto3_conn.return_value = [
+    inventory.all_clients.return_value = [
         (connections[i], "us-east-%d" % i) for i in range(regions)
     ]
 
@@ -471,14 +473,14 @@ def test_inventory_get_all_db_hosts(m_find_hosts, m_describe_db_clusters, m_desc
     m_find_hosts.return_value = result
 
     assert result == inventory._get_all_db_hosts(**params)
-    inventory._boto3_conn.assert_called_with(params["regions"], "rds")
+    inventory.all_clients.assert_called_with("rds")
     m_describe_db_instances.assert_has_calls(
-        [call(connections[i], params["strict"], params["instance_filters"]) for i in range(regions)]
+        [call(connections[i], params["instance_filters"], strict=params["strict"]) for i in range(regions)]
     )
 
     if gather_clusters:
         m_describe_db_clusters.assert_has_calls(
-            [call(connections[i], params["strict"], params["cluster_filters"]) for i in range(regions)]
+            [call(connections[i], params["cluster_filters"], strict=params["strict"]) for i in range(regions)]
         )
 
     m_find_hosts.assert_called_with(result, params["statuses"])
@@ -625,23 +627,7 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
     )
 
 
-MOCK_HAS_BOTO3 = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.HAS_BOTO3"
 BASE_INVENTORY_PARSE = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.AWSInventoryBase.parse"
-MISSING_REQUIRED_LIB = "ansible_collections.amazon.aws.plugins.inventory.aws_rds.missing_required_lib"
-
-
-@patch(MISSING_REQUIRED_LIB)
-@patch(BASE_INVENTORY_PARSE)
-@patch(MOCK_HAS_BOTO3, False)
-def test_inventory_parse_with_missing_boto3(m_parse, m_missing_required_lib, inventory):
-
-    loader = MagicMock()
-    path = generate_random_string(with_punctuation=False, with_digits=False)
-    m_missing_required_lib.side_effect = lambda x: f"Failed to import the required Python library ({x})"
-
-    with pytest.raises(AnsibleError) as err:
-        inventory.parse(MagicMock(), loader, path)
-        assert "Failed to import the required Python library (botocore and boto3)" in err
 
 
 @pytest.mark.parametrize("include_clusters", [True, False])
@@ -701,9 +687,7 @@ def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster
 
     inventory.parse(inventory_data, loader, path, cache)
 
-    m_parse.assert_called_with(inventory_data, loader, path)
-    inventory._read_config_data.assert_called_with(path)
-    inventory._set_credentials.assert_called_with(ANY)
+    m_parse.assert_called_with(inventory_data, loader, path, cache=cache)
 
     boto3_instance_filters = ansible_dict_to_boto3_filter_list(options["filters"])
     boto3_cluster_filters = []

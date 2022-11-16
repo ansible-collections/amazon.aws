@@ -120,6 +120,16 @@ def test_client_wrapper(monkeypatch):
                                         region=sentinel.CONN_REGION,
                                         endpoint=sentinel.CONN_URL,)
 
+    # Check that we can override parameters
+    wrapped_conn = base_plugin.client(sentinel.PARAM_SERVICE, sentinel.PARAM_WRAPPER, region=sentinel.PARAM_REGION)
+    assert wrapped_conn.client is sentinel.BOTO3_CONN
+    assert wrapped_conn.retry is sentinel.PARAM_WRAPPER
+    assert get_aws_connection_info.call_args == call(base_plugin)
+    assert boto3_conn.call_args == call(base_plugin, conn_type='client',
+                                        resource=sentinel.PARAM_SERVICE,
+                                        region=sentinel.PARAM_REGION,
+                                        endpoint=sentinel.CONN_URL,)
+
 
 def test_resource(monkeypatch):
     get_aws_connection_info = MagicMock(name='get_aws_connection_info')
@@ -136,4 +146,11 @@ def test_resource(monkeypatch):
     assert boto3_conn.call_args == call(base_plugin, conn_type='resource',
                                         resource=sentinel.PARAM_SERVICE,
                                         region=sentinel.CONN_REGION,
+                                        endpoint=sentinel.CONN_URL,)
+
+    assert base_plugin.resource(sentinel.PARAM_SERVICE, region=sentinel.PARAM_REGION) is sentinel.BOTO3_CONN
+    assert get_aws_connection_info.call_args == call(base_plugin)
+    assert boto3_conn.call_args == call(base_plugin, conn_type='resource',
+                                        resource=sentinel.PARAM_SERVICE,
+                                        region=sentinel.PARAM_REGION,
                                         endpoint=sentinel.CONN_URL,)
