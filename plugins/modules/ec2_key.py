@@ -246,44 +246,52 @@ def find_key_pair(ec2_client, name):
     return key
 
 
-def create_key_pair(module, ec2_client, name, key_material, force, key_type):
-
+def create_new_key_pair(module, ec2_client, name, key_material, key_type):
+    '''
+    key does not exist, we create new key
+    '''
     tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
-    key = find_key_pair(ec2_client, name)
     tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    key_data = None
+    if not module.check_mode:
+        if key_material:
+            key = _import_key_pair(ec2_client, name, key_material, tag_spec)
+        else:
+            key = _create_key_pair(ec2_client, name, tag_spec, key_type)
+        key_data = extract_key_data(key, key_type)
+    result = {'changed': True, 'key': key_data, 'msg': 'key pair created'}
+
+    return result
+
+
+def handle_existing_key_pair(module, ec2_client, key, name, key_material, force, key_type, tags, tag_spec, purge_tags):
+
     changed = False
-    if key:
-        if key_material and force:
-            new_fingerprint = get_key_fingerprint(module, ec2_client, key_material)
-            if key['KeyFingerprint'] != new_fingerprint:
-                changed = True
-                if not module.check_mode:
-                    delete_key_pair(module, ec2_client, name, finish_task=False)
-                    key = _import_key_pair(ec2_client, name, key_material, tag_spec)
-                key_data = extract_key_data(key)
-                module.exit_json(changed=True, key=key_data, msg="key pair updated")
-        if key_type and key_type != key['KeyType']:
+    if key_material and force:
+        new_fingerprint = get_key_fingerprint(module, ec2_client, key_material)
+        if key['KeyFingerprint'] != new_fingerprint:
             changed = True
             if not module.check_mode:
                 delete_key_pair(module, ec2_client, name, finish_task=False)
-                key = _create_key_pair(ec2_client, name, tag_spec, key_type)
-            key_data = extract_key_data(key, key_type)
-            module.exit_json(changed=True, key=key_data, msg="key pair updated")
-        changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
-        key = find_key_pair(ec2_client, name)
-        key_data = extract_key_data(key)
-        module.exit_json(changed=changed, key=key_data, msg="key pair already exists")
-    else:
-        # key doesn't exist, create it now
-        key_data = None
-        if not module.check_mode:
-            if key_material:
                 key = _import_key_pair(ec2_client, name, key_material, tag_spec)
-            else:
-                key = _create_key_pair(ec2_client, name, tag_spec, key_type)
-            key_data = extract_key_data(key, key_type)
-        module.exit_json(changed=True, key=key_data, msg="key pair created")
+            key_data = extract_key_data(key)
+            module.exit_json(changed=True, key=key_data, msg="key pair updated")
+
+    if key_type and key_type != key['KeyType']:
+        changed = True
+        if not module.check_mode:
+            delete_key_pair(module, ec2_client, name, finish_task=False)
+            key = _create_key_pair(ec2_client, name, tag_spec, key_type)
+        key_data = extract_key_data(key, key_type)
+        module.exit_json(changed=True, key=key_data, msg="key pair updated")
+
+    changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
+    key = find_key_pair(ec2_client, name)
+    key_data = extract_key_data(key)
+
+    result = {'changed': changed, 'key': key_data, 'msg': 'key pair alreday exists', 'hehe': key}
+
+    return result
 
 
 def _delete_key_pair(ec2_client, key_name):
@@ -298,14 +306,16 @@ def delete_key_pair(module, ec2_client, name, finish_task=True):
     key = find_key_pair(ec2_client, name)
 
     if key and module.check_mode:
-        module.exit_json(changed=True, key=None, msg="key deleted")
+        result = {'changed': True, 'key': None, 'msg': 'key deleted'}
     elif not key:
-        module.exit_json(key=None, msg="key did not exist")
+        result = {'key': None, 'msg': 'key did not exist'}
     else:
         _delete_key_pair(ec2_client, name)
         if not finish_task:
             return
-        module.exit_json(changed=True, key=None, msg="key deleted")
+        result = {'changed': True, 'key': None, 'msg': 'key deleted'}
+
+    return result
 
 
 def main():
@@ -335,14 +345,24 @@ def main():
     key_material = module.params.get('key_material')
     force = module.params.get('force')
     key_type = module.params.get('key_type')
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
+    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
 
     if key_type:
         module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
 
     if state == 'absent':
-        delete_key_pair(module, ec2_client, name)
+        result = delete_key_pair(module, ec2_client, name)
     elif state == 'present':
-        create_key_pair(module, ec2_client, name, key_material, force, key_type)
+        # check if key already exists
+        key = find_key_pair(ec2_client, name)
+        if key:
+            result = handle_existing_key_pair(module, ec2_client, key, name, key_material, force, key_type, tags, tag_spec, purge_tags)
+        else:
+            result = create_new_key_pair(module, ec2_client, name, key_material, key_type)
+
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':
