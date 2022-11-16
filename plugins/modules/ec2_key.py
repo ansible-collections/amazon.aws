@@ -236,14 +236,15 @@ def get_key_fingerprint(module, ec2_client, key_material):
 def find_key_pair(ec2_client, name):
 
     try:
-        key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])['KeyPairs'][0]
+        key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])
     except is_boto3_error_code('InvalidKeyPair.NotFound'):
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:  # pylint: disable=duplicate-except
         raise Ec2KeyFailure(err, "error finding keypair")
     except IndexError:
         key = None
-    return key
+
+    return key['KeyPairs'][0]
 
 
 def create_new_key_pair(module, ec2_client, name, key_material, key_type):
