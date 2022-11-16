@@ -1,0 +1,2 @@
+minor_changes:
+- amazon.aws inventory plugins - additional refactorization of inventory plugin connection handling (https://github.com/ansible-collections/amazon.aws/pull/1271).
