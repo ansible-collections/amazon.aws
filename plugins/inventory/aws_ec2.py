@@ -8,7 +8,8 @@ extends_documentation_fragment:
   - inventory_cache
   - constructed
   - amazon.aws.boto3
-  - amazon.aws.aws_credentials
+  - amazon.aws.common.plugins
+  - amazon.aws.region.plugins
 description:
   - Get inventory hosts from Amazon Web Services EC2.
   - Uses a YAML configuration file that ends with C(aws_ec2.{yml|yaml}).
@@ -266,12 +267,8 @@ try:
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils._text import to_text
-from ansible.module_utils.basic import missing_required_lib
 
-from ansible.template import Templar
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -475,7 +472,7 @@ class InventoryModule(AWSInventoryBase):
 
     def __init__(self):
 
-        super(InventoryModule, self).__init__()
+        super().__init__()
 
         self.group_prefix = 'aws_ec2_'
 
@@ -491,7 +488,7 @@ class InventoryModule(AWSInventoryBase):
         if not any(f['Name'] == 'instance-state-name' for f in filters):
             filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
 
-        for connection, _region in self._boto3_conn(regions, "ec2"):
+        for connection, _region in self.all_clients("ec2"):
             try:
                 reservations = _describe_ec2_instances(connection, filters).get('Reservations')
                 instances = []
@@ -509,9 +506,9 @@ class InventoryModule(AWSInventoryBase):
                 if e.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict_permissions:
                     instances = []
                 else:
-                    self.fail_aws("Failed to describe instances: %s" % to_native(e))
+                    self.fail_aws("Failed to describe instances", exception=e)
             except botocore.exceptions.BotoCoreError as e:
-                self.fail_aws("Failed to describe instances: %s" % to_native(e))
+                self.fail_aws("Failed to describe instances", exception=e)
 
             all_instances.extend(instances)
 
@@ -694,7 +691,7 @@ class InventoryModule(AWSInventoryBase):
             :return the contents of the config file
         '''
         inventory_file_suffix = ('aws_ec2.yml', 'aws_ec2.yaml')
-        if super(InventoryModule, self).verify_file(path):
+        if super().verify_file(path):
             if path.endswith(inventory_file_suffix):
                 return True
         self.display.debug(f"aws_ec2 inventory filename must end with {inventory_file_suffix}")
@@ -707,18 +704,10 @@ class InventoryModule(AWSInventoryBase):
         return result or [{}]
 
     def parse(self, inventory, loader, path, cache=True):
-
-        super(InventoryModule, self).parse(inventory, loader, path)
-
-        if not HAS_BOTO3:
-            self.fail_aws(missing_required_lib('botocore and boto3'))
-
-        self._read_config_data(path)
+        super().parse(inventory, loader, path, cache=cache)
 
         if self.get_option('use_contrib_script_compatible_sanitization'):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
-
-        self._set_credentials(loader)
 
         # get user specifications
         regions = self.get_option('regions')
