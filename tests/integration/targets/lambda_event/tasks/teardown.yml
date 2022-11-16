@@ -1,0 +1,33 @@
+---
+- debug: msg="Starting test Teardown......"
+
+- name: Delete DynamoDB stream event mapping (trigger)
+  amazon.aws.lambda_event:
+    state: absent
+    event_source: stream
+    function_arn: '{{ lambda_function_arn }}'
+    source_params:
+      source_arn: "{{ dynamo_stream_arn }}"
+      enabled: True
+      batch_size: 500
+      starting_position: LATEST
+      function_response_types:
+        - ReportBatchItemFailures
+  register: create_lambda_event_result
+  ignore_errors: true
+
+- name: Delete lambda function
+  lambda:
+    name: '{{ lambda_function_name }}'
+    state: absent
+
+- name: Delete dynamo table
+  community.aws.dynamodb_table:
+    name: "{{ dynamodb_table_name }}"
+    state: absent
+
+- name: Delete the role
+  community.aws.iam_role:
+    name: '{{ lambda_role_name }}'
+    assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json")}}'
+    state: absent

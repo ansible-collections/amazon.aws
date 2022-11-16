@@ -1,0 +1,117 @@
+- name: set connection information for AWS modules and run tests
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  collections:
+  - community.general
+  block:
+
+  - name: Create test resources setup
+    import_tasks: setup.yml
+
+# TEST CREATE LAMBDA EVENT ========================================================================================
+  - name: Create DynamoDB stream event mapping (trigger) - check_mode
+    amazon.aws.lambda_event:
+      state: present
+      event_source: stream
+      function_arn: '{{ lambda_function_arn }}'
+      source_params:
+        source_arn: '{{ dynamo_stream_arn }}'
+        enabled: True
+        batch_size: 500
+        starting_position: LATEST
+        function_response_types:
+          - ReportBatchItemFailures
+    check_mode: true
+    register: create_lambda_event_result
+
+  - assert:
+      that:
+        - create_lambda_event_result is changed
+        - create_lambda_event_result is not failed
+        - '"lambda:CreateEventSourceMapping" not in create_lambda_event_result.resource_actions'
+
+  - name: Create DynamoDB stream event mapping (trigger)
+    amazon.aws.lambda_event:
+      state: present
+      event_source: stream
+      function_arn: '{{ lambda_function_arn }}'
+      source_params:
+        source_arn: '{{ dynamo_stream_arn }}'
+        enabled: True
+        batch_size: 500
+        starting_position: LATEST
+        function_response_types:
+          - ReportBatchItemFailures
+    register: create_lambda_event_result
+
+  - name: Get info on above trigger
+    command: 'aws lambda get-event-source-mapping --uuid {{ create_lambda_event_result.events.uuid }}'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+    register: lambda_function_details
+
+  - name: convert it to an object
+    set_fact:
+      lambda_function_details_obj: "{{ lambda_function_details.stdout | from_json }}"
+
+  - assert:
+      that:
+        - lambda_function_details_obj.FunctionResponseTypes is defined
+        - lambda_function_details_obj.FunctionResponseTypes | length > 0
+        - lambda_function_details_obj.FunctionResponseTypes[0] == "ReportBatchItemFailures"
+        - '"lambda:CreateEventSourceMapping" in create_lambda_event_result.resource_actions'
+
+  - name: Create DynamoDB stream event mapping (trigger) - check_mode - idempotency
+    amazon.aws.lambda_event:
+      state: present
+      event_source: stream
+      function_arn: '{{ lambda_function_arn }}'
+      source_params:
+        source_arn: '{{ dynamo_stream_arn }}'
+        enabled: True
+        batch_size: 500
+        starting_position: LATEST
+        function_response_types:
+          - ReportBatchItemFailures
+    check_mode: true
+    register: create_lambda_event_result
+
+  - assert:
+      that:
+        - create_lambda_event_result is not changed
+        - create_lambda_event_result is not failed
+        - '"lambda:CreateEventSourceMapping" not in create_lambda_event_result.resource_actions'
+
+  - name: Create DynamoDB stream event mapping (trigger) - idempotency
+    amazon.aws.lambda_event:
+      state: present
+      event_source: stream
+      function_arn: '{{ lambda_function_arn }}'
+      source_params:
+        source_arn: '{{ dynamo_stream_arn }}'
+        enabled: True
+        batch_size: 500
+        starting_position: LATEST
+        function_response_types:
+          - ReportBatchItemFailures
+    register: create_lambda_event_result
+
+  - assert:
+      that:
+        - create_lambda_event_result is not changed
+        - create_lambda_event_result is not failed
+        - '"lambda:CreateEventSourceMapping" not in create_lambda_event_result.resource_actions'
+
+
+# ========================================================================================
+
+  always:
+    - name: Clean up test resources setup
+      import_tasks: teardown.yml
