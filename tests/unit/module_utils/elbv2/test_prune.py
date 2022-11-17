@@ -107,7 +107,8 @@ simplified_oidc_action = dict(
         UserInfoEndpoint='https://idp.ansible.test/user',
         ClientId='ExampleClient',
         Scope='openid',
-        SessionTimeout=604800
+        SessionTimeout=604800,
+        UseExistingClientSecret=True,
     ),
 )
 oidc_actions = [
@@ -133,8 +134,7 @@ oidc_actions = [
             UserInfoEndpoint='https://idp.ansible.test/user',
             ClientId='ExampleClient',
             ClientSecret='MyVerySecretString',
-            Scope='openid',
-            SessionTimeout=604800
+            UseExistingClientSecret=True,
         ),
     ),
 ]
