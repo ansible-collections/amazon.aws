@@ -4,7 +4,7 @@
     - name: 'Create Health Check with name and tags'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -41,7 +41,7 @@
     - name: 'Create Health Check with name and tags - idempotency'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -78,7 +78,7 @@
     - name: 'Create Health Check with name and tags'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -115,7 +115,7 @@
     - name: 'Create Health Check with name and tags - Idempotency'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -153,7 +153,7 @@
     - name: 'Create Health Check with name with tags={} and purge_tags=false (should not remove existing tags)'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -186,7 +186,7 @@
     - name: 'Create Health Check with name with tags=None with purge_tags=true (should not remove existing tags)'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -218,7 +218,7 @@
     - name: 'Create Health Check with name with tags={} with purge_tags=true (should remove existing tags except Name)'
       amazon.aws.route53_health_check:
         state: present
-        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
         type: '{{ type_http }}'
@@ -253,17 +253,19 @@
       - name: 'Delete HTTP health check with use_unique_names'
         amazon.aws.route53_health_check:
           state: absent
-          name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-delete-if-found'
+          name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
           ip_address: '{{ ip_address }}'
           port: '{{ port }}'
           type: '{{ type_http }}'
           resource_path: '{{ resource_path }}'
           use_unique_names: true
-          tags:
-            Service: my-service
-            Owner: my-test-xyz
-            Lifecycle: dev
-          fqdn: '{{ fqdn_1 }}'
+          fqdn: '{{ fqdn }}'
+          tags: {}
         register: delete_result
         with_items:
           - '{{ resource_path }}'
+
+      - assert:
+          that:
+            - delete_result is changed
+            - delete_result is not failed
