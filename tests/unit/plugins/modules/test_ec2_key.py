@@ -47,3 +47,29 @@ def test_api_failure_find_key_pair():
 
     with pytest.raises(ec2_key.Ec2KeyFailure):
         ec2_key.find_key_pair(ec2_client, name)
+
+
+def test_extract_key_data():
+
+    key = {
+        "CreateTime": datetime.datetime(2022, 9, 15, 20, 10, 15, tzinfo=tzutc()),
+        "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "KeyName": "my_keypair",
+        "KeyPairId": "key-043046ef2a9a80b56",
+        "Tags": [],
+    }
+
+    key_type = "rsa"
+
+    expected_result = {
+        "name": "my_keypair",
+        "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "id": "key-043046ef2a9a80b56",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    result = ec2_key.extract_key_data(key, key_type)
+
+    assert result == expected_result
+

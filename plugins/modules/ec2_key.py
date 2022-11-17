@@ -196,7 +196,6 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
 
 
 def extract_key_data(key, key_type=None):
-
     data = {
         'name': key['KeyName'],
         'fingerprint': key['KeyFingerprint'],
