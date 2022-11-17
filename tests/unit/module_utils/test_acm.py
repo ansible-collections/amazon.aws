@@ -202,16 +202,35 @@ def test_acm_service_manager_import_certificate(acm_service_mgr):
     assert arn == acm_service_mgr.import_certificate(certificate=MagicMock(), private_key=MagicMock(), arn=arn)
 
 
-def test_acm_service_manager_delete_certificate(acm_service_mgr):
+def test_acm_service_manager_delete_certificate_keyword_arn(acm_service_mgr):
     arn = 'arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012'
-    acm_service_mgr.delete_certificate(arn)
+    acm_service_mgr.delete_certificate_with_backoff = MagicMock()
+    acm_service_mgr.delete_certificate(arn=arn)
+    err = "Couldn't delete certificate %s" % arn
+    acm_service_mgr.delete_certificate_with_backoff.assert_called_with(arn, module=acm_service_mgr.module, error=err)
+
+
+def test_acm_service_manager_delete_certificate_positional_arn(acm_service_mgr):
+    arn = 'arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012'
+    acm_service_mgr.delete_certificate_with_backoff = MagicMock()
+    module = MagicMock()
+    client = MagicMock()
+    acm_service_mgr.delete_certificate(module, client, arn)
+    err = "Couldn't delete certificate %s" % arn
+    acm_service_mgr.delete_certificate_with_backoff.assert_called_with(arn, module=acm_service_mgr.module, error=err)
+
+
+def test_acm_service_manager_delete_certificate_missing_arn(acm_service_mgr):
+    with pytest.raises(SystemExit):
+        acm_service_mgr.delete_certificate()
+    acm_service_mgr.module.fail_json.assert_called_with(msg="Missing required certificate arn to delete.")
 
 
 def test_acm_service_manager_delete_certificate_failure(acm_service_mgr):
     arn = 'arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012'
     acm_service_mgr.client.delete_certificate.side_effect = raise_botocore_error()
     with pytest.raises(SystemExit):
-        acm_service_mgr.delete_certificate(arn)
+        acm_service_mgr.delete_certificate(arn=arn)
 
 
 @pytest.mark.parametrize(
@@ -329,5 +348,4 @@ def test_acm_service_manager_get_certificates(acm_service_mgr, domain_name, arn,
     acm_service_mgr.list_certificate_tags_with_backoff = MagicMock()
     acm_service_mgr.list_certificate_tags_with_backoff.side_effect = lambda *args, **kwargs: certificate_tags.get(args[0], [])
 
-    print(f"results: {results}")
     assert acm_service_mgr.get_certificates(domain_name=domain_name, statuses=MagicMock(), arn=arn, only_tags=tags) == results

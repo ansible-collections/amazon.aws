@@ -124,16 +124,23 @@ class ACMServiceManager:
         except (TypeError, AttributeError) as e:
             self.module.fail_json_aws(e, msg="ACM tag filtering err")
 
-    def delete_certificate(self, arn):
+    def delete_certificate(self, *args, arn=None):
+        # hacking for backward compatibility
+        if arn is None:
+            if len(args) < 3:
+                self.module.fail_json(msg="Missing required certificate arn to delete.")
+            arn = args[2]
         error = "Couldn't delete certificate %s" % arn
         self.delete_certificate_with_backoff(arn, module=self.module, error=error)
 
-    # Returns a list of certificates
-    # if domain_name is specified, returns only certificates with that domain
-    # if an ARN is specified, returns only that certificate
-    # only_tags is a dict, e.g. {'key':'value'}. If specified this function will return
-    # only certificates which contain all those tags (key exists, value matches).
-    def get_certificates(self, domain_name=None, statuses=None, arn=None, only_tags=None):
+    def get_certificates(self, *args, domain_name=None, statuses=None, arn=None, only_tags=None, **kwargs):
+        """
+            Returns a list of certificates
+            if domain_name is specified, returns only certificates with that domain
+            if an ARN is specified, returns only that certificate
+            only_tags is a dict, e.g. {'key':'value'}. If specified this function will return
+            only certificates which contain all those tags (key exists, value matches).
+        """
         all_certificates = self.list_certificates_with_backoff(
             statuses=statuses,
             module=self.module,
@@ -189,7 +196,7 @@ class ACMServiceManager:
             results.append(cert_data)
         return results
 
-    def get_domain_of_cert(self, arn):
+    def get_domain_of_cert(self, arn, **kwargs):
         """
             returns the domain name of a certificate (encoded in the public cert)
             for a given ARN A cert with that ARN must already exist
@@ -200,7 +207,7 @@ class ACMServiceManager:
         cert_data = self.describe_certificate_with_backoff(certificate_arn=arn, module=self.module, error=error)
         return cert_data['DomainName']
 
-    def import_certificate(self, certificate, private_key, arn=None, certificate_chain=None, tags=None):
+    def import_certificate(self, *args, certificate, private_key, arn=None, certificate_chain=None, tags=None):
 
         original_arn = arn
 
