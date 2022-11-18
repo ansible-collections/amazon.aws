@@ -573,6 +573,7 @@ def main():
     request_interval_in = module.params.get('request_interval')
     health_check_name = module.params.get('health_check_name')
     tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
 
     # Default port
     if port_in is None:
@@ -633,7 +634,7 @@ def main():
             if module.params.get('use_unique_names'):
                 existing_checks_with_name = get_existing_checks_with_name()
                 if tags is None:
-                    module.params['purge_tags'] = False
+                    purge_tags = False
                     tags = {}
                 tags['Name'] = health_check_name
 
@@ -649,7 +650,7 @@ def main():
 
         if check_id:
             changed |= manage_tags(module, client, 'healthcheck', check_id,
-                                   tags, module.params.get('purge_tags'))
+                                   tags, purge_tags)
 
     health_check = describe_health_check(id=check_id)
     health_check['action'] = action
