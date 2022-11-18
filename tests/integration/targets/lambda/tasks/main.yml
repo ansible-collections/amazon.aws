@@ -184,6 +184,10 @@
       - result.configuration.tracing_config.mode == "PassThrough"
       - result.configuration.architectures == ['arm64']
 
+  - name: Save Lambda ARN
+    ansible.builtin.set_fact:
+      lambda_function_arn: "{{ result['configuration']['function_arn'] }}"
+
   - include_tasks: tagging.yml
 
   # Test basic operation of Uploaded lambda
@@ -203,6 +207,18 @@
   - name: test lambda works
     lambda_execute:
       name: '{{lambda_function_name}}'
+      payload:
+        name: Mr Ansible Tests
+    register: result
+  - name: assert lambda manages to respond as expected
+    assert:
+      that:
+      - result is not failed
+      - result.result.output.message == "hello Mr Ansible Tests"
+
+  - name: test execute lambda with function arn
+    lambda_execute:
+      function_arn: "{{ lambda_function_arn }}"
       payload:
         name: Mr Ansible Tests
     register: result
@@ -644,7 +660,7 @@
     assert:
       that:
       - result is not failed
-  
+
   # Test creation with layers
   - name: Create temporary directory for testing
     tempfile:

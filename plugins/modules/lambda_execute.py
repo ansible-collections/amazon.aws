@@ -212,7 +212,7 @@ def main():
         module.exit_json(changed=True)
 
     try:
-        wait_for_lambda(client, module, name)
+        wait_for_lambda(client, module, name or function_arn)
         response = client.invoke(**invoke_params, aws_retry=True)
     except is_boto3_error_code('ResourceNotFoundException') as nfe:
         module.fail_json_aws(nfe, msg="Could not find Lambda to execute. Make sure "
@@ -265,12 +265,12 @@ def main():
     module.exit_json(changed=True, result=results)
 
 
-def wait_for_lambda(client, module, name):
+def wait_for_lambda(client, module, name_or_arn):
     try:
         client_active_waiter = client.get_waiter('function_active')
         client_updated_waiter = client.get_waiter('function_updated')
-        client_active_waiter.wait(FunctionName=name)
-        client_updated_waiter.wait(FunctionName=name)
+        client_active_waiter.wait(FunctionName=name_or_arn)
+        client_updated_waiter.wait(FunctionName=name_or_arn)
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(e, msg='Timeout while waiting on lambda to be Active')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
