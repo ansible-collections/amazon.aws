@@ -1,0 +1,2 @@
+trivial:
+- gitignore - ignore integration test 'inventory' files (https://github.com/ansible-collections/amazon.aws/pull/1276)
