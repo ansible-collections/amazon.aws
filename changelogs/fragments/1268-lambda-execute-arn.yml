@@ -1,0 +1,2 @@
+bugfixes:
+  - lambda_execute - Fix error where ``function_arn`` can be passed instead of ``name``
