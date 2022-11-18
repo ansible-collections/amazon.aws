@@ -95,3 +95,37 @@ def test_extract_key_data_create_key_pair():
     result = ec2_key.extract_key_data(key, key_type)
 
     assert result == expected_result
+
+
+@patch(module_name + '.delete_key_pair')
+@patch(module_name + '._import_key_pair')
+@patch(module_name + '.find_key_pair')
+def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pair):
+
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    m_find_key_pair.return_value = None
+
+    m_import_key_pair.return_value = {
+        'KeyFingerprint': 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-043046ef2a9a80b56'
+    }
+
+    m_delete_key_pair.return_value = {
+        'changed': True,
+        'key': None,
+        'msg': 'key deleted'
+    }
+
+    expected_result = 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62'
+
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+
+    result = ec2_key.get_key_fingerprint(module, ec2_client, key_material)
+
+    assert result == expected_result
+    assert m_find_key_pair.call_count == 1
+    assert m_import_key_pair.call_count == 1
+    assert m_delete_key_pair.call_count == 1

@@ -209,13 +209,11 @@ def get_key_fingerprint(module, ec2_client, key_material):
     http://blog.jbrowne.com/?p=23
     https://forums.aws.amazon.com/thread.jspa?messageID=352828
     '''
-
     # find an unused name
     name_in_use = True
     while name_in_use:
         random_name = "ansible-" + str(uuid.uuid4())
         name_in_use = find_key_pair(ec2_client, random_name)
-
     temp_key = _import_key_pair(ec2_client, random_name, key_material)
     delete_key_pair(module, ec2_client, random_name, finish_task=False)
     return temp_key['KeyFingerprint']
