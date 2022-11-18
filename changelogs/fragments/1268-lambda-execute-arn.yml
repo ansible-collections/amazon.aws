@@ -1,2 +1,2 @@
 bugfixes:
-  - lambda_execute - Fix waiter error when ``function_arn`` is passed instead of ``name``(https://github.com/ansible-collections/amazon.aws/issues/1268).
+  - lambda_execute - Fix waiter error when function_arn is passed instead of name(https://github.com/ansible-collections/amazon.aws/issues/1268).
