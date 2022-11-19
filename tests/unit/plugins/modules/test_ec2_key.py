@@ -16,6 +16,33 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_key
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_key"
 
 
+def raise_botocore_exception_clienterror(action):
+
+    if action == 'create_key_pair':
+        params = {
+            'Error': {
+                'Code': 1,
+                'Message': 'error creating key'
+            },
+            'ResponseMetadata': {
+                'RequestId': '01234567-89ab-cdef-0123-456789abcdef'
+            }
+        }
+
+    elif action == 'describe_key_pair':
+        params = {
+            'Error': {
+                'Code': 'InvalidKeyPair.NotFound',
+                'Message': 'The key pair does not exist'
+            },
+            'ResponseMetadata': {
+                'RequestId': '01234567-89ab-cdef-0123-456789abcdef'
+            }
+        }
+
+    return botocore.exceptions.ClientError(params, action)
+
+
 def test_find_key_pair():
     ec2_client = MagicMock()
     name = 'my_keypair'
@@ -49,6 +76,17 @@ def test_api_failure_find_key_pair():
         ec2_key.find_key_pair(ec2_client, name)
 
 
+def test_invalid_key_pair_find_key_pair():
+    ec2_client = MagicMock()
+    name = 'non_existing_keypair'
+
+    ec2_client.describe_key_pairs.side_effect = raise_botocore_exception_clienterror('describe_key_pair')
+
+    result = ec2_key.find_key_pair(ec2_client, name)
+
+    assert result == None
+
+
 def test_extract_key_data_describe_key_pairs():
 
     key = {
@@ -72,6 +110,7 @@ def test_extract_key_data_describe_key_pairs():
     result = ec2_key.extract_key_data(key, key_type)
 
     assert result == expected_result
+
 
 def test_extract_key_data_create_key_pair():
 
@@ -129,3 +168,37 @@ def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pa
     assert m_find_key_pair.call_count == 1
     assert m_import_key_pair.call_count == 1
     assert m_delete_key_pair.call_count == 1
+
+
+def test__create_key_pair():
+    ec2_client = MagicMock()
+    name = 'my_keypair'
+    tag_spec = None
+    key_type = None
+
+    params = { 'KeyName': name }
+
+    ec2_client.create_key_pair.return_value = {
+        'KeyFingerprint': 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62',
+        'KeyMaterial': '-----BEGIN RSA PRIVATE KEY-----\nMIIEXm7/Bi9wba2m0Qtclu\nCXQw2paSIZb\n-----END RSA PRIVATE KEY-----',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-012345678905a208d'
+    }
+
+    result = ec2_key._create_key_pair(ec2_client, name, tag_spec, key_type)
+
+    assert result == ec2_client.create_key_pair.return_value
+    assert ec2_client.create_key_pair.call_count == 1
+    assert ec2_client.create_key_pair.called_with(aws_retry=True, **params)
+
+
+def test_api_failure__create_key_pair():
+    ec2_client = MagicMock()
+    name = 'my_keypair'
+    tag_spec = None
+    key_type = None
+
+    ec2_client.create_key_pair.side_effect = raise_botocore_exception_clienterror('create_key_pair')
+
+    with pytest.raises(ec2_key.Ec2KeyFailure):
+        ec2_key._create_key_pair(ec2_client, name, tag_spec, key_type)
