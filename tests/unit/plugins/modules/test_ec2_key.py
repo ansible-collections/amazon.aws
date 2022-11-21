@@ -40,6 +40,9 @@ def raise_botocore_exception_clienterror(action):
     elif action == 'import_key_pair':
         params['Error']['Message'] = 'error importing key'
 
+    elif action == 'delete_key_pair':
+        params['Error']['Message'] = 'error deleting key'
+
     return botocore.exceptions.ClientError(params, action)
 
 
@@ -63,7 +66,7 @@ def test__import_key_pair():
 
     assert result == ec2_client.import_key_pair.return_value
     assert ec2_client.import_key_pair.call_count == 1
-    assert ec2_client.import_key_pair.called_with(aws_retry=True, **expected_params)
+    ec2_client.import_key_pair.assert_called_with(aws_retry=True, **expected_params)
 
 
 def test_api_failure__import_key_pair():
@@ -227,7 +230,7 @@ def test__create_key_pair():
 
     assert result == ec2_client.create_key_pair.return_value
     assert ec2_client.create_key_pair.call_count == 1
-    assert ec2_client.create_key_pair.called_with(aws_retry=True, **expected_params)
+    ec2_client.create_key_pair.assert_called_with(aws_retry=True, **expected_params)
 
 
 def test_api_failure__create_key_pair():
@@ -240,3 +243,96 @@ def test_api_failure__create_key_pair():
 
     with pytest.raises(ec2_key.Ec2KeyFailure):
         ec2_key._create_key_pair(ec2_client, name, tag_spec, key_type)
+
+
+@patch(module_name + '.extract_key_data')
+@patch(module_name + '._import_key_pair')
+def test_create_new_key_pair_key_material(m_import_key_pair, m_extract_key_data):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_type = 'rsa'
+    tags = None
+
+    module.check_mode = False
+
+    m_import_key_pair.return_value = {
+        'KeyFingerprint': 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-012345678905a208d'
+    }
+
+    m_extract_key_data.return_value = {
+        "name": "my_keypair",
+        "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "id": "key-043046ef2a9a80b56",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': 'key pair created'}
+
+    result = ec2_key.create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
+
+    assert result == expected_result
+    assert m_import_key_pair.call_count == 1
+    assert m_extract_key_data.call_count == 1
+
+
+@patch(module_name + '.extract_key_data')
+@patch(module_name + '._create_key_pair')
+def test_create_new_key_pair_no_key_material(m_create_key_pair, m_extract_key_data):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key_type = 'rsa'
+    key_material = None
+    tags = None
+
+    module.check_mode = False
+
+    m_create_key_pair.return_value = {
+        'KeyFingerprint': 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-012345678905a208d'
+    }
+
+    m_extract_key_data.return_value = {
+        "name": "my_keypair",
+        "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "id": "key-043046ef2a9a80b56",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': 'key pair created'}
+
+    result = ec2_key.create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
+
+    assert result == expected_result
+    assert m_create_key_pair.call_count == 1
+    assert m_extract_key_data.call_count == 1
+
+
+def test__delete_key_pair():
+    ec2_client = MagicMock()
+
+
+    key_name = 'my_keypair'
+    ec2_key._delete_key_pair(ec2_client, key_name)
+
+    assert ec2_client.delete_key_pair.call_count == 1
+    ec2_client.delete_key_pair.assert_called_with(aws_retry=True, KeyName=key_name)
+
+
+def test_api_failure__delete_key_pair():
+    ec2_client = MagicMock()
+    name = 'my_keypair'
+
+    ec2_client.delete_key_pair.side_effect = raise_botocore_exception_clienterror('delete_key_pair')
+
+    with pytest.raises(ec2_key.Ec2KeyFailure):
+        ec2_key._delete_key_pair(ec2_client, name)
