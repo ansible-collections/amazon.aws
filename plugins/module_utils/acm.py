@@ -41,7 +41,6 @@ from .ec2 import AWSRetry
 from .ec2 import ansible_dict_to_boto3_tag_list
 from .ec2 import boto3_tag_list_to_ansible_dict
 
-
 class ACMServiceManager:
     """Handles ACM Facts Services"""
 
@@ -83,6 +82,54 @@ class ACMServiceManager:
     @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=['RequestInProgressException', 'ResourceNotFoundException'])
     def list_certificate_tags_with_backoff(self, client, certificate_arn):
         return client.list_tags_for_certificate(CertificateArn=certificate_arn)['Tags']
+
+    @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=['RequestInProgressException', 'ResourceNotFoundException'])
+    def generate_certificate_with_backoff(self, client, domain_name, validation_method, subject_alternative_names, idempotency_token, certificate_authority_arn, tag_list, key_algorithm):
+
+        certParams = {}
+        if domain_name is None:
+            module.fail_json_aws(e, msg="Domain name required.")
+
+        if certificate_authority_arn is None:
+            module.fail_json_aws(e, msg="Cert Auth ARN required.")
+
+        certParams["DomainName"] = domain_name
+        certParams["CertificateAuthorityArn"] = certificate_authority_arn
+
+        if tag_list is not None:
+            certParams["Tags"] = tag_list
+
+        if subject_alternative_names is not None:
+            certParams["SubjectAlternativeNames"] = subject_alternative_names
+
+        if idempotency_token is not None:
+            certParams["IdempotencyToken"] = idempotency_token
+
+        if validation_method is not None:
+            certParams["ValidationMethod"] = validation_method
+
+        #if key_algorithm is not None:
+        #    certParams["KeyAlgorithm"] = key_algorithm
+
+        response = client.request_certificate(**certParams)
+
+        # strip out response metadata
+        return {'CertificateArn': response['CertificateArn']}
+
+    def generate_certificate(self, client, module,
+        domain_name=None,
+        validation_method=None,
+        subject_alternative_names=None,
+        idempotency_token=None,
+        certificate_authority_arn=None,
+        tag_list=None,
+        key_algorithm=None):
+        try:
+            result = self.generate_certificate_with_backoff(client=client, domain_name=domain_name, validation_method=validation_method, subject_alternative_names=subject_alternative_names, idempotency_token=idempotency_token, certificate_authority_arn=certificate_authority_arn, tag_list=tag_list, key_algorithm=key_algorithm)
+        except (BotoCoreError, ClientError) as e:
+            module.fail_json_aws(e, msg="Could not generate Certificate")
+
+        return result
 
     # Returns a list of certificates
     # if domain_name is specified, returns only certificates with that domain
