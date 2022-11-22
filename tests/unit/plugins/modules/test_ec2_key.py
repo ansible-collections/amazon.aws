@@ -338,6 +338,59 @@ def test_api_failure__delete_key_pair():
         ec2_key._delete_key_pair(ec2_client, name)
 
 
+@patch(module_name + '.extract_key_data')
+@patch(module_name + '._import_key_pair')
+@patch(module_name + '.delete_key_pair')
+@patch(module_name + '.get_key_fingerprint')
+def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_delete_key_pair, m__import_key_pair, m_extract_key_data):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    tag_spec = None
+    key = {
+        "Name": "my_keypair",
+        "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "Id": "key-043046ef2a9a80b56",
+        "Tags": {},
+        "Type": "rsa"
+    }
+
+    module.check_mode = False
+
+    m_get_key_fingerprint.return_value = 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62'
+    m_delete_key_pair.return_value = None
+    m__import_key_pair.return_value = {
+        'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
+        'Name': 'my_keypair',
+        'Id': 'key-043046ef2a9a80b56',
+        'Tags': {},
+        'Type': 'rsa'
+    }
+    m_extract_key_data.return_value = {
+        "name": "my_keypair",
+        "fingerprint": "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62",
+        "id": "key-012345678905a208d",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
+
+    result = ec2_key.update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec)
+
+    assert result == expected_result
+    assert m_get_key_fingerprint.call_count == 1
+    assert m_delete_key_pair.call_count == 1
+    assert m__import_key_pair.call_count == 1
+    assert m_extract_key_data.call_count == 1
+    m_get_key_fingerprint.assert_called_with(module, ec2_client, key_material)
+    m_delete_key_pair.assert_called_with(module, ec2_client, name, finish_task=False)
+    m__import_key_pair.assert_called_with(ec2_client, name, key_material, tag_spec)
+    m_extract_key_data.assert_called_with(key)
+
+
 @patch(module_name + '._delete_key_pair')
 @patch(module_name + '.find_key_pair')
 def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair):
@@ -392,3 +445,4 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
     m_find_key_pair.assert_called_with(ec2_client, name)
     assert m_delete_key_pair.call_count == 0
     assert result == expected_result
+
