@@ -473,8 +473,8 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
         (MagicMock(), "us-east-1"), (MagicMock(), "us-east-2")
     ]
 
-    inventory._boto3_conn = MagicMock()
-    inventory._boto3_conn.return_value = boto3_conn
+    inventory.all_clients = MagicMock()
+    inventory.all_clients.return_value = boto3_conn
 
     m_describe_ec2_instances.side_effect = [
         {
@@ -526,7 +526,7 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
     regions = ["us-east-2", "us-east-4"]
 
     assert inventory._get_instances_by_region(regions, filters, False) == expected
-    inventory._boto3_conn.assert_called_with(regions, "ec2")
+    inventory.all_clients.assert_called_with("ec2")
 
     if any((f['Name'] == 'instance-state-name' for f in filters)):
         filters.append(default_filter)
@@ -551,7 +551,7 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
         ),
         botocore.exceptions.ClientError(
             {
-                'Error': {'Code': 1, 'Message': 'Something went wrong'},
+                'Error': {'Code': 'UnauthorizedOperation', 'Message': 'Something went wrong'},
                 'ResponseMetadata': {
                     'HTTPStatusCode': 403
                 }
@@ -564,8 +564,8 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
 def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, inventory, strict, error):
 
-    inventory._boto3_conn = MagicMock()
-    inventory._boto3_conn.return_value = [(MagicMock(), "us-west-2")]
+    inventory.all_clients = MagicMock()
+    inventory.all_clients.return_value = [(MagicMock(), "us-west-2")]
     inventory.fail_aws = MagicMock()
     inventory.fail_aws.side_effect = SystemExit(1)
 

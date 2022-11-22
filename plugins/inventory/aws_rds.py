@@ -36,10 +36,6 @@ options:
     default:
       - creating
       - available
-  iam_role_arn:
-    description:
-      - The ARN of the IAM role to assume to perform the inventory lookup. You should still provide
-        AWS credentials with enough privilege to perform the AssumeRole action.
   hostvars_prefix:
     description:
       - The prefix for host variables names coming from AWS.
@@ -56,7 +52,9 @@ extends_documentation_fragment:
   - inventory_cache
   - constructed
   - amazon.aws.boto3
-  - amazon.aws.aws_credentials
+  - amazon.aws.common.plugins
+  - amazon.aws.region.plugins
+  - amazon.aws.assume_role.plugins
 author:
   - Sloane Hertel (@s-hertel)
 '''
@@ -84,15 +82,13 @@ except ImportError:
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import missing_required_lib
-from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible.template import Templar
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
 
 
 def _find_hosts_with_valid_statuses(hosts, statuses):
@@ -133,7 +129,7 @@ def _add_tags_for_rds_hosts(connection, hosts, strict):
 
 def describe_resource_with_tags(func):
 
-    def describe_wrapper(connection, strict, filters):
+    def describe_wrapper(connection, filters, strict=False):
         try:
             results = func(connection=connection, filters=filters)
             if 'DBInstances' in results:
@@ -143,11 +139,11 @@ def describe_resource_with_tags(func):
             _add_tags_for_rds_hosts(connection, results, strict)
         except is_boto3_error_code('AccessDenied') as e:  # pylint: disable=duplicate-except
             if not strict:
-                results = []
-            else:
-                raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+                return []
+            raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+
         return results
 
     return describe_wrapper
@@ -169,7 +165,7 @@ class InventoryModule(AWSInventoryBase):
     NAME = 'amazon.aws.aws_rds'
 
     def __init__(self):
-        super(InventoryModule, self).__init__()
+        super().__init__()
         self.credentials = {}
 
     def _populate(self, hosts):
@@ -245,7 +241,7 @@ class InventoryModule(AWSInventoryBase):
             :param path: the path to the inventory config file
             :return the contents of the config file
         '''
-        if super(InventoryModule, self).verify_file(path):
+        if super().verify_file(path):
             if path.endswith(('aws_rds.yml', 'aws_rds.yaml')):
                 return True
         return False
@@ -262,10 +258,10 @@ class InventoryModule(AWSInventoryBase):
         all_instances = []
         all_clusters = []
 
-        for connection, _region in self._boto3_conn(regions, "rds"):
-            all_instances += _describe_db_instances(connection, strict, instance_filters)
+        for connection, _region in self.all_clients("rds"):
+            all_instances += _describe_db_instances(connection, instance_filters, strict=strict)
             if gather_clusters:
-                all_clusters += _describe_db_clusters(connection, strict, cluster_filters)
+                all_clusters += _describe_db_clusters(connection, cluster_filters, strict=strict)
         sorted_hosts = list(
             sorted(all_instances, key=lambda x: x['DBInstanceIdentifier']) +
             sorted(all_clusters, key=lambda x: x['DBClusterIdentifier'])
@@ -273,14 +269,7 @@ class InventoryModule(AWSInventoryBase):
         return _find_hosts_with_valid_statuses(sorted_hosts, statuses)
 
     def parse(self, inventory, loader, path, cache=True):
-        super(InventoryModule, self).parse(inventory, loader, path)
-
-        if not HAS_BOTO3:
-            self.fail_aws(missing_required_lib('botocore and boto3'))
-
-        self._read_config_data(path)
-
-        self._set_credentials(loader)
+        super().parse(inventory, loader, path, cache=cache)
 
         # get user specifications
         regions = self.get_option('regions')

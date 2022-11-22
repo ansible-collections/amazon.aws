@@ -34,18 +34,20 @@ class AWSPluginBase:
     def fail_aws(self, message, exception=None):
         if not exception:
             self._do_fail(to_native(message))
-        self._do_fail("{0}: {1}".format(message, to_native(exception)))
+        self._do_fail(f"{message}: {to_native(exception)}")
 
-    def client(self, service, retry_decorator=None):
+    def client(self, service, retry_decorator=None, **params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
-        conn = boto3_conn(self, conn_type='client', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args.update(params)
+        conn = boto3_conn(self, conn_type='client', resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
-    def resource(self, service):
+    def resource(self, service, **params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
-        return boto3_conn(self, conn_type='resource', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args.update(params)
+        return boto3_conn(self, conn_type='resource', resource=service, **kw_args)
 
     @property
     def region(self):
