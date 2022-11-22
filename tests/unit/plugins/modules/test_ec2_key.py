@@ -336,3 +336,59 @@ def test_api_failure__delete_key_pair():
 
     with pytest.raises(ec2_key.Ec2KeyFailure):
         ec2_key._delete_key_pair(ec2_client, name)
+
+
+@patch(module_name + '._delete_key_pair')
+@patch(module_name + '.find_key_pair')
+def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+
+    module.check_mode = False
+
+    m_find_key_pair.return_value = {
+        'KeyPairs': [
+            {
+                'CreateTime': datetime.datetime(2022, 9, 15, 20, 10, 15, tzinfo=tzutc()),
+                'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
+                'KeyName': 'my_keypair',
+                'KeyPairId': 'key-043046ef2a9a80b56',
+                'KeyType': 'rsa',
+                'Tags': []
+            }
+        ],
+    }
+
+    expected_result = {'changed': True, 'key': None, 'msg': 'key deleted'}
+
+    result = ec2_key.delete_key_pair(module, ec2_client, name)
+
+    assert m_find_key_pair.call_count == 1
+    m_find_key_pair.assert_called_with(ec2_client, name)
+    assert m_delete_key_pair.call_count == 1
+    m_delete_key_pair.assert_called_with(ec2_client, name)
+    assert result == expected_result
+
+
+@patch(module_name + '._delete_key_pair')
+@patch(module_name + '.find_key_pair')
+def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+
+    module.check_mode = False
+
+    m_find_key_pair.return_value = None
+
+    expected_result = {'key': None, 'msg': 'key did not exist'}
+
+    result = ec2_key.delete_key_pair(module, ec2_client, name)
+
+    assert m_find_key_pair.call_count == 1
+    m_find_key_pair.assert_called_with(ec2_client, name)
+    assert m_delete_key_pair.call_count == 0
+    assert result == expected_result
