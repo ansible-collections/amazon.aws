@@ -174,6 +174,31 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-access-key"></span><strong>access_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS access key ID.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_ACCESS_KEY_ID</p></li>
+<li><p>Environment variable: AWS_ACCESS_KEY</p></li>
+<li><p>Environment variable: EC2_ACCESS_KEY</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_ACCESS_KEY_ID</p>
+</li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-allow_duplicated_hosts"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-allow-duplicated-hosts"><strong>allow_duplicated_hosts</strong></p>
 <a class="ansibleOptionLink" href="#parameter-allow_duplicated_hosts" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 5.0.0</span></p>
@@ -187,77 +212,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-access-key-id"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-access-key"></span><strong>aws_access_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-aws_access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id</span></p>
-<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The AWS access key to use.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul>
-<li><p>Environment variable: EC2_ACCESS_KEY</p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
-<p>Alternative: AWS_ACCESS_KEY_ID</p>
-</li>
-<li><p>Environment variable: AWS_ACCESS_KEY</p></li>
-<li><p>Environment variable: AWS_ACCESS_KEY_ID</p></li>
-</ul>
-</div></td>
-</tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-boto_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-boto-profile"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-profile"></span><strong>aws_profile</strong></p>
-<a class="ansibleOptionLink" href="#parameter-aws_profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: boto_profile</span></p>
+<div class="ansibleOptionAnchor" id="parameter-assume_role_arn"></div>
+<div class="ansibleOptionAnchor" id="parameter-iam_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-iam-role-arn"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-assume-role-arn"></span><strong>assume_role_arn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-assume_role_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: iam_role_arn</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The AWS profile</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul class="simple">
-<li><p>Environment variable: AWS_DEFAULT_PROFILE</p></li>
-<li><p>Environment variable: AWS_PROFILE</p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-key"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-access-key"></span><strong>aws_secret_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-aws_secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key</span></p>
-<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The AWS secret key that corresponds to the access key.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul>
-<li><p>Environment variable: EC2_SECRET_KEY</p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
-<p>Alternative: AWS_SECRET_ACCESS_KEY</p>
-</li>
-<li><p>Environment variable: AWS_SECRET_KEY</p></li>
-<li><p>Environment variable: AWS_SECRET_ACCESS_KEY</p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-security-token"><strong>aws_security_token</strong></p>
-<a class="ansibleOptionLink" href="#parameter-aws_security_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The AWS security token if using temporary access and secret keys.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
-<ul>
-<li><p>Environment variable: EC2_SECURITY_TOKEN</p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
-<p>Alternative: AWS_SESSION_TOKEN</p>
-</li>
-<li><p>Environment variable: AWS_SESSION_TOKEN</p></li>
-<li><p>Environment variable: AWS_SECURITY_TOKEN</p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: AWS_SECURITY_TOKEN was used for compatability with the original boto SDK, support for which has been dropped</p>
-<p>Alternative: AWS_SESSION_TOKEN</p>
-</li>
-</ul>
+<td><div class="ansible-option-cell"><p>The ARN of the IAM role to assume to perform the lookup.</p>
+<p>You should still provide AWS credentials with enough privilege to perform the AssumeRole action.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -389,6 +351,26 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-endpoint"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-endpoint-url"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-endpoint"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_endpoint_url, endpoint</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The <em>endpoint</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_URL</p></li>
+<li><p>Environment variable: EC2_URL</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_URL</p>
+</li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-exclude_filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-exclude-filters"><strong>exclude_filters</strong></p>
 <a class="ansibleOptionLink" href="#parameter-exclude_filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
@@ -400,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-filters"><strong>filters</strong></p>
 <a class="ansibleOptionLink" href="#parameter-filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -409,7 +391,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-groups"><strong>groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -417,7 +399,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostnames"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostnames"><strong>hostnames</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
@@ -425,7 +407,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostnames/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostnames-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostnames/name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -435,7 +417,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>If value provided does not exist in the above options, it will be used as a literal string.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostnames/prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostnames-prefix"><strong>prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostnames/prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -444,7 +426,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostnames/separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostnames-separator"><strong>separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostnames/separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -452,7 +434,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostvars-prefix"><strong>hostvars_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
@@ -460,19 +442,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <td><div class="ansible-option-cell"><p>The prefix for host variables names coming from AWS.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_suffix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostvars-suffix"><strong>hostvars_suffix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_suffix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The suffix for host variables names coming from AWS.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-iam_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-iam-role-arn"><strong>iam_role_arn</strong></p>
-<a class="ansibleOptionLink" href="#parameter-iam_role_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The ARN of the IAM role to assume to perform the inventory lookup. You should still provide AWS credentials with enough privilege to perform the AssumeRole action.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -580,18 +555,44 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-plugin"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-plugin"><strong>plugin</strong></p>
-<a class="ansibleOptionLink" href="#parameter-plugin" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-boto_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-profile"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-boto-profile"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-profile"></span><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile, boto_profile</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Token that ensures this is a source file for the plugin.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<td><div class="ansible-option-cell"><p>A named AWS profile to use for authentication.</p>
+<p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
+<p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
+<p>The <em>boto_profile</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
 <ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aws_ec2&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;amazon.aws.aws_ec2&quot;</span></code></p></li>
+<li><p>Environment variable: AWS_PROFILE</p></li>
+<li><p>Environment variable: AWS_DEFAULT_PROFILE</p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-region"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-region"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AWS region to use.</p>
+<p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_REGION</p></li>
+<li><p>Environment variable: EC2_REGION</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources, when it is used for all connections</p>
+<p>Alternative:</p>
+</li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-regions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-regions"><strong>regions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-regions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -600,7 +601,62 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-secret-key"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS secret access key.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_SECRET_ACCESS_KEY</p></li>
+<li><p>Environment variable: AWS_SECRET_KEY</p></li>
+<li><p>Environment variable: EC2_SECRET_KEY</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_SECRET_ACCESS_KEY</p>
+</li>
+</ul>
+</div></td>
+</tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-session-token"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-security-token"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-access-token"></span><strong>session_token</strong></p>
+<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS STS session token for use with temporary credentials.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
+<p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<ul>
+<li><p>Environment variable: AWS_SESSION_TOKEN</p></li>
+<li><p>Environment variable: AWS_SECURITY_TOKEN</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: AWS_SECURITY_TOKEN was used for compatability with the original boto SDK, support for which has been dropped</p>
+<p>Alternative: AWS_SESSION_TOKEN</p>
+</li>
+<li><p>Environment variable: EC2_SECURITY_TOKEN</p>
+<p>Removed in: major release after 2024-12-01</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Alternative: AWS_SESSION_TOKEN</p>
+</li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-strict"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-strict"><strong>strict</strong></p>
 <a class="ansibleOptionLink" href="#parameter-strict" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -613,7 +669,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-strict_permissions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-strict-permissions"><strong>strict_permissions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-strict_permissions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -626,7 +682,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_contrib_script_compatible_ec2_tag_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-contrib-script-compatible-ec2-tag-keys"><strong>use_contrib_script_compatible_ec2_tag_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_contrib_script_compatible_ec2_tag_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
@@ -640,7 +696,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_contrib_script_compatible_sanitization"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-contrib-script-compatible-sanitization"><strong>use_contrib_script_compatible_sanitization</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_contrib_script_compatible_sanitization" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -654,7 +710,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-extra-vars"><strong>use_extra_vars</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in ansible-core 2.11</span></p>
@@ -686,6 +742,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>If no credentials are provided and the control node has an associated IAM instance profile then the role will be used for authentication.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>
 </section>
