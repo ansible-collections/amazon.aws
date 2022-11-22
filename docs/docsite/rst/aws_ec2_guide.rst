@@ -275,6 +275,18 @@ Some examples are shown below:
     # This sets the ec2_security_group_ids variable.
     ec2_security_group_ids: security_groups | map(attribute='group_id') | list |  join(',')
 
+    # This sets several host variables that can be used in conjunction with the SSM connection module.
+    # Strings must be wrapped in two sets of quotes, either ' then " or " then '.
+    ansible_aws_ssm_instance_id: instance_id
+    ansible_connection: '"community.aws.aws_ssm"'
+    ansible_user: '"ssm-user"'
+    ansible_become: true
+    ansible_aws_ssm_region: '"us-west-2"'
+    ansible_aws_ssm_bucket_name: '"my-ansible-ssm-bucket"'
+    ansible_aws_ssm_bucket_sse_mode: '"AES256"'
+    ansible_aws_ssm_timeout: 600
+    ansible_aws_ssm_retries: 10
+
 
 ``include_filters`` and ``exclude_filters``
 -------------------------------------------
