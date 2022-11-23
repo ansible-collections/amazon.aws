@@ -170,6 +170,36 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             connection = self.client(service, region=region)
             yield connection, region
 
+    def get_cached_result(self, path, cache):
+        # false when refresh_cache or --flush-cache is used
+        if not cache:
+            return False, None
+        # get the user-specified directive
+        if not self.get_option("cache"):
+            return False, None
+
+        cache_key = self.get_cache_key(path)
+        try:
+            cached_value = self._cache[cache_key]
+        except KeyError:
+            # if cache expires or cache file doesn"t exist
+            return False, None
+
+        return True, cached_value
+
+    def update_cached_result(self, path, cache, result):
+        if not self.get_option("cache"):
+            return
+
+        cache_key = self.get_cache_key(path)
+        # We weren't explicitly told to flush the cache, and there's already a cache entry,
+        # this means that the result we're being passed came from the cache.  As such we don't
+        # want to "update" the cache as that could reset a TTL on the cache entry.
+        if cache and cache_key in self._cache:
+            return
+
+        self._cache[cache_key] = result
+
     def verify_file(self, path):
         """
             :param path: the path to the inventory config file

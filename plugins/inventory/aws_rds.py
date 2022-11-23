@@ -272,30 +272,14 @@ class InventoryModule(AWSInventoryBase):
         if 'db-cluster-id' in filters and include_clusters:
             cluster_filters = ansible_dict_to_boto3_filter_list({'db-cluster-id': filters['db-cluster-id']})
 
-        cache_key = self.get_cache_key(path)
-        # false when refresh_cache or --flush-cache is used
-        if cache:
-            # get the user-specified directive
-            cache = self.get_option('cache')
+        result_was_cached, cached_result = self.get_cached_result(path, cache)
+        if result_was_cached:
+            self._populate_from_source(cached_result)
+            return
 
-        # Generate inventory
-        formatted_inventory = {}
-        cache_needs_update = False
-        if cache:
-            try:
-                results = self._cache[cache_key]
-            except KeyError:
-                # if cache expires or cache file doesn't exist
-                cache_needs_update = True
-            else:
-                self._populate_from_source(results)
+        results = self._get_all_db_hosts(regions, instance_filters, cluster_filters, strict_permissions, statuses, include_clusters)
+        self._populate(results)
 
-        if not cache or cache_needs_update:
-            results = self._get_all_db_hosts(regions, instance_filters, cluster_filters, strict_permissions, statuses, include_clusters)
-            self._populate(results)
-            formatted_inventory = self._format_inventory(results)
-
-        # If the cache has expired/doesn't exist or if refresh_inventory/flush cache is used
-        # when the user is using caching, update the cached inventory
-        if cache_needs_update or (not cache and self.get_option('cache')):
-            self._cache[cache_key] = formatted_inventory
+        # Update the cache once we're done
+        formatted_inventory = self._format_inventory(results)
+        self.update_cached_result(path, cache, formatted_inventory)
