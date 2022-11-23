@@ -464,6 +464,7 @@ def _describe_ec2_instances(connection, filters):
 class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_ec2'
+    INVENTORY_FILE_SUFFIXES = ("aws_ec2.yml", "aws_ec2.yaml")
 
     def __init__(self):
 
@@ -677,19 +678,6 @@ class InventoryModule(AWSInventoryBase):
 
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host_vars, name, strict=strict)
-
-    def verify_file(self, path):
-        '''
-            :param loader: an ansible.parsing.dataloader.DataLoader object
-            :param path: the path to the inventory config file
-            :return the contents of the config file
-        '''
-        inventory_file_suffix = ('aws_ec2.yml', 'aws_ec2.yaml')
-        if super().verify_file(path):
-            if path.endswith(inventory_file_suffix):
-                return True
-        self.display.debug(f"aws_ec2 inventory filename must end with {inventory_file_suffix}")
-        return False
 
     def build_include_filters(self):
         result = self.get_option('include_filters')

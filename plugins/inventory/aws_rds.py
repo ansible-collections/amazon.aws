@@ -163,6 +163,7 @@ def _describe_db_clusters(connection, filters):
 class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_rds'
+    INVENTORY_FILE_SUFFIXES = ('aws_rds.yml', 'aws_rds.yaml')
 
     def __init__(self):
         super().__init__()
@@ -234,17 +235,6 @@ class InventoryModule(AWSInventoryBase):
             self._add_host_to_composed_groups(self.get_option('groups'), host, hostname, strict=strict)
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, hostname, strict=strict)
-
-    def verify_file(self, path):
-        '''
-            :param loader: an ansible.parsing.dataloader.DataLoader object
-            :param path: the path to the inventory config file
-            :return the contents of the config file
-        '''
-        if super().verify_file(path):
-            if path.endswith(('aws_rds.yml', 'aws_rds.yaml')):
-                return True
-        return False
 
     def _get_all_db_hosts(self, regions, instance_filters, cluster_filters, strict, statuses, gather_clusters=False):
         '''

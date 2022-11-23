@@ -169,3 +169,17 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         for region in regions:
             connection = self.client(service, region=region)
             yield connection, region
+
+    def verify_file(self, path):
+        """
+            :param path: the path to the inventory config file
+            :return the contents of the config file
+        """
+        if not super().verify_file(path):
+            return False
+
+        if hasattr(self, "INVENTORY_FILE_SUFFIXES"):
+            if not path.endswith(self.INVENTORY_FILE_SUFFIXES):
+                return False
+
+        return True
