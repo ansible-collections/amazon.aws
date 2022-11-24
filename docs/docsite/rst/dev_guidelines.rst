@@ -187,16 +187,15 @@ use ``AnsibleAWSModule`` as a base, you must document the reason and request an 
 Importing botocore and boto3
 ----------------------------
 
-The ``ansible_collections.amazon.aws.plugins.module_utils.ec2`` module and
-``ansible_collections.amazon.aws.plugins.module_utils.core`` modules both
-automatically import boto3 and botocore.  If boto3 is missing from the system then the variable
-``HAS_BOTO3`` will be set to false.  Normally, this means that modules don't need to import
-boto3 directly. There is no need to check ``HAS_BOTO3`` when using AnsibleAWSModule
+The ``ansible_collections.amazon.aws.plugins.module_utils.botocore`` module
+automatically imports boto3 and botocore.  If boto3 is missing from the system then the variable
+``HAS_BOTO3`` will be set to ``False``.  Normally, this means that modules don't need to import
+boto3 directly.  There is no need to check ``HAS_BOTO3`` when using AnsibleAWSModule
 as the module does that check:
 
 .. code-block:: python
 
-   from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+   from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
    try:
        import botocore
    except ImportError:
@@ -207,16 +206,16 @@ or:
 .. code-block:: python
 
    from ansible.module_utils.basic import AnsibleModule
-   from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+   from ansible.module_utils.basic import missing_required_lib
+   from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
    try:
        import botocore
    except ImportError:
        pass  # handled by imported HAS_BOTO3
 
    def main():
-
        if not HAS_BOTO3:
-           module.fail_json(msg='boto3 and botocore are required for this module')
+           module.fail_json(missing_required_lib('botocore and boto3'))
 
 Supporting Module Defaults
 --------------------------
@@ -230,7 +229,7 @@ authentication parameters.  To do the same for your new module, add an entry for
   action_groups:
     aws:
        ...
-       aws_example_module
+       example_module
 
 Module behavior
 ---------------
@@ -261,7 +260,7 @@ to connect to AWS as these handle the same range of connection options.
 
 These helpers also check for missing profiles or a region not set when it needs to be, so you don't have to.
 
-An example of connecting to ec2 is shown below. Note that unlike boto there is no ``NoAuthHandlerFound``
+An example of connecting to EC2 is shown below. Note that unlike boto there is no ``NoAuthHandlerFound``
 exception handling like in boto. Instead, an ``AuthFailure`` exception will be thrown when you use the
 connection. To ensure that authorization, parameter validation and permissions errors are all caught,
 you should catch ``ClientError`` and ``BotoCoreError`` exceptions with every boto3 connection call.
@@ -271,7 +270,7 @@ See exception handling:
 
    module.client('ec2')
 
-or for the higher level ec2 resource:
+or for the higher level EC2 resource:
 
 .. code-block:: python
 
@@ -348,17 +347,17 @@ are a number of possibilities for handling it.
 
 * Catch the general ``ClientError`` or look for a specific error code with
     ``is_boto3_error_code``.
-* Use ``aws_module.fail_json_aws()`` to report the module failure in a standard way
-* Retry using AWSRetry
-* Use ``fail_json()`` to report the failure without using ``ansible_collections.amazon.aws.plugins.module_utils.core``
-* Do something custom in the case where you know how to handle the exception
+* Use ``aws_module.fail_json_aws()`` to report the module failure in a standard way.
+* Retry using AWSRetry.
+* Use ``fail_json()`` to report the failure without using ``AnsibleAWSModule``.
+* Do something custom in the case where you know how to handle the exception.
 
 For more information on botocore exception handling see the `botocore error documentation <https://botocore.readthedocs.io/en/latest/client_upgrades.html#error-handling>`_.
 
 Using is_boto3_error_code
 -------------------------
 
-To use ``ansible_collections.amazon.aws.plugins.module_utils.core.is_boto3_error_code`` to catch a single
+To use ``ansible_collections.amazon.aws.plugins.module_utils.botocore.is_boto3_error_code`` to catch a single
 AWS error code, call it in place of ``ClientError`` in your except clauses. In
 this example, *only* the ``InvalidGroup.NotFound`` error code will be caught here,
 and any other error will be raised for handling elsewhere in the program.
@@ -382,7 +381,7 @@ You should use the AnsibleAWSModule for all new modules, unless not possible.
 
 .. code-block:: python
 
-   from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+   from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
    # Set up module parameters
    # module params code here
@@ -391,7 +390,7 @@ You should use the AnsibleAWSModule for all new modules, unless not possible.
    # connection code here
 
    # Make a call to AWS
-   name = module.params.get['name']
+   name = module.params.get('name')
    try:
        result = connection.describe_frooble(FroobleName=name)
    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -406,7 +405,7 @@ If you need to perform an action based on the error boto3 returned, use the erro
 .. code-block:: python
 
    # Make a call to AWS
-   name = module.params.get['name']
+   name = module.params.get('name')
    try:
        result = connection.describe_frooble(FroobleName=name)
    except is_boto3_error_code('FroobleNotFound'):
@@ -414,7 +413,7 @@ If you need to perform an action based on the error boto3 returned, use the erro
    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
        module.fail_json_aws(e, msg="Couldn't obtain frooble %s" % name)
 
-using fail_json() and avoiding ansible_collections.amazon.aws.plugins.module_utils.core
+using fail_json() and avoiding AnsibleAWSModule
 ---------------------------------------------------------------------------------------
 
 Boto3 provides lots of useful information when an exception is thrown so pass this to the user
@@ -422,7 +421,7 @@ along with the message.
 
 .. code-block:: python
 
-   from ansible.module_utils.ec2 import HAS_BOTO3
+   from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
    try:
        import botocore
    except ImportError:
@@ -432,7 +431,7 @@ along with the message.
    # connection code here
 
    # Make a call to AWS
-   name = module.params.get['name']
+   name = module.params.get('name')
    try:
        result = connection.describe_frooble(FroobleName=name)
    except botocore.exceptions.ClientError as e:
@@ -448,7 +447,7 @@ If you need to perform an action based on the error boto3 returned, use the erro
 .. code-block:: python
 
    # Make a call to AWS
-   name = module.params.get['name']
+   name = module.params.get('name')
    try:
        result = connection.describe_frooble(FroobleName=name)
    except botocore.exceptions.ClientError as e:
@@ -717,7 +716,7 @@ and returns True if they are different.
 
 .. code-block:: python
 
-   from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+   from ansible_collections.amazon.aws.plugins.module_utils.iam import compare_policies
 
    import json
 
