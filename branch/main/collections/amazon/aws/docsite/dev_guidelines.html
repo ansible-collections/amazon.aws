@@ -164,7 +164,7 @@
 <ul>
 <li><p><a class="reference internal" href="#using-is-boto3-error-code" id="id20">Using is_boto3_error_code</a></p></li>
 <li><p><a class="reference internal" href="#using-fail-json-aws" id="id21">Using fail_json_aws()</a></p></li>
-<li><p><a class="reference internal" href="#using-fail-json-and-avoiding-ansible-collections-amazon-aws-plugins-module-utils-core" id="id22">using fail_json() and avoiding ansible_collections.amazon.aws.plugins.module_utils.core</a></p></li>
+<li><p><a class="reference internal" href="#using-fail-json-and-avoiding-ansibleawsmodule" id="id22">using fail_json() and avoiding AnsibleAWSModule</a></p></li>
 </ul>
 </li>
 <li><p><a class="reference internal" href="#api-throttling-rate-limiting-and-pagination" id="id23">API throttling (rate limiting) and pagination</a></p></li>
@@ -354,13 +354,12 @@ use <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModul
 </section>
 <section id="importing-botocore-and-boto3">
 <h3><a class="toc-backref" href="#id14">Importing botocore and boto3</a><a class="headerlink" href="#importing-botocore-and-boto3" title="Permalink to this heading"></a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.ec2</span></code> module and
-<code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.core</span></code> modules both
-automatically import boto3 and botocore.  If boto3 is missing from the system then the variable
-<code class="docutils literal notranslate"><span class="pre">HAS_BOTO3</span></code> will be set to false.  Normally, this means that modules don’t need to import
-boto3 directly. There is no need to check <code class="docutils literal notranslate"><span class="pre">HAS_BOTO3</span></code> when using AnsibleAWSModule
+<p>The <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore</span></code> module
+automatically imports boto3 and botocore.  If boto3 is missing from the system then the variable
+<code class="docutils literal notranslate"><span class="pre">HAS_BOTO3</span></code> will be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  Normally, this means that modules don’t need to import
+boto3 directly.  There is no need to check <code class="docutils literal notranslate"><span class="pre">HAS_BOTO3</span></code> when using AnsibleAWSModule
 as the module does that check:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.core</span> <span class="kn">import</span> <span class="n">AnsibleAWSModule</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.modules</span> <span class="kn">import</span> <span class="n">AnsibleAWSModule</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">botocore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -369,16 +368,16 @@ as the module does that check:</p>
 </div>
 <p>or:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
-<span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.ec2</span> <span class="kn">import</span> <span class="n">HAS_BOTO3</span>
+<span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">missing_required_lib</span>
+<span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.botocore</span> <span class="kn">import</span> <span class="n">HAS_BOTO3</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">botocore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="k">pass</span>  <span class="c1"># handled by imported HAS_BOTO3</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-
     <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_BOTO3</span><span class="p">:</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;boto3 and botocore are required for this module&#39;</span><span class="p">)</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">missing_required_lib</span><span class="p">(</span><span class="s1">&#39;botocore and boto3&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -390,7 +389,7 @@ authentication parameters.  To do the same for your new module, add an entry for
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">action_groups</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">aws</span><span class="p">:</span><span class="w"></span>
 <span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">aws_example_module</span><span class="w"></span>
+<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">example_module</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -415,7 +414,7 @@ These handle some of the more esoteric connection options, such as security toke
 <p>If using the basic AnsibleModule then you should use <code class="docutils literal notranslate"><span class="pre">get_aws_connection_info</span></code> and then <code class="docutils literal notranslate"><span class="pre">boto3_conn</span></code>
 to connect to AWS as these handle the same range of connection options.</p>
 <p>These helpers also check for missing profiles or a region not set when it needs to be, so you don’t have to.</p>
-<p>An example of connecting to ec2 is shown below. Note that unlike boto there is no <code class="docutils literal notranslate"><span class="pre">NoAuthHandlerFound</span></code>
+<p>An example of connecting to EC2 is shown below. Note that unlike boto there is no <code class="docutils literal notranslate"><span class="pre">NoAuthHandlerFound</span></code>
 exception handling like in boto. Instead, an <code class="docutils literal notranslate"><span class="pre">AuthFailure</span></code> exception will be thrown when you use the
 connection. To ensure that authorization, parameter validation and permissions errors are all caught,
 you should catch <code class="docutils literal notranslate"><span class="pre">ClientError</span></code> and <code class="docutils literal notranslate"><span class="pre">BotoCoreError</span></code> exceptions with every boto3 connection call.
@@ -423,7 +422,7 @@ See exception handling:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>or for the higher level ec2 resource:</p>
+<p>or for the higher level EC2 resource:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -490,15 +489,15 @@ are a number of possibilities for handling it.</p>
 </dd>
 </dl>
 </li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">aws_module.fail_json_aws()</span></code> to report the module failure in a standard way</p></li>
-<li><p>Retry using AWSRetry</p></li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">fail_json()</span></code> to report the failure without using <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.core</span></code></p></li>
-<li><p>Do something custom in the case where you know how to handle the exception</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">aws_module.fail_json_aws()</span></code> to report the module failure in a standard way.</p></li>
+<li><p>Retry using AWSRetry.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">fail_json()</span></code> to report the failure without using <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code>.</p></li>
+<li><p>Do something custom in the case where you know how to handle the exception.</p></li>
 </ul>
 <p>For more information on botocore exception handling see the <a class="reference external" href="https://botocore.readthedocs.io/en/latest/client_upgrades.html#error-handling">botocore error documentation</a>.</p>
 <section id="using-is-boto3-error-code">
 <h3><a class="toc-backref" href="#id20">Using is_boto3_error_code</a><a class="headerlink" href="#using-is-boto3-error-code" title="Permalink to this heading"></a></h3>
-<p>To use <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.core.is_boto3_error_code</span></code> to catch a single
+<p>To use <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.is_boto3_error_code</span></code> to catch a single
 AWS error code, call it in place of <code class="docutils literal notranslate"><span class="pre">ClientError</span></code> in your except clauses. In
 this example, <em>only</em> the <code class="docutils literal notranslate"><span class="pre">InvalidGroup.NotFound</span></code> error code will be caught here,
 and any other error will be raised for handling elsewhere in the program.</p>
@@ -516,7 +515,7 @@ and any other error will be raised for handling elsewhere in the program.</p>
 exceptions.  Call this on your exception and it will report the error together with a traceback for
 use in Ansible verbose mode.</p>
 <p>You should use the AnsibleAWSModule for all new modules, unless not possible.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.core</span> <span class="kn">import</span> <span class="n">AnsibleAWSModule</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.modules</span> <span class="kn">import</span> <span class="n">AnsibleAWSModule</span>
 
 <span class="c1"># Set up module parameters</span>
 <span class="c1"># module params code here</span>
@@ -525,7 +524,7 @@ use in Ansible verbose mode.</p>
 <span class="c1"># connection code here</span>
 
 <span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="p">(</span><span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BotoCoreError</span><span class="p">,</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -537,7 +536,7 @@ expect anything other than botocore exceptions you should test everything works 
 <p>If you need to perform an action based on the error boto3 returned, use the error code and the
 <code class="docutils literal notranslate"><span class="pre">is_boto3_error_code()</span></code> helper.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">is_boto3_error_code</span><span class="p">(</span><span class="s1">&#39;FroobleNotFound&#39;</span><span class="p">):</span>
@@ -547,11 +546,11 @@ expect anything other than botocore exceptions you should test everything works 
 </pre></div>
 </div>
 </section>
-<section id="using-fail-json-and-avoiding-ansible-collections-amazon-aws-plugins-module-utils-core">
-<h3><a class="toc-backref" href="#id22">using fail_json() and avoiding ansible_collections.amazon.aws.plugins.module_utils.core</a><a class="headerlink" href="#using-fail-json-and-avoiding-ansible-collections-amazon-aws-plugins-module-utils-core" title="Permalink to this heading"></a></h3>
+<section id="using-fail-json-and-avoiding-ansibleawsmodule">
+<h3><a class="toc-backref" href="#id22">using fail_json() and avoiding AnsibleAWSModule</a><a class="headerlink" href="#using-fail-json-and-avoiding-ansibleawsmodule" title="Permalink to this heading"></a></h3>
 <p>Boto3 provides lots of useful information when an exception is thrown so pass this to the user
 along with the message.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.ec2</span> <span class="kn">import</span> <span class="n">HAS_BOTO3</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.botocore</span> <span class="kn">import</span> <span class="n">HAS_BOTO3</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">botocore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -561,7 +560,7 @@ along with the message.</p>
 <span class="c1"># connection code here</span>
 
 <span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -574,7 +573,7 @@ along with the message.</p>
 work with python3</p>
 <p>If you need to perform an action based on the error boto3 returned, use the error code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -797,7 +796,7 @@ example:</p>
 use the <code class="docutils literal notranslate"><span class="pre">compare_policies</span></code> helper function which handles this variance.</p>
 <p><code class="docutils literal notranslate"><span class="pre">compare_policies</span></code> takes two dictionaries, recursively sorts and makes them hashable for comparison
 and returns True if they are different.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.ec2</span> <span class="kn">import</span> <span class="n">compare_policies</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.iam</span> <span class="kn">import</span> <span class="n">compare_policies</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
 
