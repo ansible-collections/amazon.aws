@@ -140,7 +140,7 @@ def copy_snapshot(module, ec2):
         params['KmsKeyId'] = module.params.get('kms_key_id')
 
     if module.params.get('tags'):
-        params['TagSpecifications'] = boto3_tag_specifications(module.params.get('tags'))
+        params['TagSpecifications'] = boto3_tag_specifications(module.params.get('tags'), types=['snapshot'])
 
     try:
         snapshot_id = ec2.copy_snapshot(**params)['SnapshotId']
