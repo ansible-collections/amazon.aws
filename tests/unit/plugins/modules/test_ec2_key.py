@@ -3,7 +3,7 @@
 
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from unittest.mock import call
+from unittest.mock import call, ANY
 
 import pytest
 import botocore
@@ -21,14 +21,14 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_key"
 def raise_botocore_exception_clienterror(action):
 
     params = {
-            'Error': {
-                'Code': 1,
-                'Message': 'error creating key'
-            },
-            'ResponseMetadata': {
-                'RequestId': '01234567-89ab-cdef-0123-456789abcdef'
-            }
+        'Error': {
+            'Code': 1,
+            'Message': 'error creating key'
+        },
+        'ResponseMetadata': {
+            'RequestId': '01234567-89ab-cdef-0123-456789abcdef'
         }
+    }
 
     if action == 'create_key_pair':
         params['Error']['Message'] = 'error creating key'
@@ -49,7 +49,7 @@ def raise_botocore_exception_clienterror(action):
 def test__import_key_pair():
     ec2_client = MagicMock()
     name = 'my_keypair'
-    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
 
     expected_params = {
         'KeyName': name,
@@ -72,7 +72,7 @@ def test__import_key_pair():
 def test_api_failure__import_key_pair():
     ec2_client = MagicMock()
     name = 'my_keypair'
-    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
 
     expected_params = {
         'KeyName': name,
@@ -113,9 +113,9 @@ def test_extract_key_data_describe_key_pairs():
 def test_extract_key_data_create_key_pair():
 
     key = {
-    'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
-    'KeyName': 'my_keypair',
-    'KeyPairId': 'key-043046ef2a9a80b56'
+        'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-043046ef2a9a80b56'
     }
 
     key_type = "rsa"
@@ -157,7 +157,7 @@ def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pa
 
     expected_result = 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62'
 
-    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
 
     result = ec2_key.get_key_fingerprint(module, ec2_client, key_material)
 
@@ -208,7 +208,7 @@ def test_invalid_key_pair_find_key_pair():
 
     result = ec2_key.find_key_pair(ec2_client, name)
 
-    assert result == None
+    assert result is None
 
 
 def test__create_key_pair():
@@ -217,7 +217,7 @@ def test__create_key_pair():
     tag_spec = None
     key_type = None
 
-    expected_params = { 'KeyName': name }
+    expected_params = {'KeyName': name}
 
     ec2_client.create_key_pair.return_value = {
         'KeyFingerprint': 'd7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62',
@@ -252,7 +252,7 @@ def test_create_new_key_pair_key_material(m_import_key_pair, m_extract_key_data)
     ec2_client = MagicMock()
 
     name = 'my_keypair'
-    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
     key_type = 'rsa'
     tags = None
 
@@ -320,7 +320,6 @@ def test_create_new_key_pair_no_key_material(m_create_key_pair, m_extract_key_da
 def test__delete_key_pair():
     ec2_client = MagicMock()
 
-
     key_name = 'my_keypair'
     ec2_key._delete_key_pair(ec2_client, key_name)
 
@@ -347,14 +346,13 @@ def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_
     ec2_client = MagicMock()
 
     name = 'my_keypair'
-    key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+    key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
     tag_spec = None
     key = {
-        "Name": "my_keypair",
+        "KeyName": "my_keypair",
         "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
-        "Id": "key-043046ef2a9a80b56",
+        "KeyPairId": "key-043046ef2a9a80b56",
         "Tags": {},
-        "Type": "rsa"
     }
 
     module.check_mode = False
@@ -363,17 +361,15 @@ def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_
     m_delete_key_pair.return_value = None
     m__import_key_pair.return_value = {
         'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
-        'Name': 'my_keypair',
-        'Id': 'key-043046ef2a9a80b56',
+        'KeyName': 'my_keypair',
+        'KeyPairId': 'key-043046ef2a9a80b56',
         'Tags': {},
-        'Type': 'rsa'
     }
     m_extract_key_data.return_value = {
         "name": "my_keypair",
         "fingerprint": "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62",
         "id": "key-012345678905a208d",
         "tags": {},
-        "type": "rsa"
     }
 
     expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
@@ -389,6 +385,167 @@ def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_
     m_delete_key_pair.assert_called_with(module, ec2_client, name, finish_task=False)
     m__import_key_pair.assert_called_with(ec2_client, name, key_material, tag_spec)
     m_extract_key_data.assert_called_with(key)
+
+
+@patch(module_name + '.extract_key_data')
+@patch(module_name + '._create_key_pair')
+@patch(module_name + '.delete_key_pair')
+def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_key_pair, m_extract_key_data):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key_type = 'rsa'
+    tag_spec = None
+
+    module.check_mode = False
+
+    m_delete_key_pair.return_value = None
+    m__create_key_pair.return_value = {
+        'KeyFingerprint': '11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa',
+        'Name': 'my_keypair',
+        'Id': 'key-043046ef2a9a80b56',
+        'Tags': {},
+        'Type': 'rsa'
+    }
+    m_extract_key_data.return_value = {
+        "name": "my_keypair",
+        "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "id": "key-043046ef2a9a80b56",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
+
+    result = ec2_key.update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec)
+
+    assert result == expected_result
+    assert m_delete_key_pair.call_count == 1
+    assert m__create_key_pair.call_count == 1
+    assert m_extract_key_data.call_count == 1
+    m_delete_key_pair.assert_called_with(module, ec2_client, name, finish_task=False)
+    m__create_key_pair.assert_called_with(ec2_client, name, tag_spec, key_type)
+    m_extract_key_data.assert_called_with(m__create_key_pair.return_value, key_type)
+
+
+@patch(module_name + '.update_key_pair_by_key_material')
+def test_handle_existing_key_pair_update_key_matrial_with_force(m_update_key_pair_by_key_material):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key = {
+        "KeyName": "my_keypair",
+        "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "KeyPairId": "key-043046ef2a9a80b56",
+        "Tags": {},
+        "KeyType": "rsa"
+    }
+
+    module.params = {
+        'key_material': "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com",
+        'force': True,
+        'key_type': 'rsa',
+        'tags': None,
+        'purge_tags': True,
+        'tag_spec': None
+    }
+
+    key_data = {
+        "name": "my_keypair",
+        "fingerprint": "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62",
+        "id": "key-012345678905a208d",
+        "tags": {},
+    }
+
+    m_update_key_pair_by_key_material.return_value = {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+
+    expected_result = {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+
+    result = ec2_key.handle_existing_key_pair_update(module, ec2_client, name, key)
+
+    assert result == expected_result
+    assert m_update_key_pair_by_key_material.call_count == 1
+
+
+@patch(module_name + '.update_key_pair_by_key_type')
+def test_handle_existing_key_pair_update_key_type(m_update_key_pair_by_key_type):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key = {
+        "KeyName": "my_keypair",
+        "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "KeyPairId": "key-043046ef2a9a80b56",
+        "Tags": {},
+        "KeyType": "ed25519"
+    }
+
+    module.params = {
+        'key_material': "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com",
+        'force': False,
+        'key_type': 'rsa',
+        'tags': None,
+        'purge_tags': True,
+        'tag_spec': None
+    }
+
+    key_data = {
+        "name": "my_keypair",
+        "fingerprint": "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62",
+        "id": "key-012345678905a208d",
+        "tags": {},
+    }
+
+    m_update_key_pair_by_key_type.return_value = {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+
+    expected_result = {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+
+    result = ec2_key.handle_existing_key_pair_update(module, ec2_client, name, key)
+
+    assert result == expected_result
+    assert m_update_key_pair_by_key_type.call_count == 1
+
+
+@patch(module_name + '.extract_key_data')
+def test_handle_existing_key_pair_else(m_extract_key_data):
+    module = MagicMock()
+    ec2_client = MagicMock()
+
+    name = 'my_keypair'
+    key = {
+        "KeyName": "my_keypair",
+        "KeyFingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "KeyPairId": "key-043046ef2a9a80b56",
+        "Tags": {},
+        "KeyType": "rsa"
+    }
+
+    module.params = {
+        'key_material': "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com",
+        'force': False,
+        'key_type': 'rsa',
+        'tags': None,
+        'purge_tags': True,
+        'tag_spec': None
+    }
+
+    m_extract_key_data.return_value = {
+        "name": "my_keypair",
+        "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
+        "id": "key-043046ef2a9a80b56",
+        "tags": {},
+        "type": "rsa"
+    }
+
+    expected_result = {'changed': False, 'key': m_extract_key_data.return_value, 'msg': 'key pair alreday exists'}
+
+    result = ec2_key.handle_existing_key_pair_update(module, ec2_client, name, key)
+
+    assert result == expected_result
+    assert m_extract_key_data.call_count == 1
 
 
 @patch(module_name + '._delete_key_pair')
@@ -446,3 +603,12 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
     assert m_delete_key_pair.call_count == 0
     assert result == expected_result
 
+
+@patch(module_name + ".AnsibleAWSModule")
+def test_main_success(m_AnsibleAWSModule):
+    m_module = MagicMock()
+    m_AnsibleAWSModule.return_value = m_module
+
+    ec2_key.main()
+
+    m_module.client.assert_called_with("ec2", retry_decorator=ANY)

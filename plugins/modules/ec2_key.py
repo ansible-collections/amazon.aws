@@ -311,6 +311,26 @@ def delete_key_pair(module, ec2_client, name, finish_task=True):
     return result
 
 
+def handle_existing_key_pair_update(module, ec2_client, name, key):
+    key_material = module.params.get('key_material')
+    force = module.params.get('force')
+    key_type = module.params.get('key_type')
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
+    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    if key_material and force:
+        result = update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec)
+    elif key_type and key_type != key['KeyType']:
+        result = update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec)
+    else:
+        changed = False
+        changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
+        key = find_key_pair(ec2_client, name)
+        key_data = extract_key_data(key)
+        result = {'changed': changed, 'key': key_data, 'msg': 'key pair alreday exists'}
+    return result
+
+
 def main():
 
     argument_spec = dict(
@@ -336,11 +356,10 @@ def main():
     name = module.params['name']
     state = module.params.get('state')
     key_material = module.params.get('key_material')
-    force = module.params.get('force')
     key_type = module.params.get('key_type')
     tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
-    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+
+    result = {}
 
     if key_type:
         module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
@@ -352,18 +371,9 @@ def main():
         # check if key already exists
         key = find_key_pair(ec2_client, name)
         if key:
-            if key_material and force:
-                result = update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec)
-            elif key_type and key_type != key['KeyType']:
-                result = update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec)
-            else:
-                changed = False
-                changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
-                key = find_key_pair(ec2_client, name)
-                key_data = extract_key_data(key)
-                result = {'changed': changed, 'key': key_data, 'msg': 'key pair alreday exists'}
+            result = handle_existing_key_pair_update(module, ec2_client, name, key)
         else:
-            result = create_new_key_pair(module, ec2_client, name, key_material, key_type, tags=module.params["tags"])
+            result = create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
 
     module.exit_json(**result)
 
