@@ -337,12 +337,6 @@
     lambda_info:
     register: lambda_infos_query_config
     check_mode: yes
-  - name: debug
-    debug:
-      var: lambda_infos_all
-  - name: debug function name
-    debug:
-      var: lambda_function_name
   - name: lambda_info | Assert successfull retrieval of all information 2
     assert:
       that:
