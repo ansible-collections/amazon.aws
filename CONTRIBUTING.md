@@ -51,8 +51,10 @@ WARNING: Excluding tests marked "cloud/aws" which require config
 (see "/home/dev/ansible/ansible/test/lib/ansible_test/config/cloud-config-aws.ini.template"): ec2_group
 ```
 This is because the unit tests don't automatically detect the AWS credentials on your machine
-(unlike plain `boto3` and the `aws` cli).
-You need to explicitly create credentials and load them in.
+unlike plain `boto3` and the `aws` cli.
+(Typically because they're run inside Docker, which can't access `~/.aws/credentials`.
+But even when running tests outside docker, the tests ignore `~/.aws/credentials`.)
+You need to explicitly create credentials and load them in to an Ansible-specific file.
 To do this, copy the file mentioned in that error message,
 into the clone of this repo, under `tests/integration/cloud-config-aws.ini`.
 Modify the `@` variables, pasting in an IAM secret credential.
@@ -66,6 +68,7 @@ If you're only writing a pull request for one AWS service
 you are able to create credentials only with permissions required for that test.
 For example, to test the Lambda modules, you only need Lambda permissions,
 and permissions to create IAM roles.
+You could also deploy [the policies used by the CI](https://github.com/mattclay/aws-terminator/tree/master/aws/policy).
 
 All modules MUST have integration tests for new features.
 Bug fixes for modules that currently have integration tests SHOULD have tests added.  
@@ -104,7 +107,7 @@ Ansible coding styles, and more can be found in the [Ansible Community Guide](
 https://docs.ansible.com/ansible/latest/community/index.html).
 
 Information about AWS SDK library usage, module utils, testing, and more can be
-found in the [AWS Guidelines](https://docs.ansible.com/ansible/devel/dev_guide/platforms/aws_guidelines.html)
+found in the [AWS Guidelines](https://docs.ansible.com/ansible/devel/collections/amazon/aws/docsite/dev_guidelines.html#ansible-collections-amazon-aws-docsite-dev-guide-intro)
 documentation.
 
 For general information on running the integration tests see
