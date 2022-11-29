@@ -6,6 +6,9 @@ sections:
   - title: Scenario Guide
     toctree:
       - guide_aws
+  - title: Contributing
+    toctree:
+      - CONTRIBUTING
   - title: Module Development Guidelines
     toctree:
       - dev_guidelines

@@ -95,7 +95,7 @@ You can either call modules by their Fully Qualified Collection Name (FQCN), suc
 ## Contributing to this collection
 
 We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+See [CONTRIBUTING.md](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/docsite/CONTRIBUTING.html) for more details.
 
 You can also join us on:
 
