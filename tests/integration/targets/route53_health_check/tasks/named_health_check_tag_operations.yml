@@ -1,0 +1,271 @@
+---
+- block:
+    # Create Health Check =================================================================
+    - name: 'Create Health Check with name and tags'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+      register: create_result
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_result.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_result is not failed
+        - create_result is changed
+        - tags_keys_list | length == 4
+        - '"Service" in tags_keys_list'
+        - '"Owner" in tags_keys_list'
+        - '"Lifecycle" in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    # Create Health Check - check Idempotenty =================================================================
+    - name: 'Create Health Check with name and tags - idempotency'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          Owner: my-test-xyz
+          Lifecycle: dev
+        fqdn: '{{ fqdn }}'
+      register: create_idem
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_idem.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check - idempotency'
+      assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+        - tags_keys_list | length == 4
+        - '"Service" in tags_keys_list'
+        - '"Owner" in tags_keys_list'
+        - '"Lifecycle" in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    # Create Health Check - Update Tags =================================================================
+    - name: 'Create Health Check with name and tags'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          NewOwner: my-test-abcd
+        fqdn: '{{ fqdn }}'
+      register: create_hc_update_tags
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_hc_update_tags.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_hc_update_tags is not failed
+        - create_hc_update_tags is changed
+        - tags_keys_list | length == 3
+        - '"Service" in tags_keys_list'
+        - '"NewOwner" in tags_keys_list'
+        - '"Owner" not in tags_keys_list'
+        - '"Lifecycle" not in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    # Create Health Check - Update Tags - Idempotency =================================================================
+    - name: 'Create Health Check with name and tags - Idempotency'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        tags:
+          Service: my-service
+          NewOwner: my-test-abcd
+        fqdn: '{{ fqdn }}'
+      register: create_hc_update_tags_idem
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_hc_update_tags_idem.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_hc_update_tags_idem is not failed
+        - create_hc_update_tags_idem is not changed
+        - tags_keys_list | length == 3
+        - '"Service" in tags_keys_list'
+        - '"NewOwner" in tags_keys_list'
+        - '"Owner" not in tags_keys_list'
+        - '"Lifecycle" not in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    # Create Health Check - test purge_tags behavior =================================================================
+
+    - name: 'Create Health Check with name with tags={} and purge_tags=false (should not remove existing tags)'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        tags: {}
+        purge_tags: false
+      register: create_hc_update_tags
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_hc_update_tags.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_hc_update_tags is not failed
+        - create_hc_update_tags is not changed
+        - tags_keys_list | length == 3
+        - '"Service" in tags_keys_list'
+        - '"NewOwner" in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    - name: 'Create Health Check with name with tags=None with purge_tags=true (should not remove existing tags)'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        purge_tags: true
+      register: create_hc_update_tags
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_hc_update_tags.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_hc_update_tags is not failed
+        - create_hc_update_tags is not changed
+        - tags_keys_list | length == 3
+        - '"Service" in tags_keys_list'
+        - '"NewOwner" in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+    - name: 'Create Health Check with name with tags={} with purge_tags=true (should remove existing tags except Name)'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        tags: {}
+        purge_tags: true
+      register: create_hc_update_tags
+
+    - name: Get Health Check tags
+      amazon.aws.route53_info:
+        query: health_check
+        resource_id:  "{{ create_hc_update_tags.health_check.id }}"
+        health_check_method: tags
+      register: health_check_tags
+    - set_fact:
+        tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
+
+    - name: 'Check result - Create HTTP health check'
+      assert:
+        that:
+        - create_hc_update_tags is not failed
+        - create_hc_update_tags is changed
+        - tags_keys_list | length == 1
+        - '"Service" not in tags_keys_list'
+        - '"NewOwner" not in tags_keys_list'
+        - '"Name" in tags_keys_list'
+
+  # Cleanup starts here =================================================================
+  always:
+      - name: 'Delete HTTP health check with use_unique_names'
+        amazon.aws.route53_health_check:
+          state: absent
+          name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+          ip_address: '{{ ip_address }}'
+          port: '{{ port }}'
+          type: '{{ type_http }}'
+          resource_path: '{{ resource_path }}'
+          use_unique_names: true
+          fqdn: '{{ fqdn }}'
+          tags: {}
+        register: delete_result
+        with_items:
+          - '{{ resource_path }}'
+
+      - assert:
+          that:
+            - delete_result is changed
+            - delete_result is not failed

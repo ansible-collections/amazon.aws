@@ -102,12 +102,11 @@
         resource_path: '{{ item }}'
         use_unique_names: true
       register: create_idem
-      check_mode: true
       with_items:
         - '{{ resource_path }}'
         - '{{ resource_path_1 }}'
 
-    - name: 'Check result - Create multiple HTTP health check - idempotency - check_mode'
+    - name: 'Check result - Create multiple HTTP health check - idempotency'
       assert:
         that:
         - create_idem is not failed
