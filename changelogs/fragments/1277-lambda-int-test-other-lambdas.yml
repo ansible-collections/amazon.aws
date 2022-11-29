@@ -1,0 +1,2 @@
+bugfixes:
+  - lambda - fix flaky integration test which assumes there are no other lambdas in the account (https://github.com/ansible-collections/amazon.aws/issues/1277)

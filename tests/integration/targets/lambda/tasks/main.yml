@@ -331,49 +331,53 @@
     check_mode: yes
     vars:
       ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
-  - name: lambda_info | Assert successfull retrieval of all information
+  - name: lambda_info | Assert successfull retrieval of all information 1
+    vars:
+      lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
     assert:
       that:
       - lambda_infos_all is not failed
       - lambda_infos_all.functions | length > 0
-      - lambda_infos_all.functions[0].function_name == lambda_function_name
-      - lambda_infos_all.functions[0].runtime == lambda_python_runtime
-      - lambda_infos_all.functions[0].description == ""
-      - lambda_infos_all.functions[0].function_arn is defined
-      - lambda_infos_all.functions[0].handler == lambda_python_handler
-      - lambda_infos_all.functions[0].versions is defined
-      - lambda_infos_all.functions[0].aliases is defined
-      - lambda_infos_all.functions[0].policy is defined
-      - lambda_infos_all.functions[0].mappings is defined
-      - lambda_infos_all.functions[0].tags is defined
-      - lambda_infos_all.functions[0].architectures == ['arm64']
+      - lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | length == 1
+      - lambda_info.runtime == lambda_python_runtime
+      - lambda_info.description == ""
+      - lambda_info.function_arn is defined
+      - lambda_info.handler == lambda_python_handler
+      - lambda_info.versions is defined
+      - lambda_info.aliases is defined
+      - lambda_info.policy is defined
+      - lambda_info.mappings is defined
+      - lambda_info.tags is defined
+      - lambda_info.architectures == ['arm64']
 
   - name: lambda_info | Ensure default query value is 'config' when function name
       omitted
     lambda_info:
     register: lambda_infos_query_config
     check_mode: yes
-  - name: lambda_info | Assert successfull retrieval of all information
+  - name: lambda_info | Assert successfull retrieval of all information 2
+    vars:
+      lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
     assert:
       that:
       - lambda_infos_query_config is not failed
       - lambda_infos_query_config.functions | length > 0
-      - lambda_infos_query_config.functions[0].function_name == lambda_function_name
-      - lambda_infos_query_config.functions[0].runtime == lambda_python_runtime
-      - lambda_infos_query_config.functions[0].description == ""
-      - lambda_infos_query_config.functions[0].function_arn is defined
-      - lambda_infos_query_config.functions[0].handler == lambda_python_handler
-      - lambda_infos_query_config.functions[0].versions is not defined
-      - lambda_infos_query_config.functions[0].aliases is not defined
-      - lambda_infos_query_config.functions[0].policy is not defined
-      - lambda_infos_query_config.functions[0].mappings is not defined
-      - lambda_infos_query_config.functions[0].tags is not defined
+      - lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | length == 1
+      - lambda_info.runtime == lambda_python_runtime
+      - lambda_info.description == ""
+      - lambda_info.function_arn is defined
+      - lambda_info.handler == lambda_python_handler
+      - lambda_info.versions is not defined
+      - lambda_info.aliases is not defined
+      - lambda_info.policy is not defined
+      - lambda_info.mappings is not defined
+      - lambda_info.tags is not defined
 
   - name: lambda_info | Ensure default query value is 'all' when function name specified
     lambda_info:
       name: '{{ lambda_function_name }}'
     register: lambda_infos_query_all
-  - name: lambda_info | Assert successfull retrieval of all information
+  - name: lambda_info | Assert successfull retrieval of all information 3
     assert:
       that:
       - lambda_infos_query_all is not failed
