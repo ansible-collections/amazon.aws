@@ -316,21 +316,23 @@
     vars:
       ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
   - name: lambda_info | Assert successfull retrieval of all information 1
+    vars:
+      lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
     assert:
       that:
       - lambda_infos_all is not failed
       - lambda_infos_all.functions | length > 0
       - lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | length == 1
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).runtime == lambda_python_runtime
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).description == ""
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).function_arn is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).handler == lambda_python_handler
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).versions is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).aliases is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).policy is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).mappings is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).tags is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).architectures == ['arm64']
+      - lambda_info.runtime == lambda_python_runtime
+      - lambda_info.description == ""
+      - lambda_info.function_arn is defined
+      - lambda_info.handler == lambda_python_handler
+      - lambda_info.versions is defined
+      - lambda_info.aliases is defined
+      - lambda_info.policy is defined
+      - lambda_info.mappings is defined
+      - lambda_info.tags is defined
+      - lambda_info.architectures == ['arm64']
 
   - name: lambda_info | Ensure default query value is 'config' when function name
       omitted
@@ -338,20 +340,22 @@
     register: lambda_infos_query_config
     check_mode: yes
   - name: lambda_info | Assert successfull retrieval of all information 2
+    vars:
+      lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
     assert:
       that:
       - lambda_infos_query_config is not failed
       - lambda_infos_query_config.functions | length > 0
-      - lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | length == 1
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).runtime == lambda_python_runtime
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).description == ""
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).function_arn is defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).handler == lambda_python_handler
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).versions is not defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).aliases is not defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).policy is not defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).mappings is not defined
-      - (lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first).tags is not defined
+      - lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | length == 1
+      - lambda_info.runtime == lambda_python_runtime
+      - lambda_info.description == ""
+      - lambda_info.function_arn is defined
+      - lambda_info.handler == lambda_python_handler
+      - lambda_info.versions is not defined
+      - lambda_info.aliases is not defined
+      - lambda_info.policy is not defined
+      - lambda_info.mappings is not defined
+      - lambda_info.tags is not defined
 
   - name: lambda_info | Ensure default query value is 'all' when function name specified
     lambda_info:
