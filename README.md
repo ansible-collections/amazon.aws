@@ -95,18 +95,11 @@ You can either call modules by their Fully Qualified Collection Name (FQCN), suc
 ## Contributing to this collection
 
 We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
-See [Contributing to Ansible-maintained collections](https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections) for more details.
+See [CONTRIBUTING.md](https://github.com/ansible-collections/amazon.aws/blob/main/CONTRIBUTING.md) for more details.
 
 You can also join us on:
 
 - Libera.Chat IRC - the ``#ansible-aws`` [irc.libera.chat](https://libera.chat/) channel
-
-### More information about contributing
-
-- [Ansible Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) - Details on contributing to Ansible
-- [Contributing to Collections](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html#contributing-to-collections) - How to check out collection git repositories correctly
-- [Guidelines for Ansible Amazon AWS module development](https://docs.ansible.com/ansible/latest/dev_guide/platforms/aws_guidelines.html)
-- [Getting Started With AWS Ansible Module Development and Community Contribution](https://www.ansible.com/blog/getting-started-with-aws-ansible-module-development)
 
 ## Release notes
 
