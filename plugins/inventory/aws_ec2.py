@@ -464,6 +464,7 @@ def _describe_ec2_instances(connection, filters):
 class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_ec2'
+    INVENTORY_FILE_SUFFIXES = ("aws_ec2.yml", "aws_ec2.yaml")
 
     def __init__(self):
 
@@ -678,19 +679,6 @@ class InventoryModule(AWSInventoryBase):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host_vars, name, strict=strict)
 
-    def verify_file(self, path):
-        '''
-            :param loader: an ansible.parsing.dataloader.DataLoader object
-            :param path: the path to the inventory config file
-            :return the contents of the config file
-        '''
-        inventory_file_suffix = ('aws_ec2.yml', 'aws_ec2.yaml')
-        if super().verify_file(path):
-            if path.endswith(inventory_file_suffix):
-                return True
-        self.display.debug(f"aws_ec2 inventory filename must end with {inventory_file_suffix}")
-        return False
-
     def build_include_filters(self):
         result = self.get_option('include_filters')
         if self.get_option('filters'):
@@ -715,28 +703,15 @@ class InventoryModule(AWSInventoryBase):
         hostvars_suffix = self.get_option("hostvars_suffix")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option('use_contrib_script_compatible_ec2_tag_keys')
 
-        cache_key = self.get_cache_key(path)
-        # false when refresh_cache or --flush-cache is used
-        if cache:
-            # get the user-specified directive
-            cache = self.get_option('cache')
-
         if self.get_option('include_extra_api_calls'):
             self.display.deprecate(
                 "The include_extra_api_calls option has been deprecated "
                 " and will be removed in release 6.0.0.",
                 date='2024-09-01', collection_name='amazon.aws')
 
-        # Generate inventory
-        cache_needs_update = False
-        if cache:
-            try:
-                results = self._cache[cache_key]
-            except KeyError:
-                # if cache expires or cache file doesn't exist
-                cache_needs_update = True
+        result_was_cached, results = self.get_cached_result(path, cache)
 
-        if not cache or cache_needs_update:
+        if not result_was_cached:
             results = self._query(regions, include_filters, exclude_filters, strict_permissions)
 
         self._populate(
@@ -747,10 +722,7 @@ class InventoryModule(AWSInventoryBase):
             hostvars_suffix=hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys)
 
-        # If the cache has expired/doesn't exist or if refresh_inventory/flush cache is used
-        # when the user is using caching, update the cached inventory
-        if cache_needs_update or (not cache and self.get_option('cache')):
-            self._cache[cache_key] = results
+        self.update_cached_result(path, cache, results)
 
     @staticmethod
     def _legacy_script_compatible_group_sanitization(name):

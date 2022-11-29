@@ -187,7 +187,7 @@ def test_inventory_get_preferred_hostname_failure(inventory):
         ('aws_ec2.yaml', True),
     ]
 )
-@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.AWSInventoryBase.verify_file")
+@patch("ansible.plugins.inventory.BaseInventoryPlugin.verify_file")
 def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_return, filename, result):
     m_base_verify_file.return_value = base_verify_file_return
     if not base_verify_file_return:
