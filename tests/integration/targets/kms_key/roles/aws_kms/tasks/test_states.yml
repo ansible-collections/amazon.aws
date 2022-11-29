@@ -59,6 +59,7 @@
       - key.key_policies | length == 1
       - key.key_policies[0].Id == 'key-default-1'
       - key.description == ''
+      - key.multi_region == False
 
   - name: Sleep to wait for updates to propagate
     wait_for:
@@ -105,6 +106,7 @@
       - key.key_policies | length == 1
       - key.key_policies[0].Id == 'key-default-1'
       - key.description == ''
+      - key.multi_region == False
 
     # ------------------------------------------------------------------------------------------
 

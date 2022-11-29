@@ -60,6 +60,11 @@ options:
       - A description of the CMK.
       - Use a description that helps you decide whether the CMK is appropriate for a task.
     type: str
+  multi_region:
+    description:
+      -  Whether to create a multi-Region primary key or not.
+    default: False
+    type: bool
   pending_window:
     description:
       - The number of days between requesting deletion of the CMK and when it will actually be deleted.
@@ -154,6 +159,7 @@ EXAMPLES = r'''
 # Create a new KMS key
 - amazon.aws.kms_key:
     alias: mykey
+    multi_region: true
     tags:
       Name: myKey
       Purpose: protect_stuff
@@ -409,6 +415,15 @@ had_invalid_entries:
   description: Whether there are invalid (non-ARN) entries in the KMS entry. These don't count as a change, but will be removed if any changes are being made.
   type: bool
   returned: always
+multi_region:
+  description:
+    - Indicates whether the CMK is a multi-Region (True ) or regional (False ) key.
+    - This value is True for multi-Region primary and replica CMKs and False for regional CMKs.
+  type: bool
+  returned: always
+  sample: False
+
+
 '''
 
 # these mappings are used to go from simple labels to the actual 'Sid' values returned
@@ -853,12 +868,14 @@ def update_key(connection, module, key):
     # make results consistent with kms_facts before returning
     result = get_key_details(connection, module, key['key_arn'])
     result['changed'] = changed
+
     return result
 
 
 def create_key(connection, module):
     key_usage = module.params.get('key_usage')
     key_spec = module.params.get('key_spec')
+    multi_region = module.params.get('multi_region')
     tags_list = ansible_dict_to_boto3_tag_list(
         module.params['tags'] or {},
         # KMS doesn't use "Key" and "Value" as other APIs do.
@@ -868,16 +885,16 @@ def create_key(connection, module):
                   Tags=tags_list,
                   KeyUsage=key_usage,
                   CustomerMasterKeySpec=key_spec,
-                  Origin='AWS_KMS')
+                  Origin='AWS_KMS',
+                  MultiRegion=multi_region)
 
     if module.check_mode:
         return {'changed': True}
-
+  
     if module.params.get('description'):
         params['Description'] = module.params['description']
     if module.params.get('policy'):
         params['Policy'] = module.params['policy']
-
     try:
         result = connection.create_key(**params)['KeyMetadata']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -927,9 +944,8 @@ def fetch_key_metadata(connection, module, key_id, alias):
     #        have all been exhausted, but none of those available options have solved the problem.
     # Integration tests will wait for 10 seconds to combat this issue.
     # See https://github.com/ansible-collections/community.aws/pull/1052.
-
     alias = canonicalize_alias_name(module.params.get('alias'))
-
+  
     try:
         # Fetch by key_id where possible
         if key_id:
@@ -943,6 +959,14 @@ def fetch_key_metadata(connection, module, key_id, alias):
         module.fail_json_aws(e, 'Failed to fetch key metadata.')
 
 
+def validate_params(module, key_metadata):
+    # We can't create keys with a specific ID, if we can't access the key we'll have to fail
+    if module.params.get('state') == 'present' and module.params.get('key_id') and not key_metadata:
+        module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get('key_id')))
+    if module.params.get('multi_region') and key_metadata:
+        module.fail_json(msg="You cannot change the multi-region property on an existing key.")
+
+
 def main():
     argument_spec = dict(
         alias=dict(aliases=['key_alias']),
@@ -950,6 +974,7 @@ def main():
         key_id=dict(aliases=['key_arn']),
         description=dict(),
         enabled=dict(type='bool', default=True),
+        multi_region=dict(type='bool', default=False),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         grants=dict(type='list', default=[], elements='dict'),
@@ -974,9 +999,7 @@ def main():
                      date='2024-05-01', collection_name='amazon.aws')
 
     key_metadata = fetch_key_metadata(kms, module, module.params.get('key_id'), module.params.get('alias'))
-    # We can't create keys with a specific ID, if we can't access the key we'll have to fail
-    if module.params.get('state') == 'present' and module.params.get('key_id') and not key_metadata:
-        module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get('key_id')))
+    validate_params(module, key_metadata)
 
     if module.params.get('state') == 'absent':
         if key_metadata is None:
