@@ -76,6 +76,7 @@
       enabled: yes
       multi_region: True
     register: result
+    ignore_errors: True
   
   - assert:
       that:
