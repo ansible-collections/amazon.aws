@@ -412,7 +412,7 @@ options:
         - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
         - Requires boto3 >= 1.26.0.
       type: int
-      version_added: 5.1.0
+      version_added: 5.2.0
     tde_credential_arn:
         description:
           - The ARN from the key store with which to associate the instance for Transparent Data Encryption. This is
