@@ -275,6 +275,11 @@ Some examples are shown below:
     # This sets the ec2_security_group_ids variable.
     ec2_security_group_ids: security_groups | map(attribute='group_id') | list |  join(',')
 
+    # Host variables that are strings need to be wrapped with two sets of quotes.
+    # See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.
+    ansible_connection: '"community.aws.aws_ssm"'
+    ansible_user: '"ssm-user"'
+
 
 ``include_filters`` and ``exclude_filters``
 -------------------------------------------
