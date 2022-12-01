@@ -407,7 +407,7 @@ options:
         type: str
     storage_throughput:
       description:
-        - The storage throughput when the I(storage_type) is gp3.
+        - The storage throughput when the I(storage_type) is C(gp3).
         - When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.
         - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
         - Requires boto3 >= 1.26.0.
