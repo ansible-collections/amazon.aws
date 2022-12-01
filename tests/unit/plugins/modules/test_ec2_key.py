@@ -274,7 +274,7 @@ def test_create_new_key_pair_key_material(m_import_key_pair, m_extract_key_data)
 
     expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': 'key pair created'}
 
-    result = ec2_key.create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
+    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
 
     assert result == expected_result
     assert m_import_key_pair.call_count == 1
@@ -310,7 +310,7 @@ def test_create_new_key_pair_no_key_material(m_create_key_pair, m_extract_key_da
 
     expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': 'key pair created'}
 
-    result = ec2_key.create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
+    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
 
     assert result == expected_result
     assert m_create_key_pair.call_count == 1
@@ -374,15 +374,15 @@ def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_
 
     expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
 
-    result = ec2_key.update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec)
+    result = ec2_key.update_key_pair_by_key_material(module.check_mode, ec2_client, name, key, key_material, tag_spec)
 
     assert result == expected_result
     assert m_get_key_fingerprint.call_count == 1
     assert m_delete_key_pair.call_count == 1
     assert m__import_key_pair.call_count == 1
     assert m_extract_key_data.call_count == 1
-    m_get_key_fingerprint.assert_called_with(module, ec2_client, key_material)
-    m_delete_key_pair.assert_called_with(module, ec2_client, name, finish_task=False)
+    m_get_key_fingerprint.assert_called_with(module.check_mode, ec2_client, key_material)
+    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, finish_task=False)
     m__import_key_pair.assert_called_with(ec2_client, name, key_material, tag_spec)
     m_extract_key_data.assert_called_with(key)
 
@@ -418,13 +418,13 @@ def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_
 
     expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
 
-    result = ec2_key.update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec)
+    result = ec2_key.update_key_pair_by_key_type(module.check_mode, ec2_client, name, key_type, tag_spec)
 
     assert result == expected_result
     assert m_delete_key_pair.call_count == 1
     assert m__create_key_pair.call_count == 1
     assert m_extract_key_data.call_count == 1
-    m_delete_key_pair.assert_called_with(module, ec2_client, name, finish_task=False)
+    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, finish_task=False)
     m__create_key_pair.assert_called_with(ec2_client, name, tag_spec, key_type)
     m_extract_key_data.assert_called_with(m__create_key_pair.return_value, key_type)
 
@@ -573,7 +573,7 @@ def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair):
 
     expected_result = {'changed': True, 'key': None, 'msg': 'key deleted'}
 
-    result = ec2_key.delete_key_pair(module, ec2_client, name)
+    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name)
 
     assert m_find_key_pair.call_count == 1
     m_find_key_pair.assert_called_with(ec2_client, name)
@@ -596,7 +596,7 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
 
     expected_result = {'key': None, 'msg': 'key did not exist'}
 
-    result = ec2_key.delete_key_pair(module, ec2_client, name)
+    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name)
 
     assert m_find_key_pair.call_count == 1
     m_find_key_pair.assert_called_with(ec2_client, name)

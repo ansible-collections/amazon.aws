@@ -158,6 +158,7 @@ from ansible.module_utils._text import to_bytes
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
@@ -178,11 +179,11 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
         'TagSpecifications': tag_spec
     }
 
-    params = {k: v for k, v in params.items() if v is not None}
+    params = scrub_none_parameters(params)
 
     try:
         key = ec2_client.import_key_pair(aws_retry=True, **params)
-    except botocore.exceptions.ClientError as err:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
         raise Ec2KeyFailure(err, "error importing key")
     return key
 
@@ -192,17 +193,17 @@ def extract_key_data(key, key_type=None):
         'name': key['KeyName'],
         'fingerprint': key['KeyFingerprint'],
         'id': key['KeyPairId'],
-        'tags': {} if key.get('Tags') is None else boto3_tag_list_to_ansible_dict(key['Tags']),
+        'tags': boto3_tag_list_to_ansible_dict(key.get('Tags') or []),
         # KeyMaterial is returned by create_key_pair, but not by describe_key_pairs
         'private_key': key.get('KeyMaterial'),
         # KeyType is only set by describe_key_pairs
         'type': key.get('KeyType') or key_type
     }
 
-    return {k: v for k, v in data.items() if v is not None}
+    return scrub_none_parameters(data)
 
 
-def get_key_fingerprint(module, ec2_client, key_material):
+def get_key_fingerprint(check_mode, ec2_client, key_material):
     '''
     EC2's fingerprints are non-trivial to generate, so push this key
     to a temporary name and make ec2 calculate the fingerprint for us.
@@ -215,7 +216,7 @@ def get_key_fingerprint(module, ec2_client, key_material):
         random_name = "ansible-" + str(uuid.uuid4())
         name_in_use = find_key_pair(ec2_client, random_name)
     temp_key = _import_key_pair(ec2_client, random_name, key_material)
-    delete_key_pair(module, ec2_client, random_name, finish_task=False)
+    delete_key_pair(check_mode, ec2_client, random_name, finish_task=False)
     return temp_key['KeyFingerprint']
 
 
@@ -239,24 +240,23 @@ def _create_key_pair(ec2_client, name, tag_spec, key_type):
         'KeyType': key_type,
     }
 
-    params = {k: v for k, v in params.items() if v is not None}
+    params = scrub_none_parameters(params)
 
     try:
         key = ec2_client.create_key_pair(aws_retry=True, **params)
-    except botocore.exceptions.ClientError as err:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
         raise Ec2KeyFailure(err, "error creating key")
     return key
 
 
-def create_new_key_pair(module, ec2_client, name, key_material, key_type, tags):
+def create_new_key_pair(ec2_client, name, key_material, key_type, tags, check_mode):
     '''
     key does not exist, we create new key
     '''
-    if module.check_mode:
+    if check_mode:
         return {'changed': True, 'key': None, 'msg': 'key pair created'}
 
     tag_spec = boto3_tag_specifications(tags, ['key-pair'])
-    key_data = None
     if key_material:
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
     else:
@@ -267,22 +267,22 @@ def create_new_key_pair(module, ec2_client, name, key_material, key_type, tags):
     return result
 
 
-def update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec):
-    if module.check_mode:
+def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_material, tag_spec):
+    if check_mode:
         return {'changed': True, 'key': None, 'msg': 'key pair updated'}
-    new_fingerprint = get_key_fingerprint(module, ec2_client, key_material)
+    new_fingerprint = get_key_fingerprint(check_mode, ec2_client, key_material)
     if key['KeyFingerprint'] != new_fingerprint:
-        delete_key_pair(module, ec2_client, name, finish_task=False)
+        delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
         key_data = extract_key_data(key)
         return {'changed': True, 'key': key_data, 'msg': "key pair updated"}
 
 
-def update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec):
-    if module.check_mode:
+def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec):
+    if check_mode:
         return {'changed': True, 'key': None, 'msg': 'key pair updated'}
     else:
-        delete_key_pair(module, ec2_client, name, finish_task=False)
+        delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _create_key_pair(ec2_client, name, tag_spec, key_type)
         key_data = extract_key_data(key, key_type)
         return {'changed': True, 'key': key_data, 'msg': "key pair updated"}
@@ -291,14 +291,14 @@ def update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec):
 def _delete_key_pair(ec2_client, key_name):
     try:
         ec2_client.delete_key_pair(aws_retry=True, KeyName=key_name)
-    except botocore.exceptions.ClientError as err:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
         raise Ec2KeyFailure(err, "error deleting key")
 
 
-def delete_key_pair(module, ec2_client, name, finish_task=True):
+def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
     key = find_key_pair(ec2_client, name)
 
-    if key and module.check_mode:
+    if key and check_mode:
         result = {'changed': True, 'key': None, 'msg': 'key deleted'}
     elif not key:
         result = {'key': None, 'msg': 'key did not exist'}
@@ -318,10 +318,11 @@ def handle_existing_key_pair_update(module, ec2_client, name, key):
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
     tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    check_mode = module.check_mode
     if key_material and force:
-        result = update_key_pair_by_key_material(module, ec2_client, name, key, key_material, tag_spec)
+        result = update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_material, tag_spec)
     elif key_type and key_type != key['KeyType']:
-        result = update_key_pair_by_key_type(module, ec2_client, name, key_type, tag_spec)
+        result = update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec)
     else:
         changed = False
         changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
@@ -365,7 +366,7 @@ def main():
         module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
 
     if state == 'absent':
-        result = delete_key_pair(module, ec2_client, name)
+        result = delete_key_pair(module.check_mode, ec2_client, name)
 
     elif state == 'present':
         # check if key already exists
@@ -373,7 +374,7 @@ def main():
         if key:
             result = handle_existing_key_pair_update(module, ec2_client, name, key)
         else:
-            result = create_new_key_pair(module, ec2_client, name, key_material, key_type, tags)
+            result = create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
 
     module.exit_json(**result)
 
