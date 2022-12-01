@@ -354,6 +354,11 @@ The prefix will be the name of the host group that is to be concatenated with th
 
 <span class="w">  </span><span class="c1"># This sets the ec2_security_group_ids variable.</span><span class="w"></span>
 <span class="w">  </span><span class="nt">ec2_security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_groups | map(attribute=&#39;group_id&#39;) | list |  join(&#39;,&#39;)</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1"># Host variables that are strings need to be wrapped with two sets of quotes.</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;community.aws.aws_ssm&quot;&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;ssm-user&quot;&#39;</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
