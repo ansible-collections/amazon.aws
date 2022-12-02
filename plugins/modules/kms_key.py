@@ -300,7 +300,7 @@ policies:
     - Sid: "Allow direct access to key metadata to the account"
       Effect: "Allow"
       Principal:
-        AWS: "arn:aws:iam::123456789012:root'
+        AWS: "arn:aws:iam::123456789012:root"
       Action:
       - "kms:Describe*"
       - "kms:Get*"
