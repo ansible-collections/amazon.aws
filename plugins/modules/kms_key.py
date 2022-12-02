@@ -1036,7 +1036,7 @@ def main():
     kms = module.client('kms')
 
     module.deprecate(
-        'The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.',
+        "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
         date='2024-05-01',
         collection_name='amazon.aws',
     )
