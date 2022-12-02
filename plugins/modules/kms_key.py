@@ -65,6 +65,7 @@ options:
       -  Whether to create a multi-Region primary key or not.
     default: False
     type: bool
+    version_added: 5.2.0
   pending_window:
     description:
       - The number of days between requesting deletion of the CMK and when it will actually be deleted.
@@ -191,13 +192,13 @@ EXAMPLES = r'''
 - name: Update IAM policy on an existing KMS key
   amazon.aws.kms_key:
     alias: my-kms-key
-    policy: '{'Version': '2012-10-17', 'Id': 'my-kms-key-permissions', 'Statement': [ { <SOME STATEMENT> } ]}'
+    policy: '{"Version": "2012-10-17", "Id": "my-kms-key-permissions", "Statement": [ { <SOME STATEMENT> } ]}'
     state: present
 
 - name: Example using lookup for policy json
   amazon.aws.kms_key:
     alias: my-kms-key
-    policy: '{{ lookup('template', 'kms_iam_policy_template.json.j2') }}'
+    policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
     state: present
 '''
 
@@ -241,19 +242,19 @@ creation_date:
   description: Date and time of creation of the key.
   type: str
   returned: always
-  sample: '2017-04-18T15:12:08.551000+10:00'
+  sample: "2017-04-18T15:12:08.551000+10:00"
 deletion_date:
   description: Date and time after which KMS deletes this KMS key.
   type: str
   returned: when key_state is PendingDeletion
-  sample: '2017-04-18T15:12:08.551000+10:00'
+  sample: "2017-04-18T15:12:08.551000+10:00"
   version_added: 3.3.0
   version_added_collection: community.aws
 description:
   description: Description of the key.
   type: str
   returned: always
-  sample: 'My Key for Protecting important stuff'
+  sample: "My Key for Protecting important stuff"
 enabled:
   description: Whether the key is enabled. True if I(key_state) is C(Enabled).
   type: bool
@@ -277,70 +278,70 @@ policies:
   returned: always
   elements: str
   sample:
-    Version: '2012-10-17'
-    Id: 'auto-ebs-2'
+    Version: "2012-10-17"
+    Id: "auto-ebs-2"
     Statement:
-    - Sid: 'Allow access through EBS for all principals in the account that are authorized to use EBS'
-      Effect: 'Allow'
+    - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
+      Effect: "Allow"
       Principal:
-        AWS: '*'
+        AWS: "*"
       Action:
-      - 'kms:Encrypt'
-      - 'kms:Decrypt'
-      - 'kms:ReEncrypt*'
-      - 'kms:GenerateDataKey*'
-      - 'kms:CreateGrant'
-      - 'kms:DescribeKey'
-      Resource: '*'
+      - "kms:Encrypt"
+      - "kms:Decrypt"
+      - "kms:ReEncrypt*"
+      - "kms:GenerateDataKey*"
+      - "kms:CreateGrant"
+      - "kms:DescribeKey"
+      Resource: "*"
       Condition:
         StringEquals:
-          kms:CallerAccount: '123456789012'
-          kms:ViaService: 'ec2.ap-southeast-2.amazonaws.com'
-    - Sid: 'Allow direct access to key metadata to the account'
-      Effect: 'Allow'
+          kms:CallerAccount: "123456789012"
+          kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
+    - Sid: "Allow direct access to key metadata to the account"
+      Effect: "Allow"
       Principal:
-        AWS: 'arn:aws:iam::123456789012:root'
+        AWS: "arn:aws:iam::123456789012:root'
       Action:
-      - 'kms:Describe*'
-      - 'kms:Get*'
-      - 'kms:List*'
-      - 'kms:RevokeGrant'
-      Resource: '*'
+      - "kms:Describe*"
+      - "kms:Get*"
+      - "kms:List*"
+      - "kms:RevokeGrant"
+      Resource: "*"
 key_policies:
   description: List of policy documents for the key. Empty when access is denied even if there are policies.
   type: list
   returned: always
   elements: dict
   sample:
-    Version: '2012-10-17'
-    Id: 'auto-ebs-2'
+    Version: "2012-10-17"
+    Id: "auto-ebs-2"
     Statement:
-    - Sid: 'Allow access through EBS for all principals in the account that are authorized to use EBS'
-      Effect: 'Allow'
+    - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
+      Effect: "Allow"
       Principal:
-        AWS: '*'
+        AWS: "*"
       Action:
-      - 'kms:Encrypt'
-      - 'kms:Decrypt'
-      - 'kms:ReEncrypt*'
-      - 'kms:GenerateDataKey*'
-      - 'kms:CreateGrant'
-      - 'kms:DescribeKey'
-      Resource: '*'
+      - "kms:Encrypt"
+      - "kms:Decrypt"
+      - "kms:ReEncrypt*"
+      - "kms:GenerateDataKey*"
+      - "kms:CreateGrant"
+      - "kms:DescribeKey"
+      Resource: "*"
       Condition:
         StringEquals:
-          kms:CallerAccount: '123456789012'
-          kms:ViaService: 'ec2.ap-southeast-2.amazonaws.com'
-    - Sid: 'Allow direct access to key metadata to the account'
-      Effect: 'Allow'
+          kms:CallerAccount: "123456789012"
+          kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
+    - Sid: "Allow direct access to key metadata to the account"
+      Effect: "Allow"
       Principal:
-        AWS: 'arn:aws:iam::123456789012:root'
+        AWS: "arn:aws:iam::123456789012:root"
       Action:
-      - 'kms:Describe*'
-      - 'kms:Get*'
-      - 'kms:List*'
-      - 'kms:RevokeGrant'
-      Resource: '*'
+      - "kms:Describe*"
+      - "kms:Get*"
+      - "kms:List*"
+      - "kms:RevokeGrant"
+      Resource: "*"
   version_added: 3.3.0
   version_added_collection: community.aws
 tags:
@@ -363,12 +364,12 @@ grants:
       returned: always
       sample:
         encryption_context_equals:
-           'aws:lambda:_function_arn': 'arn:aws:lambda:ap-southeast-2:123456789012:function:xyz'
+           "aws:lambda:_function_arn": "arn:aws:lambda:ap-southeast-2:123456789012:function:xyz"
     creation_date:
       description: Date of creation of the grant.
       type: str
       returned: always
-      sample: '2017-04-18T15:12:08+10:00'
+      sample: "2017-04-18T15:12:08+10:00"
     grant_id:
       description: The unique ID for the grant.
       type: str
@@ -410,7 +411,7 @@ changes_needed:
   description: Grant types that would be changed/were changed.
   type: dict
   returned: always
-  sample: { 'role': 'add', 'role grant': 'add' }
+  sample: { "role": "add", "role grant": "add" }
 had_invalid_entries:
   description: Whether there are invalid (non-ARN) entries in the KMS entry. These don't count as a change, but will be removed if any changes are being made.
   type: bool
@@ -431,7 +432,7 @@ multi_region:
 statement_label = {
     'role': 'Allow use of the key',
     'role grant': 'Allow attachment of persistent resources',
-    'admin': 'Allow access for Key Administrators',
+    'admin': 'Allow access for Key Administrators'
 }
 
 import json
@@ -523,7 +524,7 @@ def get_kms_tags(connection, module, key_id):
         except is_boto3_error_code('AccessDeniedException'):
             tag_response = {}
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg='Failed to obtain key tags')
+            module.fail_json_aws(e, msg="Failed to obtain key tags")
         if tag_response.get('NextMarker'):
             kwargs['Marker'] = tag_response['NextMarker']
         else:
@@ -541,11 +542,11 @@ def get_kms_policies(connection, module, key_id):
     except is_boto3_error_code('AccessDeniedException'):
         return []
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Failed to obtain key policies')
+        module.fail_json_aws(e, msg="Failed to obtain key policies")
 
 
 def camel_to_snake_grant(grant):
-    '''camel_to_snake_grant snakifies everything except the encryption context'''
+    '''camel_to_snake_grant snakifies everything except the encryption context '''
     constraints = grant.get('Constraints', {})
     result = camel_dict_to_snake_dict(grant)
     if 'EncryptionContextEquals' in constraints:
@@ -559,19 +560,17 @@ def get_key_details(connection, module, key_id):
     try:
         result = get_kms_metadata_with_backoff(connection, key_id)['KeyMetadata']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to obtain key metadata')
+        module.fail_json_aws(e, msg="Failed to obtain key metadata")
     result['KeyArn'] = result.pop('Arn')
 
     try:
         aliases = get_kms_aliases_lookup(connection)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to obtain aliases')
+        module.fail_json_aws(e, msg="Failed to obtain aliases")
 
     try:
         current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-        result['enable_key_rotation'] = current_rotation_status.get(
-            'KeyRotationEnabled'
-        )
+        result['enable_key_rotation'] = current_rotation_status.get('KeyRotationEnabled')
     except is_boto3_error_code(['AccessDeniedException', 'UnsupportedOperationException']) as e:
         result['enable_key_rotation'] = None
     result['aliases'] = aliases.get(result['KeyId'], [])
@@ -585,7 +584,7 @@ def get_key_details(connection, module, key_id):
             for grant in get_kms_grants_with_backoff(connection, key_id)['Grants']
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to obtain key grants')
+        module.fail_json_aws(e, msg="Failed to obtain key grants")
     tags = get_kms_tags(connection, module, key_id)
     result['tags'] = boto3_tag_list_to_ansible_dict(tags, 'TagKey', 'TagValue')
     result['policies'] = get_kms_policies(connection, module, key_id)
@@ -597,7 +596,7 @@ def get_kms_facts(connection, module):
     try:
         keys = get_kms_keys_with_backoff(connection)['Keys']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to obtain keys')
+        module.fail_json_aws(e, msg="Failed to obtain keys")
 
     return [get_key_details(connection, module, key['KeyId']) for key in keys]
 
@@ -673,7 +672,7 @@ def start_key_deletion(connection, module, key_metadata):
         connection.schedule_key_deletion(**deletion_params)
         return True
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to schedule key for deletion')
+        module.fail_json_aws(e, msg="Failed to schedule key for deletion")
 
 
 def cancel_key_deletion(connection, module, key):
@@ -690,7 +689,7 @@ def cancel_key_deletion(connection, module, key):
         # set this so that ensure_enabled_disabled works correctly
         key['key_state'] = 'Disabled'
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to cancel key deletion')
+        module.fail_json_aws(e, msg="Failed to cancel key deletion")
 
     return True
 
@@ -709,12 +708,12 @@ def ensure_enabled_disabled(connection, module, key, enabled):
             try:
                 connection.enable_key(KeyId=key_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Failed to enable key')
+                module.fail_json_aws(e, msg="Failed to enable key")
         else:
             try:
                 connection.disable_key(KeyId=key_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Failed to disable key')
+                module.fail_json_aws(e, msg="Failed to disable key")
 
     return True
 
@@ -735,7 +734,7 @@ def update_alias(connection, module, key, alias):
         try:
             connection.create_alias(TargetKeyId=key_id, AliasName=alias)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed create key alias')
+            module.fail_json_aws(e, msg="Failed create key alias")
 
     return True
 
@@ -751,7 +750,7 @@ def update_description(connection, module, key, description):
         try:
             connection.update_key_description(KeyId=key_id, Description=description)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to update key description')
+            module.fail_json_aws(e, msg="Failed to update key description")
 
     return True
 
@@ -769,11 +768,8 @@ def update_tags(connection, module, key, desired_tags, purge_tags):
         if to_remove:
             try:
                 connection.untag_resource(KeyId=key_id, TagKeys=to_remove)
-            except (
-                botocore.exceptions.ClientError,
-                botocore.exceptions.BotoCoreError,
-            ) as e:
-                module.fail_json_aws(e, msg='Unable to remove tag')
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Unable to remove tag")
         if to_add:
             try:
                 tags = ansible_dict_to_boto3_tag_list(
@@ -782,11 +778,8 @@ def update_tags(connection, module, key, desired_tags, purge_tags):
                     tag_value_key_name='TagValue',
                 )
                 connection.tag_resource(KeyId=key_id, Tags=tags)
-            except (
-                botocore.exceptions.ClientError,
-                botocore.exceptions.BotoCoreError,
-            ) as e:
-                module.fail_json_aws(e, msg='Unable to add tag to key')
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Unable to add tag to key")
 
     return True
 
@@ -797,7 +790,7 @@ def update_policy(connection, module, key, policy):
     try:
         new_policy = json.loads(policy)
     except ValueError as e:
-        module.fail_json_aws(e, msg='Unable to parse new policy as JSON')
+        module.fail_json_aws(e, msg="Unable to parse new policy as JSON")
 
     key_id = key['key_arn']
     try:
@@ -815,7 +808,7 @@ def update_policy(connection, module, key, policy):
         try:
             connection.put_key_policy(KeyId=key_id, PolicyName='default', Policy=policy)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Unable to update key policy')
+            module.fail_json_aws(e, msg="Unable to update key policy")
 
     return True
 
@@ -832,7 +825,7 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
     except is_boto3_error_code('AccessDeniedException'):
         pass
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Unable to get current key rotation status')
+        module.fail_json_aws(e, msg="Unable to get current key rotation status")
 
     if not module.check_mode:
         try:
@@ -841,7 +834,7 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
             else:
                 connection.disable_key_rotation(KeyId=key_id)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to enable/disable key rotation')
+            module.fail_json_aws(e, msg="Failed to enable/disable key rotation")
 
     return True
 
@@ -859,13 +852,13 @@ def update_grants(connection, module, key, desired_grants, purge_grants):
             try:
                 connection.retire_grant(KeyId=key_id, GrantId=grant['grant_id'])
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to retire grant')
+                module.fail_json_aws(e, msg="Unable to retire grant")
         for grant in to_add:
             grant_params = convert_grant_params(grant, key)
             try:
                 connection.create_grant(**grant_params)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to create grant')
+                module.fail_json_aws(e, msg="Unable to create grant")
 
     return True
 
@@ -885,7 +878,6 @@ def update_key(connection, module, key):
     # make results consistent with kms_facts before returning
     result = get_key_details(connection, module, key['key_arn'])
     result['changed'] = changed
-
     return result
 
 
@@ -918,7 +910,7 @@ def create_key(connection, module):
     try:
         result = connection.create_key(**params)['KeyMetadata']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to create initial key')
+        module.fail_json_aws(e, msg="Failed to create initial key")
 
     key = get_key_details(connection, module, result['KeyId'])
     update_alias(connection, module, key, module.params['alias'])
@@ -964,6 +956,7 @@ def fetch_key_metadata(connection, module, key_id, alias):
     #        have all been exhausted, but none of those available options have solved the problem.
     # Integration tests will wait for 10 seconds to combat this issue.
     # See https://github.com/ansible-collections/community.aws/pull/1052.
+
     alias = canonicalize_alias_name(module.params.get('alias'))
 
     try:
@@ -976,7 +969,7 @@ def fetch_key_metadata(connection, module, key_id, alias):
     except connection.exceptions.NotFoundException:
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, 'Failed to fetch key metadata.')
+        module.fail_json_aws(e, "Failed to fetch key metadata.")
 
 
 def validate_params(module, key_metadata):
