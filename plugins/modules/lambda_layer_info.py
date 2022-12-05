@@ -19,6 +19,13 @@ options:
     type: str
     aliases:
     - layer_name
+  version_number:
+    description:
+    - The Lambda layer version number to retrieve.
+    - Requires I(name) to be provided.
+    type: int
+    aliases:
+    - layer_version
   compatible_runtime:
     description:
     - A runtime identifier.
@@ -62,6 +69,12 @@ EXAMPLES = '''
 - name: list latest versions for all layers
   amazon.aws.lambda_layer_info:
     compatible_runtime: python3.7
+
+# Retrieve specific lambda layer information
+- name: Get lambda layer version information
+  amazon.aws.lambda_layer_info:
+    name: my-layer
+    version_number: 1
 '''
 
 RETURN = '''
@@ -110,6 +123,29 @@ layers_versions:
         description: A list of compatible instruction set architectures.
         returned: if it was defined for the layer version.
         type: list
+    content:
+        description: Details about the layer version.
+        returned: if I(version_number) was provided
+        type: complex
+        contains:
+            location:
+                description: A link to the layer archive in Amazon S3 that is valid for 10 minutes.
+                type: str
+                sample: 'https://awslambda-us-east-2-layers.s3.us-east-2.amazonaws.com/snapshots/123456789012/mylayer-4aaa2fbb-96a?versionId=27iWyA73c...'
+            code_sha256:
+                description: The SHA-256 hash of the layer archive.
+                type: str
+                sample: 'tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo='
+            code_size:
+                description: The size of the layer archive in bytes.
+                type: int
+                sample: 169
+            signing_profile_version_arn:
+                description: The Amazon Resource Name (ARN) for a signing profile version.
+                type: str
+            signing_job_arn:
+                description: The Amazon Resource Name (ARN) of a signing job.
+                type: str
 '''
 
 try:
@@ -175,23 +211,39 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
         raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layers {0}".format(params))
 
 
-def execute_module(module, lambda_client):
-
-    params = {}
-    f_operation = list_layers
-    name = module.params.get("name")
-    if name is not None:
-        f_operation = list_layer_versions
-        params["name"] = name
-    compatible_runtime = module.params.get("compatible_runtime")
-    if compatible_runtime is not None:
-        params["compatible_runtime"] = compatible_runtime
-    compatible_architecture = module.params.get("compatible_architecture")
-    if compatible_architecture is not None:
-        params["compatible_architecture"] = compatible_architecture
+def get_layer_version(lambda_client, layer_name, version_number):
 
     try:
-        result = f_operation(lambda_client, **params)
+        layer_version = lambda_client.get_layer_version(LayerName=layer_name, VersionNumber=version_number)
+        if layer_version:
+            layer_version.pop("ResponseMetadata")
+        return [camel_dict_to_snake_dict(layer_version)]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        raise LambdaLayerInfoFailure(exc=e, msg="get_layer_version() failed.")
+
+
+def execute_module(module, lambda_client):
+
+    name = module.params.get("name")
+    version_number = module.params.get("version_number")
+
+    try:
+        if name is not None and version_number is not None:
+            result = get_layer_version(lambda_client, name, version_number)
+        else:
+            params = {}
+            f_operation = list_layers
+            if name is not None:
+                f_operation = list_layer_versions
+                params["name"] = name
+            compatible_runtime = module.params.get("compatible_runtime")
+            if compatible_runtime is not None:
+                params["compatible_runtime"] = compatible_runtime
+            compatible_architecture = module.params.get("compatible_architecture")
+            if compatible_architecture is not None:
+                params["compatible_architecture"] = compatible_architecture
+            result = f_operation(lambda_client, **params)
+
         module.exit_json(changed=False, layers_versions=result)
     except LambdaLayerInfoFailure as e:
         module.fail_json_aws(exception=e.exc, msg=e.msg)
@@ -202,11 +254,15 @@ def main():
         name=dict(type="str", aliases=["layer_name"]),
         compatible_runtime=dict(type="str"),
         compatible_architecture=dict(type="str"),
+        version_number=dict(type="int", aliases=["layer_version"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
+        required_by=dict(
+            version_number=('name', )
+        )
     )
 
     lambda_client = module.client('lambda')

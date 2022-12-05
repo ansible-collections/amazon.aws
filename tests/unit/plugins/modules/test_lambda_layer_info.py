@@ -248,6 +248,67 @@ def raise_botocore_exception():
     return BotoCoreError(error="failed", operation="list_layers")
 
 
+def test_get_layer_version_success():
+
+    aws_layer_version = {
+        "CompatibleRuntimes": [
+            "python3.8"
+        ],
+        "Content": {
+            "CodeSha256": "vqxKx6nTW31obVcB4MYaTWv5H3fBQTn2PHklL9+mF9E=",
+            "CodeSize": 9492621,
+            "Location": "https://test.s3.us-east-1.amazonaws.com/snapshots/123456789012/test-79b29d149e06?versionId=nmEKA3ZgiP7hce3J"
+        },
+        "CreatedDate": "2022-12-05T10:47:32.379+0000",
+        "Description": "Python units test layer",
+        "LayerArn": "arn:aws:lambda:us-east-1:123456789012:layer:test",
+        "LayerVersionArn": "arn:aws:lambda:us-east-1:123456789012:layer:test:2",
+        "LicenseInfo": "GPL-3.0-only",
+        "Version": 2,
+        "ResponseMetadata": {
+            "some-metadata": "some-result"
+        }
+    }
+
+    ansible_layer_version = {
+        "compatible_runtimes": [
+            "python3.8"
+        ],
+        "content": {
+            "code_sha256": "vqxKx6nTW31obVcB4MYaTWv5H3fBQTn2PHklL9+mF9E=",
+            "code_size": 9492621,
+            "location": "https://test.s3.us-east-1.amazonaws.com/snapshots/123456789012/test-79b29d149e06?versionId=nmEKA3ZgiP7hce3J"
+        },
+        "created_date": "2022-12-05T10:47:32.379+0000",
+        "description": "Python units test layer",
+        "layer_arn": "arn:aws:lambda:us-east-1:123456789012:layer:test",
+        "layer_version_arn": "arn:aws:lambda:us-east-1:123456789012:layer:test:2",
+        "license_info": "GPL-3.0-only",
+        "version": 2
+    }
+
+    lambda_client = MagicMock()
+    lambda_client.get_layer_version.return_value = aws_layer_version
+
+    layer_name = "test"
+    layer_version = 2
+
+    assert [ansible_layer_version] == lambda_layer_info.get_layer_version(lambda_client, layer_name, layer_version)
+    lambda_client.get_layer_version.assert_called_once_with(LayerName=layer_name, VersionNumber=layer_version)
+
+
+def test_get_layer_version_failure():
+
+    lambda_client = MagicMock()
+    lambda_client.get_layer_version.side_effect = raise_botocore_exception()
+
+    layer_name = MagicMock()
+    layer_version = MagicMock()
+
+    with pytest.raises(lambda_layer_info.LambdaLayerInfoFailure):
+        lambda_layer_info.get_layer_version(lambda_client, layer_name, layer_version)
+
+
 @pytest.mark.parametrize(
     "params",
     [
