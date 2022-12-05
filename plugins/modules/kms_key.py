@@ -160,6 +160,13 @@ EXAMPLES = r'''
 # Create a new KMS key
 - amazon.aws.kms_key:
     alias: mykey
+    tags:
+      Name: myKey
+      Purpose: protect_stuff
+
+# Create a new multi-region KMS key
+- amazon.aws.kms_key:
+    alias: mykey
     multi_region: true
     tags:
       Name: myKey
@@ -418,9 +425,10 @@ had_invalid_entries:
   returned: always
 multi_region:
   description:
-    - Indicates whether the CMK is a multi-Region (True ) or regional (False ) key.
+    - Indicates whether the CMK is a multi-Region C(True) or regional C(False) key.
     - This value is True for multi-Region primary and replica CMKs and False for regional CMKs.
   type: bool
+  version_added: 5.2.0
   returned: always
   sample: False
 
@@ -984,7 +992,11 @@ def validate_params(module, key_metadata):
                 module.params.get('key_id')
             )
         )
-    if module.params.get('multi_region') and key_metadata:
+    if (
+        module.params.get('multi_region')
+        and key_metadata
+        and module.params.get('state') == 'present'
+    ):
         module.fail_json(
             msg='You cannot change the multi-region property on an existing key.'
         )
