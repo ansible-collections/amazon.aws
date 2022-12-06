@@ -365,16 +365,16 @@ def main():
     if key_type:
         module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
     try:
-      if state == 'absent':
-          result = delete_key_pair(module.check_mode, ec2_client, name)
+        if state == 'absent':
+            result = delete_key_pair(module.check_mode, ec2_client, name)
 
-      elif state == 'present':
-          # check if key already exists
-          key = find_key_pair(ec2_client, name)
-          if key:
-              result = handle_existing_key_pair_update(module, ec2_client, name, key)
-          else:
-              result = create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
+        elif state == 'present':
+            # check if key already exists
+            key = find_key_pair(ec2_client, name)
+            if key:
+                result = handle_existing_key_pair_update(module, ec2_client, name, key)
+            else:
+                result = create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
 
     except Ec2KeyFailure as e:
         if e.original_e:
