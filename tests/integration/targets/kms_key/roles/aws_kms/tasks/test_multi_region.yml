@@ -1,0 +1,100 @@
+- block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+  - name: get ARN of calling user
+    aws_caller_info:
+    register: aws_caller_info
+  - name: See whether key exists and its current state
+    kms_key_info:
+      alias: '{{ kms_key_alias }}'
+  - name: create a multi region key - check mode
+    kms_key:
+      alias: '{{ kms_key_alias }}-check'
+      tags:
+        Hello: World
+      state: present
+      multi_region: True
+      enabled: yes
+    register: key_check
+    check_mode: yes
+  - name: find facts about the check mode key
+    kms_key_info:
+      alias: '{{ kms_key_alias }}-check'
+    register: check_key
+  - name: ensure that check mode worked as expected
+    assert:
+      that:
+      - check_key.kms_keys | length == 0
+      - key_check is changed
+
+  - name: create a multi region key
+    kms_key:
+      alias: '{{ kms_key_alias }}'
+      tags:
+        Hello: World
+      state: present
+      enabled: yes
+      multi_region: True
+      enable_key_rotation: no
+    register: key
+  - name: assert that state is enabled
+    assert:
+      that:
+      - key is changed
+      - '"key_id" in key'
+      - key.key_id | length >= 36
+      - not key.key_id.startswith("arn:aws")
+      - '"key_arn" in key'
+      - key.key_arn.endswith(key.key_id)
+      - key.key_arn.startswith("arn:aws")
+      - key.key_state == "Enabled"
+      - key.enabled == True
+      - key.tags | length == 1
+      - key.tags['Hello'] == 'World'
+      - key.enable_key_rotation == false
+      - key.key_usage == 'ENCRYPT_DECRYPT'
+      - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+      - key.grants | length == 0
+      - key.key_policies | length == 1
+      - key.key_policies[0].Id == 'key-default-1'
+      - key.description == ''
+      - key.multi_region == True
+
+  - name: Sleep to wait for updates to propagate
+    wait_for:
+      timeout: 45
+  
+  - name: create a key (expect failure)
+    kms_key:
+      alias: '{{ kms_key_alias }}'
+      tags:
+        Hello: World
+      state: present
+      enabled: yes
+      multi_region: True
+    register: result
+    ignore_errors: True
+  
+  - assert:
+      that:
+      - result is failed
+      - result.msg != "MODULE FAILURE"
+      - result.changed == False
+      - '"You cannot change the multi-region property on an existing key." in result.msg'
+      
+  always:
+    # ============================================================
+    #   CLEAN-UP
+  - name: finish off by deleting keys
+    kms_key:
+      state: absent
+      alias: '{{ item }}'
+      pending_window: 7
+    ignore_errors: true
+    loop:
+    - '{{ kms_key_alias }}'
+    - '{{ kms_key_alias }}-diff-spec-usage'
+    - '{{ kms_key_alias }}-check'

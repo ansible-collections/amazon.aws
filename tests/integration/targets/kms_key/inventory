@@ -4,6 +4,8 @@ states
 grants
 modify
 tagging
+# CI's AWS account doesnot support multi region
+# multi_region
 
 [all:vars]
 ansible_connection=local
