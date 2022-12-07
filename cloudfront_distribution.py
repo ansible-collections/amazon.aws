@@ -119,6 +119,17 @@ options:
         origin_path:
           description: Tells CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin.
           type: str
+        origin_shield:
+          description: Specify origin shield options for the origin.
+          type: dict
+          suboptions:
+            enabled:
+              description: Indicate whether you want the origin to have Origin Shield enabled or not.
+              type: bool
+            origin_shield_region:
+              description: Specify which AWS region will be used for Origin Shield. Required if Origin Shield is enabled.
+              type: str
+          version_added: 5.1.0
         custom_headers:
           description:
             - Custom headers you wish to add to the request before passing it to the origin.
@@ -1297,6 +1308,22 @@ origins:
           returned: always
           type: int
           sample: 10
+        origin_shield:
+          description: Configuration of the origin Origin Shield.
+          returned: always
+          type: complex
+          contains:
+            enabled:
+              description: Whether Origin Shield is enabled or not.
+              returned: always
+              type: bool
+              sample: false
+            origin_shield_region:
+              description: Which region is used by Origin Shield.
+              returned: when enabled is true
+              type: str
+              sample: us-east-1
+          version_added: 5.1.0
         s3_origin_config:
           description: Origin access identity configuration for S3 Origin.
           returned: when s3_origin_access_identity_enabled is true
@@ -1731,6 +1758,15 @@ class CloudFrontValidationManager(object):
                 origin['custom_headers'] = ansible_list_to_cloudfront_list(origin.get('custom_headers'))
             else:
                 origin['custom_headers'] = ansible_list_to_cloudfront_list()
+            if 'origin_shield' in origin:
+                origin_shield = origin.get('origin_shield')
+                if origin_shield.get('enabled'):
+                    origin_shield_region = origin_shield.get('origin_shield_region')
+                    if origin_shield_region is None:
+                        self.module.fail_json(msg="origins[].origin_shield.origin_shield_region must be specified"
+                                                  " when origins[].origin_shield.enabled is true.")
+                    else:
+                        origin_shield_region = origin_shield_region.lower()
             if self.__s3_bucket_domain_identifier in origin.get('domain_name').lower():
                 if origin.get("s3_origin_access_identity_enabled") is not None:
                     if origin['s3_origin_access_identity_enabled']:
