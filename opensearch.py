@@ -948,6 +948,7 @@ def set_advanced_security_options(
             ] = advanced_security_opts.get("internal_user_database_enabled")
         master_user_opts = advanced_security_opts.get("master_user_options")
         if master_user_opts is not None:
+            advanced_security_config.setdefault("MasterUserOptions", {})
             if master_user_opts.get("master_user_arn") is not None:
                 advanced_security_config["MasterUserOptions"][
                     "MasterUserARN"
