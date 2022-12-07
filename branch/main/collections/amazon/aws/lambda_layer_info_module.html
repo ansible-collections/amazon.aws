@@ -97,6 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -337,6 +341,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 </ul>
 </div></td>
 </tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-version_number"></div>
+<div class="ansibleOptionAnchor" id="parameter-layer_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-version-number"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-layer-version"></span><strong>version_number</strong></p>
+<a class="ansibleOptionLink" href="#parameter-version_number" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_version</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Lambda layer version number to retrieve.</p>
+<p>Requires <em>name</em> to be provided.</p>
+</div></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -372,6 +387,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span><span class="w"></span>
 <span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">compatible_runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3.7</span><span class="w"></span>
+
+<span class="c1"># Retrieve specific lambda layer information</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get lambda layer version information</span><span class="w"></span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-layer</span><span class="w"></span>
+<span class="w">    </span><span class="nt">version_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -408,6 +429,58 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of compatible runtimes.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if it was defined for the layer version.</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;python3.7&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content"><strong>content</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Details about the layer version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if <em>version_number</em> was provided</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content/code_sha256"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content-code-sha256"><strong>code_sha256</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content/code_sha256" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The SHA-256 hash of the layer archive.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content/code_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content-code-size"><strong>code_size</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content/code_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The size of the layer archive in bytes.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">169</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content/location"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content-location"><strong>location</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content/location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A link to the layer archive in Amazon S3 that is valid for 10 minutes.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;https://awslambda-us-east-2-layers.s3.us-east-2.amazonaws.com/snapshots/123456789012/mylayer-4aaa2fbb-96a?versionId=27iWyA73c...&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content/signing_job_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content-signing-job-arn"><strong>signing_job_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content/signing_job_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of a signing job.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/content/signing_profile_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-content-signing-profile-version-arn"><strong>signing_profile_version_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/content/signing_profile_version_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) for a signing profile version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
