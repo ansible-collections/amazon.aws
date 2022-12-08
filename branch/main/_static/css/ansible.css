@@ -485,3 +485,6 @@ tr .ansibleOptionLink {
 }
 
 .rst-content dl dt { margin-bottom: 0; }
+
+/*! Make sure that environment variable links are blue */
+.rst-content code.xref.std-envvar { color: #2980b9; }
