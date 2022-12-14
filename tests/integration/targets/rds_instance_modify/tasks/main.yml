@@ -84,6 +84,62 @@
     # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name, cloudwatch_logs_export_configuration
 
     # ------------------------------------------------------------------------------------------
+  - name: Modify the storage type without immediate application - check_mode
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      storage_type: gp3
+      apply_immediately: false
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - result.changed
+      - 'result.storage_type == "gp2"'
+
+  - name: Modify the storage type without immediate application
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      storage_type: gp3
+      apply_immediately: false
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - 'result.pending_modified_values.storage_type == "gp3"'
+      - 'result.storage_type == "gp2"'
+
+  - name: Modify the storage type without immediate application - idempotent
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      storage_type: gp3
+      apply_immediately: false
+    register: result
+    check_mode: yes
+
+  - assert:
+      that:
+      - not result.changed
+      - 'result.pending_modified_values.storage_type == "gp3"'
+      - 'result.storage_type == "gp2"'
+
+  - name: Modify the storage type back to gp2 without immediate application
+    rds_instance:
+      id: '{{ instance_id }}'
+      state: present
+      storage_type: gp2
+      apply_immediately: false
+    register: result
+
+  - assert:
+      that:
+      - result.changed
+      - 'result.pending_modified_values == {}'
+      - 'result.storage_type == "gp2"'
 
   - name: Modify the instance name without immediate application - check_mode
     rds_instance:
