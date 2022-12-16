@@ -1,0 +1,2 @@
+minor_changes:
+  - Added support for multiple VPCs to be applied to route53_zone module
