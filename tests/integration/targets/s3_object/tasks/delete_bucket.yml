@@ -19,7 +19,7 @@
       ignore_errors: true
 
     - name: delete the bucket
-      s3_object:
-        bucket: "{{ item }}"
-        mode: delete
+      s3_bucket:
+        name: "{{ item }}"
+        state: absent
       ignore_errors: true

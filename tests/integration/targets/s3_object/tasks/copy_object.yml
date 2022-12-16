@@ -6,9 +6,14 @@
         dst: "{{ bucket_name }}-copydst"
 
   - name: create bucket source
-    s3_object:
-      bucket: "{{ copy_bucket.src }}"
-      mode: create
+    s3_bucket:
+      name: "{{ copy_bucket.src }}"
+      state: present
+
+  - name: create bucket destination
+    s3_bucket:
+      name: "{{ copy_bucket.dst }}"
+      state: present
 
   - name: Create content
     set_fact:
@@ -26,7 +31,9 @@
     retries: 3
     delay: 3
     register: put_result
-    until: "put_result.msg == 'PUT operation complete'"
+    until:
+      - '"not found" not in put_result.msg'
+    ignore_errors: True
 
   - name: Copy the content of the source bucket into dest bucket
     s3_object:
@@ -36,6 +43,12 @@
       copy_src:
         bucket: "{{ copy_bucket.src }}"
         object: source.txt
+    retries: 3
+    delay: 3
+    register: put_result
+    until:
+      - '"not found" not in put_result.msg'
+    ignore_errors: True
 
   - name: Get the content copied into {{ copy_bucket.dst }}
     s3_object:

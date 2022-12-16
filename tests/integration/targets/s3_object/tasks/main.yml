@@ -31,49 +31,15 @@
       set_fact:
         content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
-    - name: test create bucket without permissions
-      module_defaults: { group/aws: {} }
-      s3_object:
-        bucket: "{{ bucket_name }}"
-        mode: create
-      register: result
-      ignore_errors: true
-
-    - assert:
-        that:
-          - result is failed
-          - "result.msg != 'MODULE FAILURE'"
-
-    - name: test create bucket with an invalid name
-      s3_object:
-        bucket: "{{ bucket_name }}-"
-        mode: create
-      register: result
-      ignore_errors: true
-
-    - assert:
-        that:
-          - result is failed
-
     - name: test create bucket
-      s3_object:
-        bucket: "{{ bucket_name }}"
-        mode: create
+      s3_bucket:
+        name: "{{ bucket_name }}"
+        state: present
       register: result
 
     - assert:
         that:
           - result is changed
-
-    - name: trying to create a bucket name that already exists
-      s3_object:
-        bucket: "{{ bucket_name }}"
-        mode: create
-      register: result
-
-    - assert:
-        that:
-          - result is not changed
 
     - name: Create local upload.txt
       copy:
@@ -582,9 +548,9 @@
       delay: 3
 
     - name: test delete bucket
-      s3_object:
-        bucket: "{{ bucket_name }}"
-        mode: delete
+      s3_bucket:
+        name: "{{ bucket_name }}"
+        state: absent
       register: result
       retries: 3
       delay: 3
@@ -593,36 +559,6 @@
     - assert:
         that:
           - result is changed
-
-    - name: test create a bucket with a dot in the name
-      s3_object:
-        bucket: "{{ bucket_name_with_dot }}"
-        mode: create
-      register: result
-
-    - assert:
-        that:
-          - result is changed
-
-    - name: test delete a bucket with a dot in the name
-      s3_object:
-        bucket: "{{ bucket_name_with_dot }}"
-        mode: delete
-      register: result
-
-    - assert:
-        that:
-          - result is changed
-
-    - name: test delete a nonexistent bucket
-      s3_object:
-        bucket: "{{ bucket_name_with_dot }}"
-        mode: delete
-      register: result
-
-    - assert:
-        that:
-          - result is not changed
 
     - name: make tempfile 4 GB for OSX
       command:
@@ -637,9 +573,9 @@
     - name: test multipart download - platform specific
       block:
         - name: make a bucket to upload the file
-          s3_object:
-            bucket: "{{ bucket_name }}"
-            mode: create
+          s3_bucket:
+            name: "{{ bucket_name }}"
+            state: present
 
         - name: upload the file to the bucket
           s3_object:
