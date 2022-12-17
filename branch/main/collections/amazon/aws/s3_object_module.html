@@ -158,7 +158,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>This module allows the user to manage the objects and directories within S3 buckets. Includes support for creating and deleting objects and directories, retrieving objects as files or strings, generating download links and copying objects that are already stored in Amazon S3.</p></li>
-<li><p>Support for creating or deleting S3 buckets with this module has been deprecated and will be removed in release 6.0.0.</p></li>
 <li><p>S3 buckets can be created or deleted using the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p></li>
 <li><p>Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.</p></li>
 <li><p>When using non-AWS services, <em>endpoint_url</em> should be specified.</p></li>
@@ -440,15 +439,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><code class="docutils literal notranslate"><span class="pre">getstr</span></code>: download object as string</p>
 <p><code class="docutils literal notranslate"><span class="pre">list</span></code>: list keys</p>
 <p><code class="docutils literal notranslate"><span class="pre">create</span></code>: create bucket directories</p>
-<p><code class="docutils literal notranslate"><span class="pre">delete</span></code>: delete bucket directories</p>
 <p><code class="docutils literal notranslate"><span class="pre">delobj</span></code>: delete object</p>
 <p><code class="docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
-<p>Support for creating and deleting buckets has been deprecated and will be removed in release 6.0.0.  To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
+<p>Support for creating and deleting buckets was removed in release 6.0.0. To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;get&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;put&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;delete&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;create&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;geturl&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;getstr&quot;</span></code></p></li>
@@ -665,6 +662,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <li><p>In release 5.0.0 the <em>s3_url</em> parameter was merged into the <em>endpoint_url</em> parameter, <em>s3_url</em> remains as an alias for <em>endpoint_url</em>.</p></li>
 <li><p>For Walrus <em>endpoint_url</em> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
 <li><p>Support for the <code class="docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <em>endpoint_url</em> parameter or the <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> environment variable.</p></li>
+<li><p>Support for creating and deleting buckets was removed in release 6.0.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
