@@ -11,8 +11,6 @@ description:
   - This module allows the user to manage the objects and directories within S3 buckets. Includes
     support for creating and deleting objects and directories, retrieving objects as files or
     strings, generating download links and copying objects that are already stored in Amazon S3.
-  - Support for creating or deleting S3 buckets with this module has been deprecated and will be
-    removed in release 6.0.0.
   - S3 buckets can be created or deleted using the M(amazon.aws.s3_bucket) module.
   - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
   - When using non-AWS services, I(endpoint_url) should be specified.
@@ -80,14 +78,12 @@ options:
       - 'C(getstr): download object as string'
       - 'C(list): list keys'
       - 'C(create): create bucket directories'
-      - 'C(delete): delete bucket directories'
       - 'C(delobj): delete object'
       - 'C(copy): copy object that is already stored in another bucket'
-      - Support for creating and deleting buckets has been deprecated and will
-        be removed in release 6.0.0.  To create and manage the bucket itself
-        please use the M(amazon.aws.s3_bucket) module.
+      - Support for creating and deleting buckets was removed in release 6.0.0.
+        To create and manage the bucket itself please use the M(amazon.aws.s3_bucket) module.
     required: true
-    choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
+    choices: ['get', 'put', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
     type: str
   object:
     description:
@@ -240,6 +236,7 @@ notes:
   - Support for the C(S3_URL) environment variable has been
     deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
     or the C(AWS_URL) environment variable.
+  - Support for creating and deleting buckets was removed in release 6.0.0.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -528,71 +525,29 @@ def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
 def bucket_check(module, s3, bucket, validate=True):
     try:
         s3.head_bucket(Bucket=bucket)
-    except is_boto3_error_code("404"):
-        return False
+    except is_boto3_error_code("404") as e:
+        if validate:
+            raise S3ObjectFailure(
+                f"Bucket '{bucket}' not found (during bucket_check).  "
+                "Support for automatically creating buckets was removed in release 6.0.0.  "
+                "The amazon.aws.s3_bucket module can be used to create buckets.",
+                e,
+            )
     except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
         if validate:
-            module.fail_json_aws(
+            raise S3ObjectFailure(
+                f"Permission denied accessing bucket '{bucket}' (during bucket_check).",
                 e,
-                msg="Failed while looking up bucket (during bucket_check) %s."
-                % bucket,
             )
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(
-            "Failed while looking up bucket (during bucket_check) %s."
+            f"Failed while looking up bucket '{bucket}' (during bucket_check)."
             % bucket,
             e,
         )
-    return True
-
-
-def create_bucket(module, s3, bucket, location=None):
-    module.deprecate(
-        "Support for creating S3 buckets using the s3_object module"
-        " has been deprecated.  Please use the ``s3_bucket`` module"
-        " instead.",
-        version="6.0.0",
-        collection_name="amazon.aws",
-    )
-    if module.check_mode:
-        module.exit_json(
-            msg="CREATE operation skipped - running in check mode",
-            changed=True,
-        )
-    configuration = {}
-    if location not in ("us-east-1", None):
-        configuration["LocationConstraint"] = location
-    try:
-        if len(configuration) > 0:
-            s3.create_bucket(
-                Bucket=bucket, CreateBucketConfiguration=configuration
-            )
-        else:
-            s3.create_bucket(Bucket=bucket)
-        if module.params.get("permission"):
-            # Wait for the bucket to exist before setting ACLs
-            s3.get_waiter("bucket_exists").wait(Bucket=bucket)
-        for acl in module.params.get("permission"):
-            AWSRetry.jittered_backoff(
-                max_delay=120, catch_extra_error_codes=["NoSuchBucket"]
-            )(s3.put_bucket_acl)(ACL=acl, Bucket=bucket)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn(
-            "PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning"
-        )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(
-            "Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).",
-            e,
-        )
-    if bucket:
-        return True
 
 
 def paginated_list(s3, **pagination_params):
@@ -641,38 +596,6 @@ def list_keys(module, s3, bucket, prefix, marker, max_keys):
         raise S3ObjectFailure(
             "Failed while listing the keys in the bucket {0}".format(bucket), e
         )
-
-
-def delete_bucket(module, s3, bucket):
-    module.deprecate(
-        "Support for deleting S3 buckets using the s3_object module"
-        " has been deprecated.  Please use the ``s3_bucket`` module"
-        " instead.",
-        version="6.0.0",
-        collection_name="amazon.aws",
-    )
-    if module.check_mode:
-        module.exit_json(
-            msg="DELETE operation skipped - running in check mode",
-            changed=True,
-        )
-    try:
-        exists = bucket_check(module, s3, bucket)
-        if not exists:
-            return False
-        # if there are contents then we need to delete them before we can delete the bucket
-        for keys in paginated_versioned_list_with_fallback(s3, Bucket=bucket):
-            if keys:
-                s3.delete_objects(Bucket=bucket, Delete={"Objects": keys})
-        s3.delete_bucket(Bucket=bucket)
-        return True
-    except is_boto3_error_code("NoSuchBucket"):
-        return False
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Failed while deleting bucket %s." % bucket, e)
 
 
 def delete_key(module, s3, bucket, obj):
@@ -1297,23 +1220,14 @@ def s3_object_do_put(module, connection, s3_vars):
             % (s3_vars["src"])
         )
 
-    keyrtn = None
-    if s3_vars["bucketrtn"]:
-        keyrtn = key_check(
-            module,
-            connection,
-            s3_vars["bucket"],
-            s3_vars["object"],
-            version=s3_vars["version"],
-            validate=s3_vars["validate"],
-        )
-    else:
-        # If the bucket doesn't exist we should create it.
-        # only use valid bucket acls for create_bucket function
-        s3_vars["permission"] = s3_vars["bucket_acl"]
-        create_bucket(
-            module, connection, s3_vars["bucket"], s3_vars["location"]
-        )
+    keyrtn = key_check(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        version=s3_vars["version"],
+        validate=s3_vars["validate"],
+    )
 
     # the content will be uploaded as a byte string, so we must encode it first
     bincontent = get_binary_content(s3_vars)
@@ -1376,93 +1290,44 @@ def s3_object_do_delobj(module, connection, s3_vars):
         module.fail_json(msg="Bucket parameter is required.")
 
 
-def s3_object_do_delete(module, connection, s3_vars):
-    if not s3_vars.get("bucket"):
-        module.fail_json(msg="Bucket parameter is required.")
-    elif s3_vars["bucket"] and delete_bucket(
-        module, connection, s3_vars["bucket"]
-    ):
-        # Delete an entire bucket, including all objects in the bucket
-        module.exit_json(
-            msg="Bucket %s and all keys have been deleted."
-            % s3_vars["bucket"],
-            changed=True,
-        )
-
-
 def s3_object_do_list(module, connection, s3_vars):
     # If the bucket does not exist then bail out
-    if not s3_vars.get("bucketrtn"):
-        module.fail_json(
-            msg="Target bucket (%s) cannot be found" % s3_vars["bucket"]
-        )
-    else:
-        list_keys(
-            module,
-            connection,
-            s3_vars["bucket"],
-            s3_vars["prefix"],
-            s3_vars["marker"],
-            s3_vars["max_keys"],
-        )
+    list_keys(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["prefix"],
+        s3_vars["marker"],
+        s3_vars["max_keys"],
+    )
 
 
 def s3_object_do_create(module, connection, s3_vars):
     # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
     # these were separated above into the variables bucket_acl and object_acl
 
-    if s3_vars["bucket"] and not s3_vars["object"]:
-        if s3_vars["bucketrtn"]:
-            module.exit_json(msg="Bucket already exists.", changed=False)
-        # only use valid bucket acls when creating the bucket
-        s3_vars["permission"] = s3_vars["bucket_acl"]
-        module.exit_json(
-            msg="Bucket created successfully",
-            changed=create_bucket(
-                module, connection, s3_vars["bucket"], s3_vars["location"]
-            ),
-        )
-    if s3_vars["bucket"] and s3_vars["object"]:
-        if not s3_vars["object"].endswith("/"):
-            s3_vars["object"] = s3_vars["object"] + "/"
+    if not s3_vars["object"].endswith("/"):
+        s3_vars["object"] = s3_vars["object"] + "/"
 
-        if s3_vars["bucketrtn"]:
-            if key_check(
-                module, connection, s3_vars["bucket"], s3_vars["object"]
-            ):
-                module.exit_json(
-                    msg="Bucket %s and key %s already exists."
-                    % (s3_vars["bucket"], s3_vars["object"]),
-                    changed=False,
-                )
-            if not s3_vars["acl_disabled"]:
-                # setting valid object acls for the create_dirkey function
-                s3_vars["permission"] = s3_vars["object_acl"]
-            create_dirkey(
-                module,
-                connection,
-                s3_vars["bucket"],
-                s3_vars["object"],
-                s3_vars["encrypt"],
-                s3_vars["expiry"],
-            )
-        else:
-            # only use valid bucket acls for the create_bucket function
-            s3_vars["permission"] = s3_vars["bucket_acl"]
-            create_bucket(
-                module, connection, s3_vars["bucket"], s3_vars["location"]
-            )
-            if not s3_vars["acl_disabled"]:
-                # only use valid object acls for the create_dirkey function
-                s3_vars["permission"] = s3_vars["object_acl"]
-            create_dirkey(
-                module,
-                connection,
-                s3_vars["bucket"],
-                s3_vars["object"],
-                s3_vars["encrypt"],
-                s3_vars["expiry"],
-            )
+    if key_check(
+        module, connection, s3_vars["bucket"], s3_vars["object"]
+    ):
+        module.exit_json(
+            msg="Bucket %s and key %s already exists."
+            % (s3_vars["bucket"], s3_vars["object"]),
+            changed=False,
+        )
+    if not s3_vars["acl_disabled"]:
+        # setting valid object acls for the create_dirkey function
+        s3_vars["permission"] = s3_vars["object_acl"]
+    create_dirkey(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        s3_vars["encrypt"],
+        s3_vars["expiry"],
+    )
 
 
 def s3_object_do_geturl(module, connection, s3_vars):
@@ -1541,16 +1406,7 @@ def s3_object_do_getstr(module, connection, s3_vars):
 def s3_object_do_copy(module, connection, s3_vars):
     # if copying an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
     # these were separated into the variables bucket_acl and object_acl above
-    d_etag = None
-    if s3_vars["bucketrtn"]:
-        d_etag = get_etag(connection, s3_vars["bucket"], s3_vars["object"])
-    else:
-        # If the bucket doesn't exist we should create it.
-        # only use valid bucket acls for create_bucket function
-        s3_vars["permission"] = s3_vars["bucket_acl"]
-        create_bucket(
-            module, connection, s3_vars["bucket"], s3_vars["location"]
-        )
+    d_etag = get_etag(connection, s3_vars["bucket"], s3_vars["object"])
     if not s3_vars["acl_disabled"]:
         # only use valid object acls for the copy operation
         s3_vars["permission"] = s3_vars["object_acl"]
@@ -1578,12 +1434,6 @@ def populate_facts(module, **variable_dict):
         "authenticated-read",
         "bucket-owner-read",
         "bucket-owner-full-control",
-    ]
-    variable_dict["bucket_canned_acl"] = [
-        "private",
-        "public-read",
-        "public-read-write",
-        "authenticated-read",
     ]
 
     if variable_dict["validate_bucket_name"]:
@@ -1649,29 +1499,23 @@ def populate_facts(module, **variable_dict):
 
 
 def validate_bucket(module, s3, var_dict):
-    exists = bucket_check(module, s3, var_dict["bucket"])
+    bucket_check(module, s3, var_dict["bucket"], validate=var_dict["validate"])
 
-    if exists:
-        try:
-            ownership_controls = s3.get_bucket_ownership_controls(
-                Bucket=var_dict["bucket"]
-            )["OwnershipControls"]
-            if ownership_controls.get("Rules"):
-                object_ownership = ownership_controls["Rules"][0][
-                    "ObjectOwnership"
-                ]
-                if object_ownership == "BucketOwnerEnforced":
-                    var_dict["acl_disabled"] = True
-        # if bucket ownership controls are not found
-        except botocore.exceptions.ClientError:
-            pass
+    try:
+        ownership_controls = s3.get_bucket_ownership_controls(
+            Bucket=var_dict["bucket"]
+        )["OwnershipControls"]
+        if ownership_controls.get("Rules"):
+            object_ownership = ownership_controls["Rules"][0][
+                "ObjectOwnership"
+            ]
+            if object_ownership == "BucketOwnerEnforced":
+                var_dict["acl_disabled"] = True
+    # if bucket ownership controls are not found
+    except botocore.exceptions.ClientError:
+        pass
 
     if not var_dict["acl_disabled"]:
-        var_dict["bucket_acl"] = [
-            acl
-            for acl in var_dict.get("permission")
-            if acl in var_dict["bucket_canned_acl"]
-        ]
         var_dict["object_acl"] = [
             acl
             for acl in var_dict.get("permission")
@@ -1680,26 +1524,12 @@ def validate_bucket(module, s3, var_dict):
         error_acl = [
             acl
             for acl in var_dict.get("permission")
-            if (
-                acl not in var_dict["bucket_canned_acl"]
-                and acl not in var_dict["object_canned_acl"]
-            )
+            if acl not in var_dict["object_canned_acl"]
         ]
         if error_acl:
             module.fail_json(
                 msg="Unknown permission specified: %s" % error_acl
             )
-
-    var_dict["bucketrtn"] = bucket_check(
-        module, s3, var_dict["bucket"], validate=var_dict["validate"]
-    )
-
-    if (
-        var_dict["validate"]
-        and var_dict["mode"] not in ("create", "put", "delete", "copy")
-        and not var_dict["bucketrtn"]
-    ):
-        module.fail_json(msg="Source bucket cannot be found.")
 
     return var_dict
 
@@ -1723,7 +1553,6 @@ def main():
             choices=[
                 "get",
                 "put",
-                "delete",
                 "create",
                 "geturl",
                 "getstr",
@@ -1763,6 +1592,7 @@ def main():
     required_if = [
         ["ceph", True, ["endpoint_url"]],
         ["mode", "put", ["object"]],
+        ["mode", "create", ["object"]],
         ["mode", "get", ["dest", "object"]],
         ["mode", "getstr", ["object"]],
         ["mode", "geturl", ["object"]],
@@ -1792,7 +1622,6 @@ def main():
         "get": s3_object_do_get,
         "put": s3_object_do_put,
         "delobj": s3_object_do_delobj,
-        "delete": s3_object_do_delete,
         "list": s3_object_do_list,
         "create": s3_object_do_create,
         "geturl": s3_object_do_geturl,

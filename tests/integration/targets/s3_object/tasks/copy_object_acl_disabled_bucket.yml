@@ -124,9 +124,3 @@
         name: "{{ bucket_name }}-acl-disabled"
         state: absent
       register: delete_result
-
-    - name: Ensure bucket deletion
-      assert:
-        that:
-          - delete_result is changed
-          - delete_result is not failed

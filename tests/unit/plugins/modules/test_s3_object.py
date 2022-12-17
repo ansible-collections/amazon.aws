@@ -79,30 +79,6 @@ def test_s3_object_do_delobj_failure_noobj(m_delete_key):
     module.fail_json.assert_called_with(msg="object parameter is required")
 
 
-@patch(module_name + ".delete_bucket")
-def test_s3_object_do_delete_success(m_delete_bucket):
-    module = MagicMock()
-    s3 = MagicMock()
-    var_dict = {"bucket": "a987e6b6026ab04e4717"}
-    s3_object.s3_object_do_delete(module, s3, var_dict)
-    assert m_delete_bucket.call_count == 1
-    module.exit_json.assert_called_with(
-        msg="Bucket a987e6b6026ab04e4717 and all keys have been deleted.",
-        changed=True,
-    )
-
-
-@patch(module_name + ".delete_bucket")
-def test_s3_object_do_delete_failure_nobucket(m_delete_bucket):
-    module = MagicMock()
-    s3 = MagicMock()
-
-    var_dict = {}
-    s3_object.s3_object_do_delete(module, s3, var_dict)
-    assert m_delete_bucket.call_count == 0
-    module.fail_json.assert_called_with(msg="Bucket parameter is required.")
-
-
 @patch(module_name + ".paginated_list")
 @patch(module_name + ".list_keys")
 def test_s3_object_do_list_success(m_paginated_list, m_list_keys):
