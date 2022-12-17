@@ -155,6 +155,16 @@ def test_client_wrapper(monkeypatch, stdin):
                                         region=sentinel.CONN_REGION,
                                         endpoint=sentinel.CONN_URL,)
 
+    # Check that we can override parameters
+    wrapped_conn = aws_module.client(sentinel.PARAM_SERVICE, sentinel.PARAM_WRAPPER, region=sentinel.PARAM_REGION)
+    assert wrapped_conn.client is sentinel.BOTO3_CONN
+    assert wrapped_conn.retry is sentinel.PARAM_WRAPPER
+    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert boto3_conn.call_args == call(aws_module, conn_type='client',
+                                        resource=sentinel.PARAM_SERVICE,
+                                        region=sentinel.PARAM_REGION,
+                                        endpoint=sentinel.CONN_URL,)
+
 
 @pytest.mark.parametrize("stdin", [{}], indirect=["stdin"])
 def test_resource(monkeypatch, stdin):
@@ -172,4 +182,12 @@ def test_resource(monkeypatch, stdin):
     assert boto3_conn.call_args == call(aws_module, conn_type='resource',
                                         resource=sentinel.PARAM_SERVICE,
                                         region=sentinel.CONN_REGION,
+                                        endpoint=sentinel.CONN_URL,)
+
+    # Check that we can override parameters
+    assert aws_module.resource(sentinel.PARAM_SERVICE, region=sentinel.PARAM_REGION) is sentinel.BOTO3_CONN
+    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert boto3_conn.call_args == call(aws_module, conn_type='resource',
+                                        resource=sentinel.PARAM_SERVICE,
+                                        region=sentinel.PARAM_REGION,
                                         endpoint=sentinel.CONN_URL,)

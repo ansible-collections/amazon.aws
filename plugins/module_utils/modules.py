@@ -203,16 +203,18 @@ class AnsibleAWSModule:
     def md5(self, *args, **kwargs):
         return self._module.md5(*args, **kwargs)
 
-    def client(self, service, retry_decorator=None):
+    def client(self, service, retry_decorator=None, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        conn = boto3_conn(self, conn_type='client', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args.update(extra_params)
+        conn = boto3_conn(self, conn_type='client', resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
-    def resource(self, service):
+    def resource(self, service, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        return boto3_conn(self, conn_type='resource', resource=service,
-                          region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
+        kw_args.update(extra_params)
+        return boto3_conn(self, conn_type='resource', resource=service, **kw_args)
 
     @property
     def region(self):
