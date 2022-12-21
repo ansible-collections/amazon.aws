@@ -51,7 +51,7 @@ def test_s3_object_do_delobj_success(m_delete_key):
         "object": "/usr/local/myfile.txt",
         "bucket": "a987e6b6026ab04e4717",
     }
-    s3_object.s3_object_do_delobj(module, s3, var_dict)
+    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
     assert m_delete_key.call_count == 1
     module.exit_json.assert_called_with(
         msg="Object deleted from bucket a987e6b6026ab04e4717.", changed=True
@@ -64,7 +64,7 @@ def test_s3_object_do_delobj_failure_nobucket(m_delete_key):
     s3 = MagicMock()
 
     var_dict = {"object": "/usr/local/myfile.txt", "bucket": ""}
-    s3_object.s3_object_do_delobj(module, s3, var_dict)
+    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
     assert m_delete_key.call_count == 0
     module.fail_json.assert_called_with(msg="Bucket parameter is required.")
 
@@ -74,7 +74,7 @@ def test_s3_object_do_delobj_failure_noobj(m_delete_key):
     module = MagicMock()
     s3 = MagicMock()
     var_dict = {"bucket": "a987e6b6026ab04e4717", "object": ""}
-    s3_object.s3_object_do_delobj(module, s3, var_dict)
+    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
     assert m_delete_key.call_count == 0
     module.fail_json.assert_called_with(msg="object parameter is required")
 
@@ -94,7 +94,7 @@ def test_s3_object_do_list_success(m_paginated_list, m_list_keys):
         "bucketrtn": True,
     }
 
-    s3_object.s3_object_do_list(module, s3, var_dict)
+    s3_object.s3_object_do_list(module, s3, s3, var_dict)
     assert m_paginated_list.call_count == 1
     # assert m_list_keys.call_count == 1
     # module.exit_json.assert_called_with(msg="LIST operation complete", s3_keys=['delete.txt'])
@@ -158,7 +158,3 @@ def test_populate_facts(m_get_aws_connection_info):
     module.fail_json.assert_called_with(
         msg="Parameter obj cannot be used with mode=delete"
     )
-
-    module.params.update({"endpoint_url": "google.com", "dualstack": True})
-    result = s3_object.populate_facts(module)
-    module.fail_json.assert_called_with(msg="dualstack only applies to AWS S3")

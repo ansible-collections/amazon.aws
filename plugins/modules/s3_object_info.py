@@ -32,6 +32,8 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
+      - Support for passing I(dualstack) and I(endpoint_url) at the same time has been deprecated,
+        the dualstack endpoints are automatically configured using the configured I(region).
     type: bool
     default: false
   ceph:
@@ -98,9 +100,9 @@ notes:
     deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
     or the C(AWS_URL) environment variable.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
 
 '''
 
@@ -429,8 +431,6 @@ object_info:
                             sample: "xxxxxxxxxxxx"
 '''
 
-import os
-
 try:
     import botocore
 except ImportError:
@@ -441,8 +441,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_connection
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 
 
 def describe_s3_object_acl(connection, bucket_name, object_name):
@@ -699,40 +698,23 @@ def main():
     requested_object_details = module.params.get('object_details')
     endpoint_url = module.params.get('endpoint_url')
     dualstack = module.params.get('dualstack')
-    ceph = module.params.get('ceph')
 
-    if not endpoint_url and 'S3_URL' in os.environ:
-        endpoint_url = os.environ['S3_URL']
+    if dualstack and endpoint_url:
         module.deprecate(
-            "Support for the 'S3_URL' environment variable has been "
-            "deprecated.  We recommend using the 'endpoint_url' module "
-            "parameter.  Alternatively, the 'AWS_URL' environment variable can "
-            "be used instead.",
+            "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
+            "time has been deprecated.",
             date='2024-12-01', collection_name='amazon.aws',
         )
-
-    if dualstack and endpoint_url is not None and 'amazonaws.com' not in endpoint_url:
-        module.fail_json(msg='dualstack only applies to AWS S3')
+        if 'amazonaws.com' not in endpoint_url:
+            module.fail_json(msg='dualstack only applies to AWS S3')
 
     result = []
-
-    if endpoint_url:
-        region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        if region in ('us-east-1', '', None):
-            # default to US Standard region
-            location = 'us-east-1'
-        else:
-            # Boto uses symbolic names for locations but region strings will
-            # actually work fine for everything except us-east-1 (US Standard)
-            location = region
-        for key in ['validate_certs', 'security_token', 'profile_name']:
-            aws_connect_kwargs.pop(key, None)
-        connection = get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url)
-    else:
-        try:
-            connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
+    extra_params = s3_extra_params(module.params)
+    retry_decorator = AWSRetry.jittered_backoff()
+    try:
+        connection = module.client('s3', retry_decorator=retry_decorator, **extra_params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     # check if specified bucket exists
     bucket_check(connection, module, bucket_name)
