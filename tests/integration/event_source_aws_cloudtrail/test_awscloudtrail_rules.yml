@@ -1,0 +1,22 @@
+- name: test aws cloudtrail source plugin
+  hosts: localhost
+
+  sources:
+    - ansible.eda.aws_cloudtrail:
+        connection:
+          region: '{{ aws_region | default(omit) }}'
+          aws_access_key: '{{ aws_access_key | default(omit) }}'
+          aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+          security_token: '{{ security_token | default(omit) }}'
+        delay: 5
+  rules:
+    - name: match key pair creation event
+      condition: event.CloudTrailEvent.eventName == 'CreateKeyPair' and event.CloudTrailEvent.requestParameters.keyName == '{{ test_ec2_key_pair_name }}'
+      action:
+        debug:
+          msg: "SUCCESS"
+
+    - name: match key pair creation event
+      condition: event.CloudTrailEvent.eventName == 'DeleteKeyPair' and event.CloudTrailEvent.requestParameters.keyName == '{{ test_ec2_key_pair_name }}'
+      action:
+        shutdown:
