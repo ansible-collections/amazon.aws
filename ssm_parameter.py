@@ -383,7 +383,7 @@ def create_update_parameter(client, module):
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="getting description value")
 
-                if describe_existing_parameter['Description'] != args['Description']:
+                if describe_existing_parameter.get('Description') != args['Description']:
                     (changed, response) = update_parameter(client, module, **args)
         if changed:
             _wait_updated(client, module, module.params.get('name'), original_version)
