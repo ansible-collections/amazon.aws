@@ -22,4 +22,3 @@ def set_collection_info(collection_name=None, collection_version=None):
 
 def get_collection_info():
     return _collection_info_context
-

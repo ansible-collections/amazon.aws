@@ -59,6 +59,18 @@ MINIMUM_BOTOCORE_VERSION = '1.21.0'
 MINIMUM_BOTO3_VERSION = '1.18.0'
 
 
+def _get_user_agent_string():
+
+    info = get_collection_info()
+    result = "APN/1.0 Ansible/{0}".format(__version__)
+    if info['name']:
+        if info['version'] is not None:
+            result += " {0}/{1}".format(info['name'], info['version'])
+        else:
+            result += " {0}".format(info['name'])
+    return result
+
+
 def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
@@ -93,10 +105,15 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
                          'the conn_type parameter in the boto3_conn function '
                          'call')
 
-    config = params.pop('config', None)
+    # default config with user agent
+    config = botocore.config.Config(
+        user_agent=_get_user_agent_string(),
+    )
+
+    if params.get('config') is not None:
+        config = config.merge(params.pop('config'))
     if params.get('aws_config') is not None:
-        aws_config = params.pop('aws_config')
-        config = config.merge(aws_config) if config is not None else aws_config
+        config = config.merge(params.pop('aws_config'))
 
     session = boto3.session.Session(
         profile_name=profile,
@@ -169,18 +186,6 @@ def get_aws_region(module, boto3=None):
             module.fail_json(msg=e.message)
 
 
-def _get_user_agent_string():
-
-    info = get_collection_info()
-    result = "APN/1.0 Ansible/{0}".format(__version__)
-    if info['name']:
-        if info['version'] is not None:
-            result += " {0}/{1}".format(info['name'], info['version'])
-        else:
-            result += " {0}".format(info['name'])
-    return result
-
-
 def _aws_connection_info(params):
 
     endpoint_url = params.get('endpoint_url')
@@ -226,15 +231,8 @@ def _aws_connection_info(params):
     else:
         boto_params['verify'] = validate_certs
 
-    # default config with user agent
-    boto_params['aws_config'] = botocore.config.Config(
-        user_agent=_get_user_agent_string(),
-    )
-
     if config is not None:
-        boto_params['aws_config'] = boto_params['aws_config'].merge(
-            botocore.config.Config(**config)
-        )
+        boto_params['aws_config'] = botocore.config.Config(**config)
 
     for param, value in boto_params.items():
         if isinstance(value, binary_type):
