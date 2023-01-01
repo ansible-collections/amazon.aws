@@ -347,16 +347,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">vars</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">has_ec2_classic</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;has-ec2-classic&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># true | false</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">has_ec2_classic</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;has-ec2-classic&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="c1"># true | false</span>
 
-<span class="w">  </span><span class="nt">default_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;default-vpc&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># vpc-xxxxxxxx | none</span><span class="w"></span>
+<span class="w">  </span><span class="nt">default_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;default-vpc&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="c1"># vpc-xxxxxxxx | none</span>
 
-<span class="w">  </span><span class="nt">account_details</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># {&#39;default-vpc&#39;: [&#39;vpc-xxxxxxxx&#39;], &#39;max-elastic-ips&#39;: [&#39;5&#39;], &#39;max-instances&#39;: [&#39;20&#39;],</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#  &#39;supported-platforms&#39;: [&#39;VPC&#39;, &#39;EC2&#39;], &#39;vpc-max-elastic-ips&#39;: [&#39;5&#39;], &#39;vpc-max-security-groups-per-interface&#39;: [&#39;5&#39;]}</span><span class="w"></span>
+<span class="w">  </span><span class="nt">account_details</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="c1"># {&#39;default-vpc&#39;: [&#39;vpc-xxxxxxxx&#39;], &#39;max-elastic-ips&#39;: [&#39;5&#39;], &#39;max-instances&#39;: [&#39;20&#39;],</span>
+<span class="w">  </span><span class="c1">#  &#39;supported-platforms&#39;: [&#39;VPC&#39;, &#39;EC2&#39;], &#39;vpc-max-elastic-ips&#39;: [&#39;5&#39;], &#39;vpc-max-security-groups-per-interface&#39;: [&#39;5&#39;]}</span>
 </pre></div>
 </div>
 </section>

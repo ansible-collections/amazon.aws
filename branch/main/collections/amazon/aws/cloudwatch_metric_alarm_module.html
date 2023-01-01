@@ -642,59 +642,59 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create alarm</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cpu-low&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">statistic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Average</span><span class="w"></span>
-<span class="w">    </span><span class="nt">comparison</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LessThanOrEqualToThreshold&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span><span class="w"></span>
-<span class="w">    </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w"></span>
-<span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"></span>
-<span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">alarm</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">instance&#39;s</span><span class="nv"> </span><span class="s">CPU</span><span class="nv"> </span><span class="s">usage</span><span class="nv"> </span><span class="s">average</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">lower</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">5%</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">15</span><span class="nv"> </span><span class="s">minutes&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&#39;InstanceId&#39;</span><span class="p p-Indicator">:</span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create alarm</span>
+<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cpu-low&quot;</span>
+<span class="w">    </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span>
+<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span>
+<span class="w">    </span><span class="nt">statistic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Average</span>
+<span class="w">    </span><span class="nt">comparison</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LessThanOrEqualToThreshold&quot;</span>
+<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+<span class="w">    </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">alarm</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">instance&#39;s</span><span class="nv"> </span><span class="s">CPU</span><span class="nv"> </span><span class="s">usage</span><span class="nv"> </span><span class="s">average</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">lower</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">5%</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">15</span><span class="nv"> </span><span class="s">minutes&quot;</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&#39;InstanceId&#39;</span><span class="p p-Indicator">:</span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create alarm with metrics</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cpu-low&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">metrics</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CPU&#39;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">metric_stat</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="nt">metric</span><span class="p">:</span><span class="w"></span>
-<span class="w">                </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;InstanceId&quot;</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i-xx&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;300&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">stat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Average&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">return_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create alarm with metrics</span>
+<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cpu-low&quot;</span>
+<span class="w">    </span><span class="nt">metrics</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CPU&#39;</span>
+<span class="w">        </span><span class="nt">metric_stat</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">metric</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">dimensions</span><span class="p">:</span>
+<span class="w">                    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;InstanceId&quot;</span>
+<span class="w">                    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i-xx&quot;</span>
+<span class="w">                </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span>
+<span class="w">                </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span>
+<span class="w">            </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;300&quot;</span>
+<span class="w">            </span><span class="nt">stat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Average&quot;</span>
+<span class="w">            </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
+<span class="w">        </span><span class="nt">return_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an alarm to recover a failed instance</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;recover-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">metric</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;StatusCheckFailed_System&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">statistic</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Minimum&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">comparison</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GreaterThanOrEqualToThreshold&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w"></span>
-<span class="w">    </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span><span class="w"></span>
-<span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Count&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">recover</span><span class="nv"> </span><span class="s">an</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">it</span><span class="nv"> </span><span class="s">fails&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&quot;InstanceId&quot;</span><span class="p p-Indicator">:</span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;arn:aws:automate:us-west-1:ec2:recover&quot;</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an alarm to recover a failed instance</span>
+<span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;recover-instance&quot;</span>
+<span class="w">    </span><span class="nt">metric</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;StatusCheckFailed_System&quot;</span>
+<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span>
+<span class="w">    </span><span class="nt">statistic</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Minimum&quot;</span>
+<span class="w">    </span><span class="nt">comparison</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GreaterThanOrEqualToThreshold&quot;</span>
+<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">    </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Count&quot;</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">recover</span><span class="nv"> </span><span class="s">an</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">it</span><span class="nv"> </span><span class="s">fails&quot;</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&quot;InstanceId&quot;</span><span class="p p-Indicator">:</span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;arn:aws:automate:us-west-1:ec2:recover&quot;</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
 <section id="authors">

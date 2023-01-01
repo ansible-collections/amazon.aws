@@ -352,21 +352,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span><span class="w"></span>
-<span class="c1"># Gather facts about &quot;test&quot; user.</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test&quot;</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
+<span class="c1"># Gather facts about &quot;test&quot; user.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test&quot;</span>
 
-<span class="c1"># Gather facts about all users in the &quot;dev&quot; group.</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dev&quot;</span><span class="w"></span>
+<span class="c1"># Gather facts about all users in the &quot;dev&quot; group.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dev&quot;</span>
 
-<span class="c1"># Gather facts about all users with &quot;/division_abc/subdivision_xyz/&quot; path.</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/division_abc/subdivision_xyz/&quot;</span><span class="w"></span>
+<span class="c1"># Gather facts about all users with &quot;/division_abc/subdivision_xyz/&quot; path.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/division_abc/subdivision_xyz/&quot;</span>
 </pre></div>
 </div>
 </section>

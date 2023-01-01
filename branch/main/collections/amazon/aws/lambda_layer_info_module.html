@@ -367,32 +367,32 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span><span class="w"></span>
-<span class="c1"># Display information about the versions for the layer named blank-java-lib</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="c1"># Display information about the versions for the layer named blank-java-lib</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span>
 
-<span class="c1"># Display information about the versions for the layer named blank-java-lib compatible with architecture x86_64</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span><span class="w"></span>
-<span class="w">    </span><span class="nt">compatible_architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span><span class="w"></span>
+<span class="c1"># Display information about the versions for the layer named blank-java-lib compatible with architecture x86_64</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span>
+<span class="w">    </span><span class="nt">compatible_architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
 
-<span class="c1"># list latest versions of available layers</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
+<span class="c1"># list latest versions of available layers</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
 
-<span class="c1"># list latest versions of available layers compatible with runtime python3.7</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">compatible_runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3.7</span><span class="w"></span>
+<span class="c1"># list latest versions of available layers compatible with runtime python3.7</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">compatible_runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3.7</span>
 
-<span class="c1"># Retrieve specific lambda layer information</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get lambda layer version information</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-layer</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="c1"># Retrieve specific lambda layer information</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get lambda layer version information</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-layer</span>
+<span class="w">    </span><span class="nt">version_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 </section>

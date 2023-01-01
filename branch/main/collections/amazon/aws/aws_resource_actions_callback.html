@@ -165,21 +165,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-reso
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">example</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="no">To enable, add this to your ansible.cfg file in the defaults block</span><span class="w"></span>
-<span class="w">    </span><span class="no">[defaults]</span><span class="w"></span>
-<span class="w">    </span><span class="no">callback_whitelist = aws_resource_actions</span><span class="w"></span>
-<span class="nt">sample output</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span><span class="w"></span>
-<span class="c1">#</span><span class="w"></span>
-<span class="c1"># AWS ACTIONS: [&#39;s3:PutBucketAcl&#39;, &#39;s3:HeadObject&#39;, &#39;s3:DeleteObject&#39;, &#39;s3:PutObjectAcl&#39;, &#39;s3:CreateMultipartUpload&#39;,</span><span class="w"></span>
-<span class="c1">#               &#39;s3:DeleteBucket&#39;, &#39;s3:GetObject&#39;, &#39;s3:DeleteObjects&#39;, &#39;s3:CreateBucket&#39;, &#39;s3:CompleteMultipartUpload&#39;,</span><span class="w"></span>
-<span class="c1">#               &#39;s3:ListObjectsV2&#39;, &#39;s3:HeadBucket&#39;, &#39;s3:UploadPart&#39;, &#39;s3:PutObject&#39;]</span><span class="w"></span>
-<span class="c1">#</span><span class="w"></span>
-<span class="nt">sample output</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span><span class="w"></span>
-<span class="c1">#</span><span class="w"></span>
-<span class="c1"># AWS ACTIONS: [&#39;ec2:DescribeVpcAttribute&#39;, &#39;ec2:DescribeVpcClassicLink&#39;, &#39;ec2:ModifyVpcAttribute&#39;, &#39;ec2:CreateTags&#39;,</span><span class="w"></span>
-<span class="c1">#               &#39;sts:GetCallerIdentity&#39;, &#39;ec2:DescribeSecurityGroups&#39;, &#39;ec2:DescribeTags&#39;, &#39;ec2:DescribeVpcs&#39;, &#39;ec2:CreateVpc&#39;]</span><span class="w"></span>
-<span class="c1">#</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">example</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">  </span><span class="no">To enable, add this to your ansible.cfg file in the defaults block</span>
+<span class="w">    </span><span class="no">[defaults]</span>
+<span class="w">    </span><span class="no">callback_whitelist = aws_resource_actions</span>
+<span class="nt">sample output</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># AWS ACTIONS: [&#39;s3:PutBucketAcl&#39;, &#39;s3:HeadObject&#39;, &#39;s3:DeleteObject&#39;, &#39;s3:PutObjectAcl&#39;, &#39;s3:CreateMultipartUpload&#39;,</span>
+<span class="c1">#               &#39;s3:DeleteBucket&#39;, &#39;s3:GetObject&#39;, &#39;s3:DeleteObjects&#39;, &#39;s3:CreateBucket&#39;, &#39;s3:CompleteMultipartUpload&#39;,</span>
+<span class="c1">#               &#39;s3:ListObjectsV2&#39;, &#39;s3:HeadBucket&#39;, &#39;s3:UploadPart&#39;, &#39;s3:PutObject&#39;]</span>
+<span class="c1">#</span>
+<span class="nt">sample output</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># AWS ACTIONS: [&#39;ec2:DescribeVpcAttribute&#39;, &#39;ec2:DescribeVpcClassicLink&#39;, &#39;ec2:ModifyVpcAttribute&#39;, &#39;ec2:CreateTags&#39;,</span>
+<span class="c1">#               &#39;sts:GetCallerIdentity&#39;, &#39;ec2:DescribeSecurityGroups&#39;, &#39;ec2:DescribeTags&#39;, &#39;ec2:DescribeVpcs&#39;, &#39;ec2:CreateVpc&#39;]</span>
+<span class="c1">#</span>
 </pre></div>
 </div>
 <div class="admonition hint">

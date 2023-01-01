@@ -560,56 +560,56 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a new KMS key</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a new KMS key</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span>
+<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span>
 
-<span class="c1"># Create a new multi-region KMS key</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span><span class="w"></span>
-<span class="w">    </span><span class="nt">multi_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span><span class="w"></span>
+<span class="c1"># Create a new multi-region KMS key</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
+<span class="w">    </span><span class="nt">multi_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span>
+<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span>
 
-<span class="c1"># Update previous key with more tags</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_team</span><span class="w"></span>
+<span class="c1"># Update previous key with more tags</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span>
+<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span>
+<span class="w">      </span><span class="nt">Owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_team</span>
 
-<span class="c1"># Update a known key with grants allowing an instance with the billing-prod IAM profile</span><span class="w"></span>
-<span class="c1"># to decrypt data encrypted with the environment: production, application: billing</span><span class="w"></span>
-<span class="c1"># encryption context</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">key_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">abcd1234-abcd-1234-5678-ef1234567890</span><span class="w"></span>
-<span class="w">    </span><span class="nt">grants</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing_prod</span><span class="w"></span>
-<span class="w">        </span><span class="nt">grantee_principal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:role/billing_prod</span><span class="w"></span>
-<span class="w">        </span><span class="nt">constraints</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">encryption_context_equals</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span><span class="w"></span>
-<span class="w">            </span><span class="nt">application</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing</span><span class="w"></span>
-<span class="w">        </span><span class="nt">operations</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Decrypt</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RetireGrant</span><span class="w"></span>
+<span class="c1"># Update a known key with grants allowing an instance with the billing-prod IAM profile</span>
+<span class="c1"># to decrypt data encrypted with the environment: production, application: billing</span>
+<span class="c1"># encryption context</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">key_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">abcd1234-abcd-1234-5678-ef1234567890</span>
+<span class="w">    </span><span class="nt">grants</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing_prod</span>
+<span class="w">        </span><span class="nt">grantee_principal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:role/billing_prod</span>
+<span class="w">        </span><span class="nt">constraints</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">encryption_context_equals</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+<span class="w">            </span><span class="nt">application</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing</span>
+<span class="w">        </span><span class="nt">operations</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Decrypt</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RetireGrant</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update IAM policy on an existing KMS key</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span><span class="w"></span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;Version&quot;:</span><span class="nv"> </span><span class="s">&quot;2012-10-17&quot;,</span><span class="nv"> </span><span class="s">&quot;Id&quot;:</span><span class="nv"> </span><span class="s">&quot;my-kms-key-permissions&quot;,</span><span class="nv"> </span><span class="s">&quot;Statement&quot;:</span><span class="nv"> </span><span class="s">[</span><span class="nv"> </span><span class="s">{</span><span class="nv"> </span><span class="s">&lt;SOME</span><span class="nv"> </span><span class="s">STATEMENT&gt;</span><span class="nv"> </span><span class="s">}</span><span class="nv"> </span><span class="s">]}&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update IAM policy on an existing KMS key</span>
+<span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;Version&quot;:</span><span class="nv"> </span><span class="s">&quot;2012-10-17&quot;,</span><span class="nv"> </span><span class="s">&quot;Id&quot;:</span><span class="nv"> </span><span class="s">&quot;my-kms-key-permissions&quot;,</span><span class="nv"> </span><span class="s">&quot;Statement&quot;:</span><span class="nv"> </span><span class="s">[</span><span class="nv"> </span><span class="s">{</span><span class="nv"> </span><span class="s">&lt;SOME</span><span class="nv"> </span><span class="s">STATEMENT&gt;</span><span class="nv"> </span><span class="s">}</span><span class="nv"> </span><span class="s">]}&#39;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example using lookup for policy json</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span><span class="w"></span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;kms_iam_policy_template.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example using lookup for policy json</span>
+<span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;kms_iam_policy_template.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 </pre></div>
 </div>
 </section>
