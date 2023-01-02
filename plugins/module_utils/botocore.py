@@ -79,6 +79,18 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
                          "environment variables or module parameters" % module._name)
 
 
+def _merge_botocore_config(config_a, config_b):
+    """
+    Merges the extra configuration options from config_b into config_a.
+    Supports both botocore.config.Config objects and dicts
+    """
+    if not config_b:
+        return config_a
+    if not isinstance(config_b, botocore.config.Config):
+        config_b = botocore.config.Config(**config_b)
+    return config_a.merge(config_b)
+
+
 def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **params):
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
@@ -96,10 +108,8 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
         user_agent_extra='Ansible/{0}'.format(__version__),
     )
 
-    if params.get('config') is not None:
-        config = config.merge(params.pop('config'))
-    if params.get('aws_config') is not None:
-        config = config.merge(params.pop('aws_config'))
+    for param in ("config", "aws_config"):
+        config = _merge_botocore_config(config, params.pop(param, None))
 
     session = boto3.session.Session(
         profile_name=profile,
