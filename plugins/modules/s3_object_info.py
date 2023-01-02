@@ -34,6 +34,7 @@ options:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
       - Support for passing I(dualstack) and I(endpoint_url) at the same time has been deprecated,
         the dualstack endpoints are automatically configured using the configured I(region).
+        Support will be removed in a release after 2024-12-01.
     type: bool
     default: false
   ceph:

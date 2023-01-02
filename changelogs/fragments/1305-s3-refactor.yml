@@ -1,0 +1,15 @@
+minor_changes:
+- s3_bucket - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_bucket - add support for S3 dualstack endpoint (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object_info - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+deprecated_features:
+- s3_object - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been deprecated, the ``dualstack``
+  parameter is ignored when ``endpoint_url`` is passed.
+  Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been deprecated, the ``dualstack``
+  parameter is ignored when ``endpoint_url`` is passed.
+  Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object - Support for passing values of ``overwrite`` other than ``always``, ``never``, ``different`` or last ``last``
+  has been deprecated.  Boolean values should be replaced by the strings ``always`` or ``never``
+  Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
