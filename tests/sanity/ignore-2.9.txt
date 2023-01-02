@@ -1,5 +1,4 @@
 plugins/modules/ec2_vpc_dhcp_option.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
-plugins/modules/ec2_vpc_endpoint_info.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
 plugins/modules/ec2_instance.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
 plugins/modules/iam_policy.py pylint:ansible-deprecated-no-version
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
