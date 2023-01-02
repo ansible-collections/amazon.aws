@@ -40,9 +40,11 @@ try:
     import boto3
     import botocore
     HAS_BOTO3 = True
+    BOTOCORE_BASE_EXCEPTIONS = (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError)
 except ImportError:
     BOTO3_IMP_ERR = traceback.format_exc()
     HAS_BOTO3 = False
+    BOTOCORE_BASE_EXCEPTIONS = (type("NeverRaisedException", (Exception,), {}),)
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__

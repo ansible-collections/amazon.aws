@@ -1,16 +1,12 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-try:
-    import botocore
-except ImportError:
-    pass
-
 from ansible.module_utils._text import to_native
 
-from .ec2 import AWSRetry
-from .core import is_boto3_error_code
-from .core import parse_aws_arn
+from .arn import parse_aws_arn
+from .botocore import is_boto3_error_code
+from .botocore import BOTOCORE_BASE_EXCEPTIONS
+from .retries import AWSRetry
 
 
 def get_aws_account_id(module):
@@ -41,7 +37,7 @@ def get_aws_account_info(module):
         caller_id = sts_client.get_caller_identity(aws_retry=True)
         account_id = caller_id.get('Account')
         partition = caller_id.get('Arn').split(':')[1]
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError):
+    except (BOTOCORE_BASE_EXCEPTIONS):
         try:
             iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
             _arn, partition, _service, _reg, account_id, _resource = iam_client.get_user(aws_retry=True)['User']['Arn'].split(':')
@@ -58,7 +54,7 @@ def get_aws_account_info(module):
                 )
             account_id = result.get('account_id')
             partition = result.get('partition')
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (BOTOCORE_BASE_EXCEPTIONS) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(
                 e,
                 msg="Failed to get AWS account information, Try allowing sts:GetCallerIdentity or iam:GetUser permissions."

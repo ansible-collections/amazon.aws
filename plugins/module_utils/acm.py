@@ -28,18 +28,14 @@
 Common Amazon Certificate Manager facts shared between modules
 """
 
-try:
-    from botocore.exceptions import BotoCoreError, ClientError
-except ImportError:
-    pass
-
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from .core import is_boto3_error_code
-from .ec2 import AWSRetry
-from .ec2 import ansible_dict_to_boto3_tag_list
-from .ec2 import boto3_tag_list_to_ansible_dict
+from .botocore import is_boto3_error_code
+from .botocore import BOTOCORE_BASE_EXCEPTIONS
+from .retries import AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict
 
 
 def acm_catch_boto_exception(func):
@@ -53,7 +49,7 @@ def acm_catch_boto_exception(func):
             return func(*args, **kwargs)
         except is_boto3_error_code(ignore_error_codes):
             return None
-        except (BotoCoreError, ClientError) as e:
+        except (BOTOCORE_BASE_EXCEPTIONS) as e:
             if not module:
                 raise
             module.fail_json_aws(e, msg=error)
@@ -230,10 +226,10 @@ class ACMServiceManager:
         # tag that cert
         try:
             self.tag_certificate_with_backoff(arn, tags)
-        except (BotoCoreError, ClientError) as e:
+        except (BOTOCORE_BASE_EXCEPTIONS) as e:
             try:
                 self.delete_certificate_with_backoff(arn)
-            except (BotoCoreError, ClientError):
+            except (BOTOCORE_BASE_EXCEPTIONS):
                 self.module.warn("Certificate %s exists, and is not tagged. So Ansible will not see it on the next run." % arn)
                 self.module.fail_json_aws(e, msg="Couldn't tag certificate %s, couldn't delete it either" % arn)
             self.module.fail_json_aws(e, msg="Couldn't tag certificate %s" % arn)
