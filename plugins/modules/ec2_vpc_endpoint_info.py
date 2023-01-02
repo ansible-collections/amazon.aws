@@ -8,19 +8,6 @@ version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC endpoints.
 options:
-  query:
-    description:
-      - Defaults to C(endpoints).
-      - Specifies the query action to take.
-      - I(query=endpoints) returns information about AWS VPC endpoints.
-      - Retrieving information about services using I(query=services) has been
-        deprecated in favour of the M(amazon.aws.ec2_vpc_endpoint_service_info) module.
-      - The I(query) option has been deprecated and will be removed in release 6.0.0.
-    required: False
-    choices:
-      - services
-      - endpoints
-    type: str
   vpc_endpoint_ids:
     description:
       - The IDs of specific endpoints to retrieve the details of.
@@ -33,30 +20,27 @@ options:
         for possible filters.
     type: dict
     default: {}
-author: Karen Cheng (@Etherdaemon)
+author:
+  - Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.boto3
+notes:
+  - Support for the C(query) parameter was dropped in release 6.0.0.  This module now only queries
+    for endpoints.  Information about endpoint services can be retrieved using the
+    M(amazon.aws.ec2_vpc_endpoint_service_info) module.
 '''
 
 EXAMPLES = r'''
 # Simple example of listing all support AWS services for VPC endpoints
-- name: List supported AWS endpoint services
-  amazon.aws.ec2_vpc_endpoint_info:
-    query: services
-    region: ap-southeast-2
-  register: supported_endpoint_services
-
 - name: Get all endpoints in ap-southeast-2 region
   amazon.aws.ec2_vpc_endpoint_info:
-    query: endpoints
     region: ap-southeast-2
   register: existing_endpoints
 
 - name: Get all endpoints with specific filters
   amazon.aws.ec2_vpc_endpoint_info:
-    query: endpoints
     region: ap-southeast-2
     filters:
       vpc-id:
@@ -69,7 +53,6 @@ EXAMPLES = r'''
 
 - name: Get details on specific endpoint
   amazon.aws.ec2_vpc_endpoint_info:
-    query: endpoints
     region: ap-southeast-2
     vpc_endpoint_ids:
       - vpce-12345678
@@ -77,19 +60,10 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-service_names:
-  description: AWS VPC endpoint service names.
-  returned: I(query) is C(services)
-  type: list
-  elements: str
-  sample:
-    service_names:
-    - com.amazonaws.ap-southeast-2.s3
 vpc_endpoints:
   description:
-    - A list of endpoints that match the query. Each endpoint has the keys creation_timestamp,
-      policy_document, route_table_ids, service_name, state, vpc_endpoint_id, vpc_id.
-  returned: I(query) is C(endpoints)
+    - A list of matching endpoints.
+  returned: always
   type: list
   elements: dict
   contains:
@@ -215,22 +189,6 @@ def _describe_endpoints(client, **params):
     return paginator.paginate(**params).build_full_result()
 
 
-@AWSRetry.jittered_backoff()
-def _describe_endpoint_services(client, **params):
-    paginator = client.get_paginator('describe_vpc_endpoint_services')
-    return paginator.paginate(**params).build_full_result()
-
-
-def get_supported_services(client, module):
-    try:
-        services = _describe_endpoint_services(client)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to get endpoint servicess")
-
-    results = list(services['ServiceNames'])
-    return dict(service_names=results)
-
-
 def get_endpoints(client, module):
     results = list()
     params = dict()
@@ -250,7 +208,6 @@ def get_endpoints(client, module):
 
 def main():
     argument_spec = dict(
-        query=dict(choices=['services', 'endpoints'], required=False),
         filters=dict(default={}, type='dict'),
         vpc_endpoint_ids=dict(type='list', elements='str'),
     )
@@ -263,29 +220,7 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
-    query = module.params.get('query')
-    if query == 'endpoints':
-        module.deprecate('The query option has been deprecated and'
-                         ' will be removed in release 6.0.0.  Searching for'
-                         ' `endpoints` is now the default and after'
-                         ' release 6.0.0 this module will only support fetching'
-                         ' endpoints.',
-                         version='6.0.0', collection_name='amazon.aws')
-    elif query == 'services':
-        module.deprecate('Support for fetching service information with this '
-                         'module has been deprecated and will be removed in '
-                         'release 6.0.0.  '
-                         'Please use the ec2_vpc_endpoint_service_info module '
-                         'instead.', version='6.0.0',
-                         collection_name='amazon.aws')
-    else:
-        query = 'endpoints'
-
-    invocations = {
-        'services': get_supported_services,
-        'endpoints': get_endpoints,
-    }
-    results = invocations[query](connection, module)
+    results = get_endpoints(connection, module)
 
     module.exit_json(**results)
 
