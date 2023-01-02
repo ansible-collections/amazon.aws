@@ -18,7 +18,7 @@ except ImportError:
 
 from ansible.module_utils.basic import to_text
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_conn
 
 
 def s3_head_objects(client, parts, bucket, obj, versionId):
