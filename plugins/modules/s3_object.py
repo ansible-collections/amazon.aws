@@ -612,7 +612,11 @@ def put_object_acl(module, s3, bucket, obj, params=None):
             s3.put_object(aws_retry=True, **params)
         for acl in module.params.get("permission"):
             s3.put_object_acl(aws_retry=True, ACL=acl, Bucket=bucket, Key=obj)
-    except is_boto3_error_code("AccessControlListNotSupported"):
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn(
+            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning"
+        )
+    except is_boto3_error_code("AccessControlListNotSupported"):  # pylint: disable=duplicate-except
         module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (
         botocore.exceptions.BotoCoreError,
@@ -995,14 +999,22 @@ def copy_object_to_bucket(
 
 
 def get_current_object_tags_dict(s3, bucket, obj, version=None):
-    if version:
-        current_tags = s3.get_object_tagging(
-            aws_retry=True, Bucket=bucket, Key=obj, VersionId=version
-        ).get("TagSet")
-    else:
-        current_tags = s3.get_object_tagging(aws_retry=True, Bucket=bucket, Key=obj).get(
-            "TagSet"
+    try:
+        if version:
+            current_tags = s3.get_object_tagging(
+                aws_retry=True, Bucket=bucket, Key=obj, VersionId=version
+            ).get("TagSet")
+        else:
+            current_tags = s3.get_object_tagging(aws_retry=True, Bucket=bucket, Key=obj).get(
+                "TagSet"
+            )
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn(
+            "GetObjectTagging is not implemented by your storage provider."
         )
+        return {}
+    except is_boto3_error_code(("NoSuchTagSet", "NoSuchTagSetError")):
+        return {}
     return boto3_tag_list_to_ansible_dict(current_tags)
 
 
@@ -1583,20 +1595,6 @@ def main():
         func(module, s3, s3_v4, s3_object_params)
     except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn(
-            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning"
-        )
-    except is_boto3_error_code("NoSuchTagSet"):
-        return {}
-    except is_boto3_error_code(
-        "NoSuchTagSetError"
-    ):  # pylint: disable=duplicate-except
-        return {}
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn(
-            "GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning."
-        )
     except S3ObjectFailure as e:
         if e.original_e:
             module.fail_json_aws(e.original_e, e.message)
