@@ -998,7 +998,7 @@ def copy_object_to_bucket(
         )
 
 
-def get_current_object_tags_dict(s3, bucket, obj, version=None):
+def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
     try:
         if version:
             current_tags = s3.get_object_tagging(
@@ -1042,7 +1042,7 @@ def wait_tags_are_applied(
     for _dummy in range(0, 12):
         try:
             current_tags_dict = get_current_object_tags_dict(
-                s3, bucket, obj, version
+                module, s3, bucket, obj, version
             )
         except (
             botocore.exceptions.ClientError,
@@ -1068,7 +1068,7 @@ def ensure_tags(client, module, bucket, obj):
     changed = False
 
     try:
-        current_tags_dict = get_current_object_tags_dict(client, bucket, obj)
+        current_tags_dict = get_current_object_tags_dict(module, client, bucket, obj)
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -1346,6 +1346,7 @@ def s3_object_do_geturl(module, connection, connection_v4, s3_vars):
         validate=s3_vars["validate"],
     ):
         tags = get_current_object_tags_dict(
+            module,
             connection,
             s3_vars["bucket"],
             s3_vars["object"],
