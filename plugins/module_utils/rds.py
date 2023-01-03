@@ -12,10 +12,10 @@ except ImportError:
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from .ec2 import AWSRetry
-from .ec2 import ansible_dict_to_boto3_tag_list
-from .ec2 import boto3_tag_list_to_ansible_dict
-from .ec2 import compare_aws_tags
+from .retries import AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict
+from .tagging import compare_aws_tags
 from .waiters import get_waiter
 
 Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'resource', 'retry_codes'])

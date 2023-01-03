@@ -9,9 +9,9 @@ try:
 except ImportError:
     pass
 
-from .ec2 import AWSRetry
-from .ec2 import ansible_dict_to_boto3_tag_list
-from .ec2 import boto3_tag_list_to_ansible_dict
+from .retries import AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict
 from .ec2 import get_ec2_security_group_ids_from_names
 from .elb_utils import convert_tg_name_to_arn
 from .elb_utils import get_elb

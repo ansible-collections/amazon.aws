@@ -36,7 +36,7 @@ try:
 except ImportError:
     pass
 
-from .ec2 import AWSRetry
+from .retries import AWSRetry
 
 
 class DirectConnectError(Exception):

@@ -21,7 +21,7 @@
 In order to use this module, include it as part of a custom
 module as shown below.
 
-  from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+  from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
   module = AnsibleAWSModule(argument_spec=dictionary, supports_check_mode=boolean
                             mutually_exclusive=list1, required_together=list2)
 

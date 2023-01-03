@@ -59,8 +59,8 @@ from .botocore import get_aws_connection_info  # pylint: disable=unused-import
 
 from .botocore import paginated_query_with_retries
 
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
-from .core import AnsibleAWSError  # pylint: disable=unused-import
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
+from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
 # The names have been changed in .modules to better reflect their applicability.
