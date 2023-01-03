@@ -1,0 +1,2 @@
+trivial:
+- ec2_eni_info - update docs to reflect default value for ``filters`` parameter.
