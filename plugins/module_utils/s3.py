@@ -1,28 +1,24 @@
 # Copyright (c) 2018 Red Hat, Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from ansible.module_utils.basic import to_text
+import string
 from urllib.parse import urlparse
 
-from .botocore import boto3_conn
+try:
+    from hashlib import md5
+    HAS_MD5 = True
+except ImportError:
+    HAS_MD5 = False
 
 try:
-    from botocore.client import Config
-    from botocore.exceptions import BotoCoreError, ClientError
+    import botocore
 except ImportError:
     pass    # Handled by the calling module
 
-HAS_MD5 = True
-try:
-    from hashlib import md5
-except ImportError:
-    try:
-        from md5 import md5
-    except ImportError:
-        HAS_MD5 = False
 
+from ansible.module_utils.basic import to_text
 
-import string
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_conn
 
 
 def s3_head_objects(client, parts, bucket, obj, versionId):
@@ -66,7 +62,7 @@ def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
         parts = int(etag[1:-1].split('-')[1])
         try:
             return calculate_checksum_with_file(s3, parts, bucket, obj, version, filename)
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
         return '"{0}"'.format(module.md5(filename))
@@ -81,7 +77,7 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
         parts = int(etag[1:-1].split('-')[1])
         try:
             return calculate_checksum_with_content(s3, parts, bucket, obj, version, content)
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
         return '"{0}"'.format(md5(content).hexdigest())
@@ -130,38 +126,27 @@ def parse_ceph_endpoint(url):
     return {"endpoint": url, "use_ssl": use_ssl}
 
 
-def parse_default_endpoint(url, mode, encryption_mode, dualstack, sig_4):
-    result = {"endpoint": url}
+def parse_s3_endpoint(options):
+    endpoint_url = options.get("endpoint_url")
+    if options.get("ceph"):
+        return False, parse_ceph_endpoint(endpoint_url)
+    if is_fakes3(endpoint_url):
+        return False, parse_fakes3_endpoint(endpoint_url)
+    return True, {"endpoint": endpoint_url}
+
+
+def s3_extra_params(options, sigv4=False):
+    aws, extra_params = parse_s3_endpoint(options)
+    endpoint = extra_params["endpoint"]
+    if not aws:
+        return extra_params
+    dualstack = options.get("dualstack")
+    if not dualstack and not sigv4:
+        return extra_params
     config = {}
-    if (mode in ('get', 'getstr') and sig_4) or (mode == "put" and encryption_mode == "aws:kms"):
-        config["signature_version"] = "s3v4"
     if dualstack:
-        config["s3"] = {"use_dualstack_endpoint": True}
-    if config != {}:
-        result["config"] = Config(**config)
-    return result
-
-
-def s3_conn_params(mode, encryption_mode, dualstack, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
-    params = {"conn_type": "client", "resource": "s3", "region": location, **aws_connect_kwargs}
-    if ceph:
-        endpoint_p = parse_ceph_endpoint(endpoint_url)
-    elif is_fakes3(endpoint_url):
-        endpoint_p = parse_fakes3_endpoint(endpoint_url)
-    else:
-        endpoint_p = parse_default_endpoint(endpoint_url, mode, encryption_mode, dualstack, sig_4)
-
-    params.update(endpoint_p)
-    return params
-
-
-def get_s3_connection(module, aws_connect_kwargs, location, ceph, endpoint_url, sig_4=False):
-    s3_conn = s3_conn_params(module.params.get("mode"),
-                             module.params.get("encryption_mode"),
-                             module.params.get("dualstack"),
-                             aws_connect_kwargs,
-                             location,
-                             ceph,
-                             endpoint_url,
-                             sig_4)
-    return boto3_conn(module, **s3_conn)
+        config["use_dualstack_endpoint"] = True
+    if sigv4:
+        config["signature_version"] = "s3v4"
+    extra_params["config"] = config
+    return extra_params

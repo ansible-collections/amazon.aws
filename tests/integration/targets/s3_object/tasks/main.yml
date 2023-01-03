@@ -41,6 +41,17 @@
         that:
           - result is changed
 
+    - name: make a bucket with the bucket-owner-full-control ACL
+      s3_bucket:
+        name: "{{ bucket_name_acl }}"
+        state: present
+        policy: "{{ lookup('template', 'policy.json.j2') }}"
+      register: bucket_with_policy
+
+    - assert:
+        that:
+          - bucket_with_policy is changed
+
     - name: Create local upload.txt
       copy:
         content: "{{ content }}"
@@ -560,22 +571,24 @@
         that:
           - result is changed
 
-    - name: make tempfile 4 GB for OSX
-      command:
-        _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096"
-      when: ansible_distribution == 'MacOSX'
-
-    - name: make tempfile 4 GB for linux
-      command:
-        _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096"
-      when: ansible_system == 'Linux'
+    - name: Restore the bucket for later use
+      s3_bucket:
+        name: "{{ bucket_name }}"
+        state: present
 
     - name: test multipart download - platform specific
+      when:
+        - ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
       block:
-        - name: make a bucket to upload the file
-          s3_bucket:
-            name: "{{ bucket_name }}"
-            state: present
+        - name: make tempfile 4 GB for OSX
+          command:
+            _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096"
+          when: ansible_distribution == 'MacOSX'
+
+        - name: make tempfile 4 GB for linux
+          command:
+            _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096"
+          when: ansible_system == 'Linux'
 
         - name: upload the file to the bucket
           s3_object:
@@ -612,34 +625,21 @@
         - assert:
             that:
               - result is not changed
-      when: ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
 
-    - name: make a bucket with the bucket-owner-full-control ACL
-      s3_bucket:
-        name: "{{ bucket_name_acl }}"
-        state: present
-        policy: "{{ lookup('template', 'policy.json.j2') }}"
-      register: bucket_with_policy
+    - name: fail to upload the file to the bucket with an ACL
+      s3_object:
+        bucket: "{{ bucket_name_acl }}"
+        mode: put
+        src: "{{ tmpdir.path }}/upload.txt"
+        object: file-with-permissions.txt
+        permission: private
+        ignore_nonexistent_bucket: True
+      register: upload_private
+      ignore_errors: True
 
     - assert:
         that:
-          - bucket_with_policy is changed
-
-    # # XXX Doesn't fail...  ( ? Eventual consistency ? )
-    # - name: fail to upload the file to the bucket with an ACL
-    #   s3_object:
-    #     bucket: "{{ bucket_name_acl }}"
-    #     mode: put
-    #     src: "{{ tmpdir.path }}/upload.txt"
-    #     object: file-with-permissions.txt
-    #     permission: private
-    #     ignore_nonexistent_bucket: True
-    #   register: upload_private
-    #   ignore_errors: True
-    #
-    # - assert:
-    #     that:
-    #       - upload_private is failed
+          - upload_private is failed
 
     - name: upload the file to the bucket with an ACL
       s3_object:

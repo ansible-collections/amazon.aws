@@ -73,8 +73,10 @@ options:
     choices: [ 'none', 'AES256', 'aws:kms' ]
     type: str
   encryption_key_id:
-    description: KMS master key ID to use for the default encryption. This parameter is allowed if I(encryption) is C(aws:kms). If
-                 not specified then it will default to the AWS provided KMS key.
+    description:
+      - KMS master key ID to use for the default encryption.
+      - If not specified then it will default to the AWS provided KMS key.
+      - This parameter is only supported if I(encryption) is C(aws:kms).
     type: str
   bucket_key_enabled:
     description:
@@ -154,10 +156,17 @@ options:
     type: bool
     version_added: 3.1.0
     default: True
+  dualstack:
+    description:
+      - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
+      - Mutually exclusive with I(endpoint_url).
+    type: bool
+    default: false
+    version_added: 6.0.0
 
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 
@@ -348,22 +357,23 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.basic import to_text
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def create_or_update_bucket(s3_client, module, location):
+def create_or_update_bucket(s3_client, module):
 
     policy = module.params.get("policy")
     name = module.params.get("name")
@@ -379,6 +389,10 @@ def create_or_update_bucket(s3_client, module, location):
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
     acl = module.params.get("acl")
+    # default to US Standard region,
+    # note: module.region will also try to pull a default out of the boto3 configs.
+    location = module.region or "us-east-1"
+
     changed = False
     result = {}
 
@@ -1046,38 +1060,6 @@ def destroy_bucket(s3_client, module):
     module.exit_json(changed=True)
 
 
-def is_fakes3(endpoint_url):
-    """ Return True if endpoint_url has scheme fakes3:// """
-    if endpoint_url is not None:
-        return urlparse(endpoint_url).scheme in ('fakes3', 'fakes3s')
-    else:
-        return False
-
-
-def get_s3_client(module, aws_connect_kwargs, location, ceph, endpoint_url):
-    if ceph:  # TODO - test this
-        ceph = urlparse(endpoint_url)
-        params = dict(module=module, conn_type='client', resource='s3', use_ssl=ceph.scheme == 'https',
-                      region=location, endpoint=endpoint_url, **aws_connect_kwargs)
-    elif is_fakes3(endpoint_url):
-        fakes3 = urlparse(endpoint_url)
-        port = fakes3.port
-        if fakes3.scheme == 'fakes3s':
-            protocol = "https"
-            if port is None:
-                port = 443
-        else:
-            protocol = "http"
-            if port is None:
-                port = 80
-        params = dict(module=module, conn_type='client', resource='s3', region=location,
-                      endpoint="%s://%s:%s" % (protocol, fakes3.hostname, to_text(port)),
-                      use_ssl=fakes3.scheme == 'fakes3s', **aws_connect_kwargs)
-    else:
-        params = dict(module=module, conn_type='client', resource='s3', region=location, endpoint=endpoint_url, **aws_connect_kwargs)
-    return boto3_conn(**params)
-
-
 def main():
 
     argument_spec = dict(
@@ -1103,6 +1085,7 @@ def main():
         delete_object_ownership=dict(type='bool', default=False),
         acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
         validate_bucket_name=dict(type='bool', default=True),
+        dualstack=dict(default=False, type="bool"),
     )
 
     required_by = dict(
@@ -1111,7 +1094,8 @@ def main():
 
     mutually_exclusive = [
         ['public_access', 'delete_public_access'],
-        ['delete_object_ownership', 'object_ownership']
+        ['delete_object_ownership', 'object_ownership'],
+        ["dualstack", "endpoint_url"],
     ]
 
     required_if = [
@@ -1125,55 +1109,28 @@ def main():
         mutually_exclusive=mutually_exclusive
     )
 
-    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+    # Parameter validation
+    encryption = module.params.get("encryption")
+    encryption_key_id = module.params.get("encryption_key_id")
+    if encryption_key_id is not None and encryption != 'aws:kms':
+        module.fail_json(msg="Only 'aws:kms' is a valid option for encryption parameter when you specify encryption_key_id.")
+
+    extra_params = s3_extra_params(module.params)
+    retry_decorator = AWSRetry.jittered_backoff(
+        max_delay=120,
+        catch_extra_error_codes=["NoSuchBucket", "OperationAborted"],
+    )
+    s3_client = module.client("s3", retry_decorator=retry_decorator, **extra_params)
 
     if module.params.get('validate_bucket_name'):
         err = validate_bucket_name(module.params["name"])
         if err:
             module.fail_json(msg=err)
 
-    if region in ('us-east-1', '', None):
-        # default to US Standard region
-        location = 'us-east-1'
-    else:
-        # Boto uses symbolic names for locations but region strings will
-        # actually work fine for everything except us-east-1 (US Standard)
-        location = region
-
-    endpoint_url = module.params.get('endpoint_url')
-    ceph = module.params.get('ceph')
-
-    # Look at endpoint_url and tweak connection settings
-    # allow eucarc environment variables to be used if ansible vars aren't set
-    if not endpoint_url and 'S3_URL' in os.environ:
-        endpoint_url = os.environ['S3_URL']
-        module.deprecate(
-            "Support for the 'S3_URL' environment variable has been "
-            "deprecated.  We recommend using the 'endpoint_url' module "
-            "parameter.  Alternatively, the 'AWS_URL' environment variable can"
-            "be used instead.",
-            date='2024-12-01', collection_name='amazon.aws',
-        )
-
-    # if connecting to Ceph RGW, Walrus or fakes3
-    if endpoint_url:
-        for key in ['validate_certs', 'security_token', 'profile_name']:
-            aws_connect_kwargs.pop(key, None)
-    s3_client = get_s3_client(module, aws_connect_kwargs, location, ceph, endpoint_url)
-
-    if s3_client is None:  # this should never happen
-        module.fail_json(msg='Unknown error, failed to create s3 connection, no information available.')
-
     state = module.params.get("state")
-    encryption = module.params.get("encryption")
-    encryption_key_id = module.params.get("encryption_key_id")
-
-    # Parameter validation
-    if encryption_key_id is not None and encryption != 'aws:kms':
-        module.fail_json(msg="Only 'aws:kms' is a valid option for encryption parameter when you specify encryption_key_id.")
 
     if state == 'present':
-        create_or_update_bucket(s3_client, module, location)
+        create_or_update_bucket(s3_client, module)
     elif state == 'absent':
         destroy_bucket(s3_client, module)
 
