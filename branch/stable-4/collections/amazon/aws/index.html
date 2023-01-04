@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.svg"/>
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -45,7 +45,7 @@
 <a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
 
   <img class="DocSiteNav-logo"
-    src="../../../_static/images/Ansible-Mark-RGB_White.svg"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
     alt="Ansible Logo">
   <div class="DocSiteNav-title">Ansible Collections Documentation</div>
 </a>
@@ -63,7 +63,8 @@
 </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" class="st-default-search-input" name="q" placeholder="Search docs" />
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -95,6 +96,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -110,10 +115,10 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Collection Index</a> &raquo;</li>
-          <li><a href="../index.html">Collections in the Amazon Namespace</a> &raquo;</li>
-      <li>Amazon.Aws</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+      <li class="breadcrumb-item active">Amazon.Aws</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -237,12 +242,16 @@
 <li><p><a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">s3_bucket module</span></a> – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID</p></li>
 <li><p><a class="reference internal" href="s3_object_module.html#ansible-collections-amazon-aws-s3-object-module"><span class="std std-ref">s3_object module</span></a> – Manage objects in S3</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 <section id="callback-plugins">
 <h3>Callback Plugins<a class="headerlink" href="#callback-plugins" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="aws_resource_actions_callback.html#ansible-collections-amazon-aws-aws-resource-actions-callback"><span class="std std-ref">aws_resource_actions callback</span></a> – summarizes all “resource:actions” completed</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 <section id="inventory-plugins">
 <h3>Inventory Plugins<a class="headerlink" href="#inventory-plugins" title="Permalink to this heading"></a></h3>
@@ -250,6 +259,8 @@
 <li><p><a class="reference internal" href="aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">aws_ec2 inventory</span></a> – EC2 inventory source</p></li>
 <li><p><a class="reference internal" href="aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">aws_rds inventory</span></a> – RDS instance inventory source</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 <section id="lookup-plugins">
 <h3>Lookup Plugins<a class="headerlink" href="#lookup-plugins" title="Permalink to this heading"></a></h3>
@@ -259,11 +270,11 @@
 <li><p><a class="reference internal" href="aws_service_ip_ranges_lookup.html#ansible-collections-amazon-aws-aws-service-ip-ranges-lookup"><span class="std std-ref">aws_service_ip_ranges lookup</span></a> – Look up the IP ranges for services provided in AWS such as EC2 and S3.</p></li>
 <li><p><a class="reference internal" href="aws_ssm_lookup.html#ansible-collections-amazon-aws-aws-ssm-lookup"><span class="std std-ref">aws_ssm lookup</span></a> – Get the value for a SSM parameter or all parameters under a path</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+</div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p>List of <a class="reference internal" href="../../index.html#list-of-collections"><span class="std std-ref">collections</span></a> with docs hosted here.</p>
-</div>
-<div class="toctree-wrapper compound">
 </div>
 </section>
 </section>

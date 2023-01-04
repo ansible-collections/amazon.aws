@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="../../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/antsibull-minimal.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/rtd-ethical-ads.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.svg"/>
+    <link rel="shortcut icon" href="../../../../_static/images/Ansible-Mark-RGB_Black.png"/>
   <!--[if lt IE 9]>
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -45,7 +45,7 @@
 <a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
 
   <img class="DocSiteNav-logo"
-    src="../../../../_static/images/Ansible-Mark-RGB_White.svg"
+    src="../../../../_static/images/Ansible-Mark-RGB_White.png"
     alt="Ansible Logo">
   <div class="DocSiteNav-title">Ansible Collections Documentation</div>
 </a>
@@ -63,7 +63,8 @@
 </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
-    <input type="text" class="st-default-search-input" name="q" placeholder="Search docs" />
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -95,6 +96,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -110,11 +115,11 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../../index.html">Collection Index</a> &raquo;</li>
-          <li><a href="../../index.html">Collections in the Amazon Namespace</a> &raquo;</li>
-          <li><a href="../index.html">Amazon.Aws</a> &raquo;</li>
-      <li>Guidelines for Ansible Amazon AWS module development</li>
+      <li><a href="../../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">Guidelines for Ansible Amazon AWS module development</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -209,18 +214,18 @@
 <h3><a class="toc-backref" href="#id5">SDK Version Support</a><a class="headerlink" href="#sdk-version-support" title="Permalink to this heading"></a></h3>
 <p>Starting with the 2.0 releases of both collections, it is generally the policy to support the versions of botocore and boto3 that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).</p>
 <p>Features and functionality that require newer versions of the SDK can be contributed provided they are noted in the module documentation:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">DOCUMENTATION = &#39;&#39;&#39;</span><span class="w"></span>
-<span class="nn">---</span><span class="w"></span>
-<span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_vol</span><span class="w"></span>
-<span class="nt">options</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">throughput</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Volume throughput in MB/s.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This parameter is only valid for gp3 volumes.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Valid range is from 125 to 1000.</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Requires at least botocore version 1.19.27.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">int</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version_added</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.4.0</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">DOCUMENTATION = &#39;&#39;&#39;</span>
+<span class="nn">---</span>
+<span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_vol</span>
+<span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">throughput</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Volume throughput in MB/s.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This parameter is only valid for gp3 volumes.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Valid range is from 125 to 1000.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Requires at least botocore version 1.19.27.</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">int</span>
+<span class="w">    </span><span class="nt">version_added</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.4.0</span>
 </pre></div>
 </div>
 <p>And handled using the <code class="docutils literal notranslate"><span class="pre">botocore_at_least</span></code> helper method:</p>
@@ -371,10 +376,10 @@ as the module does that check:</p>
 <p>The existing AWS modules support using <a class="reference external" href="https://docs.ansible.com/ansible/devel/playbook_guide/playbooks_module_defaults.html#module-defaults" title="(in Ansible vdevel)"><span class="xref std std-ref">module_defaults</span></a> for common
 authentication parameters.  To do the same for your new module, add an entry for it in
 <code class="docutils literal notranslate"><span class="pre">meta/runtime.yml</span></code>.  These entries take the form of:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">action_groups</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">aws</span><span class="p">:</span><span class="w"></span>
-<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">aws_example_module</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">action_groups</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">aws</span><span class="p">:</span>
+<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">aws_example_module</span>
 </pre></div>
 </div>
 </section>
@@ -803,10 +808,10 @@ the AWS SDK.  The current supported versions can be found in
 needs access to a later version of the SDK this can be installed by depending on
 the <code class="docutils literal notranslate"><span class="pre">setup_botocore_pip</span></code> role and setting the <code class="docutils literal notranslate"><span class="pre">botocore_version</span></code> variable in
 the <code class="docutils literal notranslate"><span class="pre">meta/main.yml</span></code> file for your tests.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">setup_botocore_pip</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vars</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">botocore_version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.20.24&quot;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">setup_botocore_pip</span>
+<span class="w">    </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">botocore_version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.20.24&quot;</span>
 </pre></div>
 </div>
 </section>
@@ -818,23 +823,23 @@ instances.  Since AMIs are region specific there is a role which can be
 included which will query the APIs for an AMI to use and set the <code class="docutils literal notranslate"><span class="pre">ec2_ami_id</span></code>
 fact.  This role can be included by adding the <code class="docutils literal notranslate"><span class="pre">setup_ec2_facts</span></code> role as a
 dependency in the <code class="docutils literal notranslate"><span class="pre">meta/main.yml</span></code> file for your tests.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">setup_ec2_facts</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">setup_ec2_facts</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">ec2_ami_id</span></code> fact can then be used in the tests.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create launch configuration 1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">community.aws.ec2_lc</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}-lc1&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_ami_id</span><span class="nv"> </span><span class="s">}}&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_instance_type</span><span class="nv"> </span><span class="s">}}&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">sg.group_id</span><span class="nv"> </span><span class="s">}}&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/xvda</span><span class="w"></span>
-<span class="w">        </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w">        </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span><span class="w"></span>
-<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create launch configuration 1</span>
+<span class="w">  </span><span class="nt">community.aws.ec2_lc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}-lc1&#39;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_ami_id</span><span class="nv"> </span><span class="s">}}&#39;</span>
+<span class="w">    </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_instance_type</span><span class="nv"> </span><span class="s">}}&#39;</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">sg.group_id</span><span class="nv"> </span><span class="s">}}&#39;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/xvda</span>
+<span class="w">        </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">        </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span>
+<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </pre></div>
 </div>
 <p>To improve test result reproducability across regions, tests should use this
@@ -861,23 +866,23 @@ to your test in the following variables:</p>
 </ul>
 <p>So all invocations of AWS modules in the test should set these parameters. To avoid duplicating these
 for every call, it’s preferable to use <a class="reference external" href="https://docs.ansible.com/ansible/devel/playbook_guide/playbooks_module_defaults.html#module-defaults" title="(in Ansible vdevel)"><span class="xref std std-ref">module_defaults</span></a>. For example:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set connection information for aws modules and run tasks</span><span class="w"></span>
-<span class="w">  </span><span class="nt">module_defaults</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">group/aws</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_access_key</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_secret_key</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">security_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">security_token</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(omit)</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_region</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set connection information for aws modules and run tasks</span>
+<span class="w">  </span><span class="nt">module_defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">group/aws</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_access_key</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_secret_key</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">      </span><span class="nt">security_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">security_token</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(omit)</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_region</span><span class="nv"> </span><span class="s">}}&quot;</span>
 
-<span class="w">  </span><span class="nt">block</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">block</span><span class="p">:</span>
 
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Do Something</span><span class="w"></span>
-<span class="w">    </span><span class="nt">ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">... params ...</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Do Something</span>
+<span class="w">    </span><span class="nt">ec2_instance</span><span class="p">:</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">... params ...</span>
 
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Do Something Else</span><span class="w"></span>
-<span class="w">    </span><span class="nt">ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">... params ...</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Do Something Else</span>
+<span class="w">    </span><span class="nt">ec2_instance</span><span class="p">:</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">... params ...</span>
 </pre></div>
 </div>
 </section>

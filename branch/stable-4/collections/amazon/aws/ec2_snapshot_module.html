@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.svg"/>
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -45,7 +45,7 @@
 <a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
 
   <img class="DocSiteNav-logo"
-    src="../../../_static/images/Ansible-Mark-RGB_White.svg"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
     alt="Ansible Logo">
   <div class="DocSiteNav-title">Ansible Collections Documentation</div>
 </a>
@@ -63,7 +63,8 @@
 </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" class="st-default-search-input" name="q" placeholder="Search docs" />
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -95,6 +96,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -110,11 +115,11 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Collection Index</a> &raquo;</li>
-          <li><a href="../index.html">Collections in the Amazon Namespace</a> &raquo;</li>
-          <li><a href="index.html">Amazon.Aws</a> &raquo;</li>
-      <li>amazon.aws.ec2_snapshot module – Creates a snapshot from an existing volume</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">amazon.aws.ec2_snapshot module – Creates a snapshot from an existing volume</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_snapshot.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
@@ -376,34 +381,34 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Simple snapshot of volume using volume_id</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot of /data from DB123 taken 2013/11/28 12:18:32</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Simple snapshot of volume using volume_id</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot of /data from DB123 taken 2013/11/28 12:18:32</span>
 
-<span class="c1"># Snapshot of volume mounted on device_name attached to instance_id</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span><span class="w"></span>
-<span class="w">    </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot of /data from DB123 taken 2013/11/28 12:18:32</span><span class="w"></span>
+<span class="c1"># Snapshot of volume mounted on device_name attached to instance_id</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span>
+<span class="w">    </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb1</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot of /data from DB123 taken 2013/11/28 12:18:32</span>
 
-<span class="c1"># Snapshot of volume with tagging</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span><span class="w"></span>
-<span class="w">    </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">snapshot_tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hourly</span><span class="w"></span>
-<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span><span class="w"></span>
+<span class="c1"># Snapshot of volume with tagging</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span>
+<span class="w">    </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb1</span>
+<span class="w">    </span><span class="nt">snapshot_tags</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hourly</span>
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
 
-<span class="c1"># Remove a snapshot</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-abcd1234</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
+<span class="c1"># Remove a snapshot</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-abcd1234</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 
-<span class="c1"># Create a snapshot only if the most recent one is older than 1 hour</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span><span class="w"></span>
-<span class="w">    </span><span class="nt">last_snapshot_min_age</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span><span class="w"></span>
+<span class="c1"># Create a snapshot only if the most recent one is older than 1 hour</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span>
+<span class="w">    </span><span class="nt">last_snapshot_min_age</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 </pre></div>
 </div>
 </section>
