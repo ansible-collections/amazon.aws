@@ -28,6 +28,7 @@ options:
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html) for possible filters.
       - This option is mutually exclusive of I(eni_id).
     type: dict
+    default: {}
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
