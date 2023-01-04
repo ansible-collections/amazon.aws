@@ -137,7 +137,7 @@ def get_rule(client, module, rule_id):
             if predicate['Type'] in match_sets:
                 predicate.update(match_sets[predicate['Type']](client, predicate['DataId']))
                 # replaced by Id from the relevant MatchSet
-                del (predicate['DataId'])
+                del predicate['DataId']
     return rule
 
 
