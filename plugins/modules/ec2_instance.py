@@ -48,11 +48,11 @@ options:
     type: int
   instance_type:
     description:
-      - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
+      - Instance type to use for the instance, see
+        U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
       - Only required when instance is not already present.
-      - If not specified, C(t2.micro) will be used.
-      - In a release after 2023-01-01 the default will be removed and either I(instance_type) or
-        I(launch_template) must be specificed when launching an instance.
+      - At least one of I(instance_type) or I(launch_template) must be specificed when launching an
+        instance.
     type: str
   count:
     description:
@@ -223,6 +223,8 @@ options:
   launch_template:
     description:
       - The EC2 launch template to base instance configuration on.
+      - At least one of I(instance_type) or I(launch_template) must be specificed when launching an
+        instance.
     type: dict
     suboptions:
       id:
@@ -963,6 +965,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -971,6 +974,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.tower import tower_call
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 module = None
+
+
+class Ec2InstanceAWSError(AnsibleAWSError):
+    pass
 
 
 def build_volume_spec(params):
@@ -1342,11 +1349,13 @@ def build_run_instance_spec(params):
         spec['MaxCount'] = params.get('count')
         spec['MinCount'] = params.get('count')
 
-    if not params.get('launch_template'):
-        spec['InstanceType'] = params['instance_type'] if params.get('instance_type') else 't2.micro'
+    if params.get("instance_type"):
+        spec["InstanceType"] = params["instance_type"]
 
-    if params.get('launch_template') and params.get('instance_type'):
-        spec['InstanceType'] = params['instance_type']
+    if not (params.get("instance_type") or params.get("launch_template")):
+        raise Ec2InstanceAWSError(
+            "At least one of 'instance_type' and 'launch_template' "
+            "must be passed when launching instances.")
 
     return spec
 
@@ -2049,11 +2058,6 @@ def main():
         supports_check_mode=True
     )
 
-    if not module.params.get('instance_type') and not module.params.get('launch_template'):
-        if module.params.get('state') not in ('absent', 'stopped'):
-            if module.params.get('count') or module.params.get('exact_count'):
-                module.deprecate("Default value instance_type has been deprecated, in the future you must set an instance_type or a launch_template",
-                                 date='2023-01-01', collection_name='amazon.aws')
     result = dict()
 
     if module.params.get('network'):
@@ -2077,25 +2081,30 @@ def main():
     if filters is None:
         filters = build_filters()
 
-    existing_matches = find_instances(filters=filters)
+    try:
+        existing_matches = find_instances(filters=filters)
 
-    if state in ('terminated', 'absent'):
-        if existing_matches:
-            result = ensure_instance_state(state, filters)
+        if state in ('terminated', 'absent'):
+            if existing_matches:
+                result = ensure_instance_state(state, filters)
+            else:
+                result = dict(
+                    msg='No matching instances found',
+                    changed=False,
+                )
+        elif module.params.get('exact_count'):
+            enforce_count(existing_matches, module, desired_module_state=state)
+        elif existing_matches and not module.params.get('count'):
+            for match in existing_matches:
+                warn_if_public_ip_assignment_changed(match)
+                warn_if_cpu_options_changed(match)
+            result = handle_existing(existing_matches, state, filters=filters)
         else:
-            result = dict(
-                msg='No matching instances found',
-                changed=False,
-            )
-    elif module.params.get('exact_count'):
-        enforce_count(existing_matches, module, desired_module_state=state)
-    elif existing_matches and not module.params.get('count'):
-        for match in existing_matches:
-            warn_if_public_ip_assignment_changed(match)
-            warn_if_cpu_options_changed(match)
-        result = handle_existing(existing_matches, state, filters=filters)
-    else:
-        result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
+            result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
+    except Ec2InstanceAWSError as e:
+        if e.exception:
+            module.fail_json_aws(e.exception, msg=e.message)
+        module.fail_json(msg=e.message)
 
     module.exit_json(**result)
 
