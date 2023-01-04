@@ -97,6 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -693,120 +697,120 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
-<span class="c1"># Create an ALB and attach a listener</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-sec-group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-012345678</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-abcdef000</span><span class="w"></span>
-<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span><span class="w"> </span><span class="c1"># Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
-<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span><span class="w"></span>
-<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="c1"># Create an ALB and attach a listener</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-sec-group</span>
+<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-012345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-abcdef000</span>
+<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span><span class="w"> </span><span class="c1"># Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).</span>
+<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span>
+<span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span>
+<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
+<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span>
+<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
-<span class="c1"># Create an ALB and attach a listener with logging enabled</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">access_logs_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">access_logs_s3_bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span><span class="w"></span>
-<span class="w">    </span><span class="nt">access_logs_s3_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;logs&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-sec-group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-012345678</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-abcdef000</span><span class="w"></span>
-<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span><span class="w"> </span><span class="c1"># Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
-<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span><span class="w"></span>
-<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="c1"># Create an ALB and attach a listener with logging enabled</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">access_logs_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">access_logs_s3_bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">access_logs_s3_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;logs&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-sec-group</span>
+<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-012345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-abcdef000</span>
+<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span><span class="w"> </span><span class="c1"># Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).</span>
+<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span>
+<span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span>
+<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
+<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span>
+<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
-<span class="c1"># Create an ALB with listeners and rules</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-alb</span><span class="w"></span>
-<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-12345678</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-87654321</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span><span class="w"></span>
-<span class="w">    </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal</span><span class="w"></span>
-<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTPS</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">443</span><span class="w"></span>
-<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"></span>
-<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span><span class="w"></span>
-<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span><span class="w"></span>
-<span class="w">        </span><span class="nt">Rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Values</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;/test&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Values</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/redirect-path/*&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;2&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redirect</span><span class="w"></span>
-<span class="w">                </span><span class="nt">RedirectConfig</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{host}&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">Path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/example/redir&quot;</span><span class="w"> </span><span class="c1"># or /#{path}</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{port}&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{protocol}&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">Query</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{query}&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">StatusCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;HTTP_302&quot;</span><span class="w"> </span><span class="c1"># or HTTP_301</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Values</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/fixed-response-path/&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fixed-response</span><span class="w"></span>
-<span class="w">                </span><span class="nt">FixedResponseConfig</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">ContentType</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;text/plain&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">MessageBody</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">page</span><span class="nv"> </span><span class="s">you&#39;re</span><span class="nv"> </span><span class="s">looking</span><span class="nv"> </span><span class="s">for&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">StatusCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;200&quot;</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host-header</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Values</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;hostname.domain.com&quot;</span><span class="w"></span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;alternate.domain.com&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;4&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span><span class="w"></span>
-<span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
+<span class="c1"># Create an ALB with listeners and rules</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-alb</span>
+<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-12345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-87654321</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span>
+<span class="w">    </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal</span>
+<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTPS</span>
+<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">443</span>
+<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span>
+<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
+<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
+<span class="w">        </span><span class="nt">Rules</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span>
+<span class="w">                </span><span class="nt">Values</span><span class="p">:</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;/test&#39;</span>
+<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
+<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span>
+<span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span>
+<span class="w">                </span><span class="nt">Values</span><span class="p">:</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/redirect-path/*&quot;</span>
+<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;2&#39;</span>
+<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redirect</span>
+<span class="w">                </span><span class="nt">RedirectConfig</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{host}&quot;</span>
+<span class="w">                  </span><span class="nt">Path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/example/redir&quot;</span><span class="w"> </span><span class="c1"># or /#{path}</span>
+<span class="w">                  </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{port}&quot;</span>
+<span class="w">                  </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{protocol}&quot;</span>
+<span class="w">                  </span><span class="nt">Query</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#{query}&quot;</span>
+<span class="w">                  </span><span class="nt">StatusCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;HTTP_302&quot;</span><span class="w"> </span><span class="c1"># or HTTP_301</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path-pattern</span>
+<span class="w">                </span><span class="nt">Values</span><span class="p">:</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/fixed-response-path/&quot;</span>
+<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3&#39;</span>
+<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fixed-response</span>
+<span class="w">                </span><span class="nt">FixedResponseConfig</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">ContentType</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;text/plain&quot;</span>
+<span class="w">                  </span><span class="nt">MessageBody</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">page</span><span class="nv"> </span><span class="s">you&#39;re</span><span class="nv"> </span><span class="s">looking</span><span class="nv"> </span><span class="s">for&quot;</span>
+<span class="w">                  </span><span class="nt">StatusCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;200&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Conditions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host-header</span>
+<span class="w">                </span><span class="nt">Values</span><span class="p">:</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;hostname.domain.com&quot;</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;alternate.domain.com&quot;</span>
+<span class="w">            </span><span class="nt">Priority</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;4&#39;</span>
+<span class="w">            </span><span class="nt">Actions</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span>
+<span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
-<span class="c1"># Remove an ALB</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
+<span class="c1"># Remove an ALB</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 </pre></div>
 </div>
 </section>

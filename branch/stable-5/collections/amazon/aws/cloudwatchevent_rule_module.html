@@ -97,6 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -462,41 +466,41 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyCronTask</span><span class="w"></span>
-<span class="w">    </span><span class="nt">schedule_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cron(0</span><span class="nv"> </span><span class="s">20</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?</span><span class="nv"> </span><span class="s">*)&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run my scheduled task</span><span class="w"></span>
-<span class="w">    </span><span class="nt">targets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyTargetId</span><span class="w"></span>
-<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:lambda:us-east-1:123456789012:function:MyFunction</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyCronTask</span>
+<span class="w">    </span><span class="nt">schedule_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cron(0</span><span class="nv"> </span><span class="s">20</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?</span><span class="nv"> </span><span class="s">*)&quot;</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run my scheduled task</span>
+<span class="w">    </span><span class="nt">targets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyTargetId</span>
+<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:lambda:us-east-1:123456789012:function:MyFunction</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDisabledCronTask</span><span class="w"></span>
-<span class="w">    </span><span class="nt">schedule_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;rate(5</span><span class="nv"> </span><span class="s">minutes)&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run my disabled scheduled task</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">disabled</span><span class="w"></span>
-<span class="w">    </span><span class="nt">targets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyOtherTargetId</span><span class="w"></span>
-<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:lambda:us-east-1:123456789012:function:MyFunction</span><span class="w"></span>
-<span class="w">        </span><span class="nt">input</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;foo&quot;:</span><span class="nv"> </span><span class="s">&quot;bar&quot;}&#39;</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDisabledCronTask</span>
+<span class="w">    </span><span class="nt">schedule_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;rate(5</span><span class="nv"> </span><span class="s">minutes)&quot;</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run my disabled scheduled task</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">disabled</span>
+<span class="w">    </span><span class="nt">targets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyOtherTargetId</span>
+<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:lambda:us-east-1:123456789012:function:MyFunction</span>
+<span class="w">        </span><span class="nt">input</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;foo&quot;:</span><span class="nv"> </span><span class="s">&quot;bar&quot;}&#39;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyInstanceLaunchEvent</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Rule</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">EC2</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">launch&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">event_pattern</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;source&quot;:[&quot;aws.ec2&quot;],&quot;detail-type&quot;:[&quot;EC2</span><span class="nv"> </span><span class="s">Instance</span><span class="nv"> </span><span class="s">State-change</span><span class="nv"> </span><span class="s">Notification&quot;],&quot;detail&quot;:{&quot;state&quot;:[&quot;pending&quot;]}}&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">targets</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyTargetSnsTopic</span><span class="w"></span>
-<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:sns:us-east-1:123456789012:MySNSTopic</span><span class="w"></span>
-<span class="w">        </span><span class="nt">input_transformer</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">input_paths_map</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="nt">instance</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$.detail.instance-id&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$.detail.state&quot;</span><span class="w"></span>
-<span class="w">          </span><span class="nt">input_template</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;instance&gt;</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">state</span><span class="nv"> </span><span class="s">&lt;state&gt;&quot;</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyInstanceLaunchEvent</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Rule</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">EC2</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">launch&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">event_pattern</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;source&quot;:[&quot;aws.ec2&quot;],&quot;detail-type&quot;:[&quot;EC2</span><span class="nv"> </span><span class="s">Instance</span><span class="nv"> </span><span class="s">State-change</span><span class="nv"> </span><span class="s">Notification&quot;],&quot;detail&quot;:{&quot;state&quot;:[&quot;pending&quot;]}}&#39;</span>
+<span class="w">    </span><span class="nt">targets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyTargetSnsTopic</span>
+<span class="w">        </span><span class="nt">arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:sns:us-east-1:123456789012:MySNSTopic</span>
+<span class="w">        </span><span class="nt">input_transformer</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">input_paths_map</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">instance</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$.detail.instance-id&quot;</span>
+<span class="w">            </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;$.detail.state&quot;</span>
+<span class="w">          </span><span class="nt">input_template</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;instance&gt;</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">state</span><span class="nv"> </span><span class="s">&lt;state&gt;&quot;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyCronTask</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchevent_rule</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyCronTask</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 </pre></div>
 </div>
 </section>

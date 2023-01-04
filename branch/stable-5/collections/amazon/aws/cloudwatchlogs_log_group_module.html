@@ -97,6 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -412,25 +416,25 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;test-log-group&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Env&quot;</span><span class="nt"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;QA&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;test-log-group&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Env&quot;</span><span class="nt"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;QA&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;test-log-group&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Env&quot;</span><span class="nt"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;QA&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:kms:region:account-id:key/key-id</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;test-log-group&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Env&quot;</span><span class="nt"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;QA&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:kms:region:account-id:key/key-id</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
-<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudwatchlogs_log_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+<span class="w">    </span><span class="nt">log_group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-log-group</span>
 </pre></div>
 </div>
 </section>
