@@ -1106,8 +1106,7 @@ def main():
         argument_spec=argument_spec,
         required_by=required_by,
         required_if=required_if,
-        mutually_exclusive=mutually_exclusive
-    )
+        mutually_exclusive=mutually_exclusive)
 
     # Parameter validation
     encryption = module.params.get("encryption")
