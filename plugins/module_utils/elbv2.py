@@ -45,7 +45,7 @@ def _prune_ForwardConfig(action):
 
     # Remove the redundant ForwardConfig
     newAction = action.copy()
-    del(newAction["ForwardConfig"])
+    del (newAction["ForwardConfig"])
     return newAction
 
 
