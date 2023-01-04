@@ -58,9 +58,9 @@ options:
   purge_policies:
     description:
       - When I(purge_policies=true) any managed policies not listed in I(managed_policies) will be detatched.
-      - By default I(purge_policies=true).  In a release after 2022-06-01 this will be changed to I(purge_policies=false).
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
+    default: true
   state:
     description:
       - Create or remove the IAM role.
@@ -448,8 +448,6 @@ def create_or_update_role(module, client):
     purge_tags = module.params.get('purge_tags')
     tags = ansible_dict_to_boto3_tag_list(module.params.get('tags')) if module.params.get('tags') else None
     purge_policies = module.params.get('purge_policies')
-    if purge_policies is None:
-        purge_policies = True
     managed_policies = module.params.get('managed_policies')
     if managed_policies:
         # Attempt to list the policies early so we don't leave things behind if we can't find them.
@@ -665,7 +663,7 @@ def main():
         boundary=dict(type='str', aliases=['boundary_policy_arn']),
         create_instance_profile=dict(type='bool', default=True),
         delete_instance_profile=dict(type='bool', default=False),
-        purge_policies=dict(type='bool', aliases=['purge_policy', 'purge_managed_policies']),
+        purge_policies=dict(default=True, type='bool', aliases=['purge_policy', 'purge_managed_policies']),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
@@ -675,10 +673,6 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               required_if=[('state', 'present', ['assume_role_policy_document'])],
                               supports_check_mode=True)
-
-    if module.params.get('purge_policies') is None:
-        module.deprecate('After 2022-06-01 the default value of purge_policies will change from true to false.'
-                         '  To maintain the existing behaviour explicitly set purge_policies=true', date='2022-06-01', collection_name='community.aws')
 
     if module.params.get('boundary'):
         if module.params.get('create_instance_profile'):
