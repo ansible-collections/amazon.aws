@@ -26,6 +26,11 @@ ec2_data = {
                     "expected": "available"
                 },
                 {
+                    "matcher": "error",
+                    "expected": "InvalidAMIID.NotFound",
+                    "state": "retry"
+                },
+                {
                     "state": "failure",
                     "matcher": "pathAny",
                     "argument": "Images[].State",
