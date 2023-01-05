@@ -489,8 +489,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 <td><div class="ansible-option-cell"><p>Instance type to use for the instance, see <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a>.</p>
 <p>Only required when instance is not already present.</p>
-<p>If not specified, <code class="docutils literal notranslate"><span class="pre">t2.micro</span></code> will be used.</p>
-<p>In a release after 2023-01-01 the default will be removed and either <em>instance_type</em> or <em>launch_template</em> must be specificed when launching an instance.</p>
+<p>At least one of <em>instance_type</em> or <em>launch_template</em> must be specificed when launching an instance.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -506,6 +505,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#parameter-launch_template" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The EC2 launch template to base instance configuration on.</p>
+<p>At least one of <em>instance_type</em> or <em>launch_template</em> must be specificed when launching an instance.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
