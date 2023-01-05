@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="_static/antsibull-minimal.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/rtd-ethical-ads.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.svg"/>
+    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.png"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -44,7 +44,7 @@
 <a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
 
   <img class="DocSiteNav-logo"
-    src="_static/images/Ansible-Mark-RGB_White.svg"
+    src="_static/images/Ansible-Mark-RGB_White.png"
     alt="Ansible Logo">
   <div class="DocSiteNav-title">Ansible Collections Documentation</div>
 </a>
@@ -62,7 +62,8 @@
 </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" class="st-default-search-input" name="q" placeholder="Search docs" />
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -80,6 +81,10 @@
 <li class="toctree-l1"><a class="reference internal" href="collections/index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="collections/index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="collections/environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -95,8 +100,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Welcome to my Ansible collection documentation</li>
+      <li><a href="#" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Welcome to my Ansible collection documentation</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -107,10 +112,7 @@
   
            <div itemprop="articleBody">
              
-  <p># Copyright (c) Ansible Project
-# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or <a class="reference external" href="https://www.gnu.org/licenses/gpl-3.0.txt">https://www.gnu.org/licenses/gpl-3.0.txt</a>)
-# SPDX-License-Identifier: GPL-3.0-or-later</p>
-<section id="welcome-to-my-ansible-collection-documentation">
+  <section id="welcome-to-my-ansible-collection-documentation">
 <span id="docsite-root-index"></span><h1>Welcome to my Ansible collection documentation<a class="headerlink" href="#welcome-to-my-ansible-collection-documentation" title="Permalink to this heading"></a></h1>
 <p>This docsite contains documentation of amazon.aws.</p>
 <div class="toctree-wrapper compound">
@@ -126,6 +128,12 @@
 <li class="toctree-l1"><a class="reference internal" href="collections/index_inventory.html">Index of all Inventory Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="collections/index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="collections/index_module.html">Index of all Modules</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="collections/environment_variables.html">Index of all Collection Environment Variables</a></li>
 </ul>
 </div>
 </section>

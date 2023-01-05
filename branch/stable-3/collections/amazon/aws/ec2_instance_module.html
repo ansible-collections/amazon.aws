@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.svg"/>
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -45,7 +45,7 @@
 <a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
 
   <img class="DocSiteNav-logo"
-    src="../../../_static/images/Ansible-Mark-RGB_White.svg"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
     alt="Ansible Logo">
   <div class="DocSiteNav-title">Ansible Collections Documentation</div>
 </a>
@@ -63,7 +63,8 @@
 </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" class="st-default-search-input" name="q" placeholder="Search docs" />
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -95,6 +96,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
 <!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
 
         </div>
@@ -110,11 +115,11 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Collection Index</a> &raquo;</li>
-          <li><a href="../index.html">Collections in the Amazon Namespace</a> &raquo;</li>
-          <li><a href="index.html">Amazon.Aws</a> &raquo;</li>
-      <li>amazon.aws.ec2_instance module – Create &amp; manage EC2 instances</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">amazon.aws.ec2_instance module – Create &amp; manage EC2 instances</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_instance.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
@@ -173,6 +178,66 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </tr>
 </thead>
 <tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback"></span><strong>aap_callback</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: tower_callback</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Preconfigured user-data to enable an instance to perform an Ansible Automation Platform callback (Linux only).</p>
+<p>For Windows instances, to enable remote access via Ansible set <em>windows</em> to <code class="docutils literal notranslate"><span class="pre">true</span></code>, and optionally set an admin password.</p>
+<p>If using <em>windows</em> and <em>set_password</em>, callback ton Ansible Automation Platform will not be performed but the instance will be ready to receive winrm connections from Ansible.</p>
+<p>Mutually exclusive with <em>user_data</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback/host_config_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback/host_config_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-host-config-key"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-host-config-key"></span><strong>host_config_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback/host_config_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Host configuration secret key generated by the Tower job template.</p>
+<p>Required if <em>windows=False</em>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback/job_template_id"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback/job_template_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-job-template-id"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-job-template-id"></span><strong>job_template_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback/job_template_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Either the integer ID of the Tower Job Template, or the name. Using a name for the job template is not supported by Ansible Tower prior to version 3.2.</p>
+<p>Required if <em>windows=False</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback/set_password"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback/set_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-set-password"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-set-password"></span><strong>set_password</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback/set_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Optional admin password to use if <em>windows=True</em>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback/tower_address"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback/tower_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-tower-address"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-tower-address"></span><strong>tower_address</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback/tower_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>IP address or DNS name of Tower server. Must be accessible via this address from the VPC that this instance will be launched in.</p>
+<p>Required if <em>windows=False</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aap_callback/windows"></div>
+<div class="ansibleOptionAnchor" id="parameter-tower_callback/windows"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-windows"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-windows"></span><strong>windows</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aap_callback/windows" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set <em>windows=True</em> to use powershell instead of bash for the callback script.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-availability-zone"><strong>availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-availability_zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
@@ -715,37 +780,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-tower_callback"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback"><strong>tower_callback</strong></p>
-<a class="ansibleOptionLink" href="#parameter-tower_callback" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Preconfigured user-data to enable an instance to perform a Tower callback (Linux only).</p>
-<p>Mutually exclusive with <em>user_data</em>.</p>
-<p>For Windows instances, to enable remote access via Ansible set <em>tower_callback.windows</em> to true, and optionally set an admin password.</p>
-<p>If using ‘windows’ and ‘set_password’, callback to Tower will not be performed but the instance will be ready to receive winrm connections from Ansible.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-tower_callback/host_config_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-host-config-key"><strong>host_config_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-tower_callback/host_config_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Host configuration secret key generated by the Tower job template.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-tower_callback/job_template_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-job-template-id"><strong>job_template_id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-tower_callback/job_template_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Either the integer ID of the Tower Job Template, or the name (name supported only for Tower 3.2+).</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-tower_callback/tower_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tower-callback-tower-address"><strong>tower_address</strong></p>
-<a class="ansibleOptionLink" href="#parameter-tower_callback/tower_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>IP address or DNS name of Tower server. Must be accessible via this address from the VPC that this instance will be launched in.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-user_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-user-data"><strong>user_data</strong></p>
 <a class="ansibleOptionLink" href="#parameter-user_data" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -820,148 +854,148 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id6">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Terminate every running instance in a region. Use with EXTREME caution.</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
-<span class="w">    </span><span class="nt">filters</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">running</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Terminate every running instance in a region. Use with EXTREME caution.</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+<span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">running</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">restart a particular instance by its ID</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">restarted</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_ids</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">restart a particular instance by its ID</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">restarted</span>
+<span class="w">    </span><span class="nt">instance_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-12345678</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a public IP address</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-compute-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a public IP address</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-compute-instance&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
+<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and Add EBS</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-withebs-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span><span class="w"></span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span><span class="w"></span>
-<span class="w">        </span><span class="nt">ebs</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
-<span class="w">          </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and Add EBS</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-withebs-instance&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">        </span><span class="nt">ebs</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">          </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a cpu_options</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-cpuoption-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c4.large</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span><span class="w"></span>
-<span class="w">      </span><span class="nt">ebs</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cpu_options</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">core_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">        </span><span class="nt">threads_per_core</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a cpu_options</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-cpuoption-instance&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c4.large</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">      </span><span class="nt">ebs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">cpu_options</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">core_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">        </span><span class="nt">threads_per_core</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and have it begin a Tower callback on boot</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tower-callback-test&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span><span class="w"></span>
-<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tower_callback</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># IP or hostname of tower server</span><span class="w"></span>
-<span class="w">      </span><span class="nt">tower_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2.3.4</span><span class="w"></span>
-<span class="w">      </span><span class="nt">job_template_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">876</span><span class="w"></span>
-<span class="w">      </span><span class="nt">host_config_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;[secret</span><span class="nv"> </span><span class="s">config</span><span class="nv"> </span><span class="s">key</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here]&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cpu_credit_specification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unlimited</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">SomeThing</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;A</span><span class="nv"> </span><span class="s">value&quot;</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and have it begin a Tower callback on boot</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tower-callback-test&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">tower_callback</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># IP or hostname of tower server</span>
+<span class="w">      </span><span class="nt">tower_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2.3.4</span>
+<span class="w">      </span><span class="nt">job_template_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">876</span>
+<span class="w">      </span><span class="nt">host_config_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;[secret</span><span class="nv"> </span><span class="s">config</span><span class="nv"> </span><span class="s">key</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here]&#39;</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">cpu_credit_specification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unlimited</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">SomeThing</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;A</span><span class="nv"> </span><span class="s">value&quot;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with ENI (An existing ENI ID is required)</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span><span class="w"></span>
-<span class="w">      </span><span class="nt">ebs</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with ENI (An existing ENI ID is required)</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">      </span><span class="nt">ebs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add second ENI interface</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-67890&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add second ENI interface</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-67890&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with metadata options</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-metadataoptions-instance&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5calable</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span><span class="w"></span>
-<span class="w">    </span><span class="nt">metadata_options</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">http_endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">enabled</span><span class="w"></span>
-<span class="w">      </span><span class="nt">http_tokens</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">optional</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with metadata options</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-metadataoptions-instance&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5calable</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
+<span class="w">    </span><span class="nt">metadata_options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">http_endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">enabled</span>
+<span class="w">      </span><span class="nt">http_tokens</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">optional</span>
 
-<span class="c1"># ensure number of instances running with a tag matches exact_count</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start multiple instances</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">exact_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
-<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span><span class="w"></span>
+<span class="c1"># ensure number of instances running with a tag matches exact_count</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start multiple instances</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">exact_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
 
-<span class="c1"># launches multiple instances - specific number of instances</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start specific number of multiple instances</span><span class="w"></span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"></span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
-<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="w">      </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span><span class="w"></span>
+<span class="c1"># launches multiple instances - specific number of instances</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start specific number of multiple instances</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">      </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
 </pre></div>
 </div>
 </section>
