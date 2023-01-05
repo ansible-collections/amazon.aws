@@ -1,0 +1,422 @@
+---
+# Test suite for ec2_ami
+- module_defaults:
+    group/aws:
+      aws_region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  collections:
+    - amazon.aws
+  block:
+
+    # ============================================================
+
+    # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
+    - name: create a VPC to work in
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: present
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_vpc
+
+    - name: create a key pair to use for creating an ec2 instance
+      ec2_key:
+        name: '{{ ec2_ami_name }}_setup'
+        state: present
+      register: setup_key
+
+    - name: create a subnet to use for creating an ec2 instance
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ ec2_ami_name }}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: present
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_subnet
+
+    - name: create a security group to use for creating an ec2 instance
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: present
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      register: setup_sg
+
+    - name: provision ec2 instance to create an image
+      ec2_instance:
+        state: running
+        key_name: '{{ setup_key.key.name }}'
+        instance_type: t2.micro
+        image_id: '{{ ec2_ami_id }}'
+        tags:
+          '{{ec2_ami_name}}_instance_setup': 'integration_tests'
+        security_group: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        volumes:
+          - device_name: /dev/sdc
+            virtual_name: ephemeral1
+        wait: yes
+      register: setup_instance
+
+    - name: Store EC2 Instance ID
+      set_fact:
+        ec2_instance_id: '{{ setup_instance.instances[0].instance_id }}'
+
+    # ============================================================
+
+    - name: test clean failure if not providing image_id or name with state=present
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: present
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      register: result
+      ignore_errors: yes
+
+    - name: assert error message is helpful
+      assert:
+        that:
+          - result.failed
+          - "result.msg == 'one of the following is required: name, image_id'"
+
+    # ============================================================
+
+    - name: create an image from the instance (check mode)
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: present
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is changed
+      assert:
+        that:
+          - check_mode_result is changed
+
+    - name: create an image from the instance
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: present
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      register: result
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_image_id_simple: "{{ result.image_id }}"
+
+    - name: assert that image has been created
+      assert:
+        that:
+          - "result.changed"
+          - "result.image_id.startswith('ami-')"
+          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+
+    - name: get related snapshot info and ensure the tags have been propagated
+      ec2_snapshot_info:
+        snapshot_ids:
+          - "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+      register: snapshot_result
+
+    - name: ensure the tags have been propagated to the snapshot
+      assert:
+        that:
+          - "'tags' in snapshot_result.snapshots[0]"
+          - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami'"
+
+    # ============================================================
+
+    - name: create an image from the instance with attached devices with no_device true (check mode)
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_no_device_true_ami'
+        instance_id: '{{ ec2_instance_id }}'
+        device_mapping:
+          - device_name: /dev/sda1
+            volume_size: 10
+            delete_on_termination: true
+            volume_type: gp2
+          - device_name: /dev/sdf
+            no_device: yes
+        state: present
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is changed
+      assert:
+        that:
+          - check_mode_result is changed
+
+    - name: create an image from the instance with attached devices with no_device true
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_no_device_true_ami'
+        instance_id: '{{ ec2_instance_id }}'
+        device_mapping:
+          - device_name: /dev/sda1
+            volume_size: 10
+            delete_on_termination: true
+            volume_type: gp2
+          - device_name: /dev/sdf
+            no_device: yes
+        state: present
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      register: result_no_device_true
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
+
+    - name: assert that image with no_device option yes has been created
+      assert:
+        that:
+          - "result_no_device_true.changed"
+          - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
+
+    - name: create an image from the instance with attached devices with no_device false
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_no_device_false_ami'
+        instance_id: '{{ ec2_instance_id }}'
+        device_mapping:
+          - device_name: /dev/sda1
+            volume_size: 10
+            delete_on_termination: true
+            volume_type: gp2
+            no_device: no
+        state: present
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      register: result_no_device_false
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
+
+    - name: assert that image with no_device option no has been created
+      assert:
+        that:
+          - "result_no_device_false.changed"
+          - "'/dev/sda1' in result_no_device_false.block_device_mapping"
+
+    # ============================================================
+
+    - name: gather facts about the image created
+      ec2_ami_info:
+        image_ids: '{{ ec2_ami_image_id_simple }}'
+      register: ami_facts_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_facts_result.images[0].image_id == ec2_ami_image_id_simple"
+
+   # some ec2_ami_info tests to test if the filtering is working fine.
+   # ============================================================
+
+    - name: gather info about the image
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using boolean filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          is-public: true
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using integer filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          # Amazon owned
+          owner-id: 137112412989
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using string filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          name: 'amzn-ami-hvm-2017.09.0.20170930-x86_64-gp2'
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ec2_ami_info filtering tests ends
+    # ============================================================
+
+    - name: delete the image (check mode)
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: absent
+        delete_snapshot: yes
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}'
+        image_id: '{{ result.image_id }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: true
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is changed
+      assert:
+        that:
+          - check_mode_result is changed
+
+    - name: delete the image
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: absent
+        delete_snapshot: yes
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}'
+        image_id: '{{ result.image_id }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: true
+      register: result
+
+    - name: assert that the image has been deleted
+      assert:
+        that:
+          - "result.changed"
+          - "'image_id' not in result"
+          - "result.snapshots_deleted"
+
+    # ==============================================================
+
+    - name: test removing an ami if no image ID is provided (expected failed=true)
+      ec2_ami:
+        state: absent
+      register: result
+      ignore_errors: yes
+
+    - name: assert that an image ID is required
+      assert:
+        that:
+          - "result.failed"
+          - "result.msg == 'state is absent but all of the following are missing: image_id'"
+
+  always:
+
+    # ============================================================
+
+    # TEAR DOWN: snapshot, ec2 instance, ec2 key pair, security group, vpc
+    - name: Announce teardown start
+      debug:
+        msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: remove setup ec2 instance
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - '{{ ec2_instance_id }}'
+        wait: true
+      ignore_errors: yes
+
+    - name: remove setup security group
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: absent
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id_simple }}"
+        name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_no_device_true_image_id }}"
+        wait: yes
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_no_device_false_image_id }}"
+        wait: yes
+      ignore_errors: yes
+
+    - name: remove setup keypair
+      ec2_key:
+        name: '{{ec2_ami_name}}_setup'
+        state: absent
+      ignore_errors: yes
+
+    - name: remove setup subnet
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ec2_ami_name}}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: absent
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes
+
+    - name: remove setup VPC
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes

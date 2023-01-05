@@ -1,0 +1,414 @@
+---
+# Test suite for ec2_ami
+- module_defaults:
+    group/aws:
+      aws_region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  collections:
+    - amazon.aws
+  block:
+
+    # ============================================================
+
+    # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
+    - name: create a VPC to work in
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: present
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_vpc
+
+    - name: create a key pair to use for creating an ec2 instance
+      ec2_key:
+        name: '{{ ec2_ami_name }}_setup'
+        state: present
+      register: setup_key
+
+    - name: create a subnet to use for creating an ec2 instance
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ ec2_ami_name }}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: present
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_subnet
+
+    - name: create a security group to use for creating an ec2 instance
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: present
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      register: setup_sg
+
+    - name: provision ec2 instance to create an image
+      ec2_instance:
+        state: running
+        key_name: '{{ setup_key.key.name }}'
+        instance_type: t2.micro
+        image_id: '{{ ec2_ami_id }}'
+        tags:
+          '{{ec2_ami_name}}_instance_setup': 'integration_tests'
+        security_group: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        volumes:
+          - device_name: /dev/sdc
+            virtual_name: ephemeral1
+        wait: yes
+      register: setup_instance
+
+    - name: Store EC2 Instance ID
+      set_fact:
+        ec2_instance_id: '{{ setup_instance.instances[0].instance_id }}'
+
+    - name: take a snapshot of the instance to create an image
+      ec2_snapshot:
+        instance_id: '{{ ec2_instance_id }}'
+        device_name: '{{ ec2_ami_root_disk }}'
+        state: present
+      register: setup_snapshot
+
+    # ============================================================
+
+    - name: create an image from the snapshot
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}'
+        state: present
+        launch_permissions:
+          user_ids: []
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      register: result
+      ignore_errors: true
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_image_id: "{{ result.image_id }}"
+        ec2_ami_snapshot: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+
+    - name: assert a new ami has been created
+      assert:
+        that:
+          - "result.changed"
+          - "result.image_id.startswith('ami-')"
+
+    # ============================================================
+
+    - name: test default launch permissions idempotence (check mode)
+      ec2_ami:
+        description: '{{ ec2_ami_description }}'
+        state: present
+        name: '{{ ec2_ami_name }}_ami'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        image_id: '{{ result.image_id }}'
+        launch_permissions:
+          user_ids: []
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is not changed
+      assert:
+        that:
+          - check_mode_result is not changed
+
+    - name: test default launch permissions idempotence
+      ec2_ami:
+        description: '{{ ec2_ami_description }}'
+        state: present
+        name: '{{ ec2_ami_name }}_ami'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        image_id: '{{ result.image_id }}'
+        launch_permissions:
+          user_ids: []
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      register: result
+
+    - name: assert a new ami has not been created
+      assert:
+        that:
+          - "not result.changed"
+          - "result.image_id.startswith('ami-')"
+
+    # ============================================================
+
+    - name: add a tag to the AMI
+      ec2_ami:
+        state: present
+        description: '{{ ec2_ami_description }}'
+        image_id: '{{ result.image_id }}'
+        name: '{{ ec2_ami_name }}_ami'
+        tags:
+          New: Tag
+        purge_tags: no
+      register: result
+
+    - name: assert a tag was added
+      assert:
+        that:
+          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+          - "'New' in result.tags and result.tags.New == 'Tag'"
+
+    - name: use purge_tags to remove a tag from the AMI
+      ec2_ami:
+        state: present
+        description: '{{ ec2_ami_description }}'
+        image_id: '{{ result.image_id }}'
+        name: '{{ ec2_ami_name }}_ami'
+        tags:
+          New: Tag
+      register: result
+
+    - name: assert a tag was removed
+      assert:
+        that:
+          - "'Name' not in result.tags"
+          - "'New' in result.tags and result.tags.New == 'Tag'"
+
+    # ============================================================
+
+    - name: update AMI launch permissions (check mode)
+      ec2_ami:
+        state: present
+        image_id: '{{ result.image_id }}'
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        launch_permissions:
+          group_names: ['all']
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is changed
+      assert:
+        that:
+          - check_mode_result is changed
+
+    - name: update AMI launch permissions
+      ec2_ami:
+        state: present
+        image_id: '{{ result.image_id }}'
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        launch_permissions:
+          group_names: ['all']
+      register: result
+
+    - name: assert launch permissions were updated
+      assert:
+        that:
+          - "result.changed"
+
+    # ============================================================
+
+    - name: modify the AMI description (check mode)
+      ec2_ami:
+        state: present
+        image_id: '{{ result.image_id }}'
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}CHANGED'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        launch_permissions:
+          group_names: ['all']
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is changed
+      assert:
+        that:
+          - check_mode_result is changed
+
+    - name: modify the AMI description
+      ec2_ami:
+        state: present
+        image_id: '{{ result.image_id }}'
+        name: '{{ ec2_ami_name }}_ami'
+        description: '{{ ec2_ami_description }}CHANGED'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        launch_permissions:
+          group_names: ['all']
+      register: result
+
+    - name: assert the description changed
+      assert:
+        that:
+          - "result.changed"
+
+    # ============================================================
+
+    - name: remove public launch permissions
+      ec2_ami:
+        state: present
+        image_id: '{{ result.image_id }}'
+        name: '{{ ec2_ami_name }}_ami'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        launch_permissions:
+          group_names: []
+      register: result
+
+    - name: assert launch permissions were updated
+      assert:
+        that:
+          - "result.changed"
+
+    # ============================================================
+
+    - name: delete ami without deleting the snapshot (default is not to delete)
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_ami'
+        image_id: '{{ ec2_ami_image_id }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: true
+      register: result
+
+    - name: assert that the image has been deleted
+      assert:
+        that:
+          - "result.changed"
+          - "'image_id' not in result"
+
+    - name: ensure the snapshot still exists
+      ec2_snapshot_info:
+        snapshot_ids:
+          - '{{ ec2_ami_snapshot }}'
+      register: snapshot_result
+
+    - name: assert the snapshot wasn't deleted
+      assert:
+        that:
+          - "snapshot_result.snapshots[0].snapshot_id == ec2_ami_snapshot"
+
+    - name: delete ami for a second time (check mode)
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_ami'
+        image_id: '{{ ec2_ami_image_id }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      check_mode: true
+      register: check_mode_result
+
+    - name: assert that check_mode result is not changed
+      assert:
+        that:
+          - check_mode_result is not changed
+
+    - name: delete ami for a second time
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_ami'
+        image_id: '{{ ec2_ami_image_id }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      register: result
+
+    - name: assert that image does not exist
+      assert:
+        that:
+          - not result.changed
+          - not result.failed
+
+  always:
+
+    # ============================================================
+
+    # TEAR DOWN: snapshot, ec2 instance, ec2 key pair, security group, vpc
+    - name: Announce teardown start
+      debug:
+        msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: remove setup ec2 instance
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - '{{ ec2_instance_id }}'
+        wait: true
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id }}"
+        name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: yes
+
+    - name: remove setup snapshot of ec2 instance
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      ignore_errors: yes
+
+    - name: remove setup keypair
+      ec2_key:
+        name: '{{ec2_ami_name}}_setup'
+        state: absent
+      ignore_errors: yes
+
+    - name: remove setup security group
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: absent
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      ignore_errors: yes
+
+    - name: remove setup subnet
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ec2_ami_name}}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: absent
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes
+
+    - name: remove setup VPC
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes

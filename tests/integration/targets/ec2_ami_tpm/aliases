@@ -1,0 +1,6 @@
+time=10m
+
+cloud/aws
+ec2_ami
+ec2_ami_info
+ec2_snapshot_info
