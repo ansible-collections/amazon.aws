@@ -53,9 +53,22 @@ from ansible.module_utils.six import text_type
 from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
 from .version import LooseVersion
+from .common import get_collection_info
 
 MINIMUM_BOTOCORE_VERSION = '1.21.0'
 MINIMUM_BOTO3_VERSION = '1.18.0'
+
+
+def _get_user_agent_string():
+
+    info = get_collection_info()
+    result = "APN/1.0 Ansible/{0}".format(__version__)
+    if info['name']:
+        if info['version'] is not None:
+            result += " {0}/{1}".format(info['name'], info['version'])
+        else:
+            result += " {0}".format(info['name'])
+    return result
 
 
 def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
@@ -104,8 +117,9 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
                          'the conn_type parameter in the boto3_conn function '
                          'call')
 
+    # default config with user agent
     config = botocore.config.Config(
-        user_agent_extra='Ansible/{0}'.format(__version__),
+        user_agent=_get_user_agent_string(),
     )
 
     for param in ("config", "aws_config"):
@@ -122,8 +136,8 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
     elif conn_type == 'client':
         return session.client(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
     else:
-        client = session.client(resource, region_name=region, endpoint_url=endpoint, **params)
-        resource = session.resource(resource, region_name=region, endpoint_url=endpoint, **params)
+        client = session.client(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
+        resource = session.resource(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
         return client, resource
 
 
