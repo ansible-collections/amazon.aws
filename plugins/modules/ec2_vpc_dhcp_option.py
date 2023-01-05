@@ -410,7 +410,13 @@ def get_dhcp_options_info(client, module, dhcp_options_id):
         return None
 
     try:
-        dhcp_option_info = client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[dhcp_options_id])
+        dhcp_option_info = AWSRetry.jittered_backoff(
+            catch_extra_error_codes=["InvalidDhcpOptionID.NotFound"]
+        )(
+            client.describe_dhcp_options,
+        )(
+            DhcpOptionsIds=[dhcp_options_id],
+        )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to describe dhcp options")
 

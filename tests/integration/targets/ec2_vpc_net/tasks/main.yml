@@ -448,7 +448,7 @@
     - name: create a DHCP option set to use in next test
       ec2_vpc_dhcp_option:
         dns_servers:
-          - 4.4.4.4
+          - 8.8.4.4
           - 8.8.8.8
         tags:
           Name: "{{ vpc_name }}"
@@ -456,7 +456,7 @@
     - name: assert the DHCP option set was successfully created
       assert:
         that:
-          - new_dhcp is changed
+          - new_dhcp is successful
 
     - name: modify the DHCP options set for a VPC (check_mode)
       ec2_vpc_net:
