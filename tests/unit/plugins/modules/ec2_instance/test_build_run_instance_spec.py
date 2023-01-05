@@ -16,7 +16,7 @@ def params_object():
         'exact_count': None,
         'count': None,
         'launch_template': None,
-        'instance_type': None,
+        'instance_type': sentinel.INSTANCE_TYPE
     }
     return params
 
@@ -68,10 +68,28 @@ def _assert_defaults(instance_spec, to_skip=None):
         assert 'TOP_LEVEL_OPTIONS' in instance_spec
         assert instance_spec['TOP_LEVEL_OPTIONS'] is sentinel.TOP_LEVEL
 
+    if 'InstanceType' not in to_skip:
+        assert 'InstanceType' in instance_spec
+        instance_spec['InstanceType'] == sentinel.INSTANCE_TYPE
+
 
 def test_build_run_instance_spec_defaults(params_object, ec2_instance):
     instance_spec = ec2_instance.build_run_instance_spec(params_object)
     _assert_defaults(instance_spec)
+
+
+def test_build_run_instance_spec_type_required(params_object, ec2_instance):
+    params_object['instance_type'] = None
+    params_object['launch_template'] = None
+    # Test that we throw an Ec2InstanceAWSError if passed neither
+    with pytest.raises(ec2_instance.Ec2InstanceAWSError):
+        instance_spec = ec2_instance.build_run_instance_spec(params_object)
+
+    # Test that instance_type can be None if launch_template is set
+    params_object['launch_template'] = sentinel.LAUNCH_TEMPLATE
+    instance_spec = ec2_instance.build_run_instance_spec(params_object)
+    _assert_defaults(instance_spec, ['InstanceType'])
+    assert 'InstanceType' not in instance_spec
 
 
 def test_build_run_instance_spec_tagging(params_object, ec2_instance, monkeypatch):
