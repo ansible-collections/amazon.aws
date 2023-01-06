@@ -212,9 +212,8 @@
 
     - name: Wait for instance to start
       ec2_instance:
-        name: "{{ instance_name }}"
         state: running
-        image_id: "{{ ec2_ami_id }}"
+        instance_ids: "{{ test_instance.instance_ids }}"
         wait: True
 
     - name: attach existing volume to an instance (check_mode)
@@ -894,9 +893,8 @@
 
     - name: Wait for instance to start
       ec2_instance:
-        name: "{{ instance_name }}-2"
         state: running
-        image_id: "{{ ec2_ami_id }}"
+        instance_ids: "{{ test_instance_2.instance_ids }}"
         wait: True
 
     - name: attach existing volume to second instance
