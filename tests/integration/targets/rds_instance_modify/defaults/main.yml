@@ -1,0 +1,9 @@
+instance_id: ansible-test-{{ tiny_prefix }}
+modified_instance_id: '{{ instance_id }}-updated'
+username: test
+password: test12345678
+db_instance_class: db.t3.micro
+allocated_storage: 20
+
+# For mariadb tests
+mariadb_engine_version: 10.6.10
