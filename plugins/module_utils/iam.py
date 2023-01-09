@@ -8,9 +8,9 @@ except ImportError:
 
 from ansible.module_utils._text import to_native
 
-from .ec2 import AWSRetry
-from .core import is_boto3_error_code
-from .core import parse_aws_arn
+from .retries import AWSRetry
+from .botocore import is_boto3_error_code
+from .arn import parse_aws_arn
 
 
 def get_aws_account_id(module):

@@ -6,8 +6,8 @@ try:
 except ImportError:
     pass
 
-from .core import is_boto3_error_code
-from .ec2 import AWSRetry
+from .botocore import is_boto3_error_code
+from .retries import AWSRetry
 
 
 def get_elb(connection, module, elb_name):

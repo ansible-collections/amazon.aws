@@ -6,7 +6,7 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags

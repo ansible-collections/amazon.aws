@@ -361,8 +361,6 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies

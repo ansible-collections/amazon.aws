@@ -36,10 +36,10 @@ except ImportError:
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from .core import is_boto3_error_code
-from .ec2 import AWSRetry
-from .ec2 import ansible_dict_to_boto3_tag_list
-from .ec2 import boto3_tag_list_to_ansible_dict
+from .botocore import is_boto3_error_code
+from .retries import AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict
 
 
 def acm_catch_boto_exception(func):

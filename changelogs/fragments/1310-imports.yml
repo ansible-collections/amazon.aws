@@ -1,0 +1,2 @@
+minor_changes:
+- amazon.aws modules - bulk update of import statements following various refactors (https://github.com/ansible-collections/amazon.aws/pull/1310).

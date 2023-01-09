@@ -15,7 +15,7 @@ from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.urls import open_url
 
 from .ec2 import HAS_BOTO3
-from .ec2 import get_aws_connection_info
+from .botocore import get_aws_connection_info
 
 import ansible.module_utils.common.warnings as ansible_warnings
 
