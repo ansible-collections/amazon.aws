@@ -826,3 +826,20 @@ releases:
     - RELEASE-3.5.0.yml
     - unit-tests_test_rds_py37_only.yaml
     release_date: '2022-10-06'
+  3.5.1:
+    changes:
+      minor_changes:
+      - ec2_instance - refacter ``tower_callback`` code to handle parameter validation
+        as part of the argument specification (https://github.com/ansible-collections/amazon.aws/pull/1199).
+      - ec2_instance - the ``tower_callback`` parameter has been renamed to ``aap_callback``,
+        ``tower_callback`` remains as an alias.  This change should have no observable
+        effect for users outside the module documentation (https://github.com/ansible-collections/amazon.aws/pull/1199).
+      release_summary: 3.5.1 is a security bugfix release.
+      security_fixes:
+      - ec2_instance - fixes leak of password into logs when using ``tower_callback.windows=True``
+        and ``tower_callback.set_password`` (https://github.com/ansible-collections/amazon.aws/pull/1199).
+    fragments:
+    - 20221021-ec2_instance-tower_callback.yml
+    - 20221026-pytest-forked.yml
+    - release_summary.yml
+    release_date: '2023-01-09'
