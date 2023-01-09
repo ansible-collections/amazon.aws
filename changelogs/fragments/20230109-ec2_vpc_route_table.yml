@@ -1,0 +1,2 @@
+trivial:
+- ec2_vpc_route_table - fix integration test after https://github.com/ansible-collections/amazon.aws/pull/1308.
