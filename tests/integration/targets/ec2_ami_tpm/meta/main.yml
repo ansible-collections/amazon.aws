@@ -1,0 +1,5 @@
+dependencies:
+  - setup_ec2_facts
+  - role: setup_botocore_pip
+    vars:
+      botocore_version: '1.26.0'

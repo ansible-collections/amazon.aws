@@ -1,0 +1,188 @@
+---
+# Test suite for ec2_ami
+- module_defaults:
+    group/aws:
+      aws_region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  collections:
+    - amazon.aws
+  block:
+
+    # ============================================================
+
+    # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
+    - name: create a VPC to work in
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: present
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_vpc
+
+    - name: create a key pair to use for creating an ec2 instance
+      ec2_key:
+        name: '{{ ec2_ami_name }}_setup'
+        state: present
+      register: setup_key
+
+    - name: create a subnet to use for creating an ec2 instance
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ ec2_ami_name }}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: present
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      register: setup_subnet
+
+    - name: create a security group to use for creating an ec2 instance
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: present
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      register: setup_sg
+
+    - name: provision ec2 instance to create an image
+      ec2_instance:
+        state: running
+        key_name: '{{ setup_key.key.name }}'
+        instance_type: t2.micro
+        image_id: '{{ ec2_ami_id }}'
+        tags:
+          '{{ec2_ami_name}}_instance_setup': 'integration_tests'
+        security_group: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        volumes:
+          - device_name: /dev/sdc
+            virtual_name: ephemeral1
+        wait: yes
+      register: setup_instance
+
+    - name: Store EC2 Instance ID
+      set_fact:
+        ec2_instance_id: '{{ setup_instance.instances[0].instance_id }}'
+
+    - name: take a snapshot of the instance to create an image
+      ec2_snapshot:
+        instance_id: '{{ ec2_instance_id }}'
+        device_name: '{{ ec2_ami_root_disk }}'
+        state: present
+      register: setup_snapshot
+
+    # ============================================================
+
+    - name: create an image from the snapshot with boot_mode and tpm_support
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        description: '{{ ec2_ami_description }}'
+        state: present
+        boot_mode: uefi
+        tpm_support: v2.0
+        launch_permissions:
+          user_ids: []
+        tags:
+          Name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      register: result
+      ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_image_id_boot_tpm: "{{ result.image_id }}"
+        ec2_ami_snapshot_boot_tpm: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+
+    - name: gather facts about the image created
+      ec2_ami_info:
+        image_ids: '{{ ec2_ami_image_id_boot_tpm }}'
+      register: ami_facts_result_boot_tpm
+      ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: assert that new ami has been created with desired options
+      assert:
+        that:
+          - "result.changed"
+          - "result.image_id.startswith('ami-')"
+          - ami_facts_result_boot_tpm.images[0].image_id | length != 0
+          - ami_facts_result_boot_tpm.images[0].boot_mode == 'uefi'
+          - ami_facts_result_boot_tpm.images[0].tpm_support == 'v2.0'
+
+    # ============================================================
+
+  always:
+
+    # ============================================================
+
+    # TEAR DOWN: snapshot, ec2 instance, ec2 key pair, security group, vpc
+    - name: Announce teardown start
+      debug:
+        msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: remove setup ec2 instance
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - '{{ ec2_instance_id }}'
+        wait: true
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id_boot_tpm }}"
+        wait: yes
+      ignore_errors: yes
+
+    - name: remove setup snapshot of ec2 instance
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      ignore_errors: yes
+
+    - name: remove setup keypair
+      ec2_key:
+        name: '{{ec2_ami_name}}_setup'
+        state: absent
+      ignore_errors: yes
+
+    - name: remove setup security group
+      ec2_security_group:
+        name: '{{ ec2_ami_name }}_setup'
+        description: 'created by Ansible integration tests'
+        state: absent
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      ignore_errors: yes
+
+    - name: remove setup subnet
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ec2_ami_name}}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: absent
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes
+
+    - name: remove setup VPC
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: absent
+        name: '{{ ec2_ami_name }}_setup'
+        resource_tags:
+          Name: '{{ ec2_ami_name }}_setup'
+      ignore_errors: yes

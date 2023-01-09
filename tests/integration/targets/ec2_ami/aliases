@@ -1,4 +1,8 @@
 time=20m
+# Split out, but sill needed for "nightly" tests (for now) - will remove once Zuul periodic job is
+# updated
+disabled
+
 cloud/aws
 ec2_ami_info
 ec2_snapshot_info
