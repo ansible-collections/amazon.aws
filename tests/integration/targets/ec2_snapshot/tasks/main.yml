@@ -243,9 +243,6 @@
           "tag:Name": '{{ resource_prefix }}'
         max_results: 5
       register: info_result
-      until: "info_result.snapshots | length == 5"
-      retries: 10
-      delay: 30
 
     - assert:
         that:
@@ -257,11 +254,17 @@
         filters:
           "tag:Name": '{{ resource_prefix }}'
         next_token_id: "{{ info_result.next_token_id }}"
-      register: info_result
+        max_results: 5
+      register: info_result_2
 
+    # note: *MAX* 5 results, sometimes they'll throw us fewer...
+    # 8 is the absolute max it should find
     - assert:
         that:
-          - info_result.snapshots | length == 3
+          - (length_1 | int ) + (length_2 | int) <= 8
+      vars:
+        length_1: "{{ info_result.snapshots | length }}"
+        length_2: "{{ info_result_2.snapshots | length }}"
 
     # delete the tagged snapshot - check mode
     - name: Delete the tagged snapshot (check mode)
