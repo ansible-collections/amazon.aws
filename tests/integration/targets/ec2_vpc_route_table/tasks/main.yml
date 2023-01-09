@@ -714,7 +714,6 @@
     register: result
   - name: Get endpoint infos to verify that it wasn't purged from the route table
     ec2_vpc_endpoint_info:
-      query: endpoints
       vpc_endpoint_ids:
       - '{{ vpc_endpoint.result.vpc_endpoint_id }}'
     register: endpoint_details
