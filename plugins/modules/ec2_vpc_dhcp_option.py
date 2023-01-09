@@ -473,14 +473,12 @@ def main():
 
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
-    module.deprecate("The 'new_config' return key is deprecated and will be replaced by 'dhcp_config'. Both values are returned for now.",
-                     version='6.0.0', collection_name='amazon.aws')
     if state == 'absent':
         if not dhcp_options_id:
             # Look up the option id first by matching the supplied options
             dhcp_options_id = match_dhcp_options(client, module, new_config)
         changed = remove_dhcp_options_by_id(client, module, dhcp_options_id)
-        module.exit_json(changed=changed, new_options={}, dhcp_options={})
+        module.exit_json(changed=changed, dhcp_options={}, dhcp_config={})
 
     if not dhcp_options_id:
         # If we were given a vpc_id then we need to look at the configuration on that
@@ -498,7 +496,8 @@ def main():
                                                    tags=tags, purge_tags=purge_tags)
                     return_config = normalize_ec2_vpc_dhcp_config(new_config)
                     results = get_dhcp_options_info(client, module, dhcp_options_id)
-                    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
+                    module.exit_json(changed=changed, dhcp_options_id=dhcp_options_id,
+                                     dhcp_options=results, dhcp_config=return_config)
         # If no vpc_id was given, or the options don't match then look for an existing set using tags
         found, dhcp_options_id = match_dhcp_options(client, module, new_config)
 
@@ -532,7 +531,7 @@ def main():
 
     return_config = normalize_ec2_vpc_dhcp_config(new_config)
     results = get_dhcp_options_info(client, module, dhcp_options_id)
-    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results, dhcp_config=return_config)
+    module.exit_json(changed=changed, dhcp_options_id=dhcp_options_id, dhcp_options=results, dhcp_config=return_config)
 
 
 if __name__ == '__main__':
