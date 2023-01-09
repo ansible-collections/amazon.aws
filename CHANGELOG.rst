@@ -5,6 +5,25 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v3.5.1
+======
+
+Release Summary
+---------------
+
+3.5.1 is a security bugfix release.
+
+Minor Changes
+-------------
+
+- ec2_instance - refacter ``tower_callback`` code to handle parameter validation as part of the argument specification (https://github.com/ansible-collections/amazon.aws/pull/1199).
+- ec2_instance - the ``tower_callback`` parameter has been renamed to ``aap_callback``, ``tower_callback`` remains as an alias.  This change should have no observable effect for users outside the module documentation (https://github.com/ansible-collections/amazon.aws/pull/1199).
+
+Security Fixes
+--------------
+
+- ec2_instance - fixes leak of password into logs when using ``tower_callback.windows=True`` and ``tower_callback.set_password`` (https://github.com/ansible-collections/amazon.aws/pull/1199).
+
 v3.5.0
 ======
 
