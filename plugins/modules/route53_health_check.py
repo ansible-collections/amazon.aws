@@ -594,13 +594,6 @@ def main():
     action = None
     check_id = None
 
-    if module.params.get('use_unique_names') or module.params.get('health_check_id'):
-        module.deprecate(
-            'The health_check_name is currently non required parameter.'
-            ' This behavior will change and health_check_name '
-            ' will change to required=True and use_unique_names will change to default=True in release 6.0.0.',
-            version='6.0.0', collection_name='amazon.aws')
-
     # If update or delete Health Check based on ID
     update_delete_by_id = False
     if module.params.get('health_check_id'):
