@@ -5,6 +5,7 @@ import string
 from urllib.parse import urlparse
 
 try:
+    # We no longer try to import md5.md5 because we dropped support for Python 2.7
     from hashlib import md5
     HAS_MD5 = True
 except ImportError:
