@@ -1,0 +1,3 @@
+---
+minor_changes:
+- "rds_instance - add support for gp3 storage type (https://github.com/ansible-collections/amazon.aws/pull/1266)." 
