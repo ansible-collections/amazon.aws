@@ -3,7 +3,6 @@
 # Known issues:
 #
 # there is no way to associate the `default` option set in the module
-# The module doesn't store/return tags in the new_options dictionary
 # always reassociated (changed=True) when vpc_id is provided without options
 #
 # ============================================================
@@ -172,13 +171,13 @@
   - assert:
       that:
         - dhcp_options.changed
-        - dhcp_options.new_options
-        - dhcp_options.new_options.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['netbios-node-type'] == '2'
-        - dhcp_options.new_options['domain-name'] == ['{{ aws_domain_name }}']
-        - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
+        - dhcp_options.dhcp_config
+        - dhcp_options.dhcp_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['netbios-node-type'] == '2'
+        - dhcp_options.dhcp_config['domain-name'] == ['{{ aws_domain_name }}']
+        - dhcp_options.dhcp_config['domain-name-servers'] == ['AmazonProvidedDNS']
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
         - dhcp_options_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - dhcp_options_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
@@ -276,12 +275,11 @@
   - assert:
       that:
         - dhcp_options.changed
-        - dhcp_options.new_options
-        # FIXME extra keys are returned unpredictably
-        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['netbios-node-type'] == '2'
+        - dhcp_options.dhcp_config
+        - dhcp_options.dhcp_config.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['netbios-node-type'] == '2'
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
         - new_dhcp_options.dhcp_config[0]['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
@@ -358,12 +356,12 @@
   - assert:
       that:
         - dhcp_options.changed
-        - dhcp_options.new_options
-        - dhcp_options.new_options.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['netbios-node-type'] == '1'
-        - dhcp_options.new_options['domain-name'] == ['{{ aws_domain_name }}']
+        - dhcp_options.dhcp_config
+        - dhcp_options.dhcp_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['netbios-node-type'] == '1'
+        - dhcp_options.dhcp_config['domain-name'] == ['{{ aws_domain_name }}']
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
 
   - set_fact:
@@ -440,10 +438,10 @@
 
   - assert:
       that:
-        - dhcp_options.new_options
-        - dhcp_options.new_options.keys() | list | sort is superset(['domain-name', 'domain-name-servers'])
-        - dhcp_options.new_options['domain-name'] == ['{{ aws_domain_name }}']
-        - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
+        - dhcp_options.dhcp_config
+        - dhcp_options.dhcp_config.keys() | list | sort is superset(['domain-name', 'domain-name-servers'])
+        - dhcp_options.dhcp_config['domain-name'] == ['{{ aws_domain_name }}']
+        - dhcp_options.dhcp_config['domain-name-servers'] == ['AmazonProvidedDNS']
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
 
   - set_fact:
@@ -525,9 +523,9 @@
   - assert:
       that:
         - dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort is superset(['ntp-servers', 'netbios-name-servers'])
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config.keys() | list | sort is superset(['ntp-servers', 'netbios-name-servers'])
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
         - dhcp_options_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
@@ -572,9 +570,9 @@
   - assert:
       that:
         - not dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
 
   - name: test no changes with the same tags
     ec2_vpc_dhcp_option:
@@ -601,9 +599,9 @@
   - assert:
       that:
         - not dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
         - new_dhcp_options_id == dhcp_options.dhcp_options_id
         - dhcp_options.dhcp_options.tags.keys() | length == 2
         - dhcp_options.dhcp_options.tags['CreatedBy'] == 'ansible-test'
@@ -632,9 +630,9 @@
   - assert:
       that:
         - not dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
 
   - name: test no changes without specifying tags
     ec2_vpc_dhcp_option:
@@ -659,9 +657,9 @@
   - assert:
       that:
         - not dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
         - new_dhcp_options_id == dhcp_options.dhcp_options_id
         - dhcp_options_info.dhcp_options[0].tags is defined
         - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
@@ -694,9 +692,9 @@
   - assert:
       that:
         - dhcp_options.changed
-        - dhcp_options.new_options.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
-        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
-        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.dhcp_config.keys() | list | sort is superset(['netbios-name-servers', 'ntp-servers'])
+        - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
         - new_dhcp_options_id == dhcp_options.dhcp_options_id
         - dhcp_options.dhcp_options.tags.keys() | length == 3
         - dhcp_options.dhcp_options.tags['another'] == 'tag'
