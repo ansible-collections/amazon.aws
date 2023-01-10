@@ -94,25 +94,25 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create or update key/value pair in AWS SSM parameter store
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "Hello"
     description: "This is your first key"
     value: "World"
 
 - name: Delete the key
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "Hello"
     state: absent
 
 - name: Create or update secure key/value pair with default KMS key (aws/ssm)
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "Hello"
     description: "This is your first key"
     string_type: "SecureString"
     value: "World"
 
 - name: Create or update secure key/value pair with nominated KMS key
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "Hello"
     description: "This is your first key"
     string_type: "SecureString"
@@ -120,7 +120,7 @@ EXAMPLES = '''
     value: "World"
 
 - name: Always update a parameter store value and create a new version
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "overwrite_example"
     description: "This example will always overwrite the value"
     string_type: "String"
@@ -128,7 +128,7 @@ EXAMPLES = '''
     overwrite_value: "always"
 
 - name: Create or update key/value pair in AWS SSM parameter store with tier
-  community.aws.ssm_paramater:
+  community.aws.ssm_parameter:
     name: "Hello"
     description: "This is your first key"
     value: "World"
