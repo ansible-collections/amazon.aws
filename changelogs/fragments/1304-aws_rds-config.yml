@@ -1,0 +1,2 @@
+bugfixes:
+- aws_rds - fixes bug in RDS inventory plugin where config file was ignored (https://github.com/ansible-collections/amazon.aws/issues/1304).

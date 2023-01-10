@@ -360,6 +360,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if not HAS_BOTO3:
             raise AnsibleError(missing_required_lib('botocore and boto3'))
 
+        self._read_config_data(path)
         self._set_credentials()
 
         # get user specifications
