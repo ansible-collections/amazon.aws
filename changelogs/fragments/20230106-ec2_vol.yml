@@ -1,2 +1,0 @@
-trivial:
-- ec2_vol - tweak integration tests to use instance_id rather than tags when waiting for the instance.
