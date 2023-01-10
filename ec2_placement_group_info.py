@@ -73,7 +73,7 @@ placement_groups:
 
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 try:
     from botocore.exceptions import (BotoCoreError, ClientError)
 except ImportError:

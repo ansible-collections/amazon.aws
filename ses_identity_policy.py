@@ -85,7 +85,7 @@ policies:
     sample: [ExamplePolicy]
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies, AWSRetry
 
 import json

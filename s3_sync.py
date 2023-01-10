@@ -263,7 +263,7 @@ except ImportError:
 from ansible.module_utils._text import to_text
 
 # import module snippets
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 from ansible_collections.community.aws.plugins.module_utils.etag import calculate_multipart_etag
