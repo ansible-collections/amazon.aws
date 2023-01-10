@@ -1,2 +1,1 @@
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
-plugins/modules/route53_health_check.py pylint:collection-deprecated-version # https://github.com/ansible-collections/amazon.aws/issues/1111
