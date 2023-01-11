@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_instance - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1337).
