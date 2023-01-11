@@ -467,38 +467,40 @@ def create_lifecycle_rule(client, module):
     (changed, lifecycle_configuration) = compare_and_update_configuration(client, module,
                                                                           old_lifecycle_rules,
                                                                           new_rule)
+    if changed:
+        # Write lifecycle to bucket
+        try:
+            client.put_bucket_lifecycle_configuration(
+                aws_retry=True,
+                Bucket=name,
+                LifecycleConfiguration=lifecycle_configuration)
+        except is_boto3_error_message('At least one action needs to be specified in a rule'):
+            # Amazon interpretted this as not changing anything
+            changed = False
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, lifecycle_configuration=lifecycle_configuration, name=name, old_lifecycle_rules=old_lifecycle_rules)
 
-    # Write lifecycle to bucket
-    try:
-        client.put_bucket_lifecycle_configuration(
-            aws_retry=True,
-            Bucket=name,
-            LifecycleConfiguration=lifecycle_configuration)
-    except is_boto3_error_message('At least one action needs to be specified in a rule'):
-        # Amazon interpretted this as not changing anything
-        changed = False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, lifecycle_configuration=lifecycle_configuration, name=name, old_lifecycle_rules=old_lifecycle_rules)
-
-    _changed = changed
-    _retries = 10
-    _not_changed_cnt = 6
-    while wait and _changed and _retries and _not_changed_cnt:
-        # We've seen examples where get_bucket_lifecycle_configuration returns
-        # the updated rules, then the old rules, then the updated rules again and
-        # again couple of times.
-        # Thus try to read the rule few times in a row to check if it has changed.
-        time.sleep(5)
-        _retries -= 1
-        new_rules = fetch_rules(client, module, name)
-        (_changed, lifecycle_configuration) = compare_and_update_configuration(client, module,
-                                                                               new_rules,
-                                                                               new_rule)
-        if not _changed:
-            _not_changed_cnt -= 1
-            _changed = True
-        else:
-            _not_changed_cnt = 6
+        _changed = changed
+        _retries = 10
+        _not_changed_cnt = 6
+        while wait and _changed and _retries and _not_changed_cnt:
+            # We've seen examples where get_bucket_lifecycle_configuration returns
+            # the updated rules, then the old rules, then the updated rules again and
+            # again couple of times.
+            # Thus try to read the rule few times in a row to check if it has changed.
+            time.sleep(5)
+            _retries -= 1
+            new_rules = fetch_rules(client, module, name)
+            (_changed, lifecycle_configuration) = compare_and_update_configuration(client, module,
+                                                                                   new_rules,
+                                                                                   new_rule)
+            if not _changed:
+                _not_changed_cnt -= 1
+                _changed = True
+            else:
+                _not_changed_cnt = 6
+    else:
+        _retries = 0
 
     new_rules = fetch_rules(client, module, name)
 
@@ -521,36 +523,39 @@ def destroy_lifecycle_rule(client, module):
     current_lifecycle_rules = fetch_rules(client, module, name)
     changed, lifecycle_obj = compare_and_remove_rule(current_lifecycle_rules, rule_id, prefix)
 
-    # Write lifecycle to bucket or, if there no rules left, delete lifecycle configuration
-    try:
-        if lifecycle_obj['Rules']:
-            client.put_bucket_lifecycle_configuration(
-                aws_retry=True,
-                Bucket=name,
-                LifecycleConfiguration=lifecycle_obj)
-        elif current_lifecycle_rules:
-            changed = True
-            client.delete_bucket_lifecycle(aws_retry=True, Bucket=name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
+    if changed:
+        # Write lifecycle to bucket or, if there no rules left, delete lifecycle configuration
+        try:
+            if lifecycle_obj['Rules']:
+                client.put_bucket_lifecycle_configuration(
+                    aws_retry=True,
+                    Bucket=name,
+                    LifecycleConfiguration=lifecycle_obj)
+            elif current_lifecycle_rules:
+                changed = True
+                client.delete_bucket_lifecycle(aws_retry=True, Bucket=name)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e)
 
-    _changed = changed
-    _retries = 10
-    _not_changed_cnt = 6
-    while wait and _changed and _retries and _not_changed_cnt:
-        # We've seen examples where get_bucket_lifecycle_configuration returns
-        # the updated rules, then the old rules, then the updated rules again and
-        # again couple of times.
-        # Thus try to read the rule few times in a row to check if it has changed.
-        time.sleep(5)
-        _retries -= 1
-        new_rules = fetch_rules(client, module, name)
-        (_changed, lifecycle_configuration) = compare_and_remove_rule(new_rules, rule_id, prefix)
-        if not _changed:
-            _not_changed_cnt -= 1
-            _changed = True
-        else:
-            _not_changed_cnt = 6
+        _changed = changed
+        _retries = 10
+        _not_changed_cnt = 6
+        while wait and _changed and _retries and _not_changed_cnt:
+            # We've seen examples where get_bucket_lifecycle_configuration returns
+            # the updated rules, then the old rules, then the updated rules again and
+            # again couple of times.
+            # Thus try to read the rule few times in a row to check if it has changed.
+            time.sleep(5)
+            _retries -= 1
+            new_rules = fetch_rules(client, module, name)
+            (_changed, lifecycle_configuration) = compare_and_remove_rule(new_rules, rule_id, prefix)
+            if not _changed:
+                _not_changed_cnt -= 1
+                _changed = True
+            else:
+                _not_changed_cnt = 6
+    else:
+        _retries = 0
 
     new_rules = fetch_rules(client, module, name)
 
