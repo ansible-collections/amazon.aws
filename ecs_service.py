@@ -819,14 +819,24 @@ class EcsServiceManager:
         response = self.ecs.create_service(**params)
         return self.jsonize(response['service'])
 
-    def update_service(self, service_name, cluster_name, task_definition,
-                       desired_count, deployment_configuration, network_configuration,
-                       health_check_grace_period_seconds, force_new_deployment, capacity_provider_strategy):
+    def update_service(self, service_name, cluster_name, task_definition, desired_count,
+                       deployment_configuration, placement_constraints, placement_strategy,
+                       network_configuration, health_check_grace_period_seconds,
+                       force_new_deployment, capacity_provider_strategy):
         params = dict(
             cluster=cluster_name,
             service=service_name,
             taskDefinition=task_definition,
             deploymentConfiguration=deployment_configuration)
+        # filter placement_constraint and left only those where value is not None
+        # use-case: `distinctInstance` type should never contain `expression`, but None will fail `str` type validation
+        if placement_constraints:
+            params['placementConstraints'] = [{key: value for key, value in constraint.items() if value is not None}
+                                              for constraint in placement_constraints]
+
+        if placement_strategy:
+            params['placementStrategy'] = placement_strategy
+
         if network_configuration:
             params['networkConfiguration'] = network_configuration
         if force_new_deployment:
@@ -1038,6 +1048,8 @@ def main():
                                                           task_definition,
                                                           module.params['desired_count'],
                                                           deploymentConfiguration,
+                                                          module.params['placement_constraints'],
+                                                          module.params['placement_strategy'],
                                                           network_configuration,
                                                           module.params['health_check_grace_period_seconds'],
                                                           module.params['force_new_deployment'],
