@@ -274,8 +274,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
@@ -307,6 +307,17 @@ def alias_details(client, module, function_name):
     return camel_dict_to_snake_dict(lambda_info)
 
 
+def _get_query(query, function_name):
+    # create default values for query if not specified.
+    # if function name exists, query should default to 'all'.
+    # if function name does not exist, query should default to 'config' to limit the runtime when listing all lambdas.
+    if query:
+        return query
+    if function_name:
+        return "all"
+    return "config"
+
+
 def list_functions(client, module):
     """
     Returns queried facts for a specified function (or all functions).
@@ -325,7 +336,7 @@ def list_functions(client, module):
         all_function_info = _paginate(client, 'list_functions')['Functions']
         function_names = [function_info['FunctionName'] for function_info in all_function_info]
 
-    query = module.params['query']
+    query = _get_query(module.params['query'], function_name)
     functions = []
 
     # keep returning deprecated response (dict of dicts) until removed
@@ -507,15 +518,6 @@ def main():
             )
         if len(function_name) > 64:
             module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
-
-    # create default values for query if not specified.
-    # if function name exists, query should default to 'all'.
-    # if function name does not exist, query should default to 'config' to limit the runtime when listing all lambdas.
-    if not module.params.get('query'):
-        if function_name:
-            module.params['query'] = 'all'
-        else:
-            module.params['query'] = 'config'
 
     client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
 
