@@ -168,7 +168,7 @@ def set_api_params(module_params, param_names):
     """
     Sets non-None module parameters to those expected by the boto3 API.
 
-    :param module:
+    :param module_params:
     :param param_names:
     :return:
     """
