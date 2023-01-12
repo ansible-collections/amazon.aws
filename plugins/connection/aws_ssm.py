@@ -447,11 +447,94 @@ class Connection(ConnectionBase):
 
     def _prepare_terminal(self):
         ''' perform any one-time terminal settings '''
+        # No windows setup for now
+        if self.is_windows:
+            return
 
-        if not self.is_windows:
-            cmd = "stty -echo\n" + "PS1=''\n"
-            cmd = to_bytes(cmd, errors='surrogate_or_strict')
-            self._session.stdin.write(cmd)
+        # *_complete variables are 3 valued:
+        #   - None: not started
+        #   - False: started
+        #   - True: complete
+
+        startup_complete = False
+        disable_echo_complete = None
+        disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
+
+        disable_prompt_complete = None
+        end_mark = "".join(
+            [random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)]
+        )
+        disable_prompt_cmd = to_bytes(
+            "PS1='' ; printf '\\n%s\\n' '" + end_mark + "'\n",
+            errors="surrogate_or_strict",
+        )
+        disable_prompt_reply = re.compile(
+            r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE
+        )
+
+        stdout = ""
+        # Custom command execution for when we're waiting for startup
+        stop_time = int(round(time.time())) + self.get_option("ssm_timeout")
+        while (not disable_prompt_complete) and (self._session.poll() is None):
+            remaining = stop_time - int(round(time.time()))
+            if remaining < 1:
+                self._timeout = True
+                display.vvvv(
+                    "PRE timeout stdout: {0}".format(to_bytes(stdout)), host=self.host
+                )
+                raise AnsibleConnectionFailure(
+                    "SSM start_session timeout on host: %s" % self.instance_id
+                )
+            if self._poll_stdout.poll(1000):
+                stdout += to_text(self._stdout.read(1024))
+                display.vvvv(
+                    "PRE stdout line: {0}".format(to_bytes(stdout)), host=self.host
+                )
+            else:
+                display.vvvv("PRE remaining: {0}".format(remaining), host=self.host)
+
+            # wait til prompt is ready
+            if startup_complete is False:
+                match = str(stdout).find("Starting session with SessionId")
+                if match != -1:
+                    display.vvvv("PRE startup output received", host=self.host)
+                    startup_complete = True
+
+            # disable echo
+            if startup_complete and (disable_echo_complete is None):
+                display.vvvv(
+                    "PRE Disabling Echo: {0}".format(disable_echo_cmd), host=self.host
+                )
+                self._session.stdin.write(disable_echo_cmd)
+                disable_echo_complete = False
+
+            if disable_echo_complete is False:
+                match = str(stdout).find("stty -echo")
+                if match != -1:
+                    disable_echo_complete = True
+
+            # disable prompt
+            if disable_echo_complete and disable_prompt_complete is None:
+                display.vvvv(
+                    "PRE Disabling Prompt: {0}".format(disable_prompt_cmd),
+                    host=self.host,
+                )
+                self._session.stdin.write(disable_prompt_cmd)
+                disable_prompt_complete = False
+
+            if disable_prompt_complete is False:
+                match = disable_prompt_reply.search(stdout)
+                if match:
+                    stdout = stdout[match.end():]
+                    disable_prompt_complete = True
+
+        if not disable_prompt_complete:
+            raise AnsibleConnectionFailure(
+                "SSM process closed during _prepare_terminal on host: %s"
+                % self.instance_id
+            )
+        else:
+            display.vvv("PRE Terminal configured", host=self.host)
 
     def _wrap_command(self, cmd, sudoable, mark_start, mark_end):
         ''' wrap command so stdout and status can be extracted '''
@@ -463,7 +546,11 @@ class Connection(ConnectionBase):
         else:
             if sudoable:
                 cmd = "sudo " + cmd
-            cmd = "echo " + mark_start + "\n" + cmd + "\necho $'\\n'$?\n" + "echo " + mark_end + "\n"
+            cmd = (
+                f"printf '%s\\n' '{mark_start}';\n"
+                f"echo | {cmd};\n"
+                f"printf '\\n%s\\n%s\\n' \"$?\" '{mark_end}';\n"
+            )
 
         display.vvvv(u"_wrap_command: '{0}'".format(to_text(cmd)), host=self.host)
         return cmd
