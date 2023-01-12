@@ -130,12 +130,20 @@ def test_build_run_instance_spec_exact_count(params_object, ec2_instance):
     # The "exact_count" logic relies on enforce_count doing the math to figure out how many
     # instances to start/stop.  The enforce_count call is responsible for ensuring that 'to_launch'
     # is set and is a positive integer.
-    params_object['exact_count'] = sentinel.EXACT_COUNT
+    params_object['exact_count'] = 42
     params_object['to_launch'] = sentinel.TO_LAUNCH
     instance_spec = ec2_instance.build_run_instance_spec(params_object)
 
     _assert_defaults(instance_spec, ['MaxCount', 'MinCount'])
     assert 'MaxCount' in instance_spec
     assert 'MinCount' in instance_spec
-    assert instance_spec['MaxCount'] == sentinel.TO_LAUNCH
-    assert instance_spec['MinCount'] == sentinel.TO_LAUNCH
+    assert instance_spec['MaxCount'] == 42
+    assert instance_spec['MinCount'] == 42
+
+    instance_spec = ec2_instance.build_run_instance_spec(params_object, 7)
+
+    _assert_defaults(instance_spec, ['MaxCount', 'MinCount'])
+    assert 'MaxCount' in instance_spec
+    assert 'MinCount' in instance_spec
+    assert instance_spec['MaxCount'] == 35
+    assert instance_spec['MinCount'] == 35

@@ -1321,7 +1321,7 @@ def build_instance_tags(params, propagate_tags_to_volumes=True):
     return specs
 
 
-def build_run_instance_spec(params):
+def build_run_instance_spec(params, current_count=0):
 
     spec = dict(
         ClientToken=uuid.uuid4().hex,
@@ -1342,8 +1342,8 @@ def build_run_instance_spec(params):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('iam_instance_profile')))
 
     if params.get('exact_count'):
-        spec['MaxCount'] = params.get('to_launch')
-        spec['MinCount'] = params.get('to_launch')
+        spec['MaxCount'] = params.get('exact_count') - current_count
+        spec['MinCount'] = params.get('exact_count') - current_count
 
     if params.get('count'):
         spec['MaxCount'] = params.get('count')
@@ -1833,11 +1833,9 @@ def enforce_count(existing_matches, module, desired_module_state):
             )
 
         elif current_count < exact_count:
-            to_launch = exact_count - current_count
-            module.params['to_launch'] = to_launch
             # launch instances
             try:
-                ensure_present(existing_matches=existing_matches, desired_module_state=desired_module_state)
+                ensure_present(existing_matches=existing_matches, desired_module_state=desired_module_state, current_count=current_count)
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
         elif current_count > exact_count:
@@ -1867,14 +1865,14 @@ def enforce_count(existing_matches, module, desired_module_state):
         module.fail_json_aws(e, msg="Failed to enforce instance count")
 
 
-def ensure_present(existing_matches, desired_module_state):
+def ensure_present(existing_matches, desired_module_state, current_count=None):
     tags = dict(module.params.get('tags') or {})
     name = module.params.get('name')
     if name:
         tags['Name'] = name
 
     try:
-        instance_spec = build_run_instance_spec(module.params)
+        instance_spec = build_run_instance_spec(module.params, current_count)
         # If check mode is enabled,suspend 'ensure function'.
         if module.check_mode:
             module.exit_json(
