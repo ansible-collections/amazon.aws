@@ -1,0 +1,42 @@
+
+[aws_ssm_linux]
+{% if instance_output | default(False) %}
+{% if ( ami_configuration.os_type | default("linux")) == "linux" %}
+linux_{{ instance_output.instance_ids[0] }} ansible_aws_ssm_instance_id={{ instance_output.instance_ids[0] }} ansible_aws_ssm_region={{ aws_region }}
+{% endif %}
+{% endif %}
+
+[aws_ssm_windows]
+{% if instance_output | default(False) %}
+{% if ( ami_configuration.os_type | default("linux")) == "windows" %}
+windows_{{ instance_output.instance_ids[0] }} ansible_aws_ssm_instance_id={{ instance_output.instance_ids[0] }} ansible_aws_ssm_region={{ aws_region }}
+{% endif %}
+{% endif %}
+
+[aws_ssm_linux:vars]
+remote_tmp=/tmp/ansible-remote
+action_prefix=ansible.builtin.
+
+[aws_ssm_windows:vars]
+ansible_shell_type=powershell
+remote_tmp=c:/windows/temp/ansible-remote
+action_prefix=ansible.windows.win_
+
+[aws_ssm:children]
+aws_ssm_linux
+aws_ssm_windows
+
+[aws_ssm:vars]
+ansible_connection=community.aws.aws_ssm
+ansible_aws_ssm_bucket_name={{ s3_bucket_name }}
+ansible_aws_ssm_plugin=/usr/local/sessionmanagerplugin/bin/session-manager-plugin
+ansible_python_interpreter=/usr/bin/env python3
+local_tmp=/tmp/ansible-local-{{ tiny_prefix }}
+{% if encrypted_bucket | default(False) %}
+ansible_aws_ssm_bucket_sse_mode='aws:kms'
+ansible_aws_ssm_bucket_sse_kms_key_id=alias/{{ kms_key_name }}
+{% endif %}
+
+# support tests that target testhost
+[testhost:children]
+aws_ssm
