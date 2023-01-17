@@ -1,0 +1,40 @@
+---
+## Task file for setup/teardown AWS resources for aws_ssm integration testing
+- name: create a KMS key
+  aws_kms:
+    alias: '{{ kms_key_name }}'
+    grants:
+    - name: SSM-Agent-Access
+      grantee_principal: '{{ role_output.iam_role.arn }}'
+      retiring_principal: '{{ aws_caller_info.arn }}'
+      operations:
+        - Decrypt
+        - Encrypt
+        - GenerateDataKey
+        - GenerateDataKeyWithoutPlaintext
+        - DescribeKey
+        - Verify
+        - Sign
+        - RetireGrant
+    - name: Ansible-Test-Access
+      grantee_principal: '{{ aws_caller_info.arn }}'
+      retiring_principal: '{{ aws_caller_info.arn }}'
+      operations:
+        - Decrypt
+        - Encrypt
+        - GenerateDataKey
+        - GenerateDataKeyWithoutPlaintext
+        - DescribeKey
+        - Verify
+        - Sign
+        - RetireGrant
+    tags:
+      ansible-test: '{{ resource_prefix }}-connection-ssm'
+
+# Note: This bucket will **NOT** be deleted, there are some nasty gotchas with the time it takes
+# to properly enable encryption so we have a permanant bucket which is automatically emptied
+- name: Ensure encrypted bucket exists
+  s3_bucket:
+    name: "{{ encrypted_s3_bucket_name }}"
+  when:
+    - encrypted_bucket | default(False)

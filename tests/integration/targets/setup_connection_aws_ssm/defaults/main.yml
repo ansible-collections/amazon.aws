@@ -11,24 +11,27 @@ ami_details:
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     amazon:
-        owner: amazon
-        name: amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2
+        ssm_parameter: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+        # owner: amazon
+        # name: amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2
         user_data: |
             #!/bin/sh
             # Pre-Installed just needs started
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     ubuntu:
-        owner: amazon
-        name: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server*
+        ssm_parameter: /aws/service/canonical/ubuntu/server-minimal/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id
+        # owner: amazon
+        # name: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server*
         user_data: |
             #!/bin/sh
             # Pre-Installed just needs started
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     windows:
-        owner: amazon
-        name: Windows_Server-2022-English-Full-Base-*
+        ssm_parameter: /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
+        # owner: amazon
+        # name: Windows_Server-2022-English-Full-Base-*
         user_data: |
             <powershell>
             Invoke-WebRequest -Uri "https://amazon-ssm-us-east-1.s3.amazonaws.com/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "C:\AmazonSSMAgentSetup.exe"
