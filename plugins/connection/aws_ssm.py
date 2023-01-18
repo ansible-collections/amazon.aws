@@ -82,6 +82,11 @@ options:
     version_added: 2.2.0
     vars:
     - name: ansible_aws_ssm_bucket_sse_kms_key_id
+  ssm_document:
+    description: SSM document to use when connecting.
+    vars:
+    - name: ansible_aws_ssm_document
+    version_added: 5.2.0
 '''
 
 EXAMPLES = r'''
@@ -183,6 +188,19 @@ EXAMPLES = r'''
     ansible_aws_ssm_region: us-west-2
     ansible_aws_ssm_bucket_sse_mode: 'aws:kms'
     ansible_aws_ssm_bucket_sse_kms_key_id: alias/kms-key-alias
+  tasks:
+    - name: Install a Nginx Package
+      yum:
+        name: nginx
+        state: present
+
+# Install a Nginx Package on Linux Instance; with dedicated SSM document
+- name: Install a Nginx Package
+  vars:
+    ansible_connection: aws_ssm
+    ansible_aws_ssm_bucket_name: nameofthebucket
+    ansible_aws_ssm_region: us-west-2
+    ansible_aws_ssm_document: nameofthecustomdocument
   tasks:
     - name: Install a Nginx Package
       yum:
@@ -342,7 +360,11 @@ class Connection(ConnectionBase):
         ssm_parameters = dict()
         client = self._get_boto_client('ssm', region_name=region_name, profile_name=profile_name)
         self._client = client
-        response = client.start_session(Target=self.instance_id, Parameters=ssm_parameters)
+        start_session_args = dict(Target=self.instance_id, Parameters=ssm_parameters)
+        document_name = self.get_option('ssm_document')
+        if document_name is not None:
+            start_session_args['DocumentName'] = document_name
+        response = client.start_session(**start_session_args)
         self._session_id = response['SessionId']
 
         cmd = [
