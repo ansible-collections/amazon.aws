@@ -10,6 +10,9 @@
       region: '{{ aws_region }}'
   block:
 
+    - name: setup connection argments fact
+      include_tasks: 'connection_args.yml'
+
     - name: Check if instance_vars_to_delete.yml is present
       stat:
         path: "{{ playbook_dir }}/instance_vars_to_delete.yml"
@@ -37,6 +40,15 @@
       include_vars: "{{ playbook_dir }}/iam_role_vars_to_delete.yml"
       when: iam_role_vars_file.stat.exists == true
 
+    - name: Check if ssm_vars_to_delete.yml is present
+      stat:
+        path: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+      register: ssm_vars_file
+
+    - name: Include variable file to delete SSM infra
+      include_vars: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+      when: ssm_vars_file.stat.exists == true
+
     - name: Terminate EC2 instances that were previously launched
       ec2_instance:
         instance_ids: "{{ created_instance_ids }}"
@@ -63,6 +75,11 @@
       aws_kms:
         state: absent
         alias: '{{ kms_key_name }}'
+
+    - name: Delete SSM document
+      command: "aws ssm delete-document --name {{ ssm_document_name }}"
+      environment: "{{ connection_env }}"
+      ignore_errors: yes
 
     - name: Delete AWS keys environement
       file:

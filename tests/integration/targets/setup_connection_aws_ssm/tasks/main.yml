@@ -15,6 +15,9 @@
       aws_caller_info:
       register: aws_caller_info
 
+    - name: setup connection argments fact
+      include_tasks: 'connection_args.yml'
+
     - name: Ensure IAM instance role exists
       iam_role:
         name: "ansible-test-{{tiny_prefix}}-aws-ssm-role"
@@ -43,14 +46,6 @@
       when:
         - ami_configuration.ssm_parameter | default(False)
       block:
-        - set_fact:
-            # As a lookup plugin we don't have access to module_defaults
-            connection_args:
-              region: "{{ aws_region }}"
-              aws_access_key: "{{ aws_access_key }}"
-              aws_secret_key: "{{ aws_secret_key }}"
-              aws_security_token: "{{ security_token | default(omit) }}"
-          no_log: True
         - set_fact:
             ssm_amis: "{{ lookup('aws_ssm', ami_configuration.ssm_parameter, **connection_args) }}"
 
@@ -101,6 +96,11 @@
       when:
         - encrypted_bucket | default(False)
 
+    - name: setup SSM document
+      include_tasks: 'ssm_document.yml'
+      when:
+        - use_ssm_document | default(False)
+
     - name: Create S3 bucket
       s3_bucket:
         name: "{{ s3_bucket_name }}"
@@ -140,4 +140,10 @@
         src: s3_vars_to_delete.yml.j2
       when:
         - s3_output is successful
+      ignore_errors: yes
+
+    - name: Create SSM vars_to_delete.yml
+      template:
+        dest: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+        src: ssm_vars_to_delete.yml.j2
       ignore_errors: yes

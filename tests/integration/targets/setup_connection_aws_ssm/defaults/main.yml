@@ -47,3 +47,4 @@ encrypted_s3_bucket_name: ssm-encrypted-test-bucket
 
 s3_bucket_name: "{{ resource_prefix }}-connection-ssm"
 kms_key_name: "{{ resource_prefix }}-connection-ssm"
+ssm_document_name: "{{ resource_prefix }}-connection-ssm"
