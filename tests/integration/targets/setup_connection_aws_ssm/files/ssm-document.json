@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Custom SSM document",
+  "sessionType": "Standard_Stream",
+  "inputs": {
+    "s3EncryptionEnabled": false,
+    "cloudWatchLogGroupName": "",
+    "cloudWatchEncryptionEnabled": false,
+    "idleSessionTimeout": "20",
+    "cloudWatchStreamingEnabled": false,
+    "kmsKeyId": "",
+    "runAsEnabled": false,
+    "runAsDefaultUser": ""
+  }
+}

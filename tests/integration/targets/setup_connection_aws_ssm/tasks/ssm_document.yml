@@ -1,0 +1,11 @@
+---
+- block:
+    - name: Create custom SSM document
+      command: "aws ssm create-document --content file://{{ role_path }}/files/ssm-document.json --name {{ ssm_document_name }} --document-type Session"
+      environment: "{{ connection_env }}"
+  always:
+    - name: Create SSM vars_to_delete.yml
+      template:
+        dest: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+        src: ssm_vars_to_delete.yml.j2
+      ignore_errors: yes
