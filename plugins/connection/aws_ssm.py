@@ -671,7 +671,7 @@ class Connection(ConnectionBase):
 
         return stderr
 
-    def _get_url(self, client_method, bucket_name, out_path, http_method, profile_name, extra_args=None):
+    def _get_url(self, client_method, bucket_name, out_path, http_method, extra_args=None):
         ''' Generate URL for get_object / put_object '''
 
         client = self._s3_client
@@ -712,54 +712,81 @@ class Connection(ConnectionBase):
         )
         return client
 
-    @_ssm_retry
-    def _file_transport_command(self, in_path, out_path, ssm_action):
-        ''' transfer a file from using an intermediate S3 bucket '''
+    def _escape_path(self, path):
+        return path.replace("\\", "/")
 
-        path_unescaped = u"{0}/{1}".format(self.instance_id, out_path)
-        s3_path = path_unescaped.replace('\\', '/')
-        bucket_url = 's3://%s/%s' % (self.get_option('bucket_name'), s3_path)
+    def _generate_encryption_settings(self):
+        put_args = {}
+        put_headers = {}
+        if not self.get_option('bucket_sse_mode'):
+            return put_args, put_headers
 
-        profile_name = self.get_option('profile')
+        put_args['ServerSideEncryption'] = self.get_option('bucket_sse_mode')
+        put_headers['x-amz-server-side-encryption'] = self.get_option('bucket_sse_mode')
+        if self.get_option('bucket_sse_mode') == 'aws:kms' and self.get_option('bucket_sse_kms_key_id'):
+            put_args['SSEKMSKeyId'] = self.get_option('bucket_sse_kms_key_id')
+            put_headers['x-amz-server-side-encryption-aws-kms-key-id'] = self.get_option('bucket_sse_kms_key_id')
+        return put_args, put_headers
 
-        put_args = dict()
-        put_headers = dict()
-        if self.get_option('bucket_sse_mode'):
-            put_args['ServerSideEncryption'] = self.get_option('bucket_sse_mode')
-            put_headers['x-amz-server-side-encryption'] = self.get_option('bucket_sse_mode')
-            if self.get_option('bucket_sse_mode') == 'aws:kms' and self.get_option('bucket_sse_kms_key_id'):
-                put_args['SSEKMSKeyId'] = self.get_option('bucket_sse_kms_key_id')
-                put_headers['x-amz-server-side-encryption-aws-kms-key-id'] = self.get_option('bucket_sse_kms_key_id')
+    def _generate_commands(self, bucket_name, s3_path, in_path, out_path):
+        put_args, put_headers = self._generate_encryption_settings()
+
+        put_url = self._get_url('put_object', bucket_name, s3_path, 'PUT', extra_args=put_args)
+        get_url = self._get_url('get_object', bucket_name, s3_path, 'GET')
 
         if self.is_windows:
-            put_command_headers = "; ".join(["'%s' = '%s'" % (h, v) for h, v in put_headers.items()])
-            put_command = "Invoke-WebRequest -Method PUT -Headers @{%s} -InFile '%s' -Uri '%s' -UseBasicParsing" % (
-                put_command_headers, in_path,
-                self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT', profile_name,
-                              extra_args=put_args))
-            get_command = "Invoke-WebRequest '%s' -OutFile '%s'" % (
-                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET', profile_name), out_path)
+            put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
+            put_command = (
+                "Invoke-WebRequest -Method PUT "
+                f"-Headers @{{{put_command_headers}}} "  # @{'key' = 'value'; 'key2' = 'value2'}
+                f"-InFile '{in_path}' "
+                f"-Uri '{put_url}' "
+                f"-UseBasicParsing"
+            )
+            get_command = (
+                "Invoke-WebRequest "
+                f"'{get_url}' "
+                f"-OutFile '{out_path}'"
+            )
         else:
-            put_command_headers = "".join(["-H '%s: %s' " % (h, v) for h, v in put_headers.items()])
-            put_command = "curl --request PUT %s--upload-file '%s' '%s'" % (
-                put_command_headers, in_path,
-                self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT', profile_name,
-                              extra_args=put_args))
-            get_command = "curl '%s' -o '%s'" % (
-                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET', profile_name), out_path)
+            put_command_headers = " ".join([f"-H '{h}: {v}'" for h, v in put_headers.items()])
+            put_command = (
+                "curl --request PUT "
+                f"{put_command_headers} "
+                f"--upload-file '{in_path}' "
+                f"'{put_url}'"
+            )
+            get_command = (
+                "curl "
+                f"-o '{out_path}' "
+                f"'{get_url}'"
+            )
+
+        return get_command, put_command, put_args
+
+    @_ssm_retry
+    def _file_transport_command(self, in_path, out_path, ssm_action):
+        ''' transfer a file to/from host using an intermediate S3 bucket '''
+
+        bucket_name = self.get_option("bucket_name")
+        s3_path = self._escape_path(f"{self.instance_id}/{out_path}")
+
+        get_command, put_command, put_args = self._generate_commands(
+            bucket_name, s3_path, in_path, out_path,
+        )
 
         client = self._s3_client
         if ssm_action == 'get':
             (returncode, stdout, stderr) = self.exec_command(put_command, in_data=None, sudoable=False)
             with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
-                client.download_fileobj(self.get_option('bucket_name'), s3_path, data)
+                client.download_fileobj(bucket_name, s3_path, data)
         else:
             with open(to_bytes(in_path, errors='surrogate_or_strict'), 'rb') as data:
-                client.upload_fileobj(data, self.get_option('bucket_name'), s3_path, ExtraArgs=put_args)
+                client.upload_fileobj(data, bucket_name, s3_path, ExtraArgs=put_args)
             (returncode, stdout, stderr) = self.exec_command(get_command, in_data=None, sudoable=False)
 
         # Remove the files from the bucket after they've been transferred
-        client.delete_object(Bucket=self.get_option('bucket_name'), Key=s3_path)
+        client.delete_object(Bucket=bucket_name, Key=s3_path)
 
         # Check the return code
         if returncode == 0:
