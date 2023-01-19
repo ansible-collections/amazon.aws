@@ -58,11 +58,11 @@
       when: ec2_vars_file.stat.exists == true
 
     - name: Delete S3 bucket
-      s3_bucket:
-        state: absent
-        name: "{{ bucket_name }}"
-      ignore_errors: yes
+      include_tasks: 'delete_bucket.yml'
+      loop:
+        - "{{ bucket_name }}"
       when: s3_vars_file.stat.exists == true
+      ignore_errors: yes
 
     - name: Delete IAM role
       iam_role:
