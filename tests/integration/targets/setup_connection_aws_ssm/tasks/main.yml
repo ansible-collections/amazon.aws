@@ -91,11 +91,6 @@
           TestPrefix: '{{ resource_prefix }}'
       register: instance_output
 
-    - name: setup encryption
-      include_tasks: 'encryption.yml'
-      when:
-        - encrypted_bucket | default(False)
-
     - name: setup SSM document
       include_tasks: 'ssm_document.yml'
       when:
@@ -104,7 +99,13 @@
     - name: Create S3 bucket
       s3_bucket:
         name: "{{ s3_bucket_name }}"
+        region: "{{ s3_bucket_region | default(omit)}}"
       register: s3_output
+
+    - name: setup encryption
+      include_tasks: 'encryption.yml'
+      when:
+        - encrypted_bucket | default(False)
 
     - name: Create Inventory file
       template:
