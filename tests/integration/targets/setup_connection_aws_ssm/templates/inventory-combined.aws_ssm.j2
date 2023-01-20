@@ -32,6 +32,9 @@ ansible_aws_ssm_plugin=/usr/local/sessionmanagerplugin/bin/session-manager-plugi
 ansible_python_interpreter=/usr/bin/env python3
 local_tmp=/tmp/ansible-local-{{ tiny_prefix }}
 ansible_aws_ssm_bucket_name={{ s3_bucket_name }}
+{% if s3_addressing_style | default(False) %}
+ansible_aws_ssm_s3_addressing_style={{ s3_addressing_style }}
+{% endif %}
 {% if encrypted_bucket | default(False) %}
 {% if not (s3_bucket_encryption | default(False)) %}
 ansible_aws_ssm_bucket_sse_mode='aws:kms'

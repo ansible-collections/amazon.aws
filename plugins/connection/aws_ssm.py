@@ -87,9 +87,35 @@ options:
     vars:
     - name: ansible_aws_ssm_document
     version_added: 5.2.0
+  s3_addressing_style:
+    description:
+    - The addressing style to use when using S3 URLs.
+    - When the S3 bucket isn't in the same region as the Instance
+      explicitly setting the addressing style to 'virtual' may be necessary
+      U(https://repost.aws/knowledge-center/s3-http-307-response) as this forces
+      the use of a specific endpoint.
+    choices: [ 'path', 'virtual', 'auto' ]
+    default: 'auto'
+    version_added: 5.2.0
+    vars:
+    - name: ansible_aws_ssm_s3_addressing_style
 '''
 
 EXAMPLES = r'''
+
+# Wait for SSM Agent to be available on the Instance
+- name: Wait for connection to be available
+  vars:
+    ansible_connection: aws_ssm
+    ansible_aws_ssm_bucket_name: nameofthebucket
+    ansible_aws_ssm_region: us-west-2
+    # When the S3 bucket isn't in the same region as the Instance
+    # Explicitly setting the addressing style to 'virtual' may be necessary
+    # https://repost.aws/knowledge-center/s3-http-307-response
+    ansible_aws_ssm_s3_addressing_style: virtual
+  tasks:
+    - name: Wait for connection
+      wait_for_connection:
 
 # Stop Spooler Process on Windows Instances
 - name: Stop Spooler Service on Windows Instances
@@ -708,7 +734,10 @@ class Connection(ConnectionBase):
 
         client = session.client(
             service,
-            config=Config(signature_version="s3v4")
+            config=Config(
+                signature_version="s3v4",
+                s3={'addressing_style': self.get_option('s3_addressing_style')}
+            )
         )
         return client
 

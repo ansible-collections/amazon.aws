@@ -40,11 +40,6 @@ ami_details:
             </powershell>
         os_type: windows
 
-# see:
-# - https://github.com/mattclay/aws-terminator/pull/181
-# - https://github.com/ansible-collections/community.aws/pull/763
-encrypted_s3_bucket_name: ssm-encrypted-test-bucket
-
-s3_bucket_name: "{{ resource_prefix }}-connection-ssm"
+s3_bucket_name: "{{ tiny_prefix }}-connection-ssm-{{ test_suffix | default(target_os) }}"
 kms_key_name: "{{ resource_prefix }}-connection-ssm"
 ssm_document_name: "{{ resource_prefix }}-connection-ssm"
