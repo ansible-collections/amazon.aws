@@ -4,3 +4,4 @@
       vars:
         target_os: fedora
         encrypted_bucket: True
+        test_suffix: encrypteds3
