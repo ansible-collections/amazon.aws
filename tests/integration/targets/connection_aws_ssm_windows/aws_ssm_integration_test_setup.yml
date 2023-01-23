@@ -3,3 +3,4 @@
     - role: ../setup_connection_aws_ssm
       vars:
         target_os: windows
+        wait_for_timeout: 200
