@@ -41,6 +41,41 @@ options:
         required: false
         type: int
         default: 10
+    capacity_providers:
+        version_added: 5.2.0
+        description:
+            - List of capacity providers to use for the cluster.
+        required: false
+        type: list
+        elements: str
+    capacity_provider_strategy:
+        version_added: 5.2.0
+        description:
+            - List of capacity provider strategies to use for the cluster.
+        required: false
+        type: list
+        elements: dict
+        suboptions:
+            capacity_provider:
+                description:
+                  - Name of capacity provider.
+                type: str
+            weight:
+                description:
+                  - The relative percentage of the total number of launched tasks that should use the specified provider.
+                type: int
+            base:
+                description:
+                  - How many tasks, at a minimum, should use the specified provider.
+                type: int
+    purge_capacity_providers:
+        version_added: 5.2.0
+        description:
+            - Toggle overwriting of existing capacity providers or strategy. This is needed for backwards compatibility.
+            - By default I(purge_capacity_providers=false).  In a release after 2024-06-01 this will be changed to I(purge_capacity_providers=true).
+        required: false
+        type: bool
+        default: false
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -55,6 +90,21 @@ EXAMPLES = '''
   community.aws.ecs_cluster:
     name: default
     state: present
+
+- name: Cluster creation with capacity providers and strategies.
+  community.aws.ecs_cluster:
+    name: default
+    state: present
+    capacity_providers:
+      - FARGATE
+      - FARGATE_SPOT
+    capacity_provider_strategy:
+      - capacity_provider: FARGATE
+        base: 1
+        weight: 1
+      - capacity_provider: FARGATE_SPOT
+        weight: 100
+    purge_capacity_providers: True
 
 - name: Cluster deletion
   community.aws.ecs_cluster:
@@ -75,6 +125,16 @@ activeServicesCount:
     description: how many services are active in this cluster
     returned: 0 if a new cluster
     type: int
+capacityProviders:
+    version_added: 5.2.0
+    description: list of capacity providers used in this cluster
+    returned: always
+    type: list
+defaultCapacityProviderStrategy:
+    version_added: 5.2.0
+    description: list of capacity provider strategies used in this cluster
+    returned: always
+    type: list
 clusterArn:
     description: the ARN of the cluster just created
     type: str
@@ -112,6 +172,8 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 class EcsClusterManager:
@@ -145,8 +207,26 @@ class EcsClusterManager:
                 return c
         raise Exception("Unknown problem describing cluster %s." % cluster_name)
 
-    def create_cluster(self, clusterName='default'):
-        response = self.ecs.create_cluster(clusterName=clusterName)
+    def create_cluster(self, cluster_name, capacity_providers, capacity_provider_strategy):
+        params = dict(clusterName=cluster_name)
+        if capacity_providers:
+            params['capacityProviders'] = snake_dict_to_camel_dict(capacity_providers)
+        if capacity_provider_strategy:
+            params['defaultCapacityProviderStrategy'] = snake_dict_to_camel_dict(capacity_provider_strategy)
+        response = self.ecs.create_cluster(**params)
+        return response['cluster']
+
+    def update_cluster(self, cluster_name, capacity_providers, capacity_provider_strategy):
+        params = dict(cluster=cluster_name)
+        if capacity_providers:
+            params['capacityProviders'] = snake_dict_to_camel_dict(capacity_providers)
+        else:
+            params['capacityProviders'] = []
+        if capacity_provider_strategy:
+            params['defaultCapacityProviderStrategy'] = snake_dict_to_camel_dict(capacity_provider_strategy)
+        else:
+            params['defaultCapacityProviderStrategy'] = []
+        response = self.ecs.put_cluster_capacity_providers(**params)
         return response['cluster']
 
     def delete_cluster(self, clusterName):
@@ -159,7 +239,17 @@ def main():
         state=dict(required=True, choices=['present', 'absent', 'has_instances']),
         name=dict(required=True, type='str'),
         delay=dict(required=False, type='int', default=10),
-        repeat=dict(required=False, type='int', default=10)
+        repeat=dict(required=False, type='int', default=10),
+        purge_capacity_providers=dict(required=False, type='bool', default=False),
+        capacity_providers=dict(required=False, type='list', elements='str'),
+        capacity_provider_strategy=dict(required=False,
+                                        type='list',
+                                        elements='dict',
+                                        options=dict(capacity_provider=dict(type='str'),
+                                                     weight=dict(type='int'),
+                                                     base=dict(type='int', default=0)
+                                                     )
+                                        ),
     )
     required_together = [['state', 'name']]
 
@@ -177,12 +267,53 @@ def main():
 
     results = dict(changed=False)
     if module.params['state'] == 'present':
+        # Pull requested and existing capacity providers and strategies.
+        purge_capacity_providers = module.params['purge_capacity_providers']
+        requested_cp = module.params['capacity_providers']
+        requested_cps = module.params['capacity_provider_strategy']
         if existing and 'status' in existing and existing['status'] == "ACTIVE":
-            results['cluster'] = existing
+            existing_cp = existing['capacityProviders']
+            existing_cps = existing['defaultCapacityProviderStrategy']
+
+            if requested_cp is None:
+                requested_cp = []
+
+            # Check if capacity provider strategy needs to trigger an update.
+            cps_update_needed = False
+            if requested_cps is not None:
+                for strategy in requested_cps:
+                    if snake_dict_to_camel_dict(strategy) not in existing_cps:
+                        cps_update_needed = True
+                for strategy in existing_cps:
+                    if camel_dict_to_snake_dict(strategy) not in requested_cps:
+                        cps_update_needed = True
+            elif requested_cps is None and existing_cps != []:
+                cps_update_needed = True
+
+            # Unless purge_capacity_providers is true, we will not be updating the providers or strategy.
+            if not purge_capacity_providers:
+                module.deprecate('After 2024-06-01 the default value of purge_capacity_providers will change from false to true.'
+                                 ' To maintain the existing behaviour explicitly set purge_capacity_providers=true',
+                                 date='2024-06-01', collection_name='community.aws')
+                cps_update_needed = False
+                requested_cp = existing_cp
+                requested_cps = existing_cps
+
+            # If either the providers or strategy differ, update the cluster.
+            if requested_cp != existing_cp or cps_update_needed:
+                if not module.check_mode:
+                    results['cluster'] = cluster_mgr.update_cluster(cluster_name=module.params['name'],
+                                                                    capacity_providers=requested_cp,
+                                                                    capacity_provider_strategy=requested_cps)
+                results['changed'] = True
+            else:
+                results['cluster'] = existing
         else:
             if not module.check_mode:
                 # doesn't exist. create it.
-                results['cluster'] = cluster_mgr.create_cluster(module.params['name'])
+                results['cluster'] = cluster_mgr.create_cluster(cluster_name=module.params['name'],
+                                                                capacity_providers=requested_cp,
+                                                                capacity_provider_strategy=requested_cps)
             results['changed'] = True
 
     # delete the cluster
