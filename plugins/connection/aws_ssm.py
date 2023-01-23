@@ -350,6 +350,32 @@ class Connection(ConnectionBase):
     def _vvvv(self, message):
         self._display(display.vvvv, message)
 
+    def _get_bucket_endpoint(self):
+        # Fetch the correct S3 endpoint for use with our bucket.
+        # If we don't explicitly set the endpoint then some commands will use the global
+        # endpoint and fail
+        # (new AWS regions and new buckets in a region other than the one we're running in)
+
+        region_name = self.get_option('region') or 'us-east-1'
+        profile_name = self.get_option('profile') or ''
+        self._vvvv("_get_bucket_endpoint: S3 (global)")
+        tmp_s3_client = self._get_boto_client(
+            's3', region_name=region_name, profile_name=profile_name,
+        )
+        # Fetch the location of the bucket so we can open a client against the 'right' endpoint
+        # This /should/ always work
+        bucket_location = tmp_s3_client.get_bucket_location(
+            Bucket=(self.get_option('bucket_name')),
+        )
+        bucket_region = bucket_location['LocationConstraint']
+        # Create another client for the region the bucket lives in, so we can nab the endpoint URL
+        self._vvvv(f"_get_bucket_endpoint: S3 (bucket region) - {bucket_region}")
+        s3_bucket_client = self._get_boto_client(
+            's3', region_name=bucket_region, profile_name=profile_name,
+        )
+
+        return s3_bucket_client.meta.endpoint_url, s3_bucket_client.meta.region_name
+
     def _init_clients(self):
         self._vvvv("INITIALIZE BOTO3 CLIENTS")
         profile_name = self.get_option('profile') or ''
@@ -358,20 +384,17 @@ class Connection(ConnectionBase):
         # The SSM Boto client, currently used to initiate and manage the session
         # Note: does not handle the actual SSM session traffic
         self._vvvv("SETUP BOTO3 CLIENTS: SSM")
-        ssm_client = self._get_boto_client('ssm', region_name=region_name, profile_name=profile_name)
+        ssm_client = self._get_boto_client(
+            'ssm', region_name=region_name, profile_name=profile_name,
+        )
         self._client = ssm_client
 
-        region_name = self.get_option('region') or 'us-east-1'
-        self._vvvv("SETUP BOTO3 CLIENTS: S3 (tmp)")
-        tmp_s3_client = self._get_boto_client('s3', region_name=region_name, profile_name=profile_name)
-        # Fetch the location of the bucket so we can open a client against the 'right' endpoint
-        bucket_location = tmp_s3_client.get_bucket_location(
-            Bucket=(self.get_option('bucket_name')),
+        s3_endpoint_url, s3_region_name = self._get_bucket_endpoint()
+        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
+        s3_bucket_client = self._get_boto_client(
+            's3', region_name=s3_region_name, endpoint_url=s3_endpoint_url, profile_name=profile_name,
         )
-        bucket_region = bucket_location['LocationConstraint']
-        # This is the S3 client we'll really be using
-        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 - {bucket_region}")
-        s3_bucket_client = self._get_boto_client('s3', region_name=bucket_region, profile_name=profile_name)
+
         self._s3_client = s3_bucket_client
 
     def __init__(self, *args, **kwargs):
@@ -706,7 +729,7 @@ class Connection(ConnectionBase):
             params.update(extra_args)
         return client.generate_presigned_url(client_method, Params=params, ExpiresIn=3600, HttpMethod=http_method)
 
-    def _get_boto_client(self, service, region_name=None, profile_name=None):
+    def _get_boto_client(self, service, region_name=None, profile_name=None, endpoint_url=None):
         ''' Gets a boto3 client based on the STS token '''
 
         aws_access_key_id = self.get_option('access_key_id')
@@ -734,6 +757,7 @@ class Connection(ConnectionBase):
 
         client = session.client(
             service,
+            endpoint_url=endpoint_url,
             config=Config(
                 signature_version="s3v4",
                 s3={'addressing_style': self.get_option('s3_addressing_style')}
