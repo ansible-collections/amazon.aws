@@ -68,6 +68,7 @@ options:
                 description:
                   - How many tasks, at a minimum, should use the specified provider.
                 type: int
+                default: 0
     purge_capacity_providers:
         version_added: 5.2.0
         description:
