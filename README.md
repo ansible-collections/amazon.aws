@@ -24,7 +24,7 @@ after 2023-05-31.
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
-Version 5.0.0 of this collection supports `boto3 >= 1.18.0` and `botocore >= 1.21.0`
+Version 6.0.0 of this collection supports `boto3 >= 1.22.0` and `botocore >= 1.25.0`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
