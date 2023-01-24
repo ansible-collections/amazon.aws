@@ -1517,3 +1517,35 @@ releases:
     - version_added-5.yml
     - workflows-add-intersphinx.yml
     release_date: '2022-10-28'
+  5.2.0:
+    changes:
+      bugfixes:
+      - aws_rds - fixes bug in RDS inventory plugin where config file was ignored
+        (https://github.com/ansible-collections/amazon.aws/issues/1304).
+      - lambda - fix flaky integration test which assumes there are no other lambdas
+        in the account (https://github.com/ansible-collections/amazon.aws/issues/1277)
+      minor_changes:
+      - amazon.aws collection - refacterization of code to use argument specification
+        ``fallback`` when falling back to environment variables for security credentials
+        and AWS connection details (https://github.com/ansible-collections/amazon.aws/pull/1174).
+      - rds_instance - Split up the integration test-suite in a series of smaller
+        tests (https://github.com/ansible-collections/amazon.aws/pull/1185).
+      - rds_instance - add support for gp3 storage type (https://github.com/ansible-collections/amazon.aws/pull/1266).
+      release_summary: 'A minor release containing bugfixes for the ``ec2_eni_info``
+        module and the ``aws_rds`` inventory plugin, as well as improvements to the
+        ``rds_instance`` module.
+
+        '
+    fragments:
+    - 1174-module_params.yml
+    - 1266-rds_instance_gp3_support.yaml
+    - 1277-lambda-int-test-other-lambdas.yml
+    - 1283-aws_ec2_inventory_compose_doc_examples.yml
+    - 1304-aws_rds-config.yml
+    - 20230103-sanity-ec2_eni_info.yml
+    - 20230106-ec2_vol.yml
+    - integration_tests_max_duration_increase.yaml
+    - rds_instance_split_the_integration_test-suite.yaml
+    - rds_mariadb_version-10.6.10.yml
+    - release.yml
+    release_date: '2023-01-24'
