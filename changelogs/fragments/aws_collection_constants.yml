@@ -1,0 +1,2 @@
+trivial:
+- Update integration tests to use lookup plugin when pulling the default AWS SDK versions

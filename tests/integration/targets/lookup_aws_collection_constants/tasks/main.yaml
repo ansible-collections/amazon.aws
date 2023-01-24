@@ -1,0 +1,47 @@
+- name: 'MINIMUM_BOTOCORE_VERSION'
+  set_fact:
+    MINIMUM_BOTOCORE_VERSION: "{{ lookup('amazon.aws.aws_collection_constants', 'MINIMUM_BOTOCORE_VERSION') }}"
+
+- assert:
+    that:
+      - MINIMUM_BOTOCORE_VERSION.startswith("1.")
+
+- name: 'MINIMUM_BOTO3_VERSION'
+  set_fact:
+    MINIMUM_BOTO3_VERSION: "{{ lookup('amazon.aws.aws_collection_constants', 'MINIMUM_BOTO3_VERSION') }}"
+
+- assert:
+    that:
+      - MINIMUM_BOTO3_VERSION.startswith("1.")
+
+- name: 'HAS_BOTO3'
+  set_fact:
+    HAS_BOTO3: "{{ lookup('amazon.aws.aws_collection_constants', 'HAS_BOTO3') }}"
+
+- assert:
+    that:
+      - HAS_BOTO3 | bool
+
+- name: 'AMAZON_AWS_COLLECTION_VERSION'
+  set_fact:
+    AMAZON_AWS_COLLECTION_VERSION: "{{ lookup('amazon.aws.aws_collection_constants', 'AMAZON_AWS_COLLECTION_VERSION') }}"
+
+- name: 'AMAZON_AWS_COLLECTION_NAME'
+  set_fact:
+    AMAZON_AWS_COLLECTION_NAME: "{{ lookup('amazon.aws.aws_collection_constants', 'AMAZON_AWS_COLLECTION_NAME') }}"
+
+- assert:
+    that:
+      - AMAZON_AWS_COLLECTION_NAME == "amazon.aws"
+
+- name: 'COMMUNITY_AWS_COLLECTION_VERSION'
+  set_fact:
+    COMMUNITY_AWS_COLLECTION_VERSION: "{{ lookup('amazon.aws.aws_collection_constants', 'COMMUNITY_AWS_COLLECTION_VERSION') }}"
+
+- name: 'COMMUNITY_AWS_COLLECTION_NAME'
+  set_fact:
+    COMMUNITY_AWS_COLLECTION_NAME: "{{ lookup('amazon.aws.aws_collection_constants', 'COMMUNITY_AWS_COLLECTION_NAME') }}"
+
+- assert:
+    that:
+      - COMMUNITY_AWS_COLLECTION_NAME == "community.aws"
