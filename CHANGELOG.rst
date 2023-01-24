@@ -5,6 +5,28 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.2.0
+======
+
+Release Summary
+---------------
+
+A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
+
+
+Minor Changes
+-------------
+
+- amazon.aws collection - refacterization of code to use argument specification ``fallback`` when falling back to environment variables for security credentials and AWS connection details (https://github.com/ansible-collections/amazon.aws/pull/1174).
+- rds_instance - Split up the integration test-suite in a series of smaller tests (https://github.com/ansible-collections/amazon.aws/pull/1185).
+- rds_instance - add support for gp3 storage type (https://github.com/ansible-collections/amazon.aws/pull/1266).
+
+Bugfixes
+--------
+
+- aws_rds - fixes bug in RDS inventory plugin where config file was ignored (https://github.com/ansible-collections/amazon.aws/issues/1304).
+- lambda - fix flaky integration test which assumes there are no other lambdas in the account (https://github.com/ansible-collections/amazon.aws/issues/1277)
+
 v5.1.0
 ======
 
