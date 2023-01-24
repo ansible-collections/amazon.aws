@@ -85,7 +85,6 @@ options:
       object_attributes:
         description:
           - Retreive S3 object attributes.
-          - Requires minimum botocore version 1.24.7.
         required: false
         type: bool
         default: false
@@ -723,9 +722,6 @@ def main():
     # check if specified object exists
     if object_name:
         object_check(connection, module, bucket_name, object_name)
-
-    if requested_object_details and requested_object_details['object_attributes']:
-        module.require_botocore_at_least('1.24.7', reason='required for s3.get_object_attributes')
 
     if requested_object_details:
         if object_name:

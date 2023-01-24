@@ -1,6 +1,2 @@
 dependencies:
   - setup_remote_tmp_dir
-  # required for s3.get_object_attributes
-  - role: setup_botocore_pip
-    vars:
-      botocore_version: '1.24.7'

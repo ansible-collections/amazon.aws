@@ -389,27 +389,11 @@
            - 'result.key == None'
 
     # ============================================================
-    - name: test create ED25519 key pair type with botocore <= 1.21.23
-      ec2_key:
-        name: '{{ ec2_key_name }}'
-        key_type: ed25519
-      ignore_errors: true
-      register: result
-
-    - name: assert that task failed
-      assert:
-        that:
-          - 'result.failed'
-          - '"Failed to import the required Python library (botocore>=1.21.23)" in result.msg'
-          - '"This is required to set the key_type for a keypair" in result.msg'
-
     - name: test create ED25519 key pair type
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: ed25519
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: assert that task succeed
       assert:
@@ -422,8 +406,6 @@
         name: '{{ ec2_key_name }}'
         key_type: rsa
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: assert that task succeed
       assert:

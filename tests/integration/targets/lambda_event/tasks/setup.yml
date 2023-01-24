@@ -70,8 +70,6 @@
     zip_file: '{{ zip_res.dest }}'
     architecture: x86_64
   register: result
-  vars:
-    ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
 
 - name: assert lambda upload succeeded
   assert:

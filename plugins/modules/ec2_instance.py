@@ -359,7 +359,6 @@ options:
         type: str
         description:
           - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
-          - Requires botocore >= 1.21.29
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
@@ -367,7 +366,6 @@ options:
         type: str
         description:
           - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
-          - Requires botocore >= 1.23.30
         choices: [enabled, disabled]
         default: 'disabled'
 
@@ -1290,22 +1288,10 @@ def build_top_level_options(params):
             'metadata_options').get('http_tokens')
         spec['MetadataOptions']['HttpPutResponseHopLimit'] = params.get(
             'metadata_options').get('http_put_response_hop_limit')
-
-        if not module.botocore_at_least('1.23.30'):
-            # fail only if enabled is requested
-            if params.get('metadata_options').get('instance_metadata_tags') == 'enabled':
-                module.require_botocore_at_least('1.23.30', reason='to set instance_metadata_tags')
-        else:
-            spec['MetadataOptions']['InstanceMetadataTags'] = params.get(
-                'metadata_options').get('instance_metadata_tags')
-
-        if not module.botocore_at_least('1.21.29'):
-            # fail only if enabled is requested
-            if params.get('metadata_options').get('http_protocol_ipv6') == 'enabled':
-                module.require_botocore_at_least('1.21.29', reason='to set http_protocol_ipv6')
-        else:
-            spec['MetadataOptions']['HttpProtocolIpv6'] = params.get(
-                'metadata_options').get('http_protocol_ipv6')
+        spec['MetadataOptions']['HttpProtocolIpv6'] = params.get(
+            'metadata_options').get('http_protocol_ipv6')
+        spec['MetadataOptions']['InstanceMetadataTags'] = params.get(
+            'metadata_options').get('instance_metadata_tags')
 
     return spec
 

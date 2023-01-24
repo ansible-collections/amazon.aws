@@ -41,7 +41,6 @@ options:
         EC2 Instance Connect, and EC2 Serial Console.
       - By default Amazon will create an RSA key.
       - Mutually exclusive with parameter I(key_material).
-      - Requires at least botocore version 1.21.23.
     type: str
     choices:
       - rsa
@@ -362,8 +361,6 @@ def main():
 
     result = {}
 
-    if key_type:
-        module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
     try:
         if state == 'absent':
             result = delete_key_pair(module.check_mode, ec2_client, name)

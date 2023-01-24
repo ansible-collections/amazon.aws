@@ -1,38 +1,4 @@
-- name: test with boto3 version that does not support instance_metadata_tags
-  module_defaults:
-    group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
-      region: "{{ aws_region }}"
-  block:
-  - name: "fail create t3.nano instance with metadata_options"
-    ec2_instance:
-      state: present
-      name: "{{ resource_prefix }}-test-t3nano-enabled-required"
-      image_id: "{{ ec2_ami_id }}"
-      tags:
-        TestId: "{{ ec2_instance_tag_TestId }}"
-      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
-      instance_type: t3.nano
-      metadata_options:
-          http_endpoint: enabled
-          http_tokens: required
-          instance_metadata_tags: enabled
-      wait: false
-    ignore_errors: yes
-    register: instance_creation
-
-  - name: verify fail instance with metadata_options because insufficient boto3 requirements
-    assert:
-      that:
-        - instance_creation is failed
-        - instance_creation is not changed
-        - "'This is required to set instance_metadata_tags' in instance_creation.msg"
-
 - name: test with boto3 version that supports instance_metadata_tags
-  vars:
-    ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
   module_defaults:
     group/aws:
       aws_access_key: "{{ aws_access_key }}"
