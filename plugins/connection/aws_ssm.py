@@ -7,18 +7,27 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-author:
-- Pat Sharkey (@psharkey) <psharkey@cleo.com>
-- HanumanthaRao MVL (@hanumantharaomvl) <hanumanth@flux7.com>
-- Gaurav Ashtikar (@gau1991) <gaurav.ashtikar@flux7.com>
 name: aws_ssm
-short_description: execute via AWS Systems Manager
+author:
+  - Pat Sharkey (@psharkey) <psharkey@cleo.com>
+  - HanumanthaRao MVL (@hanumantharaomvl) <hanumanth@flux7.com>
+  - Gaurav Ashtikar (@gau1991) <gaurav.ashtikar@flux7.com>
+
+short_description: connect to EC2 instances via AWS Systems Manager
 description:
-- This connection plugin allows ansible to execute tasks on an EC2 instance via the aws ssm CLI.
+  - This connection plugin allows Ansible to execute tasks on an EC2 instance via an AWS SSM Session.
+notes:
+  - The C(community.aws.aws_ssm) connection plugin does not support using the ``remote_user`` and
+    ``ansible_user`` variables to configure the remote user.  The ``become_user`` parameter should
+    be used to configure which user to run commands as.  Remote commands will often default to
+    running as the ``ssm-agent`` user, however this will also depend on how SSM has been configured.
 requirements:
-- The remote EC2 instance must be running the AWS Systems Manager Agent (SSM Agent).
-- The control machine must have the aws session manager plugin installed.
-- The remote EC2 linux instance must have the curl installed.
+  - The remote EC2 instance must be running the AWS Systems Manager Agent (SSM Agent).
+    U(https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started.html)
+  - The control machine must have the AWS session manager plugin installed.
+    U(https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+  - The remote EC2 Linux instance must have curl installed.
+
 options:
   access_key_id:
     description: The STS access key to use when connecting via session-manager.
@@ -99,7 +108,11 @@ options:
     vars:
     - name: ansible_aws_ssm_bucket_sse_kms_key_id
   ssm_document:
-    description: SSM document to use when connecting.
+    description:
+    - SSM Session document to use when connecting.
+    - To configure the remote_user (when C(become=False), it is possible to use an SSM Session
+      document and define the C(runAsEnabled) and C(runAsDefaultUser) parameters.  See also
+      U(https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-schema.html)
     vars:
     - name: ansible_aws_ssm_document
     version_added: 5.2.0
@@ -334,11 +347,14 @@ def chunks(lst, n):
 class Connection(ConnectionBase):
     ''' AWS SSM based connections '''
 
-    transport = 'community.aws.aws_ssm'
+    transport = "community.aws.aws_ssm"
+    default_user = ""
+
     allow_executable = False
     allow_extras = True
     has_pipelining = False
     is_windows = False
+
     _client = None
     _s3_client = None
     _session = None
@@ -452,6 +468,7 @@ class Connection(ConnectionBase):
     def reset(self):
         ''' start a fresh ssm session '''
         self._vvvv('reset called on ssm connection')
+        self.close()
         return self.start_session()
 
     def start_session(self):
@@ -668,8 +685,6 @@ class Connection(ConnectionBase):
                 cmd = self._shell._encode_script(cmd, preserve_rc=True)
             cmd = cmd + "; echo " + mark_start + "\necho " + mark_end + "\n"
         else:
-            if sudoable:
-                cmd = "sudo " + cmd
             cmd = (
                 f"printf '%s\\n' '{mark_start}';\n"
                 f"echo | {cmd};\n"

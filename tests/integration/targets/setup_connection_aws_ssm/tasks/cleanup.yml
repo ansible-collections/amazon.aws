@@ -68,6 +68,7 @@
       iam_role:
         name: "{{ iam_role_name }}"
         state: absent
+        delete_instance_profile: True
       ignore_errors: yes
       when: iam_role_vars_file.stat.exists == true
 
