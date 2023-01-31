@@ -57,6 +57,11 @@ options:
     description: The name of the S3 bucket used for file transfers.
     vars:
     - name: ansible_aws_ssm_bucket_name
+  bucket_endpoint_url:
+    description: The S3 endpoint URL of the bucket used for file transfers.
+    vars:
+    - name: ansible_aws_ssm_bucket_endpoint_url
+    version_added: 5.3.0
   plugin:
     description: This defines the location of the session-manager-plugin binary.
     vars:
@@ -362,10 +367,12 @@ class Connection(ConnectionBase):
         self._display(display.vvvv, message)
 
     def _get_bucket_endpoint(self):
-        # Fetch the correct S3 endpoint for use with our bucket.
-        # If we don't explicitly set the endpoint then some commands will use the global
-        # endpoint and fail
-        # (new AWS regions and new buckets in a region other than the one we're running in)
+        """
+        Fetches the correct S3 endpoint and region for use with our bucket.
+        If we don't explicitly set the endpoint then some commands will use the global
+        endpoint and fail
+        (new AWS regions and new buckets in a region other than the one we're running in)
+        """
 
         region_name = self.get_option('region') or 'us-east-1'
         profile_name = self.get_option('profile') or ''
@@ -379,6 +386,10 @@ class Connection(ConnectionBase):
             Bucket=(self.get_option('bucket_name')),
         )
         bucket_region = bucket_location['LocationConstraint']
+
+        if self.get_option("bucket_endpoint_url"):
+            return self.get_option("bucket_endpoint_url"), bucket_region
+
         # Create another client for the region the bucket lives in, so we can nab the endpoint URL
         self._vvvv(f"_get_bucket_endpoint: S3 (bucket region) - {bucket_region}")
         s3_bucket_client = self._get_boto_client(
