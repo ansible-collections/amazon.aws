@@ -24,16 +24,22 @@ options:
     description: The STS access key to use when connecting via session-manager.
     vars:
     - name: ansible_aws_ssm_access_key_id
+    env:
+    - name: AWS_ACCESS_KEY_ID
     version_added: 1.3.0
   secret_access_key:
     description: The STS secret key to use when connecting via session-manager.
     vars:
     - name: ansible_aws_ssm_secret_access_key
+    env:
+    - name: AWS_SECRET_ACCESS_KEY
     version_added: 1.3.0
   session_token:
     description: The STS session token to use when connecting via session-manager.
     vars:
     - name: ansible_aws_ssm_session_token
+    env:
+    - name: AWS_SESSION_TOKEN
     version_added: 1.3.0
   instance_id:
     description: The EC2 instance ID.
@@ -43,6 +49,9 @@ options:
     description: The region the EC2 instance is located.
     vars:
     - name: ansible_aws_ssm_region
+    env:
+    - name: AWS_REGION
+    - name: AWS_DEFAULT_REGION
     default: 'us-east-1'
   bucket_name:
     description: The name of the S3 bucket used for file transfers.
@@ -57,6 +66,8 @@ options:
     description: Sets AWS profile to use.
     vars:
     - name: ansible_aws_ssm_profile
+    env:
+    - name: AWS_PROFILE
     version_added: 1.5.0
   reconnection_retries:
     description: Number of attempts to connect.
@@ -735,15 +746,6 @@ class Connection(ConnectionBase):
         aws_access_key_id = self.get_option('access_key_id')
         aws_secret_access_key = self.get_option('secret_access_key')
         aws_session_token = self.get_option('session_token')
-
-        if aws_access_key_id is None:
-            aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID", None)
-        if aws_secret_access_key is None:
-            aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
-        if aws_session_token is None:
-            aws_session_token = os.environ.get("AWS_SESSION_TOKEN", None)
-        if not profile_name:
-            profile_name = os.environ.get("AWS_PROFILE", None)
 
         session_args = dict(
             aws_access_key_id=aws_access_key_id,
