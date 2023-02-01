@@ -536,6 +536,32 @@ options:
                         description: The type of resource to assign to a container.
                         type: str
                         choices: ['GPU', 'InferenceAccelerator']
+            firelensConfiguration:
+                description:
+                    - The FireLens configuration for the container.
+                    - This is used to specify and configure a log router for container logs.
+                required: False
+                type: dict
+                suboptions:
+                    type:
+                        description:
+                            - The log router to use. The valid values are C(fluentd) or C(fluentbit).
+                        required: False
+                        type: str
+                        choices:
+                            - fluentd
+                            - fluentbit
+                    options:
+                        description:
+                            - The options to use when configuring the log router.
+                            - This field is optional and can be used to specify a custom configuration
+                              file or to add additional metadata, such as the task, task definition, cluster,
+                              and container instance details to the log event.
+                            - If specified, the syntax to use is
+                              C({"enable-ecs-log-metadata":"true|false","config-file-type:"s3|file","config-file-value":"arn:aws:s3:::mybucket/fluent.conf|filepath"}).
+                            - For more information, see U(https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html#firelens-taskdef).
+                        required: False
+                        type: dict
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.

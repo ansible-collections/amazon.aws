@@ -219,7 +219,59 @@ container_definitions:
             description: The configuration options to send to the log driver.
             returned: when present
             type: str
-
+        healthCheck:
+            description: The container health check command and associated configuration parameters for the container.
+            returned: when present
+            type: dict
+            contains:
+                command:
+                    description: A string array representing the command that the container runs to determine if it is healthy.
+                    type: list
+                interval:
+                    description: The time period in seconds between each health check execution.
+                    type: int
+                timeout:
+                    description: The time period in seconds to wait for a health check to succeed before it is considered a failure.
+                    type: int
+                retries:
+                    description: The number of times to retry a failed health check before the container is considered unhealthy.
+                    type: int
+                startPeriod:
+                    description: The optional grace period to provide containers time to bootstrap before failed.
+                    type: int
+        resourceRequirements:
+            description: The type and amount of a resource to assign to a container.
+            returned: when present
+            type: dict
+            contains:
+                value:
+                    description: The value for the specified resource type.
+                    type: str
+                type:
+                    description: The type of resource to assign to a container.
+                    type: str
+        systemControls:
+            description: A list of namespaced kernel parameters to set in the container.
+            returned: when present
+            type: dict
+            contains:
+                namespace:
+                    description: TThe namespaced kernel.
+                    type: str
+                value:
+                    description: The value for the namespaced kernel.
+                    type: str
+        firelensConfiguration:
+            description: The FireLens configuration for the container.
+            returned: when present
+            type: dict
+            contains:
+                type:
+                    description: The log router.
+                    type: str
+                options:
+                    description: The options to use when configuring the log router.
+                    type: dict
 family:
     description: The family of your task definition, used as the definition name
     returned: always
