@@ -2105,12 +2105,12 @@ class CloudFrontValidationManager(object):
 
     def validate_distribution_from_caller_reference(self, caller_reference):
         try:
-            distributions = self.__cloudfront_facts_mgr.list_distributions(False)
+            distributions = self.__cloudfront_facts_mgr.list_distributions(keyed=False)
             distribution_name = 'Distribution'
             distribution_config_name = 'DistributionConfig'
             distribution_ids = [dist.get('Id') for dist in distributions]
             for distribution_id in distribution_ids:
-                distribution = self.__cloudfront_facts_mgr.get_distribution(distribution_id)
+                distribution = self.__cloudfront_facts_mgr.get_distribution(id=distribution_id)
                 if distribution is not None:
                     distribution_config = distribution[distribution_name].get(distribution_config_name)
                     if distribution_config is not None and distribution_config.get('CallerReference') == caller_reference:
@@ -2128,13 +2128,13 @@ class CloudFrontValidationManager(object):
                 if aliases and distribution_id is None:
                     distribution_id = self.validate_distribution_id_from_alias(aliases)
                 if distribution_id:
-                    return self.__cloudfront_facts_mgr.get_distribution(distribution_id)
+                    return self.__cloudfront_facts_mgr.get_distribution(id=distribution_id)
             return None
         except Exception as e:
             self.module.fail_json_aws(e, msg="Error validating distribution_id from alias, aliases and caller reference")
 
     def validate_distribution_id_from_alias(self, aliases):
-        distributions = self.__cloudfront_facts_mgr.list_distributions(False)
+        distributions = self.__cloudfront_facts_mgr.list_distributions(keyed=False)
         if distributions:
             for distribution in distributions:
                 distribution_aliases = distribution.get('Aliases', {}).get('Items', [])
@@ -2253,12 +2253,12 @@ def main():
     if not (update or create or delete):
         module.exit_json(changed=False)
 
+    config = {}
     if update or delete:
         config = distribution['Distribution']['DistributionConfig']
         e_tag = distribution['ETag']
         distribution_id = distribution['Distribution']['Id']
-    else:
-        config = dict()
+
     if update:
         config = camel_dict_to_snake_dict(config, reversible=True)
 

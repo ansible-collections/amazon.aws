@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 
@@ -244,265 +245,18 @@ result:
     type: dict
 '''
 
-import traceback
-
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-
-
-class CloudFrontServiceManager:
-    """Handles CloudFront Services"""
-
-    def __init__(self, module):
-        self.module = module
-
-        try:
-            self.client = module.client('cloudfront', retry_decorator=AWSRetry.jittered_backoff())
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
-
-    def get_distribution(self, distribution_id):
-        try:
-            distribution = self.client.get_distribution(aws_retry=True, Id=distribution_id)
-            return distribution
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing distribution")
-
-    def get_distribution_config(self, distribution_id):
-        try:
-            distribution = self.client.get_distribution_config(aws_retry=True, Id=distribution_id)
-            return distribution
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing distribution configuration")
-
-    def get_origin_access_identity(self, origin_access_identity_id):
-        try:
-            origin_access_identity = self.client.get_cloud_front_origin_access_identity(aws_retry=True, Id=origin_access_identity_id)
-            return origin_access_identity
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing origin access identity")
-
-    def get_origin_access_identity_config(self, origin_access_identity_id):
-        try:
-            origin_access_identity = self.client.get_cloud_front_origin_access_identity_config(aws_retry=True, Id=origin_access_identity_id)
-            return origin_access_identity
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing origin access identity configuration")
-
-    def get_invalidation(self, distribution_id, invalidation_id):
-        try:
-            invalidation = self.client.get_invalidation(aws_retry=True, DistributionId=distribution_id, Id=invalidation_id)
-            return invalidation
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing invalidation")
-
-    def get_streaming_distribution(self, distribution_id):
-        try:
-            streaming_distribution = self.client.get_streaming_distribution(aws_retry=True, Id=distribution_id)
-            return streaming_distribution
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing streaming distribution")
-
-    def get_streaming_distribution_config(self, distribution_id):
-        try:
-            streaming_distribution = self.client.get_streaming_distribution_config(aws_retry=True, Id=distribution_id)
-            return streaming_distribution
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error describing streaming distribution")
-
-    # Split out paginator to allow for the backoff decorator to function
-    @AWSRetry.jittered_backoff()
-    def _paginated_result(self, paginator_name, **params):
-        paginator = self.client.get_paginator(paginator_name)
-        results = paginator.paginate(**params).build_full_result()
-        return results
-
-    def list_origin_access_identities(self):
-        try:
-            results = self._paginated_result('list_cloud_front_origin_access_identities')
-            origin_access_identity_list = results.get('CloudFrontOriginAccessIdentityList', {'Items': []})
-
-            if len(origin_access_identity_list['Items']) > 0:
-                return origin_access_identity_list['Items']
-            return {}
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing cloud front origin access identities")
-
-    def list_distributions(self, keyed=True):
-        try:
-            results = self._paginated_result('list_distributions')
-            distribution_list = results.get('DistributionList', {'Items': []})
-
-            if len(distribution_list['Items']) > 0:
-                distribution_list = distribution_list['Items']
-            else:
-                return {}
-
-            if not keyed:
-                return distribution_list
-            return self.keyed_list_helper(distribution_list)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing distributions")
-
-    def list_distributions_by_web_acl_id(self, web_acl_id):
-        try:
-            results = self._paginated_result('list_cloud_front_origin_access_identities', WebAclId=web_acl_id)
-            distribution_list = results.get('DistributionList', {'Items': []})
-
-            if len(distribution_list['Items']) > 0:
-                distribution_list = distribution_list['Items']
-            else:
-                return {}
-            return self.keyed_list_helper(distribution_list)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing distributions by web acl id")
-
-    def list_invalidations(self, distribution_id):
-        try:
-            results = self._paginated_result('list_invalidations', DistributionId=distribution_id)
-            invalidation_list = results.get('InvalidationList', {'Items': []})
-
-            if len(invalidation_list['Items']) > 0:
-                return invalidation_list['Items']
-            return {}
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing invalidations")
-
-    def list_streaming_distributions(self, keyed=True):
-        try:
-            results = self._paginated_result('list_streaming_distributions')
-            streaming_distribution_list = results.get('StreamingDistributionList', {'Items': []})
-
-            if len(streaming_distribution_list['Items']) > 0:
-                streaming_distribution_list = streaming_distribution_list['Items']
-            else:
-                return {}
-
-            if not keyed:
-                return streaming_distribution_list
-            return self.keyed_list_helper(streaming_distribution_list)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing streaming distributions")
-
-    def summary(self):
-        summary_dict = {}
-        summary_dict.update(self.summary_get_distribution_list(False))
-        summary_dict.update(self.summary_get_distribution_list(True))
-        summary_dict.update(self.summary_get_origin_access_identity_list())
-        return summary_dict
-
-    def summary_get_origin_access_identity_list(self):
-        try:
-            origin_access_identity_list = {'origin_access_identities': []}
-            origin_access_identities = self.list_origin_access_identities()
-            for origin_access_identity in origin_access_identities:
-                oai_id = origin_access_identity['Id']
-                oai_full_response = self.get_origin_access_identity(oai_id)
-                oai_summary = {'Id': oai_id, 'ETag': oai_full_response['ETag']}
-                origin_access_identity_list['origin_access_identities'].append(oai_summary)
-            return origin_access_identity_list
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error generating summary of origin access identities")
-
-    def summary_get_distribution_list(self, streaming=False):
-        try:
-            list_name = 'streaming_distributions' if streaming else 'distributions'
-            key_list = ['Id', 'ARN', 'Status', 'LastModifiedTime', 'DomainName', 'Comment', 'PriceClass', 'Enabled']
-            distribution_list = {list_name: []}
-            distributions = self.list_streaming_distributions(False) if streaming else self.list_distributions(False)
-            for dist in distributions:
-                temp_distribution = {}
-                for key_name in key_list:
-                    temp_distribution[key_name] = dist[key_name]
-                temp_distribution['Aliases'] = [alias for alias in dist['Aliases'].get('Items', [])]
-                temp_distribution['ETag'] = self.get_etag_from_distribution_id(dist['Id'], streaming)
-                if not streaming:
-                    temp_distribution['WebACLId'] = dist['WebACLId']
-                    invalidation_ids = self.get_list_of_invalidation_ids_from_distribution_id(dist['Id'])
-                    if invalidation_ids:
-                        temp_distribution['Invalidations'] = invalidation_ids
-                resource_tags = self.client.list_tags_for_resource(Resource=dist['ARN'])
-                temp_distribution['Tags'] = boto3_tag_list_to_ansible_dict(resource_tags['Tags'].get('Items', []))
-                distribution_list[list_name].append(temp_distribution)
-            return distribution_list
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error generating summary of distributions")
-        except Exception as e:
-            self.module.fail_json(msg="Error generating summary of distributions - " + str(e),
-                                  exception=traceback.format_exc())
-
-    def get_etag_from_distribution_id(self, distribution_id, streaming):
-        distribution = {}
-        if not streaming:
-            distribution = self.get_distribution(distribution_id)
-        else:
-            distribution = self.get_streaming_distribution(distribution_id)
-        return distribution['ETag']
-
-    def get_list_of_invalidation_ids_from_distribution_id(self, distribution_id):
-        try:
-            invalidation_ids = []
-            invalidations = self.list_invalidations(distribution_id)
-            for invalidation in invalidations:
-                invalidation_ids.append(invalidation['Id'])
-            return invalidation_ids
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error getting list of invalidation ids")
-
-    def get_distribution_id_from_domain_name(self, domain_name):
-        try:
-            distribution_id = ""
-            distributions = self.list_distributions(False)
-            distributions += self.list_streaming_distributions(False)
-            for dist in distributions:
-                if 'Items' in dist['Aliases']:
-                    for alias in dist['Aliases']['Items']:
-                        if str(alias).lower() == domain_name.lower():
-                            distribution_id = dist['Id']
-                            break
-            return distribution_id
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error getting distribution id from domain name")
-
-    def get_aliases_from_distribution_id(self, distribution_id):
-        aliases = []
-        try:
-            distributions = self.list_distributions(False)
-            for dist in distributions:
-                if dist['Id'] == distribution_id and 'Items' in dist['Aliases']:
-                    for alias in dist['Aliases']['Items']:
-                        aliases.append(alias)
-                    break
-            return aliases
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error getting list of aliases from distribution_id")
-
-    def keyed_list_helper(self, list_to_key):
-        keyed_list = dict()
-        for item in list_to_key:
-            distribution_id = item['Id']
-            if 'Items' in item['Aliases']:
-                aliases = item['Aliases']['Items']
-                for alias in aliases:
-                    keyed_list.update({alias: item})
-            keyed_list.update({distribution_id: item})
-        return keyed_list
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
 
 
 def set_facts_for_distribution_id_and_alias(details, facts, distribution_id, aliases):
-    facts[distribution_id].update(details)
+    facts[distribution_id] = details
     # also have a fixed key for accessing results/details returned
     facts['result'] = details
     facts['result']['DistributionId'] = distribution_id
 
     for alias in aliases:
-        facts[alias].update(details)
+        facts[alias] = details
     return facts
 
 
@@ -530,7 +284,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    service_mgr = CloudFrontServiceManager(module)
+    service_mgr = CloudFrontFactsServiceManager(module)
 
     distribution_id = module.params.get('distribution_id')
     invalidation_id = module.params.get('invalidation_id')
@@ -582,55 +336,47 @@ def main():
             module.fail_json(msg='Error unable to source a distribution id from domain_name_alias')
 
     # set appropriate cloudfront id
-    if distribution_id and not list_invalidations:
-        facts = {distribution_id: {}}
-        aliases = service_mgr.get_aliases_from_distribution_id(distribution_id)
-        for alias in aliases:
-            facts.update({alias: {}})
-        if invalidation_id:
-            facts.update({invalidation_id: {}})
-    elif distribution_id and list_invalidations:
-        facts = {distribution_id: {}}
-        aliases = service_mgr.get_aliases_from_distribution_id(distribution_id)
-        for alias in aliases:
-            facts.update({alias: {}})
-    elif origin_access_identity_id:
-        facts = {origin_access_identity_id: {}}
-    elif web_acl_id:
-        facts = {web_acl_id: {}}
+    if invalidation_id is not None and invalidation:
+        facts.update({invalidation_id: {}})
+    if origin_access_identity_id and (origin_access_identity or origin_access_identity_config):
+        facts.update({origin_access_identity_id: {}})
+    if web_acl_id:
+        facts.update({web_acl_id: {}})
 
     # get details based on options
     if distribution:
-        facts_to_set = service_mgr.get_distribution(distribution_id)
+        facts_to_set = service_mgr.get_distribution(id=distribution_id)
     if distribution_config:
-        facts_to_set = service_mgr.get_distribution_config(distribution_id)
+        facts_to_set = service_mgr.get_distribution_config(id=distribution_id)
     if origin_access_identity:
-        facts[origin_access_identity_id].update(service_mgr.get_origin_access_identity(origin_access_identity_id))
+        facts[origin_access_identity_id].update(service_mgr.get_origin_access_identity(id=origin_access_identity_id))
     if origin_access_identity_config:
-        facts[origin_access_identity_id].update(service_mgr.get_origin_access_identity_config(origin_access_identity_id))
+        facts[origin_access_identity_id].update(service_mgr.get_origin_access_identity_config(id=origin_access_identity_id))
     if invalidation:
-        facts_to_set = service_mgr.get_invalidation(distribution_id, invalidation_id)
+        facts_to_set = service_mgr.get_invalidation(distribution_id=distribution_id, id=invalidation_id)
         facts[invalidation_id].update(facts_to_set)
     if streaming_distribution:
-        facts_to_set = service_mgr.get_streaming_distribution(distribution_id)
+        facts_to_set = service_mgr.get_streaming_distribution(id=distribution_id)
     if streaming_distribution_config:
-        facts_to_set = service_mgr.get_streaming_distribution_config(distribution_id)
+        facts_to_set = service_mgr.get_streaming_distribution_config(id=distribution_id)
     if list_invalidations:
-        facts_to_set = {'invalidations': service_mgr.list_invalidations(distribution_id)}
+        invalidations = service_mgr.list_invalidations(distribution_id=distribution_id) or {}
+        facts_to_set = {'invalidations': invalidations}
     if 'facts_to_set' in vars():
+        aliases = service_mgr.get_aliases_from_distribution_id(distribution_id)
         facts = set_facts_for_distribution_id_and_alias(facts_to_set, facts, distribution_id, aliases)
 
     # get list based on options
     if all_lists or list_origin_access_identities:
-        facts['origin_access_identities'] = service_mgr.list_origin_access_identities()
+        facts['origin_access_identities'] = service_mgr.list_origin_access_identities() or {}
     if all_lists or list_distributions:
-        facts['distributions'] = service_mgr.list_distributions()
+        facts['distributions'] = service_mgr.list_distributions() or {}
     if all_lists or list_streaming_distributions:
-        facts['streaming_distributions'] = service_mgr.list_streaming_distributions()
+        facts['streaming_distributions'] = service_mgr.list_streaming_distributions() or {}
     if list_distributions_by_web_acl_id:
-        facts['distributions_by_web_acl_id'] = service_mgr.list_distributions_by_web_acl_id(web_acl_id)
+        facts['distributions_by_web_acl_id'] = service_mgr.list_distributions_by_web_acl_id(web_acl_id=web_acl_id) or {}
     if list_invalidations:
-        facts['invalidations'] = service_mgr.list_invalidations(distribution_id)
+        facts['invalidations'] = service_mgr.list_invalidations(distribution_id=distribution_id) or {}
 
     # default summary option
     if summary:

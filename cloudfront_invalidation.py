@@ -152,9 +152,10 @@ class CloudFrontInvalidationServiceManager(object):
     Handles CloudFront service calls to AWS for invalidations
     """
 
-    def __init__(self, module):
+    def __init__(self, module, cloudfront_facts_mgr):
         self.module = module
         self.client = module.client('cloudfront')
+        self.__cloudfront_facts_mgr = cloudfront_facts_mgr
 
     def create_invalidation(self, distribution_id, invalidation_batch):
         current_invalidation_response = self.get_invalidation(distribution_id, invalidation_batch['CallerReference'])
@@ -174,28 +175,16 @@ class CloudFrontInvalidationServiceManager(object):
             self.module.fail_json_aws(e, msg="Error creating CloudFront invalidations.")
 
     def get_invalidation(self, distribution_id, caller_reference):
-        current_invalidation = {}
         # find all invalidations for the distribution
-        try:
-            paginator = self.client.get_paginator('list_invalidations')
-            invalidations = paginator.paginate(DistributionId=distribution_id).build_full_result().get('InvalidationList', {}).get('Items', [])
-            invalidation_ids = [inv['Id'] for inv in invalidations]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error listing CloudFront invalidations.")
+        invalidations = self.__cloudfront_facts_mgr.list_invalidations(distribution_id=distribution_id)
 
         # check if there is an invalidation with the same caller reference
-        for inv_id in invalidation_ids:
-            try:
-                invalidation = self.client.get_invalidation(DistributionId=distribution_id, Id=inv_id)['Invalidation']
-                caller_ref = invalidation.get('InvalidationBatch', {}).get('CallerReference')
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.module.fail_json_aws(e, msg="Error getting CloudFront invalidation {0}".format(inv_id))
-            if caller_ref == caller_reference:
-                current_invalidation = invalidation
-                break
-
-        current_invalidation.pop('ResponseMetadata', None)
-        return current_invalidation
+        for invalidation in invalidations:
+            invalidation_info = self.__cloudfront_facts_mgr.get_invalidation(distribution_id=distribution_id, id=invalidation['Id'])
+            if invalidation_info.get('InvalidationBatch', {}).get('CallerReference') == caller_reference:
+                invalidation_info.pop('ResponseMetadata', None)
+                return invalidation_info
+        return {}
 
 
 class CloudFrontInvalidationValidationManager(object):
@@ -203,9 +192,9 @@ class CloudFrontInvalidationValidationManager(object):
     Manages CloudFront validations for invalidation batches
     """
 
-    def __init__(self, module):
+    def __init__(self, module, cloudfront_facts_mgr):
         self.module = module
-        self.__cloudfront_facts_mgr = CloudFrontFactsServiceManager(module)
+        self.__cloudfront_facts_mgr = cloudfront_facts_mgr
 
     def validate_distribution_id(self, distribution_id, alias):
         try:
@@ -248,8 +237,9 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False, mutually_exclusive=[['distribution_id', 'alias']])
 
-    validation_mgr = CloudFrontInvalidationValidationManager(module)
-    service_mgr = CloudFrontInvalidationServiceManager(module)
+    cloudfront_facts_mgr = CloudFrontFactsServiceManager(module)
+    validation_mgr = CloudFrontInvalidationValidationManager(module, cloudfront_facts_mgr)
+    service_mgr = CloudFrontInvalidationServiceManager(module, cloudfront_facts_mgr)
 
     caller_reference = module.params.get('caller_reference')
     distribution_id = module.params.get('distribution_id')
