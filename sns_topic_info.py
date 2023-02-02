@@ -54,6 +54,11 @@ result:
         type: complex
         returned: always
         contains:
+            content_based_deduplication:
+              description: Whether or not content_based_deduplication was set
+              returned: always
+              type: str
+              sample: "true"
             delivery_policy:
                 description: Delivery policy for the SNS topic.
                 returned: when topic is owned by this AWS account
