@@ -39,6 +39,22 @@ options:
     choices: ['standard', 'fifo']
     default: 'standard'
     type: str
+  deduplication_scope:
+    description:
+      - Deduplication scope for FIFO queues.
+      - C(messageGroup) is required for high throughput FIFO.
+      - Defaults to C(queue) on creation.
+    choices: ['queue', 'messageGroup']
+    type: str
+    version_added: 5.3.0
+  fifo_throughput_limit:
+    description:
+      - Throughput limit for FIFO queues.
+      - C(perMessageGroupId) is required for high throughput FIFO.
+      - Defaults to C(perQueue) on creation.
+    choices: ['perQueue', 'perMessageGroupId']
+    type: str
+    version_added: 5.3.0
   visibility_timeout:
     description:
       - The default visibility timeout in seconds.
@@ -100,6 +116,16 @@ content_based_deduplication:
     type: bool
     returned: always
     sample: True
+fifo_throughput_limit:
+    description: Which throughput limit strategy is applied.
+    type: str
+    returned: always
+    sample: perQueue
+deduplication_scope:
+    description: The deduplication setting.
+    type: str
+    returned: always
+    sample: messageGroup
 visibility_timeout:
     description: The default visibility timeout in seconds.
     type: int
@@ -472,6 +498,8 @@ def main():
         redrive_policy=dict(type='dict'),
         visibility_timeout=dict(type='int', aliases=['default_visibility_timeout']),
         kms_master_key_id=dict(type='str'),
+        fifo_throughput_limit=dict(type='str', choices=["perQueue", "perMessageGroupId"]),
+        deduplication_scope=dict(type='str', choices=['queue', 'messageGroup']),
         kms_data_key_reuse_period_seconds=dict(type='int', aliases=['kms_data_key_reuse_period'], no_log=False),
         content_based_deduplication=dict(type='bool'),
         tags=dict(type='dict', aliases=['resource_tags']),
