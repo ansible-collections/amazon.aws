@@ -160,8 +160,12 @@ iam_role:
             returned: always
             sample: "2016-08-14T04:36:28+00:00"
         assume_role_policy_document:
-            description: the policy that grants an entity permission to assume the role
-            type: str
+            description:
+              - the policy that grants an entity permission to assume the role
+              - |
+                note: the case of keys in this dictionary are currently converted from CamelCase to
+                snake_case.  In a release after 2023-12-01 this behaviour will change
+            type: dict
             returned: always
             sample: {
                         'statement': [
@@ -176,6 +180,25 @@ iam_role:
                         ],
                         'version': '2012-10-17'
                     }
+        assume_role_policy_document_raw:
+            description: the policy that grants an entity permission to assume the role
+            type: dict
+            returned: always
+            version_added: 5.3.0
+            sample: {
+                        'Statement': [
+                            {
+                                'Action': 'sts:AssumeRole',
+                                'Effect': 'Allow',
+                                'Principal': {
+                                    'Service': 'ec2.amazonaws.com'
+                                },
+                                'Sid': ''
+                            }
+                        ],
+                        'Version': '2012-10-17'
+                    }
+
         attached_policies:
             description: a list of dicts containing the name and ARN of the managed IAM policies attached to the role
             type: list
@@ -498,6 +521,7 @@ def create_or_update_role(module, client):
     role['tags'] = get_role_tags(module, client)
 
     camel_role = camel_dict_to_snake_dict(role, ignore_list=['tags'])
+    camel_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument", {})
     module.exit_json(changed=changed, iam_role=camel_role, **camel_role)
 
 
@@ -673,6 +697,16 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               required_if=[('state', 'present', ['assume_role_policy_document'])],
                               supports_check_mode=True)
+
+    module.deprecate("All return values other than iam_role and changed have been deprecated and "
+                     "will be removed in a release after 2023-12-01.",
+                     date="2023-12-01", collection_name="community.aws")
+
+    module.deprecate("In a release after 2023-12-01 the contents of iam_role.assume_role_policy_document "
+                     "will no longer be converted from CamelCase to snake_case.  The "
+                     "iam_role.assume_role_policy_document_raw return value already returns the "
+                     "policy document in this future format.",
+                     date="2023-12-01", collection_name="community.aws")
 
     if module.params.get('boundary'):
         if module.params.get('create_instance_profile'):

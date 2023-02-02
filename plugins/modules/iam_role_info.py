@@ -61,9 +61,18 @@ iam_roles:
       type: str
       sample: arn:aws:iam::123456789012:role/AnsibleTestRole
     assume_role_policy_document:
-      description: Policy Document describing what can assume the role.
+      description:
+        - The policy that grants an entity permission to assume the role
+        - |
+          Note: the case of keys in this dictionary are currently converted from CamelCase to
+          snake_case.  In a release after 2023-12-01 this behaviour will change.
       returned: always
-      type: str
+      type: dict
+    assume_role_policy_document_raw:
+      description: The policy document describing what can assume the role.
+      returned: always
+      type: dict
+      version_added: 5.3.0
     create_date:
       description: Date IAM role was created.
       returned: always
@@ -227,7 +236,22 @@ def describe_iam_roles(module, client):
             roles = list_iam_roles_with_backoff(client, **params)['Roles']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't list IAM roles")
-    return [camel_dict_to_snake_dict(describe_iam_role(module, client, role), ignore_list=['tags']) for role in roles]
+    return [normalize_role(describe_iam_role(module, client, role)) for role in roles]
+
+
+def normalize_profile(profile):
+    new_profile = camel_dict_to_snake_dict(profile)
+    if profile.get("Roles"):
+        profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
+    return new_profile
+
+
+def normalize_role(role):
+    new_role = camel_dict_to_snake_dict(role, ignore_list=['tags'])
+    new_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument")
+    if role.get("InstanceProfiles"):
+        role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
+    return new_role
 
 
 def main():
@@ -244,6 +268,12 @@ def main():
                               mutually_exclusive=[['name', 'path_prefix']])
 
     client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+
+    module.deprecate("In a release after 2023-12-01 the contents of assume_role_policy_document "
+                     "will no longer be converted from CamelCase to snake_case.  The "
+                     ".assume_role_policy_document_raw return value already returns the "
+                     "policy document in this future format.",
+                     date="2023-12-01", collection_name="community.aws")
 
     module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
 
