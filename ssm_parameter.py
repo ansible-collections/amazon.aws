@@ -90,6 +90,11 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+  - amazon.aws.tags
+
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 5.3.0.
+
 '''
 
 EXAMPLES = '''
@@ -137,6 +142,29 @@ EXAMPLES = '''
 - name: recommend to use with aws_ssm lookup plugin
   ansible.builtin.debug:
     msg: "{{ lookup('amazon.aws.aws_ssm', 'Hello') }}"
+
+- name: Create or update key/value pair in AWS SSM parameter store w/ tags
+  community.aws.ssm_parameter:
+    name: "Hello"
+    description: "This is your first key"
+    value: "World"
+    tags:
+      Environment: "dev"
+      Version: "1.0"
+      Confidentiality: "low"
+      Tag With Space: "foo bar"
+
+- name: Add or update a tag on an existing parameter w/o removing existing tags
+  community.aws.ssm_parameter:
+    name: "Hello"
+    purge_tags: false
+    tags:
+      Contact: "person1"
+
+- name: Delete all tags on an existing parameter
+  community.aws.ssm_parameter:
+    name: "Hello"
+    tags: {}
 '''
 
 RETURN = '''
@@ -208,12 +236,19 @@ parameter_metadata:
       description: Parameter version number
       example: 3
       returned: success
+    tags:
+      description: A dictionary representing the tags associated with the parameter.
+      type: dict
+      returned: when the parameter has tags
+      example: {'MyTagName': 'Some Value'}
+      version_added: 5.3.0
 '''
 
 import time
 
 try:
     import botocore
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -223,6 +258,9 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.community.aws.plugins.module_utils.base import BaseWaiterFactory
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 class ParameterWaiterFactory(BaseWaiterFactory):
@@ -301,6 +339,58 @@ def _wait_deleted(client, module, name):
         module.fail_json_aws(e, msg="Failed to describe parameter while waiting for deletion")
 
 
+def tag_parameter(client, module, parameter_name, tags):
+    try:
+        return client.add_tags_to_resource(aws_retry=True, ResourceType='Parameter',
+                                           ResourceId=parameter_name, Tags=tags)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to add tag(s) to parameter")
+
+
+def untag_parameter(client, module, parameter_name, tag_keys):
+    try:
+        return client.remove_tags_from_resource(aws_retry=True, ResourceType='Parameter',
+                                                ResourceId=parameter_name, TagKeys=tag_keys)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to remove tag(s) from parameter")
+
+
+def get_parameter_tags(client, module, parameter_name):
+    try:
+        tags = client.list_tags_for_resource(aws_retry=True, ResourceType='Parameter',
+                                             ResourceId=parameter_name)['TagList']
+        tags_dict = boto3_tag_list_to_ansible_dict(tags)
+        return tags_dict
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Unable to retrieve parameter tags")
+
+
+def update_parameter_tags(client, module, parameter_name, supplied_tags):
+    changed = False
+    response = {}
+
+    if supplied_tags is None:
+        return False, response
+
+    current_tags = get_parameter_tags(client, module, parameter_name)
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, supplied_tags,
+                                                   module.params.get('purge_tags'))
+
+    if tags_to_add:
+        if module.check_mode:
+            return True, response
+        response = tag_parameter(client, module, parameter_name,
+                                 ansible_dict_to_boto3_tag_list(tags_to_add))
+        changed = True
+    if tags_to_remove:
+        if module.check_mode:
+            return True, response
+        response = untag_parameter(client, module, parameter_name, tags_to_remove)
+        changed = True
+
+    return changed, response
+
+
 def update_parameter(client, module, **args):
     changed = False
     response = {}
@@ -310,8 +400,8 @@ def update_parameter(client, module, **args):
     try:
         response = client.put_parameter(aws_retry=True, **args)
         changed = True
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="setting parameter")
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as exc:
+        module.fail_json_aws(exc, msg="setting parameter")
 
     return changed, response
 
@@ -323,6 +413,9 @@ def describe_parameter(client, module, **args):
 
     if not existing_parameter['Parameters']:
         return None
+
+    tags_dict = get_parameter_tags(client, module, module.params.get('name'))
+    existing_parameter['Parameters'][0]['tags'] = tags_dict
 
     return existing_parameter['Parameters'][0]
 
@@ -387,7 +480,25 @@ def create_update_parameter(client, module):
                     (changed, response) = update_parameter(client, module, **args)
         if changed:
             _wait_updated(client, module, module.params.get('name'), original_version)
+
+        # Handle tag updates for existing parameters
+        if module.params.get('overwrite_value') != 'never':
+            tags_changed, tags_response = update_parameter_tags(
+                client, module, existing_parameter['Parameter']['Name'],
+                module.params.get('tags'))
+
+            changed = changed or tags_changed
+
+            if tags_response:
+                response['tag_updates'] = tags_response
+
     else:
+        # Add tags in initial creation request
+        if module.params.get('tags'):
+            args.update(Tags=ansible_dict_to_boto3_tag_list(module.params.get('tags')))
+            # Overwrite=True conflicts with tags and is not needed for new param
+            args.update(Overwrite=False)
+
         (changed, response) = update_parameter(client, module, **args)
         _wait_exists(client, module, module.params.get('name'))
 
@@ -444,6 +555,8 @@ def setup_module_object():
         key_id=dict(default="alias/aws/ssm"),
         overwrite_value=dict(default='changed', choices=['never', 'changed', 'always']),
         tier=dict(default='Standard', choices=['Standard', 'Advanced', 'Intelligent-Tiering']),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool', default=True),
     )
 
     return AnsibleAWSModule(
@@ -474,7 +587,8 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="to describe parameter")
     if parameter_metadata:
-        result['parameter_metadata'] = camel_dict_to_snake_dict(parameter_metadata)
+        result['parameter_metadata'] = camel_dict_to_snake_dict(parameter_metadata,
+                                                                ignore_list=['tags'])
 
     module.exit_json(changed=changed, **result)
 
