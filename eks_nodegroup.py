@@ -9,7 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: eks_nodegroup
-version_added: 5.1.0
+version_added: 5.3.0
 short_description: Manage EKS Nodegroup module
 description:
   - Manage EKS Nodegroup.
