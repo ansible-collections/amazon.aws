@@ -519,8 +519,8 @@ class SnsTopicManager(object):
         for sub in list_topic_subscriptions(self.connection, self.module, self.topic_arn):
             sub_key = (sub['Protocol'], sub['Endpoint'])
             sub_arn = sub['SubscriptionArn']
-            if sub_key not in self.desired_subscription_attributes:
-                # subscription isn't defined in desired, skipping
+            if not self.desired_subscription_attributes.get(sub_key):
+                # subscription attributes aren't defined in desired, skipping
                 continue
 
             try:
