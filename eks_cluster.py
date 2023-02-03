@@ -45,6 +45,11 @@ options:
       - present
     default: present
     type: str
+  tags:
+    description:
+      - A dictionary of tags to add the EKS cluster.
+    type: dict
+    version_added: 5.3.0
   wait:
     description: >-
       Specifies whether the module waits until the cluster is active or deleted
@@ -212,6 +217,8 @@ def ensure_present(client, module):
                       )
         if module.params['version']:
             params['version'] = module.params['version']
+        if module.params['tags']:
+            params['tags'] = module.params['tags']
         cluster = client.create_cluster(**params)['cluster']
     except botocore.exceptions.EndpointConnectionError as e:
         module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
@@ -276,6 +283,7 @@ def main():
         subnets=dict(type='list', elements='str'),
         security_groups=dict(type='list', elements='str'),
         state=dict(choices=['absent', 'present'], default='present'),
+        tags=dict(type='dict', required=False),
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=1200, type='int')
     )
