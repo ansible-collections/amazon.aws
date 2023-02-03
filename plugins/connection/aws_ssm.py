@@ -817,33 +817,66 @@ class Connection(ConnectionBase):
 
         if self.is_windows:
             put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
-            put_command = (
-                "Invoke-WebRequest -Method PUT "
-                f"-Headers @{{{put_command_headers}}} "  # @{'key' = 'value'; 'key2' = 'value2'}
-                f"-InFile '{in_path}' "
-                f"-Uri '{put_url}' "
-                f"-UseBasicParsing"
-            )
-            get_command = (
-                "Invoke-WebRequest "
-                f"'{get_url}' "
-                f"-OutFile '{out_path}'"
-            )
+            put_commands = [
+                (
+                    "Invoke-WebRequest -Method PUT "
+                    f"-Headers @{{{put_command_headers}}} "  # @{'key' = 'value'; 'key2' = 'value2'}
+                    f"-InFile '{in_path}' "
+                    f"-Uri '{put_url}' "
+                    f"-UseBasicParsing"
+                ),
+            ]
+            get_commands = [
+                (
+                    "Invoke-WebRequest "
+                    f"'{get_url}' "
+                    f"-OutFile '{out_path}'"
+                ),
+            ]
         else:
             put_command_headers = " ".join([f"-H '{h}: {v}'" for h, v in put_headers.items()])
-            put_command = (
-                "curl --request PUT "
-                f"{put_command_headers} "
-                f"--upload-file '{in_path}' "
-                f"'{put_url}'"
-            )
-            get_command = (
-                "curl "
-                f"-o '{out_path}' "
-                f"'{get_url}'"
-            )
+            put_commands = [
+                (
+                    "curl --request PUT "
+                    f"{put_command_headers} "
+                    f"--upload-file '{in_path}' "
+                    f"'{put_url}'"
+                ),
+            ]
+            get_commands = [
+                (
+                    "curl "
+                    f"-o '{out_path}' "
+                    f"'{get_url}'"
+                ),
+                # Due to https://github.com/curl/curl/issues/183 earlier
+                # versions of curl did not create the output file, when the
+                # response was empty. Although this issue was fixed in 2015,
+                # some actively maintained operating systems still use older
+                # versions of it (e.g. CentOS 7)
+                (
+                    "touch "
+                    f"'{out_path}'"
+                )
+            ]
 
-        return get_command, put_command, put_args
+        return get_commands, put_commands, put_args
+
+    def _exec_transport_commands(self, in_path, out_path, commands):
+        stdout_combined, stderr_combined = '', ''
+        for command in commands:
+            (returncode, stdout, stderr) = self.exec_command(command, in_data=None, sudoable=False)
+
+            # Check the return code
+            if returncode != 0:
+                raise AnsibleError(
+                    f"failed to transfer file to {in_path} {out_path}:\n"
+                    f"{stdout}\n{stderr}")
+
+            stdout_combined += stdout
+            stderr_combined += stderr
+
+        return (returncode, stdout_combined, stderr_combined)
 
     @_ssm_retry
     def _file_transport_command(self, in_path, out_path, ssm_action):
@@ -852,30 +885,25 @@ class Connection(ConnectionBase):
         bucket_name = self.get_option("bucket_name")
         s3_path = self._escape_path(f"{self.instance_id}/{out_path}")
 
-        get_command, put_command, put_args = self._generate_commands(
+        get_commands, put_commands, put_args = self._generate_commands(
             bucket_name, s3_path, in_path, out_path,
         )
 
         client = self._s3_client
-        if ssm_action == 'get':
-            (returncode, stdout, stderr) = self.exec_command(put_command, in_data=None, sudoable=False)
-            with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
-                client.download_fileobj(bucket_name, s3_path, data)
-        else:
-            with open(to_bytes(in_path, errors='surrogate_or_strict'), 'rb') as data:
-                client.upload_fileobj(data, bucket_name, s3_path, ExtraArgs=put_args)
-            (returncode, stdout, stderr) = self.exec_command(get_command, in_data=None, sudoable=False)
 
-        # Remove the files from the bucket after they've been transferred
-        client.delete_object(Bucket=bucket_name, Key=s3_path)
-
-        # Check the return code
-        if returncode == 0:
+        try:
+            if ssm_action == 'get':
+                (returncode, stdout, stderr) = self._exec_transport_commands(in_path, out_path, put_commands)
+                with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
+                    client.download_fileobj(bucket_name, s3_path, data)
+            else:
+                with open(to_bytes(in_path, errors='surrogate_or_strict'), 'rb') as data:
+                    client.upload_fileobj(data, bucket_name, s3_path, ExtraArgs=put_args)
+                (returncode, stdout, stderr) = self._exec_transport_commands(in_path, out_path, get_commands)
             return (returncode, stdout, stderr)
-
-        raise AnsibleError(
-            f"failed to transfer file to {in_path} {out_path}:\n"
-            f"{stdout}\n{stderr}")
+        finally:
+            # Remove the files from the bucket after they've been transferred
+            client.delete_object(Bucket=bucket_name, Key=s3_path)
 
     def put_file(self, in_path, out_path):
         ''' transfer a file from local to remote '''
