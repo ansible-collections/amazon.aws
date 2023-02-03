@@ -97,10 +97,12 @@ options:
   labels:
     description: The Kubernetes labels to be applied to the nodes in the node group when they are created.
     type: dict
+    default: {}
   taints:
     description: The Kubernetes taints to be applied to the nodes in the node group.
     type: list
     elements: dict
+    default: []
     suboptions:
       key:
         description: The key of the taint.
