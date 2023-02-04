@@ -348,7 +348,6 @@ acl:
 '''
 
 import json
-import os
 import time
 
 try:
@@ -359,7 +358,6 @@ except ImportError:
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
-from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule

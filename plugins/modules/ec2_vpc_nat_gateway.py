@@ -837,6 +837,7 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
         Tuple (bool, str, list)
     """
 
+    allocation_id = None
     params = {
         'NatGatewayId': nat_gateway_id
     }

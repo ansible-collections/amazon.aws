@@ -1,17 +1,16 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from unittest.mock import MagicMock
-from unittest.mock import patch
-from unittest.mock import call, ANY
-
-import pytest
-import botocore
 import datetime
 from dateutil.tz import tzutc
-from ansible.module_utils._text import to_bytes
+import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
+from unittest.mock import ANY
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+import botocore
+
+from ansible.module_utils._text import to_bytes
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_key
 

@@ -299,7 +299,7 @@ def delete_layer_version(lambda_client, params, check_mode=False):
                 try:
                     lambda_client.delete_layer_version(LayerName=name, VersionNumber=layer["version"])
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    LambdaLayerFailure(e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version))
+                    raise LambdaLayerFailure(e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version))
     return {"changed": changed, "layer_versions": deleted_versions}
 
 

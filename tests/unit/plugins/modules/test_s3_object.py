@@ -3,15 +3,13 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from unittest.mock import MagicMock, Mock, patch, ANY, call
+from unittest.mock import MagicMock
+from unittest.mock import patch
 import pytest
 
 import botocore.exceptions
 
 from ansible_collections.amazon.aws.plugins.modules import s3_object
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    get_aws_connection_info,
-)
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.s3_object"
 utils = "ansible_collections.amazon.aws.plugins.module_utils.ec2"
