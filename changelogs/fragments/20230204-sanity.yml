@@ -1,0 +1,4 @@
+minor_changes:
+- ec2_instance - remove unused import (https://github.com/ansible-collections/amazon.aws/pull/1350).
+- ec2_vpc_nat_gateway - ensure allocation_id is defined before potential access (https://github.com/ansible-collections/amazon.aws/pull/1350).
+- lambda_layer - raise ``LambdaLayerFailure`` rather than just creating it (https://github.com/ansible-collections/amazon.aws/pull/1350).
