@@ -11,7 +11,6 @@ import pytest
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep  # pylint: disable=unused-import
 
-import ansible_collections.amazon.aws.plugins.module_utils.modules as aws_modules
 import ansible_collections.amazon.aws.plugins.module_utils.retries as aws_retries
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
