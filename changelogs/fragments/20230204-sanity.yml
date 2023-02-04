@@ -1,0 +1,4 @@
+minor_changes:
+- ec2_instance - remove unused import ().
+- ec2_vpc_nat_gateway - ensure allocation_id is defined before potential access ().
+- lambda_layer - raise LambdaLayerFailure rather than just creating it ().

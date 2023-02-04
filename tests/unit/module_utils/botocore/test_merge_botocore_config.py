@@ -3,11 +3,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pprint
 import pytest
 from unittest.mock import MagicMock
-from unittest.mock import sentinel
-from unittest.mock import call
 
 try:
     import botocore
@@ -16,7 +13,6 @@ except ImportError:
     pass
 
 import ansible_collections.amazon.aws.plugins.module_utils.botocore as utils_botocore
-from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleBotocoreError
 
 MINIMAL_CONFIG = {
     "user_agent_extra": "Ansible/unit-test",

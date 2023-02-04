@@ -5,10 +5,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from pydoc import describe
-from sre_constants import ANY
-from unittest import result
 import pytest
+import random
+from unittest.mock import MagicMock
+from unittest.mock import ANY
 
 try:
     import botocore
@@ -20,8 +20,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.acm import (
     ACMServiceManager,
     acm_catch_boto_exception
 )
-from unittest.mock import MagicMock, patch, call, ANY
-import random
 
 
 MODULE_NAME = "ansible_collections.amazon.aws.plugins.module_utils.acm"
