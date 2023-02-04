@@ -194,7 +194,7 @@ def main():
                 )
 
                 updated_target.update({'tags': ansible_dict_tags})
-                module.exit_json(changed=True, **updated_target),
+                module.exit_json(changed=True, **updated_target)
             except (
                 botocore.exceptions.BotoCoreError,
                 botocore.exceptions.ClientError,

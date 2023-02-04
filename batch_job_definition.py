@@ -308,7 +308,7 @@ def create_job_definition(module, batch_client):
 
 
 def get_retry_strategy_params():
-    return 'attempts',
+    return ('attempts',)
 
 
 def get_container_property_params():
