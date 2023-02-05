@@ -272,6 +272,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <p>If <em>decrement_desired_capacity</em> flag is not set, new instance(s) are launched to replace the detached instance(s).</p>
 <p>If a Classic Load Balancer is attached to the AutoScalingGroup, the instances are also deregistered from the load balancer.</p>
 <p>If there are target groups attached to the AutoScalingGroup, the instances are also deregistered from the target groups.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -602,6 +603,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-replace_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of <em>instance_ids</em> belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances matching the current launch configuration.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -670,6 +672,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <td><div class="ansible-option-cell"><p>A list of tags to add to the Auto Scale Group.</p>
 <p>Optional key is <em>propagate_at_launch</em>, which defaults to true.</p>
 <p>When <em>propagate_at_launch</em> is true the tags will be propagated to the Instances created.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
