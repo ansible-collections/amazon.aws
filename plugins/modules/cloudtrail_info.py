@@ -18,6 +18,7 @@ options:
   trail_names:
     type: list
     elements: str
+    default: []
     description:
       - Specifies a list of trail names, trail ARNs, or both, of the trails to describe.
       - If an empty list is specified, information for the trail in the current region is returned.
@@ -162,7 +163,6 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 

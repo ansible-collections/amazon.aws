@@ -130,6 +130,7 @@ options:
           - One or more network interfaces. If you specify a network interface, you must specify subnet IDs and security group IDs using the network interface.
         type: list
         elements: dict
+        default: []
         suboptions:
           associate_public_ip_address:
             description:
@@ -279,7 +280,6 @@ options:
   spot_instance_request_ids:
     description:
       - List of strings with IDs of spot requests to be cancelled
-    default: []
     type: list
     elements: str
 extends_documentation_fragment:

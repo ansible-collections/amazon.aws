@@ -41,6 +41,7 @@ options:
         snapshot.
     type: dict
     required: false
+    default: {}
   wait:
     description:
       - Wait for the snapshot to be ready.

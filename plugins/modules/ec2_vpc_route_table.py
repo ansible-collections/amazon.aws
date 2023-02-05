@@ -66,6 +66,7 @@ options:
       - Routes are required for present states.
     type: list
     elements: dict
+    default: []
   state:
     description: Create or destroy the VPC route table.
     default: present

@@ -66,6 +66,7 @@ options:
   targets:
     type: list
     elements: dict
+    default: []
     description:
       - A list of targets to add to or update for the rule.
     suboptions:

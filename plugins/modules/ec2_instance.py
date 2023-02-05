@@ -25,6 +25,7 @@ options:
       - Mutually exclusive with I(exact_count).
     type: list
     elements: str
+    default: []
   state:
     description:
       - Goal state for the instances.
@@ -143,6 +144,7 @@ options:
       - Mutually exclusive with I(security_group).
     type: list
     elements: str
+    default: []
   security_group:
     description:
       - A security group ID or name.
@@ -943,8 +945,6 @@ instances:
 '''
 
 from collections import namedtuple
-import string
-import textwrap
 import time
 import uuid
 
@@ -958,7 +958,6 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
-from ansible.module_utils.six.moves.urllib import parse as urlparse
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code

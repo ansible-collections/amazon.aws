@@ -63,6 +63,7 @@ options:
       - Specifies the key to start with when using list mode. Object keys are returned in
         alphabetical order, starting with key after the marker in order.
     type: str
+    default: ''
   max_keys:
     description:
       - Max number of results to return when I(mode=list), set this if you want to retrieve fewer

@@ -19,6 +19,7 @@ options:
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpointServices.html)
         for possible filters.
     type: dict
+    default: {}
   service_names:
     description:
       - A list of service names which can be used to narrow the search results.
