@@ -29,6 +29,14 @@ options:
     default: 'present'
     choices: ['present', 'absent']
     type: str
+  overwrite:
+    description:
+    - Whether to overwrite an existing secret with the same name.
+    - If set to C(True), an existing secret with the same I(name) will be overwritten.
+    - If set to C(False), a secret with the given I(name) will only be created if none exists.
+    type: bool
+    default: True
+    version_added: 5.3.0
   recovery_window:
     description:
     - Only used if state is absent.
@@ -130,6 +138,14 @@ EXAMPLES = r'''
     state: absent
     secret_type: 'string'
     secret: "{{ super_secret_string }}"
+
+- name: Only create a new secret, but do not update if alredy exists by name
+  community.aws.secretsmanager_secret:
+    name: 'random_string'
+    state: present
+    secret_type: 'string'
+    secret: "{{ lookup('community.general.random_string', length=16, special=false) }}"
+    overwrite: false
 '''
 
 RETURN = r'''
@@ -524,6 +540,7 @@ def main():
         argument_spec={
             'name': dict(required=True),
             'state': dict(choices=['present', 'absent'], default='present'),
+            'overwrite': dict(type='bool', default=True),
             'description': dict(default=""),
             'replica': dict(type='list', elements='dict', options=replica_args),
             'kms_key_id': dict(),
@@ -580,12 +597,15 @@ def main():
                 result = secrets_mgr.put_resource_policy(secret)
             changed = True
         else:
+            # current_secret exists; decide what to do with it
             if current_secret.get("DeletedDate"):
                 secrets_mgr.restore_secret(secret.name)
                 changed = True
             if not secrets_mgr.secrets_match(secret, current_secret):
-                result = secrets_mgr.update_secret(secret)
-                changed = True
+                overwrite = module.params.get('overwrite')
+                if overwrite:
+                    result = secrets_mgr.update_secret(secret)
+                    changed = True
             if not rotation_match(secret, current_secret):
                 result = secrets_mgr.update_rotation(secret)
                 changed = True
