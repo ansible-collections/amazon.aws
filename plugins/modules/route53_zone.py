@@ -30,7 +30,7 @@ options:
             - The VPC Region the zone should be a part of (if this is going to be a private zone).
         type: str
     vpcs:
-        version_added: 5.2.0
+        version_added: 6.1.0
         description:
             - The VPCs the zone should be a part of (if this is going to be a private zone).
         type: list
@@ -38,7 +38,7 @@ options:
         suboptions:
             id:
                 description:
-                    - The ID of the VPC
+                    - The ID of the VPC.
                 type: str
                 required: true
             region:
@@ -139,17 +139,17 @@ private_zone:
     type: bool
     sample: true
 vpc_id:
-    description: id of the first vpc attached to private hosted zone (use vpcs for all)
+    description: id of the first vpc attached to private hosted zone (use vpcs for associating multiple).
     returned: for private hosted zone
     type: str
     sample: "vpc-1d36c84f"
 vpc_region:
-    description: region of the first vpc attached to private hosted zone (use vpcs for all)
+    description: region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).
     returned: for private hosted zone
     type: str
     sample: "eu-west-1"
 vpcs:
-    version_added: 5.2.0
+    version_added: 6.1.0
     description: The list of VPCs attached to the private hosted zone
     returned: for private hosted zone
     type: list

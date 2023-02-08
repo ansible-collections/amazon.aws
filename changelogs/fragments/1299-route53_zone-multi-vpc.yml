@@ -1,2 +1,2 @@
 minor_changes:
-  - Added support for multiple VPCs to be applied to route53_zone module
+- route53_zone - added support for associating multiple VPCs to route53 hosted zones (https://github.com/ansible-collections/amazon.aws/pull/1300).
