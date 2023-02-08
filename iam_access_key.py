@@ -69,8 +69,8 @@ EXAMPLES = r'''
 
 - name: Delete the access_key
   community.aws.iam_access_key:
-    name: example_user
-    access_key_id: AKIA1EXAMPLE1EXAMPLE
+    user_name: example_user
+    id: AKIA1EXAMPLE1EXAMPLE
     state: absent
 '''
 
