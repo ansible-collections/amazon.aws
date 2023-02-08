@@ -30,7 +30,7 @@ options:
             - The VPC Region the zone should be a part of (if this is going to be a private zone).
         type: str
     vpcs:
-        version_added: 6.1.0
+        version_added: 5.3.0
         description:
             - The VPCs the zone should be a part of (if this is going to be a private zone).
         type: list
@@ -149,7 +149,7 @@ vpc_region:
     type: str
     sample: "eu-west-1"
 vpcs:
-    version_added: 6.1.0
+    version_added: 5.3.0
     description: The list of VPCs attached to the private hosted zone
     returned: for private hosted zone
     type: list
