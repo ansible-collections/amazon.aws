@@ -22,7 +22,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
 
     region = args.get("region")
     queue_name = args.get("queue")
-    wait_seconds = args.get("wait_seconds") or 2
+    wait_seconds = int(args.get("wait_seconds", 2))
 
     # Boto should get credentials from ~/.aws/credentials or the environment
     session = get_session()
