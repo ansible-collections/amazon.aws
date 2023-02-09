@@ -19,7 +19,9 @@ options:
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
       - The C(AWS_ACCESS_KEY_ID), C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY)
         environment variables may also be used in decreasing order of
-        preference.
+        preference.  Prior to release 6.0.0 these environment variables will be
+        ignored if the I(profile) parameter is passed.  After release 6.0.0
+        I(access_key) will always fall back to the environment variables if set.
       - The I(aws_access_key) and I(profile) options are mutually exclusive.
       - The I(aws_access_key_id) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
@@ -36,7 +38,9 @@ options:
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
       - The C(AWS_SECRET_ACCESS_KEY), C(AWS_SECRET_KEY), or C(EC2_SECRET_KEY)
         environment variables may also be used in decreasing order of
-        preference.
+        preference.  Prior to release 6.0.0 these environment variables will be
+        ignored if the I(profile) parameter is passed.  After release 6.0.0
+        I(secret_key) will always fall back to the environment variables if set.
       - The I(secret_key) and I(profile) options are mutually exclusive.
       - The I(aws_secret_access_key) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
@@ -53,6 +57,9 @@ options:
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
       - The C(AWS_SESSION_TOKEN), C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN)
         environment variables may also be used in decreasing order of preference.
+        Prior to release 6.0.0 these environment variables will be
+        ignored if the I(profile) parameter is passed.  After release 6.0.0
+        I(session_token) will always fall back to the environment variables if set.
       - The I(security_token) and I(profile) options are mutually exclusive.
       - Aliases I(aws_session_token) and I(session_token) were added in release
         3.2.0, with the parameter being renamed from I(security_token) to
@@ -70,7 +77,10 @@ options:
       - A named AWS profile to use for authentication.
       - See the AWS documentation for more information about named profiles
         U(https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
-      - The C(AWS_PROFILE) environment variable may also be used.
+      - The C(AWS_PROFILE) environment variable may also be used.  Prior to release 6.0.0 the
+        C(AWS_PROFILE) environment variable will be ignored if any of I(access_key), I(secret_key),
+        or I(session_token) are passed.  After release 6.0.0 I(profile) will always fall back to the
+        C(AWS_PROFILE) environment variable if set.
       - The I(profile) option is mutually exclusive with the I(aws_access_key),
         I(aws_secret_key) and I(security_token) options.
     type: str
