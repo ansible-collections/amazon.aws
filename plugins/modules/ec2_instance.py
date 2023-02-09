@@ -1925,7 +1925,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                 try:
                     client.modify_instance_attribute(aws_retry=True, **c)
                 except botocore.exceptions.ClientError as e:
-                    module.fail_json_aws(e, msg="Could not apply change {0} to new instance.".format(str(c)))            
+                    module.fail_json_aws(e, msg="Could not apply change {0} to new instance.".format(str(c)))
         if existing_matches:
             # If we came from enforce_count, create a second list to distinguish
             # between existing and new instances when returning the entire cohort
