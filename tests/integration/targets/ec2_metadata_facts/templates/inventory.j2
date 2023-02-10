@@ -1,10 +1,24 @@
-[testhost]
+[testhost_py3]
 "{{ ec2_instance.instances[0].public_ip_address }}"
 
+[testhost_py2]
+"{{ ec2_instance_py2.instances[0].public_ip_address }}"
+
+[testhost:children]
+testhost_py3
+testhost_py2
+
 [testhost:vars]
-ansible_user={{ ec2_ami_ssh_user }}
 ansible_ssh_private_key_file="{{ sshkey }}"
 ansible_python_interpreter=/usr/bin/env python
+
+[testhost_py3:vars]
+ansible_user="{{ ec2_ami_ssh_user }}"
+image_id="{{ ec2_ami_id }}"
+
+[testhost_py2:vars]
+ansible_user="{{ ec2_ami_ssh_user_py2 }}"
+image_id="{{ ec2_ami_id_py2 }}"
 
 [all:vars]
 # Template vars that will need to be used in used in tests and teardown
@@ -16,5 +30,5 @@ vpc_igw="{{ vpc_igw_id }}"
 vpc_route_table_id="{{ vpc_route_table_id }}"
 ec2_key_name="{{ ec2_key_name }}"
 availability_zone="{{ availability_zone }}"
-image_id="{{ ec2_ami_id }}"
 ec2_instance_id="{{ ec2_instance_id }}"
+ec2_instance_id_py2="{{ ec2_instance_id_py2 }}"
