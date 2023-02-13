@@ -270,7 +270,7 @@ Some examples are shown below:
     # This defines combinations of host servers, IP addresses, and related SSH private keys.
     ansible_host: private_ip_address
     ansible_user: centos
-    ansible_private_ssh_key_file: key_name
+    ansible_ssh_private_key_file: /path/to/private_key_file
 
     # This sets the ec2_security_group_ids variable.
     ec2_security_group_ids: security_groups | map(attribute='group_id') | list |  join(',')
