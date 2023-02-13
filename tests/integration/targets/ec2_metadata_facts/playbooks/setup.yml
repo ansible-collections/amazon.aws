@@ -133,7 +133,6 @@
       tags:
         snake_case_key: a_snake_case_value
         camelCaseKey: aCamelCaseValue
-      wait: True
     register: ec2_instance
     vars:
       ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
@@ -176,4 +175,9 @@
   - wait_for:
       port: 22
       host: '{{ ec2_instance.instances[0].public_ip_address }}'
+      timeout: 1200
+
+  - wait_for:
+      port: 22
+      host: '{{ ec2_instance_py2.instances[0].public_ip_address }}'
       timeout: 1200
