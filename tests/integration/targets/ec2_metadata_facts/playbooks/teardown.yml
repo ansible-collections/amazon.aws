@@ -20,6 +20,7 @@
       state: absent
       instance_ids:
         - "{{ ec2_instance_id }}"
+        - "{{ ec2_instance_id_py2 }}"
       wait: True
     ignore_errors: true
     retries: 5
