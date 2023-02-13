@@ -1,0 +1,5 @@
+---
+test_inventory_hosts: []
+test_exclude_filters:
+  - tag-key: resource_prefix
+  - "tag:Name": "{{ resource_prefix }}"

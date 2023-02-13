@@ -1,0 +1,8 @@
+---
+test_inventory_hosts: 
+  - "{{ resource_prefix }}"
+test_include_filters:
+  - tag-key: resource_prefix
+test_exclude_filters:
+  - tag-key: resource_prefix
+  - tag-key: this_tag_does_not_exist

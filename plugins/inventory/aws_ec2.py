@@ -75,8 +75,8 @@ options:
     description:
       - A list of filters. Any instances matching at least one of the filters are included in the result.
       - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-      - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
-        keep the list as short as possible.
+      - Every entry in this list triggers a search query if C(apply_and_logic_on_include_filters) is not set to I(true).
+        As such, from a performance point of view, it's better to keep the list as short as possible.
     type: list
     elements: dict
     default: []
@@ -86,8 +86,8 @@ options:
       - A list of filters. Any instances matching one of the filters are excluded from the result.
       - The filters from C(exclude_filters) take priority over the C(include_filters) and C(filters) keys
       - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-      - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
-        keep the list as short as possible.
+      - Every entry in this list triggers a search query if C(apply_and_logic_on_exclude_filters) is not set to I(true).
+        As such, from a performance point of view, it's better to keep the list as short as possible.
     type: list
     elements: dict
     default: []
@@ -141,6 +141,22 @@ options:
     type: bool
     default: False
     version_added: 6.0.0
+  apply_and_logic_on_include_filters:
+    description:
+      - When multiple filters are specified on the C(include_filters) and C(filters) keys,
+        the filters are joined with an AND, if this parameter is set to I(true)
+        therefore only instances matching all of the specified filters are returned in the result.
+    type: bool
+    version_added: 6.0.0
+    default: False
+  apply_and_logic_on_exclude_filters:
+    description:
+      - When multiple filters are specified on the C(exclude_filters),
+        the filters are joined with an AND, if this parameter is set to I(true)
+        therefore any instances matching all of the filters are excluded from the result.
+    type: bool
+    version_added: 6.0.0
+    default: False
 """
 
 EXAMPLES = r"""
@@ -259,6 +275,16 @@ regions:
   - us-east-1
 hostvars_prefix: 'aws_'
 hostvars_suffix: '_ec2'
+
+# Example using include_filters and apply_and_logic_on_include_filters to compose the inventory.
+plugin: aws_ec2
+regions:
+  - us-east-1
+  - us-west-1
+include_filters:
+- tag-key: Role
+- tag-key: Team
+apply_and_logic_on_include_filters: true
 """
 
 import re
@@ -595,28 +621,43 @@ class InventoryModule(AWSInventoryBase):
 
         return hostname_list
 
-    def _query(self, regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory):
-        '''
-            :param regions: a list of regions to query
-            :param include_filters: a list of boto3 filter dictionaries
-            :param exclude_filters: a list of boto3 filter dictionaries
-            :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+    def _query(
+        self,
+        regions,
+        include_filters,
+        exclude_filters,
+        strict_permissions,
+        use_ssm_inventory,
+        include_filter_and_logic,
+        exclude_filter_and_logic,
+    ):
+        """
+        :param regions: a list of regions to query
+        :param include_filters: a list of boto3 filter dictionaries
+        :param exclude_filters: a list of boto3 filter dictionaries
+        :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
 
-        '''
+        """
         instances = []
         ids_to_ignore = []
-        for filter in exclude_filters:
-            for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
-                ids_to_ignore.append(i['InstanceId'])
-        for filter in include_filters:
-            for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
-                if i['InstanceId'] not in ids_to_ignore:
+
+        def _build_aws_filters(filters_opts, apply_and_logic):
+            aws_filters = []
+            for filter in filters_opts:
+                aws_boto3_filter = ansible_dict_to_boto3_filter_list(filter)
+                if apply_and_logic:
+                    aws_filters += aws_boto3_filter
+                else:
+                    aws_filters.append(aws_boto3_filter)
+            return [aws_filters] if apply_and_logic else aws_filters
+
+        for filter in _build_aws_filters(exclude_filters, exclude_filter_and_logic):
+            for i in self._get_instances_by_region(regions, filter, strict_permissions):
+                ids_to_ignore.append(i["InstanceId"])
+
+        for filter in _build_aws_filters(include_filters, include_filter_and_logic):
+            for i in self._get_instances_by_region(regions, filter, strict_permissions):
+                if i["InstanceId"] not in ids_to_ignore:
                     instances.append(i)
                     ids_to_ignore.append(i['InstanceId'])
 
@@ -727,6 +768,9 @@ class InventoryModule(AWSInventoryBase):
         strict_permissions = self.get_option('strict_permissions')
         allow_duplicated_hosts = self.get_option('allow_duplicated_hosts')
 
+        include_filter_and_logic = self.get_option("apply_and_logic_on_include_filters")
+        exclude_filter_and_logic = self.get_option("apply_and_logic_on_exclude_filters")
+
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
@@ -741,7 +785,15 @@ class InventoryModule(AWSInventoryBase):
         result_was_cached, results = self.get_cached_result(path, cache)
 
         if not result_was_cached:
-            results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)
+            results = self._query(
+                regions,
+                include_filters,
+                exclude_filters,
+                strict_permissions,
+                use_ssm_inventory,
+                include_filter_and_logic,
+                exclude_filter_and_logic,
+            )
 
         self._populate(
             results,
