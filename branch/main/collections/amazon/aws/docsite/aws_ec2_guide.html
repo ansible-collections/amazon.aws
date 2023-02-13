@@ -356,7 +356,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="w">  </span><span class="c1"># This defines combinations of host servers, IP addresses, and related SSH private keys.</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
 <span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">centos</span>
-<span class="w">  </span><span class="nt">ansible_private_ssh_key_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">key_name</span>
+<span class="w">  </span><span class="nt">ansible_ssh_private_key_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/private_key_file</span>
 
 <span class="w">  </span><span class="c1"># This sets the ec2_security_group_ids variable.</span>
 <span class="w">  </span><span class="nt">ec2_security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_groups | map(attribute=&#39;group_id&#39;) | list |  join(&#39;,&#39;)</span>
