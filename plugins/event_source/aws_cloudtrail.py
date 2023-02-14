@@ -5,6 +5,9 @@ An ansible-rulebook event source module for getting events from an AWS CloudTrai
 
 Arguments:
     connection        - Parameters used to create AWS session
+                        supporters parameters are: region_name, api_version,
+                        use_ssl, verify, endpoint_url, aws_access_key_id,
+                        aws_secret_access_key, aws_session_token
     lookup_attributes - The optional list of lookup attributes.
                         lookup attribute are dictionnary with an AttributeKey (string),
                         which specifies an attribute on which to filter the events
@@ -23,7 +26,6 @@ Example:
               AttributeValue: 'ec2.amazonaws.com'
             - AttributeKey: 'ReadOnly'
               AttributeValue: 'true'
-            Username: ansible
         event_category: management
 
 """

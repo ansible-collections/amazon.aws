@@ -13,7 +13,7 @@
         debug:
           msg: "SUCCESS"
 
-    - name: match key pair creation event
+    - name: match key pair deletion event
       condition: event.CloudTrailEvent.eventName == 'DeleteKeyPair' and event.CloudTrailEvent.requestParameters.keyName == '{{ test_ec2_key_pair_name }}'
       action:
         shutdown:
