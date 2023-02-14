@@ -1,0 +1,2 @@
+bugfix:
+- s3_bucket - deal gracefully with empty bucket policy (i.e. from wasabi cloud storage)"
