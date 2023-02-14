@@ -75,13 +75,13 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
 
     session = get_session()
     params = {}
-    for k,v in ARGS_MAPPING.items():
+    for k, v in ARGS_MAPPING.items():
         if args.get(k) is not None:
             params[v] = args.get(k)
 
     params["StartTime"] = datetime.utcnow()
 
-    async with session.create_client('cloudtrail', **args.get("connection")) as client:
+    async with session.create_client("cloudtrail", **args.get("connection")) as client:
         event_time = None
         event_ids = []
         while True:
