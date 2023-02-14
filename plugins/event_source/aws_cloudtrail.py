@@ -4,21 +4,24 @@ aws_cloudtrail.py
 An ansible-rulebook event source module for getting events from an AWS CloudTrail
 
 Arguments:
-    connection - Parameters used to create AWS session
-    lookup_attributes - A dictionary representing the filters to be applied.
-    event_category - Specifies the event category.
-    delay - The number of seconds to wait between polling (default 10sec)
+    connection        - Parameters used to create AWS session
+    lookup_attributes - The optional list of lookup attributes.
+                        lookup attribute are dictionnary with an AttributeKey (string), 
+                        which specifies an attribute on which to filter the events returned and an
+                        AttributeValue (string) which specifies a value for the specified AttributeKey
+    event_category    - The optional event category to return. (e.g. 'insight')
+    delay             - The number of seconds to wait between polling (default 10sec)
 
 Example:
 
     - ansible.eda.aws_cloudtrail:
         connection:
-            aws_access_key_id: access123456789
-            aws_secret_access_key: secret123456789
             region_name: us-east-1
-            profile_name: default
         lookup_attributes:
-            EventSource: ec2.amazonaws.com
+            - AttributeKey: 'EventSource'
+              AttributeValue: 'ec2.amazonaws.com'
+            - AttributeKey: 'ReadOnly'
+              AttributeValue: 'true'
             Username: ansible
         event_category: management
 
@@ -29,27 +32,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict
 
-import boto3.session
-
-
-def _parse_user_inputs(**kwargs):
-    params = {}
-    attributes = kwargs.get("lookup_attributes")
-    if attributes:
-        filters_list = []
-        for k, v in attributes.items():
-            filter_dict = {"AttributeKey": k, "AttributeValue": v}
-            if isinstance(v, bool):
-                filter_dict["AttributeValue"] = str(v).lower()
-            elif isinstance(v, int):
-                filter_dict["AttributeValue"] = str(v)
-        filters_list.append(filter_dict)
-        params["LookupAttributes"] = filters_list
-
-    event_category = kwargs.get("event_category")
-    if event_category:
-        params["EventCategory"] = event_category
-    return params
+from aiobotocore.session import get_session
 
 
 def _cloudtrail_event_to_dict(event):
@@ -75,38 +58,45 @@ def get_events(events, last_event_ids):
     return result, event_time, event_ids
 
 
-class AnsibleAwsCloudTrailEventClient(object):
-    def __init__(self, connection):
-        session = boto3.session.Session(**connection)
-        self.client = session.client("cloudtrail")
+async def get_cloudtrail_events(client, params):
+    paginator = client.get_paginator("lookup_events")
+    results = await paginator.paginate(**params).build_full_result()
+    return results.get("Events", [])
 
-    def lookup_events(self, **kwargs):
-        paginator = self.client.get_paginator("lookup_events")
-        return paginator.paginate(**kwargs).build_full_result().get("Events", [])
+
+ARGS_MAPPING = {
+    "lookup_attributes": "LookupAttributes",
+    "event_category": "EventCategory",
+}
 
 
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     delay = args.get("delay", 10)
-    client = AnsibleAwsCloudTrailEventClient(args.get("connection"))
-    params = _parse_user_inputs(**args)
+
+    session = get_session()
+    params = {}
+    for k,v in ARGS_MAPPING.items():
+        if args.get(k) is not None:
+            params[v] = args.get(k)
+
     params["StartTime"] = datetime.utcnow()
 
-    event_time = None
-    event_ids = []
+    async with session.create_client('cloudtrail', **args.get("connection")) as client:
+        event_time = None
+        event_ids = []
+        while True:
+            events = await get_cloudtrail_events(client, params)
+            if event_time is not None:
+                params["StartTime"] = event_time
 
-    while True:
-        if event_time is not None:
-            params["StartTime"] = event_time
+            events, c_event_time, c_event_ids = get_events(events, event_ids)
+            for event in events:
+                await queue.put(_cloudtrail_event_to_dict(event))
 
-        events = client.lookup_events(**params)
-        events, c_event_time, c_event_ids = get_events(events, event_ids)
-        for event in events:
-            await queue.put(_cloudtrail_event_to_dict(event))
+            event_ids = c_event_ids or event_ids
+            event_time = c_event_time or event_time
 
-        event_ids = c_event_ids or event_ids
-        event_time = c_event_time or event_time
-
-        await asyncio.sleep(delay)
+            await asyncio.sleep(delay)
 
 
 if __name__ == "__main__":
