@@ -4,10 +4,7 @@
   sources:
     - ansible.eda.aws_cloudtrail:
         connection:
-          region: '{{ aws_region | default(omit) }}'
-          aws_access_key: '{{ aws_access_key | default(omit) }}'
-          aws_secret_key: '{{ aws_secret_key | default(omit) }}'
-          security_token: '{{ security_token | default(omit) }}'
+          region: 'us-east-1'
         delay: 5
   rules:
     - name: match key pair creation event
