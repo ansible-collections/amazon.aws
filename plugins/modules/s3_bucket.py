@@ -698,7 +698,7 @@ def delete_bucket_policy(s3_client, bucket_name):
 def get_bucket_policy(s3_client, bucket_name):
     try:
         current_policy_string = s3_client.get_bucket_policy(Bucket=bucket_name).get('Policy')
-        if(len(current_policy_string) == 0)
+        if(len(current_policy_string) == 0):
             return None
         current_policy = json.loads(current_policy_string)
     except is_boto3_error_code('NoSuchBucketPolicy'):
