@@ -6,9 +6,10 @@ An ansible-rulebook event source module for getting events from an AWS CloudTrai
 Arguments:
     connection        - Parameters used to create AWS session
     lookup_attributes - The optional list of lookup attributes.
-                        lookup attribute are dictionnary with an AttributeKey (string), 
-                        which specifies an attribute on which to filter the events returned and an
-                        AttributeValue (string) which specifies a value for the specified AttributeKey
+                        lookup attribute are dictionnary with an AttributeKey (string),
+                        which specifies an attribute on which to filter the events
+                        returned and an AttributeValue (string) which specifies
+                        a value for the specified AttributeKey
     event_category    - The optional event category to return. (e.g. 'insight')
     delay             - The number of seconds to wait between polling (default 10sec)
 
