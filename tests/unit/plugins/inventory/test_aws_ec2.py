@@ -440,6 +440,7 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
         'strict_permissions': strict,
         'include_filters': [],
         'exclude_filters': [],
+        'use_ssm_inventory': False
     }
 
     for u in include_filters:
@@ -626,3 +627,52 @@ def test_inventory_get_all_hostnames_failure(inventory):
     with pytest.raises(AnsibleError) as err:
         inventory._get_all_hostnames(instance, hostnames)
         assert "A 'name' key must be defined in a hostnames dictionary." in err
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_ssm_information")
+def test_inventory__add_ssm_information(m_get_ssm_information, inventory):
+
+    instances = [
+        {'InstanceId': 'i-001', 'Name': 'first-instance'},
+        {'InstanceId': 'i-002', 'Name': 'another-instance'},
+    ]
+
+    result = {
+        "StatusCode": 200,
+        "Entities": [
+            {"Id": 'i-001', "Data": {}},
+            {
+                "Id": 'i-002',
+                "Data": {
+                    "AWS:InstanceInformation": {
+                        "Content": [
+                            {"os_type": "Linux", "os_name": "Fedora", "os_version": 37}
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+    m_get_ssm_information.return_value = result
+
+    connection = MagicMock()
+
+    expected = [
+        {'InstanceId': 'i-001', 'Name': 'first-instance'},
+        {
+            'InstanceId': 'i-002',
+            'Name': 'another-instance',
+            'SsmInventory': {"os_type": "Linux", "os_name": "Fedora", "os_version": 37}
+        },
+    ]
+
+    inventory._add_ssm_information(connection, instances)
+    assert expected == instances
+
+    filters = [
+        {
+            'Key': 'AWS:InstanceInformation.InstanceId',
+            'Values': [x['InstanceId'] for x in instances]
+        }
+    ]
+    m_get_ssm_information.assert_called_once_with(connection, filters)

@@ -74,6 +74,10 @@ ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_w
 ansible-playbook playbooks/populate_cache.yml "$@"
 ansible-playbook playbooks/test_inventory_cache.yml "$@"
 
+# generate inventory config with ssm inventory information
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_ssm.yml.j2'" "$@"
+ansible-playbook playbooks/test_inventory_ssm.yml "$@"
+
 # remove inventory cache
 rm -r aws_ec2_cache_dir/
 
