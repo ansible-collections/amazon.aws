@@ -1,0 +1,43 @@
+---
+- name: Create the PostgreSQL-cluster security group
+  amazon.aws.ec2_group:
+    name: PostgreSQL-cluster
+    description: PostgreSQL only secgroup
+    vpc_id: "{{ vpc.vpc.id }}"
+    rules:
+      - proto: tcp
+        ports:
+          - 5432
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 5432
+  register: pg_sg
+- name: Create the subnet group
+  amazon.aws.rds_subnet_group:
+    state: present
+    name: "{{ db_infra_prefix }}-wisdom-pg"
+    description: PostgreSQL subnet
+    subnets: "{{ subnet_ids }}"
+- name: Create the RDS Cluster
+  amazon.aws.rds_cluster:
+    engine: aurora-postgresql
+    username: '{{ db_infra_rds_username }}'
+    password: '{{ db_infra_rds_password }}'
+    cluster_id: '{{ db_infra_rds_cluster_id }}'
+    tags:
+      contact: goneri@redhat.com
+    state: present
+    database_name: wisdom
+    db_subnet_group_name: "{{ db_infra_prefix }}-wisdom-pg"
+    vpc_security_group_ids:
+      - "{{ pg_sg.group_id }}"
+  register: result_create_db_cluster
+- name: Add a RDS Instance
+  amazon.aws.rds_instance:
+    instance_id: wisdom-db-main
+    engine: aurora-postgresql
+    db_instance_class: db.t4g.medium
+    cluster_id: '{{ db_infra_rds_cluster_id }}'
+- name: Show up the details about the set-up
+  debug:
+    msg:
+      - "- Endpoint: {{ result_create_db_cluster.reader_endpoint }}"

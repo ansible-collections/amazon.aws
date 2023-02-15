@@ -1,0 +1,11 @@
+---
+- name: Look up the vpc
+  amazon.aws.ec2_vpc_net_info:
+    filters:
+      "tag:Name": "{{ db_infra_vpc_name }}"
+  register: result_vpc
+- include_tasks:
+    file: purge_vpc.yaml
+  vars:
+    vpc: "{{ result_vpc.vpcs[0] }}"
+  when: result_vpc.vpcs|length > 0

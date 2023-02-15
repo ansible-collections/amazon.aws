@@ -1,0 +1,43 @@
+---
+- name: create VPC
+  amazon.aws.ec2_vpc_net:
+    name: "{{ db_infra_vpc_name }}"
+    cidr_block: "{{ db_infra_vpc_cidr }}"
+    state: present
+  register: vpc
+- name: associate subnets to the VPC
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ item.subnet_cidr }}"
+    map_public: true
+    az: "{{ item.az }}"
+    resource_tags:
+      Name: "{{ item.subnet_name }}"
+  register: subnets_result
+  loop: "{{ db_infra_subnets }}"
+- name: Define the subnet_ids variable
+  ansible.builtin.set_fact:
+    subnet_ids: "{{ subnets_result.results|map(attribute='subnet')|map(attribute='id') }}"
+- name: create the IGW
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: "present"
+    tags:
+      Name: "{{ db_infra_igw_name }}"
+  register: igw
+- name: Set a default route that go through the IGW
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    tags:
+      Name: Public
+    subnets: "{{ subnet_ids }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+#- name: Deploy the bastion
+#  include_tasks:
+#    file: bastion.yaml
+- name: Prepare the RDS set-up
+  include_tasks:
+    file: rds.yaml

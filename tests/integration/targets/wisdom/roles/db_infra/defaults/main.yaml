@@ -1,0 +1,20 @@
+---
+db_infra_prefix: wisdom-prefix
+db_infra_rds_username: wisdom
+db_infra_rds_password: changeme67de2cba
+db_infra_rds_cluster_id: "{{ db_infra_prefix }}-wisdom"
+db_infra_vpc_name: "{{ db_infra_prefix }}-wisdom"
+db_infra_vpc_cidr: 172.16.0.0/16
+aws_region: us-east-1 
+db_infra_subnets:
+  - subnet_cidr: "{{ db_infra_vpc_cidr | ansible.utils.ipsubnet(24, 4) }}"
+    az: "{{ aws_region }}b"
+    subnet_name: database1
+  - subnet_cidr: "{{ db_infra_vpc_cidr | ansible.utils.ipsubnet(24, 5) }}"
+    az: "{{ aws_region  }}d"
+    subnet_name: database2
+db_infra_igw_name: "Traffic IGW"
+db_infra_keypair_name: "{{ db_infra_rds_username }}"
+db_infra_ssh_pub_key: ~/.ssh/id_rsa.pub
+db_infra_bastion:
+  fedora_image_version: 37

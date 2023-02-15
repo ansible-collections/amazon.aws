@@ -1,0 +1,55 @@
+---
+- name: Create the ssh security group
+  amazon.aws.ec2_group:
+    name: ssh-only
+    description: SSH only secgroup
+    vpc_id: "{{ vpc.vpc.id }}"
+    rules:
+      - proto: tcp
+        ports:
+          - 22
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 22
+  register: ssh_sg
+- name: Create the keypair
+  amazon.aws.ec2_key:
+    name: "{{ db_infra_keypair_name }}"
+    key_material: "{{ lookup('file', db_infra_ssh_pub_key) }}"
+- name: Retrieve the list of the Fedora images
+  amazon.aws.ec2_ami_info:
+    filters:
+      architecture: x86_64
+      virtualization-type: hvm
+      root-device-type: ebs
+      name: "Fedora-Cloud-Base-{{ db_infra_bastion.fedora_image_version }}-*"
+    owners: 125523088429
+  register: ami_find
+- name: Define fedora_ami with the last Fedora image AMI
+  ansible.builtin.set_fact:
+    fedora_ami: "{{ ami_find.images | sort(attribute='creation_date') | last }}"
+- name: "start the bastion instance(s) with a public IP address"
+  amazon.aws.ec2_instance:
+    name: bastion
+    key_name: "{{ db_infra_keypair_name }}"
+    instance_type: c5a.large
+    vpc_subnet_id: "{{ item }}"
+    security_group: ssh-only
+    network:
+      assign_public_ip: true
+    image_id: "{{ fedora_ami.image_id }}"
+    tags:
+      Environment: Testing
+      contact: goneri@redhat.com
+    volumes:
+      - device_name: /dev/sda1
+        ebs:
+          volume_size: 64
+          delete_on_termination: true
+    wait: true
+    state: running
+  loop:
+    - "{{ subnet_ids[0] }}"
+  register: bastions
+- name: Print the bastion(s) IP
+  debug:
+    msg: "- Bations IP(s) {{bastions.results|map(attribute='instances')|flatten(levels=1)|map(attribute='public_ip_address') }}"

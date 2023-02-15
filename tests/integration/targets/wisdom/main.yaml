@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    db_infra_prefix: "a{{ tiny_prefix }}"
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  tasks:
+    - include_role:
+        name: db_infra
+      when: state|default("present") == "present"
+    - include_role:
+        name: db_infra
+        tasks_from: purge.yaml
+      when: state|default("present") == "absent"
