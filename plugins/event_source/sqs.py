@@ -51,13 +51,14 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
 
             if "Messages" in response:
                 for msg in response["Messages"]:
-                    msg_body = msg["Body"]
+                    meta = {"MessageId": msg["MessageId"]}
                     try:
-                        event = json.loads(msg_body)
-                        await queue.put(event)
-                        await asyncio.sleep(0)
+                        msg_body = json.loads(msg["Body"])
                     except json.JSONDecodeError:
-                        logger.error("Failed to decode message body: %s", msg_body)
+                        msg_body = msg["Body"]
+
+                    await queue.put({"body": msg_body, "meta": meta})
+                    await asyncio.sleep(0)                        
 
                     # Need to remove msg from queue or else it'll reappear
                     await client.delete_message(
