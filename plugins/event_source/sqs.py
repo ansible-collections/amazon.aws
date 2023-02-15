@@ -50,7 +50,6 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
             )
 
             if "Messages" in response:
-
                 for msg in response["Messages"]:
                     msg_body = msg["Body"]
                     try:
