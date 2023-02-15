@@ -58,7 +58,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                         msg_body = msg["Body"]
 
                     await queue.put({"body": msg_body, "meta": meta})
-                    await asyncio.sleep(0)                        
+                    await asyncio.sleep(0)
 
                     # Need to remove msg from queue or else it'll reappear
                     await client.delete_message(
