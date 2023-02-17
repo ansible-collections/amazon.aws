@@ -1450,16 +1450,10 @@ def ensure_present(module, client, group, groups):
         revoke_ingress = []
 
     if purge_rules_egress and module.params.get('rules_egress') is not None:
-        if module.params.get('rules_egress') is []:
-            revoke_egress = [
-                to_permission(r) for r in set(present_egress) - set(named_tuple_egress_list)
-                if r != Rule((None, None), '-1', '0.0.0.0/0', 'ipv4', None)
-            ]
-        else:
-            revoke_egress = []
-            for p in present_egress:
-                if not any(rule_cmp(p, b) for b in named_tuple_egress_list):
-                    revoke_egress.append(to_permission(p))
+        revoke_egress = []
+        for p in present_egress:
+            if not any(rule_cmp(p, b) for b in named_tuple_egress_list):
+                revoke_egress.append(to_permission(p))
     else:
         revoke_egress = []
 
