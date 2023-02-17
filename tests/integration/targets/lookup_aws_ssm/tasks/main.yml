@@ -79,7 +79,7 @@
       - lookup_value == simple_value
 
   - name: Create key/value pair in aws parameter store
-    ssm_parameter:
+    aws_ssm_parameter_store:
       name: '{{ simple_name }}'
       description: '{{ simple_description }}'
       value: '{{ simple_value }}'
@@ -92,7 +92,7 @@
       - lookup_value == simple_value
 
   - name: Update key/value pair in aws parameter store
-    ssm_parameter:
+    aws_ssm_parameter_store:
       name: '{{ simple_name }}'
       description: '{{ simple_description }}'
       value: '{{ updated_value }}'
