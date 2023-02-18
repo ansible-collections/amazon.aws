@@ -134,6 +134,12 @@ options:
     choices: [ 'BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
+  object_lock_enabled:
+    description:
+      - Whether S3 Object Lock to be enabled.
+    type: bool
+    version_added: 6.0.0
+    default: false
   delete_object_ownership:
     description:
       - Delete bucket's ownership controls.
@@ -385,6 +391,7 @@ def create_or_update_bucket(s3_client, module):
     delete_public_access = module.params.get("delete_public_access")
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
+    object_lock_enabled = module.params.get("object_lock_enabled")
     acl = module.params.get("acl")
     # default to US Standard region,
     # note: module.region will also try to pull a default out of the boto3 configs.
@@ -402,7 +409,7 @@ def create_or_update_bucket(s3_client, module):
 
     if not bucket_is_present:
         try:
-            bucket_changed = create_bucket(s3_client, name, location)
+            bucket_changed = create_bucket(s3_client, name, location, object_lock_enabled)
             s3_client.get_waiter('bucket_exists').wait(Bucket=name)
             changed = changed or bucket_changed
         except botocore.exceptions.WaiterError as e:
@@ -650,6 +657,18 @@ def create_or_update_bucket(s3_client, module):
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to update bucket ACL")
 
+    # -- Object Lock
+    try:
+        object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
+    except botocore.exceptions.ClientError as e:
+        object_lock_status = False
+    if bucket_is_present:
+        if (object_lock_enabled is None or not object_lock_enabled) and object_lock_status:
+            module.fail_json_aws(e, msg="Disabling object lock is not supported")
+        if object_lock_enabled and not object_lock_status:
+            module.fail_json_aws(e, msg="Enabling object lock for existing bucket is not supported")
+    result['object_lock_enabled'] = object_lock_status
+
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
 
@@ -664,15 +683,15 @@ def bucket_exists(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120)
-def create_bucket(s3_client, bucket_name, location):
+def create_bucket(s3_client, bucket_name, location, object_lock_enabled=False):
     try:
         configuration = {}
         if location not in ('us-east-1', None):
             configuration['LocationConstraint'] = location
         if len(configuration) > 0:
-            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=configuration)
+            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=configuration, ObjectLockEnabledForBucket=object_lock_enabled)
         else:
-            s3_client.create_bucket(Bucket=bucket_name)
+            s3_client.create_bucket(Bucket=bucket_name, ObjectLockEnabledForBucket=object_lock_enabled)
         return True
     except is_boto3_error_code('BucketAlreadyOwnedByYou'):
         # We should never get here since we check the bucket presence before calling the create_or_update_bucket
@@ -726,6 +745,12 @@ def get_bucket_versioning(s3_client, bucket_name):
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def put_bucket_versioning(s3_client, bucket_name, required_versioning):
     s3_client.put_bucket_versioning(Bucket=bucket_name, VersioningConfiguration={'Status': required_versioning})
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def get_bucket_object_lock_enabled(s3_client, bucket_name):
+    object_lock_configuration = s3_client.get_object_lock_configuration(Bucket=bucket_name)
+    return object_lock_configuration['ObjectLockConfiguration']['ObjectLockEnabled'] == 'Enabled'
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -1086,6 +1111,7 @@ def main():
         acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
         validate_bucket_name=dict(type='bool', default=True),
         dualstack=dict(default=False, type="bool"),
+        object_lock_enabled=dict(type='bool', default=False),
     )
 
     required_by = dict(
