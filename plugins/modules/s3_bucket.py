@@ -697,7 +697,10 @@ def delete_bucket_policy(s3_client, bucket_name):
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def get_bucket_policy(s3_client, bucket_name):
     try:
-        current_policy = json.loads(s3_client.get_bucket_policy(Bucket=bucket_name).get('Policy'))
+        current_policy_string = s3_client.get_bucket_policy(Bucket=bucket_name).get('Policy')
+        if not current_policy_string:
+            return None
+        current_policy = json.loads(current_policy_string)
     except is_boto3_error_code('NoSuchBucketPolicy'):
         return None
 
