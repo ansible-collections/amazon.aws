@@ -382,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet_info</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">set_fact</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">subnet_ids</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">subnet_info.subnets</span><span class="o">|</span><span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="o">)|</span><span class="nf">list</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">subnet_ids</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">subnet_info.results</span> <span class="o">|</span> <span class="nf">sum</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;subnets&#39;</span><span class="o">,</span> <span class="nv">start</span><span class="o">=[])</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;subnet_id&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 </pre></div>
 </div>
 </section>
