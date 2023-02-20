@@ -1,0 +1,50 @@
+---
+name: 'Python formatting linter (Darker / Black)'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  check-darker:
+    runs-on: ${{ fromJSON('["ubuntu-latest", "self-hosted"]')[github.repository == 'github/docs-internal'] }}
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ inputs.python }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install darker
+        shell: bash
+        run: |
+          pip install darker
+
+      - name: Rebase against current base
+        shell: bash
+        run: |
+          git config user.email "github@example.com"
+          git config user.name "Git Hub Testing Rebase"
+          git rebase ${{ github.event.pull_request.base.sha }}
+          git show -s
+
+      - name: Run darker
+        shell: bash
+        run: |
+          darker --check --diff --color --rev ${{ github.event.pull_request.base.sha }}..

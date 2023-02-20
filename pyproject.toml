@@ -1,0 +1,18 @@
+[tool.black]
+skip-string-normalization = false
+line-length = 120
+target-version = ['py37', 'py38']
+extend-exclude = '''
+/(
+  | plugins/module_utils/_version.py
+)/
+'''
+
+[tool.darker]
+revision = "origin/main.."
+
+src = [
+    "plugins",
+    "tests/unit",
+    "tests/integration",
+]
