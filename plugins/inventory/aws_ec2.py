@@ -13,7 +13,7 @@ extends_documentation_fragment:
   - amazon.aws.assume_role.plugins
 description:
   - Get inventory hosts from Amazon Web Services EC2.
-  - The inventory file is an YAML configuration file and must ends with C(aws_ec2.{yml|yaml}). Example: C(my_inventory.aws_ec2.yml).
+  - "The inventory file is an YAML configuration file and must ends with C(aws_ec2.{yml|yaml}). Example: C(my_inventory.aws_ec2.yml)."
 notes:
   - If no credentials are provided and the control node has an associated IAM instance profile then the
     role will be used for authentication.
