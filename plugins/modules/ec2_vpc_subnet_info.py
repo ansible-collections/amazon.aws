@@ -65,7 +65,7 @@ EXAMPLES = '''
   register: subnet_info
 
 - set_fact:
-    subnet_ids: "{{ subnet_info.subnets|map(attribute='id')|list }}"
+    subnet_ids: "{{ subnet_info.results | sum(attribute='subnets', start=[]) | map(attribute='subnet_id') }}"
 '''
 
 RETURN = '''
