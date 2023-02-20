@@ -1,0 +1,2 @@
+trivial:
+- plugins/plugin_utils - minor dark / pylint cleanup (https://github.com/ansible-collections/amazon.aws/pull/1375).
