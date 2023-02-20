@@ -1,9 +1,6 @@
 # Copyright: (c) 2022, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 try:
     import boto3
     import botocore
@@ -26,12 +23,15 @@ def _boto3_session(profile_name=None):
 
 
 class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginBase):
-
     class TemplatedOptions:
         # When someone looks up the TEMPLATABLE_OPTIONS using get() any templates
         # will be templated using the loader passed to parse.
         TEMPLATABLE_OPTIONS = (
-            "access_key", "secret_key", "session_token", "profile", "iam_role_name",
+            "access_key",
+            "secret_key",
+            "session_token",
+            "profile",
+            "iam_role_name",
         )
 
         def __init__(self, templar, options):
@@ -65,6 +65,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         super().__init__()
         self._frozen_credentials = {}
 
+    # pylint: disable=too-many-arguments
     def parse(self, inventory, loader, path, cache=True, botocore_version=None, boto3_version=None):
         super().parse(inventory, loader, path)
         self.require_aws_sdk(botocore_version=botocore_version, boto3_version=boto3_version)
@@ -145,24 +146,26 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
                 return regions
 
         # fallback to local list hardcoded in boto3 if still no regions
-        session = _boto3_session(options.get('profile'))
+        session = _boto3_session(options.get("profile"))
         regions = session.get_available_regions(service)
 
         if not regions:
             # I give up, now you MUST give me regions
-            self.fail_aws('Unable to get regions list from available methods, you must specify the "regions" option to continue.')
+            self.fail_aws(
+                "Unable to get regions list from available methods, you must specify the 'regions' option to continue."
+            )
 
         return regions
 
     def all_clients(self, service):
         """
-            Generator that yields a boto3 client and the region
+        Generator that yields a boto3 client and the region
 
-            :param service: The boto3 service to connect to.
+        :param service: The boto3 service to connect to.
 
-            Note: For services which don't support 'DescribeRegions' this may include bad
-            endpoints, and as such EndpointConnectionError should be cleanly handled as a non-fatal
-            error.
+        Note: For services which don't support 'DescribeRegions' this may include bad
+        endpoints, and as such EndpointConnectionError should be cleanly handled as a non-fatal
+        error.
         """
         regions = self._boto3_regions(service=service)
 
@@ -202,8 +205,8 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
     def verify_file(self, path):
         """
-            :param path: the path to the inventory config file
-            :return the contents of the config file
+        :param path: the path to the inventory config file
+        :return the contents of the config file
         """
         if not super().verify_file(path):
             return False
