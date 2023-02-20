@@ -18,7 +18,6 @@ display = Display()
 
 
 class AWSPluginBase:
-
     def warn(self, message):
         display.warning(message)
 
@@ -40,14 +39,14 @@ class AWSPluginBase:
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
-        conn = boto3_conn(self, conn_type='client', resource=service, **kw_args)
+        conn = boto3_conn(self, conn_type="client", resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
     def resource(self, service, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
-        return boto3_conn(self, conn_type='resource', resource=service, **kw_args)
+        return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
     def region(self):
@@ -55,7 +54,5 @@ class AWSPluginBase:
 
     def require_aws_sdk(self, botocore_version=None, boto3_version=None):
         return check_sdk_version_supported(
-            botocore_version=botocore_version,
-            boto3_version=boto3_version,
-            warn=self.warn
+            botocore_version=botocore_version, boto3_version=boto3_version, warn=self.warn
         )

@@ -10,7 +10,6 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBa
 
 
 class AWSLookupBase(AWSPluginBase, LookupBase):
-
     def _do_fail(self, message):
         raise AnsibleLookupError(message)
 

@@ -10,7 +10,6 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBa
 
 
 class AWSConnectionBase(AWSPluginBase, ConnectionBase):
-
     def _do_fail(self, message):
         raise AnsibleConnectionFailure(message)
 
