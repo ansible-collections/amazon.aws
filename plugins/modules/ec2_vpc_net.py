@@ -250,16 +250,6 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
     return None
 
 
-def get_classic_link_status(module, connection, vpc_id):
-    try:
-        results = connection.describe_vpc_classic_link(aws_retry=True, VpcIds=[vpc_id])
-        return results['Vpcs'][0].get('ClassicLinkEnabled')
-    except is_boto3_error_message('The functionality you requested is not available in this region.'):
-        return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe VPCs")
-
-
 def wait_for_vpc_to_exist(module, connection, **params):
     # wait for vpc to be available
     try:
@@ -286,8 +276,6 @@ def get_vpc(module, connection, vpc_id, wait=True):
         vpc_obj = connection.describe_vpcs(VpcIds=[vpc_id], aws_retry=True)['Vpcs'][0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe VPCs")
-
-    vpc_obj['ClassicLinkEnabled'] = get_classic_link_status(module, connection, vpc_id)
 
     return vpc_obj
 
