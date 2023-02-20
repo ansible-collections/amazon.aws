@@ -138,12 +138,12 @@ options:
 EXAMPLES = r"""
 # Minimal example using environment vars or instance role credentials
 # Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
 
 # Example using filters, ignoring permission errors, and specifying the hostname precedence
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 # The values for profile, access key, secret key and token can be hardcoded like:
 boto_profile: aws_profile
 # or you could use Jinja as:
@@ -180,7 +180,7 @@ hostnames:
 allow_duplicated_hosts: False
 
 # Example using constructed features to create groups and set ansible_host
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
   - us-west-1
@@ -216,7 +216,7 @@ compose:
   ansible_host: private_ip_address
 
 # Example using include_filters and exclude_filters to compose the inventory.
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
   - us-west-1
@@ -230,7 +230,7 @@ exclude_filters:
   - 'my_first_tag'
 
 # Example using groups to assign the running hosts to a group based on vpc_id
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 boto_profile: aws_profile
 # Populate inventory with instances in these regions
 regions:
@@ -246,7 +246,7 @@ compose:
 groups:
   libvpc: vpc_id == 'vpc-####'
 # Define prefix and suffix for host variables coming from AWS.
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
 hostvars_prefix: 'aws_'
