@@ -90,7 +90,7 @@ EXAMPLES = r"""
     vpc_region: us-west-2
     comment: developer domain
 
-- name: create a private zone across 2 VPCs
+- name: create a private zone with multiple associated VPCs
   amazon.aws.route53_zone:
     zone: crossdevel.example.com
     vpcs:
@@ -160,7 +160,7 @@ vpcs:
             description: ID of the VPC
             returned: for private hosted zone
             type: str
-            sample: 'vpc-123456'
+            sample: "vpc-123456"
         region:
             description: Region of the VPC
             returned: for private hosted zone
