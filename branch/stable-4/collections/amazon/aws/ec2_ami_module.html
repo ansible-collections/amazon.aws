@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_ami module – Create or destroy an image (AMI) in ec2 &mdash; Ansible collections  documentation</title>
@@ -14,10 +14,8 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -53,7 +51,11 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> Ansible collections
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
           </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
 
 <div class="version">
@@ -115,7 +117,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
@@ -143,7 +145,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_ami</span></code>.</p>
 </div>
 <p class="ansible-version-added">New in amazon.aws 1.0.0</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
@@ -152,15 +154,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
 <li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="synopsis">
-<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Registers or deregisters ec2 images.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-ec2-ami-module-requirements"></span><h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-ec2-ami-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -169,8 +171,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </ul>
 </section>
 <section id="parameters">
-<h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
-<table class="colwidths-auto ansible-option-table docutils align-default" style="width: 100%">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Comments</p></th>
@@ -570,7 +572,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </table>
 </section>
 <section id="notes">
-<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -581,7 +583,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Basic AMI Creation</span>
@@ -668,9 +670,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 </div>
 </section>
 <section id="return-values">
-<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading"></a></h2>
 <p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
-<table class="colwidths-auto ansible-option-table docutils align-default" style="width: 100%">
+<table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Key</p></th>
 <th class="head"><p>Description</p></th>

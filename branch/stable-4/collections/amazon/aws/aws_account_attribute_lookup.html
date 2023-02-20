@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_account_attribute lookup – Look up AWS account attributes &mdash; Ansible collections  documentation</title>
@@ -14,10 +14,8 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -53,7 +51,11 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> Ansible collections
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
           </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
 
 <div class="version">
@@ -115,7 +117,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
@@ -142,7 +144,7 @@ You need further requirements to be able to use this lookup plugin,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-account-attribute-lookup-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.aws_account_attribute</span></code>.</p>
 </div>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
@@ -150,15 +152,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 <li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
 <li><p><a class="reference internal" href="#return-value" id="id5">Return Value</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="synopsis">
-<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Describes attributes of your AWS account. You can specify one of the listed attribute choices or omit it to see all attributes.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-aws-account-attribute-lookup-requirements"></span><h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-aws-account-attribute-lookup-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <p>The below requirements are needed on the local controller node that executes this lookup.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -167,8 +169,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </ul>
 </section>
 <section id="parameters">
-<h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
-<table class="colwidths-auto ansible-option-table docutils align-default" style="width: 100%">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Comments</p></th>
@@ -265,7 +267,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </table>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">vars</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">has_ec2_classic</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_account_attribute&#39;</span><span class="o">,</span> <span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;has-ec2-classic&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">  </span><span class="c1"># true | false</span>
@@ -280,8 +282,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-acco
 </div>
 </section>
 <section id="return-value">
-<h2><a class="toc-backref" href="#id5">Return Value</a><a class="headerlink" href="#return-value" title="Permalink to this heading"></a></h2>
-<table class="colwidths-auto ansible-option-table docutils align-default" style="width: 100%">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Return Value</a><a class="headerlink" href="#return-value" title="Permalink to this heading"></a></h2>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Key</p></th>
 <th class="head"><p>Description</p></th>
