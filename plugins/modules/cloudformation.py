@@ -282,7 +282,10 @@ events:
   type: list
   description: Most recent events in CloudFormation's event log. This may be from a previous run in some cases.
   returned: always
-  sample: ["StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE", "StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"]
+  sample: [
+        "StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE",
+        "StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
+    ]
 log:
   description: Debugging logs. Useful when modifying or finding an error.
   returned: always
