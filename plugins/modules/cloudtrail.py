@@ -83,6 +83,7 @@ options:
     description:
       - Specifies the KMS key ID to use to encrypt the logs delivered by CloudTrail. This also has the effect of enabling log file encryption.
       - The value can be an alias name prefixed by "alias/", a fully specified ARN to an alias, a fully specified ARN to a key, or a globally unique identifier.
+      - Encryption can be disabled by setting I(kms_key_id="").
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html).
     type: str
 notes:
@@ -485,7 +486,7 @@ def main():
     if module.params['enable_log_file_validation'] is not None:
         ct_params['EnableLogFileValidation'] = module.params['enable_log_file_validation']
 
-    if module.params['kms_key_id']:
+    if module.params['kms_key_id'] is not None:
         ct_params['KmsKeyId'] = module.params['kms_key_id']
 
     client = module.client('cloudtrail')
