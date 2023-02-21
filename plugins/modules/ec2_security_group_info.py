@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_security_group_info
 version_added: 1.0.0
@@ -31,10 +31,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all security groups
@@ -79,9 +78,9 @@ EXAMPLES = '''
 - amazon.aws.ec2_security_group_info:
     filters:
       "tag:Name": Example
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 security_groups:
     description: Security groups that match the provided filters. Each element consists of a dict with all the information related to that security group.
     type: list
@@ -244,7 +243,7 @@ security_groups:
             "vpc_id": "vpc-0bc3bb03f97405435"
         }
     ]
-'''
+"""
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError

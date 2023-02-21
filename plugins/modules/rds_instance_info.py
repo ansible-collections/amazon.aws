@@ -4,7 +4,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: rds_instance_info
 version_added: 5.0.0
@@ -32,10 +32,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Get information about an instance
   amazon.aws.rds_instance_info:
     db_instance_identifier: new-database
@@ -43,9 +42,9 @@ EXAMPLES = '''
 
 - name: Get all RDS instances
   amazon.aws.rds_instance_info:
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 instances:
   description: List of RDS instances
   returned: always
@@ -348,7 +347,7 @@ instances:
           returned: always
           type: str
           sample: sg-abcd1234
-'''
+"""
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code

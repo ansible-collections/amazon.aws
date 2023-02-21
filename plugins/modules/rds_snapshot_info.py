@@ -4,7 +4,7 @@
 # Copyright (c) 2017, 2018 Michael De La Rue
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: rds_snapshot_info
 version_added: 5.0.0
@@ -53,10 +53,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Get information about an snapshot
   amazon.aws.rds_snapshot_info:
     db_snapshot_identifier: snapshot_name
@@ -65,9 +64,9 @@ EXAMPLES = '''
 - name: Get all RDS snapshots for an RDS instance
   amazon.aws.rds_snapshot_info:
     db_instance_identifier: helloworld-rds-master
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 snapshots:
   description: List of non-clustered snapshots
   returned: When cluster parameters are not passed
@@ -285,7 +284,7 @@ cluster_snapshots:
       returned: always
       type: str
       sample: vpc-abcd1234
-'''
+"""
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code

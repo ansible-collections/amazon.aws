@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_route_table
 version_added: 1.0.0
@@ -85,9 +85,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic creation example:
@@ -151,9 +151,9 @@ EXAMPLES = r'''
     route_table_id: "{{ route_table.id }}"
     lookup: id
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 route_table:
   description: Route Table result.
   returned: always
@@ -276,7 +276,7 @@ route_table:
       returned: always
       type: str
       sample: vpc-6e2d2407
-'''
+"""
 
 import re
 from time import sleep

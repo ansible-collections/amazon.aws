@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_group_info
 version_added: 5.0.0
@@ -32,9 +32,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Find all groups
@@ -71,9 +71,9 @@ EXAMPLES = '''
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length > 1 }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 ---
 auto_scaling_group_arn:
     description: The Amazon Resource Name of the ASG
@@ -234,7 +234,7 @@ termination_policies:
     returned: success
     type: str
     sample: ["Default"]
-'''
+"""
 
 import re
 

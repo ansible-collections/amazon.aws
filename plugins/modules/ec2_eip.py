@@ -3,7 +3,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_eip
 version_added: 5.0.0
@@ -92,9 +92,9 @@ notes:
     It returns an overall status based on any changes occurring. It also returns
     individual changed statuses for disassociation and release.
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: associate an elastic IP with an instance
@@ -200,9 +200,9 @@ EXAMPLES = '''
     tag_name: reserved_for
     tag_value: "{{ inventory_hostname }}"
     public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 allocation_id:
   description: allocation_id of the elastic ip
   returned: on success
@@ -213,7 +213,7 @@ public_ip:
   returned: on success
   type: str
   sample: 52.88.159.209
-'''
+"""
 
 try:
     import botocore.exceptions

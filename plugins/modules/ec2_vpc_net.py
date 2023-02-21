@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_net
 version_added: 1.0.0
@@ -86,9 +86,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a VPC with dedicated tenancy and a couple of tags
@@ -108,9 +108,9 @@ EXAMPLES = '''
     ipv6_cidr: True
     region: us-east-1
     tenancy: dedicated
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 vpc:
   description: info about the VPC that was created or deleted
   returned: always
@@ -200,7 +200,7 @@ vpc:
       returned: always
       type: str
       sample: 123456789012
-'''
+"""
 
 from time import sleep
 from time import time

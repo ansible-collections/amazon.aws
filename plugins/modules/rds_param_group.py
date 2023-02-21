@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: rds_param_group
 version_added: 5.0.0
@@ -55,10 +55,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
   amazon.aws.rds_param_group:
       state: present
@@ -75,9 +74,9 @@ EXAMPLES = '''
   amazon.aws.rds_param_group:
       state: absent
       name: norwegian-blue
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 db_parameter_group_name:
     description: Name of DB parameter group
     type: str
@@ -102,7 +101,7 @@ tags:
     description: dictionary of tags
     type: dict
     returned: when state is present
-'''
+"""
 
 try:
     import botocore

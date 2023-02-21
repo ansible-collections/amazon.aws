@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: kms_key
 version_added: 5.0.0
@@ -154,9 +154,9 @@ notes:
     This can cause issues when running duplicate tasks in succession or using the M(amazon.aws.kms_key_info) module to fetch key metadata
     shortly after modifying keys.
     For this reason, it is recommended to use the return data from this module (M(amazon.aws.kms_key)) to fetch a key's metadata.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Create a new KMS key
 - amazon.aws.kms_key:
     alias: mykey
@@ -207,9 +207,9 @@ EXAMPLES = r'''
     alias: my-kms-key
     policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 key_id:
   description: ID of key.
   type: str
@@ -431,9 +431,7 @@ multi_region:
   version_added: 5.2.0
   returned: always
   sample: False
-
-
-'''
+"""
 
 # these mappings are used to go from simple labels to the actual 'Sid' values returned
 # by get_policy. They seem to be magic values.

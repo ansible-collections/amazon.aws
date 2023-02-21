@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_group
 version_added: 5.0.0
@@ -334,9 +334,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Basic configuration with Launch Configuration
 
 - amazon.aws.autoscaling_group:
@@ -444,9 +444,9 @@ EXAMPLES = r'''
     tags:
       - environment: production
         propagate_at_launch: false
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 ---
 auto_scaling_group_name:
     description: The unique name of the auto scaling group
@@ -648,7 +648,7 @@ metrics_collection:
             "Metric": "GroupInServiceInstances"
         }
     ]
-'''
+"""
 
 import time
 

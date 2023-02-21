@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_eni
 version_added: 1.0.0
@@ -120,9 +120,9 @@ notes:
   - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
     or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.
   - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ENI. As no security group is defined, ENI will be created in default security group
@@ -206,11 +206,10 @@ EXAMPLES = '''
 - amazon.aws.ec2_eni:
     eni_id: "{{ eni.interface.id }}"
     delete_on_termination: true
+"""
 
-'''
 
-
-RETURN = '''
+RETURN = r"""
 interface:
   description: Network interface attributes
   returned: when state != absent
@@ -270,8 +269,7 @@ interface:
       description: which vpc this network interface is bound
       type: str
       sample: vpc-9a9a9da
-
-'''
+"""
 
 import time
 from ipaddress import ip_address

@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_instance_info
 version_added: 1.0.0
@@ -40,9 +40,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all instances
@@ -76,10 +76,9 @@ EXAMPLES = r'''
       "tag:Name": "RHEL-*"
       instance-state-name: [ "running"]
   register: ec2_node_info
+"""
 
-'''
-
-RETURN = r'''
+RETURN = r"""
 instances:
     description: A list of ec2 instances.
     returned: always
@@ -500,7 +499,7 @@ instances:
             returned: always
             type: dict
             sample: vpc-0011223344
-'''
+"""
 
 import datetime
 

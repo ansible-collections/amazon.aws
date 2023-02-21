@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_snapshot_info
 version_added: 1.0.0
@@ -69,9 +69,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.aws
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all snapshots, including public ones
@@ -106,10 +106,9 @@ EXAMPLES = r'''
 - amazon.aws.ec2_snapshot_info:
     filters:
       status: error
+"""
 
-'''
-
-RETURN = r'''
+RETURN = r"""
 snapshots:
     description: List of snapshots retrieved with their respective info.
     type: list
@@ -199,7 +198,7 @@ next_token_id:
     - This value is null when there are no more results to return.
     type: str
     returned: when option C(max_results) is set in input
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError

@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_user_info
 version_added: 5.0.0
@@ -37,10 +37,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Gather facts about "test" user.
 - name: Get IAM user info
@@ -56,9 +55,9 @@ EXAMPLES = r'''
 - name: Get IAM user info
   amazon.aws.iam_user_info:
     path: "/division_abc/subdivision_xyz/"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 iam_users:
     description: list of maching iam users
     returned: success
@@ -99,7 +98,7 @@ iam_users:
             type: dict
             returned: if user exists
             sample: '{"Env": "Prod"}'
-'''
+"""
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError

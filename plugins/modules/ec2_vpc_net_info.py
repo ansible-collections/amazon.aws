@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_net_info
 version_added: 1.0.0
@@ -27,9 +27,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all VPCs
@@ -43,10 +43,9 @@ EXAMPLES = '''
 - amazon.aws.ec2_vpc_net_info:
     filters:
       "tag:Name": Example
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 vpcs:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -150,7 +149,7 @@ vpcs:
             returned: always
             type: str
             sample: dopt-12345678
-'''
+"""
 
 try:
     import botocore

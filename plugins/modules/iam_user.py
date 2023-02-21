@@ -2,7 +2,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: iam_user
 version_added: 5.0.0
@@ -95,9 +95,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Note: This module does not allow management of groups that users belong to.
 #       Groups should manage their membership directly using community.aws.iam_group,
@@ -138,9 +138,9 @@ EXAMPLES = r'''
   amazon.aws.iam_user:
     name: testuser1
     state: absent
+"""
 
-'''
-RETURN = r'''
+RETURN = r"""
 user:
     description: dictionary containing all the user information
     returned: success
@@ -171,7 +171,7 @@ user:
             type: dict
             returned: always
             sample: {"Env": "Prod"}
-'''
+"""
 
 try:
     import botocore

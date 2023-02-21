@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: lambda_layer_info
 version_added: 5.1.0
@@ -46,10 +46,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 ---
 # Display information about the versions for the layer named blank-java-lib
 - name: Retrieve layer versions
@@ -76,9 +75,9 @@ EXAMPLES = '''
   amazon.aws.lambda_layer_info:
     name: my-layer
     version_number: 1
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 layers_versions:
   description:
   - The layers versions that exists.
@@ -148,7 +147,7 @@ layers_versions:
             signing_job_arn:
                 description: The Amazon Resource Name (ARN) of a signing job.
                 type: str
-'''
+"""
 
 try:
     import botocore

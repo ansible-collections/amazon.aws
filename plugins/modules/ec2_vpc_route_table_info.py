@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_route_table_info
 version_added: 1.0.0
@@ -22,9 +22,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all VPC route tables
@@ -44,9 +44,9 @@ EXAMPLES = r'''
   amazon.aws.ec2_vpc_route_table_info:
     filters:
       vpc-id: vpc-abcdef00
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 route_tables:
   description:
     - A list of dictionarys describing route tables.
@@ -182,7 +182,7 @@ route_tables:
       returned: always
       type: str
       sample: vpc-6e2d2407
-'''
+"""
 
 try:
     import botocore

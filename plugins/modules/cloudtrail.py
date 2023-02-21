@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudtrail
 version_added: 5.0.0
@@ -93,10 +93,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: create single region cloudtrail
   amazon.aws.cloudtrail:
     state: present
@@ -145,9 +144,9 @@ EXAMPLES = '''
   amazon.aws.cloudtrail:
     state: absent
     name: default
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 exists:
     description: whether the resource exists
     returned: always
@@ -239,7 +238,7 @@ trail:
             returned: success
             type: dict
             sample: {'environment': 'dev', 'Name': 'default'}
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError

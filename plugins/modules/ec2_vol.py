@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vol
 version_added: 1.0.0
@@ -112,9 +112,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Simple attachment action
 - amazon.aws.ec2_vol:
     instance: XXXXXX
@@ -200,9 +200,9 @@ EXAMPLES = '''
     id: XXXXXX
     device_name: /dev/sdf
     delete_on_termination: true
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 device:
     description: device name of attached volume
     returned: when success
@@ -243,7 +243,7 @@ volume:
         "type": "standard",
         "zone": "us-east-1b"
     }
-'''
+"""
 
 import time
 

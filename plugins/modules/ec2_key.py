@@ -3,7 +3,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_key
 version_added: 1.0.0
@@ -57,9 +57,9 @@ extends_documentation_fragment:
 author:
   - "Vincent Viallet (@zbal)"
   - "Prasad Katti (@prasadkatti)"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a new EC2 key pair, returns generated private key
@@ -93,9 +93,9 @@ EXAMPLES = '''
   amazon.aws.ec2_key:
     name: my_keypair
     state: absent
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 changed:
   description: whether a keypair was created/deleted
   returned: always
@@ -144,7 +144,7 @@ key:
       type: str
       sample: rsa
       version_added: 3.1.0
-'''
+"""
 
 import uuid
 

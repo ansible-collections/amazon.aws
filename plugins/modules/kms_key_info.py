@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: kms_key_info
 version_added: 5.0.0
@@ -51,9 +51,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all KMS keys
@@ -68,9 +68,9 @@ EXAMPLES = r'''
 - amazon.aws.kms_key_info:
     filters:
       "tag:Name": Example
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 kms_keys:
   description: List of keys.
   type: complex
@@ -280,7 +280,7 @@ kms_keys:
           type: str
           returned: always
           sample: arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz
-'''
+"""
 
 import json
 

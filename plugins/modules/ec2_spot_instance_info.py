@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://wwww.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_spot_instance_info
 version_added: 2.0.0
@@ -32,9 +32,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: describe the Spot Instance requests based on request IDs
@@ -56,10 +56,9 @@ EXAMPLES = '''
     filters:
         state: active
         launch.block-device-mapping.device-name: /dev/sdb
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 spot_request:
     description:  The gathered information about specified spot instance requests.
     returned: when success
@@ -233,8 +232,7 @@ spot_request:
         "type": "one-time",
         "valid_until": "2021-09-08T21:05:57+00:00"
       }
-'''
-
+"""
 
 try:
     import botocore

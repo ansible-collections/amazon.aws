@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudwatchlogs_log_group_metric_filter
 version_added: 5.0.0
@@ -59,10 +59,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: set metric filter on log group /fluentd/testcase
   amazon.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
@@ -79,9 +78,9 @@ EXAMPLES = '''
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     state: absent
-'''
+"""
 
-RETURN = """
+RETURN = r"""
 metric_filters:
     description: Return the origin response value
     returned: success
@@ -94,7 +93,6 @@ metric_filters:
             "metric_value": "$.value"
         }
     ]
-
 """
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict

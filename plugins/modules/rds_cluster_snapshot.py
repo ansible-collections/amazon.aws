@@ -3,7 +3,7 @@
 # Copyright (c) 2021 Alina Buzachis (@alinabuzachis)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_cluster_snapshot
 version_added: 5.0.0
@@ -73,9 +73,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a DB cluster snapshot
   amazon.aws.rds_cluster_snapshot:
     db_cluster_identifier: "{{ cluster_id }}"
@@ -93,9 +93,9 @@ EXAMPLES = r'''
     source_id: "{{ snapshot.db_snapshot_arn }}"
     source_region: us-east-2
     copy_tags: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 availability_zone:
   description: Availability zone of the database from which the snapshot was created.
   returned: always
@@ -210,7 +210,7 @@ tags:
   returned: always
   type: complex
   contains: {}
-'''
+"""
 
 try:
     import botocore

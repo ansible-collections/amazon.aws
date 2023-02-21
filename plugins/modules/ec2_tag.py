@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_tag
 version_added: 1.0.0
@@ -47,9 +47,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Ensure tags are present on a resource
   amazon.aws.ec2_tag:
     region: eu-west-1
@@ -93,9 +93,9 @@ EXAMPLES = '''
         Name: ''
     state: absent
     purge_tags: true
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 tags:
   description: A dict containing the tags on the resource
   returned: always
@@ -108,7 +108,7 @@ removed_tags:
   description: A dict of tags that were removed from the resource
   returned: If tags were removed
   type: dict
-'''
+"""
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags

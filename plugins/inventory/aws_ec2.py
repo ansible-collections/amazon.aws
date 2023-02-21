@@ -1,7 +1,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_ec2
 short_description: EC2 inventory source
 extends_documentation_fragment:
@@ -133,9 +133,9 @@ options:
       - The suffix for host variables names coming from AWS.
     type: str
     version_added: 3.1.0
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Minimal example using environment vars or instance role credentials
 # Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address
 plugin: aws_ec2
@@ -251,7 +251,7 @@ regions:
   - us-east-1
 hostvars_prefix: 'aws_'
 hostvars_suffix: '_ec2'
-'''
+"""
 
 import re
 

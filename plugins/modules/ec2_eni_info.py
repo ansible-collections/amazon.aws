@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_eni_info
 version_added: 1.0.0
@@ -29,9 +29,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all ENIs
@@ -41,10 +41,9 @@ EXAMPLES = '''
 - amazon.aws.ec2_eni_info:
     filters:
       network-interface-id: eni-xxxxxxx
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 network_interfaces:
   description: List of matching elastic network interfaces.
   returned: always
@@ -185,7 +184,7 @@ network_interfaces:
       returned: always
       type: str
       sample: "vpc-b3f1f123"
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError

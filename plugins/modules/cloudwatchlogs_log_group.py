@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudwatchlogs_log_group
 version_added: 5.0.0
@@ -59,10 +59,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - amazon.aws.cloudwatchlogs_log_group:
@@ -82,10 +81,9 @@ EXAMPLES = '''
 - amazon.aws.cloudwatchlogs_log_group:
     state: absent
     log_group_name: test-log-group
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 log_groups:
     description: Return the list of complex objects representing log groups
     returned: success
@@ -125,7 +123,7 @@ log_groups:
             description: A dictionary representing the tags on the log group.
             returned: always
             type: dict
-'''
+"""
 
 try:
     import botocore

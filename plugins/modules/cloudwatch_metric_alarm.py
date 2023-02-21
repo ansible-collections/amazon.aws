@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: cloudwatch_metric_alarm
 short_description: "Create/update or delete AWS CloudWatch 'metric alarms'"
 version_added: 5.0.0
@@ -249,9 +249,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
   - name: create alarm
     amazon.aws.cloudwatch_metric_alarm:
       state: present
@@ -305,7 +305,7 @@ EXAMPLES = r'''
       description: "This will recover an instance when it fails"
       dimensions: {"InstanceId":'i-XXX'}
       alarm_actions: ["arn:aws:automate:us-west-1:ec2:recover"]
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError

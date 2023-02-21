@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_tag_info
 version_added: 1.0.0
@@ -24,9 +24,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Retrieve all tags on an instance
   amazon.aws.ec2_tag_info:
     region: eu-west-1
@@ -38,14 +38,14 @@ EXAMPLES = '''
     region: eu-west-1
     resource: vpc-xxxxxxxxxxxxxxxxx
   register: vpc_tags
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 tags:
   description: A dict containing the tags on the resource
   returned: always
   type: dict
-'''
+"""
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags

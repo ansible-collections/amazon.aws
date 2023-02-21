@@ -2,7 +2,7 @@
 # (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_service_ip_ranges
 author:
   - James Turner (!UNKNOWN) <turnerjsm@gmail.com>
@@ -20,9 +20,9 @@ options:
   ipv6_prefixes:
     description: 'When I(ipv6_prefixes=True) the lookup will return ipv6 addresses instead of ipv4 addresses'
     version_added: 2.1.0
-'''
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 vars:
   ec2_ranges: "{{ lookup('aws_service_ip_ranges', region='ap-southeast-2', service='EC2', wantlist=True) }}"
 tasks:
@@ -36,7 +36,7 @@ tasks:
 # "52.92.16.0/20,52.216.0.0/15,54.231.0.0/17"
 """
 
-RETURN = """
+RETURN = r"""
 _raw:
   description: comma-separated list of CIDR ranges
 """

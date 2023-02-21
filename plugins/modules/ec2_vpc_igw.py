@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_igw
 version_added: 1.0.0
@@ -29,9 +29,9 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.tags
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Ensure that the VPC has an Internet Gateway.
@@ -56,9 +56,9 @@ EXAMPLES = '''
     state: absent
     vpc_id: vpc-abcdefgh
   register: vpc_igw_delete
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 changed:
   description: If any changes have been made to the Internet Gateway.
   type: bool
@@ -84,7 +84,7 @@ vpc_id:
   returned: I(state=present)
   sample:
     vpc_id: "vpc-XXXXXXXX"
-'''
+"""
 
 try:
     import botocore

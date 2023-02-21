@@ -2,7 +2,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_eip_info
 version_added: 5.0.0
@@ -25,10 +25,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details or the AWS region,
 # see the AWS Guide for details.
 
@@ -70,11 +69,10 @@ EXAMPLES = r'''
 - ansible.builtin.set_fact:
     eip_alloc: my_vms_eips.addresses[0].allocation_id
     my_pub_ip: my_vms_eips.addresses[0].public_ip
+"""
 
-'''
 
-
-RETURN = '''
+RETURN = r"""
 addresses:
   description: Properties of all Elastic IP addresses matching the provided filters. Each element is a dict with all the information related to an EIP.
   returned: on success
@@ -92,8 +90,7 @@ addresses:
             "Name": "test-vm-54.81.104.1"
         }
     }]
-
-'''
+"""
 
 try:
     from botocore.exceptions import (BotoCoreError, ClientError)

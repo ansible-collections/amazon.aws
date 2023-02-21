@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_dhcp_option
 version_added: 1.0.0
@@ -91,9 +91,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-RETURN = """
+RETURN = r"""
 changed:
     description: Whether the dhcp options were changed
     type: bool
@@ -166,7 +166,7 @@ dhcp_config:
         sample: 2
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 # Completely overrides the VPC DHCP options associated with VPC vpc-123456 and deletes any existing
 # DHCP option set that may have been attached to that VPC.
 - amazon.aws.ec2_vpc_dhcp_option:
@@ -226,7 +226,6 @@ EXAMPLES = """
     region: us-east-1
     dhcp_options_id: dopt-12345678
     vpc_id: vpc-123456
-
 """
 
 try:

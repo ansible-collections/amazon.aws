@@ -3,7 +3,7 @@
 # Copyright: (c) 2018, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: route53
 version_added: 5.0.0
@@ -160,9 +160,9 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.boto3
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 nameservers:
   description: Nameservers associated with the zone.
   returned: when state is 'get'
@@ -243,9 +243,9 @@ set:
       returned: always
       type: str
       sample: foo.bar.com.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add new.foo.com as an A record with 3 IPs and wait until the changes have been replicated
   amazon.aws.route53:
     state: present
@@ -401,7 +401,7 @@ EXAMPLES = r'''
     geo_location:
       country_code: US
       subdivision_code: TX
-'''
+"""
 
 from operator import itemgetter
 

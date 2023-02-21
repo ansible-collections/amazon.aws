@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://wwww.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_object_info
 version_added: 5.0.0
@@ -103,10 +103,9 @@ extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Retrieve a list of objects in S3 bucket
@@ -147,10 +146,9 @@ EXAMPLES = r'''
       attributes_list:
         - ETag
         - ObjectSize
+"""
 
-'''
-
-RETURN = r'''
+RETURN = r"""
 s3_keys:
   description: List of object keys.
   returned: when only I(bucket_name) is specified and I(object_name), I(object_details) are not specified.
@@ -429,7 +427,7 @@ object_info:
                             returned: if it was upload with the object.
                             type: str
                             sample: "xxxxxxxxxxxx"
-'''
+"""
 
 try:
     import botocore

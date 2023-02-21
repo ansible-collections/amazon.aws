@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 ---
 module: s3_object
 version_added: 1.0.0
@@ -255,7 +255,7 @@ extends_documentation_fragment:
   - amazon.aws.boto3
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Simple PUT operation
   amazon.aws.s3_object:
     bucket: mybucket
@@ -365,7 +365,7 @@ EXAMPLES = """
         object: /source/key.txt
 """
 
-RETURN = """
+RETURN = r"""
 msg:
   description: Message indicating the status of the operation.
   returned: always

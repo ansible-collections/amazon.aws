@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elb_application_lb_info
 version_added: 5.0.0
@@ -31,10 +31,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all ALBs
@@ -58,9 +57,9 @@ EXAMPLES = r'''
   register: alb_info
 - ansible.builtin.debug:
     var: alb_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 load_balancers:
     description: a list of load balancers
     returned: always
@@ -209,7 +208,7 @@ load_balancers:
                 if it is unable to forward the request to AWS WAF.
             type: bool
             sample: false
-'''
+"""
 
 try:
     import botocore

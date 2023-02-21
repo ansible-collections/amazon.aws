@@ -3,7 +3,7 @@
 # Copyright (c) 2022 Alina Buzachis (@alinabuzachis)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_cluster
 version_added: 5.0.0
@@ -212,7 +212,7 @@ options:
     master_user_password:
         description:
           - An 8-41 character password for the master database user.
-          - The password can contain any printable ASCII character except "/", """, or "@".
+          - The password can contain any printable ASCII character except C(/), C("), or C(@).
           - To modify the password use I(force_password_update). Use I(apply immediately) to change
             the password immediately, otherwise it is updated during the next maintenance window.
         aliases:
@@ -345,9 +345,9 @@ options:
           - A list of EC2 VPC security groups to associate with the DB cluster.
         type: list
         elements: str
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Create minimal aurora cluster in default VPC and default subnet group
   amazon.aws.rds_cluster:
@@ -417,9 +417,9 @@ EXAMPLES = r'''
     engine: aurora-postgresql
     state: present
     db_instance_class: 'db.t3.medium'
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 activity_stream_status:
   description: The status of the database activity stream.
   returned: always
@@ -644,7 +644,7 @@ vpc_security_groups:
       returned: always
       type: str
       sample: sg-12345678
-'''
+"""
 
 
 try:

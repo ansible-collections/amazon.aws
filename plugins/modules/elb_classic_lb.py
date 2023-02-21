@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elb_classic_lb
 version_added: 1.0.0
@@ -283,9 +283,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
@@ -487,7 +487,7 @@ EXAMPLES = """
     tags: {}
 """
 
-RETURN = '''
+RETURN = r"""
 elb:
   description: Load Balancer attributes
   returned: always
@@ -667,7 +667,7 @@ elb:
       elements: str
       sample: ['us-east-1b', 'us-east-1a']
       returned: when state is not 'absent'
-'''
+"""
 
 try:
     import botocore

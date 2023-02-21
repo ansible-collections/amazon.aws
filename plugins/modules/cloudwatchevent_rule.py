@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: cloudwatchevent_rule
 version_added: 5.0.0
@@ -120,9 +120,9 @@ options:
             type: int
             description: The number of tasks to create based on I(task_definition).
     required: false
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     schedule_expression: "cron(0 20 * * ? *)"
@@ -158,9 +158,9 @@ EXAMPLES = r'''
 - amazon.aws.cloudwatchevent_rule:
     name: MyCronTask
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 rule:
     description: CloudWatch Event rule data.
     returned: success
@@ -176,7 +176,7 @@ targets:
     returned: success
     type: list
     sample: "[{ 'arn': 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction', 'id': 'MyTargetId' }]"
-'''
+"""
 
 import json
 

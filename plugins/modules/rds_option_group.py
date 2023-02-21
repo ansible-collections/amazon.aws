@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: rds_option_group
 short_description: Manages the creation, modification, deletion of RDS option groups
 version_added: 5.0.0
@@ -124,9 +124,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Create an RDS Mysql Option group
 - name: Create an RDS Mysql option group
   amazon.aws.rds_option_group:
@@ -178,9 +178,9 @@ EXAMPLES = r'''
     state: absent
     option_group_name: test-mysql-option-group
   register: deleted_rds_mysql_option_group
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allows_vpc_and_non_vpc_instance_memberships:
     description: Indicates whether this option group can be applied to both VPC and non-VPC instances.
     returned: always
@@ -341,7 +341,7 @@ tags:
     sample: {
         "Ansible": "Test"
     }
-'''
+"""
 
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule

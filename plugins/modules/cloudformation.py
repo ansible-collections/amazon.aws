@@ -2,7 +2,7 @@
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudformation
 version_added: 1.0.0
@@ -161,9 +161,9 @@ extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: create a cloudformation stack
   amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
@@ -275,9 +275,9 @@ EXAMPLES = '''
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template
     on_create_failure: DELETE
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 events:
   type: list
   description: Most recent events in CloudFormation's event log. This may be from a previous run in some cases.
@@ -312,7 +312,7 @@ stack_outputs:
   description: A key:value dictionary of all the stack outputs currently defined. If there are no stack outputs, it is an empty dictionary.
   returned: state == present
   sample: {"MySg": "AnsibleModuleTestYAML-CFTestSg-C8UVS567B6NS"}
-'''  # NOQA
+"""
 
 import json
 import time

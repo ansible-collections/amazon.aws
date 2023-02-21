@@ -2,7 +2,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: aws_caller_info
 version_added: 1.0.0
@@ -19,17 +19,17 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get the current caller identity information
   amazon.aws.aws_caller_info:
   register: caller_info
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 account:
     description: The account id the access credentials are associated with.
     returned: success
@@ -52,7 +52,7 @@ user_id:
     returned: success
     type: str
     sample: 123456789012:my-federated-user-name
-'''
+"""
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError

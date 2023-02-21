@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_endpoint_info
 short_description: Retrieves AWS VPC endpoints details using AWS methods
 version_added: 1.0.0
@@ -30,9 +30,9 @@ notes:
   - Support for the C(query) parameter was dropped in release 6.0.0.  This module now only queries
     for endpoints.  Information about endpoint services can be retrieved using the
     M(amazon.aws.ec2_vpc_endpoint_service_info) module.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all support AWS services for VPC endpoints
 - name: Get all endpoints in ap-southeast-2 region
   amazon.aws.ec2_vpc_endpoint_info:
@@ -57,9 +57,9 @@ EXAMPLES = r'''
     vpc_endpoint_ids:
       - vpce-12345678
   register: endpoint_details
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 vpc_endpoints:
   description:
     - A list of matching endpoints.
@@ -167,7 +167,7 @@ vpc_endpoints:
       state: "available"
       vpc_endpoint_id: "vpce-abbad0d0"
       vpc_id: "vpc-1111ffff"
-'''
+"""
 
 try:
     import botocore

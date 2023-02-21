@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_subnet
 version_added: 1.0.0
@@ -77,9 +77,9 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create subnet for database servers
@@ -110,9 +110,9 @@ EXAMPLES = '''
     vpc_id: vpc-123456
     cidr: 10.1.100.0/24
     ipv6_cidr: ''
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 subnet:
     description: Dictionary of subnet values
     returned: I(state=present)
@@ -200,7 +200,7 @@ subnet:
                             description: The CIDR block association state.
                             returned: always
                             type: str
-'''
+"""
 
 
 import time
