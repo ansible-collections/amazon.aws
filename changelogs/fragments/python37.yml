@@ -1,0 +1,9 @@
+deprecated_features:
+- amazon.aws collection - due to the AWS SDKs announcing the end of support
+  for Python less than 3.7 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
+  support for Python less than 3.7 by this collection has been deprecated and will be removed in release 7.0.0.
+  (https://github.com/ansible-collections/amazon.aws/pull/1342).
+- amazon.aws collection - due to the AWS SDKs Python support policies
+  (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
+  support for Python less than 3.8 by this collection is expected to be removed in a release after 2024-12-01
+  (https://github.com/ansible-collections/amazon.aws/pull/1342).

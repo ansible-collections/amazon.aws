@@ -410,7 +410,7 @@ options:
         - The storage throughput when the I(storage_type) is C(gp3).
         - When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.
         - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
-        - Requires boto3 >= 1.26.0.
+        - Requires botocore >= 1.29.0.
       type: int
       version_added: 5.2.0
     tde_credential_arn:
@@ -1010,7 +1010,7 @@ def get_options_with_changing_values(client, module, parameters):
             parameters['Iops'] = new_iops
 
     if instance.get('StorageType') == 'gp3':
-        if module.boto3_at_least('1.26.0'):
+        if module.botocore_at_least('1.29.0'):
             GP3_THROUGHPUT = True
             current_storage_throughput = instance.get('PendingModifiedValues', {}).get('StorageThroughput', instance['StorageThroughput'])
             new_storage_throughput = module.params.get('storage_throughput') or current_storage_throughput
@@ -1018,7 +1018,7 @@ def get_options_with_changing_values(client, module, parameters):
                 parameters['StorageThroughput'] = new_storage_throughput
         else:
             GP3_THROUGHPUT = False
-            module.warn('gp3 volumes require boto3 >= 1.26.0. storage_throughput will be ignored.')
+            module.warn('gp3 volumes require botocore >= 1.29.0. storage_throughput will be ignored.')
 
         current_iops = instance.get('PendingModifiedValues', {}).get('Iops', instance['Iops'])
         # when you just change from gp2 to gp3, you may not add the iops parameter

@@ -157,8 +157,6 @@
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
       architecture: arm64
-    vars:
-      ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
     register: result
     check_mode: yes
   - name: assert lambda upload succeeded
@@ -174,8 +172,6 @@
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
       architecture: arm64
-    vars:
-      ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
     register: result
   - name: assert lambda upload succeeded
     assert:
@@ -329,8 +325,6 @@
       query: all
     register: lambda_infos_all
     check_mode: yes
-    vars:
-      ansible_python_interpreter: '{{ botocore_virtualenv_interpreter }}'
   - name: lambda_info | Assert successfull retrieval of all information 1
     vars:
       lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"

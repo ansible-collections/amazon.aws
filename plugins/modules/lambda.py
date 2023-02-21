@@ -111,7 +111,6 @@ options:
     description:
       - The instruction set architecture that the function supports.
       - Requires one of I(s3_bucket) or I(zip_file).
-      - Requires botocore >= 1.21.51.
     type: str
     choices: ['x86_64', 'arm64']
     aliases: ['architectures']
@@ -239,7 +238,6 @@ configuration:
     contains:
         architectures:
             description: The architectures supported by the function.
-            returned: successful run where botocore >= 1.21.51
             type: list
             elements: str
             sample: ['arm64']
@@ -642,10 +640,6 @@ def main():
 
     check_mode = module.check_mode
     changed = False
-
-    if architectures:
-        module.require_botocore_at_least(
-            '1.21.51', reason='to configure the architectures that the function supports.')
 
     try:
         client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())

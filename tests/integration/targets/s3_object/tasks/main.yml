@@ -120,8 +120,6 @@
             - Checksum
             - ObjectParts
       register: info_detail_result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - assert:
         that:

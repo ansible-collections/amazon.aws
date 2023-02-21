@@ -4,6 +4,3 @@ dependencies:
 - role: setup_ec2_instance_env
   vars:
     ec2_instance_test_name: hibernation_options
-- role: setup_botocore_pip
-  vars:
-    boto3_version: "1.20.30"
