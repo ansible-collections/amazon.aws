@@ -168,8 +168,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.18.0</p></li>
-<li><p>botocore &gt;= 1.21.0</p></li>
+<li><p>boto3 &gt;= 1.22.0</p></li>
+<li><p>botocore &gt;= 1.25.0</p></li>
 </ul>
 </section>
 <section id="parameters">
@@ -968,7 +968,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The storage throughput when the <em>storage_type</em> is <code class="docutils literal notranslate"><span class="pre">gp3</span></code>.</p>
 <p>When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.</p>
 <p>When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.</p>
-<p>Requires boto3 &gt;= 1.26.0.</p>
+<p>Requires botocore &gt;= 1.29.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">

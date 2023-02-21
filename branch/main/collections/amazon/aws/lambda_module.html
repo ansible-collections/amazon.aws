@@ -168,8 +168,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.18.0</p></li>
-<li><p>botocore &gt;= 1.21.0</p></li>
+<li><p>boto3 &gt;= 1.22.0</p></li>
+<li><p>botocore &gt;= 1.25.0</p></li>
 </ul>
 </section>
 <section id="parameters">
@@ -207,7 +207,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-cell"><p>The instruction set architecture that the function supports.</p>
 <p>Requires one of <em>s3_bucket</em> or <em>zip_file</em>.</p>
-<p>Requires botocore &gt;= 1.21.51.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p></li>
@@ -676,7 +675,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#return-configuration/architectures" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The architectures supported by the function.</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> successful run where botocore &gt;= 1.21.51</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;arm64&quot;]</span></code></p>
 </div></td>
 </tr>

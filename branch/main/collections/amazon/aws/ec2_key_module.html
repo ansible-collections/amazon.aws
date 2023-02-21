@@ -167,8 +167,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.18.0</p></li>
-<li><p>botocore &gt;= 1.21.0</p></li>
+<li><p>boto3 &gt;= 1.22.0</p></li>
+<li><p>botocore &gt;= 1.25.0</p></li>
 </ul>
 </section>
 <section id="parameters">
@@ -268,7 +268,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>Note that ED25519 keys are not supported for Windows instances, EC2 Instance Connect, and EC2 Serial Console.</p>
 <p>By default Amazon will create an RSA key.</p>
 <p>Mutually exclusive with parameter <em>key_material</em>.</p>
-<p>Requires at least botocore version 1.21.23.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;rsa&quot;</span></code></p></li>
