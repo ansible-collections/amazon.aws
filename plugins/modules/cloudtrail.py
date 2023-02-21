@@ -486,8 +486,8 @@ def main():
     if module.params['enable_log_file_validation'] is not None:
         ct_params['EnableLogFileValidation'] = module.params['enable_log_file_validation']
 
-    if module.params['kms_key_id'] is not None:
-        ct_params['KmsKeyId'] = module.params['kms_key_id']
+    if module.params["kms_key_id"] is not None:
+        ct_params["KmsKeyId"] = module.params["kms_key_id"]
 
     client = module.client('cloudtrail')
     region = module.region
@@ -591,7 +591,7 @@ def main():
         results['exists'] = True
         if not module.check_mode:
             if tags:
-                ct_params['TagsList'] = ansible_dict_to_boto3_tag_list(tags)
+                ct_params["TagsList"] = ansible_dict_to_boto3_tag_list(tags)
             # If we aren't in check_mode then actually create it
             created_trail = create_trail(module, client, ct_params)
             # Get the trail status
