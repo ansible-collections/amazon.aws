@@ -167,8 +167,8 @@ author:
   - "Ross Williams (@gunzy83) <gunzy83au@gmail.com>"
   - "Willem van Ketwich (@wilvk) <willvk@gmail.com>"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 """

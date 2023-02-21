@@ -76,8 +76,8 @@ options:
         only applies to newly allocated Elastic IPs, isn't validated when I(reuse_existing_ip_allowed=true).
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 

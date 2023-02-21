@@ -107,8 +107,8 @@ notes:
   - The C(policy_file) paramater was removed in release 6.0.0 please use the
     I(policy) option and a file lookup instead.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 """

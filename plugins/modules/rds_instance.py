@@ -11,8 +11,8 @@ description:
  - Create, modify, and delete RDS instances.
  - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
- - amazon.aws.aws
- - amazon.aws.ec2
+ - amazon.aws.common.modules
+ - amazon.aws.region.modules
  - amazon.aws.tags
  - amazon.aws.boto3
 author:

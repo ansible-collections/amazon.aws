@@ -56,8 +56,8 @@ options:
             - The value to emit when a filter pattern does not match a log event.
           type: float
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
 """
 

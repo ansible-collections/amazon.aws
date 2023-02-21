@@ -69,8 +69,8 @@ notes:
 author:
   - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 """

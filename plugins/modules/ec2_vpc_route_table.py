@@ -81,8 +81,8 @@ options:
 notes:
   - Tags are used to uniquely identify route tables within a VPC when the I(route_table_id) is not supplied.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 """
