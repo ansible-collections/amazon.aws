@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - ec2_key - fix issue when trying to update existing key pair with the same key material (https://github.com/ansible-collections/amazon.aws/pull/1383).

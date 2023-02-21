@@ -1,6 +1,5 @@
 ---
 # TODO - name: test 'validate_certs' parameter
-# TODO - name: test creating key pair with another_key_material with force=yes
 # =============================================================
 
 - module_defaults:
@@ -344,6 +343,28 @@
           - '"tags" in result.key'
           - 'result.key.name == "{{ec2_key_name}}"'
           - 'result.key.fingerprint == "{{fingerprint}}"'
+
+    # ============================================================
+    - name: test state=present with key_material (idempotency)
+      ec2_key:
+        name: '{{ ec2_key_name }}'
+        key_material: '{{ key_material }}'
+        state: present
+      register: result
+
+    - name: assert state=present with key_material
+      assert:
+        that:
+          - result is not changed
+          - '"key" in result'
+          - '"name" in result.key'
+          - '"fingerprint" in result.key'
+          - '"private_key" not in result.key'
+          - '"id" in result.key'
+          - '"tags" in result.key'
+          - 'result.key.name == "{{ec2_key_name}}"'
+          - 'result.key.fingerprint == "{{fingerprint}}"'
+          - 'result.msg == "key pair already exists"'
 
     # ============================================================
 
