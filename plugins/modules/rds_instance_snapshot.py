@@ -4,7 +4,7 @@
 # Copyright (c) 2017, 2018 Michael De La Rue
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_instance_snapshot
 version_added: 5.0.0
@@ -74,13 +74,13 @@ author:
   - "Alina Buzachis (@alinabuzachis)"
   - "Joseph Torcasso (@jatorcasso)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create snapshot
   amazon.aws.rds_instance_snapshot:
     db_instance_identifier: new-database
@@ -99,9 +99,9 @@ EXAMPLES = r'''
   amazon.aws.rds_instance_snapshot:
     db_snapshot_identifier: new-database-snapshot
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allocated_storage:
   description: How much storage is allocated in GB.
   returned: always
@@ -224,7 +224,7 @@ vpc_id:
   returned: always
   type: str
   sample: vpc-09ff232e222710ae0
-'''
+"""
 
 try:
     import botocore

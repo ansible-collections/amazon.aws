@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_endpoint
 short_description: Create and delete AWS VPC endpoints
 version_added: 1.0.0
@@ -107,13 +107,13 @@ notes:
   - The C(policy_file) paramater was removed in release 6.0.0 please use the
     I(policy) option and a file lookup instead.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create new vpc endpoint with a json template for policy
@@ -144,9 +144,9 @@ EXAMPLES = r'''
     state: absent
     vpc_endpoint_id: "{{ new_vpc_endpoint.result['VpcEndpointId'] }}"
     region: ap-southeast-2
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 endpoints:
   description: The resulting endpoints from the module call
   returned: success
@@ -178,7 +178,7 @@ endpoints:
         "vpc_id": "vpc-abbad0d0"
       }
     ]
-'''
+"""
 
 import datetime
 import json

@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_policy
 version_added: 5.0.0
@@ -50,12 +50,12 @@ author:
   - "Jonathan I. Davila (@defionscode)"
   - "Dennis Podkovyrin (@sbj-ss)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
@@ -87,15 +87,15 @@ EXAMPLES = '''
     loop:
       - user: s3_user
         prefix: s3_user_prefix
+"""
 
-'''
-RETURN = '''
+RETURN = r"""
 policy_names:
     description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
     returned: always
     type: list
     elements: str
-'''
+"""
 
 import json
 

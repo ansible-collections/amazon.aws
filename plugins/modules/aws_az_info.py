@@ -2,7 +2,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: aws_az_info
 short_description: Gather information about availability zones in AWS
 version_added: 1.0.0
@@ -22,12 +22,12 @@ options:
     default: {}
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all availability zones
@@ -37,9 +37,9 @@ EXAMPLES = '''
   amazon.aws.aws_az_info:
     filters:
       zone-name: eu-west-1a
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 availability_zones:
     returned: on success
     description: >
@@ -137,7 +137,7 @@ availability_zones:
             "zone_type": "availability-zone"
         }
     ]
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError

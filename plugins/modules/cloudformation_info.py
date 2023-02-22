@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudformation_info
 version_added: 1.0.0
@@ -48,12 +48,12 @@ options:
         type: bool
         default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get information on all stacks
@@ -96,9 +96,9 @@ EXAMPLES = '''
     stack_name: nonexistent-stack
     all_facts: true
   failed_when: cloudformation['nonexistent-stack'] is undefined
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 cloudformation:
     description:
         - Dictionary of dictionaries containing info of stack(s).
@@ -283,7 +283,7 @@ cloudformation:
                 'TagOne': 'ValueOne',
                 'TagTwo': 'ValueTwo'
             }
-'''
+"""
 
 import json
 

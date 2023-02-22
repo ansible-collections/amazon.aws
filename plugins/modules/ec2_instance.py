@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_instance
 version_added: 1.0.0
@@ -370,13 +370,13 @@ options:
         default: 'disabled'
 
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Terminate every running instance in a region. Use with EXTREME caution.
@@ -530,9 +530,9 @@ EXAMPLES = '''
     state: present
     tags:
       foo: bar
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 instances:
     description: a list of ec2 instances
     returned: when wait == true
@@ -938,7 +938,7 @@ instances:
             returned: always
             type: dict
             sample: vpc-0011223344
-'''
+"""
 
 from collections import namedtuple
 import time

@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_ami
 version_added: 1.0.0
@@ -167,15 +167,15 @@ author:
   - "Ross Williams (@gunzy83) <gunzy83au@gmail.com>"
   - "Willem van Ketwich (@wilvk) <willvk@gmail.com>"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
 # Thank you to iAcquire for sponsoring development of this module.
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Basic AMI Creation
@@ -274,9 +274,9 @@ EXAMPLES = '''
     state: present
     launch_permissions:
       user_ids: ['123456789012']
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 architecture:
     description: Architecture of image.
     returned: when AMI is created or already exists
@@ -382,7 +382,7 @@ snapshots_deleted:
         "snap-fbcccb8f",
         "snap-cfe7cdb4"
     ]
-'''
+"""
 
 import time
 

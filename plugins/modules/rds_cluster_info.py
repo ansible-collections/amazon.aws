@@ -3,7 +3,7 @@
 # Copyright (c) 2022 Alina Buzachis (@alinabuzachis)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: rds_cluster_info
 version_added: 5.0.0
 short_description: Obtain information about one or more RDS clusters
@@ -28,13 +28,12 @@ options:
 author:
   - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Get info of all existing DB clusters
   amazon.aws.rds_cluster_info:
   register: _result_cluster_info
@@ -48,9 +47,9 @@ EXAMPLES = r'''
   amazon.aws.rds_cluster_info:
     engine: "aurora"
   register: _result_cluster_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 clusters:
   description: List of RDS clusters.
   returned: always
@@ -236,7 +235,7 @@ clusters:
                 description: Security group of the cluster.
                 type: str
                 sample: sg-12345678
-'''
+"""
 
 
 try:

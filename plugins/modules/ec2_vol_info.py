@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vol_info
 version_added: 1.0.0
@@ -18,12 +18,12 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html) for possible filters.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all volumes
@@ -52,10 +52,9 @@ EXAMPLES = '''
     filters:
       attachment.instance-id: "i-000111222333"
   register: volumes
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 volumes:
     description: Volumes that match the provided filters. Each element consists of a dict with all the information related to that volume.
     type: list
@@ -121,7 +120,7 @@ volumes:
             description: The throughput that the volume supports, in MiB/s.
             type: int
             sample: 131
-'''
+"""
 
 try:
     from botocore.exceptions import ClientError

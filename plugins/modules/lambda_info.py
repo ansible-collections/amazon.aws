@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: lambda_info
 version_added: 5.0.0
@@ -32,12 +32,12 @@ options:
 author:
   - Pierre Jodouin (@pjodouin)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 ---
 # Simple example of listing all info for a function
 - name: List all for a specific function
@@ -62,9 +62,9 @@ EXAMPLES = '''
 - name: show Lambda information
   ansible.builtin.debug:
     msg: "{{ output['function'] }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 ---
 function:
     description:
@@ -263,7 +263,8 @@ functions:
             'subnet_ids': [],
             'vpc_id': '123'
             }
-'''
+"""
+
 import json
 import re
 

@@ -2,7 +2,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_subnet_info
 version_added: 1.0.0
@@ -25,12 +25,12 @@ options:
     type: dict
     default: {}
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all VPC subnets
@@ -66,9 +66,9 @@ EXAMPLES = '''
 
 - set_fact:
     subnet_ids: "{{ subnet_info.results | sum(attribute='subnets', start=[]) | map(attribute='subnet_id') }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 subnets:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -140,7 +140,7 @@ subnets:
                             description: The CIDR block association state.
                             returned: always
                             type: str
-'''
+"""
 
 try:
     import botocore

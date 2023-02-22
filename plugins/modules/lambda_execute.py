@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: lambda_execute
 version_added: 5.0.0
@@ -14,8 +14,8 @@ description:
     The usage did not change.
   - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
 author:
   - "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
@@ -69,9 +69,9 @@ options:
       - A dictionary in any form to be provided as input to the Lambda function.
     default: {}
     type: dict
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - amazon.aws.lambda_execute:
     name: test-function
     # the payload is automatically serialized and sent to the function
@@ -105,9 +105,9 @@ EXAMPLES = '''
 - amazon.aws.lambda_execute:
     name: test-function
     version_qualifier: PRODUCTION
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 result:
     description: Resulting data structure from a successful task execution.
     returned: success
@@ -127,7 +127,7 @@ result:
             type: int
             sample: 200
             returned: always
-'''
+"""
 
 import base64
 import json

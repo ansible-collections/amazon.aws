@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: route53_health_check
 version_added: 5.0.0
@@ -122,13 +122,13 @@ author:
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create a health-check for host1.example.com and use it in record
   amazon.aws.route53_health_check:
     state: present
@@ -190,10 +190,9 @@ EXAMPLES = '''
   amazon.aws.route53_health_check:
     state: absent
     id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
+"""
 
-'''
-
-RETURN = r'''
+RETURN = r"""
 health_check:
   description: Information about the health check.
   returned: success
@@ -274,7 +273,7 @@ health_check:
       type: dict
       returned: When the health check exists.
       sample: '{"my_key": "my_value"}'
-'''
+"""
 
 import uuid
 

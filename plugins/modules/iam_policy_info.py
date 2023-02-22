@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_policy_info
 version_added: 5.0.0
@@ -31,13 +31,12 @@ options:
 author:
   - Mark Chappell (@tremble)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Describe all inline IAM policies on an IAM User
   amazon.aws.iam_policy_info:
     iam_type: user
@@ -48,9 +47,9 @@ EXAMPLES = '''
     iam_type: role
     iam_name: example_role
     policy_name: example_policy
+"""
 
-'''
-RETURN = '''
+RETURN = r"""
 policies:
     description: A list containing the matching IAM inline policy names and their data
     returned: success
@@ -72,7 +71,7 @@ all_policy_names:
     description: A list of names of all of the IAM inline policies on the queried object
     returned: success
     type: list
-'''
+"""
 
 try:
     import botocore

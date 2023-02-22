@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_bucket
 version_added: 1.0.0
@@ -181,9 +181,9 @@ notes:
   - Support for the C(S3_URL) environment variable has been
     deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
     or the C(AWS_URL) environment variable.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple S3 bucket
@@ -283,9 +283,9 @@ EXAMPLES = r'''
     name: mys3bucket
     state: present
     acl: public-read
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 encryption:
     description:
         - Server-side encryption of the objects in the S3 bucket.
@@ -345,7 +345,7 @@ acl:
     type: dict
     returned: I(state=present)
     sample: 'public-read'
-'''
+"""
 
 import json
 import time

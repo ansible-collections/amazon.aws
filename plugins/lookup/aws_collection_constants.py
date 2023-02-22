@@ -1,7 +1,7 @@
 # (c) 2023 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_collection_constants
 author:
   - Mark Chappell (@tremble)
@@ -21,12 +21,12 @@ options:
       - COMMUNITY_AWS_COLLECTION_VERSION
       - COMMUNITY_AWS_COLLECTION_NAME
     required: True
-'''
-
-EXAMPLES = """
 """
 
-RETURN = """
+EXAMPLES = r"""
+"""
+
+RETURN = r"""
 _raw:
   description: value
   type: str

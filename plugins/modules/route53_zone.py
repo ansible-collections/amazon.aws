@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: route53_zone
 short_description: add or delete Route53 zones
 version_added: 5.0.0
@@ -45,17 +45,17 @@ options:
             - Note that you can't associate a reusable delegation set with a private hosted zone.
         type: str
 extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
     - amazon.aws.tags
     - amazon.aws.boto3
 notes:
     - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 author:
     - "Christopher Troup (@minichate)"
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: create a public zone
   amazon.aws.route53_zone:
     zone: example.com
@@ -93,9 +93,9 @@ EXAMPLES = r'''
     tags:
         Support: Ansible Community
     purge_tags: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 comment:
     description: optional hosted zone comment
     returned: when hosted zone exists
@@ -135,7 +135,7 @@ tags:
     description: tags associated with the zone
     returned: when tags are defined
     type: dict
-'''
+"""
 
 import time
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule

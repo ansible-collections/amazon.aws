@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_nat_gateway
 version_added: 1.0.0
@@ -81,13 +81,13 @@ author:
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 1.4.0.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create new nat gateway with client token.
@@ -182,9 +182,9 @@ EXAMPLES = r'''
         Tag3: tag3
     wait: true
   register: update_tags_nat_gateway
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 create_time:
   description: The ISO 8601 date time format in UTC.
   returned: In all cases.
@@ -229,7 +229,7 @@ nat_gateway_addresses:
         'allocation_id': 'eipalloc-12345'
       }
   ]
-'''
+"""
 
 import datetime
 

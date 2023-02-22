@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_dhcp_option_info
 version_added: 1.0.0
@@ -29,12 +29,12 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all DHCP Option sets for an account or profile
@@ -57,10 +57,9 @@ EXAMPLES = '''
     profile: production
     dhcp_options_ids: dopt-123fece2
   register: dhcp_info
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 dhcp_options:
     description: The DHCP options created, associated or found.
     returned: always
@@ -146,7 +145,7 @@ changed:
     description: True if listing the dhcp options succeeds.
     type: bool
     returned: always
-'''
+"""
 
 try:
     import botocore

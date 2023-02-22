@@ -1,7 +1,7 @@
 # Copyright (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_rds
 short_description: RDS instance inventory source
 description:
@@ -57,9 +57,9 @@ extends_documentation_fragment:
   - amazon.aws.assume_role.plugins
 author:
   - Sloane Hertel (@s-hertel)
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 plugin: aws_rds
 regions:
   - us-east-1
@@ -73,7 +73,7 @@ keyed_groups:
   - key: region
 hostvars_prefix: aws_
 hostvars_suffix: _rds
-'''
+"""
 
 try:
     import botocore

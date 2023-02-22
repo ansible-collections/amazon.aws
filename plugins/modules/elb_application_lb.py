@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elb_application_lb
 version_added: 5.0.0
@@ -216,17 +216,17 @@ options:
     version_added: 3.2.0
     version_added_collection: community.aws
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
 
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.
   - Listener rules are matched based on priority. If a rule's priority is changed then a new rule will be created.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ALB and attach a listener
@@ -341,10 +341,9 @@ EXAMPLES = r'''
 - amazon.aws.elb_application_lb:
     name: myalb
     state: absent
+"""
 
-'''
-
-RETURN = r'''
+RETURN = r"""
 access_logs_s3_bucket:
     description: The name of the S3 bucket for the access logs.
     returned: when state is present
@@ -527,7 +526,8 @@ waf_fail_open_enabled:
     returned: when state is present
     type: bool
     sample: false
-'''
+"""
+
 try:
     import botocore
 except ImportError:

@@ -3,7 +3,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_subnet_group
 version_added: 5.0.0
@@ -40,14 +40,13 @@ author:
   - "Scott Anderson (@tastychutney)"
   - "Alina Buzachis (@alinabuzachis)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add or change a subnet group
   amazon.aws.rds_subnet_group:
     state: present
@@ -73,9 +72,9 @@ EXAMPLES = r'''
   amazon.aws.rds_subnet_group:
     state: absent
     name: norwegian-blue
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 changed:
     description: True if listing the RDS subnet group succeeds.
     type: bool
@@ -175,7 +174,7 @@ subnet_group:
             sample:
                 tag1: Tag1
                 tag2: Tag2
-'''
+"""
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule

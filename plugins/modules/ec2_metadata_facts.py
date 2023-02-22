@@ -3,7 +3,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_metadata_facts
 version_added: 1.0.0
@@ -22,18 +22,18 @@ description:
       is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.
 notes:
     - Parameters to filter on ec2_metadata_facts may be added later.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Gather EC2 metadata facts
 - amazon.aws.ec2_metadata_facts:
 
 - debug:
     msg: "This instance is a t1.micro"
   when: ansible_ec2_instance_type == "t1.micro"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 ansible_facts:
     description: Dictionary of new facts representing discovered properties of the EC2 instance.
     returned: changed
@@ -431,7 +431,7 @@ ansible_facts:
             description: The instance user data.
             type: str
             sample: "#!/bin/bash"
-'''
+"""
 
 import json
 import re

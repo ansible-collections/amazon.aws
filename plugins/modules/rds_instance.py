@@ -2,7 +2,7 @@
 # Copyright (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_instance
 version_added: 5.0.0
@@ -11,8 +11,8 @@ description:
  - Create, modify, and delete RDS instances.
  - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
- - amazon.aws.aws
- - amazon.aws.ec2
+ - amazon.aws.common.modules
+ - amazon.aws.region.modules
  - amazon.aws.tags
  - amazon.aws.boto3
 author:
@@ -248,7 +248,7 @@ options:
     master_user_password:
         description:
           - An 8-41 character password for the master database user. The password can contain any printable ASCII character
-            except "/", """, or "@". To modify the password use I(force_update_password). Use I(apply immediately) to change
+            except C(/), C("), or C(@). To modify the password use I(force_update_password). Use I(apply immediately) to change
             the password immediately, otherwise it is updated during the next maintenance window.
         aliases:
           - password
@@ -451,9 +451,9 @@ options:
         default: True
         version_added: 1.5.0
         version_added_collection: community.aws
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: create minimal aurora instance in default VPC and default subnet group
   amazon.aws.rds_instance:
@@ -549,9 +549,9 @@ EXAMPLES = r'''
     engine: mariadb
     state: present
   register: restored_db
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allocated_storage:
   description: The allocated storage size in gigabytes. This is always 1 for aurora database engines.
   returned: always
@@ -853,7 +853,7 @@ vpc_security_groups:
       returned: always
       type: str
       sample: sg-12345678
-'''
+"""
 
 from time import sleep
 

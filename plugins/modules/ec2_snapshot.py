@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_snapshot
 version_added: 1.0.0
@@ -70,12 +70,12 @@ options:
     type: int
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Simple snapshot of volume using volume_id
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
@@ -104,9 +104,9 @@ EXAMPLES = '''
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     last_snapshot_min_age: 60
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 snapshot_id:
     description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
     type: str
@@ -127,7 +127,7 @@ volume_size:
     type: int
     returned: always
     sample: 8
-'''
+"""
 
 import datetime
 

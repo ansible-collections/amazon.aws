@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: route53_info
 short_description: Retrieves route53 details using AWS methods
 version_added: 5.0.0
@@ -126,13 +126,12 @@ options:
 author:
   - Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all hosted zones
 - name: List all hosted zones
   amazon.aws.route53_info:
@@ -201,9 +200,9 @@ EXAMPLES = r'''
         hosted_zone_id: "{{ AWSINFO.zone_id }}"
         start_record_name: "host1.workshop.test.io"
       register: RECORDS
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 resource_record_sets:
     description: A list of resource record sets returned by list_resource_record_sets in boto3.
     returned: when I(query=record_sets)
@@ -488,7 +487,7 @@ HealthCheck:
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: dict
     returned: when I(query=health_check) and I(health_check_method=details)
-'''
+"""
 
 try:
     import botocore

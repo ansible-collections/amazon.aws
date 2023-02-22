@@ -1,0 +1,2 @@
+trivial:
+- bulk update module docs to use new fragment names (https://github.com/ansible-collections/amazon.aws/pull/1382).

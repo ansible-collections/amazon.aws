@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_endpoint_service_info
 short_description: Retrieves AWS VPC endpoint service details
 version_added: 1.5.0
@@ -24,20 +24,20 @@ options:
 author:
   - Mark Chappell (@tremble)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all supported AWS services for VPC endpoints
 - name: List supported AWS endpoint services
   amazon.aws.ec2_vpc_endpoint_service_info:
     region: ap-southeast-2
   register: supported_endpoint_services
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service_names:
   description: List of supported AWS VPC endpoint service names.
   returned: success
@@ -106,7 +106,7 @@ service_details:
       - The verification state of the VPC endpoint service.
       - Consumers of an endpoint service cannot use the private name when the state is not C(verified).
       type: str
-'''
+"""
 
 try:
     import botocore

@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_nat_gateway_info
 short_description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods
 version_added: 1.0.0
@@ -24,12 +24,12 @@ options:
     default: {}
 author: Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all nat gateways
 - name: List all managed nat gateways in ap-southeast-2
   amazon.aws.ec2_vpc_nat_gateway_info:
@@ -62,9 +62,9 @@ EXAMPLES = r'''
       subnet-id: subnet-12345678
       state: ['available']
   register: existing_nat_gateways
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 changed:
   description: True if listing the internet gateways succeeds.
   type: bool
@@ -139,7 +139,7 @@ result:
         sample:
             Tag1: tag1
             Tag_2: tag_2
-'''
+"""
 
 
 try:

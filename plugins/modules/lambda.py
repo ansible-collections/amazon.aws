@@ -2,7 +2,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: lambda
 version_added: 5.0.0
@@ -143,13 +143,13 @@ options:
 author:
   - 'Steyn Huizinga (@steynovich)'
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Create Lambda functions
 - name: looped creation
   amazon.aws.lambda:
@@ -211,9 +211,9 @@ EXAMPLES = r'''
     handler: 'hello_python.my_handler'
     layers:
         - layer_version_arn: 'arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7'
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 code:
     description: The lambda function's code returned by get_function in boto3.
     returned: success
@@ -383,7 +383,7 @@ configuration:
                     description: The Amazon Resource Name (ARN) of a signing job.
                     returned: always
                     type: str
-'''
+"""
 
 import base64
 import hashlib

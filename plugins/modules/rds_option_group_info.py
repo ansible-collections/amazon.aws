@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: rds_option_group_info
 short_description: rds_option_group_info module
@@ -44,12 +44,12 @@ options:
         default: ''
         required: false
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: List an option group
@@ -62,9 +62,9 @@ EXAMPLES = r'''
     region: ap-southeast-2
     profile: production
   register: option_group
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 changed:
     description: True if listing the RDS option group succeeds.
     type: bool
@@ -231,7 +231,7 @@ option_groups_list:
                 "Ansible": "Test"
             }
 
-'''
+"""
 
 try:
     import botocore

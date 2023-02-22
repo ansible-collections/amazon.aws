@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudtrail_info
 version_added: 5.0.0
@@ -23,12 +23,12 @@ options:
     default: true
     description: Specifies whether to include shadow trails in the response.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all trails
@@ -38,10 +38,9 @@ EXAMPLES = '''
 - amazon.aws.cloudtrail_info:
     trail_names:
       - arn:aws:cloudtrail:us-east-2:123456789012:trail/MyTrail
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 trail_list:
     description: List of trail objects. Each element consists of a dict with all the information related to that cloudtrail.
     type: list
@@ -147,8 +146,7 @@ trail_list:
             type: dict
             returned: always
             sample: "{ 'my_tag_key': 'my_tag_value' }"
-
-'''
+"""
 
 try:
     import botocore

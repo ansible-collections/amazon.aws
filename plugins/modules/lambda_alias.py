@@ -2,7 +2,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: lambda_alias
 version_added: 5.0.0
@@ -46,13 +46,12 @@ options:
     type: int
     default: 0
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 ---
 # Simple example to create a lambda function and publish a version
 - hosts: localhost
@@ -113,9 +112,9 @@ EXAMPLES = '''
       name: Prod
       version: "{{ production_version }}"
       description: "Production is version {{ production_version }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 ---
 alias_arn:
     description: Full ARN of the function, including the alias
@@ -142,7 +141,7 @@ revision_id:
     returned: success
     type: str
     sample: 12345678-1234-1234-1234-123456789abc
-'''
+"""
 
 import re
 
