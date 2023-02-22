@@ -193,7 +193,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS access key ID.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variables may also be used in decreasing order of preference.  Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>access_key</em> will always fall back to the environment variables if set.</p>
 <p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
@@ -416,7 +416,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>A named AWS profile to use for authentication.</p>
 <p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable may also be used.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable may also be used.  Prior to release 6.0.0 the <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable will be ignored if any of <em>access_key</em>, <em>secret_key</em>, or <em>session_token</em> are passed.  After release 6.0.0 <em>profile</em> will always fall back to the <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable if set.</p>
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
@@ -471,7 +471,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS secret access key.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>, or <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>, or <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variables may also be used in decreasing order of preference.  Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>secret_key</em> will always fall back to the environment variables if set.</p>
 <p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
@@ -489,7 +489,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS STS session token for use with temporary credentials.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code> environment variables may also be used in decreasing order of preference. Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>session_token</em> will always fall back to the environment variables if set.</p>
 <p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
 <p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
