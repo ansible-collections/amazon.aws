@@ -113,7 +113,7 @@ EXAMPLES = r"""
     state: present
     engine: memcached
     cache_engine_version: 1.4.14
-    node_type: cache.m1.small
+    node_type: cache.m3.small
     num_nodes: 1
     cache_port: 11211
     cache_security_groups:
