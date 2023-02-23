@@ -138,6 +138,9 @@ options:
               - A list of ALB Listener Rules.
               - 'For the complete documentation of possible Conditions and Actions please see the boto3 documentation:'
               - 'https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule'
+              - >
+                Keep in mind that AWS uses default values for parameters that are not requested. For example for I(Scope)
+                and I(SessionTimeout) when the action type is C(authenticate-oidc).
             suboptions:
                 Conditions:
                     type: list
