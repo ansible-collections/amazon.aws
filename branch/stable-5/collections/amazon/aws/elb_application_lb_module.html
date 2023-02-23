@@ -447,6 +447,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of ALB Listener Rules.</p>
 <p>For the complete documentation of possible Conditions and Actions please see the boto3 documentation:</p>
 <p><a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule</a></p>
+<p>Keep in mind that AWS uses default values for parameters that are not requested. For example for <em>Scope</em> and <em>SessionTimeout</em> when the action type is <code class="docutils literal notranslate"><span class="pre">authenticate-oidc</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
