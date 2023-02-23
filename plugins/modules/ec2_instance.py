@@ -1831,8 +1831,8 @@ def enforce_count(existing_matches, module, desired_module_state):
             module.exit_json(
                 changed=False,
                 instances=[pretty_instance(i) for i in existing_matches],
-                instance_ids=[i['InstanceId'] for i in existing_matches],
-                msg='{0} instances already running, nothing to do.'.format(exact_count)
+                instance_ids=[i["InstanceId"] for i in existing_matches],
+                msg=f"{exact_count} instances already running, nothing to do.",
             )
 
         elif current_count < exact_count:
@@ -1853,7 +1853,7 @@ def enforce_count(existing_matches, module, desired_module_state):
                     changed=True,
                     terminated_ids=terminate_ids,
                     instance_ids=all_instance_ids,
-                    msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids)
+                    msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
                 )
             # terminate instances
             try:
@@ -1888,19 +1888,19 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         # If check mode is enabled,suspend 'ensure function'.
         if module.check_mode:
             if existing_matches:
-                instance_ids = [x['InstanceId'] for x in existing_matches]
+                instance_ids = [x["InstanceId"] for x in existing_matches]
                 module.exit_json(
                     changed=True,
                     instance_ids=instance_ids,
                     instances=existing_matches,
                     spec=instance_spec,
-                    msg='Would have launched instances if not in check_mode.',
+                    msg="Would have launched instances if not in check_mode.",
                 )
             else:
                 module.exit_json(
                     changed=True,
                     spec=instance_spec,
-                    msg='Would have launched instances if not in check_mode.',
+                    msg="Would have launched instances if not in check_mode.",
                 )
         instance_response = run_instances(**instance_spec)
         instances = instance_response['Instances']
@@ -1932,8 +1932,8 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         if existing_matches:
             # If we came from enforce_count, create a second list to distinguish
             # between existing and new instances when returning the entire cohort
-            all_instance_ids = [x['InstanceId'] for x in existing_matches] + instance_ids
-        if not module.params.get('wait'):
+            all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
+        if not module.params.get("wait"):
             if existing_matches:
                 module.exit_json(
                     changed=True,
