@@ -92,16 +92,31 @@ def _prune_ForwardConfig(action):
     return newAction
 
 
-# the AWS api won't return the client secret, so we'll have to remove it
-# or the module will always see the new and current actions as different
-# and try to apply the same config
+# remove the client secret if UseExistingClientSecret, because aws won't return it
+# add default values when they are not requested
 def _prune_secret(action):
     if action['Type'] != 'authenticate-oidc':
         return action
 
-    action['AuthenticateOidcConfig'].pop('ClientSecret', None)
+    if not action['AuthenticateOidcConfig'].get('Scope', False):
+        action['AuthenticateOidcConfig']['Scope'] = 'openid'
+
+    if not action['AuthenticateOidcConfig'].get('SessionTimeout', False):
+        action['AuthenticateOidcConfig']['SessionTimeout'] = 604800
+
     if action['AuthenticateOidcConfig'].get('UseExistingClientSecret', False):
-        action['AuthenticateOidcConfig'].pop('UseExistingClientSecret')
+        action['AuthenticateOidcConfig'].pop('ClientSecret', None)
+
+    return action
+
+
+# while AWS api also won't return UseExistingClientSecret key
+# it must be added, because it's requested and compared
+def _append_use_existing_client_secretn(action):
+    if action['Type'] != 'authenticate-oidc':
+        return action
+
+    action['AuthenticateOidcConfig']['UseExistingClientSecret'] = True
 
     return action
 
@@ -996,9 +1011,10 @@ class ELBListenerRules(object):
             current_actions_sorted = _sort_actions(current_rule['Actions'])
             new_actions_sorted = _sort_actions(new_rule['Actions'])
 
+            new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
             new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
+            if [_prune_ForwardConfig(i) for i in new_current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
                 modified_rule['Actions'] = new_rule['Actions']
         # If the action lengths are different, then replace with the new actions
         else:
