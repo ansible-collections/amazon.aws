@@ -16,7 +16,7 @@ prior to preparing a release.
   deprecation announcements.
 * Major releases may also include breaking changes.
 
-Releases to `Ansible Galaxy <https://galaxy.ansible.com/>`_ are automated through GitHub and Zuul
+Releases to `Ansible Galaxy <https://galaxy.ansible.com>`_ are automated through GitHub and Zuul
 integrations.
 
 Major releases
@@ -36,11 +36,12 @@ Preparing the branches involves creating a new ``stable`` branch, updating docum
 bumping the version for the ``main`` branch.
 
 Generating the release involves updating the version information, creating the changelog and
-tagging the release.  This part of the process is identical to performing :ref:`Minor and Patch releases`
+tagging the release.  This part of the process is identical to performing
+`Minor and Patch releases<ansible_collections.amazon.aws.docsite.minor_releases>`
 and will be covered in that section.
 
 Pre-flight checks
-================
+=================
 
 It's generally advisable to ask in the `Ansible + AWS Matrix chat room
 <https://matrix.to/#/#aws:ansible.com>`_ prior to preparing a release to see if folks have any
@@ -139,15 +140,16 @@ Next steps
 Once these pull requests have been merged there should be a new ``stable`` branch for the release
 series (for example ``stable-6`` for all ``6.x.y`` releases) and the ``main`` branch should have
 been updated.  After which you can continue the major release process by following the steps for
-:ref:`Minor and Patch releases`.
+`Minor and Patch releases<ansible_collections.amazon.aws.docsite.minor_releases>`.
 
 
-.. _Minor and Patch releases:
+.. _ansible_collections.amazon.aws.docsite.minor_releases:
 
 Minor and Patch releases
 ************************
 
 .. note::
+
   The examples below will be based upon preparing the major release ``6.0.0`` using the ``stable-6``
   branch.  While ``6.0.0`` is a major release, this part of the process is identical for major,
   minor and patch releases.
@@ -192,6 +194,7 @@ information.
 **galaxy.yml:**
 
 .. code-block:: yaml
+
   namespace: amazon
   name: aws
   version: 6.0.0
@@ -200,6 +203,7 @@ information.
 **plugins/module_utils/common.py:**
 
 .. code-block:: python
+
    AMAZON_AWS_COLLECTION_VERSION = "6.0.0"
 
 .. note::
@@ -225,6 +229,7 @@ If you've not already installed these tools then you'll need to do so (this can 
 environment if desired):
 
 .. code-block:: bash
+
    pip install ansible sphinx-ansible-theme antsibull-changelog antsibull-docs
 
 Add a release_summary changelog fragment
@@ -237,6 +242,7 @@ changelog.  For example, the `release summary for 5.2.0
 **changelog/fragments/release-summary.yml:**
 
 .. code-block:: yaml
+
   release_summary: |
     Add a short description highlighting some of the key changes in the release.
 
@@ -265,10 +271,12 @@ generation, fix the original fragment, and re-generate the final changelog (This
 commit small changes as you go).
 
 .. note::
+
   Releases for amazon.aws should either be prepared by someone from the Ansible Cloud Content
   team, or be approved by at least one person from the Ansible Cloud Content team.
 
 .. warning::
+
   Prior to triggering the merge for the release pull request, please warn the `Ansible + AWS Matrix
   chat room <https://matrix.to/#/#aws:ansible.com>`_ the final tagging (which releases the code to
   `Ansible Galaxy <https://galaxy.ansible.com>`_) should be done using the pull request commit.
@@ -276,7 +284,7 @@ commit small changes as you go).
 Tag the release
 ===============
 
-Pushing the release to `Ansible Galaxy <https://galaxy.ansible.com/>`_ is performed by Zuul.  When
+Pushing the release to `Ansible Galaxy <https://galaxy.ansible.com>`_ is performed by Zuul.  When
 a tag is pushed GitHub Zuul will automatically build the relevant artifacts and push them to Galaxy.
 
 .. code-block:: bash
@@ -307,6 +315,7 @@ For more information (and some examples) see the `Ansible News Working Group wik
   As part of the next release cycle please add an example here.
 
 .. .. code-block:: none
+..
 ..   @newsbot [amazon.aws 6.0.0](https://github.com/ansible-collections/amazon.aws/tree/6.0.0) has been released.
      This is a major release, and includes XXX WRITE ME XXX
      [see changelog for more details](https://github.com/ansible-collections/amazon.aws/blob/6.0.0/CHANGELOG.rst)
