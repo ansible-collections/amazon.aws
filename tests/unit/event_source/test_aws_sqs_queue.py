@@ -39,7 +39,7 @@ async def test_receive_from_sqs(eda_queue):
                 {
                     "region": "us-east-1",
                     "name": "eda",
-                    "delay": 1,
+                    "delay_seconds": 1,
                 },
             )
         assert eda_queue.queue[0] == {"body": "Hello World", "meta": {"MessageId": "1"}}

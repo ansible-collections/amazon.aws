@@ -4,23 +4,24 @@ aws_cloudtrail.py
 An ansible-rulebook event source module for getting events from an AWS CloudTrail
 
 Arguments:
-    connection        - Parameters used to create AWS session
-                        supporters parameters are: region_name, api_version,
-                        use_ssl, verify, endpoint_url, aws_access_key_id,
-                        aws_secret_access_key, aws_session_token
-    lookup_attributes - The optional list of lookup attributes.
+    access_key:    Optional AWS access key ID
+    secret_key:    Optional AWS secret access key
+    session_token: Optional STS session token for use with temporary credentials
+    endpoint_url:  Optional URL to connect to instead of the default AWS endpoints
+    region:        Optional AWS region to use
+    delay_seconds: The number of seconds to wait between polling (default 10sec)
+
+    lookup_attributes:  The optional list of lookup attributes.
                         lookup attribute are dictionnary with an AttributeKey (string),
                         which specifies an attribute on which to filter the events
                         returned and an AttributeValue (string) which specifies
                         a value for the specified AttributeKey
-    event_category    - The optional event category to return. (e.g. 'insight')
-    delay             - The number of seconds to wait between polling (default 10sec)
+    event_category:     The optional event category to return. (e.g. 'insight')
 
 Example:
 
     - ansible.eda.aws_cloudtrail:
-        connection:
-            region_name: us-east-1
+        region: us-east-1
         lookup_attributes:
             - AttributeKey: 'EventSource'
               AttributeValue: 'ec2.amazonaws.com'
@@ -36,6 +37,8 @@ from datetime import datetime
 from typing import Any, Dict
 
 from aiobotocore.session import get_session
+
+from ..utils.aws_utils import connection_args
 
 
 def _cloudtrail_event_to_dict(event):
@@ -74,7 +77,7 @@ ARGS_MAPPING = {
 
 
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):
-    delay = args.get("delay", 10)
+    delay = int(args.get("delay_seconds", 10))
 
     session = get_session()
     params = {}
@@ -84,7 +87,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
 
     params["StartTime"] = datetime.utcnow()
 
-    async with session.create_client("cloudtrail", **args.get("connection")) as client:
+    async with session.create_client("cloudtrail", **connection_args(args)) as client:
         event_time = None
         event_ids = []
         while True:
