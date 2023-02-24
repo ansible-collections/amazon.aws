@@ -1113,11 +1113,31 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-changed_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-return-changed-ids"><strong>changed_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-changed_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>a list of the set of ec2 instance IDs changed by the module action</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when instances that must be present are launched</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;i-0123456789abcdef0&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instance_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-return-instance-ids"><strong>instance_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-instance_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>a list of ec2 instance IDs matching the provided specification and filters</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;i-0123456789abcdef0&quot;,</span> <span class="pre">&quot;i-0123456789abcdef1&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-return-instances"><strong>instances</strong></p>
 <a class="ansibleOptionLink" href="#return-instances" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>a list of ec2 instances</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when wait == true</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when wait == true or when matching instances already exist</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1811,6 +1831,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the VPC the instance is in.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0011223344&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-terminated_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-return-terminated-ids"><strong>terminated_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-terminated_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>a list of the set of ec2 instance IDs terminated by the module action</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when instances that must be absent are terminated</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;i-0123456789abcdef1&quot;]</span></code></p>
 </div></td>
 </tr>
 </tbody>
