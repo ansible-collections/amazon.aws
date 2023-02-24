@@ -158,7 +158,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Get inventory hosts from Amazon Web Services EC2.</p></li>
-<li><p>Uses a YAML configuration file that ends with <code class="docutils literal notranslate"><span class="pre">aws_ec2.{yml|yaml}</span></code>.</p></li>
+<li><p>The inventory file is a YAML configuration file and must end with <code class="docutils literal notranslate"><span class="pre">aws_ec2.{yml|yaml}</span></code>. Example: <code class="docutils literal notranslate"><span class="pre">my_inventory.aws_ec2.yml</span></code>.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -683,12 +683,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Minimal example using environment vars or instance role credentials</span>
 <span class="c1"># Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 
 <span class="c1"># Example using filters, ignoring permission errors, and specifying the hostname precedence</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="c1"># The values for profile, access key, secret key and token can be hardcoded like:</span>
 <span class="nt">boto_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
 <span class="c1"># or you could use Jinja as:</span>
@@ -725,7 +725,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="nt">allow_duplicated_hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 
 <span class="c1"># Example using constructed features to create groups and set ansible_host</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
@@ -761,7 +761,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
 
 <span class="c1"># Example using include_filters and exclude_filters to compose the inventory.</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
@@ -775,7 +775,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_first_tag&#39;</span>
 
 <span class="c1"># Example using groups to assign the running hosts to a group based on vpc_id</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">boto_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
 <span class="c1"># Populate inventory with instances in these regions</span>
 <span class="nt">regions</span><span class="p">:</span>
@@ -791,7 +791,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="nt">groups</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
 <span class="c1"># Define prefix and suffix for host variables coming from AWS.</span>
-<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws_&#39;</span>
