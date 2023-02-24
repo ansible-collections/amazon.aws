@@ -533,9 +533,27 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+instance_ids:
+    description: a list of ec2 instance IDs matching the provided specification and filters
+    returned: always
+    type: list
+    sample: ["i-0123456789abcdef0", "i-0123456789abcdef1"]
+    version_added: 5.3.0
+changed_ids:
+    description: a list of the set of ec2 instance IDs changed by the module action
+    returned: when instances that must be present are launched
+    type: list
+    sample: ["i-0123456789abcdef0"]
+    version_added: 5.3.0
+terminated_ids:
+    description: a list of the set of ec2 instance IDs terminated by the module action
+    returned: when instances that must be absent are terminated
+    type: list
+    sample: ["i-0123456789abcdef1"]
+    version_added: 5.3.0
 instances:
     description: a list of ec2 instances
-    returned: when wait == true
+    returned: when wait == true or when matching instances already exist
     type: complex
     contains:
         ami_launch_index:
@@ -1812,7 +1830,9 @@ def enforce_count(existing_matches, module, desired_module_state):
         if current_count == exact_count:
             module.exit_json(
                 changed=False,
-                msg='{0} instances already running, nothing to do.'.format(exact_count)
+                instances=[pretty_instance(i) for i in existing_matches],
+                instance_ids=[i["InstanceId"] for i in existing_matches],
+                msg=f"{exact_count} instances already running, nothing to do.",
             )
 
         elif current_count < exact_count:
@@ -1829,7 +1849,12 @@ def enforce_count(existing_matches, module, desired_module_state):
             all_instance_ids = [x['InstanceId'] for x in existing_matches]
             terminate_ids = all_instance_ids[0:to_terminate]
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
+                module.exit_json(
+                    changed=True,
+                    terminated_ids=terminate_ids,
+                    instance_ids=all_instance_ids,
+                    msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
+                )
             # terminate instances
             try:
                 client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
@@ -1838,10 +1863,14 @@ def enforce_count(existing_matches, module, desired_module_state):
                 pass
             except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
                 module.fail_json(e, msg='Unable to terminate instances')
+            # include data for all matched instances in addition to the list of terminations
+            # allowing for recovery of metadata from the destructive operation
             module.exit_json(
                 changed=True,
                 msg='Successfully terminated instances.',
                 terminated_ids=terminate_ids,
+                instance_ids=all_instance_ids,
+                instances=existing_matches,
             )
 
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1858,11 +1887,21 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         instance_spec = build_run_instance_spec(module.params, current_count)
         # If check mode is enabled,suspend 'ensure function'.
         if module.check_mode:
-            module.exit_json(
-                changed=True,
-                spec=instance_spec,
-                msg='Would have launched instances if not in check_mode.',
-            )
+            if existing_matches:
+                instance_ids = [x["InstanceId"] for x in existing_matches]
+                module.exit_json(
+                    changed=True,
+                    instance_ids=instance_ids,
+                    instances=existing_matches,
+                    spec=instance_spec,
+                    msg="Would have launched instances if not in check_mode.",
+                )
+            else:
+                module.exit_json(
+                    changed=True,
+                    spec=instance_spec,
+                    msg="Would have launched instances if not in check_mode.",
+                )
         instance_response = run_instances(**instance_spec)
         instances = instance_response['Instances']
         instance_ids = [i['InstanceId'] for i in instances]
@@ -1890,22 +1929,43 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                     client.modify_instance_attribute(aws_retry=True, **c)
                 except botocore.exceptions.ClientError as e:
                     module.fail_json_aws(e, msg="Could not apply change {0} to new instance.".format(str(c)))
-
-        if not module.params.get('wait'):
-            module.exit_json(
-                changed=True,
-                instance_ids=instance_ids,
-                spec=instance_spec,
-            )
+        if existing_matches:
+            # If we came from enforce_count, create a second list to distinguish
+            # between existing and new instances when returning the entire cohort
+            all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
+        if not module.params.get("wait"):
+            if existing_matches:
+                module.exit_json(
+                    changed=True,
+                    changed_ids=instance_ids,
+                    instance_ids=all_instance_ids,
+                    spec=instance_spec,
+                )
+            else:
+                module.exit_json(
+                    changed=True,
+                    instance_ids=instance_ids,
+                    spec=instance_spec,
+                )
         await_instances(instance_ids, desired_module_state=desired_module_state)
         instances = find_instances(ids=instance_ids)
 
-        module.exit_json(
-            changed=True,
-            instances=[pretty_instance(i) for i in instances],
-            instance_ids=instance_ids,
-            spec=instance_spec,
-        )
+        if existing_matches:
+            all_instances = existing_matches + instances
+            module.exit_json(
+                changed=True,
+                changed_ids=instance_ids,
+                instance_ids=all_instance_ids,
+                instances=[pretty_instance(i) for i in all_instances],
+                spec=instance_spec,
+            )
+        else:
+            module.exit_json(
+                changed=True,
+                instance_ids=instance_ids,
+                instances=[pretty_instance(i) for i in instances],
+                spec=instance_spec,
+            )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to create new EC2 instance")
 
