@@ -1,2 +1,2 @@
 minor_changes:
-- s3_bucket - The option to create a bucket with object lock enabled (https://github.com/ansible-collections/amazon.aws/pull/1372).
+- s3_bucket - add option to support creation of buckets with object lock enabled (https://github.com/ansible-collections/amazon.aws/pull/1372).
