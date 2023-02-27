@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}-object_lock"
+        local_bucket_name: "{{ bucket_name | hash('md5')}}-objectlock"
 
     # ============================================================
 
