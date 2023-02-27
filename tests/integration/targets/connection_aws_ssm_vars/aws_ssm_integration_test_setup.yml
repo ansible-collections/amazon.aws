@@ -1,0 +1,6 @@
+- hosts: localhost
+  roles:
+    - role: ../setup_connection_aws_ssm
+      vars:
+        target_os: fedora
+        credential_vars: True
