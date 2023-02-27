@@ -137,9 +137,9 @@ options:
   object_lock_enabled:
     description:
       - Whether S3 Object Lock to be enabled.
+      - Defaults to C(False) when creating a new bucket.
     type: bool
-    version_added: 6.0.0
-    default: false
+    version_added: 5.3.0
   delete_object_ownership:
     description:
       - Delete bucket's ownership controls.
@@ -663,7 +663,7 @@ def create_or_update_bucket(s3_client, module):
     except botocore.exceptions.ClientError as e:
         object_lock_status = False
     if bucket_is_present:
-        if (object_lock_enabled is None or not object_lock_enabled) and object_lock_status:
+        if object_lock_enabled is False and object_lock_status:
             module.fail_json_aws(e, msg="Disabling object lock is not supported")
         if object_lock_enabled and not object_lock_status:
             module.fail_json_aws(e, msg="Enabling object lock for existing bucket is not supported")
@@ -685,13 +685,20 @@ def bucket_exists(s3_client, bucket_name):
 @AWSRetry.exponential_backoff(max_delay=120)
 def create_bucket(s3_client, bucket_name, location, object_lock_enabled=False):
     try:
+        params = {"Bucket": bucket_name}
+
         configuration = {}
         if location not in ('us-east-1', None):
             configuration['LocationConstraint'] = location
-        if len(configuration) > 0:
-            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=configuration, ObjectLockEnabledForBucket=object_lock_enabled)
-        else:
-            s3_client.create_bucket(Bucket=bucket_name, ObjectLockEnabledForBucket=object_lock_enabled)
+
+        if configuration:
+            params["CreateBucketConfiguration"] = configuration
+
+        if object_lock_enabled is not None:
+            params["ObjectLockEnabledForBucket"] = object_lock_enabled
+
+        s3_client.create_bucket(**params)
+
         return True
     except is_boto3_error_code('BucketAlreadyOwnedByYou'):
         # We should never get here since we check the bucket presence before calling the create_or_update_bucket
@@ -1111,7 +1118,7 @@ def main():
         acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
         validate_bucket_name=dict(type='bool', default=True),
         dualstack=dict(default=False, type="bool"),
-        object_lock_enabled=dict(type='bool', default=False),
+        object_lock_enabled=dict(type="bool"),
     )
 
     required_by = dict(
