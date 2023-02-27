@@ -1,0 +1,50 @@
+name: Integration tests splitter
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'stable-*'
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  test_splitter:
+    name: list test targets
+    env:
+      source_directory: "./source"
+      dependent_directory: "./dependency"
+    runs-on: ubuntu-latest
+    outputs:
+      test_targets: ${{ steps.display.outputs.test_targets }}
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Checkout the community.aws collection repository
+        uses: actions/checkout@v3
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.dependent_directory }}
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+
+      - name: list changes for pull request
+        id: splitter
+        uses: abikouo/github_actions/.github/actions/cloud_integration_test_splitter@main
+        with:
+          collection_path: ${{ env.source_directory }},${{ env.dependent_directory }}
+          base_ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: display targets
+        id: display
+        run: echo "test_targets=${{ steps.splitter.outputs.test_targets }}" >> $GITHUB_OUTPUT
+        shell: bash
