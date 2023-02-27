@@ -660,14 +660,26 @@ def create_or_update_bucket(s3_client, module):
     # -- Object Lock
     try:
         object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
-    except botocore.exceptions.ClientError as e:
-        object_lock_status = False
-    if bucket_is_present:
-        if object_lock_enabled is False and object_lock_status:
-            module.fail_json_aws(e, msg="Disabling object lock is not supported")
-        if object_lock_enabled and not object_lock_status:
-            module.fail_json_aws(e, msg="Enabling object lock for existing bucket is not supported")
-    result["object_lock_enabled"] = object_lock_status
+        result["object_lock_enabled"] = object_lock_status
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if object_lock_enabled is not None:
+            module.fail_json(msg="Fetching bucket object lock state is not supported")
+    except is_boto3_error_code("ObjectLockConfigurationNotFoundError"):  # pylint: disable=duplicate-except
+        result["object_lock_enabled"] = False
+    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        if object_lock_enabled is not None:
+            module.fail_json(msg="Permission denied fetching bucket object lock state")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch bucket object lock state")
+    else:
+        if object_lock_status is not None:
+            if not object_lock_enabled and object_lock_status:
+                module.fail_json(msg="Disabling object lock is not supported")
+            if object_lock_enabled and not object_lock_status:
+                module.fail_json(msg="Enabling object lock for existing bucket is not supported")
 
     # Module exit
     module.exit_json(changed=changed, name=name, **result)

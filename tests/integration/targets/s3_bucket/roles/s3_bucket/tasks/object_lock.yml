@@ -44,8 +44,7 @@
 
     - assert:
         that:
-          - not output.changed
-          - not output.object_lock_enabled
+          - output is failed
 
     - name: Delete test s3 bucket
       s3_bucket:
@@ -81,15 +80,13 @@
 
     - assert:
         that:
-          - not output.changed
-          - output.object_lock_enabled
+          - output is failed
 
-    - name: 'Disable object lock'
+    - name: 'Re-Enable object lock (idempotency)'
       s3_bucket:
         name: '{{ local_bucket_name }}'
         state: present
       register: output
-      ignore_errors: true
 
     - assert:
         that:
