@@ -270,11 +270,15 @@ def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_mater
     if check_mode:
         return {'changed': True, 'key': None, 'msg': 'key pair updated'}
     new_fingerprint = get_key_fingerprint(check_mode, ec2_client, key_material)
+    changed = False
+    msg = "key pair already exists"
     if key['KeyFingerprint'] != new_fingerprint:
         delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
-        key_data = extract_key_data(key)
-        return {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+        msg = "key pair updated"
+        changed = True
+    key_data = extract_key_data(key)
+    return {"changed": changed, "key": key_data, "msg": msg}
 
 
 def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec):
@@ -327,7 +331,7 @@ def handle_existing_key_pair_update(module, ec2_client, name, key):
         changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
         key = find_key_pair(ec2_client, name)
         key_data = extract_key_data(key)
-        result = {'changed': changed, 'key': key_data, 'msg': 'key pair alreday exists'}
+        result = {"changed": changed, "key": key_data, "msg": "key pair already exists"}
     return result
 
 
