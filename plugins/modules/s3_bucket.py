@@ -667,7 +667,7 @@ def create_or_update_bucket(s3_client, module):
             module.fail_json_aws(e, msg="Disabling object lock is not supported")
         if object_lock_enabled and not object_lock_status:
             module.fail_json_aws(e, msg="Enabling object lock for existing bucket is not supported")
-    result['object_lock_enabled'] = object_lock_status
+    result["object_lock_enabled"] = object_lock_status
 
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
@@ -754,10 +754,10 @@ def put_bucket_versioning(s3_client, bucket_name, required_versioning):
     s3_client.put_bucket_versioning(Bucket=bucket_name, VersioningConfiguration={'Status': required_versioning})
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_object_lock_enabled(s3_client, bucket_name):
     object_lock_configuration = s3_client.get_object_lock_configuration(Bucket=bucket_name)
-    return object_lock_configuration['ObjectLockConfiguration']['ObjectLockEnabled'] == 'Enabled'
+    return object_lock_configuration["ObjectLockConfiguration"]["ObjectLockEnabled"] == "Enabled"
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
