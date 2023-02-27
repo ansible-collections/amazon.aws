@@ -387,9 +387,45 @@ def test_update_key_pair_by_key_material_update_needed(m_get_key_fingerprint, m_
     m_extract_key_data.assert_called_with(key)
 
 
-@patch(module_name + '.extract_key_data')
-@patch(module_name + '._create_key_pair')
-@patch(module_name + '.delete_key_pair')
+@patch(module_name + ".extract_key_data")
+@patch(module_name + ".get_key_fingerprint")
+def test_update_key_pair_by_key_material_key_exists(m_get_key_fingerprint, m_extract_key_data):
+    ec2_client = MagicMock()
+
+    key_material = MagicMock()
+    key_fingerprint = MagicMock()
+    tag_spec = MagicMock()
+    key_id = MagicMock()
+    key_name = MagicMock()
+    key = {
+        "KeyName": key_name,
+        "KeyFingerprint": key_fingerprint,
+        "KeyPairId": key_id,
+        "Tags": {},
+    }
+
+    check_mode = False
+    m_get_key_fingerprint.return_value = key_fingerprint
+    m_extract_key_data.return_value = {
+        "name": key_name,
+        "fingerprint": key_fingerprint,
+        "id": key_id,
+        "tags": {},
+    }
+
+    expected_result = {"changed": False, "key": m_extract_key_data.return_value, "msg": "key pair already exists"}
+
+    assert expected_result == ec2_key.update_key_pair_by_key_material(
+        check_mode, ec2_client, key_name, key, key_material, tag_spec
+    )
+
+    m_get_key_fingerprint.assert_called_once_with(check_mode, ec2_client, key_material)
+    m_extract_key_data.assert_called_once_with(key)
+
+
+@patch(module_name + ".extract_key_data")
+@patch(module_name + "._create_key_pair")
+@patch(module_name + ".delete_key_pair")
 def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_key_pair, m_extract_key_data):
     module = MagicMock()
     ec2_client = MagicMock()
@@ -416,7 +452,7 @@ def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_
         "type": "rsa"
     }
 
-    expected_result = {'changed': True, 'key': m_extract_key_data.return_value, 'msg': "key pair updated"}
+    expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair updated"}
 
     result = ec2_key.update_key_pair_by_key_type(module.check_mode, ec2_client, name, key_type, tag_spec)
 
@@ -540,7 +576,7 @@ def test_handle_existing_key_pair_else(m_extract_key_data):
         "type": "rsa"
     }
 
-    expected_result = {'changed': False, 'key': m_extract_key_data.return_value, 'msg': 'key pair alreday exists'}
+    expected_result = {"changed": False, "key": m_extract_key_data.return_value, "msg": "key pair already exists"}
 
     result = ec2_key.handle_existing_key_pair_update(module, ec2_client, name, key)
 
