@@ -118,6 +118,11 @@
         src: aws-env-vars.j2
       no_log: yes
 
+    - name: Create out boto3 config file'
+      template:
+        dest: "{{ playbook_dir }}/boto3_config"
+        src: "boto_config.j2"
+
   always:
     - name: Create EC2 Linux vars_to_delete.yml
       template:
