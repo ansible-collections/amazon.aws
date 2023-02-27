@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+PLAYBOOK_DIR=$(pwd)
+set -eux
+
+CMD_ARGS=("$@")
+
+# Destroy Environment
+cleanup() {
+
+    cd "${PLAYBOOK_DIR}"
+    ansible-playbook -c local aws_ssm_integration_test_teardown.yml "${CMD_ARGS[@]}"
+
+}
+
+trap "cleanup" EXIT
+
+# Setup Environment
+ansible-playbook -c local aws_ssm_integration_test_setup.yml "$@"
+
+AWS_CONFIG_FILE="$( pwd )/boto3_config"
+export AWS_CONFIG_FILE
+
+cd ../connection
+
+# Execute Integration tests
+INVENTORY="${PLAYBOOK_DIR}/ssm_inventory" ./test.sh \
+    -e target_hosts=aws_ssm \
+    "$@"
