@@ -49,18 +49,15 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Describe a specific Transit Gateway attachment.
 - community.aws.ec2_transit_gateway_vpc_attachment_info:
-    state: present
     id: 'tgw-attach-0123456789abcdef0'
 
 # Describe all attachments attached to a transit gateway.
 - community.aws.ec2_transit_gateway_vpc_attachment_info:
-    state: present
     filters:
       transit-gateway-id: tgw-0fedcba9876543210'
 
 # Describe all attachments in an account.
 - community.aws.ec2_transit_gateway_vpc_attachment_info:
-    state: present
     filters:
       transit-gateway-id: tgw-0fedcba9876543210'
 '''
