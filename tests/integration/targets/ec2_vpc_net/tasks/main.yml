@@ -114,7 +114,6 @@
           - result.vpc.cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.cidr_block_association_set[0].cidr_block == vpc_cidr
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-          - '"classic_link_enabled" in result.vpc'
           - result.vpc.dhcp_options_id.startswith("dopt-")
           - result.vpc.id.startswith("vpc-")
           - '"instance_tenancy" in result.vpc'
@@ -158,7 +157,6 @@
           - result.vpc.cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.cidr_block_association_set[0].cidr_block == vpc_cidr
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-          - '"classic_link_enabled" in result.vpc'
           - result.vpc.dhcp_options_id.startswith("dopt-")
           - result.vpc.id.startswith("vpc-")
           - '"instance_tenancy" in result.vpc'
@@ -216,8 +214,6 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id == result.vpc.cidr_block_association_set[0].association_id
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block == result.vpc.cidr_block_association_set[0].cidr_block
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-          - '"classic_link_dns_supported" in vpc_info.vpcs[0]'
-          - '"classic_link_enabled" in vpc_info.vpcs[0]'
           - vpc_info.vpcs[0].dhcp_options_id == result.vpc.dhcp_options_id
           - ( vpc_info.vpcs[0].enable_dns_hostnames | bool ) == True
           - ( vpc_info.vpcs[0].enable_dns_support | bool ) == True
@@ -323,8 +319,6 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id == result.vpc.cidr_block_association_set[0].association_id
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block == result.vpc.cidr_block_association_set[0].cidr_block
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-          - '"classic_link_dns_supported" in vpc_info.vpcs[0]'
-          - '"classic_link_enabled" in vpc_info.vpcs[0]'
           - vpc_info.vpcs[0].dhcp_options_id == result.vpc.dhcp_options_id
           - ( vpc_info.vpcs[0].enable_dns_hostnames | bool ) == True
           - ( vpc_info.vpcs[0].enable_dns_support | bool ) == True
@@ -384,7 +378,6 @@
           - result.vpc.cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.cidr_block_association_set[0].cidr_block == vpc_cidr
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-          - '"classic_link_enabled" in result.vpc'
           - result.vpc.dhcp_options_id.startswith("dopt-")
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
