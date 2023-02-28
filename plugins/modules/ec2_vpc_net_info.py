@@ -79,14 +79,6 @@ vpcs:
             description: The IPv4 CIDR block assigned to the VPC.
             returned: always
             type: str
-        classic_link_dns_supported:
-            description: True/False depending on attribute setting for classic link DNS support.
-            returned: always
-            type: bool
-        classic_link_enabled:
-            description: True/False depending on if classic link support is enabled.
-            returned: always
-            type: bool
         enable_dns_hostnames:
             description: True/False depending on attribute setting for DNS hostnames support.
             returned: always

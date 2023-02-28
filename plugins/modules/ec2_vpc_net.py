@@ -135,11 +135,6 @@ vpc:
                 }
             }
         ]
-    classic_link_enabled:
-      description: indicates whether ClassicLink is enabled
-      returned: always
-      type: bool
-      sample: false
     dhcp_options_id:
       description: the id of the DHCP options associated with this VPC
       returned: always
