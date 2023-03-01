@@ -391,6 +391,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpcs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs"><strong>vpcs</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpcs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The VPCs the zone should be a part of (if this is going to be a private zone).</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpcs/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpcs/id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the VPC.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpcs/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs-region"><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpcs/region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The region of the VPC.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-zone"><strong>zone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -429,6 +451,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">myvpc_id</span> <span class="cp">}}</span><span class="s">&#39;</span>
 <span class="w">    </span><span class="nt">vpc_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
 <span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">developer domain</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create a private zone with multiple associated VPCs</span>
+<span class="w">  </span><span class="nt">amazon.aws.route53_zone</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">crossdevel.example.com</span>
+<span class="w">    </span><span class="nt">vpcs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-123456</span>
+<span class="w">        </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-000001</span>
+<span class="w">        </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
+<span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">developer cross-vpc domain</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create a public zone associated with a specific reusable delegation set</span>
 <span class="w">  </span><span class="nt">amazon.aws.route53_zone</span><span class="p">:</span>
@@ -511,7 +543,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>id of vpc attached to private hosted zone</p>
+<td><div class="ansible-option-cell"><p>id of the first vpc attached to private hosted zone (use vpcs for associating multiple).</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-1d36c84f&quot;</span></code></p>
 </div></td>
@@ -520,12 +552,40 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-vpc_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-vpc-region"><strong>vpc_region</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>region of vpc attached to private hosted zone</p>
+<td><div class="ansible-option-cell"><p>region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eu-west-1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vpcs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-vpcs"><strong>vpcs</strong></p>
+<a class="ansibleOptionLink" href="#return-vpcs" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The list of VPCs attached to the private hosted zone</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;[{'id':</span> <span class="pre">'vpc-123456',</span> <span class="pre">'region':</span> <span class="pre">'us-west-2'}]&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vpcs/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-vpcs-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#return-vpcs/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the VPC</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-123456&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vpcs/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-vpcs-region"><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#return-vpcs/region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Region of the VPC</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> for private hosted zone</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eu-west-2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-zone_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-zone-id"><strong>zone_id</strong></p>
 <a class="ansibleOptionLink" href="#return-zone_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
