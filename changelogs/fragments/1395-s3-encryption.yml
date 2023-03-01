@@ -1,0 +1,2 @@
+trivial:
+- s3_bucket - disabled tests related to disabling encryption on S3 buckets, this is no longer supported by AWS, and encryption is enabled by default (https://github.com/ansible-collections/amazon.aws/pull/1395).
