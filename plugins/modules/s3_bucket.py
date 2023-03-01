@@ -70,6 +70,7 @@ options:
     description:
       - Describes the default server-side encryption to apply to new objects in the bucket.
         In order to remove the server-side encryption, the encryption needs to be set to 'none' explicitly.
+      - "Note: Since January 2023 Amazon S3 doesn't support disabling encryption on S3 buckets."
     choices: [ 'none', 'AES256', 'aws:kms' ]
     type: str
   encryption_key_id:
