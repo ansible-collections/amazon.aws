@@ -148,6 +148,14 @@ options:
             description: A cluster query language expression to apply to the constraint.
             required: false
             type: str
+    purge_placement_constraints:
+        version_added: 5.3.0
+        description:
+            - Toggle overwriting of existing placement constraints. This is needed for backwards compatibility.
+            - By default I(purge_placement_constraints=false). In a release after 2024-06-01 this will be changed to I(purge_placement_constraints=true).
+        required: false
+        type: bool
+        default: false
     placement_strategy:
         description:
           - The placement strategy objects to use for tasks in your service. You can specify a maximum of 5 strategy rules per service.
@@ -162,6 +170,14 @@ options:
           field:
             description: The field to apply the placement strategy against.
             type: str
+    purge_placement_strategy:
+        version_added: 5.3.0
+        description:
+            - Toggle overwriting of existing placement strategy. This is needed for backwards compatibility.
+            - By default I(purge_placement_strategy=false). In a release after 2024-06-01 this will be changed to I(purge_placement_strategy=true).
+        required: false
+        type: bool
+        default: false
     force_deletion:
         description:
           - Forcibly delete the service. Required when deleting a service with >0 scale, or no target group.
@@ -396,7 +412,9 @@ service:
             returned: always
             type: int
         loadBalancers:
-            description: A list of load balancer objects
+            description:
+                - A list of load balancer objects
+                - Updating the loadbalancer configuration of an existing service requires botocore>=1.24.14.
             returned: always
             type: complex
             contains:
@@ -822,7 +840,8 @@ class EcsServiceManager:
     def update_service(self, service_name, cluster_name, task_definition, desired_count,
                        deployment_configuration, placement_constraints, placement_strategy,
                        network_configuration, health_check_grace_period_seconds,
-                       force_new_deployment, capacity_provider_strategy, load_balancers):
+                       force_new_deployment, capacity_provider_strategy, load_balancers,
+                       purge_placement_constraints, purge_placement_strategy):
         params = dict(
             cluster=cluster_name,
             service=service_name,
@@ -834,8 +853,14 @@ class EcsServiceManager:
             params['placementConstraints'] = [{key: value for key, value in constraint.items() if value is not None}
                                               for constraint in placement_constraints]
 
+        if purge_placement_constraints and not placement_constraints:
+            params['placementConstraints'] = []
+
         if placement_strategy:
             params['placementStrategy'] = placement_strategy
+
+        if purge_placement_strategy and not placement_strategy:
+            params['placementStrategy'] = []
 
         if network_configuration:
             params['networkConfiguration'] = network_configuration
@@ -907,6 +932,7 @@ def main():
                 expression=dict(required=False, type='str')
             )
         ),
+        purge_placement_constraints=dict(required=False, default=False, type='bool'),
         placement_strategy=dict(
             required=False,
             default=[],
@@ -917,6 +943,7 @@ def main():
                 field=dict(type='str'),
             )
         ),
+        purge_placement_strategy=dict(required=False, default=False, type='bool'),
         health_check_grace_period_seconds=dict(required=False, type='int'),
         network_configuration=dict(required=False, type='dict', options=dict(
             subnets=dict(type='list', elements='str'),
@@ -1061,6 +1088,8 @@ def main():
                                                           module.params['force_new_deployment'],
                                                           capacityProviders,
                                                           updatedLoadBalancers,
+                                                          module.params['purge_placement_constraints'],
+                                                          module.params['purge_placement_strategy'],
                                                           )
 
                 else:
