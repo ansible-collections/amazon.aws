@@ -16,4 +16,4 @@
         - debug:
             var: groups
 
-        - include_tasks: tear_down.yml
+        - include_tasks: tasks/tear_down.yml

@@ -15,7 +15,7 @@
 
         # Create VPC, subnet, security group, and find image_id to create instance
 
-        - include_tasks: setup.yml
+        - include_tasks: tasks/setup.yml
 
         # Create new host, refresh inventory
         - name: create a new host (1/3)

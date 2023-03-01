@@ -18,4 +18,4 @@
       region: '{{ aws_region }}'
 
   tasks:
-    - include_tasks: "{{ task }}.yml"
+    - include_tasks: "tasks/{{ task }}.yml"
