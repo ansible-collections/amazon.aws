@@ -42,33 +42,36 @@
           - output.encryption
           - output.encryption.SSEAlgorithm == 'aws:kms'
 
-    # ============================================================
-
-    - name: Disable encryption from bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        encryption: "none"
-      register: output
-
-    - assert:
-        that:
-          - output.changed
-          - not output.encryption
-
-    - name: Disable encryption from bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        encryption: "none"
-      register: output
-
-    - assert:
-        that:
-          - output is not changed
-          - not output.encryption
-
-    # ============================================================
+    ## # ============================================================
+    ##
+    ## AWS S3 no longer supports disabling S3 encryption
+    ## https://docs.aws.amazon.com/AmazonS3/latest/userguide/default-encryption-faq.html
+    ##
+    ## - name: Disable encryption from bucket
+    ##   s3_bucket:
+    ##     name: '{{ local_bucket_name }}'
+    ##     state: present
+    ##     encryption: "none"
+    ##   register: output
+    ##
+    ## - assert:
+    ##     that:
+    ##       - output.changed
+    ##       - not output.encryption
+    ##
+    ## - name: Disable encryption from bucket
+    ##   s3_bucket:
+    ##     name: '{{ local_bucket_name }}'
+    ##     state: present
+    ##     encryption: "none"
+    ##   register: output
+    ##
+    ## - assert:
+    ##     that:
+    ##       - output is not changed
+    ##       - not output.encryption
+    ##
+    ## # ============================================================
 
     - name: Delete encryption test s3 bucket
       s3_bucket:
