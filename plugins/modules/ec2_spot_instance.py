@@ -523,11 +523,23 @@ def cancel_spot_instance_requests(module, connection):
                                  msg='Would have cancelled Spot request {0}'.format(spot_instance_request_ids))
 
             connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
+
+            if module.params.get('terminate_instances') == True:
+                associated_instances = ([ request['InstanceId'] for request in requests_exist['SpotInstanceRequests'] ])
+                terminate_associated_instances(connection, module, associated_instances)
+
             module.exit_json(changed=changed, msg='Cancelled Spot request {0}'.format(module.params.get('spot_instance_request_ids')))
         else:
             module.exit_json(changed=changed, msg='Spot request not found or already cancelled')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while cancelling the spot instance request')
+
+
+def terminate_associated_instances(connection, module, instance_ids):
+    try:
+        connection.terminate_instances(aws_retry=True, InstanceIds=instance_ids)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json(e, msg='Unable to terminate instances')
 
 
 def main():
@@ -602,15 +614,20 @@ def main():
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
         spot_instance_request_ids=dict(type='list', elements='str'),
+        terminate_instances=dict(type='bool', default='False')
     )
+
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True
     )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
-
     state = module.params['state']
+
+    if module.params.get('terminate_instances') and state != 'absent':
+        module.fail_json('terminate_instances can only be used when state is absent.')
+
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     if state == 'present':
         request_spot_instances(module, connection)
