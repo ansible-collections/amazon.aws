@@ -341,6 +341,213 @@
           - "'Successfully deleted' in output.result"
 
     # ============================================================
+    - name: Create a private zone (new format) (CHECK MODE)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: original comment
+        state: present
+      register: output
+      check_mode: yes
+
+    - assert:
+        that:
+          - output.changed
+
+    - name: Create a private zone (new format)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: original comment
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+
+    # ============================================================
+    - name: Idemptotent update a private zone (new format) (CHECK MODE)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: original comment
+        state: present
+      register: output
+      check_mode: yes
+
+    - assert:
+        that:
+          - not output.changed
+          - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
+
+    - name: Idemptotent update a private zone (new format)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: original comment
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - not output.changed
+          - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
+
+    # ============================================================
+    - name: Update a private zone comment (new format) (CHECK MODE)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: new comment
+        state: present
+      register: output
+      check_mode: yes
+
+    - assert:
+        that:
+          - output.changed
+
+    - name: Update a private zone comment (new format)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        comment: new comment
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+
+    # ============================================================
+    - name: Delete private zone (new format) (CHECK MODE)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        state: absent
+      register: output
+      check_mode: yes
+
+    - assert:
+        that:
+          - output.changed
+          - "'Successfully deleted' in output.result"
+
+    - name: Delete private zone (new format)
+      route53_zone:
+        vpcs:
+          - id: "{{ testing_vpc.vpc.id }}"
+            region: "{{ aws_region }}"
+        zone: "{{ resource_prefix }}.private"
+        state: absent
+      register: output
+
+    # ============================================================
+    - block:
+        - name: Create second VPC for use in testing
+          ec2_vpc_net:
+            name: "{{ resource_prefix }}-vpc2"
+            cidr_block: 10.22.34.0/23
+            tags:
+              Name: Ansible ec2_instance Testing VPC 2
+            tenancy: default
+          register: second_testing_vpc
+
+        - name: Create a private zone with multiple VPCs (CHECK MODE)
+          route53_zone:
+            vpcs:
+              - id: "{{ testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+              - id: "{{ second_testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+            zone: "{{ resource_prefix }}.private"
+            comment: original comment
+            state: present
+          register: output
+          check_mode: yes
+
+        - assert:
+            that:
+              - output.changed
+
+        - name: Create a private zone with multiple VPCs
+          route53_zone:
+            vpcs:
+              - id: "{{ testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+              - id: "{{ second_testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+            zone: "{{ resource_prefix }}.private"
+            comment: original comment
+            state: present
+          register: output
+
+        - assert:
+            that:
+              - output.changed
+              - output.vpc_id == testing_vpc.vpc.id  # The first one for backwards compatibility
+              - output.vpc_region == aws_region
+              - (output.vpcs | length) == 2
+              - output.vpcs.1.id == second_testing_vpc.vpc.id
+              - output.vpcs.1.region == aws_region
+
+        # ============================================================
+        - name: Delete private zone with multiple VPCs (CHECK MODE)
+          route53_zone:
+            vpcs:
+              - id: "{{ testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+              - id: "{{ second_testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+            zone: "{{ resource_prefix }}.private"
+            state: absent
+          register: output
+          check_mode: yes
+
+        - assert:
+            that:
+              - output.changed
+              - "'Successfully deleted' in output.result"
+
+        - name: Delete private zone with multiple VPCs
+          route53_zone:
+            vpcs:
+              - id: "{{ testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+              - id: "{{ second_testing_vpc.vpc.id }}"
+                region: "{{ aws_region }}"
+            zone: "{{ resource_prefix }}.private"
+            state: absent
+          register: output
+
+        - assert:
+            that:
+              - output.changed
+              - "'Successfully deleted' in output.result"
+
+      always:
+        - name: Delete second VPC for use in testing
+          ec2_vpc_net:
+            name: "{{ resource_prefix }}-vpc2"
+            cidr_block: 10.22.34.0/23
+            state: absent
+
+    # ============================================================
     - name: Create a public zone
       route53_zone:
         zone: "{{ resource_prefix }}.public2"
