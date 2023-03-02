@@ -64,6 +64,9 @@
 
   # ============================================================
 
+  - name: Run tests for termianting associated instances
+    import_tasks: terminate_associated_instances.yml
+
   # Assert that spot instance request is created
   - name: Create simple spot instance request
     ec2_spot_instance:
@@ -252,7 +255,6 @@
       that:
         - fake_cancel_result is not changed
         - '"Spot request not found or already cancelled" in fake_cancel_result.msg'
-
 
   always:
 
