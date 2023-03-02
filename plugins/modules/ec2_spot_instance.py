@@ -530,8 +530,8 @@ def cancel_spot_instance_requests(module, connection):
 
             connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
 
-            if module.params.get('terminate_instances') == True:
-                associated_instances = ([ request['InstanceId'] for request in requests_exist['SpotInstanceRequests'] ])
+            if module.params.get("terminate_instances") is True:
+                associated_instances = [request["InstanceId"] for request in requests_exist["SpotInstanceRequests"]]
                 terminate_associated_instances(connection, module, associated_instances)
 
             module.exit_json(changed=changed, msg='Cancelled Spot request {0}'.format(module.params.get('spot_instance_request_ids')))
@@ -545,7 +545,7 @@ def terminate_associated_instances(connection, module, instance_ids):
     try:
         connection.terminate_instances(aws_retry=True, InstanceIds=instance_ids)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json(e, msg='Unable to terminate instances')
+        module.fail_json(e, msg="Unable to terminate instances")
 
 
 def main():
@@ -619,8 +619,8 @@ def main():
         tags=dict(type='dict'),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
-        spot_instance_request_ids=dict(type='list', elements='str'),
-        terminate_instances=dict(type='bool', default='False')
+        spot_instance_request_ids=dict(type="list", elements="str"),
+        terminate_instances=dict(type="bool", default="False"),
     )
 
     module = AnsibleAWSModule(
@@ -628,10 +628,10 @@ def main():
         supports_check_mode=True
     )
 
-    state = module.params['state']
+    state = module.params["state"]
 
-    if module.params.get('terminate_instances') and state != 'absent':
-        module.fail_json('terminate_instances can only be used when state is absent.')
+    if module.params.get("terminate_instances") and state != "absent":
+        module.fail_json("terminate_instances can only be used when state is absent.")
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
