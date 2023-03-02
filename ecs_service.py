@@ -44,7 +44,7 @@ options:
     task_definition:
         description:
           - The task definition the service will run.
-          - This parameter is required when I(state=present).
+          - This parameter is required when I(state=present) unless I(force_new_deployment=True).
           - This parameter is ignored when updating a service with a C(CODE_DEPLOY) deployment controller in which case
             the task definition is managed by Code Pipeline and cannot be updated.
         required: false
@@ -971,14 +971,15 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,
-                              required_if=[('state', 'present', ['task_definition']),
-                                           ('launch_type', 'FARGATE', ['network_configuration'])],
+                              required_if=[('launch_type', 'FARGATE', ['network_configuration'])],
                               required_together=[['load_balancers', 'role']],
                               mutually_exclusive=[['launch_type', 'capacity_provider_strategy']])
 
-    if module.params['state'] == 'present' and module.params['scheduling_strategy'] == 'REPLICA':
-        if module.params['desired_count'] is None:
+    if module.params['state'] == 'present':
+        if module.params['scheduling_strategy'] == 'REPLICA' and module.params['desired_count'] is None:
             module.fail_json(msg='state is present, scheduling_strategy is REPLICA; missing desired_count')
+        if module.params['task_definition'] is None and not module.params['force_new_deployment']:
+            module.fail_json(msg='Either task_definition or force_new_deployment is required when status is present.')
 
     if len(module.params['capacity_provider_strategy']) > 6:
         module.fail_json(msg='AWS allows a maximum of six capacity providers in the strategy.')
@@ -1074,6 +1075,9 @@ def main():
                         module.fail_json(msg="It is not currently supported to change tags of an existing service")
 
                     updatedLoadBalancers = loadBalancers if existing['deploymentController']['type'] == 'ECS' else []
+
+                    if task_definition is None and module.params['force_new_deployment']:
+                        task_definition = existing['taskDefinition']
 
                     # update required
                     response = service_mgr.update_service(module.params['name'],
