@@ -282,6 +282,7 @@ options:
     description:
       - Boolean value to set whether or not to terminate instances associated to spot request.
       - Can be used only when I(state=absent).
+    default: False
     type: bool
 extends_documentation_fragment:
   - amazon.aws.common.modules
