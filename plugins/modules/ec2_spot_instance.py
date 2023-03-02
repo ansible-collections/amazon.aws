@@ -278,6 +278,11 @@ options:
       - List of strings with IDs of spot requests to be cancelled
     type: list
     elements: str
+  terminate_instances:
+    description:
+      - Boolean value to set whether or not to terminate instances associated to spot request.
+      - Can be used only when I(state=absent).
+    type: bool
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
