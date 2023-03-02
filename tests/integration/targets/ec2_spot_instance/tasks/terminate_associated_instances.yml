@@ -34,7 +34,6 @@
     amazon.aws.ec2_instance_info:
       instance_ids: ["{{ instance_id_1 }}"]
     register: instance_info_result
-  - debug: msg="BEFORE -> {{ instance_info_result.instances[0].state.name }}"
 
   # Cancel spot instance request
   - name: Spot Request Termination
@@ -48,7 +47,7 @@
     amazon.aws.ec2_instance_info:
       instance_ids: ["{{ instance_id_1 }}"]
     register: instance_info_result
-  - debug: msg="AFTER -> {{ instance_info_result.instances[0].state.name }}"
+
   - assert:
       that: instance_info_result.instances[0].state.name == 'running'
 
@@ -87,7 +86,6 @@
     amazon.aws.ec2_instance_info:
       instance_ids: ["{{ instance_id_2 }}"]
     register: instance_info_result
-  - debug: msg="BEFORE -> {{ instance_info_result.instances[0].state.name }}"
 
   # Cancel spot instance request
   - name: Spot Request Termination
@@ -106,6 +104,6 @@
     amazon.aws.ec2_instance_info:
       instance_ids: ["{{ instance_id_2 }}"]
     register: instance_info_result
-  - debug: msg="AFTER -> {{ instance_info_result.instances[0].state.name }}"
+
   - assert:
       that: instance_info_result.instances[0].state.name in ['terminated', 'shutting-down']
