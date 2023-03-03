@@ -32,6 +32,23 @@ options:
         description:
             - The VPC Region the zone should be a part of (if this is going to be a private zone).
         type: str
+    vpcs:
+        version_added: 5.3.0
+        description:
+            - The VPCs the zone should be a part of (if this is going to be a private zone).
+        type: list
+        elements: dict
+        suboptions:
+            id:
+                description:
+                    - The ID of the VPC.
+                type: str
+                required: true
+            region:
+                description:
+                    - The region of the VPC.
+                type: str
+                required: true
     comment:
         description:
             - Comment associated with the zone.
@@ -76,6 +93,16 @@ EXAMPLES = r'''
     vpc_region: us-west-2
     comment: developer domain
 
+- name: create a private zone with multiple associated VPCs
+  amazon.aws.route53_zone:
+    zone: crossdevel.example.com
+    vpcs:
+      - id: vpc-123456
+        region: us-west-2
+      - id: vpc-000001
+        region: us-west-2
+    comment: developer cross-vpc domain
+
 - name: create a public zone associated with a specific reusable delegation set
   amazon.aws.route53_zone:
     zone: example.com
@@ -115,15 +142,33 @@ private_zone:
     type: bool
     sample: true
 vpc_id:
-    description: id of vpc attached to private hosted zone
+    description: id of the first vpc attached to private hosted zone (use vpcs for associating multiple).
     returned: for private hosted zone
     type: str
     sample: "vpc-1d36c84f"
 vpc_region:
-    description: region of vpc attached to private hosted zone
+    description: region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).
     returned: for private hosted zone
     type: str
     sample: "eu-west-1"
+vpcs:
+    version_added: 5.3.0
+    description: The list of VPCs attached to the private hosted zone
+    returned: for private hosted zone
+    type: list
+    elements: dict
+    sample: "[{'id': 'vpc-123456', 'region': 'us-west-2'}]"
+    contains:
+        id:
+            description: ID of the VPC
+            returned: for private hosted zone
+            type: str
+            sample: "vpc-123456"
+        region:
+            description: Region of the VPC
+            returned: for private hosted zone
+            type: str
+            sample: "eu-west-2"
 zone_id:
     description: hosted zone id
     returned: when hosted zone exists
@@ -179,6 +224,7 @@ def create(matching_zones):
     zone_in = module.params.get('zone').lower()
     vpc_id = module.params.get('vpc_id')
     vpc_region = module.params.get('vpc_region')
+    vpcs = module.params.get('vpcs') or ([{'id': vpc_id, 'region': vpc_region}] if vpc_id and vpc_region else None)
     comment = module.params.get('comment')
     delegation_set_id = module.params.get('delegation_set_id')
     tags = module.params.get('tags')
@@ -187,12 +233,13 @@ def create(matching_zones):
     if not zone_in.endswith('.'):
         zone_in += "."
 
-    private_zone = bool(vpc_id and vpc_region)
+    private_zone = bool(vpcs)
 
     record = {
         'private_zone': private_zone,
-        'vpc_id': vpc_id,
-        'vpc_region': vpc_region,
+        'vpc_id': vpcs and vpcs[0]['id'],  # The first one for backwards compatibility
+        'vpc_region': vpcs and vpcs[0]['region'],  # The first one for backwards compatibility
+        'vpcs': vpcs,
         'comment': comment,
         'name': zone_in,
         'delegation_set_id': delegation_set_id,
@@ -223,19 +270,23 @@ def create_or_update_private(matching_zones, record):
             module.fail_json_aws(e, msg="Could not get details about hosted zone %s" % z['Id'])
         zone_details = result['HostedZone']
         vpc_details = result['VPCs']
-        current_vpc_id = None
-        current_vpc_region = None
-        if isinstance(vpc_details, dict):
-            if vpc_details['VPC']['VPCId'] == record['vpc_id']:
-                current_vpc_id = vpc_details['VPC']['VPCId']
-                current_vpc_region = vpc_details['VPC']['VPCRegion']
+        current_vpc_ids = None
+        current_vpc_regions = None
+        matching = False
+        if isinstance(vpc_details, dict) and len(record['vpcs']) == 1:
+            if vpc_details['VPC']['VPCId'] == record['vpcs'][0]['id']:
+                current_vpc_ids = [vpc_details['VPC']['VPCId']]
+                current_vpc_regions = [vpc_details['VPC']['VPCRegion']]
+                matching = True
         else:
-            if record['vpc_id'] in [v['VPCId'] for v in vpc_details]:
-                current_vpc_id = record['vpc_id']
-                if record['vpc_region'] in [v['VPCRegion'] for v in vpc_details]:
-                    current_vpc_region = record['vpc_region']
+            # Sort the lists and compare them to make sure they contain the same items
+            if (sorted([vpc['id'] for vpc in record['vpcs']]) == sorted([v['VPCId'] for v in vpc_details])
+                    and sorted([vpc['region'] for vpc in record['vpcs']]) == sorted([v['VPCRegion'] for v in vpc_details])):
+                current_vpc_ids = [vpc['id'] for vpc in record['vpcs']]
+                current_vpc_regions = [vpc['region'] for vpc in record['vpcs']]
+                matching = True
 
-        if record['vpc_id'] == current_vpc_id and record['vpc_region'] == current_vpc_region:
+        if matching:
             record['zone_id'] = zone_details['Id'].replace('/hostedzone/', '')
             if 'Comment' in zone_details['Config'] and zone_details['Config']['Comment'] != record['comment']:
                 if not module.check_mode:
@@ -245,7 +296,7 @@ def create_or_update_private(matching_zones, record):
                         module.fail_json_aws(e, msg="Could not update comment for hosted zone %s" % zone_details['Id'])
                 return True, record
             else:
-                record['msg'] = "There is already a private hosted zone in the same region with the same VPC \
+                record['msg'] = "There is already a private hosted zone in the same region with the same VPC(s) \
                     you chose. Unable to create a new private hosted zone in the same name space."
                 return False, record
 
@@ -258,8 +309,8 @@ def create_or_update_private(matching_zones, record):
                     'PrivateZone': True,
                 },
                 VPC={
-                    'VPCRegion': record['vpc_region'],
-                    'VPCId': record['vpc_id'],
+                    'VPCRegion': record['vpcs'][0]['region'],
+                    'VPCId': record['vpcs'][0]['id'],
                 },
                 CallerReference="%s-%s" % (record['name'], time.time()),
             )
@@ -269,6 +320,19 @@ def create_or_update_private(matching_zones, record):
         hosted_zone = result['HostedZone']
         zone_id = hosted_zone['Id'].replace('/hostedzone/', '')
         record['zone_id'] = zone_id
+
+        if len(record['vpcs']) > 1:
+            for vpc in record['vpcs'][1:]:
+                try:
+                    result = client.associate_vpc_with_hosted_zone(
+                        HostedZoneId=zone_id,
+                        VPC={
+                            'VPCRegion': vpc['region'],
+                            'VPCId': vpc['id'],
+                        },
+                    )
+                except (BotoCoreError, ClientError) as e:
+                    module.fail_json_aws(e, msg="Could not associate additional VPCs with hosted zone")
 
     changed = True
     return changed, record
@@ -331,7 +395,7 @@ def create_or_update_public(matching_zones, record):
     return changed, record
 
 
-def delete_private(matching_zones, vpc_id, vpc_region):
+def delete_private(matching_zones, vpcs):
     for z in matching_zones:
         try:
             result = client.get_hosted_zone(Id=z['Id'])
@@ -340,7 +404,7 @@ def delete_private(matching_zones, vpc_id, vpc_region):
         zone_details = result['HostedZone']
         vpc_details = result['VPCs']
         if isinstance(vpc_details, dict):
-            if vpc_details['VPC']['VPCId'] == vpc_id and vpc_region == vpc_details['VPC']['VPCRegion']:
+            if vpc_details['VPC']['VPCId'] == vpcs[0]['id'] and vpcs[0]['region'] == vpc_details['VPC']['VPCRegion']:
                 if not module.check_mode:
                     try:
                         client.delete_hosted_zone(Id=z['Id'])
@@ -348,7 +412,9 @@ def delete_private(matching_zones, vpc_id, vpc_region):
                         module.fail_json_aws(e, msg="Could not delete hosted zone %s" % z['Id'])
                 return True, "Successfully deleted %s" % zone_details['Name']
         else:
-            if vpc_id in [v['VPCId'] for v in vpc_details] and vpc_region in [v['VPCRegion'] for v in vpc_details]:
+            # Sort the lists and compare them to make sure they contain the same items
+            if (sorted([vpc['id'] for vpc in vpcs]) == sorted([v['VPCId'] for v in vpc_details])
+                    and sorted([vpc['region'] for vpc in vpcs]) == sorted([v['VPCRegion'] for v in vpc_details])):
                 if not module.check_mode:
                     try:
                         client.delete_hosted_zone(Id=z['Id'])
@@ -356,7 +422,7 @@ def delete_private(matching_zones, vpc_id, vpc_region):
                         module.fail_json_aws(e, msg="Could not delete hosted zone %s" % z['Id'])
                 return True, "Successfully deleted %s" % zone_details['Name']
 
-    return False, "The vpc_id and the vpc_region do not match a private hosted zone."
+    return False, "The VPCs do not match a private hosted zone."
 
 
 def delete_public(matching_zones):
@@ -404,19 +470,20 @@ def delete(matching_zones):
     zone_in = module.params.get('zone').lower()
     vpc_id = module.params.get('vpc_id')
     vpc_region = module.params.get('vpc_region')
+    vpcs = module.params.get('vpcs') or ([{'id': vpc_id, 'region': vpc_region}] if vpc_id and vpc_region else None)
     hosted_zone_id = module.params.get('hosted_zone_id')
 
     if not zone_in.endswith('.'):
         zone_in += "."
 
-    private_zone = bool(vpc_id and vpc_region)
+    private_zone = bool(vpcs)
 
     if zone_in in [z['Name'] for z in matching_zones]:
         if hosted_zone_id:
             changed, result = delete_hosted_id(hosted_zone_id, matching_zones)
         else:
             if private_zone:
-                changed, result = delete_private(matching_zones, vpc_id, vpc_region)
+                changed, result = delete_private(matching_zones, vpcs)
             else:
                 changed, result = delete_public(matching_zones)
     else:
@@ -435,6 +502,10 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         vpc_id=dict(default=None),
         vpc_region=dict(default=None),
+        vpcs=dict(type='list', default=None, elements='dict', options=dict(
+            id=dict(required=True),
+            region=dict(required=True)
+        )),
         comment=dict(default=''),
         hosted_zone_id=dict(),
         delegation_set_id=dict(),
@@ -445,6 +516,9 @@ def main():
     mutually_exclusive = [
         ['delegation_set_id', 'vpc_id'],
         ['delegation_set_id', 'vpc_region'],
+        ['delegation_set_id', 'vpcs'],
+        ['vpcs', 'vpc_id'],
+        ['vpcs', 'vpc_region'],
     ]
 
     module = AnsibleAWSModule(
@@ -457,11 +531,12 @@ def main():
     state = module.params.get('state').lower()
     vpc_id = module.params.get('vpc_id')
     vpc_region = module.params.get('vpc_region')
+    vpcs = module.params.get('vpcs')
 
     if not zone_in.endswith('.'):
         zone_in += "."
 
-    private_zone = bool(vpc_id and vpc_region)
+    private_zone = bool(vpcs or (vpc_id and vpc_region))
 
     client = module.client('route53', retry_decorator=AWSRetry.jittered_backoff())
 
