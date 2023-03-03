@@ -1,0 +1,2 @@
+trivial:
+  - "Fix 'compatibility' typo (https://github.com/ansible-collections/amazon.aws/pull/1400)."

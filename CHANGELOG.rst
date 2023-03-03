@@ -189,7 +189,7 @@ Breaking Changes / Porting Guide
 --------------------------------
 
 - amazon.aws collection - Support for ansible-core < 2.11 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/1087).
-- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.21.0`` and ``boto3<1.18.0``. Most modules will continue to work with older versions of the AWS SDK, however compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/934).
+- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.21.0`` and ``boto3<1.18.0``. Most modules will continue to work with older versions of the AWS SDK, however compatibility with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/934).
 - doc_fragments - remove minimum collection requirements from doc_fragments/aws.py and allow pulling those from doc_fragments/aws_boto3.py instead (https://github.com/ansible-collections/amazon.aws/pull/985).
 - ec2_ami - the default value for ``purge_tags`` has been changed from ``False`` to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/916).
 - ec2_ami - the parameter aliases ``DeviceName``, ``VirtualName`` and ``NoDevice`` were previously deprecated and have been removed, please use ``device_name``, ``virtual_name`` and ``no_device`` instead (https://github.com/ansible-collections/amazon.aws/pull/913).
@@ -293,7 +293,7 @@ v4.0.0
 Major Changes
 -------------
 
-- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.20.0`` and ``boto3<1.17.0``. Most modules will continue to work with older versions of the AWS SDK, however compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/574).
+- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.20.0`` and ``boto3<1.17.0``. Most modules will continue to work with older versions of the AWS SDK, however compatibility with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/574).
 
 Minor Changes
 -------------
@@ -500,7 +500,7 @@ v3.0.0
 Major Changes
 -------------
 
-- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.19.0`` and ``boto3<1.16.0``. Most modules will continue to work with older versions of the AWS SDK, however compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/574).
+- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.19.0`` and ``boto3<1.16.0``. Most modules will continue to work with older versions of the AWS SDK, however compatibility with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/574).
 
 Minor Changes
 -------------
@@ -605,7 +605,7 @@ Major Changes
 -------------
 
 - amazon.aws collection - Due to the AWS SDKs announcing the end of support for Python less than 3.6 (https://boto3.amazonaws.com/v1/documentation/api/1.17.64/guide/migrationpy3.html) this collection now requires Python 3.6+ (https://github.com/ansible-collections/amazon.aws/pull/298).
-- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.18.0`` and ``boto3<1.15.0``. Most modules will continue to work with older versions of the AWS SDK, however compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/502).
+- amazon.aws collection - The amazon.aws collection has dropped support for ``botocore<1.18.0`` and ``boto3<1.15.0``. Most modules will continue to work with older versions of the AWS SDK, however compatibility with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/502).
 - ec2_instance - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_instance``.
 - ec2_instance_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_instance_info``.
 - ec2_vpc_endpoint - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_endpoint``.
@@ -626,42 +626,42 @@ Minor Changes
 -------------
 
 - aws_ec2 - use a generator rather than list comprehension (https://github.com/ansible-collections/amazon.aws/pull/465).
-- aws_s3 - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- aws_s3 - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- aws_s3 - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- aws_s3 - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - aws_s3 - add ``tags`` and ``purge_tags`` features for an S3 object (https://github.com/ansible-collections/amazon.aws/pull/335)
 - aws_s3 - new mode to copy existing on another bucket (https://github.com/ansible-collections/amazon.aws/pull/359).
 - aws_secret - added support for gracefully handling deleted secrets (https://github.com/ansible-collections/amazon.aws/pull/455).
 - aws_ssm - add "on_missing" and "on_denied" option (https://github.com/ansible-collections/amazon.aws/pull/370).
-- cloudformation - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- cloudformation - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- cloudformation - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- cloudformation - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - ec2_ami - ensure tags are propagated to the snapshot(s) when creating an AMI (https://github.com/ansible-collections/amazon.aws/pull/437).
 - ec2_eni - fix idempotency when ``security_groups`` attribute is specified (https://github.com/ansible-collections/amazon.aws/pull/337).
 - ec2_eni - timeout increased when waiting for ENIs to finish detaching (https://github.com/ansible-collections/amazon.aws/pull/501).
-- ec2_group - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- ec2_group - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_group - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_group - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - ec2_group - use a generator rather than list comprehension (https://github.com/ansible-collections/amazon.aws/pull/465).
 - ec2_group - use system ipaddress module, available with Python >= 3.3, instead of vendored copy (https://github.com/ansible-collections/amazon.aws/pull/461).
-- ec2_instance - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- ec2_instance - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_instance - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_instance - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - ec2_instance - add ``throughput`` parameter for gp3 volume types (https://github.com/ansible-collections/amazon.aws/pull/433).
 - ec2_instance - add support for controlling metadata options (https://github.com/ansible-collections/amazon.aws/pull/414).
 - ec2_instance - remove unnecessary raise when exiting with a failure (https://github.com/ansible-collections/amazon.aws/pull/460).
-- ec2_instance_info - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- ec2_instance_info - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_instance_info - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_instance_info - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - ec2_snapshot - migrated to use the boto3 python library (https://github.com/ansible-collections/amazon.aws/pull/356).
 - ec2_spot_instance_info - Added a new module that describes the specified Spot Instance requests (https://github.com/ansible-collections/amazon.aws/pull/487).
 - ec2_vol - add parameter ``multi_attach`` to support Multi-Attach on volume creation/update (https://github.com/ansible-collections/amazon.aws/pull/362).
 - ec2_vol - relax the boto3/botocore requirements and only require botocore 1.19.27 for modifying the ``throughput`` parameter (https://github.com/ansible-collections/amazon.aws/pull/346).
 - ec2_vpc_dhcp_option - Now also returns a boto3-style resource description in the ``dhcp_options`` result key.  This includes any tags for the ``dhcp_options_id`` and has the same format as the current return value of ``ec2_vpc_dhcp_option_info``. (https://github.com/ansible-collections/amazon.aws/pull/252)
 - ec2_vpc_dhcp_option_info - Now also returns a user-friendly ``dhcp_config`` key that matches the historical ``new_config`` key from ec2_vpc_dhcp_option, and alleviates the need to use ``items2dict(key_name='key', value_name='values')`` when parsing the output of the module. (https://github.com/ansible-collections/amazon.aws/pull/252)
-- ec2_vpc_subnet - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- ec2_vpc_subnet - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_vpc_subnet - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- ec2_vpc_subnet - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - integration tests - remove dependency with collection ``community.general`` (https://github.com/ansible-collections/amazon.aws/pull/361).
 - module_utils/waiter - add RDS cluster ``cluster_available`` waiter (https://github.com/ansible-collections/amazon.aws/pull/464).
 - module_utils/waiter - add RDS cluster ``cluster_deleted`` waiter (https://github.com/ansible-collections/amazon.aws/pull/464).
 - module_utils/waiter - add Route53 ``resource_record_sets_changed`` waiter (https://github.com/ansible-collections/amazon.aws/pull/350).
-- s3_bucket - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
-- s3_bucket - Tests for compatability with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- s3_bucket - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
+- s3_bucket - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - s3_bucket - add new option ``object_ownership`` to configure object ownership (https://github.com/ansible-collections/amazon.aws/pull/311)
 - s3_bucket - updated to use HeadBucket instead of ListBucket when testing for bucket existence (https://github.com/ansible-collections/amazon.aws/pull/357).
 

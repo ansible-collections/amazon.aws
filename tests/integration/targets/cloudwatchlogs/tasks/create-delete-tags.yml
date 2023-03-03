@@ -75,7 +75,7 @@
       - '"arn" in log_group'
       - '"stored_bytes" in log_group'
       # - '"kms_key_id" in log_group'
-      # pre-4.0.0 upgrade compatability
+      # pre-4.0.0 upgrade compatibility
       - '"log_group_name" in result'
       - '"creation_time" in result'
       - '"retention_in_days" in result'
