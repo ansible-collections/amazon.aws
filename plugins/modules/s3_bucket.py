@@ -415,7 +415,11 @@ def create_or_update_bucket(s3_client, module):
         versioning_status = get_bucket_versioning(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if versioning is not None:
+            module.fail_json_aws(e, msg="Bucket versioning is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if versioning is not None:
             module.fail_json_aws(e, msg="Failed to get bucket versioning")
+        module.debug("AccessDenied fetching bucket versioning")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket versioning")
     else:
@@ -446,7 +450,11 @@ def create_or_update_bucket(s3_client, module):
         requester_pays_status = get_bucket_request_payment(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if requester_pays is not None:
+            module.fail_json_aws(e, msg="Bucket request payment is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if requester_pays is not None:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
+        module.debug("AccessDenied fetching bucket request payment")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket request payment")
     else:
@@ -469,7 +477,11 @@ def create_or_update_bucket(s3_client, module):
         current_policy = get_bucket_policy(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if policy is not None:
+            module.fail_json_aws(e, msg="Bucket policy is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if policy is not None:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
+        module.debug("AccessDenied fetching bucket policy")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket policy")
     else:
@@ -504,7 +516,11 @@ def create_or_update_bucket(s3_client, module):
         current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if tags is not None:
+            module.fail_json_aws(e, msg="Bucket tagging is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if tags is not None:
             module.fail_json_aws(e, msg="Failed to get bucket tags")
+        module.debug("AccessDenied fetching bucket tags")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket tags")
     else:
@@ -538,7 +554,11 @@ def create_or_update_bucket(s3_client, module):
         current_encryption = get_bucket_encryption(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if encryption is not None:
+            module.fail_json_aws(e, msg="Bucket encryption is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if encryption is not None:
             module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
+        module.debug("AccessDenied fetching bucket encryption settings")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
     else:
@@ -579,7 +599,11 @@ def create_or_update_bucket(s3_client, module):
         current_public_access = get_bucket_public_access(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if public_access is not None:
+            module.fail_json_aws(e, msg="Bucket public access configuration is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if public_access is not None:
             module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+        module.debug("AccessDenied fetching bucket public access settings")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
     else:
@@ -615,7 +639,11 @@ def create_or_update_bucket(s3_client, module):
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Bucket object ownership is not supported by the current S3 Endpoint")
+    except is_boto3_error_code('AccessDenied') as e:
+        if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+        module.debug("AccessDenied fetching bucket object ownership settings")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
     else:
@@ -644,7 +672,7 @@ def create_or_update_bucket(s3_client, module):
             # other features.
             module.fail_json_aws(e, msg="Failed to get bucket acl block")
         except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
-            module.fail_json_aws(e, msg="Failed to update bucket ACL")
+            module.fail_json_aws(e, msg="Bucket ACLs ar not supported by the current S3 Endpoint")
         except is_boto3_error_code('AccessDenied') as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
