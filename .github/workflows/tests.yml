@@ -68,6 +68,45 @@ jobs:
   unit-source:
     uses: ansible-network/github_actions/.github/workflows/unit_source.yml@main
     with:
+      matrix_include: "[]"
+      matrix_exclude: >-
+          [
+            {
+              "python-version": "3.11"
+            },
+            {
+              "ansible-version": "stable-2.12",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.13",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.8"
+            }
+          ]
       collection_pre_install: ''
   all_green:
     if: ${{ always() }}
