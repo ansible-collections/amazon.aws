@@ -10,6 +10,7 @@ encryption_bucket_key
 encryption_sse
 public_access
 acl
+object_lock
 
 [all:vars]
 ansible_connection=local
