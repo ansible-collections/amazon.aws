@@ -1,0 +1,3 @@
+---
+minor_changes:
+- Add github actions to run unit and sanity tests.(https://github.com/ansible-collections/amazon.aws/pull/1393).
