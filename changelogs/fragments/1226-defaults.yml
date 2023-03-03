@@ -1,2 +1,0 @@
-trivial:
-  - "Fixed ``default`` values in various modules so that documentation and argument spec coincide (https://github.com/ansible-collections/amazon.aws/pull/1226)."

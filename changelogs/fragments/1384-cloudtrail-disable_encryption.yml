@@ -1,2 +1,0 @@
-bugfixes:
-- cloudtrail - support to disabling encryption using ´´kms_key_id´´ (https://github.com/ansible-collections/amazon.aws/pull/1384).
