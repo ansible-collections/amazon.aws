@@ -89,7 +89,7 @@ class TestIamUtils():
         self.module.fail_json.side_effect = SystemExit(2)
 
     # ========== get_aws_account_id ============
-    # This is just a minimal (compatability) wrapper around get_aws_account_info
+    # This is just a minimal (compatibility) wrapper around get_aws_account_info
     # Perform some basic testing and call it a day.
 
     # Test the simplest case - We're permitted to call GetCallerIdentity
