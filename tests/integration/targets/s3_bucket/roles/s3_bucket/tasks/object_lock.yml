@@ -60,7 +60,7 @@
 
     - name: 'Create a bucket with object lock enabled'
       s3_bucket:
-        name: '{{ local_bucket_name }}'
+        name: '{{ local_bucket_name }}-2'
         state: present
         object_lock_enabled: true
       register: output
@@ -72,7 +72,7 @@
 
     - name: 'Disable object lock'
       s3_bucket:
-        name: '{{ local_bucket_name }}'
+        name: '{{ local_bucket_name }}-2'
         state: present
         object_lock_enabled: false
       register: output
@@ -84,8 +84,21 @@
 
     - name: 'Re-Enable object lock (idempotency)'
       s3_bucket:
-        name: '{{ local_bucket_name }}'
+        name: '{{ local_bucket_name }}-2'
         state: present
+        object_lock_enabled: true
+      register: output
+
+    - assert:
+        that:
+          - not output.changed
+          - output.object_lock_enabled
+
+    - name: 'Touch bucket with object lock enabled (idempotency)'
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: present
+        object_lock_enabled: true
       register: output
 
     - assert:
@@ -95,7 +108,7 @@
 
     - name: Delete test s3 bucket
       s3_bucket:
-        name: '{{ local_bucket_name }}'
+        name: '{{ local_bucket_name }}-2'
         state: absent
       register: output
 
@@ -108,5 +121,11 @@
     - name: Ensure all buckets are deleted
       s3_bucket:
         name: '{{ local_bucket_name }}'
+        state: absent
+      ignore_errors: yes
+
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
         state: absent
       ignore_errors: yes
