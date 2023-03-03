@@ -558,7 +558,7 @@ def describe_instance_attribute(connection, instance_id, attributes):
     for attr in attributes:
         response = connection.describe_instance_attribute(Attribute=attr, InstanceId=instance_id)
         for key in response:
-            if key not in ('InstanceId', 'ResponseMetadata'):
+            if key not in ("InstanceId", "ResponseMetadata"):
                 result[key] = response[key]
     return result
 
@@ -610,7 +610,7 @@ def main():
         minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
         instance_ids=dict(default=[], type="list", elements="str"),
         filters=dict(default={}, type="dict"),
-        include_attributes=dict(default=[], type='list', elements='str', aliases=['attributes']),
+        include_attributes=dict(type="list", elements="str", aliases=["attributes"]),
     )
 
     module = AnsibleAWSModule(

@@ -1520,7 +1520,9 @@ def change_network_attachments(instance, params):
                         NetworkInterfaceId=eni_id,
                     )
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}")
+                    module.fail_json_aws(
+                        e, msg="Could not attach interface {0} to instance {1}".format(eni_id, instance["InstanceId"])
+                    )
         return bool(len(to_attach))
     return False
 
