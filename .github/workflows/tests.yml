@@ -18,7 +18,6 @@ jobs:
   sanity:
     uses: ansible-network/github_actions/.github/workflows/sanity.yml@main
     with:
-      matrix_include: "[]"
       matrix_exclude: >-
           [
             {
