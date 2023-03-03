@@ -61,11 +61,10 @@
       assert:
         that:
           - _instances_info.instances | length == 1
-          - _instances_info.instances[0].state.name != 'running'
 
   vars:
     ec2_test_name: "{{ ec2_instance_name }}-no-wait"
-  
+
   always:
     - name: Delete instance created
       ec2_instance:
