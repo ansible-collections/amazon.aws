@@ -416,7 +416,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if versioning is not None:
             module.fail_json_aws(e, msg="Bucket versioning is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if versioning is not None:
             module.fail_json_aws(e, msg="Failed to get bucket versioning")
         module.debug("AccessDenied fetching bucket versioning")
@@ -451,7 +451,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if requester_pays is not None:
             module.fail_json_aws(e, msg="Bucket request payment is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if requester_pays is not None:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
         module.debug("AccessDenied fetching bucket request payment")
@@ -478,7 +478,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if policy is not None:
             module.fail_json_aws(e, msg="Bucket policy is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if policy is not None:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
         module.debug("AccessDenied fetching bucket policy")
@@ -517,7 +517,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if tags is not None:
             module.fail_json_aws(e, msg="Bucket tagging is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if tags is not None:
             module.fail_json_aws(e, msg="Failed to get bucket tags")
         module.debug("AccessDenied fetching bucket tags")
@@ -555,7 +555,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if encryption is not None:
             module.fail_json_aws(e, msg="Bucket encryption is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if encryption is not None:
             module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
         module.debug("AccessDenied fetching bucket encryption settings")
@@ -599,8 +599,8 @@ def create_or_update_bucket(s3_client, module):
         current_public_access = get_bucket_public_access(s3_client, name)
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if public_access is not None:
-            module.fail_json_aws(e, msg="Bucket public access configuration is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+            module.fail_json_aws(e, msg="Bucket public access settings are not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
         if public_access is not None:
             module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
         module.debug("AccessDenied fetching bucket public access settings")
@@ -640,7 +640,7 @@ def create_or_update_bucket(s3_client, module):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Bucket object ownership is not supported by the current S3 Endpoint")
-    except is_boto3_error_code('AccessDenied') as e:
+    except is_boto3_error_code("AccessDenied") as e:
         if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
         module.debug("AccessDenied fetching bucket object ownership settings")
