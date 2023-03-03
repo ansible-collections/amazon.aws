@@ -202,7 +202,7 @@ options:
         deprecated:
           removed_at_date: '2024-12-01'
           collection_name: amazon.aws
-          why: 'AWS_SECURITY_TOKEN was used for compatability with the original boto SDK, support for which has been dropped'
+          why: 'AWS_SECURITY_TOKEN was used for compatibility with the original boto SDK, support for which has been dropped'
           alternatives: AWS_SESSION_TOKEN
       - name: EC2_SECURITY_TOKEN
         deprecated:
