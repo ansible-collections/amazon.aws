@@ -1,0 +1,131 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}-objectlock"
+
+    # ============================================================
+
+    - name: 'Create a simple bucket'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - not output.object_lock_enabled
+
+    - name: 'Re-disable object lock (idempotency)'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+        object_lock_enabled: false
+      register: output
+
+    - assert:
+        that:
+          - not output.changed
+          - not output.object_lock_enabled
+
+    - name: 'Enable object lock'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+        object_lock_enabled: true
+      register: output
+      ignore_errors: true
+
+    - assert:
+        that:
+          - output is failed
+
+    - name: Delete test s3 bucket
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: absent
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+
+    # ============================================================
+
+    - name: 'Create a bucket with object lock enabled'
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: present
+        object_lock_enabled: true
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.object_lock_enabled
+
+    - name: 'Disable object lock'
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: present
+        object_lock_enabled: false
+      register: output
+      ignore_errors: true
+
+    - assert:
+        that:
+          - output is failed
+
+    - name: 'Re-Enable object lock (idempotency)'
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: present
+        object_lock_enabled: true
+      register: output
+
+    - assert:
+        that:
+          - not output.changed
+          - output.object_lock_enabled
+
+    - name: 'Touch bucket with object lock enabled (idempotency)'
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: present
+        object_lock_enabled: true
+      register: output
+
+    - assert:
+        that:
+          - not output.changed
+          - output.object_lock_enabled
+
+    - name: Delete test s3 bucket
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: absent
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+
+  # ============================================================
+  always:
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: absent
+      ignore_errors: yes
+
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: '{{ local_bucket_name }}-2'
+        state: absent
+      ignore_errors: yes
