@@ -73,7 +73,6 @@ jobs:
     needs:
       - changelog
       - sanity
-      - unit-galaxy
       - unit-source
     runs-on: ubuntu-latest
     steps:
