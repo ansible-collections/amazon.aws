@@ -96,7 +96,7 @@ used by boto3)
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        ...
+        ....
     )
 
     if module.params.get('scope') == 'managed':

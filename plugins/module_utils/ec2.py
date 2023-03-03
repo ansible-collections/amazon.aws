@@ -76,11 +76,6 @@ from .tagging import compare_aws_tags  # pylint: disable=unused-import
 from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
 from .transformation import map_complex_type  # pylint: disable=unused-import
 
-# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.policy
-from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
-from .policy import compare_policies  # pylint: disable=unused-import
-from .policy import sort_json_policy_dict  # pylint: disable=unused-import
-
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.retries
 from .retries import AWSRetry  # pylint: disable=unused-import
 
