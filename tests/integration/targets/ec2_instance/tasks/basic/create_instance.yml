@@ -1,0 +1,211 @@
+---
+- name: Create instance using name
+  when: not (create_with_tag_name | default(False) | bool)
+  block:
+    - name: "Create a new instance (check_mode)"
+      ec2_instance:
+        state: present
+        name: "{{ ec2_test_instance_name }}"
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+        - create_instance_check_mode is changed
+        - '"instance_ids" not in create_instance_check_mode'
+        - '"ec2:RunInstances" not in create_instance_check_mode.resource_actions'
+
+    - name: "Create a new instance"
+      ec2_instance:
+        state: present
+        name: "{{ ec2_test_instance_name }}"
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance
+
+    - assert:
+        that:
+        - create_instance is changed
+        - '"ec2:RunInstances" in create_instance.resource_actions'
+        - '"instance_ids" in create_instance'
+        - create_instance.instance_ids | length == 1
+        - create_instance.instance_ids[0].startswith("i-")
+
+    - name: Ensure module did not reuse existing instance id
+      assert:
+        that:
+          - create_instance.instance_ids[0] != test_instance_id
+      with_items: "{{ existing_instances_ids }}"
+      loop_control:
+        loop_var: test_instance_id
+      when: existing_instances_ids | default([]) | length > 0
+
+    - name: validate instance availability zone
+      block:
+        - name: Get instance info
+          ec2_instance_info:
+            instance_ids:
+              - "{{ create_instance.instance_ids[0] }}"
+          register: _instances_info
+
+        - assert:
+            that:
+              - _instances_info.instances[0].placement.availability_zone == test_aws_availability_zone
+      when: test_aws_availability_zone is defined
+
+    - name: "Create a new instance - idempotency (check_mode)"
+      ec2_instance:
+        state: present
+        name: "{{ ec2_test_instance_name }}"
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_check_mode_idempotency
+      check_mode: true
+
+    - assert:
+        that:
+        - create_instance_check_mode_idempotency is not changed
+        - '"ec2:RunInstances" not in create_instance_check_mode_idempotency.resource_actions'
+        - '"instance_ids" in create_instance_check_mode_idempotency'
+        - create_instance_check_mode_idempotency.instance_ids | length == 1
+        - create_instance_check_mode_idempotency.instance_ids[0] == create_instance.instance_ids[0]
+
+    - name: "Create a new instance - idempotency"
+      ec2_instance:
+        state: present
+        name: "{{ ec2_test_instance_name }}"
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      register: create_instance_idempotency
+
+    - assert:
+        that:
+        - create_instance_idempotency is not changed
+        - '"ec2:RunInstances" not in create_instance_idempotency.resource_actions'
+        - '"instance_ids" in create_instance_idempotency'
+        - create_instance_idempotency.instance_ids | length == 1
+        - create_instance_idempotency.instance_ids[0] == create_instance.instance_ids[0]
+
+################################################################
+- name: Create instance using tag name
+  when: create_with_tag_name | default(False) | bool 
+  block:
+    - name: "Create a new instance with a different name in tags (check_mode)"
+      ec2_instance:
+        state: present
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          Name: "{{ ec2_test_instance_name }}"
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_tag_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+        - create_instance_tag_check_mode is changed
+        - '"instance_ids" not in create_instance_tag_check_mode'
+        - '"ec2:RunInstances" not in create_instance_tag_check_mode.resource_actions'
+
+    - name: "Create a new instance with a different name in tags"
+      ec2_instance:
+        state: present
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          Name: "{{ ec2_test_instance_name }}"
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_tag
+
+    - assert:
+        that:
+        - create_instance_tag is changed
+        - '"ec2:RunInstances" in create_instance_tag.resource_actions'
+        - '"instance_ids" in create_instance_tag'
+        - create_instance_tag.instance_ids | length == 1
+        - create_instance_tag.instance_ids[0].startswith("i-")
+
+    - name: validate instance availability zone
+      block:
+        - name: Get instance info
+          ec2_instance_info:
+            instance_ids:
+              - "{{ create_instance_tag.instance_ids[0] }}"
+          register: _instances_info
+
+        - assert:
+            that:
+              - _instances_info.instances[0].placement.availability_zone == test_aws_availability_zone
+      when: test_aws_availability_zone is defined
+
+    - name: Ensure module did not reuse existing instance id
+      assert:
+        that:
+          - create_instance_tag.instance_ids[0] != test_instance_id
+      loop_control:
+        loop_var: test_instance_id
+      with_items: "{{ existing_instances_ids }}"
+      when: existing_instances_ids is defined
+
+    - name: "Create a new instance with a different name in tags - idempotency (check_mode)"
+      ec2_instance:
+        state: present
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          Name: "{{ ec2_test_instance_name }}"
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_tag_check_mode_idempotency
+      check_mode: true
+
+    - assert:
+        that:
+        - create_instance_tag_check_mode_idempotency is not changed
+        - '"ec2:RunInstances" not in create_instance_tag_check_mode_idempotency.resource_actions'
+        - '"instance_ids" in create_instance_tag_check_mode_idempotency'
+        - create_instance_tag_check_mode_idempotency.instance_ids | length == 1
+        - create_instance_tag_check_mode_idempotency.instance_ids[0] == create_instance_tag.instance_ids[0]
+
+    - name: "Create a new instance with a different name in tags - idempotency"
+      ec2_instance:
+        state: present
+        instance_type: "{{ ec2_instance_type }}"
+        availability_zone: "{{ test_aws_availability_zone | default(omit) }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          Name: "{{ ec2_test_instance_name }}"
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_instance_tag_idempotency
+
+    - assert:
+        that:
+        - create_instance_tag_idempotency is not changed
+        - '"ec2:RunInstances" not in create_instance_tag_idempotency.resource_actions'
+        - '"instance_ids" in create_instance_tag_idempotency'
+        - create_instance_tag_idempotency.instance_ids | length == 1
+        - create_instance_tag_idempotency.instance_ids[0] == create_instance_tag.instance_ids[0]

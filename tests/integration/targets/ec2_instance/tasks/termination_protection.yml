@@ -1,0 +1,320 @@
+---
+- block:
+    - name: Create instance with termination protection (check mode)
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: true
+        instance_type: "{{ ec2_instance_type }}"
+        state: running
+        wait: true
+      check_mode: true
+      register: _create_instance_check_mode
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+      register: _instances_info
+
+    - name: Ensure instance was not created
+      assert:
+        that:
+        - _create_instance_check_mode is changed
+        - _create_instance_check_mode.spec.DisableApiTermination == True
+        - _instances_info.instances | length == 0
+
+    - name: Create instance with termination protection
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: true
+        instance_type: "{{ ec2_instance_type }}"
+        state: running
+        wait: true
+      register: _create_instance
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+
+    - name: Ensure instance was created with termination protection
+      assert:
+        that:
+        - _create_instance is changed
+        - _create_instance.spec.DisableApiTermination == True
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == True
+
+    - name: Create instance with termination protection (check mode) (idempotent)
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: true
+        instance_type: "{{ ec2_instance_type }}"
+        state: running
+        wait: true
+      check_mode: true
+      register: _create_instance
+
+    - name: Check the returned value for the earlier task
+      assert:
+        that:
+          - _create_instance is not changed
+
+    - name: Create instance with termination protection (idempotent)
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: true
+        instance_type: "{{ ec2_instance_type }}"
+        state: running
+        wait: true
+      register: _create_instance
+
+    - name: Check return values of the create instance task
+      assert:
+        that:
+          - _create_instance is not changed
+
+    - name: Try to terminate the instance (expected to fail)
+      ec2_instance:
+        filters:
+          tag:Name: "{{ ec2_instance_test_name }}"
+        state: absent
+      failed_when: "'Unable to terminate instances' not in _terminate_instance.msg"
+      register: _terminate_instance
+
+    - name: Set termination protection to false (check_mode)
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        termination_protection: false
+        instance_type: "{{ ec2_instance_type }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      check_mode: True
+      register: _remove_term_protection_check_mode
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+
+    - name: Ensure check mode does not remove termination protection
+      assert:
+        that:
+        - _remove_term_protection_check_mode is changed
+        - _remove_term_protection_check_mode.changes.0.DisableApiTermination.Value == False
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == True
+
+    - name: Set termination protection to false
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        termination_protection: false
+        instance_type: "{{ ec2_instance_type }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      register: _remove_term_protection
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+      retries: 10
+      delay: 3
+      until: _instances_info.instances.0.attributes.disable_api_termination.value == False
+
+    - name: Ensure check mode does not remove termination protection
+      assert:
+        that:
+        - _remove_term_protection is changed
+        - _remove_term_protection.changes.0.DisableApiTermination.Value == False
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == False
+
+    - name: Set termination protection to false (idempotency)
+      ec2_instance:
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        termination_protection: false
+        instance_type: "{{ ec2_instance_type }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      register: _remove_term_protection_idempotent
+
+    - name: Ensure no change on previous task
+      assert:
+        that:
+          - _remove_term_protection_idempotent is not changed
+
+    # Test : update instance (security group and termination protection) with different state ('running', 'stopped')
+    - name: Set termination protection to true and add security group
+      ec2_instance:
+        state: running
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        instance_type: "{{ ec2_instance_type }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        security_groups: "{{ sg.group_id }}"
+        termination_protection: true
+        wait: true
+      register: _add_term_protection
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+      delay: 3
+      retries: 10
+      until: _instances_info.instances.0.security_groups.0.group_id == sg.group_id
+
+    - assert:
+        that:
+        - _add_term_protection is changed
+        - _add_term_protection.changes.0.DisableApiTermination.Value == True
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == True
+        - _instances_info.instances.0.security_groups.0.group_id == sg.group_id
+
+    - name: "Change sg and termination protection while instance is in state running"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        instance_type: "{{ ec2_instance_type }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        security_groups: "{{ sg2.group_id }}"
+        termination_protection: false
+        wait: true
+      register: _update_instance
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+      delay: 3
+      retries: 10
+      until: _instances_info.instances.0.security_groups.0.group_id == sg2.group_id
+
+    - assert:
+        that:
+        - _update_instance is changed
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == False
+        - _instances_info.instances.0.security_groups.0.group_id == sg2.group_id
+
+    - name: "Change instance state from running to stopped, and change sg and termination protection"
+      ec2_instance:
+        state: stopped
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _update_instance
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+      delay: 3
+      retries: 10
+      until: _instances_info.instances.0.security_groups.0.group_id == sg.group_id
+
+    - assert:
+        that:
+        - _update_instance is changed
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == True
+        - _instances_info.instances.0.security_groups.0.group_id == sg.group_id
+
+    - name: "Change sg and termination protection while instance is in state stopped"
+      ec2_instance:
+        state: stopped
+        name: "{{ ec2_instance_test_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_groups: "{{ sg2.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        termination_protection: false
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _update_instance
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_test_name }}"
+        include_attributes:
+          - disableApiTermination
+      register: _instances_info
+      delay: 3
+      retries: 10
+      until: _instances_info.instances.0.security_groups.0.group_id == sg2.group_id
+
+    - assert:
+        that:
+        - _update_instance is changed
+        - _instances_info.instances | length == 1
+        - _instances_info.instances.0.attributes.disable_api_termination.value == False
+        - _instances_info.instances.0.security_groups.0.group_id == sg2.group_id
+
+  vars:
+    ec2_instance_test_name: "{{ ec2_instance_name }}-term-protection"
+
+  always:
+    - name: Delete instance
+      ec2_instance:
+        state: absent
+        wait: false
+        instance_ids: "{{ _create_instance.instance_ids }}"

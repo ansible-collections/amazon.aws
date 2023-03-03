@@ -1,0 +1,331 @@
+- name: Test attachment of external resources (ENI, Key pair) to instance
+  vars:
+    ec2_attach_instance_name: "{{ ec2_instance_name }}-attach"
+    ec2_keypair_name: '{{ resource_prefix }}-key'
+  block:
+    # create external resources to attach to the instance
+    - name: create an Elastic network interface
+      ec2_eni:
+        state: present
+        delete_on_termination: true
+        subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        security_groups:
+          - "{{ sg.group_id }}"
+      register: eni_a
+
+    - name: create a second Elastic network interface 
+      ec2_eni:
+        state: present
+        delete_on_termination: true
+        subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        security_groups:
+          - "{{ sg.group_id }}"
+      register: eni_b
+
+    - name: Create an ec2 key pair
+      ec2_key:
+        name: "{{ ec2_keypair_name }}"
+
+    - name: create new instance with external network interface and key pair
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+          source_dest_check: false
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _create_instance
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+
+    - assert:
+        that:
+        - _create_instance is changed
+        - _instances_info.instances.0.key_name == ec2_keypair_name
+        - _instances_info.instances.0.network_interfaces | length == 1
+        - _instances_info.instances.0.network_interfaces.0.network_interface_id == eni_a.interface.id
+
+    - name: create once again instance with external network interface and key pair (idempotency)
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+          source_dest_check: false
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _create_idempotency
+
+    - name: validate no change
+      assert:
+        that:
+          - _create_idempotency is not changed
+
+    - name: Attach a second network interface to the instance (check mode)
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      check_mode: true
+      register: _attach_interface_check_mode
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+
+    - assert:
+        that:
+        - _attach_interface_check_mode is changed
+        - _instances_info.instances.0.network_interfaces | length == 1
+        - _instances_info.instances.0.network_interfaces.0.network_interface_id == eni_a.interface.id
+
+    - name: Attach a second network interface to the instance
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+          source_dest_check: false
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _attach_interface
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+      retries: 10
+      delay: 3
+      until: _instances_info.instances.0.network_interfaces | length == 2
+
+    - assert:
+        that:
+        - _attach_interface is changed
+        - _instances_info.instances.0.network_interfaces | length == 2
+        - eni_a.interface.id in attached_eni_id
+        - eni_b.interface.id in attached_eni_id
+      vars:
+        attached_eni_id: '{{ _instances_info.instances.0.network_interfaces | map(attribute="network_interface_id") | list }}'
+
+    # Test tags and vpc settings
+    - name: "Alter it by adding tags"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+          source_dest_check: false
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Another: thing
+        purge_tags: false
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: add_another_tag
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+    
+    - name: "Remaking the same instance resulted in no changes"
+      assert:
+        that:
+          - add_another_tag is changed
+          - _instances_info.instances | length == 1
+          - _instances_info.instances[0].tags.Another == 'thing'
+          - _instances_info.instances[0].tags.Something == 'else'
+
+    - name: "Purge a tag"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+          source_dest_check: false
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Another: thing
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: purge_tag
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+
+    - name: "Remaking the same instance resulted in no changes"
+      assert:
+        that:
+          - purge_tag is changed
+          - _instances_info.instances | length == 1
+          - _instances_info.instances[0].tags.Another == 'thing'
+          - '"Something" not in _instances_info.instances[0].tags'
+
+    - name: "check that subnet-default public IP rule was followed"
+      assert:
+        that:
+          - _instances_info.instances[0].public_dns_name == ""
+          - _instances_info.instances[0].private_ip_address.startswith(subnet_b_startswith)
+          - _instances_info.instances[0].subnet_id == testing_subnet_b.subnet.id
+
+    - name: "check that tags were applied"
+      assert:
+        that:
+          - _instances_info.instances[0].tags.Name.startswith(resource_prefix)
+          - "_instances_info.instances[0].state.name in  ['pending', 'running']"
+
+    - name: "Try setting purge_tags to True without specifiying tags (should NOT purge tags)"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+          source_dest_check: false
+        purge_tags: true
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _purge_tags_without_tags
+    
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+
+    - name: Assert tags were not purged
+      assert:
+        that:
+          - _purge_tags_without_tags is not changed
+          - _instances_info.instances | length == 1
+          - _instances_info.instances[0].tags | length > 1
+
+    - name: "Purge all tags (aside from Name)"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_attach_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        key_name: "{{ ec2_keypair_name }}"
+        network:
+          interfaces:
+            - id: "{{ eni_a.interface.id }}"
+            - id: "{{ eni_b.interface.id }}"
+          source_dest_check: false
+        tags: {}
+        purge_tags: true
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: _purge_all_tags
+
+    - name: "Gather instance info"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_attach_instance_name }}"
+      register: _instances_info
+
+    - name: Assert tags were not purged
+      assert:
+        that:
+          - _purge_all_tags is changed
+          - _instances_info.instances | length == 1
+          - _instances_info.instances[0].tags | length == 1
+          - '"Name" in _instances_info.instances[0].tags'
+
+  always:
+    - name: Delete key pair
+      ec2_key:
+        state: absent
+        name: "{{ ec2_keypair_name }}"
+
+    - name: Delete instance
+      ec2_instance:
+        state: absent
+        wait: false
+        instance_ids: "{{ _create_instance.instance_ids }}"

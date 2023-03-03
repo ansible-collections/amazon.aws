@@ -1,0 +1,253 @@
+- name: "Enforce instance count - launch {{ t_exact_count.total }} instances"
+  when:
+    - t_exact_count.added is not defined
+    - t_exact_count.removed is not defined
+  block:
+    - name: "Enforce instance count - launch {{ t_exact_count.total }} instances (check_mode)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        name: "{{ ec2_test_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: create_multiple_instances_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+        - create_multiple_instances_check_mode is changed
+        - '"instance_ids" not in create_multiple_instances_check_mode'
+        - '"ec2:RunInstances" not in create_multiple_instances_check_mode.resource_actions'
+
+    - name: "Enforce instance count - launch {{ t_exact_count.total }} instances"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      register: create_multiple_instances
+
+    - assert:
+        that:
+        - create_multiple_instances is changed
+        - '"ec2:RunInstances" in create_multiple_instances.resource_actions'
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+
+    - name: "Enforce instance count - launch {{ t_exact_count.total }} instances (check_mode - Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: create_multiple_instances
+      check_mode: true
+
+    - assert:
+        that:
+        - create_multiple_instances is not changed
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+    - name: "Enforce instance count - launch {{ t_exact_count.total }} instances (Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      register: create_multiple_instances
+
+    - assert:
+        that:
+        - create_multiple_instances is not changed
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+- name: "Enforce instance count to {{ t_exact_count.total }} - Launch {{ t_exact_count.added }} more instances"
+  when:
+    - t_exact_count.added is defined
+  block:
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Launch {{ t_exact_count.added }} more instances (check_mode)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      check_mode: true
+      register: create_multiple_instances_check_mode
+
+    - assert:
+        that:
+        - create_multiple_instances_check_mode is not failed
+        - create_multiple_instances_check_mode is changed
+        - '"instance_ids" in create_multiple_instances_check_mode'
+        - create_multiple_instances_check_mode.instance_ids | length == t_exact_count.initial | int
+        - '"changed_ids" not in create_multiple_instances_check_mode'
+        - '"ec2:RunInstances" not in create_multiple_instances_check_mode.resource_actions'
+        - create_multiple_instances_check_mode.msg == "Would have launched instances if not in check_mode."
+
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Launch {{ t_exact_count.added }} more instances"
+      ec2_instance:
+        state: 'running'
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: create_multiple_instances
+
+    - assert:
+        that:
+        - create_multiple_instances is changed
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"changed_ids" in create_multiple_instances'
+        - create_multiple_instances.changed_ids | length == t_exact_count.added | int
+
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Launch {{ t_exact_count.added }} more instances (check_mode - Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      check_mode: true
+      register: create_multiple_instances
+
+    - assert:
+        that:
+        - create_multiple_instances is not changed
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"changed_ids" not in create_multiple_instances'
+        - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Launch {{ t_exact_count.added }} more instances (Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      register: create_multiple_instances
+
+    - assert:
+        that:
+        - create_multiple_instances is not changed
+        - '"instance_ids" in create_multiple_instances'
+        - create_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"changed_ids" not in create_multiple_instances'
+        - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+- name: "Enforce instance count to {{ t_exact_count.total }} - Terminate {{ t_exact_count.removed }} instances"
+  when:
+    - t_exact_count.removed is defined
+  block:
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Terminate {{ t_exact_count.removed }} instances (check_mode)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: terminate_multiple_instances
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_multiple_instances is changed
+        - '"instance_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.instance_ids | length == t_exact_count.initial | int
+        - '"terminated_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.terminated_ids | length == t_exact_count.removed
+        - '"ec2:RunInstances" not in terminate_multiple_instances.resource_actions'
+
+    # long running task
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Terminate {{ t_exact_count.removed }} instances"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: false
+      register: terminate_multiple_instances
+
+    - assert:
+        that:
+        - terminate_multiple_instances is changed
+        - '"instance_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.instance_ids | length == t_exact_count.initial | int
+        - '"terminated_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.terminated_ids | length == t_exact_count.removed | int
+
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Terminate {{ t_exact_count.removed }} instances (check_mode - Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: terminate_multiple_instances
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_multiple_instances is not changed
+        - '"instance_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"terminated_ids" not in terminate_multiple_instances'
+        - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
+
+    - name: "Enforce instance count to {{ t_exact_count.total }} - Terminate {{ t_exact_count.removed }} instances (Idempotency)"
+      ec2_instance:
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: "{{ t_exact_count.total }}"
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ ec2_test_instance_name }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: terminate_multiple_instances
+
+    - assert:
+        that:
+        - terminate_multiple_instances is not changed
+        - '"instance_ids" in terminate_multiple_instances'
+        - terminate_multiple_instances.instance_ids | length == t_exact_count.total | int
+        - '"terminated_ids" not in terminate_multiple_instances'
+        - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'

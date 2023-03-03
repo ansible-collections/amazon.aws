@@ -1,0 +1,105 @@
+---
+- name: Test create minimal instance
+  block:
+    # create instance ids
+    - set_fact:
+        existing_instances_ids: []
+
+    - name: Test create basic instance and change state
+      block:
+        - name: create basic instance using name parameter
+          include_tasks: tasks/basic/create_instance.yml
+        
+        - name: Test change instance state
+          include_tasks: tasks/basic/state.yml
+          loop_control:
+            loop_var: current_state
+          vars:
+            ec2_instance_state: "{{ current_state.state }}"
+            ec2_expected_states: "{{ current_state.code }}"
+          with_items:
+            - state: stopped
+              code: ("stopped", "stopping")
+            - state: running
+              code: ("running")
+            - state: terminated
+              code: ("terminated")
+      
+      vars:
+        ec2_test_instance_name: "{{ ec2_basic_1 }}"
+
+    - name: create another basic instance using name parameter (ensure module did not reuse existing instance id)
+      include_tasks: tasks/basic/create_instance.yml
+      vars:
+        ec2_test_instance_name: "{{ ec2_basic_2 }}"
+
+    - set_fact:
+        basic_2_instance_id: "{{ create_instance.instance_ids[0] }}"
+        existing_instances_ids: "{{ existing_instances_ids + [create_instance.instance_ids[0]] }}"
+
+    - name: create another basic instance using tag name
+      include_tasks: tasks/basic/create_instance.yml
+      vars:
+        ec2_test_instance_name: "{{ ec2_basic_tag }}"
+        create_with_tag_name: true
+
+    - set_fact:
+        basic_tag_instance_id: "{{ create_instance_tag.instance_ids[0] }}"
+        existing_instances_ids: "{{ existing_instances_ids + [create_instance_tag.instance_ids[0]] }}"
+
+    - name: create basic instance into availability zone a using name parameter
+      include_tasks: tasks/basic/create_instance.yml
+      vars:
+        ec2_test_instance_name: "{{ ec2_basic_zone_a }}"
+        test_aws_availability_zone: "{{ aws_region }}a"
+
+    - set_fact:
+        basic_zone_a_instance_id: "{{ create_instance.instance_ids[0] }}"
+        existing_instances_ids: "{{ existing_instances_ids + [create_instance.instance_ids[0]] }}"
+
+    - name: create basic instance into availability zone b using tag name
+      include_tasks: tasks/basic/create_instance.yml
+      vars:
+        ec2_test_instance_name: "{{ ec2_basic_zone_b }}"
+        create_with_tag_name: true
+        test_aws_availability_zone: "{{ aws_region }}b"
+
+    - set_fact:
+        basic_zone_b_instance_id: "{{ create_instance_tag.instance_ids[0] }}"
+        existing_instances_ids: "{{ existing_instances_ids + [create_instance_tag.instance_ids[0]] }}"
+
+    # Test terminate instance
+    # - name: "Terminate instance {{ ec2_basic_1 }} with id {{ basic_1_instance_id }} using name parameter"
+    #   include_tasks: tasks/basic/terminate_instance.yml
+    #   vars:
+    #     ec2_test_instance_name: "{{ ec2_basic_1 }}"
+    #     instance_id_to_terminate: "{{ basic_1_instance_id }}"
+
+    - name: "Terminate instance using instance_ids ['{{ basic_2_instance_id }}']"
+      include_tasks: tasks/basic/terminate_instance.yml
+      vars:
+        instance_id_to_terminate: "{{ basic_2_instance_id }}"
+
+    - name: "Terminate instance '{{ ec2_basic_tag }}' using tag name parameter instance id='{{ basic_tag_instance_id }}'"
+      include_tasks: tasks/basic/terminate_instance.yml
+      vars:
+        instance_id_to_terminate: "{{ basic_tag_instance_id }}"
+        ec2_test_instance_tag_name: "{{ ec2_basic_tag }}"
+
+    - name: "Terminate instance '{{ ec2_basic_zone_a }}' using tag name parameter instance id='{{ basic_zone_a_instance_id }}'"
+      include_tasks: tasks/basic/terminate_instance.yml
+      vars:
+        instance_id_to_terminate: "{{ basic_zone_a_instance_id }}"
+        ec2_test_instance_tag_name: "{{ ec2_basic_zone_a }}"
+
+    - name: "Terminate instance '{{ ec2_basic_zone_b }}' using instance_ids='{{ basic_zone_b_instance_id }}'"
+      include_tasks: tasks/basic/terminate_instance.yml
+      vars:
+        instance_id_to_terminate: "{{ basic_zone_b_instance_id }}"
+
+  vars:
+    ec2_basic_1: "{{ ec2_instance_name }}-basic-1"
+    ec2_basic_2: "{{ ec2_instance_name }}-basic-2"
+    ec2_basic_tag: "{{ ec2_instance_name }}-tag"
+    ec2_basic_zone_a: "{{ ec2_instance_name }}-basic-zone-a"
+    ec2_basic_zone_b: "{{ ec2_instance_name }}-basic-zone-b"

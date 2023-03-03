@@ -1,0 +1,76 @@
+- name: "Create multiple instance (check_mode)"
+  ec2_instance:
+    instance_type: "{{ ec2_instance_type }}"
+    count: 5
+    region: "{{ aws_region }}"
+    image_id: "{{ ec2_ami_id }}"
+    state: present
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+  register: create_multiple_instances
+  check_mode: true
+
+- assert:
+    that:
+    - create_multiple_instances is not failed
+    - create_multiple_instances is changed
+    - '"instance_ids" not in create_multiple_instances'
+    - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+- name: "Create multiple instances"
+  ec2_instance:
+    instance_type: "{{ ec2_instance_type }}"
+    count: 5
+    region: "{{ aws_region }}"
+    image_id: "{{ ec2_ami_id }}"
+    state: present
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    wait: true
+  register: create_multiple_instances
+
+- assert:
+    that:
+    - create_multiple_instances is not failed
+    - create_multiple_instances is changed
+    - '"ec2:RunInstances" in create_multiple_instances.resource_actions'
+    - '"instance_ids" in create_multiple_instances'
+    - create_multiple_instances.instance_ids | length == 5
+
+# Terminate instances created in count test
+- name: Terminate instances
+  include_tasks: tasks/count_instances/terminate_instances.yml
+  vars:
+    created_instance_ids: "{{ create_multiple_instances.instance_ids }}"
+
+# ################################################################
+- block:
+    - name: launch instances using exact_count
+      include_tasks: tasks/count_instances/create_instances.yml
+      vars:
+        t_exact_count:
+          total: 5
+
+    - name: Scale down instances
+      include_tasks: tasks/count_instances/create_instances.yml
+      vars:
+        t_exact_count:
+          initial: 5
+          total: 3
+          removed: 2
+
+    - name: Scale up instances
+      include_tasks: tasks/count_instances/create_instances.yml
+      vars:
+        t_exact_count:
+          initial: 3
+          total: 6
+          added: 3
+
+    - name: Terminate instances
+      include_tasks: tasks/count_instances/terminate_instances.yml
+      vars:
+        created_instance_ids: "{{ create_multiple_instances.instance_ids }}"
+
+  vars:
+    ec2_test_instance_name: "{{ ec2_instance_name }}-exact-count"

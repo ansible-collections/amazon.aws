@@ -1,0 +1,7 @@
+---
+minor_changes:
+  - ec2_instance_info - add new parameter `include_attributes` to describe instance attributes (https://github.com/ansible-collections/amazon.aws/pull/1404).
+bugfixes:
+  - ec2_instance - fix check_mode issue when adding network interfaces (https://github.com/ansible-collections/amazon.aws/issues/1403).
+trivial:
+  - ec2_instance - refactor integration testing to reduce running time.

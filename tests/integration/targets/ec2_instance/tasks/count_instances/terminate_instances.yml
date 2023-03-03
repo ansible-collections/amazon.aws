@@ -1,0 +1,84 @@
+- block:
+    - assert:
+        that:
+          - created_instance_ids is defined
+        fail_msg: "'created_instance_ids' should be defined with the instance ids to terminate"
+
+    - name: "Terminate instance based on id (check_mode)"
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - "{{ item }}"
+      register: terminate_id
+      check_mode: true
+      with_items: "{{ created_instance_ids }}"
+
+    - assert:
+        that:
+        - terminate_id is changed
+
+    - name: Gather instance information
+      ec2_instance_info:
+        filters:
+          instance-id: '{{ item }}'
+      with_items: "{{ created_instance_ids }}"
+      register: _instances_info
+
+    - assert:
+        that:
+          - created_instance_ids == existing_instances_ids
+      vars:
+        existing_instances_ids: "{{ _instances_info.results | map(attribute='instances') | flatten | map(attribute='instance_id') | list }}"
+
+    - name: "Terminate instance based on id"
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - "{{ item }}"
+        wait: true
+      register: terminate_id
+      with_items: "{{ created_instance_ids }}"
+
+    - assert:
+        that:
+        - terminate_id is changed
+
+    - name: Gather instance information
+      ec2_instance_info:
+        filters:
+          instance-id: '{{ item }}'
+          instance-state-name: terminated
+      with_items: "{{ created_instance_ids }}"
+      register: _instances_info
+
+    - name: ensure all instance are terminated
+      assert:
+        that:
+          - existing_instances_ids | length == created_instance_ids | length
+      vars:
+        existing_instances_ids: "{{ _instances_info.results | map(attribute='instances') | flatten | list }}"
+
+    - name: "Terminate instance based on id - Idempotency (check_mode)"
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - "{{ item }}"
+      register: terminate_id
+      check_mode: true
+      with_items: "{{ created_instance_ids }}"
+
+    - assert:
+        that:
+        - terminate_id is not changed
+
+    - name: "Terminate instance based on id - Idempotency"
+      ec2_instance:
+        state: absent
+        instance_ids:
+        - "{{ item }}"
+      register: terminate_id
+      with_items: "{{ created_instance_ids }}"
+
+    - assert:
+        that:
+        - terminate_id is not changed

@@ -1,0 +1,158 @@
+- name: Terminate instance based on name parameter
+  when: ec2_test_instance_tag_name is undefined
+  block:
+    - assert:
+        that:
+          - instance_id_to_terminate is defined
+          - instance_id_to_terminate.startswith("i-")
+        fail_msg: "instance id to terminate must be defined ('i-xxxxxxxxxxxx')"
+
+    - set_fact:
+        ec2_test_instands_ids: ["{{ instance_id_to_terminate }}"]
+      when: ec2_test_instance_name is not defined
+
+    - name: "Terminate instance based on name parameter (check_mode)"
+      ec2_instance:
+        state: absent
+        name: "{{ ec2_test_instance_name | default(omit) }}"
+        instance_ids: "{{ ec2_test_instands_ids | default(omit) }}"
+        wait: false
+      register: terminate_name
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_name is changed
+        - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+        - '"terminate_failed" in terminate_name'
+        - '"terminate_success" in terminate_name'
+        - terminate_name.terminate_failed | length == 0
+        - terminate_name.terminate_success | length == 1
+        - terminate_name.terminate_success[0] == instance_id_to_terminate
+
+    - name: "Terminate instance based on name parameter"
+      ec2_instance:
+        state: absent
+        name: "{{ ec2_test_instance_name | default(omit) }}"
+        instance_ids: "{{ ec2_test_instands_ids | default(omit) }}"
+        wait: false
+      register: terminate_name
+
+    - assert:
+        that:
+        - terminate_name is changed
+        - '"ec2:TerminateInstances" in terminate_name.resource_actions'
+        - '"terminate_failed" in terminate_name'
+        - '"terminate_success" in terminate_name'
+        - terminate_name.terminate_failed | length == 0
+        - terminate_name.terminate_success | length == 1
+        - terminate_name.terminate_success[0] == instance_id_to_terminate
+
+    - name: "Terminate instance based on name parameter - idempotency (check_mode)"
+      ec2_instance:
+        state: absent
+        name: "{{ ec2_test_instance_name | default(omit) }}"
+        instance_ids: "{{ ec2_test_instands_ids | default(omit) }}"
+        wait: false
+      register: terminate_name
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_name is not changed
+        - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+        - '"terminate_failed" not in terminate_name'
+        - '"terminate_success" not in terminate_name'
+
+    - name: "Terminate instance based on name parameter - idempotency"
+      ec2_instance:
+        state: absent
+        name: "{{ ec2_test_instance_name | default(omit) }}"
+        instance_ids: "{{ ec2_test_instands_ids | default(omit) }}"
+        wait: false
+      register: terminate_name
+
+    - assert:
+        that:
+        - terminate_name is not changed
+        - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+        - '"terminate_failed" not in terminate_name'
+        - '"terminate_success" not in terminate_name'
+
+################################################################
+- name: Terminate instance based on name tag
+  when: ec2_test_instance_tag_name is defined
+  block:
+    - assert:
+        that:
+          - instance_id_to_terminate is defined
+          - instance_id_to_terminate.startswith("i-")
+        fail_msg: "instance id to terminate must be defined ('i-xxxxxxxxxxxx')"
+  
+    - name: "Terminate instance based on name tag (check_mode)"
+      ec2_instance:
+        state: absent
+        tags:
+          Name: "{{ ec2_test_instance_tag_name }}"
+        wait: false
+      register: terminate_tag
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_tag is changed
+        - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+        - '"terminate_failed" in terminate_tag'
+        - '"terminate_success" in terminate_tag'
+        - terminate_tag.terminate_failed | length == 0
+        - terminate_tag.terminate_success | length == 1
+        - terminate_tag.terminate_success[0] == instance_id_to_terminate
+
+    - name: "Terminate instance based on name tag"
+      ec2_instance:
+        state: absent
+        tags:
+          Name: "{{ ec2_test_instance_tag_name }}"
+        wait: false
+      register: terminate_tag
+
+    - assert:
+        that:
+        - terminate_tag is changed
+        - '"ec2:TerminateInstances" in terminate_tag.resource_actions'
+        - '"terminate_failed" in terminate_tag'
+        - '"terminate_success" in terminate_tag'
+        - terminate_tag.terminate_failed | length == 0
+        - terminate_tag.terminate_success | length == 1
+        - terminate_tag.terminate_success[0] == instance_id_to_terminate
+
+    - name: "Terminate instance based on name tag - idempotency (check_mode)"
+      ec2_instance:
+        state: absent
+        tags:
+          Name: "{{ ec2_test_instance_tag_name }}"
+        wait: false
+      register: terminate_tag
+      check_mode: true
+
+    - assert:
+        that:
+        - terminate_tag is not changed
+        - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+        - '"terminate_failed" not in terminate_tag'
+        - '"terminate_success" not in terminate_tag'
+
+    - name: "Terminate instance based on name tag - idempotency"
+      ec2_instance:
+        state: absent
+        tags:
+          Name: "{{ ec2_test_instance_tag_name }}"
+        wait: false
+      register: terminate_tag
+
+    - assert:
+        that:
+        - terminate_tag is not changed
+        - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+        - '"terminate_failed" not in terminate_tag'
+        - '"terminate_success" not in terminate_tag'

@@ -1,0 +1,18 @@
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+
+  - include_tasks: "tasks/{{ item }}.yml"
+    with_items:
+      - attach_external_resources
+      - termination_protection
+      - default_vpc
+      - instance_options
+      - no_wait
+      - minimal
+      # - multiple_instances
+  

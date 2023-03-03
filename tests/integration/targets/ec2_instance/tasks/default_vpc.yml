@@ -1,0 +1,252 @@
+---
+# Test create instance into default VPC
+- name: Test create instance in default VPC
+  vars:
+    ec2_instance_default_vpc: "{{ ec2_instance_name }}-default-vpc"
+    ec2_iam_roles:
+      - "{{ ec2_instance_name }}-default-vpc-role1"
+      - "{{ ec2_instance_name }}-default-vpc-role2"
+  block:
+    - name: "Create IAM role for test"
+      iam_role:
+        state: present
+        name: '{{ item }}'
+        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        create_instance_profile: true
+        managed_policy:
+        - AmazonEC2ContainerServiceRole
+      register: iam_roles
+      with_items: "{{ ec2_iam_roles }}"
+
+    - name: Make instance in a default subnet of the VPC (check mode)
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        instance_role: "{{ ec2_iam_roles[0] }}"
+        wait: false
+      register: _create_instance
+      check_mode: true
+
+    - name: Gather instance info
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_default_vpc }}"
+      register: _instance_info
+
+    - assert:
+        that:
+          - _create_instance is changed
+          - _instance_info.instances | length == 0
+
+    - name: Make instance in a default subnet of the VPC with hibernation configure with unencrypted volume
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+        wait: false
+      register: _create_instance
+      failed_when: "'Hibernation prerequisites not satisfied' not in _create_instance.msg"
+
+    - name: Make instance in a default subnet of the VPC with hibernation configured and iam instance role (check_mode)
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        instance_role: "{{ ec2_iam_roles[0] }}"
+        wait: true
+      register: _create_instance_check_mode
+      check_mode: true
+
+    - name: Gather instance info
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_default_vpc }}"
+      register: _instance_info
+
+    - name: assert instance was created into default VPC
+      assert:
+        that:
+          - _create_instance_check_mode is changed
+          - _create_instance_check_mode.spec.HibernationOptions.Configured == True
+          - _instance_info.instances | length == 0
+
+    - name: Make instance in a default subnet of the VPC with hibernation configured and iam instance role
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        instance_role: "{{ ec2_iam_roles[0] }}"
+        wait: true
+      register: _create_instance
+
+    - name: Gather instance info
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_default_vpc }}"
+      register: _instance_info
+
+    - name: assert instance was created into default VPC
+      assert:
+        that:
+          - _create_instance is changed
+          - _instance_info.instances | length == 1
+          - _instance_info.instances.0.security_groups.0.group_name == "default"
+          - _instance_info.instances.0.hibernation_options.configured
+          - _instance_info.instances[0].iam_instance_profile.arn == iam_roles.results[0].arn.replace(":role/", ":instance-profile/")
+
+    - name: Make instance in a default subnet of the VPC with hibernation configured and iam instance role (check mode) (idempotency)
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        wait: true
+        instance_role: "{{ ec2_iam_roles[0] }}"
+      register: _create_instance_check_mode_idempotent
+      check_mode: true
+
+    - assert:
+        that:
+          - _create_instance_check_mode_idempotent is not changed
+
+    - name: Make instance in a default subnet of the VPC with hibernation configured and iam instance role (idempotency)
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        wait: true
+        instance_role: "{{ ec2_iam_roles[0] }}"
+      register: _create_instance_idempotent
+
+    - assert:
+        that:
+          - _create_instance_idempotent is not changed
+
+    # Test EC2 instance with IAM roles
+    - name: Update instance with new IAM instance role
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        hibernation_options: true
+        volumes:
+          - device_name: /dev/sda1
+            ebs:
+              delete_on_termination: true
+              encrypted: true
+        wait: true
+        instance_role: "{{ iam_roles.results[1].arn.replace(':role/', ':instance-profile/') }}"
+      register: _update_instance_with_role
+
+    - name: Gather instance info
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_default_vpc }}"
+      register: _instance_info
+      retries: 20
+      delay: 3
+      until: _instance_info.instances[0].iam_instance_profile.arn == iam_roles.results[1].arn.replace(":role/", ":instance-profile/")
+
+    - assert:
+        that:
+          - _update_instance_with_role is changed
+          - _instance_info.instances | length == 1
+          - _instance_info.instances[0].iam_instance_profile.arn == iam_roles.results[1].arn.replace(":role/", ":instance-profile/")
+
+    - name: Make instance with an IAM instance role (check mode)
+      ec2_instance:
+        state: present
+        name: "{{ ec2_instance_default_vpc }}-check"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: "default"
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+        instance_role: "{{ iam_roles.results[1].arn.replace(':role/', ':instance-profile/') }}"
+      check_mode: true
+      register: _instance_with_role_check_mode
+
+    - name: Gather instance info
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_default_vpc }}-check"
+      register: _instance_info
+
+    - assert:
+        that:
+          - _instance_with_role_check_mode is changed
+          - _instance_info.instances | length == 0
+
+  always:
+    - name: Terminate instances created into default VPC
+      ec2_instance:
+        state: absent
+        instance_ids: "{{ _create_instance.instance_ids }}"
+        wait: false
+      ignore_errors: true
+
+    - name: Delete IAM roles
+      iam_role:
+        state: absent
+        name: '{{ item }}'
+        delete_instance_profile: true
+      with_items: "{{ ec2_iam_roles }}"
+      ignore_errors: true

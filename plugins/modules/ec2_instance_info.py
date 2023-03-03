@@ -36,6 +36,15 @@ options:
     required: false
     aliases: ['uptime']
     type: int
+  include_attributes:
+    description:
+      - Describes the specified attributes of the returned instances. You can specify only one attribute at a time.
+        See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstanceAttribute.html) for possible values.
+    required: false
+    type: list
+    elements: str
+    aliases: ['attributes']
+    version_added: 5.3.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -77,6 +86,13 @@ EXAMPLES = r"""
       "tag:Name": "RHEL-*"
       instance-state-name: [ "running"]
   register: ec2_node_info
+
+- name: Gather information about a particular instance using ID and include kernel attribute
+  amazon.aws.ec2_instance_info:
+    instance_ids:
+      - i-12345678
+    include_attributes:
+        - kernel
 """
 
 RETURN = r"""
@@ -85,6 +101,20 @@ instances:
     returned: always
     type: complex
     contains:
+        attributes:
+            description: The details of the instance attribute specified on input.
+            returned: when include_attribute is specified
+            type: dict
+            sample:
+                {
+                    'disable_api_termination': {
+                        'value': True
+                    },
+                    'ebs_optimized': {
+                        'value': True
+                    }
+                }
+            version_added: 5.3.0
         ami_launch_index:
             description: The AMI launch index, which can be used to find this instance in the launch group.
             returned: always
@@ -523,6 +553,16 @@ def _describe_instances(connection, **params):
     return paginator.paginate(**params).build_full_result()
 
 
+def describe_instance_attribute(connection, instance_id, attributes):
+    result = {}
+    for attr in attributes:
+        response = connection.describe_instance_attribute(Attribute=attr, InstanceId=instance_id)
+        for key in response:
+            if key not in ('InstanceId', 'ResponseMetadata'):
+                result[key] = response[key]
+    return result
+
+
 def list_ec2_instances(connection, module):
     instance_ids = module.params.get("instance_ids")
     uptime = module.params.get("minimum_uptime")
@@ -549,6 +589,12 @@ def list_ec2_instances(connection, module):
         for reservation in reservations["Reservations"]:
             instances = instances + reservation["Instances"]
 
+    # include instances attributes
+    attributes = module.params.get("include_attributes")
+    if attributes:
+        for instance in instances:
+            instance["attributes"] = describe_instance_attribute(connection, instance["InstanceId"], attributes)
+
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
 
@@ -564,6 +610,7 @@ def main():
         minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
         instance_ids=dict(default=[], type="list", elements="str"),
         filters=dict(default={}, type="dict"),
+        include_attributes=dict(default=[], type='list', elements='str', aliases=['attributes']),
     )
 
     module = AnsibleAWSModule(

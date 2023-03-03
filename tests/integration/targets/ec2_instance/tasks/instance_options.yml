@@ -1,0 +1,384 @@
+- name: create new instance with multiple options
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 1
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: required
+      instance_metadata_tags: enabled
+    security_groups:
+      - "{{ sg.group_id }}"
+      - "{{ sg2.group_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: _instances
+
+- name: "Gather instance info"
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: _instances_info
+
+- assert:
+    that:
+    - _instances is not failed
+    - _instances is changed
+    - _instances_info.instances[0].block_device_mappings[0]
+    - _instances_info.instances[0].block_device_mappings[1]
+    - _instances_info.instances[0].block_device_mappings[1].device_name == '/dev/sdb'
+    - _instances_info.instances[0].ebs_optimized
+    - _instances_info.instances[0].metadata_options.http_endpoint == 'enabled'
+    - _instances_info.instances[0].metadata_options.http_tokens == 'required'
+    - _instances_info.instances[0].metadata_options.instance_metadata_tags == 'enabled'
+    - _instances_info.instances[0].state.name == 'running'
+    - _instances_info.instances[0].security_groups | length == 2
+
+# Test recreate ec2 instance with same parameters (idempotency)
+- name: Recreate ec2 instance with same parameters
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 1
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: required
+      instance_metadata_tags: enabled
+    security_groups:
+      - "{{ sg.group_id }}"
+      - "{{ sg2.group_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: create_idempotency
+
+- name: Ensure no change was made
+  assert:
+    that:
+    - create_idempotency is success
+    - create_idempotency is not changed
+
+# Test remove security group from ec2 instance
+- name: "Remove secondary security group from instance"
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 1
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: required
+      instance_metadata_tags: enabled
+    security_groups:
+      - "{{ sg.group_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: _remove_sg
+
+- name: "Gather instance info"
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: _instances_info
+  retries: 20
+  delay: 3
+  until: _instances_info.instances[0].security_groups | length == 1
+
+- assert:
+    that:
+    - _remove_sg is changed
+    - _instances_info.instances[0].security_groups | length == 1
+
+# Test add security group to ec2 instance
+- name: "Add secondary security group to instance"
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 1
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: required
+      instance_metadata_tags: enabled
+    security_groups:
+      - "{{ sg.group_id }}"
+      - "{{ sg2.group_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: _add_sg
+
+- name: "Gather instance info"
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: _instances_info
+  retries: 20
+  delay: 3
+  until: _instances_info.instances[0].security_groups | length == 2
+
+- assert:
+    that:
+    - _add_sg is changed
+    - _instances_info.instances[0].security_groups | length == 2
+
+# Test ec2 instance up time
+- name: "check using uptime 100 hours - should find nothing"
+  ec2_instance_info:
+    region: "{{ ec2_region }}"
+    uptime: 6000
+    filters:
+      instance-state-name: [ "running"]
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: long_running_instances
+
+- name: Confirm there is no instance running since 100hours
+  assert:
+    that:
+      - not long_running_instances.instances
+
+- name: Sleep for 61 seconds and continue with play
+  wait_for:
+    timeout: 61
+
+- name: check using uptime 1 minute
+  ec2_instance_info:
+    region: "{{ ec2_region }}"
+    uptime: 1
+    filters:
+      instance-state-name: [ "running"]
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: one_min_running_instances
+
+- name: "Confirm there is one running instance"
+  assert:
+    that:
+      - one_min_running_instances.instances | length == 1
+
+# check mode - create ec2 instance with an extra block device
+- name: check mode - create instance with an extra block device
+  block:
+    - name: "New instance with an extra block device (check mode)"
+      ec2_instance:
+        state: present
+        name: "{{ ec2_checkmode_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        volumes:
+        - device_name: /dev/sdb
+          ebs:
+            volume_size: 20
+            delete_on_termination: true
+            volume_type: standard
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        instance_type: "{{ ec2_instance_type }}"
+      check_mode: yes
+
+    - name: "fact checkmode ec2 instance"
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_checkmode_instance_name }}"
+      register: checkmode_instance_fact
+
+    - name: "Confirm instance was not created with check mode"
+      assert:
+        that:
+          - "{{ checkmode_instance_fact.instances | length }} == 0"
+  vars:
+    ec2_checkmode_instance_name: "{{ ec2_instance_name }}-device-checkmode"
+
+# create ec2 instance with gp3 volume and throughput
+- name: create ec2 instance with gp3 volume and throughput
+  block:
+    - name: "New instance with an extra block device - gp3 volume_type and throughput"
+      ec2_instance:
+        state: running
+        name: "{{ ec2_gp3_volume_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        volumes:
+        - device_name: /dev/sdb
+          ebs:
+            volume_size: 20
+            delete_on_termination: true
+            volume_type: gp3
+            throughput: 500
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      register: block_device_instances_gp3
+
+    - assert:
+        that:
+        - block_device_instances_gp3 is not failed
+        - block_device_instances_gp3 is changed
+        - block_device_instances_gp3.spec.BlockDeviceMappings[0].DeviceName == '/dev/sdb'
+        - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeType == 'gp3'
+        - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeSize == 20
+        - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.Throughput == 500
+
+  vars:
+    ec2_gp3_volume_instance_name: "{{ ec2_instance_name }}-gp3-volume"
+
+# test modify cpu options
+- name: "modify cpu_options on existing instance (warning displayed)"
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 2
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: required
+      instance_metadata_tags: enabled
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: cpu_options_update
+  ignore_errors: true
+
+- name: Get EC2 instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: _instances_info
+
+- name: "modify cpu_options has no effect on existing instance"
+  assert:
+    that:
+      - cpu_options_update is success
+      - cpu_options_update is not changed
+      - _instances_info.instances | length > 0
+      - _instances_info.instances.0.state.name in ['running','pending']
+      - _instances_info.instances.0.cpu_options.core_count == 1
+      - _instances_info.instances.0.cpu_options.threads_per_core == 1
+
+# create ec2 instance with cpu options (check mode)
+- block:
+    - name: create ec2 instance with cpu_options(check mode)
+      ec2_instance:
+        state: running
+        name: "{{ ec2_instance_cpu_option }}"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        instance_type: "{{ ec2_instance_type }}"
+        cpu_options:
+            core_count: 1
+            threads_per_core: 1
+        wait: true
+      check_mode: yes
+
+    - name: get ec2 instance facts
+      ec2_instance_info:
+        filters:
+          "tag:Name": "{{ ec2_instance_cpu_option }}"
+      register: checkmode_instance_info
+
+    - name: Confirm instance was not created using check mode
+      assert:
+        that:
+          - checkmode_instance_info.instances | length == 0
+  vars:
+    ec2_instance_cpu_option: "{{ ec2_instance_name }}-cpu-options"
+
+# modify ec2 instance metadata options
+- name: modify ec2 instance metadata options
+  ec2_instance:
+    state: running
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+    ebs_optimized: true
+    volumes:
+    - device_name: /dev/sdb
+      ebs:
+        volume_size: 20
+        delete_on_termination: true
+        volume_type: standard
+    cpu_options:
+      core_count: 1
+      threads_per_core: 1
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: optional
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    instance_type: "{{ ec2_instance_type }}"
+    wait: true
+  register: update_metadata_options
+
+- name: Gather instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+  register: _instances_info
+
+- assert:
+    that:
+    - update_metadata_options is success
+    - update_metadata_options is not changed
+    - _instances_info.instances[0].metadata_options.http_endpoint == 'enabled'
+    - _instances_info.instances[0].metadata_options.http_tokens == 'required'

@@ -1,0 +1,94 @@
+- name: "change instance state to '{{ ec2_instance_state }}' (check mode)"
+  ec2_instance:
+    state: "{{ ec2_instance_state }}"
+    name: "{{ ec2_test_instance_name }}"
+    instance_type: "{{ ec2_instance_type }}"
+    image_id: "{{ ec2_ami_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    wait: true
+  check_mode: true
+  register: _change_state_check_mode
+
+- name: Get instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_test_instance_name }}"
+  register: _instances_info
+
+- name: assert using check mode did not stopped the instance
+  assert:
+    that:
+      - _change_state_check_mode is changed
+      - _instances_info.instances[0].state.name not in ec2_expected_states
+
+- name: "change instance state to '{{ ec2_instance_state }}'"
+  ec2_instance:
+    state: "{{ ec2_instance_state }}"
+    name: "{{ ec2_test_instance_name }}"
+    instance_type: "{{ ec2_instance_type }}"
+    image_id: "{{ ec2_ami_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    wait: true
+  register: _change_state
+
+- name: Get instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_test_instance_name }}"
+  register: _instances_info
+
+- name: "Verify that instance was set to '{{ ec2_instance_state }}'"
+  assert:
+    that:
+      - _change_state is changed
+      - _instances_info.instances[0].state.name in ec2_expected_states
+
+- name: "change instance state to '{{ ec2_instance_state }}' (check_mode) (idempotency)"
+  ec2_instance:
+    state: "{{ ec2_instance_state }}"
+    name: "{{ ec2_test_instance_name }}"
+    instance_type: "{{ ec2_instance_type }}"
+    image_id: "{{ ec2_ami_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    wait: true
+  register: _change_state_check_mode_idempotent
+  check_mode: true
+
+- name: Get instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_test_instance_name }}"
+  register: _instances_info
+
+- name: "Verify that instance was set to '{{ ec2_instance_state }}'"
+  assert:
+    that:
+      - _change_state_check_mode_idempotent is not changed
+      - _instances_info.instances[0].state.name in ec2_expected_states
+
+- name: "change instance state to '{{ ec2_instance_state }}' (idempotency)"
+  ec2_instance:
+    state: "{{ ec2_instance_state }}"
+    name: "{{ ec2_test_instance_name }}"
+    instance_type: "{{ ec2_instance_type }}"
+    image_id: "{{ ec2_ami_id }}"
+    tags:
+      TestId: "{{ ec2_instance_tag_TestId }}"
+    wait: true
+  register: _change_state_idempotent
+  check_mode: true
+
+- name: Get instance info
+  ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_test_instance_name }}"
+  register: _instances_info
+
+- name: "Verify that instance was set to '{{ ec2_instance_state }}'"
+  assert:
+    that:
+      - _change_state_idempotent is not changed
+      - _instances_info.instances[0].state.name in ec2_expected_states
