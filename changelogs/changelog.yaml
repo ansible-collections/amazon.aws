@@ -1552,7 +1552,7 @@ releases:
   5.3.0:
     changes:
       bugfixes:
-      - "cloudtrail - support to disabling encryption using \xB4\xB4kms_key_id\xB4\xB4
+      - "cloudtrail - support to disabling encryption using ``kms_key_id``
         (https://github.com/ansible-collections/amazon.aws/pull/1384)."
       - ec2_key - fix issue when trying to update existing key pair with the same
         key material (https://github.com/ansible-collections/amazon.aws/pull/1383).
@@ -1570,7 +1570,7 @@ releases:
         release 6.0.0. After release 6.0.0 it will only be possible to pass either
         a profile or security tokens, regardless of mechanism used to pass them.  To
         explicitly block a parameter coming from an environment variable pass an empty
-        string as the parameter value``` Support for passing profile and security
+        string as the parameter value.  Support for passing profile and security
         tokens together was originally deprecated in release 1.2.0, however only partially
         implemented in release 5.0.0 (https://github.com/ansible-collections/amazon.aws/pull/1355).
       minor_changes:
@@ -1603,4 +1603,4 @@ releases:
     - 964-ec2_instance-return-instances.yml
     - release_summary.yml
     - unit-tests_test_ec2_key_only.yaml
-    release_date: '2023-03-03'
+    release_date: '2023-03-04'
