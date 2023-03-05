@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon Web Services Guide &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Guidelines for Ansible Amazon AWS module development" href="dev_guidelines.html" />
+    <link rel="prev" title="amazon.aws Release Notes" href="CHANGELOG.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">Amazon.Aws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#changelog">Changelog</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">Amazon Web Services Guide</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="amazon-web-services-guide">
+<span id="ansible-collections-amazon-aws-docsite-aws-intro"></span><h1>Amazon Web Services Guide<a class="headerlink" href="#amazon-web-services-guide" title="Permalink to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">amazon.aws</span></code> collection contains a number of modules and plugins for controlling Amazon Web Services (AWS). This guide explains how to use the modules and inventory scripts to automate your AWS resources with Ansible.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#authentication" id="id1">Authentication</a></p></li>
+<li><p><a class="reference internal" href="#provisioning" id="id2">Provisioning</a></p></li>
+<li><p><a class="reference internal" href="#security-groups" id="id3">Security Groups</a></p></li>
+<li><p><a class="reference internal" href="#host-inventory" id="id4">Host Inventory</a></p></li>
+<li><p><a class="reference internal" href="#tags-and-groups-and-variables" id="id5">Tags And Groups And Variables</a></p></li>
+<li><p><a class="reference internal" href="#autoscaling-with-ansible-pull" id="id6">Autoscaling with Ansible Pull</a></p></li>
+<li><p><a class="reference internal" href="#autoscaling-with-ansible-automation-platform" id="id7">Autoscaling with Ansible Automation Platform</a></p></li>
+<li><p><a class="reference internal" href="#ansible-with-and-versus-cloudformation" id="id8">Ansible With (And Versus) CloudFormation</a></p></li>
+<li><p><a class="reference internal" href="#aws-image-building-with-ansible" id="id9">AWS Image Building With Ansible</a></p></li>
+<li><p><a class="reference internal" href="#next-steps-explore-modules" id="id10">Next Steps: Explore Modules</a></p></li>
+</ul>
+</nav>
+<p>Requirements for the AWS modules are minimal.</p>
+<p>All of the modules require and are tested against recent versions of botocore and boto3.  Starting with the 2.0 AWS collection releases, it is generally the policy of the collections to support the versions of these libraries released 12 months prior to the most recent major collection revision. Individual modules may require a more recent library version to support specific features or may require the boto library, check the module documentation for the minimum required version for each module. You must have the boto3 Python module installed on your control machine. You can install these modules from your OS distribution or using the python package installer: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">boto3</span></code>.</p>
+<p>Starting with the 2.0 releases of both collections, Python 2.7 support will be ended in accordance with AWS’ <a class="reference external" href="https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-python-2-7-in-aws-sdk-for-python-and-aws-cli-v1/">end of Python 2.7 support</a> and Python 3.6 or greater will be required.</p>
+<p>Whereas classically Ansible will execute tasks in its host loop against multiple remote machines, most cloud-control steps occur on your local machine with reference to the regions to control.</p>
+<p>In your playbook steps we’ll typically be using the following pattern for provisioning steps:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<section id="authentication">
+<span id="ansible-collections-amazon-aws-docsite-aws-authentication"></span><h2><a class="toc-backref" href="#id1" role="doc-backlink">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this heading"></a></h2>
+<p>Authentication with the AWS-related modules is handled by either
+specifying your access and secret key as ENV variables or module arguments.</p>
+<p>For environment variables:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">export AWS_ACCESS_KEY_ID=&#39;AK123&#39;</span>
+<span class="l l-Scalar l-Scalar-Plain">export AWS_SECRET_ACCESS_KEY=&#39;abc123&#39;</span>
+</pre></div>
+</div>
+<p>For storing these in a vars_file, ideally encrypted with ansible-vault:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--REMOVED--&quot;</span>
+<span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--REMOVED--&quot;</span>
+</pre></div>
+</div>
+<p>Note that if you store your credentials in vars_file, you need to refer to them in each AWS-module. For example:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+</pre></div>
+</div>
+<p>Or they can be specified using “module_defaults” at the top of a playbook.:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo_setup.yml</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
+<span class="w">  </span><span class="nt">module_defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">group/aws</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">region</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">        </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+</pre></div>
+</div>
+<p>Credentials can also be accessed from a <a class="reference external" href="https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials_profiles.html">Credentials Profile</a>.:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="provisioning">
+<span id="ansible-collections-amazon-aws-docsite-aws-provisioning"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Provisioning</a><a class="headerlink" href="#provisioning" title="Permalink to this heading"></a></h2>
+<p>The ec2_instance module provisions and de-provisions instances within EC2.</p>
+<p>An example of creating an instance with a public IP assigned follows.</p>
+<p>The “name” parameter will create a “<a class="reference external" href="tag:Name">tag:Name</a>” on the instance. Additional tags can be specified with the “tags” parameter.:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo_setup.yml</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Provision an EC2 instance with a public IP address</span>
+<span class="w">      </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">        </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">        </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
+<span class="w">        </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">        </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
+<span class="w">      </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
+</pre></div>
+</div>
+<p>The data about the instance that has been created is being saved by the “register” keyword in the variable named “result”.</p>
+<p>From this, we’ll use the add_host module to dynamically create a host group consisting of these new instances.  This facilitates performing configuration actions on the hosts immediately in a subsequent task.:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo_setup.yml</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Provision an EC2 instance with a public IP address</span>
+<span class="w">      </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">        </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">        </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
+<span class="w">        </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">        </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
+<span class="w">      </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
+
+<span class="w">  </span><span class="w w-Error"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Add all instance public IPs to host group</span>
+<span class="w">     </span><span class="nt">add_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hostname=</span><span class="cp">{{</span> <span class="nv">item.public_ip</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain"> groups=ec2hosts</span>
+<span class="w">     </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">result.instances</span> <span class="cp">}}</span><span class="s">&quot;</span>
+</pre></div>
+</div>
+<p>With the host group now created, a second play at the bottom of the same provisioning playbook file might now have some configuration steps:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo_setup.yml</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Provision a set of instances</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
+<span class="w">  </span><span class="c1"># ... AS ABOVE ...</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2hosts</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">configuration play</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2-user</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check NTP service</span>
+<span class="w">       </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name=ntpd state=started</span>
+</pre></div>
+</div>
+</section>
+<section id="security-groups">
+<span id="ansible-collections-amazon-aws-docsite-aws-security-groups"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Security Groups</a><a class="headerlink" href="#security-groups" title="Permalink to this heading"></a></h2>
+<p>Security groups on AWS are stateful. The response of a request from your instance is allowed to flow in regardless of inbound security group rules and vice-versa.
+In case you only want allow traffic with AWS S3 service, you need to fetch the current IP ranges of AWS S3 for one region and apply them as an egress rule.:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fetch raw ip ranges for aws s3</span>
+<span class="w">  </span><span class="nt">set_fact</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">raw_s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_service_ip_ranges&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;eu-central-1&#39;</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">&#39;S3&#39;</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">prepare list structure for ec2_group module</span>
+<span class="w">  </span><span class="nt">set_fact</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="o">|</span> <span class="nf">default</span><span class="o">([])</span> <span class="o">+</span> <span class="o">[{</span><span class="s1">&#39;proto&#39;</span><span class="o">:</span> <span class="s1">&#39;all&#39;</span><span class="o">,</span> <span class="s1">&#39;cidr_ip&#39;</span><span class="o">:</span> <span class="nv">item</span><span class="o">,</span> <span class="s1">&#39;rule_desc&#39;</span><span class="o">:</span> <span class="s1">&#39;S3 Service IP range&#39;</span><span class="o">}]</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">raw_s3_ranges</span> <span class="cp">}}</span><span class="s">&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set S3 IP ranges to egress rules</span>
+<span class="w">  </span><span class="nt">ec2_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_s3_ip_ranges</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">allow outgoing traffic to aws S3 service</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eu-central-1</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-123456</span>
+<span class="w">    </span><span class="nt">purge_rules</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">purge_rules_egress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">rules_egress</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_s3_ip_ranges</span>
+</pre></div>
+</div>
+</section>
+<section id="host-inventory">
+<span id="ansible-collections-amazon-aws-docsite-aws-host-inventory"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Host Inventory</a><a class="headerlink" href="#host-inventory" title="Permalink to this heading"></a></h2>
+<p>Once your nodes are spun up, you’ll probably want to talk to them again.  With a cloud setup, it’s best to not maintain a static list of cloud hostnames
+in text files.  Rather, the best way to handle this is to use the aws_ec2 inventory plugin. See <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/inventory_guide/intro_dynamic_inventory.html#dynamic-inventory" title="(in Ansible vdevel)"><span>Working with dynamic inventory</span></a>.</p>
+<p>The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.</p>
+</section>
+<section id="tags-and-groups-and-variables">
+<span id="ansible-collections-amazon-aws-docsite-aws-tags-and-groups"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Tags And Groups And Variables</a><a class="headerlink" href="#tags-and-groups-and-variables" title="Permalink to this heading"></a></h2>
+<p>When using the inventory plugin, you can configure extra inventory structure based on the metadata returned by AWS.</p>
+<p>For instance, you might use <code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code> to create groups from instance tags:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">keyed_groups</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+</pre></div>
+</div>
+<p>You can then target all instances with a “class” tag where the value is “webserver” in a play:</p>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_class_webserver</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ping</span>
+</pre></div>
+</div>
+<p>You can also use these groups with ‘group_vars’ to set variables that are automatically applied to matching instances.</p>
+</section>
+<section id="autoscaling-with-ansible-pull">
+<span id="ansible-collections-amazon-aws-docsite-aws-pull"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Autoscaling with Ansible Pull</a><a class="headerlink" href="#autoscaling-with-ansible-pull" title="Permalink to this heading"></a></h2>
+<p>Amazon Autoscaling features automatically increase or decrease capacity based on load.  There are also Ansible modules shown in the cloud documentation that
+can configure autoscaling policy.</p>
+<p>When nodes come online, it may not be sufficient to wait for the next cycle of an ansible command to come along and configure that node.</p>
+<p>To do this, pre-bake machine images which contain the necessary ansible-pull invocation.  Ansible-pull is a command line tool that fetches a playbook from a git server and runs it locally.</p>
+<p>One of the challenges of this approach is that there needs to be a centralized way to store data about the results of pull commands in an autoscaling context.
+For this reason, the autoscaling solution provided below in the next section can be a better approach.</p>
+<p>Read <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/cli/ansible-pull.html#ansible-pull" title="(in Ansible vdevel)"><span class="xref std std-ref">ansible-pull</span></a> for more information on pull-mode playbooks.</p>
+</section>
+<section id="autoscaling-with-ansible-automation-platform">
+<span id="ansible-collections-amazon-aws-docsite-aws-autoscale"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Autoscaling with Ansible Automation Platform</a><a class="headerlink" href="#autoscaling-with-ansible-automation-platform" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/">Ansible Automation Platform (AAP)</a>
+also contains a very nice feature for auto-scaling use cases.  In this mode, a simple curl script can call
+a defined URL and the server will “dial out” to the requester and configure an instance that is spinning up.  This can be a great way
+to reconfigure ephemeral nodes.  See the install and product documentation for more details.</p>
+<p>A benefit of using the callback in AAP over pull mode is that job results are still centrally recorded and less information has to be shared
+with remote hosts.</p>
+</section>
+<section id="ansible-with-and-versus-cloudformation">
+<span id="ansible-collections-amazon-aws-docsite-aws-cloudformation-example"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Ansible With (And Versus) CloudFormation</a><a class="headerlink" href="#ansible-with-and-versus-cloudformation" title="Permalink to this heading"></a></h2>
+<p>CloudFormation is a Amazon technology for defining a cloud stack as a JSON or YAML document.</p>
+<p>Ansible modules provide an easier to use interface than CloudFormation in many examples, without defining a complex JSON/YAML document.
+This is recommended for most users.</p>
+<p>However, for users that have decided to use CloudFormation, there is an Ansible module that can be used to apply a CloudFormation template
+to Amazon.</p>
+<p>When using Ansible with CloudFormation, typically Ansible will be used with a tool like Packer to build images, and CloudFormation will launch
+those images, or ansible will be invoked through user data once the image comes online, or a combination of the two.</p>
+<p>Please see the examples in the Ansible CloudFormation module for more details.</p>
+</section>
+<section id="aws-image-building-with-ansible">
+<span id="ansible-collections-amazon-aws-docsite-aws-image-build"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">AWS Image Building With Ansible</a><a class="headerlink" href="#aws-image-building-with-ansible" title="Permalink to this heading"></a></h2>
+<p>Many users may want to have images boot to a more complete configuration rather than configuring them entirely after instantiation.  To do this,
+one of many programs can be used with Ansible playbooks to define and upload a base image, which will then get its own AMI ID for usage with
+the ec2 module or other Ansible AWS modules such as ec2_asg or the cloudformation module.   Possible tools include Packer, aminator, and Ansible’s
+ec2_ami module.</p>
+<p>Generally speaking, we find most users using Packer.</p>
+<p>See the Packer documentation of the <a class="reference external" href="https://www.packer.io/docs/provisioners/ansible/ansible-local">Ansible local Packer provisioner</a> and <a class="reference external" href="https://www.packer.io/docs/provisioners/ansible/ansible">Ansible remote Packer provisioner</a>.</p>
+<p>If you do not want to adopt Packer at this time, configuring a base-image with Ansible after provisioning (as shown above) is acceptable.</p>
+</section>
+<section id="next-steps-explore-modules">
+<span id="ansible-collections-amazon-aws-docsite-aws-next-steps"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Next Steps: Explore Modules</a><a class="headerlink" href="#next-steps-explore-modules" title="Permalink to this heading"></a></h2>
+<p>Ansible ships with lots of modules for configuring a wide array of EC2 services.  Browse the “Cloud” category of the module
+documentation for a full list with examples.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="../../../index.html#list-of-collections"><span class="std std-ref">Collection Index</span></a></dt><dd><p>Browse existing collections, modules, and plugins</p>
+</dd>
+<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks.html#working-with-playbooks" title="(in Ansible vdevel)"><span>Working with playbooks</span></a></dt><dd><p>An introduction to playbooks</p>
+</dd>
+<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks_delegation.html#playbooks-delegation" title="(in Ansible vdevel)"><span>Controlling where tasks run: delegation and local actions</span></a></dt><dd><p>Delegation, useful for working with loud balancers, clouds, and locally executed steps.</p>
+</dd>
+<dt><a class="reference external" href="https://groups.google.com/group/ansible-devel">User Mailing List</a></dt><dd><p>Have a question?  Stop by the google group!</p>
+</dd>
+<dt><a class="reference external" href="https://libera.chat/">irc.libera.chat</a></dt><dd><p>#ansible IRC chat channel</p>
+</dd>
+</dl>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="CHANGELOG.html" class="btn btn-neutral float-left" title="amazon.aws Release Notes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dev_guidelines.html" class="btn btn-neutral float-right" title="Guidelines for Ansible Amazon AWS module development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
