@@ -1,2 +1,0 @@
-trivial:
-- inventory:aws_ec2 - update docs. Add full path to the awx_ec2 inv example and update description to add a file name example.

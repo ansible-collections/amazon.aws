@@ -1,2 +1,0 @@
-trivial:
-- ssm_parameter - Added an integration test to avoid regression of https://github.com/ansible-collections/amazon.aws/issues/389.
