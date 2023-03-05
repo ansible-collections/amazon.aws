@@ -1549,3 +1549,58 @@ releases:
     - rds_mariadb_version-10.6.10.yml
     - release.yml
     release_date: '2023-01-24'
+  5.3.0:
+    changes:
+      bugfixes:
+      - "cloudtrail - support to disabling encryption using ``kms_key_id``
+        (https://github.com/ansible-collections/amazon.aws/pull/1384)."
+      - ec2_key - fix issue when trying to update existing key pair with the same
+        key material (https://github.com/ansible-collections/amazon.aws/pull/1383).
+      - module_utils/elbv2 - fix change detection by adding default values for ``Scope``
+        and ``SessionTimeout`` parameters in ``authenticate-oidc`` rules (https://github.com/ansible-collections/amazon.aws/pull/1270).
+      - module_utils/elbv2 - respect ``UseExistingClientSecret`` parameter in ``authenticate-oidc``
+        rules (https://github.com/ansible-collections/amazon.aws/pull/1270).
+      - revert breaking change introduced in 5.2.0 when passing credentials through
+        a mix of environment variables and parameters (https://github.com/ansible-collections/amazon.aws/issues/1353).
+      - s3_bucket - empty bucket policy was throwing a JSONDecodeError - deal with
+        it gracefully instead (https://github.com/ansible-collections/amazon.aws/pull/1368)
+      deprecated_features:
+      - support for passing both profile and security tokens through a mix of environment
+        variables and parameters has been deprecated and support will be removed in
+        release 6.0.0. After release 6.0.0 it will only be possible to pass either
+        a profile or security tokens, regardless of mechanism used to pass them.  To
+        explicitly block a parameter coming from an environment variable pass an empty
+        string as the parameter value.  Support for passing profile and security
+        tokens together was originally deprecated in release 1.2.0, however only partially
+        implemented in release 5.0.0 (https://github.com/ansible-collections/amazon.aws/pull/1355).
+      minor_changes:
+      - ec2_instance - more consistently return ``instances`` information (https://github.com/ansible-collections/amazon.aws/pull/964).
+      - ec2_instance - remove unused import (https://github.com/ansible-collections/amazon.aws/pull/1350).
+      - ec2_key - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1288).
+      - ec2_vpc_nat_gateway - ensure allocation_id is defined before potential access
+        (https://github.com/ansible-collections/amazon.aws/pull/1350).
+      - route53_zone - added support for associating multiple VPCs to route53 hosted
+        zones (https://github.com/ansible-collections/amazon.aws/pull/1300).
+      - s3_bucket - add option to support creation of buckets with object lock enabled
+        (https://github.com/ansible-collections/amazon.aws/pull/1372).
+      release_summary: This release brings some minor changes, bugfixes, and deprecated
+        features.
+    fragments:
+    - 1226-defaults.yml
+    - 1270-elbv2-fixes.yml
+    - 1299-route53_zone-multi-vpc.yml
+    - 1347-s3-object-lock-enabled.yml
+    - 1353-revert-env-fallback.yml
+    - 1357-subnet-example.yml
+    - 1368-empty_bucket_policy.yml
+    - 1383-ec2_key-fix-idempotency-issue-when-creating-existing-key-with-same-key-material.yaml
+    - 1384-cloudtrail-disable_encryption.yml
+    - 1395-s3-encryption.yml
+    - 1400-typo.yml
+    - 20230204-sanity.yml
+    - 20230220-inventory_docs_ec2_aws.yml
+    - 389-ssm_parameter-versioned_test.yml
+    - 964-ec2_instance-return-instances.yml
+    - release_summary.yml
+    - unit-tests_test_ec2_key_only.yaml
+    release_date: '2023-03-05'
