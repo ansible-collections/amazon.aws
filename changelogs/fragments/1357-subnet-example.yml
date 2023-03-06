@@ -1,2 +1,0 @@
-trivial:
-- ec2_vpc_subnet_info - fix example (https://github.com/ansible-collections/amazon.aws/pull/1357).
