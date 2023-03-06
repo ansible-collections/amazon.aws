@@ -29,7 +29,7 @@
     - block:
 
         # Create VPC, subnet, security group, and find image_id to create instance
-        - include_tasks: setup.yml
+        - include_tasks: tasks/setup.yml
 
         - name: Ensure IAM instance role exists
           iam_role:
@@ -134,3 +134,4 @@
             instance_ids: "{{ instances_ids }}"
             wait: true
             state: absent
+          when: instances_ids is defined
