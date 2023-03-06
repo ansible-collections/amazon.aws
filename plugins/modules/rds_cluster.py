@@ -166,9 +166,8 @@ options:
           - Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.
           - For the full list of DB instance classes and availability for your engine visit U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(db_cluster_instance_class) require botocore >= 1.23.44.
         type: str
-        version_added: 5.1.0
+        version_added: 6.0.0
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
@@ -178,35 +177,34 @@ options:
         description:
           - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(allocated_storage) require botocore >= 1.23.44.
         type: int
-        version_added: 5.1.0
+        version_added: 6.0.0
     storage_type:
         description:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
           - When specified, a value for the I(iops) parameter is required.
-          - I(storage_type) require botocore >= 1.23.44.
         type: str
         default: io1
         choices:
           - io1
-        version_added: 5.1.0
+        version_added: 6.0.0
     iops:
         description:
           - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster
           - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
-          - I(iops) require botocore >= 1.23.44.
         type: int
-        version_added: 5.1.0
+        version_added: 6.0.0
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
+          - The combinaison of I(engine) and I(engine_mode) may not be supported.
+          - "See AWS documentation for details:
+            L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
           - When I(engine=mysql), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
           - When I(engine=postgres), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
-          - C(postgres) and C(mysql) require botocore >= 1.23.44.
-          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.1.0.
+          - Support for C(postgres) and C(mysql) was added in amazon.aws 6.0.0.
         choices:
           - aurora
           - aurora-mysql
@@ -226,7 +224,7 @@ options:
           - global
           - multimaster
         type: str
-        version_added: 6.0.0
+        version_added: 5.1.0
     engine_version:
         description:
           - The version number of the database engine to use.
@@ -994,7 +992,7 @@ def main():
         enable_global_write_forwarding=dict(type='bool'),
         db_cluster_instance_class=dict(type='str'),
         enable_iam_database_authentication=dict(type='bool'),
-        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql"]),
+        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql", "mysql", "postgres"]),
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
         allocated_storage=dict(type="int"),
@@ -1054,7 +1052,6 @@ def main():
         module.fail_json_aws(e, msg='Failed to connect to AWS.')
 
     if module.params.get('engine') and module.params['engine'] in ('mysql', 'postgres'):
-        module.require_botocore_at_least('1.23.44', reason='to use mysql and postgres engines')
         if module.params['state'] == 'present' and not (
             module.params.get('allocated_storage') and
             module.params.get('iops') and
@@ -1063,7 +1060,7 @@ def main():
             module.fail_json(f"When engine={module.params['engine']} allocated_storage, iops and db_cluster_instance_class msut be specified")
 
     if module.params.get('storage_type'):
-        module.require_botocore_at_least('1.23.44', reason='to use storage_type') 
+        module.require_botocore_at_least('1.23.44', reason='to use storage_type')
 
     module.params['db_cluster_identifier'] = module.params['db_cluster_identifier'].lower()
     cluster = get_cluster(module.params['db_cluster_identifier'])

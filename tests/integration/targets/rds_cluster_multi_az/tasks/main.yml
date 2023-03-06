@@ -7,7 +7,7 @@
       security_token: "{{ security_token | default(omit) }}"
   collections:
     - amazon.aws
-  
+
   block:
   - name: Ensure the resource doesn't exist
     rds_cluster:
@@ -18,8 +18,6 @@
       password: '{{ password }}'
       skip_final_snapshot: true
     register: _result_delete_db_cluster
-    vars:
-      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - assert:
       that:
@@ -34,20 +32,18 @@
       engine_version: 8.0.28
       allocated_storage: 100
       iops: 5000
-      db_cluster_instance_class: db.r6gd.xlarge 
+      db_cluster_instance_class: db.r6gd.xlarge
       username: '{{ username }}'
       password: '{{ password }}'
       wait: true
       tags: '{{ tags_create }}'
     register: _result_create_source_db_cluster
-    vars:
-      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
     check_mode: True
-  
+
   - assert:
       that:
       - _result_create_source_db_cluster.changed
-  
+
   - name: Create a source DB cluster
     rds_cluster:
       id: '{{ cluster_id }}'
@@ -62,9 +58,7 @@
       wait: true
       tags: '{{ tags_create }}'
     register: _result_create_source_db_cluster
-    vars:
-      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
-  
+
   always:
 
   - name: Delete DB cluster without creating a final snapshot
