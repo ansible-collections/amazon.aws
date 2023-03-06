@@ -468,7 +468,7 @@ def _describe_ec2_instances(connection, filters):
 
 
 def _get_ssm_information(client, filters):
-    paginator = client.get_paginator('get_inventory')
+    paginator = client.get_paginator("get_inventory")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
@@ -627,17 +627,12 @@ class InventoryModule(AWSInventoryBase):
         return {'aws_ec2': instances}
 
     def _add_ssm_information(self, connection, instances):
-        filters = [
-            {
-                'Key': 'AWS:InstanceInformation.InstanceId',
-                'Values': [x['InstanceId'] for x in instances]
-            }
-        ]
+        filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
         result = _get_ssm_information(connection, filters)
         for entity in result.get("Entities", []):
             for x in instances:
                 if x["InstanceId"] == entity["Id"]:
-                    content = entity.get('Data', {}).get('AWS:InstanceInformation', {}).get('Content', [])
+                    content = entity.get("Data", {}).get("AWS:InstanceInformation", {}).get("Content", [])
                     if content:
                         x["SsmInventory"] = content[0]
                     break
@@ -732,8 +727,8 @@ class InventoryModule(AWSInventoryBase):
 
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
-        use_contrib_script_compatible_ec2_tag_keys = self.get_option('use_contrib_script_compatible_ec2_tag_keys')
-        use_ssm_inventory = self.get_option('use_ssm_inventory')
+        use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
+        use_ssm_inventory = self.get_option("use_ssm_inventory")
 
         if self.get_option('include_extra_api_calls'):
             self.display.deprecate(
