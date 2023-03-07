@@ -305,7 +305,7 @@ environment if desired):</p>
 <h4>Add a release_summary changelog fragment<a class="headerlink" href="#add-a-release-summary-changelog-fragment" title="Permalink to this heading"></a></h4>
 <p>While not strictly necessary it’s preferable to add a release summary that will be added to the
 changelog.  For example, the <a class="reference external" href="https://ansible-collections.github.io/amazon.aws/branch/stable-5/collections/amazon/aws/docsite/CHANGELOG.html#release-summary">release summary for 5.2.0</a></p>
-<p><strong>changelog/fragments/release-summary.yml:</strong></p>
+<p><strong>changelogs/fragments/release-summary.yml:</strong></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">release_summary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 <span class="w">  </span><span class="no">Add a short description highlighting some of the key changes in the release.</span>
 </pre></div>
@@ -316,6 +316,9 @@ changelog.  For example, the <a class="reference external" href="https://ansible
 <h4>Generate the merged changelog<a class="headerlink" href="#generate-the-merged-changelog" title="Permalink to this heading"></a></h4>
 <p>Next we need to generate the merged changelog.  This will automatically delete the used fragments,
 update <code class="docutils literal notranslate"><span class="pre">CHANGELOG.rst</span></code>, <code class="docutils literal notranslate"><span class="pre">changelogs/changelog.yaml</span></code>, and <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> what it changes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>antsibull-changelog<span class="w"> </span>release
+</pre></div>
+</div>
 <p>Commit all of these changes to your local branch.</p>
 </section>
 <section id="create-your-pull-request">
