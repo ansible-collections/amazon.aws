@@ -239,7 +239,7 @@ While not strictly necessary it's preferable to add a release summary that will 
 changelog.  For example, the `release summary for 5.2.0
 <https://ansible-collections.github.io/amazon.aws/branch/stable-5/collections/amazon/aws/docsite/CHANGELOG.html#release-summary>`_
 
-**changelog/fragments/release-summary.yml:**
+**changelogs/fragments/release-summary.yml:**
 
 .. code-block:: yaml
 
@@ -253,6 +253,10 @@ Generate the merged changelog
 
 Next we need to generate the merged changelog.  This will automatically delete the used fragments,
 update ``CHANGELOG.rst``, ``changelogs/changelog.yaml``, and ``git add`` what it changes.
+
+.. code-block:: bash
+
+  antsibull-changelog release
 
 Commit all of these changes to your local branch.
 
