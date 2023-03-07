@@ -133,6 +133,12 @@ options:
       - The suffix for host variables names coming from AWS.
     type: str
     version_added: 3.1.0
+  use_ssm_inventory:
+    description:
+      - Add SSM inventory information into hostvars.
+    type: bool
+    default: False
+    version_added: 6.0.0
 """
 
 EXAMPLES = r"""
@@ -461,6 +467,11 @@ def _describe_ec2_instances(connection, filters):
     return paginator.paginate(Filters=filters).build_full_result()
 
 
+def _get_ssm_information(client, filters):
+    paginator = client.get_paginator("get_inventory")
+    return paginator.paginate(Filters=filters).build_full_result()
+
+
 class InventoryModule(AWSInventoryBase):
 
     NAME = 'amazon.aws.aws_ec2'
@@ -582,7 +593,7 @@ class InventoryModule(AWSInventoryBase):
 
         return hostname_list
 
-    def _query(self, regions, include_filters, exclude_filters, strict_permissions):
+    def _query(self, regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory):
         '''
             :param regions: a list of regions to query
             :param include_filters: a list of boto3 filter dictionaries
@@ -609,7 +620,22 @@ class InventoryModule(AWSInventoryBase):
 
         instances = sorted(instances, key=lambda x: x['InstanceId'])
 
+        if use_ssm_inventory and instances:
+            for connection, _region in self.all_clients("ssm"):
+                self._add_ssm_information(connection, instances)
+
         return {'aws_ec2': instances}
+
+    def _add_ssm_information(self, connection, instances):
+        filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
+        result = _get_ssm_information(connection, filters)
+        for entity in result.get("Entities", []):
+            for x in instances:
+                if x["InstanceId"] == entity["Id"]:
+                    content = entity.get("Data", {}).get("AWS:InstanceInformation", {}).get("Content", [])
+                    if content:
+                        x["SsmInventory"] = content[0]
+                    break
 
     def _populate(self, groups, hostnames, allow_duplicated_hosts=False,
                   hostvars_prefix=None, hostvars_suffix=None,
@@ -701,7 +727,8 @@ class InventoryModule(AWSInventoryBase):
 
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
-        use_contrib_script_compatible_ec2_tag_keys = self.get_option('use_contrib_script_compatible_ec2_tag_keys')
+        use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
+        use_ssm_inventory = self.get_option("use_ssm_inventory")
 
         if self.get_option('include_extra_api_calls'):
             self.display.deprecate(
@@ -712,7 +739,7 @@ class InventoryModule(AWSInventoryBase):
         result_was_cached, results = self.get_cached_result(path, cache)
 
         if not result_was_cached:
-            results = self._query(regions, include_filters, exclude_filters, strict_permissions)
+            results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)
 
         self._populate(
             results,

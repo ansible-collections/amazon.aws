@@ -481,6 +481,11 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 ``strict_permissions: False`` will ignore 403 errors rather than failing.
 
 
+``use_ssm_inventory``
+---------------------
+
+``use_ssm_inventory: True`` will include SSM inventory variables into hostvars for ssm-configured instances.
+
 ``cache``
 ---------
 

@@ -1,0 +1,137 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  environment: "{{ ansible_test.environment }}"
+
+  collections:
+    - amazon.aws
+
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  vars:
+    ami_details:
+        owner: 125523088429
+        name: Fedora-Cloud-Base-37-1.2.x86_64*
+        user_data: |
+            #!/bin/sh
+            sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl start amazon-ssm-agent
+        os_type: linux
+    iam_role_name: "{{ resource_prefix }}-inventory-ssm"
+
+  tasks:
+    - block:
+
+        # Create VPC, subnet, security group, and find image_id to create instance
+        - include_tasks: tasks/setup.yml
+
+        - name: Ensure IAM instance role exists
+          iam_role:
+            name: "{{ iam_role_name }}"
+            assume_role_policy_document: "{{ lookup('file', 'files/ec2-trust-policy.json') }}"
+            state: present
+            create_instance_profile: yes
+            managed_policy:
+            - AmazonSSMManagedInstanceCore
+            wait: True
+          register: role_output
+
+        - name: AMI Lookup (ami_info)
+          ec2_ami_info:
+            owners: '{{ ami_details.owner | default("amazon") }}'
+            filters:
+              name: '{{ ami_details.name }}'
+          register: ec2_amis
+          no_log: true
+
+        - name: Set facts with latest AMIs
+          vars:
+            latest_ami: '{{ ec2_amis.images | default([]) | sort(attribute="creation_date") | last }}'
+          set_fact:
+            latest_ami_id: '{{ ssm_amis | default(latest_ami.image_id) }}'
+
+        - name: Create EC2 instance
+          ec2_instance:
+            instance_type: "t3.micro"
+            ebs_optimized: True
+            image_id: "{{ latest_ami_id }}"
+            wait: "yes"
+            instance_role: "{{ role_output.iam_role.role_name }}"
+            name: "{{ resource_prefix }}-inventory-ssm"
+            user_data: "{{ ami_details.user_data }}"
+            state: running
+            tags:
+              TestPrefix: '{{ resource_prefix }}'
+          register: instance_output
+
+        - set_fact:
+            instances_ids: "{{ [instance_output.instance_ids[0]] }}"
+
+        - name: Get ssm inventory information
+          test_get_ssm_inventory:
+            instance_id: '{{ instance_output.instance_ids[0] }}'
+            aws_access_key: '{{ aws_access_key }}'
+            aws_secret_key: '{{ aws_secret_key }}'
+            security_token: '{{ security_token | default(omit) }}'
+            region: '{{ aws_region }}'
+          register: result
+          until: result.ssm_inventory != {}
+          retries: 18
+          delay: 10
+
+        - name: validate EC2 ssm-configured instance
+          assert:
+            that:
+              - result.ssm_inventory != {}
+
+        # Create 'Standard' EC2 instance (without ssm configured)
+        - name: Create another EC2 instance without SSM configured
+          amazon.aws.ec2_instance:
+            name: "{{ resource_prefix }}-inventory-std"
+            instance_type: "t3.micro"
+            image_id: "{{ latest_ami_id }}"
+            wait: true
+            state: running
+          register: _instance
+
+        - set_fact:
+            instances_ids: "{{ instances_ids + _instance.instance_ids }}"
+
+        # refresh inventory
+        - meta: refresh_inventory
+
+        - debug: var=hostvars
+
+        - name: assert hostvars was populated with ssm_inventory information
+          assert:
+            that:
+              - ssm_hostname in hostvars
+              - std_hostname in hostvars
+              - '"ssm_inventory" in hostvars[ssm_hostname]'
+              - hostvars[ssm_hostname].ssm_inventory["agent_type"] == "amazon-ssm-agent"
+              - hostvars[ssm_hostname].ssm_inventory["platform_type"] == "Linux"
+              - hostvars[ssm_hostname].ssm_inventory["platform_name"] == "Fedora Linux"
+              - '"ssm_inventory" not in hostvars[std_hostname]'
+          vars:
+            ssm_hostname: '{{ resource_prefix }}-inventory-ssm'
+            std_hostname: '{{ resource_prefix }}-inventory-std'
+
+      always:
+        - name: Delete IAM role
+          iam_role:
+            name: "{{ iam_role_name }}"
+            state: absent
+            wait: True
+
+        - name: Delete EC2 instances
+          amazon.aws.ec2_instance:
+            instance_ids: "{{ instances_ids }}"
+            wait: true
+            state: absent
+          when: instances_ids is defined
