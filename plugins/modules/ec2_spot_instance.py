@@ -284,7 +284,7 @@ options:
       - Can be used only when I(state=absent).
     default: False
     type: bool
-    version_added: 5.3.0
+    version_added: 5.4.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
