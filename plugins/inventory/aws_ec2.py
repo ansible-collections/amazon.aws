@@ -138,7 +138,7 @@ options:
       - Add SSM inventory information into hostvars.
     type: bool
     default: False
-    version_added: 5.3.0
+    version_added: 6.0.0
 """
 
 EXAMPLES = r"""
