@@ -1,12 +1,11 @@
-# Based on the ssh connection plugin by Michael DeHaan
-#
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Pat Sharkey <psharkey@cleo.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+# Based on the ssh connection plugin by Michael DeHaan
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 name: aws_ssm
 author:
   - Pat Sharkey (@psharkey) <psharkey@cleo.com>
@@ -128,9 +127,9 @@ options:
     version_added: 5.2.0
     vars:
     - name: ansible_aws_ssm_s3_addressing_style
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 
 # Wait for SSM Agent to be available on the Instance
 - name: Wait for connection to be available
@@ -261,7 +260,7 @@ EXAMPLES = r'''
       yum:
         name: nginx
         state: present
-'''
+"""
 
 import os
 import getpass
