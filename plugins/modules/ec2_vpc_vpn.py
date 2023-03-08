@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_vpn
 version_added: 1.0.0
@@ -14,11 +12,6 @@ short_description: Create, modify, and delete EC2 VPN connections
 description:
   - This module creates, modifies, and deletes VPN connections. Idempotence is achieved by using the filters
     option or specifying the VPN connection identifier.
-extends_documentation_fragment:
-  - amazon.aws.ec2
-  - amazon.aws.aws
-  - amazon.aws.boto3
-  - amazon.aws.tags
 author:
   - "Sloane Hertel (@s-hertel)"
 options:
@@ -135,7 +128,12 @@ options:
     required: false
     type: int
     default: 15
-'''
+extends_documentation_fragment:
+  - amazon.aws.region.modules
+  - amazon.aws.common.modules
+  - amazon.aws.tags
+  - amazon.aws.boto3
+"""
 
 EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
@@ -293,18 +291,22 @@ vpn_connection_id:
     vpn_connection_id: vpn-781e0e19
 """
 
-from ansible.module_utils._text import to_text
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-
 try:
-    from botocore.exceptions import BotoCoreError, ClientError, WaiterError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 class VPNConnectionException(Exception):

@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_vpn_info
 version_added: 1.0.0
 short_description: Gather information about VPN Connections in AWS.
 description:
-    - Gather information about VPN Connections in AWS.
-author: Madhura Naniwadekar (@Madhura-CSI)
+  - Gather information about VPN Connections in AWS.
+author:
+  - Madhura Naniwadekar (@Madhura-CSI)
 options:
   filters:
     description:
@@ -30,13 +29,12 @@ options:
     elements: str
     default: []
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Gather information about all vpn connections
   community.aws.ec2_vpc_vpn_info:
@@ -52,9 +50,9 @@ EXAMPLES = r'''
     filters:
       vpn-gateway-id: vgw-cbe66beb
   register: vpn_conn_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 vpn_connections:
     description: List of one or more VPN Connections.
     returned: always
@@ -158,19 +156,22 @@ vpn_connections:
         returned: always
         type: str
         sample: vgw-cbe56bfb
-'''
+"""
 
 import json
+
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     camel_dict_to_snake_dict,
-                                                                     )
 
 
 def date_handler(obj):
