@@ -753,6 +753,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-terminate_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-terminate-instances"><strong>terminate_instances</strong></p>
+<a class="ansibleOptionLink" href="#parameter-terminate_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Boolean value to set whether or not to terminate instances associated to spot request.</p>
+<p>Can be used only when <em>state=absent</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -765,7 +779,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-zone_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-zone-group"><strong>zone_group</strong></p>
 <a class="ansibleOptionLink" href="#parameter-zone_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
