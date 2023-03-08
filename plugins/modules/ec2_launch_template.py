@@ -1,11 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_launch_template
 version_added: 1.0.0
@@ -16,10 +15,6 @@ description:
 - The M(amazon.aws.ec2_instance) and M(community.aws.autoscaling_group) modules can, instead of specifying all
   parameters on those tasks, be passed a Launch Template which contains
   settings like instance size, disk type, subnet, and more.
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
 author:
 - Ryan Scott Brown (@ryansb)
 options:
@@ -378,9 +373,13 @@ options:
           - Requires botocore >= 1.23.30
         choices: [enabled, disabled]
         default: 'disabled'
-'''
+extends_documentation_fragment:
+- amazon.aws.common.modules
+- amazon.aws.region.modules
+- amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create an ec2 launch template
   community.aws.ec2_launch_template:
     name: "my_template"
@@ -404,9 +403,9 @@ EXAMPLES = '''
     state: absent
 
 # This module does not yet allow deletion of specific versions of launch templates
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 latest_version:
   description: Latest available version of the launch template
   returned: when state=present
@@ -415,25 +414,29 @@ default_version:
   description: The version that will be used if only the template name is specified. Often this is the same as the latest version, but not always.
   returned: when state=present
   type: int
-'''
+"""
+
 import re
 from uuid import uuid4
+
+try:
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
+except ImportError:
+    pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
-try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def determine_iam_role(module, name_or_arn):
