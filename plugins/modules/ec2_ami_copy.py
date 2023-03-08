@@ -1,13 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_ami_copy
 version_added: 1.0.0
@@ -72,12 +69,12 @@ author:
   - Amir Moulavi (@amir343) <amir.moulavi@gmail.com>
   - Tim C (@defunctio) <defunct@defunct.io>
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Basic AMI Copy
   community.aws.ec2_ami_copy:
     source_region: us-east-1
@@ -125,26 +122,29 @@ EXAMPLES = '''
     source_image_id: ami-xxxxxxx
     encrypted: true
     kms_key_id: arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/746de6ea-50a4-4bcb-8fbc-e3b29f2d367b
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 image_id:
   description: AMI ID of the copied AMI
   returned: always
   type: str
   sample: ami-e689729e
-'''
+"""
 
 try:
-    from botocore.exceptions import ClientError, WaiterError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 
 
 def copy_image(module, ec2):
