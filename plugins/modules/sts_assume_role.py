@@ -1,21 +1,19 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: sts_assume_role
 version_added: 1.0.0
 short_description: Assume a role using AWS Security Token Service and obtain temporary credentials
 description:
-    - Assume a role using AWS Security Token Service and obtain temporary credentials.
+  - Assume a role using AWS Security Token Service and obtain temporary credentials.
 author:
-    - Boris Ekelchik (@bekelchik)
-    - Marek Piatek (@piontas)
+  - Boris Ekelchik (@bekelchik)
+  - Marek Piatek (@piontas)
 options:
   role_arn:
     description:
@@ -53,12 +51,12 @@ options:
 notes:
   - In order to use the assumed role in a following playbook task you must pass the access_key, access_secret and access_token.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-RETURN = '''
+RETURN = r"""
 sts_creds:
     description: The temporary security credentials, which include an access key ID, a secret access key, and a security (or session) token
     returned: always
@@ -79,9 +77,9 @@ changed:
     description: True if obtaining the credentials succeeds
     type: bool
     returned: always
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Assume an existing role (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
@@ -100,15 +98,17 @@ EXAMPLES = '''
     tags:
       MyNewTag: value
 
-'''
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+"""
 
 try:
-    from botocore.exceptions import ClientError, ParamValidationError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import ParamValidationError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def _parse_response(response):
