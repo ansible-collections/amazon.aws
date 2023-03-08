@@ -1,19 +1,17 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-# Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_transit_gateway_info
 short_description: Gather information about ec2 transit gateways in AWS
 version_added: 1.0.0
 description:
-    - Gather information about ec2 transit gateways in AWS
-author: "Bob Boldin (@BobBoldin)"
+  - Gather information about ec2 transit gateways in AWS
+author:
+  - "Bob Boldin (@BobBoldin)"
 options:
   transit_gateway_ids:
     description:
@@ -29,13 +27,12 @@ options:
     type: dict
     default: {}
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather info about all transit gateways
@@ -57,9 +54,9 @@ EXAMPLES = r'''
     transit_gateway_ids:
       - tgw-02c42332e6b7da829
       - tgw-03c53443d5a8cb716
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 transit_gateways:
     description: >
         Transit gateways that match the provided filters. Each element consists of a dict with all the information
@@ -162,7 +159,7 @@ transit_gateways:
             returned: always
             type: str
             sample: "tgw-02c42332e6b7da829"
-'''
+"""
 
 try:
     import botocore
@@ -171,11 +168,12 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 class AnsibleEc2TgwInfo(object):
