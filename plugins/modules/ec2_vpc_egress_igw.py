@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_egress_igw
 version_added: 1.0.0
 short_description: Manage an AWS VPC Egress Only Internet gateway
 description:
-    - Manage an AWS VPC Egress Only Internet gateway
-author: Daniel Shepherd (@shepdelacreme)
+  - Manage an AWS VPC Egress Only Internet gateway
+author:
+  - Daniel Shepherd (@shepdelacreme)
 options:
   vpc_id:
     description:
@@ -27,13 +26,12 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Ensure that the VPC has an Internet Gateway.
@@ -43,9 +41,9 @@ EXAMPLES = '''
     state: present
   register: eigw
 
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 gateway_id:
     description: The ID of the Egress Only Internet Gateway or Null.
     returned: always
@@ -56,7 +54,7 @@ vpc_id:
     returned: always
     type: str
     sample: vpc-012345678
-'''
+"""
 
 try:
     import botocore
@@ -65,9 +63,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def delete_eigw(module, connection, eigw_id):
