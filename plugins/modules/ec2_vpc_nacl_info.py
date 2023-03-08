@@ -1,18 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ec2_vpc_nacl_info
 version_added: 1.0.0
 short_description: Gather information about Network ACLs in an AWS VPC
 description:
-    - Gather information about Network ACLs in an AWS VPC
-author: "Brad Davidson (@brandond)"
+  - Gather information about Network ACLs in an AWS VPC
+author:
+  - "Brad Davidson (@brandond)"
 options:
   nacl_ids:
     description:
@@ -34,12 +34,12 @@ notes:
   - By default, the module will return all Network ACLs.
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all Network ACLs:
@@ -55,9 +55,9 @@ EXAMPLES = r'''
     filters:
       'default': 'true'
   register: default_nacls
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 nacls:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -100,7 +100,7 @@ nacls:
             type: list
             elements: list
             sample: [[100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]]
-'''
+"""
 
 try:
     import botocore
@@ -109,11 +109,12 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 # VPC-supported IANA protocol numbers
