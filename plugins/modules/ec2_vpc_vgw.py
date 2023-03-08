@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: ec2_vpc_vgw
 short_description: Create and delete AWS VPN Virtual Gateways
 version_added: 1.0.0
@@ -55,13 +53,13 @@ notes:
 author:
   - Nick Aslanidis (@naslanidis)
 extends_documentation_fragment:
-  - amazon.aws.ec2
-  - amazon.aws.aws
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create a new VGW attached to a specific VPC
   community.aws.ec2_vpc_vgw:
     state: present
@@ -100,9 +98,9 @@ EXAMPLES = '''
     profile: personal
     vpn_gateway_id: vgw-3a9aa123
   register: deleted_vgw
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 vgw:
   description: A description of the VGW
   returned: success
@@ -133,7 +131,7 @@ vgw:
       type: str
       returned: success
       example: vpc-123456789abcdef01
-'''
+"""
 
 import time
 
@@ -142,13 +140,14 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 # AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
