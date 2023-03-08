@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_peering_info
 short_description: Retrieves AWS VPC Peering details using AWS methods.
 version_added: 1.0.0
@@ -25,15 +23,15 @@ options:
         for possible filters.
     type: dict
     default: {}
-author: Karen Cheng (@Etherdaemon)
+author:
+  - Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Simple example of listing all VPC Peers
 - name: List all vpc peers
   community.aws.ec2_vpc_peering_info:
@@ -58,9 +56,9 @@ EXAMPLES = r'''
     filters:
       status-code: ['pending-acceptance']
   register: pending_vpc_peers
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 vpc_peering_connections:
   description: Details of the matching VPC peering connections.
   returned: success
@@ -199,19 +197,21 @@ result:
   description: The result of the describe.
   returned: success
   type: list
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def get_vpc_peers(client, module):
