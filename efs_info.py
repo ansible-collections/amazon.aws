@@ -1,21 +1,19 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: efs_info
 version_added: 1.0.0
 short_description: Get information about Amazon EFS file systems
 description:
-    - This module can be used to search Amazon EFS file systems.
-      Note that the M(community.aws.efs_info) module no longer returns C(ansible_facts)!
+- This module can be used to search Amazon EFS file systems.
+  Note that the M(community.aws.efs_info) module no longer returns C(ansible_facts)!
 author:
-    - "Ryan Sydnor (@ryansydnor)"
+- "Ryan Sydnor (@ryansydnor)"
 options:
     name:
       description:
@@ -39,13 +37,12 @@ options:
       elements: str
       default: []
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+- amazon.aws.common.modules
+- amazon.aws.region.modules
 - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Find all existing efs
   community.aws.efs_info:
   register: result
@@ -66,9 +63,9 @@ EXAMPLES = r'''
 
 - ansible.builtin.debug:
     msg: "{{ result['efs'] }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 creation_time:
     description: timestamp of creation date
     returned: always
@@ -168,7 +165,7 @@ tags:
             "key": "Value"
         }
 
-'''
+"""
 
 
 from collections import defaultdict
@@ -180,9 +177,11 @@ except ImportError:
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 class EFSConnection(object):

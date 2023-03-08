@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: ec2_transit_gateway
 short_description: Create and delete AWS Transit Gateways
 version_added: 1.0.0
@@ -74,13 +72,13 @@ options:
 author:
   - "Bob Boldin (@BobBoldin)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
   - amazon.aws.tags
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create a new transit gateway using defaults
   community.aws.ec2_transit_gateway:
     state: present
@@ -114,9 +112,9 @@ EXAMPLES = '''
     region: ap-southeast-2
     transit_gateway_id: tgw-3a9aa123
   register: deleted_tgw
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 transit_gateway:
   description: The attributes of the transit gateway.
   type: complex
@@ -210,20 +208,25 @@ transit_gateway:
       returned: always
       type: str
       sample: tgw-3a9aa123
-'''
+"""
+
+from time import sleep
+from time import time
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # handled by imported AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from time import sleep, time
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 class AnsibleEc2Tgw(object):

@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: cloudformation_exports_info
 short_description: Read a value from CloudFormation Exports
 version_added: 1.0.0
@@ -15,12 +13,12 @@ description:
 author:
   - "Michael Moyle (@mmoyle)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Get Exports
   community.aws.cloudformation_exports_info:
     profile: 'my_aws_profile'
@@ -28,23 +26,24 @@ EXAMPLES = '''
   register: cf_exports
 - ansible.builtin.debug:
     msg: "{{ cf_exports }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 export_items:
     description: A dictionary of Exports items names and values.
     returned: Always
     type: dict
-'''
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+"""
 
 try:
     from botocore.exceptions import ClientError
     from botocore.exceptions import BotoCoreError
 except ImportError:
     pass  # handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 @AWSRetry.exponential_backoff()

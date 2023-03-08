@@ -1,12 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: dms_endpoint
 version_added: 1.0.0
@@ -143,13 +141,13 @@ options:
 author:
   - "Rui Moreira (@ruimoreira)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
   - amazon.aws.tags
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details
 - name: Endpoint Creation
   community.aws.dms_endpoint:
@@ -164,9 +162,9 @@ EXAMPLES = '''
     databasename: 'testdb'
     sslmode: none
     wait: false
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 endpoint:
   description:
     - A description of the DMS endpoint.
@@ -325,7 +323,7 @@ endpoint:
         - Additional settings for Redis endpoints.
       type: dict
       returned: when the I(endpoint_type) is C(redshift)
-'''
+"""
 
 try:
     import botocore
@@ -334,12 +332,14 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+
 
 backoff_params = dict(retries=5, delay=1, backoff=1.5)
 

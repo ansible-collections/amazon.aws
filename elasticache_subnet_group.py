@@ -1,18 +1,16 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elasticache_subnet_group
 version_added: 1.0.0
 short_description: manage ElastiCache subnet groups
 description:
-     - Creates, modifies, and deletes ElastiCache subnet groups.
+  - Creates, modifies, and deletes ElastiCache subnet groups.
 options:
   state:
     description:
@@ -40,12 +38,12 @@ options:
 author:
   - "Tim Mahoney (@timmahoney)"
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add or change a subnet group
   community.aws.elasticache_subnet_group:
     state: present
@@ -59,9 +57,9 @@ EXAMPLES = r'''
   community.aws.elasticache_subnet_group:
     state: absent
     name: norwegian-blue
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 cache_subnet_group:
   description: Description of the Elasticache Subnet Group.
   returned: always
@@ -95,7 +93,7 @@ cache_subnet_group:
       sample:
         - subnet-aaaaaaaa
         - subnet-bbbbbbbb
-'''
+"""
 
 try:
     import botocore
@@ -104,9 +102,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def get_subnet_group(name):

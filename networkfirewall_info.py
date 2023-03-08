@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: networkfirewall_info
 short_description: describe AWS Network Firewall firewalls
 version_added: 4.0.0
@@ -34,14 +32,15 @@ options:
     elements: str
     aliases: ['vpcs', 'vpc_id']
 
-author: Mark Chappell (@tremble)
+author:
+  - Mark Chappell (@tremble)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 
 # Describe all firewalls in an account
 - community.aws.networkfirewall_info: {}
@@ -53,9 +52,9 @@ EXAMPLES = '''
 # Describe a firewall by name
 - community.aws.networkfirewall_info:
     name: ExampleFirewall
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 firewall_list:
   description: A list of ARNs of the matching firewalls.
   type: list
@@ -184,10 +183,9 @@ firewalls:
                 }
               }
             }
-'''
+"""
 
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.networkfirewall import NetworkFirewallManager
 
 

@@ -1,11 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2021, Daniil Kupchenko (@oukooveu)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 
 DOCUMENTATION = r"""
 ---
@@ -199,16 +196,16 @@ options:
         description: How many seconds to wait. Cluster creation can take up to 20-30 minutes.
         type: int
         default: 3600
-extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
-    - amazon.aws.boto3
-    - amazon.aws.tags
 notes:
     - All operations are time consuming, for example create takes 20-30 minutes,
       update kafka version -- more than one hour, update configuration -- 10-15 minutes;
     - Cluster's brokers get evenly distributed over a number of availability zones
       that's equal to the number of subnets.
+extends_documentation_fragment:
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+    - amazon.aws.tags
 """
 
 EXAMPLES = r"""
@@ -266,12 +263,12 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    camel_dict_to_snake_dict,
-    compare_aws_tags,
-    AWSRetry,
-)
 
 
 @AWSRetry.jittered_backoff(retries=5, delay=5)

@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright 2014 Jens Carl, Hothead Games Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: redshift_subnet_group
 version_added: 1.0.0
@@ -40,14 +37,14 @@ options:
     type: list
     elements: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
 author:
   - "Jens Carl (@j-carl), Hothead Games Inc."
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a Redshift subnet group
   community.aws.redshift_subnet_group:
     state: present
@@ -61,9 +58,9 @@ EXAMPLES = r'''
   community.aws.redshift_subnet_group:
     state: absent
     group_name: redshift-subnet
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 cluster_subnet_group:
     description: A dictionary containing information about the Redshift subnet group.
     returned: success
@@ -92,7 +89,7 @@ cluster_subnet_group:
             sample:
               - subnet-aaaaaaaa
               - subnet-bbbbbbbb
-'''
+"""
 
 try:
     import botocore
@@ -101,10 +98,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def get_subnet_group(name):

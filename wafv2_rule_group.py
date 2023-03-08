@@ -1,11 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: wafv2_rule_group
 version_added: 1.5.0
@@ -67,14 +66,13 @@ options:
       type: bool
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.tags
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: change description
   community.aws.wafv2_rule_group:
     name: test02
@@ -150,9 +148,9 @@ EXAMPLES = '''
       A: B
       C: D
   register: out
-'''
+"""
 
-RETURN = """
+RETURN = r"""
 arn:
     description: Rule group arn
     sample: arn:aws:wafv2:eu-central-1:11111111:regional/rulegroup/test02/6e90c01a-e4eb-43e5-b6aa-b1604cedf7d7
@@ -200,19 +198,22 @@ visibility_config:
 """
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import compare_priority_rules
-from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_rule_groups
-from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_snake_dict_to_camel_dict
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import ensure_wafv2_tags
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_rule_groups
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_snake_dict_to_camel_dict
 
 
 class RuleGroup:

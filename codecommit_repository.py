@@ -1,13 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Shuang Wang <ooocamel@icloud.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: codecommit_repository
 version_added: 1.0.0
@@ -17,7 +14,8 @@ description:
   - See U(https://aws.amazon.com/codecommit/) for more information about CodeCommit.
   - Prior to release 5.0.0 this module was called C(community.aws.aws_codecommit).
     The usage did not change.
-author: Shuang Wang (@ptux)
+author:
+  - Shuang Wang (@ptux)
 options:
   name:
     description:
@@ -39,12 +37,12 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 repository_metadata:
   description: "Information about the repository."
   returned: always
@@ -120,9 +118,9 @@ response_metadata:
       returned: always
       type: str
       sample: "0"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Create a new repository
 - community.aws.codecommit_repository:
     name: repo
@@ -132,15 +130,16 @@ EXAMPLES = '''
 - community.aws.codecommit_repository:
     name: repo
     state: absent
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 class CodeCommit(object):

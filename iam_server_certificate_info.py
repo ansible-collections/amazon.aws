@@ -1,32 +1,30 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_server_certificate_info
 version_added: 1.0.0
 short_description: Retrieve the information of a server certificate
 description:
   - Retrieve the attributes of a server certificate.
-author: "Allen Sanabria (@linuxdynasty)"
+author:
+  - "Allen Sanabria (@linuxdynasty)"
 options:
   name:
     description:
       - The name of the server certificate you are retrieving attributes for.
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Retrieve server certificate
   community.aws.iam_server_certificate_info:
     name: production-cert
@@ -37,9 +35,9 @@ EXAMPLES = '''
     name: production-cert
   register: server_cert
   failed_when: "{{ server_cert.results | length == 0 }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 server_certificate_id:
     description: The 21 character certificate id
     returned: success
@@ -75,12 +73,11 @@ upload_date:
     returned: success
     type: str
     sample: "2015-04-25T00:36:40+00:00"
-'''
+"""
 
 
 try:
     import botocore
-    import botocore.exceptions
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 

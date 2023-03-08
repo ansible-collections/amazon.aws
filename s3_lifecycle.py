@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_lifecycle
 version_added: 1.0.0
 short_description: Manage S3 bucket lifecycle rules in AWS
 description:
-    - Manage S3 bucket lifecycle rules in AWS.
-author: "Rob White (@wimnat)"
+  - Manage S3 bucket lifecycle rules in AWS.
+author:
+  - "Rob White (@wimnat)"
 notes:
   - If specifying expiration time as days then transition time must also be specified in days.
   - If specifying expiration time as a date then transition time must also be specified as a date.
@@ -149,13 +148,14 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
+RETURN = r""" # """
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
@@ -219,7 +219,7 @@ EXAMPLES = r'''
         storage_class: standard_ia
       - transition_days: 90
         storage_class: glacier
-'''
+"""
 
 from copy import deepcopy
 import datetime
@@ -227,6 +227,7 @@ import time
 
 try:
     from dateutil import parser as date_parser
+
     HAS_DATEUTIL = True
 except ImportError:
     HAS_DATEUTIL = False
@@ -236,11 +237,12 @@ try:
 except ImportError:
     pass  # handled by AnsibleAwsModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def parse_date(date):

@@ -1,13 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_launch_config_info
 version_added: 1.0.0
@@ -48,12 +45,12 @@ options:
       - Corresponds to Python slice notation.
     type: int
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all launch configurations
@@ -67,9 +64,9 @@ EXAMPLES = r'''
   community.aws.autoscaling_launch_config_info:
     sort: created_time
     sort_order: descending
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 block_device_mapping:
     description: Block device mapping for the instances of launch configuration.
     type: list
@@ -149,11 +146,10 @@ user_data:
     description: User data available.
     type: str
     returned: always
-'''
+"""
 
 try:
     import botocore
-    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -173,7 +169,7 @@ def list_launch_configs(connection, module):
     try:
         pg = connection.get_paginator('describe_launch_configurations')
         launch_configs = pg.paginate(LaunchConfigurationNames=launch_config_name).build_full_result()
-    except ClientError as e:
+    except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e, msg="Failed to list launch configs")
 
     snaked_launch_configs = []

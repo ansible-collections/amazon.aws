@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: directconnect_virtual_interface
 version_added: 1.0.0
@@ -86,12 +84,12 @@ options:
       - The virtual interface ID.
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 address_family:
   description: The address family for the BGP peer.
   returned: always
@@ -228,9 +226,9 @@ vlan:
   returned: always
   type: int
   sample: 100
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: create an association between a LAG and connection
   community.aws.directconnect_virtual_interface:
@@ -245,22 +243,24 @@ EXAMPLES = r'''
     connection_id: dxcon-XXXXXXXX
     virtual_interface_id: dxv-XXXXXXXX
 
-'''
+"""
 
 import traceback
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     # handled by AnsibleAWSModule
     pass
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import DirectConnectError
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import delete_virtual_interface
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def try_except_ClientError(failure_msg):

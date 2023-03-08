@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2018, JR Kerkstra <jrkerkstra@example.org>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: redshift_cross_region_snapshots
 version_added: 1.0.0
@@ -15,7 +12,8 @@ short_description: Manage Redshift Cross Region Snapshots
 description:
   - Manage Redshift Cross Region Snapshots. Supports KMS-Encrypted Snapshots.
   - For more information, see U(https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-snapshots.html#cross-region-snapshot-copy)
-author: JR Kerkstra (@captainkerk)
+author:
+  - JR Kerkstra (@captainkerk)
 options:
   cluster_name:
     description:
@@ -54,13 +52,12 @@ options:
     aliases: [ "retention_period" ]
     type: int
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-- amazon.aws.boto3
+  - amazon.aws.region.modules
+  - amazon.aws.common.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: configure cross-region snapshot on cluster `johniscool`
   community.aws.redshift_cross_region_snapshots:
     cluster_name: johniscool
@@ -84,9 +81,9 @@ EXAMPLES = '''
     state: absent
     region: us-east-1
     destination_region: us-west-2
-'''
+"""
 
-RETURN = ''' # '''
+RETURN = r""" # """
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 

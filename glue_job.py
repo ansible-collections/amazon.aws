@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Rob White (@wimnat)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: glue_job
 version_added: 1.0.0
@@ -103,13 +101,13 @@ options:
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.2.0.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue job
@@ -126,9 +124,9 @@ EXAMPLES = r'''
 - community.aws.glue_job:
     name: my-glue-job
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 allocated_capacity:
     description: The number of AWS Glue data processing units (DPUs) allocated to runs of this job. From 2 to
                  100 DPUs can be allocated; the default is 10. A DPU is a relative measure of processing power
@@ -223,10 +221,10 @@ timeout:
     returned: when state is present
     type: int
     sample: 300
-'''
+"""
 
-# Non-ansible imports
 import copy
+
 try:
     import botocore
 except ImportError:
@@ -234,11 +232,12 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def _get_glue_job(connection, module, glue_job_name):

@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 
 version_added: 1.0.0
@@ -14,15 +12,10 @@ module: cloudfront_invalidation
 
 short_description: create invalidations for AWS CloudFront distributions
 description:
-    - Allows for invalidation of a batch of paths for a CloudFront distribution.
+  - Allows for invalidation of a batch of paths for a CloudFront distribution.
 
-author: Willem van Ketwich (@wilvk)
-
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-
+author:
+  - Willem van Ketwich (@wilvk)
 
 options:
     distribution_id:
@@ -52,9 +45,13 @@ options:
 notes:
   - does not support check mode
 
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 
 - name: create a batch of invalidations using a distribution_id for a reference
   community.aws.cloudfront_invalidation:
@@ -74,9 +71,9 @@ EXAMPLES = r'''
       - /testpathtwo/test5.js
       - /testpaththree/*
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 invalidation:
   description: The invalidation's information.
   returned: always
@@ -130,7 +127,7 @@ location:
   returned: always
   type: str
   sample: https://cloudfront.amazonaws.com/2017-03-25/distribution/E1ZID6KZJECZY7/invalidation/I2G9MOWJZFV622
-'''
+"""
 
 import datetime
 
@@ -142,9 +139,10 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 class CloudFrontInvalidationServiceManager(object):

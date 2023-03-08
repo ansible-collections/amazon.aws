@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_snapshot_copy
 version_added: 1.0.0
@@ -57,12 +54,12 @@ options:
 author:
   - Deepak Kothandan (@Deepakkothandan) <deepak.kdy@gmail.com>
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Basic Snapshot Copy
   community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
@@ -100,23 +97,24 @@ EXAMPLES = '''
     source_snapshot_id: snap-xxxxxxx
     encrypted: true
     kms_key_id: arn:aws:kms:eu-central-1:XXXXXXXXXXXX:key/746de6ea-50a4-4bcb-8fbc-e3b29f2d367b
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 snapshot_id:
     description: snapshot id of the newly created snapshot
     returned: when snapshot copy is successful
     type: str
     sample: "snap-e9095e8c"
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def copy_snapshot(module, ec2):

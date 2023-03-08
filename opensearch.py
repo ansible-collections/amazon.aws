@@ -1,20 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 ---
 module: opensearch
 short_description: Creates OpenSearch or ElasticSearch domain
 description:
   - Creates or modify a Amazon OpenSearch Service domain.
 version_added: 4.0.0
-author: "Sebastien Rosset (@sebastien-rosset)"
+author:
+  - "Sebastien Rosset (@sebastien-rosset)"
 options:
   state:
     description:
@@ -390,13 +388,15 @@ options:
 requirements:
   - botocore >= 1.21.38
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
+  - amazon.aws.boto3
 """
 
-EXAMPLES = """
+RETURN = r""" # """
+
+EXAMPLES = r"""
 
 - name: Create OpenSearch domain for dev environment, no zone awareness, no dedicated masters
   community.aws.opensearch:
@@ -494,26 +494,20 @@ except ImportError:
 
 from ansible.module_utils.six import string_types
 
-# import module snippets
-from ansible_collections.amazon.aws.plugins.module_utils.core import (
-    AnsibleAWSModule,
-    is_boto3_error_code,
-)
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    AWSRetry,
-    boto3_tag_list_to_ansible_dict,
-    compare_policies,
-)
-from ansible_collections.community.aws.plugins.module_utils.opensearch import (
-    compare_domain_versions,
-    ensure_tags,
-    get_domain_status,
-    get_domain_config,
-    get_target_increment_version,
-    normalize_opensearch,
-    parse_version,
-    wait_for_domain_status,
-)
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.opensearch import compare_domain_versions
+from ansible_collections.community.aws.plugins.module_utils.opensearch import ensure_tags
+from ansible_collections.community.aws.plugins.module_utils.opensearch import get_domain_status
+from ansible_collections.community.aws.plugins.module_utils.opensearch import get_domain_config
+from ansible_collections.community.aws.plugins.module_utils.opensearch import get_target_increment_version
+from ansible_collections.community.aws.plugins.module_utils.opensearch import normalize_opensearch
+from ansible_collections.community.aws.plugins.module_utils.opensearch import parse_version
+from ansible_collections.community.aws.plugins.module_utils.opensearch import wait_for_domain_status
 
 
 def ensure_domain_absent(client, module):

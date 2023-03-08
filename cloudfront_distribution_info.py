@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: cloudfront_distribution_info
 version_added: 1.0.0
@@ -144,12 +141,12 @@ options:
         type: bool
 
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get a summary of distributions
@@ -192,9 +189,9 @@ EXAMPLES = '''
 - name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
   community.aws.cloudfront_distribution_info:
     all_lists: true
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 origin_access_identity:
     description: Describes the origin access identity information. Requires I(origin_access_identity_id) to be set.
     returned: only if I(origin_access_identity) is true
@@ -243,10 +240,11 @@ result:
         as figuring out the DistributionId is usually the reason one uses this module in the first place.
     returned: always
     type: dict
-'''
+"""
+
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
 
 
 def set_facts_for_distribution_id_and_alias(details, facts, distribution_id, aliases):

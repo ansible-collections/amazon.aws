@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: accessanalyzer_validate_policy_info
 version_added: 5.0.0
@@ -63,19 +61,19 @@ options:
 author:
   - Mark Chappell (@tremble)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Validate a policy
 - name: Validate a simple IAM policy
   community.aws.accessanalyzer_validate_policy_info:
     policy: "{{ lookup('template', 'managed_policy.json.j2') }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 findings:
   description: The list of findings in a policy returned by IAM Access Analyzer based on its suite of policy checks.
   returned: success
@@ -160,7 +158,7 @@ findings:
                   description: The offset within the policy that corresponds to the position, starting from C(0).
                   type: int
                   returned: success
-'''
+"""
 
 try:
     import botocore
@@ -169,8 +167,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def filter_findings(findings, type_filter):

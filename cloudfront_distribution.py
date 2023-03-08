@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 
 version_added: 1.0.0
@@ -20,12 +18,6 @@ description:
 author:
   - Willem van Ketwich (@wilvk)
   - Will Thames (@willthames)
-
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
-  - amazon.aws.tags
 
 options:
 
@@ -597,9 +589,14 @@ options:
       default: 1800
       type: int
 
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.tags
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: create a basic distribution with defaults and tags
   community.aws.cloudfront_distribution:
     state: present
@@ -689,9 +686,9 @@ EXAMPLES = r'''
   community.aws.cloudfront_distribution:
     state: absent
     caller_reference: replaceable distribution
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 active_trusted_signers:
   description: Key pair IDs that CloudFront is aware of for each trusted signer.
   returned: always
@@ -1414,28 +1411,29 @@ web_acl_id:
   returned: always
   type: str
   sample: abcd1234-1234-abcd-abcd-abcd12345678
-'''
+"""
 
-from ansible.module_utils._text import to_text, to_native
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
-from ansible.module_utils.common.dict_transformations import recursive_diff
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, compare_aws_tags, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
+from collections import OrderedDict
 import datetime
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    try:
-        from ordereddict import OrderedDict
-    except ImportError:
-        pass  # caught by AnsibleAWSModule (as python 2.6 + boto3 => ordereddict is installed)
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import recursive_diff
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def change_dict_key_name(dictionary, old_key, new_key):

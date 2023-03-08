@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sqs_queue
 version_added: 1.0.0
@@ -104,13 +102,13 @@ options:
       - Enables content-based deduplication. Used for FIFOs only.
       - Defaults to C(false).
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-RETURN = r'''
+RETURN = r"""
 content_based_deduplication:
     description: Enables content-based deduplication. Used for FIFOs only.
     type: bool
@@ -186,9 +184,9 @@ tags:
     type: dict
     returned: always
     sample: '{"Env": "prod"}'
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create SQS queue with redrive policy
   community.aws.sqs_queue:
     name: my-queue
@@ -258,7 +256,7 @@ EXAMPLES = r'''
     name: my-queue
     region: ap-southeast-2
     state: absent
-'''
+"""
 
 import json
 
@@ -270,11 +268,12 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 def get_queue_name(module, is_fifo=False):

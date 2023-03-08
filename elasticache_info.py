@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: elasticache_info
 short_description: Retrieve information for AWS ElastiCache clusters
 version_added: 1.0.0
@@ -20,21 +18,21 @@ options:
 author:
   - Will Thames (@willthames)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: obtain all ElastiCache information
   community.aws.elasticache_info:
 
 - name: obtain all information for a single ElastiCache cluster
   community.aws.elasticache_info:
     name: test_elasticache
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 elasticache_clusters:
   description: List of ElastiCache clusters.
   returned: always
@@ -402,19 +400,20 @@ elasticache_clusters:
       sample:
         Application: web
         Environment: test
-'''
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 @AWSRetry.exponential_backoff()

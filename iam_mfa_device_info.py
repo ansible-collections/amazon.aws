@@ -1,31 +1,30 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_mfa_device_info
 version_added: 1.0.0
 short_description: List the MFA (Multi-Factor Authentication) devices registered for a user
 description:
-    - List the MFA (Multi-Factor Authentication) devices registered for a user
-author: Victor Costan (@pwnall)
+  - List the MFA (Multi-Factor Authentication) devices registered for a user
+author:
+  - Victor Costan (@pwnall)
 options:
   user_name:
     description:
       - The name of the user whose MFA devices will be listed
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-RETURN = """
+RETURN = r"""
 mfa_devices:
     description: The MFA devices registered for the given user
     returned: always
@@ -39,7 +38,7 @@ mfa_devices:
         user_name: example
 """
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # more details: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADevices.html
@@ -54,7 +53,7 @@ EXAMPLES = r'''
     role_arn: "arn:aws:iam::123456789012:role/someRole"
     role_session_name: "someRoleSession"
   register: assumed_role
-'''
+"""
 
 try:
     import botocore

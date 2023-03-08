@@ -1,11 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: iam_role
 version_added: 1.0.0
@@ -91,13 +90,13 @@ options:
     default: True
     type: bool
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a role with description and tags
@@ -127,8 +126,8 @@ EXAMPLES = r'''
     assume_role_policy_document: "{{ lookup('file', 'policy.json') }}"
     state: absent
 
-'''
-RETURN = r'''
+"""
+RETURN = r"""
 iam_role:
     description: dictionary containing the IAM Role data
     returned: success
@@ -214,7 +213,7 @@ iam_role:
             type: dict
             returned: always
             sample: '{"Env": "Prod"}'
-'''
+"""
 
 import json
 
@@ -225,13 +224,14 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 @AWSRetry.jittered_backoff()

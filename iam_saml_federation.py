@@ -1,25 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+# Copyright: Contributors to the Ansible project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_saml_federation
 version_added: 1.0.0
@@ -42,17 +27,18 @@ options:
         default: present
         choices: [ "present", "absent" ]
         type: str
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
 
 author:
     - Tony (@axc450)
     - Aidan Rowe (@aidan-)
-'''
 
-EXAMPLES = '''
+extends_documentation_fragment:
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # It is assumed that their matching environment variables are set.
 # Creates a new iam saml identity provider if not present
@@ -74,9 +60,9 @@ EXAMPLES = '''
   community.aws.iam_saml_federation:
       name: example3
       state: absent
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 saml_provider:
     description: Details of the SAML Identity Provider that was created/modified.
     type: complex
@@ -101,15 +87,16 @@ saml_provider:
             type: str
             returned: present
             sample: "2017-02-08T04:36:28+00:00"
-'''
+"""
 
 try:
-    import botocore.exceptions
+    import botocore
 except ImportError:
     pass
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class SAMLProviderManager:

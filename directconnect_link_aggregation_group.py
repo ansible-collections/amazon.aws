@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: directconnect_link_aggregation_group
 version_added: 1.0.0
@@ -17,10 +15,6 @@ description:
     The usage did not change.
 author:
   - "Sloane Hertel (@s-hertel)"
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
 options:
   state:
     description:
@@ -81,9 +75,13 @@ options:
       - The duration in seconds to wait if I(wait=true).
     default: 120
     type: int
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 
 # create a Direct Connect connection
 - community.aws.directconnect_link_aggregation_group:
@@ -93,7 +91,7 @@ EXAMPLES = """
   bandwidth: 1Gbps
 """
 
-RETURN = """
+RETURN = r"""
 changed:
   type: str
   description: Whether or not the LAG has changed.
@@ -173,13 +171,13 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import DirectConnectError
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import delete_connection
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import delete_virtual_interface
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import disassociate_connection_and_lag
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def lag_status(client, lag_id):

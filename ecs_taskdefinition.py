@@ -1,12 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ecs_taskdefinition
 version_added: 1.0.0
@@ -630,12 +628,12 @@ options:
                 description: A cluster query language expression to apply to the constraint.
                 type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create task definition
   community.aws.ecs_taskdefinition:
     containers:
@@ -769,22 +767,23 @@ EXAMPLES = r'''
         startPeriod: 15
         timeout: 15
     state: present
-'''
-RETURN = r'''
+"""
+
+RETURN = r"""
 taskdefinition:
     description: a reflection of the input parameters
     type: dict
     returned: always
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class EcsTaskManager:

@@ -1,20 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: (c) 2019, Michael Pechner <mikey@mikey.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
 
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ecs_tag
 version_added: 1.0.0
 short_description: create and remove tags on Amazon ECS resources
-notes:
-    - none
 description:
-    - Creates and removes tags for Amazon ECS resources.
-    - Resources are referenced by their cluster name.
+  - Creates and removes tags for Amazon ECS resources.
+  - Resources are referenced by their cluster name.
 author:
   - Michael Pechner (@mpechner)
 options:
@@ -53,13 +50,12 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Ensure tags are present on a resource
   community.aws.ecs_tag:
     cluster_name: mycluster
@@ -93,9 +89,9 @@ EXAMPLES = r'''
         Name: foo
     state: absent
     purge_tags: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 tags:
   description: A dict containing the tags on the resource
   returned: always
@@ -108,16 +104,19 @@ removed_tags:
   description: A dict of tags that were removed from the resource
   returned: If tags were removed
   type: dict
-'''
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list, compare_aws_tags
+"""
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
-    pass    # Handled by AnsibleAWSModule
-__metaclass__ = type
+    pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def get_tags(ecs, module, resource):

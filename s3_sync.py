@@ -1,31 +1,17 @@
 #!/usr/bin/python
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# -*- coding: utf-8 -*-
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+# Copyright: Contributors to the Ansible project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: s3_sync
 version_added: 1.0.0
 short_description: Efficiently upload multiple files to S3
 description:
-     - The S3 module is great, but it is very slow for a large volume of files- even a dozen will be noticeable. In addition to speed, it handles globbing,
-       inclusions/exclusions, mime types, expiration mapping, recursion, cache control and smart directory mapping.
+- The S3 module is great, but it is very slow for a large volume of files- even a dozen will be noticeable. In addition to speed, it handles globbing,
+  inclusions/exclusions, mime types, expiration mapping, recursion, cache control and smart directory mapping.
 options:
   mode:
     description:
@@ -127,15 +113,15 @@ options:
     default: false
     type: bool
 
-author: Ted Timmons (@tedder)
+author:
+- Ted Timmons (@tedder)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+- amazon.aws.common.modules
+- amazon.aws.region.modules
 - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: basic upload
   community.aws.s3_sync:
     bucket: tedder
@@ -166,9 +152,9 @@ EXAMPLES = '''
     storage_class: "GLACIER"
     include: "*"
     exclude: "*.txt,.*"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 filelist_initial:
   description: file listing (dicts) from initial globbing
   returned: always
@@ -241,7 +227,7 @@ uploads:
                 "whytime": "1477931637 / 1477931489"
            }]
 
-'''
+"""
 
 import datetime
 import fnmatch
@@ -251,6 +237,7 @@ import stat as osstat  # os.stat constants
 
 try:
     from dateutil import tz
+
     HAS_DATEUTIL = True
 except ImportError:
     HAS_DATEUTIL = False
@@ -262,11 +249,10 @@ except ImportError:
 
 from ansible.module_utils._text import to_text
 
-# import module snippets
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 
 from ansible_collections.community.aws.plugins.module_utils.etag import calculate_multipart_etag
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def gather_files(fileroot, include=None, exclude=None):

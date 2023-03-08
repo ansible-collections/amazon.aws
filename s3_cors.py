@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-#
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_cors
 version_added: 1.0.0
@@ -36,12 +33,12 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple cors for s3 bucket
@@ -65,9 +62,9 @@ EXAMPLES = r'''
 - community.aws.s3_cors:
     name: mys3bucket
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 changed:
   description: check to see if a change was made to the rules
   returned: always
@@ -96,15 +93,19 @@ rules:
         "max_age_seconds": 30000
       }
     ]
-'''
+"""
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, compare_policies
 
 
 def create_or_update_bucket_cors(connection, module):

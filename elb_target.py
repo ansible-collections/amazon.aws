@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elb_target
 version_added: 1.0.0
 short_description: Manage a target in a target group
 description:
-    - Used to register or deregister a target in a target group.
-author: "Rob White (@wimnat)"
+  - Used to register or deregister a target in a target group.
+author:
+  - "Rob White (@wimnat)"
 options:
   deregister_unused:
     description:
@@ -68,16 +67,17 @@ options:
     required: true
     choices: [ 'present', 'absent' ]
     type: str
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
 
 notes:
   - If you specified a port override when you registered a target, you must specify both the target ID and the port when you deregister it.
-'''
 
-EXAMPLES = '''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Register an IP address target to a target group
@@ -106,13 +106,14 @@ EXAMPLES = '''
     target_port: 8080
     state: present
 
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 
-'''
+"""
 
-from time import time, sleep
+from time import sleep
+from time import time
 
 try:
     import botocore
@@ -121,8 +122,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=['TargetGroupNotFound'])

@@ -1,13 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
-#
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_launch_config
 version_added: 1.0.0
@@ -183,12 +180,12 @@ options:
     type: str
     choices: ['default', 'dedicated']
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 
 - name: create a launch configuration with an encrypted volume
   community.aws.autoscaling_launch_config:
@@ -254,9 +251,9 @@ EXAMPLES = r'''
       security_groups: "['sg-xxxx']"
       volumes: "{{ volumes }}"
     register: lc_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 arn:
   description: The Amazon Resource Name of the launch configuration.
   returned: when I(state=present)
@@ -440,7 +437,7 @@ security_groups:
   type: list
   sample:
   - sg-5e27db2f
-'''
+"""
 
 
 import traceback
@@ -454,8 +451,9 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def create_block_device_meta(module, volume):

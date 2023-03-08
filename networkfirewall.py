@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: networkfirewall
 short_description: manage AWS Network Firewall firewalls
 version_added: 4.0.0
@@ -104,13 +102,13 @@ options:
 author:
   - Mark Chappell (@tremble)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Create an AWS Network Firewall
 - community.aws.networkfirewall:
     name: 'ExampleFirewall'
@@ -142,9 +140,9 @@ EXAMPLES = '''
 - community.aws.networkfirewall:
     state: absent
     name: 'ExampleFirewall'
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 firewall:
   description: The full details of the firewall
   returned: success
@@ -269,10 +267,9 @@ firewall:
                 }
               }
             }
-'''
+"""
 
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.networkfirewall import NetworkFirewallManager
 
 

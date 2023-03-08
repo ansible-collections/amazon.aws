@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Jon Meran <jonathan.meran@sonos.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: batch_job_definition
 version_added: 1.0.0
@@ -179,12 +177,12 @@ options:
         many times.
     type: int
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: My Batch Job Definition
   community.aws.batch_job_definition:
@@ -207,9 +205,9 @@ EXAMPLES = r'''
 
 - name: show results
   ansible.builtin.debug: var=job_definition_create_result
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 ---
 output:
   description: "returns what action was taken, whether something was changed, invocation and response"
@@ -223,16 +221,20 @@ output:
       status: INACTIVE
       type: container
   type: dict
-'''
-
-from ansible_collections.amazon.aws.plugins.module_utils.batch import cc, set_api_params
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+"""
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.batch import cc
+from ansible_collections.amazon.aws.plugins.module_utils.batch import set_api_params
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 # ---------------------------------------------------------------------------------------------------

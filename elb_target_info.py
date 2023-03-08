@@ -1,10 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Yaakov Kuperman <ykuperman@gmail.com>
 # GNU General Public License v3.0+ # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elb_target_info
 version_added: 1.0.0
@@ -12,8 +12,8 @@ short_description: Gathers which target groups a target is associated with.
 description:
   - This module will search through every target group in a region to find
     which ones have registered a given instance ID or IP.
-
-author: "Yaakov Kuperman (@yaakov-github)"
+author:
+  - "Yaakov Kuperman (@yaakov-github)"
 options:
   instance_id:
     description:
@@ -25,14 +25,14 @@ options:
       - Whether or not to get target groups not used by any load balancers.
     type: bool
     default: true
+
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = """
+EXAMPLES = r"""
 # practical use case - dynamically de-registering and re-registering nodes
 
   - name: Get EC2 Metadata
@@ -127,7 +127,7 @@ EXAMPLES = """
 
 """
 
-RETURN = """
+RETURN = r"""
 instance_target_groups:
     description: a list of target groups to which the instance is registered to
     returned: always
@@ -204,16 +204,18 @@ instance_target_groups:
                             type: str
 """
 
-__metaclass__ = type
-
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     # we can handle the lack of boto3 based on the ec2 module
     pass
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry
 
 
 class Target(object):

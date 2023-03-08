@@ -1,14 +1,10 @@
 #!/usr/bin/python
-"""
-Copyright (c) 2017 Ansible Project
-GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
+# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# Copyright (c) 2017 Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: s3_bucket_info
 version_added: 1.0.0
@@ -114,12 +110,12 @@ options:
     default: False
     version_added: 1.4.0
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Note: Only AWS S3 is currently supported
@@ -157,9 +153,9 @@ EXAMPLES = '''
 - name: List buckets
   ansible.builtin.debug:
     msg: "{{ result['buckets'] }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 bucket_list:
   description: "List of buckets"
   returned: always
@@ -399,17 +395,19 @@ bucket_list:
               returned: always
               type: str
               sample: https
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def get_bucket_list(module, connection, name="", name_filter=""):

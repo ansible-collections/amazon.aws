@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elb_instance
 version_added: 1.0.0
@@ -15,7 +13,8 @@ description:
   - This module de-registers or registers an AWS EC2 instance from the ELBs
     that it belongs to.
   - Will be marked changed when called only if there are ELBs found to operate on.
-author: "John Jarvis (@jarv)"
+author:
+  - "John Jarvis (@jarv)"
 options:
   state:
     description:
@@ -55,13 +54,13 @@ options:
     default: 0
     type: int
 notes:
-- The ec2_elbs fact previously set by this module was deprecated in release 2.1.0 and since release
-  4.0.0 is no longer set.
+  - The ec2_elbs fact previously set by this module was deprecated in release 2.1.0 and since release
+    4.0.0 is no longer set.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
 EXAMPLES = r"""
 # basic pre_task and post_task example
@@ -83,22 +82,23 @@ post_tasks:
     delegate_to: localhost
 """
 
-RETURN = '''
+RETURN = r"""
 updated_elbs:
   description: A list of ELB names that the instance has been added to or removed from.
   returned: always
   type: list
   elements: str
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class ElbManager:

@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 
 version_added: 1.0.0
@@ -16,16 +14,11 @@ short_description: Create, update and delete origin access identities for a
                    CloudFront distribution
 
 description:
-    - Allows for easy creation, updating and deletion of origin access
-      identities.
+  - Allows for easy creation, updating and deletion of origin access
+    identities.
 
-author: Willem van Ketwich (@wilvk)
-
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-
+author:
+  - Willem van Ketwich (@wilvk)
 
 options:
     state:
@@ -54,9 +47,13 @@ options:
 notes:
   - Does not support check mode.
 
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 
 - name: create an origin access identity
   community.aws.cloudfront_origin_access_identity:
@@ -76,9 +73,9 @@ EXAMPLES = '''
      caller_reference: this is an example reference
      comment: this is a new comment
 
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 cloud_front_origin_access_identity:
   description: The origin access identity's information.
   returned: always
@@ -114,20 +111,22 @@ location:
   returned: when initially created
   type: str
 
-'''
+"""
 
 import datetime
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 class CloudFrontOriginAccessIdentityServiceManager(object):

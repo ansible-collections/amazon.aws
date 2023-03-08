@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: waf_web_acl
 short_description: Create and delete WAF Web ACLs
 version_added: 1.0.0
@@ -19,10 +17,6 @@ description:
 author:
   - Mike Mochan (@mmochan)
   - Will Thames (@willthames)
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
 
 options:
   name:
@@ -85,9 +79,14 @@ options:
     default: false
     required: false
     type: bool
-'''
 
-EXAMPLES = r'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
   - name: create web ACL
     community.aws.waf_web_acl:
       name: my_web_acl
@@ -103,9 +102,9 @@ EXAMPLES = r'''
     community.aws.waf_web_acl:
       name: my_web_acl
       state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 web_acl:
   description: contents of the Web ACL.
   returned: always
@@ -158,25 +157,25 @@ web_acl:
       returned: always
       type: str
       sample: 10fff965-4b6b-46e2-9d78-24f6d2e2d21c
-'''
+"""
+
+import re
 
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-import re
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.waf import (
-    list_regional_rules_with_backoff,
-    list_regional_web_acls_with_backoff,
-    list_rules_with_backoff,
-    list_web_acls_with_backoff,
-    run_func_with_change_token_backoff,
-)
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_regional_rules_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_regional_web_acls_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_rules_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_web_acls_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import run_func_with_change_token_backoff
 
 
 def get_web_acl_by_name(client, module, name):

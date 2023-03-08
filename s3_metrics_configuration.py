@@ -1,23 +1,22 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: s3_metrics_configuration
 version_added: 1.3.0
 short_description: Manage s3 bucket metrics configuration in AWS
 description:
-    - Manage s3 bucket metrics configuration in AWS which allows to get the CloudWatch request metrics for the objects in a bucket
-author: Dmytro Vorotyntsev (@vorotech)
+  - Manage s3 bucket metrics configuration in AWS which allows to get the CloudWatch request metrics for the objects in a bucket
+author:
+  - Dmytro Vorotyntsev (@vorotech)
 notes:
-    - This modules manages single metrics configuration, the s3 bucket might have up to 1,000 metrics configurations
-    - To request metrics for the entire bucket, create a metrics configuration without a filter
-    - Metrics configurations are necessary only to enable request metric, bucket-level daily storage metrics are always turned on
+  - This modules manages single metrics configuration, the s3 bucket might have up to 1,000 metrics configurations
+  - To request metrics for the entire bucket, create a metrics configuration without a filter
+  - Metrics configurations are necessary only to enable request metric, bucket-level daily storage metrics are always turned on
 options:
   bucket_name:
     description:
@@ -48,13 +47,14 @@ options:
     choices: ['present', 'absent']
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
+RETURN = r""" # """
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a metrics configuration that enables metrics for an entire bucket
@@ -94,17 +94,19 @@ EXAMPLES = r'''
     id: EntireBucket
     state: absent
 
-'''
+"""
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 
 
 def _create_metrics_configuration(mc_id, filter_prefix, filter_tags):

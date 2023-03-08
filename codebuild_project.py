@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: codebuild_project
 version_added: 1.0.0
@@ -154,9 +151,9 @@ extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
     - amazon.aws.tags.modules
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - community.aws.codebuild_project:
@@ -182,9 +179,9 @@ EXAMPLES = r'''
     encryption_key: "arn:aws:kms:us-east-1:123123:alias/aws/s3"
     region: us-east-1
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 project:
   description: Returns the dictionary describing the code project configuration.
   returned: success
@@ -288,7 +285,7 @@ project:
       returned: always
       type: str
       sample: "2018-04-17T16:56:03.245000+02:00"
-'''
+"""
 
 try:
     import botocore
@@ -302,6 +299,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_bot
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 

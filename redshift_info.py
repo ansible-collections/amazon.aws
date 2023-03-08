@@ -1,17 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: redshift_info
 version_added: 1.0.0
-author: "Jens Carl (@j-carl)"
+author:
+  - "Jens Carl (@j-carl)"
 short_description: Gather information about Redshift cluster(s)
 description:
   - Gather information about Redshift cluster(s).
@@ -30,13 +28,12 @@ options:
     required: false
     type: dict
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-- amazon.aws.boto3
+  - amazon.aws.region.modules
+  - amazon.aws.common.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do net set authentication details, see the AWS guide for details.
 
 - name: Find all clusters
@@ -65,9 +62,9 @@ EXAMPLES = '''
       stack: db
   register: redshift_user
   failed_when: "{{ redshift_user.results | length == 0 }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 # For more information see U(http://boto3.readthedocs.io/en/latest/reference/services/redshift.html#Redshift.Client.describe_clusters)
 ---
 cluster_identifier:
@@ -273,17 +270,19 @@ iam_roles:
     returned: success
     type: list
     sample: []
-'''
+"""
 
 import re
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def match_tags(tags_to_match, cluster):

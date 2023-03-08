@@ -1,21 +1,17 @@
 #!/usr/bin/python
-"""
-Copyright: (c) 2021, Milan Zink <zeten30@gmail.com>
-GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
+# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# Copyright: (c) 2021, Milan Zink <zeten30@gmail.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: efs_tag
 version_added: 2.0.0
 short_description: create and remove tags on Amazon EFS resources
 description:
-    - Creates and removes tags for Amazon EFS resources.
-    - Resources are referenced by their ID (filesystem or filesystem access point).
+  - Creates and removes tags for Amazon EFS resources.
+  - Resources are referenced by their ID (filesystem or filesystem access point).
 author:
   - Milan Zink (@zeten30)
 options:
@@ -44,13 +40,12 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Ensure tags are present on a resource
   community.aws.efs_tag:
     resource: fs-123456ab
@@ -80,9 +75,9 @@ EXAMPLES = r'''
     state: absent
     tags: {}
     purge_tags: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 tags:
   description: A dict containing the tags on the resource
   returned: always
@@ -95,16 +90,22 @@ removed_tags:
   description: A dict of tags that were removed from the resource
   returned: If tags were removed
   type: dict
-'''
+"""
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     # Handled by AnsibleAWSModule
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list, compare_aws_tags, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+
 
 MAX_AWS_RETRIES = 10  # How many retries to perform when an API call is failing
 WAIT_RETRY = 5  # how many seconds to wait between propagation status polls

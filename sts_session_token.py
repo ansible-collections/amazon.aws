@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: sts_session_token
 version_added: 1.0.0
 short_description: Obtain a session token from the AWS Security Token Service
 description:
-    - Obtain a session token from the AWS Security Token Service.
-author: Victor Costan (@pwnall)
+  - Obtain a session token from the AWS Security Token Service.
+author:
+  - Victor Costan (@pwnall)
 options:
   duration_seconds:
     description:
@@ -32,12 +31,12 @@ options:
 notes:
   - In order to use the session token in a following playbook task you must pass the I(access_key), I(access_secret) and I(access_token).
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-RETURN = """
+RETURN = r"""
 sts_creds:
     description: The Credentials object returned by the AWS Security Token Service
     returned: always
@@ -54,7 +53,7 @@ changed:
 """
 
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html)
@@ -73,7 +72,7 @@ EXAMPLES = '''
     tags:
         MyNewTag: value
 
-'''
+"""
 
 try:
     import botocore

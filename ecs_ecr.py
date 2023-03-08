@@ -1,15 +1,10 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ecs_ecr
 version_added: 1.0.0
@@ -104,15 +99,14 @@ options:
         type: dict
         version_added: 5.2.0
 author:
- - David M. Lee (@leedm777)
+    - David M. Lee (@leedm777)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # If the repository does not exist, it is created. If it does exist, would not
 # affect any policies already on it.
 - name: ecr-repo
@@ -186,9 +180,9 @@ EXAMPLES = '''
     encryption_configuration:
       encryption_type: KMS
       kms_key: custom-kms-key-alias
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 state:
     type: str
     description: The asserted state of the repository (present, absent)
@@ -216,7 +210,7 @@ repository:
         repositoryArn: arn:aws:ecr:us-east-1:123456789012:repository/ecr-test-1484664090
         repositoryName: ecr-test-1484664090
         repositoryUri: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ecr-test-1484664090
-'''
+"""
 
 import json
 import traceback
@@ -229,10 +223,11 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 def build_kwargs(registry_id):

@@ -1,22 +1,21 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: kinesis_stream
 version_added: 1.0.0
 short_description: Manage a Kinesis Stream.
 description:
-    - Create or Delete a Kinesis Stream.
-    - Update the retention period of a Kinesis Stream.
-    - Update Tags on a Kinesis Stream.
-    - Enable/disable server side encryption on a Kinesis Stream.
-author: Allen Sanabria (@linuxdynasty)
+  - Create or Delete a Kinesis Stream.
+  - Update the retention period of a Kinesis Stream.
+  - Update Tags on a Kinesis Stream.
+  - Enable/disable server side encryption on a Kinesis Stream.
+author:
+  - Allen Sanabria (@linuxdynasty)
 options:
   name:
     description:
@@ -73,13 +72,12 @@ options:
       - The GUID or alias for the KMS key.
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic creation example:
@@ -148,9 +146,9 @@ EXAMPLES = '''
     wait: true
     wait_timeout: 600
   register: test_stream
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 stream_name:
   description: The name of the Kinesis Stream.
   returned: when state == present.
@@ -179,7 +177,7 @@ tags:
       "Name": "Splunk",
       "Env": "development"
   }
-'''
+"""
 
 import time
 
@@ -191,9 +189,10 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
 def get_tags(client, stream_name):

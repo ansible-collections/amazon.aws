@@ -1,11 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: wafv2_web_acl_info
 version_added: 1.5.0
@@ -28,21 +27,20 @@ options:
     type: str
 
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: get web acl
   community.aws.wafv2_web_acl_info:
     name: test05
     scope: REGIONAL
   register: out
-'''
+"""
 
-RETURN = """
+RETURN = r"""
 arn:
   description: web acl arn
   sample: arn:aws:wafv2:eu-central-1:11111111:regional/webacl/test05/318c1ab9-fa74-4b3b-a974-f92e25106f61
@@ -91,12 +89,14 @@ visibility_config:
 """
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 

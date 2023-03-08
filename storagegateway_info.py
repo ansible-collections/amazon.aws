@@ -1,14 +1,12 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Loic BLOT (@nerzhul) <loic.blot@unix-experience.fr>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # This module is sponsored by E.T.A.I. (www.etai.fr)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: storagegateway_info
 version_added: 1.0.0
@@ -45,12 +43,12 @@ options:
     required: false
     default: true
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 gateways:
   description: list of gateway objects
   returned: always
@@ -161,9 +159,9 @@ gateways:
           returned: always
           type: str
           sample: "present"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: "Get AWS storage gateway information"
@@ -172,15 +170,17 @@ EXAMPLES = '''
 - name: "Get AWS storage gateway information for region eu-west-3"
   community.aws.aws_sgw_info:
     region: eu-west-3
-'''
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+"""
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 class SGWInformationManager(object):

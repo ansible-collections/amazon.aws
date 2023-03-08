@@ -1,13 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: sns_topic_info
 short_description: sns_topic_info module
 version_added: 3.2.0
@@ -21,12 +18,12 @@ options:
         required: false
         type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+- amazon.aws.common.modules
+- amazon.aws.region.modules
 - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: list all the topics
   community.aws.sns_topic_info:
   register: sns_topic_list
@@ -35,9 +32,9 @@ EXAMPLES = r'''
   community.aws.sns_topic_info:
     topic_arn: "{{ sns_arn }}"
   register: sns_topic_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 result:
   description:
     - The result contaning the details of one or all AWS SNS topics.
@@ -132,7 +129,7 @@ result:
                 description: The type of topic.
                 type: str
                 sample: "standard"
-'''
+"""
 
 
 try:
@@ -140,10 +137,11 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.community.aws.plugins.module_utils.sns import list_topics
 from ansible_collections.community.aws.plugins.module_utils.sns import get_info
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def main():

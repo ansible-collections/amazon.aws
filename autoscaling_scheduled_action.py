@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2021, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -6,10 +7,7 @@
 # Based off of https://github.com/mmochan/ansible-aws-ec2-asg-scheduled-actions/blob/master/library/ec2_asg_scheduled_action.py
 # (c) 2016, Mike Mochan <@mmochan>
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_scheduled_action
 version_added: 2.2.0
@@ -67,14 +65,15 @@ options:
     required: false
     default: present
     choices: ['present', 'absent']
-author: Mark Woolley(@marknet15)
+author:
+  - Mark Woolley(@marknet15)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Create a scheduled action for a autoscaling group.
 - name: Create a minimal scheduled action for autoscaling group
   community.aws.autoscaling_scheduled_action:
@@ -108,9 +107,9 @@ EXAMPLES = r'''
     autoscaling_group_name: test_asg
     scheduled_action_name: test_scheduled_action
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 scheduled_action_name:
   description: The name of the scheduled action.
   returned: when I(state=present)
@@ -151,7 +150,7 @@ desired_capacity:
   returned: when I(state=present)
   type: int
   sample: 1
-'''
+"""
 
 try:
     import botocore
@@ -160,12 +159,14 @@ except ImportError:
 
 try:
     from dateutil.parser import parse as timedate_parse
+
     HAS_DATEUTIL = True
 except ImportError:
     HAS_DATEUTIL = False
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def format_request():

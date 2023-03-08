@@ -1,12 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elasticache_parameter_group
 version_added: 1.0.0
@@ -14,11 +12,8 @@ short_description: Manage cache parameter groups in Amazon ElastiCache.
 description:
   - Manage cache security groups in Amazon ElastiCache.
   - Returns information about the specified cache cluster.
-author: "Sloane Hertel (@s-hertel)"
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+author:
+  - "Sloane Hertel (@s-hertel)"
 
 options:
   group_family:
@@ -47,9 +42,14 @@ options:
     description:
       - A user-specified dictionary of parameters to reset or modify for the cache parameter group.
     type: dict
-'''
 
-EXAMPLES = """
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 ---
@@ -79,7 +79,7 @@ EXAMPLES = """
         state: 'absent'
 """
 
-RETURN = """
+RETURN = r"""
 elasticache:
   description: cache parameter group information and response metadata
   returned: always

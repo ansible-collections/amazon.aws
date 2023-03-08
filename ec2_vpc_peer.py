@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: ec2_vpc_peer
 short_description: create, delete, accept, and reject VPC peering connections between two VPCs.
 version_added: 1.0.0
@@ -57,13 +55,13 @@ notes:
 author:
   - Mike Mochan (@mmochan)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Complete example to create and accept a local peering connection.
 - name: Create local account VPC peering Connection
   community.aws.ec2_vpc_peer:
@@ -212,8 +210,8 @@ EXAMPLES = '''
     profile: bot03_profile_for_cross_account
     state: reject
 
-'''
-RETURN = '''
+"""
+RETURN = r"""
 peering_id:
   description: The id of the VPC peering connection created/deleted.
   returned: always
@@ -352,21 +350,23 @@ vpc_peering_connection:
       returned: success
       type: str
       example: "pcx-0123456789abcdef0"
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def wait_for_state(client, module, state, pcx_id):

@@ -1,13 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: sns_topic
 short_description: Manages AWS SNS topics and subscriptions
 version_added: 1.0.0
@@ -163,7 +160,7 @@ extends_documentation_fragment:
   - amazon.aws.region.modules
   - amazon.aws.tags.modules
   - amazon.aws.boto3
-'''
+"""
 
 EXAMPLES = r"""
 
@@ -216,7 +213,7 @@ EXAMPLES = r"""
     state: absent
 """
 
-RETURN = r'''
+RETURN = r"""
 sns_arn:
     description: The ARN of the topic you are modifying
     type: str
@@ -332,7 +329,7 @@ sns_topic:
       returned: always
       type: bool
       sample: false
-'''
+"""
 
 import json
 
@@ -341,10 +338,11 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.community.aws.plugins.module_utils.sns import list_topics
 from ansible_collections.community.aws.plugins.module_utils.sns import topic_arn_lookup
 from ansible_collections.community.aws.plugins.module_utils.sns import compare_delivery_policies

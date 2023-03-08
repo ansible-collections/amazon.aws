@@ -1,11 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: ecs_service
 version_added: 1.0.0
@@ -290,12 +289,12 @@ options:
         required: false
         version_added: 4.1.0
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Basic provisioning example
 - community.aws.ecs_service:
@@ -377,9 +376,9 @@ EXAMPLES = r'''
       Firstname: jane
       lastName: doe
     propagate_tags: SERVICE
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service:
     description: Details of created service.
     returned: when creating a service
@@ -671,8 +670,24 @@ ansible_facts:
                     returned: always
                     type: str
 
-'''
+"""
+
 import time
+
+try:
+    import botocore
+except ImportError:
+    pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import map_complex_type
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+
 
 DEPLOYMENT_CONTROLLER_TYPE_MAP = {
     'type': 'str',
@@ -683,19 +698,6 @@ DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
     'minimum_healthy_percent': 'int',
     'deployment_circuit_breaker': 'dict',
 }
-
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
 
 
 class EcsServiceManager:

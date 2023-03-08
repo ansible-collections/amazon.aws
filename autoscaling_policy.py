@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: autoscaling_policy
 short_description: Create or delete AWS scaling policies for Autoscaling groups
 version_added: 1.0.0
@@ -189,11 +187,12 @@ options:
     description:
       - The estimated time, in seconds, until a newly launched instance can contribute to the CloudWatch metrics.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
-EXAMPLES = '''
+"""
+
+EXAMPLES = r"""
 - name: Simple Scale Down policy
   community.aws.autoscaling_policy:
     state: present
@@ -261,9 +260,9 @@ EXAMPLES = '''
       target_value: 98.0
     asg_name: asg-test-1
   register: result
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 adjustment_type:
   description: Scaling policy adjustment type.
   returned: always
@@ -349,16 +348,18 @@ step_adjustments:
       returned: always
       type: int
       sample: 50
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def build_target_specification(target_tracking_config):

@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2022 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: eks_nodegroup
 version_added: 5.3.0
@@ -169,12 +167,11 @@ options:
     default: 1200
     type: int
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create nodegroup
@@ -207,9 +204,9 @@ EXAMPLES = r'''
     cluster_name: test_cluster
     wait: yes
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 nodegroup_name:
   description: The name associated with an Amazon EKS managed node group.
   returned: when state is present
@@ -345,17 +342,21 @@ tags:
   type: dict
   sample:
     foo: bar
-'''
-
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+"""
 
 try:
-    import botocore.exceptions
+    import botocore
 except ImportError:
     pass
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def validate_tags(client, module, nodegroup):

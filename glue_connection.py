@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: (c) 2018, Rob White (@wimnat)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: glue_connection
 version_added: 1.0.0
@@ -72,12 +70,12 @@ options:
       - Required when I(connection_type=NETWORK).
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue connection
@@ -106,9 +104,9 @@ EXAMPLES = r'''
 - community.aws.glue_connection:
     name: my-glue-connection
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 connection_properties:
     description:
         - (deprecated) A dict of key-value pairs (converted to lowercase) used as parameters for this connection.
@@ -157,11 +155,11 @@ raw_connection_properties:
     returned: when state is present
     type: dict
     sample: {'JDBC_CONNECTION_URL':'jdbc:mysql://mydb:3306/databasename','USERNAME':'x','PASSWORD':'y'}
-'''
+"""
 
-# Non-ansible imports
 import copy
 import time
+
 try:
     import botocore
 except ImportError:
@@ -169,10 +167,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def _get_glue_connection(connection, module):

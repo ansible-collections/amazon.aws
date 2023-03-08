@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2019, Prasad Katti (@prasadkatti)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: stepfunctions_state_machine_execution
 version_added: 1.0.0
@@ -47,16 +44,16 @@ options:
         type: str
         default: ''
 
-extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
-    - amazon.aws.boto3
-
 author:
     - Prasad Katti (@prasadkatti)
-'''
 
-EXAMPLES = '''
+extends_documentation_fragment:
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 - name: Start an execution of a state machine
   community.aws.stepfunctions_state_machine_execution:
     name: an_execution_name
@@ -69,9 +66,9 @@ EXAMPLES = '''
     execution_arn: "arn:aws:states:us-west-2:123456789012:execution:HelloWorldStateMachineCopy:a1e8e2b5-5dfe-d40e-d9e3-6201061047c8"
     cause: "cause of task failure"
     error: "error code of the failure"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 execution_arn:
     description: ARN of the AWS Step Functions state machine execution.
     type: str
@@ -87,7 +84,7 @@ stop_date:
     type: str
     returned: if action == stop
     sample: "2019-11-02T22:39:49.071000-07:00"
-'''
+"""
 
 
 try:
@@ -97,8 +94,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def start_execution(module, sfn_client):

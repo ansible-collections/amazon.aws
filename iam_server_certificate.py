@@ -1,24 +1,10 @@
 #!/usr/bin/python
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# Copyright: Contributors to the Ansible project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_server_certificate
 version_added: 1.0.0
@@ -76,12 +62,14 @@ options:
 author:
   - Jonathan I. Davila (@defionscode)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+RETURN = r""" # """
+
+EXAMPLES = r"""
 - name: Basic server certificate upload from local file
   community.aws.iam_server_certificate:
     name: very_ssl
@@ -104,7 +92,7 @@ EXAMPLES = '''
     name: very_ssl
     new_name: new_very_ssl
     state: present
-'''
+"""
 
 try:
     import botocore
@@ -113,9 +101,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.jittered_backoff()

@@ -1,14 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright 2014 Jens Carl, Hothead Games Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 author:
   - "Jens Carl (@j-carl), Hothead Games Inc."
@@ -170,13 +166,13 @@ options:
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Basic cluster provisioning example
   community.aws.redshift:
     command: create
@@ -191,9 +187,9 @@ EXAMPLES = r'''
     identifier: new_cluster
     skip_final_cluster_snapshot: true
     wait: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 cluster:
     description: dictionary containing all the cluster information
     returned: success
@@ -257,21 +253,23 @@ cluster:
             description: aws tags for cluster.
             returned: success
             type: dict
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def _ensure_tags(redshift, identifier, existing_tags, module):

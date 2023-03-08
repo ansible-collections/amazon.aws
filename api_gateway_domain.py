@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: api_gateway_domain
 short_description: Manage AWS API Gateway custom domains
@@ -57,17 +55,17 @@ options:
     default: present
     choices: [ 'present', 'absent' ]
     type: str
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
 notes:
   - Does not create a DNS entry on Route53, for that use the M(community.aws.route53) module.
   - Only supports TLS certificates from AWS ACM that can just be referenced by the ARN, while the AWS API still offers (deprecated)
     options to add own Certificates.
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Setup endpoint for a custom domain for your API Gateway HTTP API
   community.aws.api_gateway_domain:
     domain_name: myapi.foobar.com
@@ -88,9 +86,9 @@ EXAMPLES = '''
     zone: foobar.com
     alias_hosted_zone_id: "{{ api_gw_domain_result.response.domain.distribution_hosted_zone_id }}"
     command: create
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 response:
   description: The data returned by create_domain_name (or update and delete) and create_base_path_mapping methods by boto3.
   returned: success
@@ -110,19 +108,24 @@ response:
     path_mappings: [
         { base_path: '(empty)', rest_api_id: 'abcd123', stage: 'production' }
     ]
-'''
-
-try:
-    from botocore.exceptions import ClientError, BotoCoreError, EndpointConnectionError
-except ImportError:
-    pass  # caught by imported AnsibleAWSModule
+"""
 
 import copy
 
+try:
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import EndpointConnectionError
+except ImportError:
+    pass  # caught by imported AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict, snake_dict_to_camel_dict
 
 
 def get_domain(module, client):

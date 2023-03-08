@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2018, Rob White (@wimnat)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elb_network_lb
 version_added: 1.0.0
@@ -126,17 +123,17 @@ options:
       - Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.
     choices: [ 'ipv4', 'dualstack' ]
     type: str
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
-  - amazon.aws.tags
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.
   - Listener rules are matched based on priority. If a rule's priority is changed then a new rule will be created.
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.tags
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create an ELB and attach a listener
@@ -187,9 +184,9 @@ EXAMPLES = r'''
     name: myelb
     state: absent
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 load_balancer:
     description: A representation of the Network Load Balancer
     returned: when state is present
@@ -328,11 +325,17 @@ load_balancer:
             returned: when state is present
             type: str
             sample: vpc-0011223344
-'''
+"""
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListener
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListeners
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import NetworkLoadBalancer
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import NetworkLoadBalancer, ELBListeners, ELBListener
 
 
 def create_or_update_elb(elb_obj):

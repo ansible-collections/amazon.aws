@@ -4,11 +4,7 @@
 # Copyright: (c) 2014, Michael J. Schultz <mjschultz@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: sns
 short_description: Send Amazon Simple Notification Service messages
 version_added: 1.0.0
@@ -79,12 +75,12 @@ options:
     choices: ['json', 'string']
     type: str
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-- amazon.aws.boto3
-'''
+  - amazon.aws.region.modules
+  - amazon.aws.common.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Send default notification message via SNS
   community.aws.sns:
     msg: '{{ inventory_hostname }} has completed the play.'
@@ -114,7 +110,7 @@ EXAMPLES = """
   delegate_to: localhost
 """
 
-RETURN = """
+RETURN = r"""
 msg:
   description: Human-readable diagnostic information
   returned: always
@@ -130,12 +126,14 @@ message_id:
 import json
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass    # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.sns import topic_arn_lookup
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def main():

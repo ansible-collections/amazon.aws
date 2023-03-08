@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2019, Tom De Keyser (@tdekeyser)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: stepfunctions_state_machine
 version_added: 1.0.0
@@ -44,16 +41,17 @@ options:
         choices: [ present, absent ]
         type: str
 
-extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
-    - amazon.aws.boto3
-    - amazon.aws.tags
 author:
     - Tom De Keyser (@tdekeyser)
-'''
 
-EXAMPLES = '''
+extends_documentation_fragment:
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.tags
+    - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 # Create a new AWS Step Functions state machine
 - name: Setup HelloWorld state machine
   community.aws.stepfunctions_state_machine:
@@ -77,26 +75,27 @@ EXAMPLES = '''
   community.aws.stepfunctions_state_machine:
     name: HelloWorldStateMachine
     state: absent
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 state_machine_arn:
     description: ARN of the AWS Step Functions state machine
     type: str
     returned: always
-'''
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
-                                                                     AWSRetry,
-                                                                     compare_aws_tags,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     )
+"""
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def manage_state_machine(state, sfn_client, module):

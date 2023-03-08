@@ -1,25 +1,24 @@
 #!/usr/bin/python
-#
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_customer_gateway
 version_added: 1.0.0
 short_description: Manage an AWS customer gateway
 description:
-    - Manage an AWS customer gateway.
-author: Michael Baydoun (@MichaelBaydoun)
+  - Manage an AWS customer gateway.
+author:
+  - Michael Baydoun (@MichaelBaydoun)
 notes:
-    - You cannot create more than one customer gateway with the same IP address. If you run an identical request more than one time, the
-      first request creates the customer gateway, and subsequent requests return information about the existing customer gateway. The subsequent
-      requests do not create new customer gateway resources.
-    - Return values contain customer_gateway and customer_gateways keys which are identical dicts. You should use
-      customer_gateway. See U(https://github.com/ansible/ansible-modules-extras/issues/2773) for details.
+  - You cannot create more than one customer gateway with the same IP address. If you run an identical request more than one time, the
+    first request creates the customer gateway, and subsequent requests return information about the existing customer gateway. The subsequent
+    requests do not create new customer gateway resources.
+  - Return values contain customer_gateway and customer_gateways keys which are identical dicts. You should use
+    customer_gateway. See U(https://github.com/ansible/ansible-modules-extras/issues/2773) for details.
 options:
   bgp_asn:
     description:
@@ -49,13 +48,12 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create Customer Gateway
   community.aws.ec2_customer_gateway:
     bgp_asn: 12345
@@ -71,9 +69,9 @@ EXAMPLES = '''
     state: absent
     region: us-east-1
   register: cgw
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 gateway.customer_gateways:
     description: details about the gateway that was created.
     returned: success
@@ -108,7 +106,7 @@ gateway.customer_gateways:
             returned: when gateway exists and is available.
             sample: ipsec.1
             type: str
-'''
+"""
 
 try:
     import botocore
@@ -117,8 +115,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class Ec2CustomerGatewayManager:

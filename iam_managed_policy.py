@@ -1,18 +1,16 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: iam_managed_policy
 version_added: 1.0.0
 short_description: Manage User Managed IAM policies
 description:
-    - Allows creating and removing managed IAM policies
+  - Allows creating and removing managed IAM policies
 options:
   policy_name:
     description:
@@ -45,14 +43,15 @@ options:
     choices: [ "present", "absent" ]
     type: str
 
-author: "Dan Kozlowski (@dkhenry)"
+author:
+  - "Dan Kozlowski (@dkhenry)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Create a policy
 - name: Create IAM Managed Policy
   community.aws.iam_managed_policy:
@@ -102,9 +101,9 @@ EXAMPLES = r'''
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 policy:
   description: Returns the policy json structure, when state == absent this will return the value of the removed policy.
   returned: success
@@ -121,7 +120,7 @@ policy:
         "policy_name": "AdministratorAccess",
         "update_date": "2017-03-01T15:42:55.981000+00:00"
   }'
-'''
+"""
 
 import json
 
@@ -133,10 +132,11 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)

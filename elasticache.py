@@ -1,13 +1,10 @@
 #!/usr/bin/python
-#
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elasticache
 version_added: 1.0.0
@@ -15,7 +12,8 @@ short_description: Manage cache clusters in Amazon ElastiCache
 description:
   - Manage cache clusters in Amazon ElastiCache.
   - Returns information about the specified cache cluster.
-author: "Jim Dalton (@jsdalton)"
+author:
+  - "Jim Dalton (@jsdalton)"
 options:
   state:
     description:
@@ -97,11 +95,12 @@ options:
       - Defaults to C(false).
     type: bool
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
+RETURN = r""" # """
 
 EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
@@ -130,8 +129,8 @@ EXAMPLES = r"""
   community.aws.elasticache:
     name: "test-please-delete"
     state: rebooted
-
 """
+
 from time import sleep
 
 try:
@@ -139,12 +138,12 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
-class ElastiCacheManager(object):
+class ElastiCacheManager():
 
     """Handles elasticache creation and destruction"""
 
@@ -153,7 +152,7 @@ class ElastiCacheManager(object):
     def __init__(self, module, name, engine, cache_engine_version, node_type,
                  num_nodes, cache_port, cache_parameter_group, cache_subnet_group,
                  cache_security_groups, security_group_ids, zone, wait,
-                 hard_modify, region, **aws_connect_kwargs):
+                 hard_modify):
         self.module = module
         self.name = name
         self.engine = engine.lower()
@@ -168,9 +167,6 @@ class ElastiCacheManager(object):
         self.zone = zone
         self.wait = wait
         self.hard_modify = hard_modify
-
-        self.region = region
-        self.aws_connect_kwargs = aws_connect_kwargs
 
         self.changed = False
         self.data = None
@@ -500,8 +496,6 @@ def main():
         argument_spec=argument_spec,
     )
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
-
     name = module.params['name']
     state = module.params['state']
     engine = module.params['engine']
@@ -530,7 +524,7 @@ def main():
                                              cache_subnet_group,
                                              cache_security_groups,
                                              security_group_ids, zone, wait,
-                                             hard_modify, region, **aws_connect_kwargs)
+                                             hard_modify)
 
     if state == 'present':
         elasticache_manager.ensure_present()

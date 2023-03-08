@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Jon Meran <jonathan.meran@sonos.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: batch_compute_environment
 version_added: 1.0.0
@@ -120,12 +118,12 @@ options:
       - The Amazon Resource Name (ARN) of the Amazon EC2 Spot Fleet IAM role applied to a SPOT compute environment.
     type: str
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: My Batch Compute Environment
   community.aws.batch_compute_environment:
     compute_environment_name: computeEnvironmentName
@@ -155,9 +153,9 @@ EXAMPLES = r'''
 - name: show results
   ansible.builtin.debug:
     var: aws_batch_compute_environment_action
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 ---
 output:
   description: "returns what action was taken, whether something was changed, invocation and response"
@@ -222,16 +220,20 @@ output:
       statusReason: "ComputeEnvironment Healthy"
       type: MANAGED
   type: dict
-'''
+"""
 
 import re
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, camel_dict_to_snake_dict
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 # ---------------------------------------------------------------------------------------------------

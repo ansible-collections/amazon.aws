@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elasticache_snapshot
 version_added: 1.0.0
@@ -14,11 +12,8 @@ short_description: Manage cache snapshots in Amazon ElastiCache
 description:
   - Manage cache snapshots in Amazon ElastiCache.
   - Returns information about the specified snapshot.
-author: "Sloane Hertel (@s-hertel)"
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+author:
+  - "Sloane Hertel (@s-hertel)"
 options:
   name:
     description:
@@ -47,9 +42,13 @@ options:
     description:
       - The s3 bucket to which the snapshot is exported.
     type: str
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = """
+EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
@@ -61,7 +60,7 @@ EXAMPLES = """
     replication_id: '{{ replication }}'
 """
 
-RETURN = """
+RETURN = r"""
 response_metadata:
   description: response metadata about the snapshot
   returned: always
@@ -117,8 +116,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def create(module, connection, replication_id, cluster_id, name):

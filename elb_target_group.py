@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: elb_target_group
 version_added: 1.0.0
@@ -204,17 +202,18 @@ options:
       - The time to wait for the target group.
     default: 200
     type: int
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
-  - amazon.aws.tags
 
 notes:
   - Once a target group has been created, only its health check can then be modified using subsequent calls
-'''
 
-EXAMPLES = r'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.tags
+  - amazon.aws.boto3
+"""
+
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a target group with a default health check
@@ -324,9 +323,9 @@ EXAMPLES = r'''
     targets:
         - Id: arn:aws:lambda:eu-central-1:123456789012:function:my-lambda-function
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 deregistration_delay_timeout_seconds:
     description: The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused.
     returned: when state present
@@ -437,7 +436,7 @@ vpc_id:
     returned: when state present
     type: str
     sample: vpc-0123456
-'''
+"""
 
 import time
 
@@ -448,12 +447,13 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
 def get_tg_attributes(connection, module, tg_arn):

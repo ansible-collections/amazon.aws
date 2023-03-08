@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: ec2_vpc_nacl
 short_description: create and delete Network ACLs
 version_added: 1.0.0
@@ -73,17 +71,18 @@ options:
     type: str
     choices: ['present', 'absent']
     default: present
-author: Mike Mochan (@mmochan)
-extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
-  - amazon.aws.tags
+author:
+  - Mike Mochan (@mmochan)
 notes:
   - Support for I(purge_tags) was added in release 4.0.0.
-'''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+  - amazon.aws.tags
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 
 # Complete example to create and delete a network ACL
 # that allows SSH, HTTP and ICMP in, and all traffic out.
@@ -141,8 +140,8 @@ EXAMPLES = r'''
   community.aws.ec2_vpc_nacl:
     nacl_id: acl-33b4ee5b
     state: absent
-'''
-RETURN = r'''
+"""
+RETURN = r"""
 task:
   description: The result of the create, or delete action.
   returned: success
@@ -152,17 +151,19 @@ nacl_id:
   returned: success
   type: str
   sample: acl-123456789abcdef01
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml

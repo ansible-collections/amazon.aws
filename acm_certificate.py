@@ -1,31 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # Copyright (c) 2019 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-#
-# This module is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This software is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this software.  If not, see <http://www.gnu.org/licenses/>.
-#
+
 # Author:
 #   - Matthew Davis <Matthew.Davis.2@team.telstra.com>
 #     on behalf of Telstra Corporation Limited
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: acm_certificate
 short_description: Upload and delete certificates in the AWS Certificate Manager service
@@ -175,13 +158,13 @@ notes:
 author:
   - Matthew Davis (@matt-telstra) on behalf of Telstra Corporation Limited
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.tags
-'''
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 
 - name: upload a self-signed certificate
   community.aws.aws_acm:
@@ -230,9 +213,9 @@ EXAMPLES = '''
       Application: search
       Environment: development
     purge_tags: true
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 certificate:
   description: Information about the certificate which was uploaded
   type: complex
@@ -255,7 +238,7 @@ arns:
   returned: when I(state=absent)
   sample:
    - "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
-'''
+"""
 
 
 import base64
@@ -267,14 +250,14 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    boto3_tag_list_to_ansible_dict,
-    ansible_dict_to_boto3_tag_list,
-)
 from ansible.module_utils._text import to_text
+
+from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):

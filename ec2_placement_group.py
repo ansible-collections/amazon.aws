@@ -1,22 +1,21 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_placement_group
 version_added: 1.0.0
 short_description: Create or delete an EC2 Placement Group
 description:
-    - Create an EC2 Placement Group; if the placement group already exists,
-      nothing is done. Or, delete an existing placement group. If the placement
-      group is absent, do nothing. See also
-      U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
-author: "Brad Macpherson (@iiibrad)"
+  - Create an EC2 Placement Group; if the placement group already exists,
+    nothing is done. Or, delete an existing placement group. If the placement
+    group is absent, do nothing. See also
+    U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
+author:
+  - "Brad Macpherson (@iiibrad)"
 options:
   name:
     description:
@@ -45,12 +44,12 @@ options:
     choices: [ 'cluster', 'spread', 'partition' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-'''
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide
 # for details.
 
@@ -77,10 +76,10 @@ EXAMPLES = '''
     name: my-cluster
     state: absent
 
-'''
+"""
 
 
-RETURN = '''
+RETURN = r"""
 placement_group:
   description: Placement group attributes
   returned: when state != absent
@@ -99,16 +98,17 @@ placement_group:
       type: str
       sample: "cluster"
 
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.exponential_backoff()

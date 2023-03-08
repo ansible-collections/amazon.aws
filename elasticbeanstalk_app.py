@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: elasticbeanstalk_app
 version_added: 1.0.0
@@ -43,12 +41,12 @@ author:
   - Harpreet Singh (@hsingh)
   - Stephen Granger (@viper233)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Create or update an application
 - community.aws.elasticbeanstalk_app:
     app_name: Sample_App
@@ -60,9 +58,9 @@ EXAMPLES = '''
     app_name: Sample_App
     state: absent
 
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 app:
     description: Beanstalk application.
     returned: always
@@ -83,15 +81,16 @@ output:
     returned: in check mode
     type: str
     sample: App is up-to-date
-'''
+"""
 
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 
 
 def describe_app(ebs, app_name, module):

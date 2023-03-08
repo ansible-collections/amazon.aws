@@ -1,22 +1,21 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ecs_cluster
 version_added: 1.0.0
 short_description: Create or terminate ECS clusters.
 notes:
-    - When deleting a cluster, the information returned is the state of the cluster prior to deletion.
-    - It will also wait for a cluster to have instances registered to it.
+  - When deleting a cluster, the information returned is the state of the cluster prior to deletion.
+  - It will also wait for a cluster to have instances registered to it.
 description:
-    - Creates or terminates ecs clusters.
-author: Mark Chance (@Java1Guy)
+  - Creates or terminates ecs clusters.
+author:
+  - Mark Chance (@Java1Guy)
 options:
     state:
         description:
@@ -78,13 +77,12 @@ options:
         type: bool
         default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Cluster creation
@@ -120,8 +118,8 @@ EXAMPLES = '''
     repeat: 10
   register: task_output
 
-'''
-RETURN = '''
+"""
+RETURN = r"""
 activeServicesCount:
     description: how many services are active in this cluster
     returned: 0 if a new cluster
@@ -163,7 +161,7 @@ status:
     returned: always
     type: str
     sample: ACTIVE
-'''
+"""
 
 import time
 
@@ -172,9 +170,10 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 class EcsClusterManager:

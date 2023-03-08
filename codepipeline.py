@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: codepipeline
 version_added: 1.0.0
@@ -75,12 +72,12 @@ options:
         choices: ['present', 'absent']
         type: str
 extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
     - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Example for creating a pipeline for continuous deploy of Github code to an ECS cluster (container)
@@ -147,9 +144,9 @@ EXAMPLES = r'''
               FileName: imagedefinitions.json
     region: us-east-1
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 pipeline:
   description: Returns the dictionary describing the CodePipeline configuration.
   returned: success
@@ -194,7 +191,7 @@ pipeline:
         - This number is auto incremented when CodePipeline params are changed.
       returned: always
       type: int
-'''
+"""
 
 import copy
 
@@ -205,9 +202,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 def create_pipeline(client, name, role_arn, artifact_store, stages, version, module):

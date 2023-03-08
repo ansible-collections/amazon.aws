@@ -1,14 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: autoscaling_instance_refresh_info
 version_added: 3.2.0
@@ -18,7 +14,8 @@ description:
   - You can determine the status of a request by looking at the I(status) parameter.
   - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_instance_refresh_info).
     The usage did not change.
-author: "Dan Khersonsky (@danquixote)"
+author:
+  - "Dan Khersonsky (@danquixote)"
 options:
   name:
     description:
@@ -41,12 +38,12 @@ options:
     type: int
     required: false
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Find an refresh by ASG name
@@ -70,9 +67,9 @@ EXAMPLES = '''
     name: somename-asg
     next_token: 'some-token-123'
   register: asgs
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 ---
 instance_refresh_id:
     description: instance refresh id
@@ -120,16 +117,19 @@ instances_to_update:
     returned: success
     type: int
     sample: 5
-'''
+"""
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def find_asg_instance_refreshes(conn, module):

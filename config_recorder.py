@@ -1,13 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2018, Aaron Smith <ajsmith10381@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: config_recorder
 version_added: 1.0.0
@@ -62,12 +59,12 @@ options:
           - Before you can set this option, you must set I(all_supported=false).
     type: dict
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create Configuration Recorder for AWS Config
   community.aws.config_recorder:
     name: test_configuration_recorder
@@ -76,9 +73,9 @@ EXAMPLES = '''
     recording_group:
         all_supported: true
         include_global_types: true
-'''
+"""
 
-RETURN = '''#'''
+RETURN = r"""#"""
 
 
 try:
@@ -88,9 +85,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def resource_exists(client, module, params):

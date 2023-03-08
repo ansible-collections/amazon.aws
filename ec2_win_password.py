@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: ec2_win_password
 version_added: 1.0.0
 short_description: Gets the default administrator password for EC2 Windows instances
 description:
-    - Gets the default administrator password from any EC2 Windows instance. The instance is referenced by its id (e.g. C(i-XXXXXXX)).
-author: "Rick Mendes (@rickmendes)"
+  - Gets the default administrator password from any EC2 Windows instance. The instance is referenced by its id (e.g. C(i-XXXXXXX)).
+author:
+  - "Rick Mendes (@rickmendes)"
 options:
   instance_id:
     description:
@@ -48,16 +47,18 @@ options:
     default: 120
     type: int
 
-extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
-
 requirements:
-- cryptography
-'''
+  - cryptography
 
-EXAMPLES = '''
+extends_documentation_fragment:
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
+  - amazon.aws.boto3
+"""
+
+RETURN = r""" # """
+
+EXAMPLES = r"""
 # Example of getting a password
 - name: get the Administrator password
   community.aws.ec2_win_password:
@@ -92,7 +93,7 @@ EXAMPLES = '''
     key_file: "~/aws-creds/my_test_key.pem"
     wait: true
     wait_timeout: 45
-'''
+"""
 
 import datetime
 import time
@@ -102,6 +103,7 @@ try:
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
     from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
     HAS_CRYPTOGRAPHY = True
 except ImportError:
     HAS_CRYPTOGRAPHY = False
@@ -113,8 +115,9 @@ except ImportError:
 
 from ansible.module_utils._text import to_bytes
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def setup_module_object():
