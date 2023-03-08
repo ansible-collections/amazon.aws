@@ -475,6 +475,7 @@ def test_inventory_query_include_filters_with_and_logic(inventory):
         "strict_permissions": strict,
         "include_filters": include_filters,
         "exclude_filters": [],
+        "use_ssm_inventory": False,
         "include_filter_and_logic": True,
         "exclude_filter_and_logic": False,
     }
@@ -502,6 +503,7 @@ def test_inventory_query_exclude_filters_with_and_logic(inventory):
     params = {
         "regions": regions,
         "strict_permissions": strict,
+        "use_ssm_inventory": False,
         "include_filters": [],
         "exclude_filters": exclude_filters,
         "include_filter_and_logic": False,
