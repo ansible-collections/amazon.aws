@@ -1,12 +1,10 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 ---
 module: iam_role_info
 version_added: 1.0.0
@@ -29,13 +27,12 @@ options:
             - Mutually exclusive with I(name).
         type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.boto3
+    - amazon.aws.common.modules
+    - amazon.aws.region.modules
+    - amazon.aws.boto3
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: find all existing IAM roles
   community.aws.iam_role_info:
   register: result
@@ -47,9 +44,9 @@ EXAMPLES = '''
 - name: describe all roles matching a path prefix
   community.aws.iam_role_info:
     path_prefix: /application/path
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 iam_roles:
   description: List of IAM roles
   returned: always
@@ -153,7 +150,7 @@ iam_roles:
       type: dict
       returned: always
       sample: '{"Env": "Prod"}'
-'''
+"""
 
 try:
     import botocore
@@ -162,10 +159,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.jittered_backoff()
