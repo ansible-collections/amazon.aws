@@ -22,6 +22,12 @@ options:
     default: present
     choices: [ 'present', 'absent' ]
     type: str
+  image_uri:
+    description:
+      - The Amazon ECR URI of the image to use.
+      - Required (alternative to runtime zip_file and s3_bucket) when creating a function.
+      - Required when I(state=present).
+    type: str
   runtime:
     description:
       - The runtime environment for the Lambda function you are uploading.
@@ -531,7 +537,16 @@ def _s3_args(s3_bucket, s3_key, s3_object_version):
     return code
 
 
+def _image_args(image_uri):
+    if not image_uri:
+        return {}
+
+    code = {'ImageUri': image_uri }
+    return code
+
+
 def _code_args(module, current_config):
+    image_uri = module.params.get('image_uri')
     s3_bucket = module.params.get('s3_bucket')
     s3_key = module.params.get('s3_key')
     s3_object_version = module.params.get('s3_object_version')
@@ -539,7 +554,6 @@ def _code_args(module, current_config):
     architectures = module.params.get('architecture')
 
     code_kwargs = {}
-
     if architectures and current_config.get('Architectures', None) != [architectures]:
         module.warn('Arch Change')
         code_kwargs.update({'Architectures': [architectures]})
@@ -550,6 +564,7 @@ def _code_args(module, current_config):
         module.fail_json(msg=str(e), exception=traceback.format_exc())
 
     code_kwargs.update(_s3_args(s3_bucket, s3_key, s3_object_version))
+    code_kwargs.update(_image_args(image_uri))
 
     if not code_kwargs:
         return {}
@@ -564,6 +579,7 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         state=dict(default='present', choices=['present', 'absent']),
+        image_uri=dict(),
         runtime=dict(),
         role=dict(),
         handler=dict(),
@@ -602,25 +618,36 @@ def main():
 
     mutually_exclusive = [['zip_file', 's3_key'],
                           ['zip_file', 's3_bucket'],
-                          ['zip_file', 's3_object_version']]
+                          ['zip_file', 's3_object_version'],
+                          ['image_uri', 'zip_file'],
+                          ['image_uri', 'runtime'],
+                          ['image_uri', 'handler'],
+                          ['image_uri', 's3_key'],
+                          ['image_uri', 's3_bucket'],
+                          ['image_uri', 's3_object_version']]
 
     required_together = [['s3_key', 's3_bucket'],
                          ['vpc_subnet_ids', 'vpc_security_group_ids']]
 
     required_if = [
-        ['state', 'present', ['runtime', 'handler', 'role']],
-        ['architecture', 'x86_64', ['zip_file', 's3_bucket'], True],
-        ['architecture', 'arm64', ['zip_file', 's3_bucket'], True],
+        ['state', 'present', ['role']],
+        ['state', 'present', ['runtime', 'image_uri'], True],
+        ['architecture', 'x86_64', ['zip_file', 's3_bucket', 'image_uri'], True],
+        ['architecture', 'arm64', ['zip_file', 's3_bucket', 'image_uri'], True],
     ]
+    
+    required_by = { "runtime": "handler" }
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,
                               mutually_exclusive=mutually_exclusive,
                               required_together=required_together,
-                              required_if=required_if)
+                              required_if=required_if,
+                              required_by=required_by)
 
     name = module.params.get('name')
     state = module.params.get('state').lower()
+    image_uri = module.params.get('image_uri')
     runtime = module.params.get('runtime')
     role = module.params.get('role')
     handler = module.params.get('handler')
@@ -686,6 +713,10 @@ def main():
             func_kwargs.update({'Timeout': timeout})
         if memory_size and current_config['MemorySize'] != memory_size:
             func_kwargs.update({'MemorySize': memory_size})
+            
+        if image_uri is not None and current_config['PackageType'] != "Image":
+            func_kwargs.update({'PackageType': "Image"})
+            
         if runtime and current_config['Runtime'] != runtime:
             func_kwargs.update({'Runtime': runtime})
         if (environment_variables is not None) and (current_config.get(
@@ -778,7 +809,6 @@ def main():
 
         func_kwargs = {'FunctionName': name,
                        'Publish': True,
-                       'Runtime': runtime,
                        'Role': role_arn,
                        'Timeout': timeout,
                        'MemorySize': memory_size,
@@ -793,6 +823,12 @@ def main():
 
         if description is not None:
             func_kwargs.update({'Description': description})
+
+        if image_uri is not None:
+            func_kwargs.update({'PackageType': "Image"})
+
+        if runtime is not None:
+            func_kwargs.update({'Runtime': runtime})
 
         if handler is not None:
             func_kwargs.update({'Handler': handler})
