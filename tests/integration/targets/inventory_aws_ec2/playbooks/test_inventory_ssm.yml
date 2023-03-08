@@ -6,6 +6,7 @@
 
   collections:
     - amazon.aws
+    - community.aws
 
   module_defaults:
     group/aws:
@@ -74,12 +75,8 @@
             instances_ids: "{{ [instance_output.instance_ids[0]] }}"
 
         - name: Get ssm inventory information
-          test_get_ssm_inventory:
+          ssm_inventory_info:
             instance_id: '{{ instance_output.instance_ids[0] }}'
-            aws_access_key: '{{ aws_access_key }}'
-            aws_secret_key: '{{ aws_secret_key }}'
-            security_token: '{{ security_token | default(omit) }}'
-            region: '{{ aws_region }}'
           register: result
           until: result.ssm_inventory != {}
           retries: 18
