@@ -656,7 +656,7 @@ def get_health_check():
 
     if module.params.get('health_check_method') == 'details':
         results = client.get_health_check(**params)
-        results['health_check'] = camel_dict_to_snake_dict(results['HealthCheck'])
+        results["health_check"] = camel_dict_to_snake_dict(results["HealthCheck"])
         module.deprecate(
             "The 'CamelCase' return values with key 'HealthCheck' is deprecated \
                 and will be replaced by 'snake_case' return values with key 'health_check'. \
@@ -667,13 +667,15 @@ def get_health_check():
 
     elif module.params.get('health_check_method') == 'failure_reason':
         response = client.get_health_check_last_failure_reason(**params)
-        results = {'health_check_observations': []}
-        results['health_check_observations'] = [camel_dict_to_snake_dict(health_check) for health_check in response['HealthCheckObservations']]
+        results["health_check_observations"] = [
+            camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
+        ]
 
     elif module.params.get('health_check_method') == 'status':
         response = client.get_health_check_status(**params)
-        results = {'health_check_observations': []}
-        results['health_check_observations'] = [camel_dict_to_snake_dict(health_check) for health_check in response['HealthCheckObservations']]
+        results["health_check_observations"] = [
+            camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
+        ]
 
     return results
 
