@@ -730,7 +730,7 @@ def main():
     zone = module.params.get('zone')
     snapshot = module.params.get('snapshot')
     state = module.params.get('state')
-    tags = module.params.get('tags')
+    tags = module.params.get('tags') or {} 
     iops = module.params.get('iops')
     volume_type = module.params.get('volume_type')
     throughput = module.params.get('throughput')
