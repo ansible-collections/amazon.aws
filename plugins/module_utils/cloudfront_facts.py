@@ -1,20 +1,8 @@
 # -*- coding: utf-8 -*-
-#
+
 # Copyright (c) 2017 Willem van Ketwich
-#
-# This module is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This software is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this software.  If not, see <http://www.gnu.org/licenses/>.
-#
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 # Author:
 #   - Willem van Ketwich <willem@vanketwich.com.au>
 #
@@ -22,6 +10,7 @@
 #   - cloudfront_distribution
 #   - cloudfront_invalidation
 #   - cloudfront_origin_access_identity
+
 """
 Common cloudfront facts shared between modules
 """

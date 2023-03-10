@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # (c) 2016, Bill Wang <ozbillwang(at)gmail.com>
 # (c) 2017, Marat Bakeev <hawara(at)gmail.com>
 # (c) 2018, Michael De La Rue <siblemitcom.mddlr(at)spamgourmet.com>

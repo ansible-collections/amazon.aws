@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2014 Ansible Project
 # Copyright (c) 2017, 2018, 2019 Will Thames
 # Copyright (c) 2017, 2018 Michael De La Rue

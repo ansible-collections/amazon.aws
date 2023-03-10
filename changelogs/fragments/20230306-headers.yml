@@ -1,0 +1,4 @@
+trivial:
+- Add file encoding comment to all plugins
+- Replace full GPL prefix entries with one line version
+- Add missing copyright notices
