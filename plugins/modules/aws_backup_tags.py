@@ -65,7 +65,18 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-
+tags:
+  description: A dict containing the tags on the resource
+  returned: always
+  type: dict
+added_tags:
+  description: A dict of tags that were added to the resource
+  returned: When tags are added to the resource
+  type: dict
+removed_tags:
+  description: A dict of tags that were removed from the resource
+  returned: When tags are removed from the resource
+  type: dict
 """
 
 try:
