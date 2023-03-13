@@ -385,8 +385,6 @@ options:
       - how long before wait gives up, in seconds.
     default: 300
     type: int
-requirements:
-  - botocore >= 1.21.38
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
