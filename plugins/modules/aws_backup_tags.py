@@ -4,6 +4,70 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+DOCUMENTATION = r"""
+
+"""
+
+EXAMPLES = r"""
+# Note: These examples do not set authentication details, see the AWS Guide for details.
+
+- name: List tags on a backup vault
+    amazon.aws.aws_backup_tags:
+    method: list
+    resource_arn: "{{ backup_vault_arn }}"
+
+- name: Add tags on a resource
+    amazon.aws.aws_backup_tags:
+    resource_arn: "{{ backup_vault_arn }}"
+    method: update
+    state: present
+    tags:
+        CamelCaseKey: CamelCaseValue
+        pascalCaseKey: pascalCaseValue
+        snake_case_key: snake_case_value
+        test_tag_key_1: tag_tag_value_1
+        test_tag_key_2: tag_tag_value_2
+
+- name: Remove only specified tags on a resource
+    amazon.aws.aws_backup_tags:
+    resource_arn: "{{ backup_vault_arn }}"
+    method: update
+    state: absent
+    tags:
+        CamelCaseKey: CamelCaseValue
+
+- name: Remove all tags except for specified tags
+    amazon.aws.aws_backup_tags:
+    resource_arn: "{{ backup_vault_arn }}"
+    method: update
+    state: absent
+    tags:
+        test_tag_key_1: tag_tag_value_1
+        test_tag_key_2: tag_tag_value_2
+    purge_tags: true
+
+- name: Update value of tag key on a resource
+    amazon.aws.aws_backup_tags:
+    resource_arn: "{{ backup_vault_arn }}"
+    method: update
+    state: present
+    tags:
+        test_tag_key_1: tag_tag_value_NEW_1
+
+- name: Remove only one of the tags on a resource
+    amazon.aws.aws_backup_tags:
+    resource_arn: "{{ backup_vault_arn }}"
+    method: update
+    state: absent
+    tags: {}
+    purge_tags: true
+
+"""
+
+RETURN = r"""
+
+"""
+
 try:
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
