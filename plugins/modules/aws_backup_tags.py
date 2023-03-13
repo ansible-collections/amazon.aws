@@ -5,20 +5,61 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = r"""
-
+---
+module: aws_backup_tags
+version_added: 6.0.0
+short_description: Manage tags on backup plan, backup vault, recovery point.
+description:
+    - Create, list, update, remove tags on AWS backup resources such as backup plan, backup vault, and recovery point.
+    - Resources are referenced using ARN.
+author:
+    - Mandar Vijay Kulkarni (@mandar242)
+options:
+  resource_arn:
+    description:
+      - The Amazon Resource Name (ARN) of the backup resource.
+    required: true
+    type: str
+    sample: 'arn:aws:backup:us-east-2:123456789012:backup-vault:my-backup-valult'
+  method:
+    description:
+      - Whether to list or update(create, remove, modify) tags.
+      - Set I(method=update) to perform create, update, remove operations on resource tags.
+      - Set I(method=list) to only list the resource tags without any modifications.
+    choices: ['update', 'list']
+    type: str
+  state:
+    description:
+      - Whether the tags should be present or absent on the resource.
+    default: present
+    choices: ['present', 'absent']
+    type: str
+  tags:
+    description:
+      - A dictionary of tags to add or remove from the resource.
+      - If the value provided for a tag key is null and I(state=absent), the tag will be removed regardless of its current value.
+    type: dict
+    required: true
+    aliases: ['resource_tags']
+  purge_tags:
+    description:
+      - Whether unspecified tags should be removed from the resource.
+      - Note that when combined with I(state=absent), specified tag keys are not purged regardless of its current value.
+    type: bool
+    default: false
 """
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: List tags on a backup vault
+- name: List tags on a resource
     amazon.aws.aws_backup_tags:
     method: list
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
 
 - name: Add tags on a resource
     amazon.aws.aws_backup_tags:
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: present
     tags:
@@ -30,7 +71,7 @@ EXAMPLES = r"""
 
 - name: Remove only specified tags on a resource
     amazon.aws.aws_backup_tags:
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
     tags:
@@ -38,7 +79,7 @@ EXAMPLES = r"""
 
 - name: Remove all tags except for specified tags
     amazon.aws.aws_backup_tags:
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
     tags:
@@ -48,20 +89,19 @@ EXAMPLES = r"""
 
 - name: Update value of tag key on a resource
     amazon.aws.aws_backup_tags:
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: present
     tags:
         test_tag_key_1: tag_tag_value_NEW_1
 
-- name: Remove only one of the tags on a resource
+- name: Remove all of the tags on a resource
     amazon.aws.aws_backup_tags:
-    resource_arn: "{{ backup_vault_arn }}"
+    resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
     tags: {}
     purge_tags: true
-
 """
 
 RETURN = r"""
@@ -146,7 +186,7 @@ def main():
         method=dict(required=True, type='str', choices=['update', 'list']),
         state=dict(default='present', choices=['present', 'absent']),
         resource_arn=dict(required=True, type='str'),
-        tags=dict(required=False, type='dict'),
+        tags=dict(type='dict'),
         purge_tags=dict(default=False, type='bool'),
     )
 
