@@ -1,0 +1,2 @@
+minor_changes:
+- backup_tag - Added a new module that describes tags on AWS backup resources. (https://github.com/ansible-collections/amazon.aws/pull/1427).
