@@ -1,0 +1,139 @@
+---
+# tasks file for test_ec2_tag
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+
+    - name: Create an AWS Backup Vault so we have smething to tag
+      command: 'aws backup create-backup-vault --backup-vault-name {{ backup_vault_name }}'
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: backup_vault_create_result
+
+    - name: convert it to an object
+      set_fact:
+        backup_vault: "{{ backup_vault_create_result.stdout | from_json }}"
+
+    - set_fact:
+        vault_arn: "{{ backup_vault.BackupVaultArn }}"
+
+    - name: List tags on a backup vault
+      amazon.aws.backup_tag:
+        method: list
+        resource_arn: "{{ vault_arn }}"
+      register: current_tags
+
+    - assert:
+        that:
+          - '"tags" in current_tags'
+          - current_tags.tags | length == 0
+
+    - name: Add tags on backup_vault
+      amazon.aws.backup_tag:
+        resource_arn: "{{ vault_arn }}"
+        method: update
+        state: present
+        tags:
+            CamelCaseKey: CamelCaseValue
+            pascalCaseKey: pascalCaseValue
+            snake_case_key: snake_case_value
+            test_tag_key_1: tag_tag_value_1
+            test_tag_key_2: tag_tag_value_2
+      register: add_tags_result
+
+    - assert:
+        that:
+          - add_tags_result is changed
+          - add_tags_result.tags | length == 5
+          - add_tags_result.added_tags | length == 5
+          - add_tags_result.tags.CamelCaseKey == 'CamelCaseValue'
+          - add_tags_result.tags.pascalCaseKey == 'pascalCaseValue'
+          - add_tags_result.tags.snake_case_key == 'snake_case_value'
+          - add_tags_result.tags.test_tag_key_1 == 'tag_tag_value_1'
+          - add_tags_result.tags.test_tag_key_2  == 'tag_tag_value_2'
+
+    - name: Remove only specified tags on backup vault
+      amazon.aws.backup_tag:
+        resource_arn: "{{ vault_arn }}"
+        method: update
+        state: absent
+        tags:
+            CamelCaseKey: CamelCaseValue
+      register: remove_specified_result
+
+    - assert:
+        that:
+          - remove_specified_result is changed
+          - remove_specified_result.tags | length == 4
+          - remove_specified_result.removed_tags | length == 1
+          - remove_specified_result.tags.pascalCaseKey == 'pascalCaseValue'
+          - remove_specified_result.tags.snake_case_key == 'snake_case_value'
+          - remove_specified_result.tags.test_tag_key_1 == 'tag_tag_value_1'
+          - remove_specified_result.tags.test_tag_key_2  == 'tag_tag_value_2'
+
+    - name: Remove all except specified tags on backup vault
+      amazon.aws.backup_tag:
+        resource_arn: "{{ vault_arn }}"
+        method: update
+        state: absent
+        tags:
+            test_tag_key_1: tag_tag_value_1
+            test_tag_key_2: tag_tag_value_2
+        purge_tags: true
+      register: remove_except_specified_result
+
+    - assert:
+        that:
+          - remove_except_specified_result is changed
+          - remove_except_specified_result.tags | length == 2
+          - remove_except_specified_result.removed_tags | length == 2
+          - remove_except_specified_result.tags.test_tag_key_1 == 'tag_tag_value_1'
+          - remove_except_specified_result.tags.test_tag_key_2  == 'tag_tag_value_2'
+
+    - name: Update value of tag key on backup vault
+      amazon.aws.backup_tag:
+        resource_arn: "{{ vault_arn }}"
+        method: update
+        state: present
+        tags:
+            test_tag_key_1: test_tag_NEW_VALUE_1
+      register: update_specified_result
+
+    - assert:
+        that:
+          - update_specified_result is changed
+          - update_specified_result.tags | length == 2
+          - update_specified_result.tags.test_tag_key_1 == 'test_tag_NEW_VALUE_1'
+          - update_specified_result.tags.test_tag_key_2 == 'tag_tag_value_2'
+
+    - name: Remove all tags on backup vault
+      amazon.aws.backup_tag:
+        resource_arn: "{{ vault_arn }}"
+        method: update
+        state: absent
+        tags: {}
+        purge_tags: true
+      register: remove_all_tags_result
+
+    - assert:
+        that:
+          - '"tags" in remove_all_tags_result'
+          - remove_all_tags_result.tags | length == 0
+          - remove_all_tags_result.removed_tags | length == 2
+
+  always:
+    - name: Delete AWS Backup Vault created during this test
+      command: 'aws backup delete-backup-vault --backup-vault-name {{ backup_vault_name }}'
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      ignore_errors: true

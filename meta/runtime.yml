@@ -7,6 +7,7 @@ action_groups:
   - aws_az_info
   - aws_caller_info
   - aws_s3
+  - backup_tag
   - cloudformation
   - cloudformation_info
   - cloudtrail

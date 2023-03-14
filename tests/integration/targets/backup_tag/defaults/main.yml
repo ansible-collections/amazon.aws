@@ -1,0 +1,3 @@
+---
+# defaults file for test_backup_tag
+backup_vault_name: '{{ tiny_prefix }}-backup-vault'

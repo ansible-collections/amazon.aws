@@ -53,12 +53,12 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: List tags on a resource
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     method: list
     resource_arn: "{{ backup_resource_arn }}"
 
 - name: Add tags on a resource
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: present
@@ -70,7 +70,7 @@ EXAMPLES = r"""
         test_tag_key_2: tag_tag_value_2
 
 - name: Remove only specified tags on a resource
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
@@ -78,7 +78,7 @@ EXAMPLES = r"""
         CamelCaseKey: CamelCaseValue
 
 - name: Remove all tags except for specified tags
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
@@ -88,7 +88,7 @@ EXAMPLES = r"""
     purge_tags: true
 
 - name: Update value of tag key on a resource
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: present
@@ -96,7 +96,7 @@ EXAMPLES = r"""
         test_tag_key_1: tag_tag_value_NEW_1
 
 - name: Remove all of the tags on a resource
-    amazon.aws.aws_backup_tags:
+    amazon.aws.backup_tag:
     resource_arn: "{{ backup_resource_arn }}"
     method: update
     state: absent
