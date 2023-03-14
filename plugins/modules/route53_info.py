@@ -472,6 +472,7 @@ health_check_observations:
                     description: A description of the status of the health check endpoint as reported by one of the Amazon Route 53 health checkers.
                     type: str
                     sample: 'Failure: Resolved IP: 12.345.67.89. The connection was closed by the endpoint.'
+    version_added: 5.4.0
 ResourceRecordSets:
     description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
@@ -648,6 +649,7 @@ def get_count():
 
 def get_health_check():
     params = dict()
+    results = dict()
 
     if not module.params.get('health_check_id'):
         module.fail_json(msg="health_check_id is required")

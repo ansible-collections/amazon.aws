@@ -1725,6 +1725,33 @@
       - create_check is changed
       - health_check_info.health_check.health_check_config.measure_latency == true
 
+  # test route53_info for health_check_method=status
+  - name: Get health check status
+    amazon.aws.route53_info:
+      query: health_check
+      health_check_id: "{{ create_check.health_check.id }}"
+      health_check_method: status
+    register: health_check_status_info
+
+  - assert:
+      that:
+      - health_check_status_info is not failed
+      - '"health_check_observations" in health_check_status_info'
+
+  # test route53_info for health_check_method=failure_reason
+  - name: Get health check failure_reason
+    amazon.aws.route53_info:
+      query: health_check
+      health_check_id: "{{ create_check.health_check.id }}"
+      health_check_method: failure_reason
+    register: health_check_failure_reason_info
+
+  - assert:
+      that:
+      - health_check_failure_reason_info is not failed
+      - '"health_check_observations" in health_check_failure_reason_info'
+
+
   - name: 'Update above health check to disable latency graphs - immutable, no change'
     route53_health_check:
       state: present
