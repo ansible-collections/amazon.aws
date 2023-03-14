@@ -300,26 +300,40 @@ def desired_topic(module, notification_type):
 
 
 def update_notification_topic(connection, module, identity, identity_notifications, notification_type):
+    # Not passing the parameter should not cause any changes.
+    if module.params.get(f"{notification_type.lower()}_notifications") is None:
+        return False
+
     topic_key = notification_type + 'Topic'
     if identity_notifications is None:
         # If there is no configuration for notifications cannot be being sent to topics
         # hence assume None as the current state.
-        current = None
+        current_topic = None
     elif topic_key in identity_notifications:
-        current = identity_notifications[topic_key]
+        current_topic = identity_notifications[topic_key]
     else:
         # If there is information on the notifications setup but no information on the
         # particular notification topic it's pretty safe to assume there's no topic for
         # this notification. AWS API docs suggest this information will always be
         # included but best to be defensive
-        current = None
+        current_topic = None
 
-    required = desired_topic(module, notification_type)
+    required_topic = desired_topic(module, notification_type)
 
-    if current != required:
+    if current_topic != required_topic:
         try:
             if not module.check_mode:
-                connection.set_identity_notification_topic(Identity=identity, NotificationType=notification_type, SnsTopic=required, aws_retry=True)
+                request_kwargs = {
+                    "Identity": identity,
+                    "NotificationType": notification_type,
+                    "aws_retry": True,
+                }
+
+                # The topic has to be omitted from the request to disable the notification.
+                if required_topic is not None:
+                    request_kwargs["SnsTopic"] = required_topic
+
+                connection.set_identity_notification_topic(**request_kwargs)
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg='Failed to set identity notification topic for {identity} {notification_type}'.format(
                 identity=identity,
