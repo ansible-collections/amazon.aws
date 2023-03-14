@@ -6,7 +6,7 @@
 
 DOCUMENTATION = r"""
 ---
-module: aws_backup_tags
+module: backup_tag
 version_added: 6.0.0
 short_description: Manage tags on backup plan, backup vault, recovery point.
 description:
