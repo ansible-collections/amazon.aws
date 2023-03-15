@@ -1,17 +1,16 @@
 from unittest.mock import patch
 
 import pytest
-from ansible_collections.ansible.eda.plugins.event_source.aws_sqs_queue import (
-    main as sqs_main,
-)
 from asyncmock import AsyncMock
+
+from plugins.event_source.aws_sqs_queue import main as sqs_main
 
 
 @pytest.mark.asyncio
 async def test_receive_from_sqs(eda_queue):
     session = AsyncMock()
     with patch(
-        "ansible_collections.ansible.eda.plugins.event_source.aws_sqs_queue.get_session",  # noqa: E501
+        "plugins.event_source.aws_sqs_queue.get_session",  # noqa: E501
         return_value=session,
     ):
         client = AsyncMock()
