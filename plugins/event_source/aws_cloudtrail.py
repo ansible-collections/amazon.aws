@@ -37,8 +37,7 @@ from datetime import datetime
 from typing import Any, Dict
 
 from aiobotocore.session import get_session
-
-from ..utils.aws_utils import connection_args
+from ansible_collections.ansible.eda.plugins.utils.aws_utils import connection_args
 
 
 def _cloudtrail_event_to_dict(event):

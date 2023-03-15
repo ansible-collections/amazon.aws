@@ -26,8 +26,7 @@ from typing import Any, Dict
 
 import botocore.exceptions
 from aiobotocore.session import get_session
-
-from ..utils.aws_utils import connection_args
+from ansible_collections.ansible.eda.plugins.utils.aws_utils import connection_args
 
 
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):

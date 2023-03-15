@@ -3,9 +3,8 @@
 
   sources:
     - ansible.eda.aws_cloudtrail:
-        connection:
-          region: 'us-east-1'
-        delay: 5
+        region: 'us-east-1'
+        delay_seconds: 5
   rules:
     - name: match key pair creation event
       condition: event.CloudTrailEvent.eventName == 'CreateKeyPair' and event.CloudTrailEvent.requestParameters.keyName == '{{ test_ec2_key_pair_name }}'
