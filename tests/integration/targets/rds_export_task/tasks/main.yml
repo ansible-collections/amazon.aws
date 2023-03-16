@@ -3,7 +3,7 @@
   collections:
     - amazon.aws
     - community.aws
-  
+
   module_defaults:
     group/aws:
       region: '{{ aws_region }}'
@@ -18,18 +18,18 @@
         assume_role_policy_document: "{{ lookup('file','files/policy.json') }}"
         state: present
       register: _result_create_iam_role
-    
+
     - assert:
         that:
         - _result_create_iam_role is changed
-    
+
     - name: Create a key
       aws_kms:
         alias: '{{kms_key_alias }}'
         tags:
           ansible-test: '{{ resource_prefix }}'
       register: _result_create_key
-      
+
     - name: Create an S3 bucket
       s3_bucket:
         name: '{{ bucket_name }}'
@@ -41,7 +41,7 @@
         - _result_create_s3_bucket is success
         - _result_create_s3_bucket is changed
         - _result_create_s3_bucket.name == '{{ bucket_name }}'
-    
+
     - name: Enable aws:kms encryption with KMS key
       s3_bucket:
         name: '{{ bucket_name }}'
@@ -61,7 +61,6 @@
         id: "{{ instance_id }}"
         state: present
         engine: "{{ engine}}"
-        engine_version: "{{ mariadb_engine_version }}"
         allow_major_version_upgrade: true
         username: "{{ username }}"
         password: "{{ password }}"
@@ -95,7 +94,7 @@
     - assert:
         that:
         - _result_instance_snapshot.changed
-    
+
     - name: Export snapshot to S3 (CHECK_MODE)
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
@@ -106,7 +105,7 @@
         state: present
       check_mode: true
       register: _result_export_task
-    
+
     - name: Export snapshot to S3 - idempotence (CHECK_MODE)
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
@@ -127,7 +126,7 @@
         kms_key_id: "{{ _result_create_key.key_arn }}"
         state: present
       register: _result_export_task
-    
+
     - name: Export snapshot to S3 - idempotence
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
@@ -136,27 +135,27 @@
         iam_role_arn: "{{ _result_create_iam_role.arn }}"
         kms_key_id: "{{ _result_create_key.key_arn }}"
       register: _result_export_task
-    
+
     - name: Delete an export task (CHECK_MODE)
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
         state: absent
       check_mode: true
       register: _result_delete
-    
+
     - name: Delete an export task - idempotence
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
         state: absent
       check_mode: true
       register: _result_delete
-    
+
     - name: Delete an export task
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
         state: absent
       register: _result_delete
-    
+
     - name: Delete an export task - idempotence
       rds_export_task:
         export_task_id: "{{ export_task_id }}"
@@ -182,19 +181,19 @@
         instance_id: "{{ instance_id }}"
         skip_final_snapshot: true
       ignore_errors: true
-    
+
     - name: Delete S3 bucket
       s3_bucket:
         name: '{{ bucket_name }}'
         state: absent
       ignore_errors: true
-    
+
     - name: Delete the kms kms_key_alias
       aws_kms:
         state: absent
         alias: '{{ kms_key_alias }}'
       ignore_errors: true
-    
+
     - name: Delete the IAM role
       iam_role:
         name: '{{ role_name }}'

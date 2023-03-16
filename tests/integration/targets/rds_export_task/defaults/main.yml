@@ -9,7 +9,6 @@ password: "{{ lookup('password', 'dev/null length=12 chars=ascii_letters,digits'
 db_instance_class: db.t3.micro
 allocated_storage: 10
 engine: 'mariadb'
-mariadb_engine_version: 10.3.31
 
 # Create snapshot
 snapshot_id: '{{ _resource_prefix }}-rds-instance-snapshot'
@@ -17,7 +16,7 @@ snapshot_id: '{{ _resource_prefix }}-rds-instance-snapshot'
 # Create an IAM role
 rds_role_name: '{{ _resource_prefix }}-role'
 
-# Create kms key 
+# Create kms key
 kms_key_alias: '{{ _resource_prefix }}-kms'
 
 # Create an S3 bucket
