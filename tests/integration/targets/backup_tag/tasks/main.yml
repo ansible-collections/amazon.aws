@@ -1,5 +1,4 @@
 ---
-# tasks file for test_ec2_tag
 - module_defaults:
     group/aws:
       aws_access_key: "{{ aws_access_key }}"
