@@ -15,19 +15,11 @@ description:
 author:
     - Mandar Vijay Kulkarni (@mandar242)
 options:
-  resource_arn:
+  resource:
     description:
       - The Amazon Resource Name (ARN) of the backup resource.
     required: true
     type: str
-  method:
-    description:
-      - Whether to list or update(create, remove, modify) tags.
-      - Set I(method=update) to perform create, update, remove operations on resource tags.
-      - Set I(method=list) to only list the resource tags without any modifications.
-    choices: ['update', 'list']
-    type: str
-    required: True
   state:
     description:
       - Whether the tags should be present or absent on the resource.
@@ -58,15 +50,9 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: List tags on a resource
-  amazon.aws.backup_tag:
-    method: list
-    resource_arn: "{{ backup_resource_arn }}"
-
 - name: Add tags on a resource
   amazon.aws.backup_tag:
-    resource_arn: "{{ backup_resource_arn }}"
-    method: update
+    resource: "{{ backup_resource_arn }}"
     state: present
     tags:
       CamelCaseKey: CamelCaseValue
@@ -77,16 +63,14 @@ EXAMPLES = r"""
 
 - name: Remove only specified tags on a resource
   amazon.aws.backup_tag:
-    resource_arn: "{{ backup_resource_arn }}"
-    method: update
+    resource: "{{ backup_resource_arn }}"
     state: absent
     tags:
         CamelCaseKey: CamelCaseValue
 
 - name: Remove all tags except for specified tags
   amazon.aws.backup_tag:
-    resource_arn: "{{ backup_resource_arn }}"
-    method: update
+    resource: "{{ backup_resource_arn }}"
     state: absent
     tags:
         test_tag_key_1: tag_tag_value_1
@@ -95,16 +79,14 @@ EXAMPLES = r"""
 
 - name: Update value of tag key on a resource
   amazon.aws.backup_tag:
-    resource_arn: "{{ backup_resource_arn }}"
-    method: update
+    resource: "{{ backup_resource_arn }}"
     state: present
     tags:
         test_tag_key_1: tag_tag_value_NEW_1
 
 - name: Remove all of the tags on a resource
   amazon.aws.backup_tag:
-    resource_arn: "{{ backup_resource_arn }}"
-    method: update
+    resource: "{{ backup_resource_arn }}"
     state: absent
     tags: {}
     purge_tags: true
@@ -132,17 +114,18 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
 
 
 def manage_tags(module, backup_client):
     result = {"changed": False}
 
-    resource_arn = module.params.get("resource_arn")
+    resource = module.params.get("resource")
     tags = module.params.get("tags")
     state = module.params.get("state")
     purge_tags = module.params.get("purge_tags")
 
-    current_tags = get_current_tags(module, backup_client)
+    current_tags = get_backup_resource_tags(module, backup_client)
     tags_to_add, tags_to_remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
 
     remove_tags = {}
@@ -159,11 +142,11 @@ def manage_tags(module, backup_client):
             result["removed_tags"] = remove_tags
             if not module.check_mode:
                 try:
-                    backup_client.untag_resource(ResourceArn=resource_arn, TagKeyList=list(remove_tags.keys()))
+                    backup_client.untag_resource(ResourceArn=resource, TagKeyList=list(remove_tags.keys()))
                 except (BotoCoreError, ClientError) as remove_tag_error:
                     module.fail_json_aws(
                         remove_tag_error,
-                        msg="Failed to remove tags {0} from resource {1}".format(remove_tags, resource_arn),
+                        msg="Failed to remove tags {0} from resource {1}".format(remove_tags, resource),
                     )
 
     if state == "present" and tags_to_add:
@@ -171,34 +154,20 @@ def manage_tags(module, backup_client):
         result["added_tags"] = tags_to_add
         if not module.check_mode:
             try:
-                backup_client.tag_resource(ResourceArn=resource_arn, Tags=tags_to_add)
+                backup_client.tag_resource(ResourceArn=resource, Tags=tags_to_add)
             except (BotoCoreError, ClientError) as set_tag_error:
                 module.fail_json_aws(
-                    set_tag_error, msg="Failed to set tags {0} on resource {1}".format(tags_to_add, resource_arn)
+                    set_tag_error, msg="Failed to set tags {0} on resource {1}".format(tags_to_add, resource)
                 )
 
-    result["tags"] = get_current_tags(module, backup_client)
+    result["tags"] = get_backup_resource_tags(module, backup_client)
     return result
-
-
-def get_current_tags(module, backup_client):
-    resource_arn = module.params.get("resource_arn")
-
-    try:
-        response = backup_client.list_tags(ResourceArn=resource_arn)
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to list tags on the resource {0}".format(resource_arn))
-
-    current_tags = response["Tags"]
-
-    return current_tags
 
 
 def main():
     argument_spec = dict(
-        method=dict(required=True, type="str", choices=["update", "list"]),
         state=dict(default="present", choices=["present", "absent"]),
-        resource_arn=dict(required=True, type="str"),
+        resource=dict(required=True, type="str"),
         tags=dict(required=True, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=False, type="bool"),
     )
@@ -212,10 +181,7 @@ def main():
 
     result = {}
 
-    if module.params.get("method") == "list":
-        result["changed"], result["tags"] = False, get_current_tags(module, backup_client)
-    else:
-        result = manage_tags(module, backup_client)
+    result = manage_tags(module, backup_client)
 
     module.exit_json(**result)
 

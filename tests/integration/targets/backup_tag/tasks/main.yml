@@ -8,7 +8,7 @@
       region: "{{ aws_region }}"
   block:
 
-    - name: Create an AWS Backup Vault so we have smething to tag
+    - name: Create an AWS Backup Vault so we have something to tag
       command: 'aws backup create-backup-vault --backup-vault-name {{ backup_vault_name }}'
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
@@ -25,9 +25,8 @@
         vault_arn: "{{ backup_vault.BackupVaultArn }}"
 
     - name: List tags on a backup vault
-      amazon.aws.backup_tag:
-        method: list
-        resource_arn: "{{ vault_arn }}"
+      amazon.aws.backup_tag_info:
+        resource: "{{ vault_arn }}"
       register: current_tags
 
     - assert:
@@ -37,8 +36,7 @@
 
     - name: Add tags on backup_vault
       amazon.aws.backup_tag:
-        resource_arn: "{{ vault_arn }}"
-        method: update
+        resource: "{{ vault_arn }}"
         state: present
         tags:
             CamelCaseKey: CamelCaseValue
@@ -61,8 +59,7 @@
 
     - name: Remove only specified tags on backup vault
       amazon.aws.backup_tag:
-        resource_arn: "{{ vault_arn }}"
-        method: update
+        resource: "{{ vault_arn }}"
         state: absent
         tags:
             CamelCaseKey: CamelCaseValue
@@ -80,8 +77,7 @@
 
     - name: Remove all except specified tags on backup vault
       amazon.aws.backup_tag:
-        resource_arn: "{{ vault_arn }}"
-        method: update
+        resource: "{{ vault_arn }}"
         state: absent
         tags:
             test_tag_key_1: tag_tag_value_1
@@ -99,8 +95,7 @@
 
     - name: Update value of tag key on backup vault
       amazon.aws.backup_tag:
-        resource_arn: "{{ vault_arn }}"
-        method: update
+        resource: "{{ vault_arn }}"
         state: present
         tags:
             test_tag_key_1: test_tag_NEW_VALUE_1
@@ -115,8 +110,7 @@
 
     - name: Remove all tags on backup vault
       amazon.aws.backup_tag:
-        resource_arn: "{{ vault_arn }}"
-        method: update
+        resource: "{{ vault_arn }}"
         state: absent
         tags: {}
         purge_tags: true
