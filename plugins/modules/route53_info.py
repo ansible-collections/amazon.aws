@@ -860,7 +860,7 @@ def main():
     try:
         results = invocations[module.params.get('query')]()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json(msg=to_native(e))
+        module.fail_json_aws(e, msg="Query failed")
 
     module.exit_json(**results)
 
