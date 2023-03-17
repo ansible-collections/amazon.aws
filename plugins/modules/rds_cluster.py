@@ -160,21 +160,62 @@ options:
             By default, write operations are not allowed on Aurora DB clusters that are secondary clusters in an Aurora global database.
           - This value can be only set on Aurora DB clusters that are members of an Aurora global database.
         type: bool
+    db_cluster_instance_class:
+        description:
+          - The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example C(db.m6gd.xlarge).
+          - Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.
+          - For the full list of DB instance classes and availability for your engine visit
+            U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
+          - This setting is required to create a Multi-AZ DB cluster.
+          - I(db_cluster_instance_class) require botocore >= 1.23.44.
+        type: str
+        version_added: 5.4.0
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
             If this option is omitted when creating the cluster, Amazon RDS sets this to C(false).
         type: bool
+    allocated_storage:
+        description:
+          - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster.
+          - I(allocated_storage) require botocore >= 1.23.44.
+        type: int
+        version_added: 5.4.0
+    storage_type:
+        description:
+          - Specifies the storage type to be associated with the DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster.
+          - When specified, a value for the I(iops) parameter is required.
+          - I(storage_type) require botocore >= 1.23.44.
+          - Defaults to C(io1).
+        type: str
+        choices:
+          - io1
+        version_added: 5.4.0
+    iops:
+        description:
+          - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
+          - This setting is required to create a Multi-AZ DB cluster
+          - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
+          - I(iops) require botocore >= 1.23.44.
+        type: int
+        version_added: 5.4.0
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
           - The combinaison of I(engine) and I(engine_mode) may not be supported.
           - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
+          - When I(engine=mysql), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
+          - When I(engine=postgres), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
+          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.4.0.
         choices:
           - aurora
           - aurora-mysql
           - aurora-postgresql
+          - mysql
+          - postgres
         type: str
     engine_mode:
         description:
@@ -696,14 +737,39 @@ def get_backtrack_options(params_dict):
 
 def get_create_options(params_dict):
     options = [
-        'AvailabilityZones', 'BacktrackWindow', 'BackupRetentionPeriod', 'PreferredBackupWindow',
-        'CharacterSetName', 'DBClusterIdentifier', 'DBClusterParameterGroupName', 'DBSubnetGroupName',
-        'DatabaseName', 'EnableCloudwatchLogsExports', 'EnableIAMDatabaseAuthentication', 'KmsKeyId',
-        'Engine', 'EngineMode', 'EngineVersion', 'PreferredMaintenanceWindow', 'MasterUserPassword', 'MasterUsername',
-        'OptionGroupName', 'Port', 'ReplicationSourceIdentifier', 'SourceRegion', 'StorageEncrypted',
-        'Tags', 'VpcSecurityGroupIds', 'EngineMode', 'ScalingConfiguration', 'DeletionProtection',
-        'EnableHttpEndpoint', 'CopyTagsToSnapshot', 'Domain', 'DomainIAMRoleName',
-        'EnableGlobalWriteForwarding',
+        "AvailabilityZones",
+        "BacktrackWindow",
+        "BackupRetentionPeriod",
+        "PreferredBackupWindow",
+        "CharacterSetName",
+        "DBClusterIdentifier",
+        "DBClusterParameterGroupName",
+        "DBSubnetGroupName",
+        "DatabaseName",
+        "EnableCloudwatchLogsExports",
+        "EnableIAMDatabaseAuthentication",
+        "KmsKeyId",
+        "Engine",
+        "EngineMode",
+        "EngineVersion",
+        "PreferredMaintenanceWindow",
+        "MasterUserPassword",
+        "MasterUsername",
+        "OptionGroupName",
+        "Port",
+        "ReplicationSourceIdentifier",
+        "SourceRegion",
+        "StorageEncrypted",
+        "Tags",
+        "VpcSecurityGroupIds",
+        "EngineMode",
+        "ScalingConfiguration",
+        "DeletionProtection",
+        "EnableHttpEndpoint",
+        "CopyTagsToSnapshot",
+        "Domain",
+        "DomainIAMRoleName",
+        "EnableGlobalWriteForwarding",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -810,7 +876,7 @@ def backtrack_cluster(params):
         try:
             client.backtrack_db_cluster(**params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg=F"Unable to backtrack cluster {params['DBClusterIdentifier']}")
+            module.fail_json_aws(e, msg=f"Unable to backtrack cluster {params['DBClusterIdentifier']}")
         wait_for_cluster_status(client, module, params['DBClusterIdentifier'], 'cluster_available')
 
 
@@ -951,11 +1017,15 @@ def main():
         copy_tags_to_snapshot=dict(type='bool'),
         domain=dict(),
         domain_iam_role_name=dict(),
-        enable_global_write_forwarding=dict(type='bool'),
-        enable_iam_database_authentication=dict(type='bool'),
-        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql"]),
+        enable_global_write_forwarding=dict(type="bool"),
+        db_cluster_instance_class=dict(type="str"),
+        enable_iam_database_authentication=dict(type="bool"),
+        engine=dict(choices=["aurora", "aurora-mysql", "aurora-postgresql", "mysql", "postgres"]),
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
+        allocated_storage=dict(type="int"),
+        storage_type=dict(type="str", choices=["io1"]),
+        iops=dict(type="int"),
         final_snapshot_identifier=dict(),
         force_backtrack=dict(type='bool'),
         kms_key_id=dict(),
@@ -999,7 +1069,7 @@ def main():
             ('s3_bucket_name', 'source_db_cluster_identifier', 'snapshot_identifier'),
             ('use_latest_restorable_time', 'restore_to_time'),
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
@@ -1008,6 +1078,22 @@ def main():
         client = module.client('rds', retry_decorator=retry_decorator)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS.')
+
+    if module.params.get("engine") and module.params["engine"] in ("mysql", "postgres"):
+        module.require_botocore_at_least("1.23.44", reason="to use mysql and postgres engines")
+        if module.params["state"] == "present":
+            if not (
+                module.params.get("allocated_storage")
+                and module.params.get("iops")
+                and module.params.get("db_cluster_instance_class")
+            ):
+                module.fail_json(
+                    f"When engine={module.params['engine']} allocated_storage, iops and db_cluster_instance_class msut be specified"
+                )
+            else:
+                # Fall to default value
+                if not module.params.get("storage_type"):
+                    module.params["storage_type"] = "io1"
 
     module.params['db_cluster_identifier'] = module.params['db_cluster_identifier'].lower()
     cluster = get_cluster(module.params['db_cluster_identifier'])
