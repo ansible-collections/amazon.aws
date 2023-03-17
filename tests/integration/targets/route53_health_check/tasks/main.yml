@@ -1725,6 +1725,9 @@
       - create_check is changed
       - health_check_info.health_check.health_check_config.measure_latency == true
 
+  - pause:
+      seconds: 20
+
   # test route53_info for health_check_method=status
   - name: Get health check status
     amazon.aws.route53_info:
