@@ -118,7 +118,7 @@ options:
         See U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html)
     type: bool
     required: False
-    version_added: 5.2.0
+    version_added: 5.4.0
 author:
   - "zimbatm (@zimbatm)"
 notes:
