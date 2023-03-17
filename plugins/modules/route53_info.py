@@ -378,7 +378,7 @@ delegation_sets:
     version_added: 4.1.0
     version_added_collection: community.aws
 health_check:
-    description: A dict of Route53 health check details returned by get_health_check_status in boto3.
+    description: A dict of Route53 health check details returned by get_health_check in boto3.
     type: dict
     returned: when I(query=health_check) and I(health_check_method=details)
     contains:
@@ -448,6 +448,33 @@ health_check:
                     sample: HTTPS
     version_added: 4.1.0
     version_added_collection: community.aws
+health_check_observations:
+    description: A dict of Route53 health check details returned by get_health_check_status and get_health_check_last_failure_reason in boto3.
+    type: list
+    elements: dict
+    returned: when I(query=health_check) and I(health_check_method=status) or I(health_check_method=failure_reason)
+    contains:
+        ip_address:
+            description: The IP address of the Amazon Route 53 health checker that provided the failure reason in StatusReport.
+            type: str
+            sample: '12.345.67.89'
+        region:
+            description: The region of the Amazon Route 53 health checker that provided the status in StatusReport.
+            type: str
+            sample: 'us-west-1'
+        status_report:
+            description: A complex type that contains the last failure reason and the time of the failed health check.
+            type: dict
+            contains:
+                checked_time:
+                    description: The date and time that the health checker performed the health check in ISO 8601 format and Coordinated Universal Time (UTC).
+                    type: str
+                    sample: '2023-03-08T23:10:08.452000+00:00'
+                status:
+                    description: A description of the status of the health check endpoint as reported by one of the Amazon Route 53 health checkers.
+                    type: str
+                    sample: 'Failure: Resolved IP: 12.345.67.89. The connection was closed by the endpoint.'
+    version_added: 5.4.0
 ResourceRecordSets:
     description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
@@ -484,7 +511,7 @@ DelegationSets:
     elements: dict
     returned: when I(query=reusable_delegation_set)
 HealthCheck:
-    description: A deprecated CamelCased dict of Route53 health check details returned by get_health_check_status in boto3. \
+    description: A deprecated CamelCased dict of Route53 health check details returned by get_health_check in boto3. \
                  This dict contains same elements/parameters as it's snake_cased version mentioned above. \
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: dict
@@ -624,6 +651,7 @@ def get_count():
 
 def get_health_check():
     params = dict()
+    results = dict()
 
     if not module.params.get('health_check_id'):
         module.fail_json(msg="health_check_id is required")
@@ -632,16 +660,26 @@ def get_health_check():
 
     if module.params.get('health_check_method') == 'details':
         results = client.get_health_check(**params)
-    elif module.params.get('health_check_method') == 'failure_reason':
-        results = client.get_health_check_last_failure_reason(**params)
-    elif module.params.get('health_check_method') == 'status':
-        results = client.get_health_check_status(**params)
+        results["health_check"] = camel_dict_to_snake_dict(results["HealthCheck"])
+        module.deprecate(
+            "The 'CamelCase' return values with key 'HealthCheck' is deprecated \
+                and will be replaced by 'snake_case' return values with key 'health_check'. \
+                Both case values are returned for now.",
+            date="2025-01-01",
+            collection_name="amazon.aws",
+        )
 
-    results['health_check'] = camel_dict_to_snake_dict(results['HealthCheck'])
-    module.deprecate("The 'CamelCase' return values with key 'HealthCheck' is deprecated and \
-                    will be replaced by 'snake_case' return values with key 'health_check'. \
-                    Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+    elif module.params.get('health_check_method') == 'failure_reason':
+        response = client.get_health_check_last_failure_reason(**params)
+        results["health_check_observations"] = [
+            camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
+        ]
+
+    elif module.params.get('health_check_method') == 'status':
+        response = client.get_health_check_status(**params)
+        results["health_check_observations"] = [
+            camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
+        ]
 
     return results
 
@@ -824,7 +862,7 @@ def main():
     try:
         results = invocations[module.params.get('query')]()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json(msg=to_native(e))
+        module.fail_json_aws(e, msg="Query failed")
 
     module.exit_json(**results)
 
