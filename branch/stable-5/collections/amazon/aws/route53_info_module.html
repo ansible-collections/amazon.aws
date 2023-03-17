@@ -592,7 +592,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-health_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 <p><span class="ansible-option-versionadded">added in community.aws 4.1.0</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A dict of Route53 health check details returned by get_health_check_status in boto3.</p>
+<td><div class="ansible-option-cell"><p>A dict of Route53 health check details returned by get_health_check in boto3.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when <em>query=health_check</em> and <em>health_check_method=details</em></p>
 </div></td>
 </tr>
@@ -737,6 +737,59 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The identifier that Amazon Route53 assigned to the health check at the time of creation.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;12345cdc-2cc4-1234-bed2-123456abc1a2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations"><strong>health_check_observations</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dict of Route53 health check details returned by get_health_check_status and get_health_check_last_failure_reason in boto3.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when <em>query=health_check</em> and <em>health_check_method=status</em> or <em>health_check_method=failure_reason</em></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations/ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations-ip-address"><strong>ip_address</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations/ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP address of the Amazon Route 53 health checker that provided the failure reason in StatusReport.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;12.345.67.89&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations-region"><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations/region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The region of the Amazon Route 53 health checker that provided the status in StatusReport.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations/status_report"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations-status-report"><strong>status_report</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations/status_report" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A complex type that contains the last failure reason and the time of the failed health check.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations/status_report/checked_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations-status-report-checked-time"><strong>checked_time</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations/status_report/checked_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time that the health checker performed the health check in ISO 8601 format and Coordinated Universal Time (UTC).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2023-03-08T23:10:08.452000+00:00&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check_observations/status_report/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-observations-status-report-status"><strong>status</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check_observations/status_report/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description of the status of the health check endpoint as reported by one of the Amazon Route 53 health checkers.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Failure:</span> <span class="pre">Resolved</span> <span class="pre">IP:</span> <span class="pre">12.345.67.89.</span> <span class="pre">The</span> <span class="pre">connection</span> <span class="pre">was</span> <span class="pre">closed</span> <span class="pre">by</span> <span class="pre">the</span> <span class="pre">endpoint.&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -895,7 +948,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-HealthCheck"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-healthcheck"><strong>HealthCheck</strong></p>
 <a class="ansibleOptionLink" href="#return-HealthCheck" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A deprecated CamelCased dict of Route53 health check details returned by get_health_check_status in boto3. \ This dict contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
+<td><div class="ansible-option-cell"><p>A deprecated CamelCased dict of Route53 health check details returned by get_health_check in boto3. \ This dict contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when <em>query=health_check</em> and <em>health_check_method=details</em></p>
 </div></td>
 </tr>
