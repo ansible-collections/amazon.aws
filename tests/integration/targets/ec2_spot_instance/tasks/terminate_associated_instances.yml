@@ -1,0 +1,109 @@
+---
+- block:
+
+  # Spot instance request creation
+  - name: Simple Spot Request Creation
+    amazon.aws.ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ ec2_ami_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.micro"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      tags:
+        ansible-test: "{{ resource_prefix }}"
+    register: create_result
+
+  # Get instance ID of associated spot instance request
+  - name: Get info about the spot instance request created
+    amazon.aws.ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ create_result.spot_request.spot_instance_request_id }}"
+    register: spot_instance_info_result
+    retries: 5
+    until: spot_instance_info_result.spot_request[0].instance_id is defined
+
+  - name: Pause to allow instance launch
+    pause:
+      seconds: 60
+
+  - name: Get instance ID of the instance associated with above spot instance request
+    set_fact:
+      instance_id_1: "{{ spot_instance_info_result.spot_request[0].instance_id }}"
+
+  - name: Check state of instance - BEFORE request cancellation
+    amazon.aws.ec2_instance_info:
+      instance_ids: ["{{ instance_id_1 }}"]
+    register: instance_info_result
+
+  # Cancel spot instance request
+  - name: Spot Request Termination
+    amazon.aws.ec2_spot_instance:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+
+  # Verify that instance is not terminated and still running
+  - name: Check state of instance - AFTER request cancellation
+    amazon.aws.ec2_instance_info:
+      instance_ids: ["{{ instance_id_1 }}"]
+    register: instance_info_result
+
+  - assert:
+      that: instance_info_result.instances[0].state.name == 'running'
+
+#==========================================================================
+
+  # Spot instance request creation
+  - name: Simple Spot Request Creation
+    amazon.aws.ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ ec2_ami_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.micro"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      tags:
+        ansible-test: "{{ resource_prefix }}"
+    register: create_result
+
+  # Get instance ID of associated spot instance request
+  - name: Get info about the spot instance request created
+    amazon.aws.ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ create_result.spot_request.spot_instance_request_id }}"
+    register: spot_instance_info_result
+    retries: 5
+    until: spot_instance_info_result.spot_request[0].instance_id is defined
+
+  - name: Pause to allow instance launch
+    pause:
+      seconds: 60
+
+  - name: Get instance ID of the instance associated with above spot instance request
+    set_fact:
+      instance_id_2: "{{ spot_instance_info_result.spot_request[0].instance_id }}"
+
+  - name: Check state of instance - BEFORE request cancellation
+    amazon.aws.ec2_instance_info:
+      instance_ids: ["{{ instance_id_2 }}"]
+    register: instance_info_result
+
+  # Cancel spot instance request
+  - name: Spot Request Termination
+    amazon.aws.ec2_spot_instance:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+      terminate_instances: true
+
+  - name: wait for instance to terminate
+    pause:
+      seconds: 60
+
+  # Verify that instance is terminated or shutting-down
+  - name: Check state of instance - AFTER request cancellation
+    amazon.aws.ec2_instance_info:
+      instance_ids: ["{{ instance_id_2 }}"]
+    register: instance_info_result
+
+  - assert:
+      that: instance_info_result.instances[0].state.name in ['terminated', 'shutting-down']
