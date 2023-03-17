@@ -38,6 +38,63 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+restore_jobs:
+    returned: always
+    description:
+        - restore jobs that match the provided filters.
+        - Each element consists of a dict with details related to that restore job.
+    type: list
+    elements: dict
+    contains:
+        account_id:
+            description:
+                - The account ID that owns the restore job.
+            type: str
+            returned: if restore job exists
+            sample: "123456789012"
+        created_resource_arn:
+            description:
+                - An Amazon Resource Name (ARN) that uniquely identifies a resource whose recovery point is being restored.
+                - The format of the ARN depends on the resource type of the backed-up resource.
+            type: str
+            returned: if restore job exists
+            sample: "arn:aws:ec2:us-east-2:xxxxxxxxxx..."
+        creation_date:
+            description:
+                - The date and time that a restore job is created, in Unix format and Coordinated Universal Time (UTC).
+            type: str
+            returned: if restore job exists
+            sample: "2023-03-13T15:53:07.172000-07:00"
+        iam_role_arn:
+            description:
+                - The IAM role ARN used to create the target recovery point.
+            type: str
+            returned: if restore job exists
+            sample: "arn:aws:ec2:us-east-2:xxxxxxxxxx..."
+        percent_done:
+            description:
+                - The estimated percentage that is complete of a job at the time the job status was queried.
+            type: str
+            returned: if restore job exists
+            sample: "0.00%"
+        recovery_point_arn:
+            description:
+                - An ARN that uniquely identifies a recovery point.
+            type: str
+            returned: if restore job exists
+            sample: "arn:aws:ec2:us-east-2:xxxxxxxxxx..."
+        restore_job_id:
+            description:
+                - The ID of the job that restores a recovery point.
+            type: str
+            returned: if restore job exists
+            sample: "AAAA1234-1D1D-1234-3F8E-1EB111EEEE00"
+        status:
+            description:
+                - The state of the job initiated by Backup to restore a recovery point.
+            type: str
+            returned: if restore job exists
+            sample: "COMPLETED"
 """
 
 try:
