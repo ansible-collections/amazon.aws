@@ -19,6 +19,13 @@
     subnet_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
 
   tasks:
+  - set_fact:
+      # As lookup plugins don't have access to module_defaults
+      connection_args:
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        aws_security_token: "{{ security_token | default(omit) }}"
 
   - include_role:
       name: '../setup_sshkey'
@@ -116,11 +123,30 @@
         assign_public_ip: true
         delete_on_termination: true
       wait: True
-
     register: ec2_instance
 
   - set_fact:
+      ec2_ami_id_py2: "{{ lookup('aws_ssm', '/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2', **connection_args) }}"
+      ec2_ami_ssh_user_py2: "ec2-user"
+
+  - name: Create an instance to test with using Python 2
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-ec2-metadata-facts-py2"
+      image_id: "{{ ec2_ami_id_py2 }}"
+      vpc_subnet_id: "{{ vpc_subnet_id }}"
+      security_group: "{{ vpc_sg_id }}"
+      instance_type: t2.micro
+      key_name: "{{ ec2_key_name }}"
+      network:
+        assign_public_ip: true
+        delete_on_termination: true
+      wait: True
+    register: ec2_instance_py2
+
+  - set_fact:
       ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
+      ec2_instance_id_py2: "{{ ec2_instance_py2.instances[0].instance_id }}"
 
   - name: Create inventory file
     template:
@@ -130,4 +156,9 @@
   - wait_for:
       port: 22
       host: '{{ ec2_instance.instances[0].public_ip_address }}'
+      timeout: 1200
+
+  - wait_for:
+      port: 22
+      host: '{{ ec2_instance_py2.instances[0].public_ip_address }}'
       timeout: 1200

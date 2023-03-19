@@ -441,6 +441,14 @@ from ansible.module_utils.six.moves.urllib.parse import quote
 
 socket.setdefaulttimeout(5)
 
+# The ec2_metadata_facts module is a special case, while we generally dropped support for Python < 3.6
+# this module doesn't depend on the SDK and still has valid use cases for folks working with older
+# OSes.
+try:
+    json_decode_error = json.JSONDecodeError
+except AttributeError:
+    json_decode_error = ValueError
+
 
 class Ec2Metadata(object):
     ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
@@ -528,7 +536,7 @@ class Ec2Metadata(object):
                         self._data['%s' % (new_uri)] = content
                         for (key, value) in json_dict.items():
                             self._data['%s:%s' % (new_uri, key.lower())] = value
-                    except (json.JSONDecodeError, AttributeError):
+                    except (json_decode_error, AttributeError):
                         self._data['%s' % (new_uri)] = content  # not a stringified JSON string
 
     def fix_invalid_varnames(self, data):
