@@ -1,0 +1,3 @@
+trivial:
+- backup_tag - Added a new module that manages tags on AWS backup resources. (https://github.com/ansible-collections/amazon.aws/pull/1427).
+- backup_tag_info - Added a new module that describes tags on AWS backup resources. (https://github.com/ansible-collections/amazon.aws/pull/1427).
