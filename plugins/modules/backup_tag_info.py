@@ -8,7 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_tag_info
 version_added: 6.0.0
-short_description: List tags on AWS Backup resources.
+short_description: List tags on AWS Backup resources
 description:
     - List tags on AWS backup resources such as backup plan, backup vault, and recovery point.
     - Resources are referenced using ARN.

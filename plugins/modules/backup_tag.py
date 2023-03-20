@@ -8,7 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_tag
 version_added: 6.0.0
-short_description: Manage tags on backup plan, backup vault, recovery point.
+short_description: Manage tags on backup plan, backup vault, recovery point
 description:
     - Create, list, update, remove tags on AWS backup resources such as backup plan, backup vault, and recovery point.
     - Resources are referenced using ARN.
@@ -43,7 +43,6 @@ options:
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
-  - amazon.aws.tags
   - amazon.aws.boto3
 """
 
