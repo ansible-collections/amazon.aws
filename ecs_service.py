@@ -131,6 +131,13 @@ options:
               rollback:
                 type: bool
                 description: If enabled, ECS will roll back your service to the last completed deployment after a failure.
+    enable_execute_command:
+        description:
+          - Whether or not to enable the execute command functionality for the containers in the ECS task.
+          - If I(enable_execute_command=true) execute command functionality is enabled on all containers in the ECS task.
+        required: false
+        type: bool
+        version_added: 5.4.0
     placement_constraints:
         description:
           - The placement constraints for the tasks in the service.
@@ -778,6 +785,9 @@ class EcsServiceManager:
         if boto3_tag_list_to_ansible_dict(existing.get('tags', [])) != (expected['tags'] or {}):
             return False
 
+        if (expected["enable_execute_command"] or False) != existing.get("enableExecuteCommand", False):
+            return False
+
         # expected is params. DAEMON scheduling strategy returns desired count equal to
         # number of instances running; don't check desired count if scheduling strat is daemon
         if (expected['scheduling_strategy'] != 'DAEMON'):
@@ -786,11 +796,30 @@ class EcsServiceManager:
 
         return True
 
-    def create_service(self, service_name, cluster_name, task_definition, load_balancers,
-                       desired_count, client_token, role, deployment_controller, deployment_configuration,
-                       placement_constraints, placement_strategy, health_check_grace_period_seconds,
-                       network_configuration, service_registries, launch_type, platform_version,
-                       scheduling_strategy, capacity_provider_strategy, tags, propagate_tags):
+    def create_service(
+        self,
+        service_name,
+        cluster_name,
+        task_definition,
+        load_balancers,
+        desired_count,
+        client_token,
+        role,
+        deployment_controller,
+        deployment_configuration,
+        placement_constraints,
+        placement_strategy,
+        health_check_grace_period_seconds,
+        network_configuration,
+        service_registries,
+        launch_type,
+        platform_version,
+        scheduling_strategy,
+        capacity_provider_strategy,
+        tags,
+        propagate_tags,
+        enable_execute_command,
+    ):
 
         params = dict(
             cluster=cluster_name,
@@ -836,14 +865,30 @@ class EcsServiceManager:
 
         if scheduling_strategy:
             params['schedulingStrategy'] = scheduling_strategy
+        if enable_execute_command:
+            params["enableExecuteCommand"] = enable_execute_command
+
         response = self.ecs.create_service(**params)
         return self.jsonize(response['service'])
 
-    def update_service(self, service_name, cluster_name, task_definition, desired_count,
-                       deployment_configuration, placement_constraints, placement_strategy,
-                       network_configuration, health_check_grace_period_seconds,
-                       force_new_deployment, capacity_provider_strategy, load_balancers,
-                       purge_placement_constraints, purge_placement_strategy):
+    def update_service(
+        self,
+        service_name,
+        cluster_name,
+        task_definition,
+        desired_count,
+        deployment_configuration,
+        placement_constraints,
+        placement_strategy,
+        network_configuration,
+        health_check_grace_period_seconds,
+        force_new_deployment,
+        capacity_provider_strategy,
+        load_balancers,
+        purge_placement_constraints,
+        purge_placement_strategy,
+        enable_execute_command,
+    ):
         params = dict(
             cluster=cluster_name,
             service=service_name,
@@ -875,11 +920,14 @@ class EcsServiceManager:
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
             params['desiredCount'] = desired_count
+        if enable_execute_command is not None:
+            params["enableExecuteCommand"] = enable_execute_command
 
         if load_balancers:
             params['loadBalancers'] = load_balancers
 
         response = self.ecs.update_service(**params)
+
         return self.jsonize(response['service'])
 
     def jsonize(self, service):
@@ -967,8 +1015,9 @@ def main():
                 base=dict(type='int')
             )
         ),
-        propagate_tags=dict(required=False, choices=['TASK_DEFINITION', 'SERVICE']),
-        tags=dict(required=False, type='dict'),
+        propagate_tags=dict(required=False, choices=["TASK_DEFINITION", "SERVICE"]),
+        tags=dict(required=False, type="dict"),
+        enable_execute_command=dict(required=False, type="bool"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -1081,47 +1130,54 @@ def main():
                     if task_definition is None and module.params['force_new_deployment']:
                         task_definition = existing['taskDefinition']
 
-                    # update required
-                    response = service_mgr.update_service(module.params['name'],
-                                                          module.params['cluster'],
-                                                          task_definition,
-                                                          module.params['desired_count'],
-                                                          deploymentConfiguration,
-                                                          module.params['placement_constraints'],
-                                                          module.params['placement_strategy'],
-                                                          network_configuration,
-                                                          module.params['health_check_grace_period_seconds'],
-                                                          module.params['force_new_deployment'],
-                                                          capacityProviders,
-                                                          updatedLoadBalancers,
-                                                          module.params['purge_placement_constraints'],
-                                                          module.params['purge_placement_strategy'],
-                                                          )
+                    try:
+                        # update required
+                        response = service_mgr.update_service(
+                            module.params["name"],
+                            module.params["cluster"],
+                            task_definition,
+                            module.params["desired_count"],
+                            deploymentConfiguration,
+                            module.params["placement_constraints"],
+                            module.params["placement_strategy"],
+                            network_configuration,
+                            module.params["health_check_grace_period_seconds"],
+                            module.params["force_new_deployment"],
+                            capacityProviders,
+                            updatedLoadBalancers,
+                            module.params["purge_placement_constraints"],
+                            module.params["purge_placement_strategy"],
+                            module.params["enable_execute_command"],
+                        )
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        module.fail_json_aws(e, msg="Couldn't create service")
 
                 else:
                     try:
-                        response = service_mgr.create_service(module.params['name'],
-                                                              module.params['cluster'],
-                                                              module.params['task_definition'],
-                                                              loadBalancers,
-                                                              module.params['desired_count'],
-                                                              clientToken,
-                                                              role,
-                                                              deploymentController,
-                                                              deploymentConfiguration,
-                                                              module.params['placement_constraints'],
-                                                              module.params['placement_strategy'],
-                                                              module.params['health_check_grace_period_seconds'],
-                                                              network_configuration,
-                                                              serviceRegistries,
-                                                              module.params['launch_type'],
-                                                              module.params['platform_version'],
-                                                              module.params['scheduling_strategy'],
-                                                              capacityProviders,
-                                                              module.params['tags'],
-                                                              module.params['propagate_tags'],
-                                                              )
-                    except botocore.exceptions.ClientError as e:
+                        response = service_mgr.create_service(
+                            module.params["name"],
+                            module.params["cluster"],
+                            module.params["task_definition"],
+                            loadBalancers,
+                            module.params["desired_count"],
+                            clientToken,
+                            role,
+                            deploymentController,
+                            deploymentConfiguration,
+                            module.params["placement_constraints"],
+                            module.params["placement_strategy"],
+                            module.params["health_check_grace_period_seconds"],
+                            network_configuration,
+                            serviceRegistries,
+                            module.params["launch_type"],
+                            module.params["platform_version"],
+                            module.params["scheduling_strategy"],
+                            capacityProviders,
+                            module.params["tags"],
+                            module.params["propagate_tags"],
+                            module.params["enable_execute_command"],
+                        )
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                         module.fail_json_aws(e, msg="Couldn't create service")
 
                 if response.get('tags', None):
