@@ -14,7 +14,42 @@ description:
 author:
     - Mandar Vijay Kulkarni (@mandar242)
 options:
-    - to be added
+  account_id:
+    description:
+      - The account ID to list the restore jobs from.
+    required: false
+    type: str
+  status:
+    description:
+      - Status of restore jobs to filter the result based on job status.
+    default: present
+    choices: ['PENDING', 'RUNNING', 'COMPLETED', 'ABORTED', 'FAILED']
+    rquired: false
+    type: str
+  created_before:
+    description:
+      - Specified date to filter result based on the restore job creation datetime.
+      - If specified, only the restore jobs created before the specified datetime will be returned.
+    required: false
+    type: str
+  created_after:
+    description:
+      - Specified date to filter result based on the restore job creation datetime.
+      - If specified, only the restore jobs created after the specified datetime will be returned.
+    required: false
+    type: str
+  completed_before:
+    description:
+      - Specified date to filter result based on the restore job completion datetime.
+      - If specified, only the restore jobs created before the specified datetime will be returned.
+    required: false
+    type: str
+  completed_after:
+    description:
+      - Specified date to filter result based on the restore job completion datetime.
+      - If specified, only the restore jobs created after the specified datetime will be returned.
+    required: false
+    type: str
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -98,7 +133,7 @@ restore_jobs:
 """
 
 try:
-    import botocore, boto3
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -126,9 +161,7 @@ def build_params_dict(module):
 
 @AWSRetry.jittered_backoff()
 def _list_restore_jobs(connection, **params):
-    import q; q('here 0'    )
     paginator = connection.get_paginator('list_restore_jobs')
-    import q; q('here 1')
     return paginator.paginate(**params).build_full_result()
 
 
