@@ -144,14 +144,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def build_params_dict(module):
-
     parameters = {
         "ByAccountId": "account_id",
         "ByStatus": "status",
         "ByCreatedBefore": "created_before",
         "ByCreatedAfter": "created_after",
         "ByCompleteBefore": "completed_before",
-        "ByCompleteAfter": "completed_after"
+        "ByCompleteAfter": "completed_after",
     }
 
     params_dict = {k: module.params.get(v) for k, v in parameters.items() if module.params.get(v)}
@@ -161,12 +160,11 @@ def build_params_dict(module):
 
 @AWSRetry.jittered_backoff()
 def _list_restore_jobs(connection, **params):
-    paginator = connection.get_paginator('list_restore_jobs')
+    paginator = connection.get_paginator("list_restore_jobs")
     return paginator.paginate(**params).build_full_result()
 
 
 def list_restore_jobs(connection, module):
-
     params_dict = build_params_dict(module)
 
     try:
@@ -178,14 +176,15 @@ def list_restore_jobs(connection, module):
 
     return snaked_restore_jobs
 
+
 def main():
     argument_spec = dict(
-        account_id=dict(required=False, type='str'),
-        status=dict(required=False, type='str', choices=['PENDING', 'RUNNING', 'COMPLETED', 'ABORTED', 'FAILED']),
-        created_before=dict(required=False, type='str'),
-        created_after=dict(required=False, type='str'),
-        completed_before=dict(required=False, type='str'),
-        completed_after=dict(required=False, type='str'),
+        account_id=dict(required=False, type="str"),
+        status=dict(required=False, type="str", choices=["PENDING", "RUNNING", "COMPLETED", "ABORTED", "FAILED"]),
+        created_before=dict(required=False, type="str"),
+        created_after=dict(required=False, type="str"),
+        completed_before=dict(required=False, type="str"),
+        completed_after=dict(required=False, type="str"),
     )
 
     module = AnsibleAWSModule(
@@ -195,7 +194,7 @@ def main():
 
     backup_client = module.client("backup")
 
-    module.require_botocore_at_least('1.25.13', reason='to list restore jobs info')
+    module.require_botocore_at_least("1.25.13", reason="to list restore jobs info")
 
     restore_jobs = list_restore_jobs(backup_client, module)
 
