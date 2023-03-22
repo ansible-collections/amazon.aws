@@ -22,9 +22,8 @@ options:
   status:
     description:
       - Status of restore jobs to filter the result based on job status.
-    default: present
+    required: false
     choices: ['PENDING', 'RUNNING', 'COMPLETED', 'ABORTED', 'FAILED']
-    rquired: false
     type: str
   created_before:
     description:
@@ -60,16 +59,16 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: List all restore jobs
-    amazon.aws.backup_restore_job_info:
+  amazon.aws.backup_restore_job_info:
 
 - name: List restore jobs based on Account ID
-    amazon.aws.backup_restore_job_info:
-        account_id: xx1234567890
+  amazon.aws.backup_restore_job_info:
+    account_id: xx1234567890
 
 - name: List restore jobs based on status and created_before time
-    amazon.aws.backup_restore_job_info:
-        status: completed
-        created_before: "2023-02-25T00:05:36.309Z"
+  amazon.aws.backup_restore_job_info:
+    status: completed
+    created_before: "2023-02-25T00:05:36.309Z"
 """
 
 RETURN = r"""
