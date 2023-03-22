@@ -142,19 +142,18 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def build_params_dict(module):
-    parameters = {
-        "ByAccountId": "account_id",
-        "ByStatus": "status",
-        "ByCreatedBefore": "created_before",
-        "ByCreatedAfter": "created_after",
-        "ByCompleteBefore": "completed_before",
-        "ByCompleteAfter": "completed_after",
+def build_request_args(account_id, status, created_before, created_after, completed_before, completed_after):
+    request_args = {
+        "ByAccountId": account_id if account_id else '',
+        "ByStatus": status if status else '',
+        "ByCreatedBefore": created_before if created_before else '',
+        "ByCreatedAfter": created_after if created_after else '',
+        "ByCompleteBefore": completed_before if completed_before else '',
+        "ByCompleteAfter": completed_after if completed_after else '',
     }
 
-    params_dict = {k: module.params.get(v) for k, v in parameters.items() if module.params.get(v)}
-
-    return params_dict
+    request_args = {k: v for k, v in request_args.items() if v}
+    return request_args
 
 
 @AWSRetry.jittered_backoff()
@@ -163,11 +162,10 @@ def _list_restore_jobs(connection, **params):
     return paginator.paginate(**params).build_full_result()
 
 
-def list_restore_jobs(connection, module):
-    params_dict = build_params_dict(module)
+def list_restore_jobs(connection, module, request_args):
 
     try:
-        response = _list_restore_jobs(connection, **params_dict)
+        response = _list_restore_jobs(connection, **request_args)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list restore jobs")
 
@@ -195,7 +193,16 @@ def main():
 
     module.require_botocore_at_least("1.25.13", reason="to list restore jobs info")
 
-    restore_jobs = list_restore_jobs(backup_client, module)
+    request_args = build_request_args(
+        account_id=module.params["account_id"],
+        status=module.params["status"],
+        created_before=module.params["created_before"],
+        created_after=module.params["created_after"],
+        completed_before=module.params["completed_before"],
+        completed_after=module.params["completed_after"],
+    )
+
+    restore_jobs = list_restore_jobs(backup_client, module, request_args)
 
     module.exit_json(changed=False, restore_jobs=restore_jobs)
 
