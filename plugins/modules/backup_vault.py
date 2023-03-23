@@ -156,9 +156,8 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
         return False
 
     curr_tags = curr_tags or {}
+    tags_to_add, tags_to_remove = compare_aws_tags( curr_tags, tags, purge_tags=purge_tags)
 
-    tags_to_add, tags_to_remove = compare_aws_tags(
-        curr_tags, tags, purge_tags=purge_tags)
     if not tags_to_add and not tags_to_remove:
         return False
 
@@ -171,8 +170,7 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
         try:
             client.remove_tags(ResourceId=vault_arn, TagsList=tags_to_remove)
         except (BotoCoreError, ClientError) as err:
-            module.fail_json_aws(
-                err, msg="Failed to remove tags from the vault")
+            module.fail_json_aws(err, msg="Failed to remove tags from the vault")
 
     if tags_to_add:
         tags_to_add = ansible_dict_to_boto3_tag_list(tags_to_add)
@@ -214,15 +212,23 @@ def get_vault_facts(module, client, vault_name):
     # Now check to see if our vault exists and get status and tags
     if resp:
         try:
-            tags_list = client.list_tags(
+            tags_list = client.list_tags(ResourceIdList=[resp["BackupVaultArn"]])
                 ResourceIdList=[resp["BackupVaultArn"]])
         except (BotoCoreError, ClientError) as err:
-            module.fail_json_aws(
-                err, msg="Failed to describe the Backup Vault")
+            module.fail_json_aws(err, msg="Failed to describe the Backup Vault")
 
-        resp["tags"] = boto3_tag_list_to_ansible_dict(
-            tags_list["ResourceTagList"][0]["TagsList"])
+            resp["tags"] = boto3_tag_list_to_ansible_dict(tags_list["ResourceTagList"][0]["TagsList"])
         # Check for non-existent values and populate with None
+        optional_vals = set(
+            [
+                "S3KeyPrefix",
+                "SnsTopicName",
+                "SnsTopicARN",
+                "CloudWatchLogsLogGroupArn",
+                "CloudWatchLogsRoleArn",
+                "KmsKeyId",
+            ]
+        )
         optional_vals = set(["S3KeyPrefix", "SnsTopicName", "SnsTopicARN",
                             "CloudWatchLogsLogGroupArn", "CloudWatchLogsRoleArn", "KmsKeyId"])
         for v in optional_vals - set(resp.keys()):
@@ -250,8 +256,7 @@ def delete_backup_vault(module, client, vault_name):
 
 def main():
     argument_spec = dict(
-        state=dict(default="present", choices=[
-                   "present", "absent", "enabled", "disabled"]),
+        state=dict(default="present", choices=["present", "absent", "enabled", "disabled"]),
         backup_vault_name=dict(default="default", type="str"),
         encryption_key_arn=dict(type="str"),
         creator_request_id=dict(default="default", type="str"),
@@ -259,11 +264,9 @@ def main():
         purge_tags=dict(default=True, type="bool"),
     )
 
-    required_if = [("state", "present", ["backup_vault_name"]),
-                   ("state", "enabled", ["backup_vault_name"])]
+    required_if = [("state", "present", ["backup_vault_name"]), ("state", "enabled", ["backup_vault_name"])]
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec, supports_check_mode=True, required_if=required_if)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_if=required_if)
 
     # collect parameters
     if module.params["state"] in ("present", "enabled"):
@@ -323,15 +326,12 @@ def main():
                 pass
             vault = dict()
             vault.update(ct_params)
-
-            fake_key_arn = "arn:aws:kms:" + region + ":" + \
-                acct_id + ":key/" + ct_params["BackupVaultName"]
+            fake_key_arn = "arn:aws:kms:" + region + ":" + acct_id + ":key/" + ct_params["BackupVaultName"]
 
             vault["EncryptionKeyArn"] = fake_key_arn
             vault["tags"] = tags
-        # Populate trail facts in output
-        results["vault"] = camel_dict_to_snake_dict(
-            vault, ignore_list=["tags"])
+        # Populate backup vault facts in output
+        results["vault"] = camel_dict_to_snake_dict(vault, ignore_list=["tags"])
 
     module.exit_json(**results)
 
