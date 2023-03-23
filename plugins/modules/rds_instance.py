@@ -1029,20 +1029,21 @@ def get_options_with_changing_values(client, module, parameters):
         new_allocated_storage = module.params.get('allocated_storage')
         current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
 
-        if current_allocated_storage != new_allocated_storage:
-            parameters['AllocatedStorage'] = new_allocated_storage
-
-        if new_allocated_storage >= 400:
-            if new_iops < 12000:
-                module.fail_json(msg='IOPS must be at least 12000 when the allocated storage is larger than or equal to 400 GB.')
-
-            if new_storage_throughput < 500 and GP3_THROUGHPUT:
-                module.fail_json(msg='Storage Throughput must be at least 500 when the allocated storage is larger than or equal to 400 GB.')
-
-            if current_iops != new_iops:
-                parameters['Iops'] = new_iops
-                # must be always specified when changing iops
+        if new_allocated_storage:
+            if current_allocated_storage != new_allocated_storage:
                 parameters['AllocatedStorage'] = new_allocated_storage
+
+            if new_allocated_storage >= 400:
+                if new_iops < 12000:
+                    module.fail_json(msg='IOPS must be at least 12000 when the allocated storage is larger than or equal to 400 GB.')
+
+                if new_storage_throughput < 500 and GP3_THROUGHPUT:
+                    module.fail_json(msg='Storage Throughput must be at least 500 when the allocated storage is larger than or equal to 400 GB.')
+
+                if current_iops != new_iops:
+                    parameters['Iops'] = new_iops
+                    # must be always specified when changing iops
+                    parameters['AllocatedStorage'] = new_allocated_storage
 
     if parameters.get('NewDBInstanceIdentifier') and instance.get('PendingModifiedValues', {}).get('DBInstanceIdentifier'):
         if parameters['NewDBInstanceIdentifier'] == instance['PendingModifiedValues']['DBInstanceIdentifier'] and not apply_immediately:
