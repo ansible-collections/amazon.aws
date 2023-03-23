@@ -144,15 +144,16 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 def build_request_args(account_id, status, created_before, created_after, completed_before, completed_after):
     request_args = {
-        "ByAccountId": account_id if account_id else '',
-        "ByStatus": status if status else '',
-        "ByCreatedBefore": created_before if created_before else '',
-        "ByCreatedAfter": created_after if created_after else '',
-        "ByCompleteBefore": completed_before if completed_before else '',
-        "ByCompleteAfter": completed_after if completed_after else '',
+        "ByAccountId": account_id if account_id else "",
+        "ByStatus": status if status else "",
+        "ByCreatedBefore": created_before if created_before else "",
+        "ByCreatedAfter": created_after if created_after else "",
+        "ByCompleteBefore": completed_before if completed_before else "",
+        "ByCompleteAfter": completed_after if completed_after else "",
     }
 
     request_args = {k: v for k, v in request_args.items() if v}
+
     return request_args
 
 
@@ -163,7 +164,6 @@ def _list_restore_jobs(connection, **params):
 
 
 def list_restore_jobs(connection, module, request_args):
-
     try:
         response = _list_restore_jobs(connection, **request_args)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
