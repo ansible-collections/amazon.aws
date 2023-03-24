@@ -1,0 +1,2 @@
+bugfixes:
+- cloudwatch-metric-alarm - Don't consider prop 'StateTransitionedTimestamp' in change detection. (https://github.com/ansible-collections/amazon.aws/pull/1440).
