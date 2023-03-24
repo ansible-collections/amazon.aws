@@ -18,15 +18,29 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.backup_restore_job
     [
         ("", "", "", "", "", "", {}),
         ("123456789012", "", "", "", "", "", {"ByAccountId": "123456789012"}),
-        ("123456789012", "COMPLETED", "", "", "", "", {"ByAccountId": "123456789012", "ByStatus": "COMPLETED"},)
+        (
+            "123456789012",
+            "COMPLETED",
+            "",
+            "",
+            "",
+            "",
+            {"ByAccountId": "123456789012", "ByStatus": "COMPLETED"},
+        ),
     ],
 )
-def test_build_request_args(account_id, status, created_before, created_after, completed_before, completed_after, expected):
-    assert backup_restore_job_info.build_request_args(account_id, status, created_before, created_after, completed_before, completed_after) == expected
+def test_build_request_args(
+    account_id, status, created_before, created_after, completed_before, completed_after, expected
+):
+    assert (
+        backup_restore_job_info.build_request_args(
+            account_id, status, created_before, created_after, completed_before, completed_after
+        )
+        == expected
+    )
 
 
 def test__list_restore_jobs():
-
     connection = MagicMock()
     conn_paginator = MagicMock()
     paginate = MagicMock()
@@ -42,8 +56,9 @@ def test__list_restore_jobs():
         "IamRoleArn": "arn:aws:iam::123456789012:role/service-role/AWSBackupDefaultServiceRole",
         "PercentDone": "0.00%",
         "RecoveryPointArn": "arn:aws:ec2:us-east-2::image/ami-01234567ec51af3f",
-        "ResourceType": "EC2", "RestoreJobId": "52BEE289-xxxx-xxxx-xxxx-47DCAA2E7ACD",
-        "Status": "COMPLETED"
+        "ResourceType": "EC2",
+        "RestoreJobId": "52BEE289-xxxx-xxxx-xxxx-47DCAA2E7ACD",
+        "Status": "COMPLETED",
     }
 
     connection.get_paginator.return_value = conn_paginator
