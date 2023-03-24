@@ -48,7 +48,7 @@
   - assert:
       that:
       - result.changed
-      - result.db_instance_id_gp3entifier == '{{ instance_id_gp3 }}'
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
       - result.tags.Name == '{{ instance_id_gp3 }}'
       - result.tags.Created_by == 'Ansible rds_instance tests'
@@ -85,7 +85,7 @@
   - assert:
       that:
       - not result.changed
-      - result.db_instance_id_gp3entifier
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
 
   - name: Idempotence with minimal options
@@ -97,12 +97,12 @@
   - assert:
       that:
       - not result.changed
-      - result.db_instance_id_gp3entifier
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
 
   - name: Test tags are not purged if purge_tags is False
     rds_instance:
-      db_instance_id_gp3entifier: '{{ instance_id_gp3 }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       engine: mariadb
       username: '{{ username }}'
@@ -120,7 +120,7 @@
 
   - name: Add a tag and remove a tag - check_mode
     rds_instance:
-      db_instance_id_gp3entifier: '{{ instance_id_gp3 }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
         Name: '{{ instance_id_gp3 }}-new'
@@ -135,7 +135,7 @@
 
   - name: Add a tag and remove a tag
     rds_instance:
-      db_instance_id_gp3entifier: '{{ instance_id_gp3 }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
         Name: '{{ instance_id_gp3 }}-new'
@@ -151,7 +151,7 @@
 
   - name: Add a tag and remove a tag (idempotence) - check_mode
     rds_instance:
-      db_instance_id_gp3entifier: '{{ instance_id_gp3 }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
         Name: '{{ instance_id_gp3 }}-new'
@@ -166,7 +166,7 @@
 
   - name: Add a tag and remove a tag (idempotence)
     rds_instance:
-      db_instance_id_gp3entifier: '{{ instance_id_gp3 }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
         Name: '{{ instance_id_gp3 }}-new'
