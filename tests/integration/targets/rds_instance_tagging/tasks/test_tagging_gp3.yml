@@ -1,19 +1,7 @@
-- name: rds_instance / tagging integration tests
-  collections:
-  - community.aws
-  module_defaults:
-    group/aws:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
-  block:
-  - name: Test tagging db with storage type gp3
-    import_tasks: test_tagging_gp3.yml
-
+- block:
   - name: Ensure the resource doesn't exist
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: absent
       skip_final_snapshot: true
     register: result
@@ -26,7 +14,7 @@
     # Test invalid bad options
   - name: Create a DB instance with an invalid engine
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: present
       engine: thisisnotavalidengine
       username: '{{ username }}'
@@ -44,7 +32,7 @@
     # Test creation, adding tags and enabling encryption
   - name: Create a mariadb instance
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: present
       engine: mariadb
       username: '{{ username }}'
@@ -53,23 +41,23 @@
       allocated_storage: '{{ allocated_storage }}'
       storage_encrypted: true
       tags:
-        Name: '{{ instance_id }}'
+        Name: '{{ instance_id_gp3 }}'
         Created_by: Ansible rds_instance tests
     register: result
 
   - assert:
       that:
       - result.changed
-      - result.db_instance_identifier == '{{ instance_id }}'
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
-      - result.tags.Name == '{{ instance_id }}'
+      - result.tags.Name == '{{ instance_id_gp3 }}'
       - result.tags.Created_by == 'Ansible rds_instance tests'
       - result.kms_key_id
       - result.storage_encrypted == true
 
-  - name: Test impotency omitting tags - check_mode
+  - name: Test idempotency omitting tags - check_mode
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: present
       engine: mariadb
       username: '{{ username }}'
@@ -83,9 +71,9 @@
       that:
       - not result.changed
 
-  - name: Test impotency omitting tags
+  - name: Test idempotency omitting tags
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: present
       engine: mariadb
       username: '{{ username }}'
@@ -97,24 +85,24 @@
   - assert:
       that:
       - not result.changed
-      - result.db_instance_identifier
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
 
   - name: Idempotence with minimal options
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: present
     register: result
 
   - assert:
       that:
       - not result.changed
-      - result.db_instance_identifier
+      - result.db_instance_identifier == '{{ instance_id_gp3 }}'
       - result.tags | length == 2
 
   - name: Test tags are not purged if purge_tags is False
     rds_instance:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       engine: mariadb
       username: '{{ username }}'
@@ -132,10 +120,10 @@
 
   - name: Add a tag and remove a tag - check_mode
     rds_instance:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
-        Name: '{{ instance_id }}-new'
+        Name: '{{ instance_id_gp3 }}-new'
         Created_by: Ansible rds_instance tests
       purge_tags: true
     register: result
@@ -147,10 +135,10 @@
 
   - name: Add a tag and remove a tag
     rds_instance:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
-        Name: '{{ instance_id }}-new'
+        Name: '{{ instance_id_gp3 }}-new'
         Created_by: Ansible rds_instance tests
       purge_tags: true
     register: result
@@ -159,14 +147,14 @@
       that:
       - result.changed
       - result.tags | length == 2
-      - result.tags.Name == '{{ instance_id }}-new'
+      - result.tags.Name == '{{ instance_id_gp3 }}-new'
 
   - name: Add a tag and remove a tag (idempotence) - check_mode
     rds_instance:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
-        Name: '{{ instance_id }}-new'
+        Name: '{{ instance_id_gp3 }}-new'
         Created_by: Ansible rds_instance tests
       purge_tags: true
     register: result
@@ -178,10 +166,10 @@
 
   - name: Add a tag and remove a tag (idempotence)
     rds_instance:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ instance_id_gp3 }}'
       state: present
       tags:
-        Name: '{{ instance_id }}-new'
+        Name: '{{ instance_id_gp3 }}-new'
         Created_by: Ansible rds_instance tests
       purge_tags: true
     register: result
@@ -190,12 +178,12 @@
       that:
       - not result.changed
       - result.tags | length == 2
-      - result.tags.Name == '{{ instance_id }}-new'
+      - result.tags.Name == '{{ instance_id_gp3 }}-new'
 
   always:
   - name: Remove DB instance
     rds_instance:
-      id: '{{ instance_id }}'
+      id: '{{ instance_id_gp3 }}'
       state: absent
       skip_final_snapshot: true
       wait: false
