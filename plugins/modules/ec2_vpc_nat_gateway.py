@@ -266,7 +266,7 @@ def wait_for_status(client, module, waiter_name, nat_gateway_id):
         attempts = 1 + int(wait_timeout / waiter.config.delay)
         waiter.wait(
             NatGatewayIds=[nat_gateway_id],
-            WaiterConfig={'MaxAttempts': attempts}
+            WaiterConfig={"MaxAttempts": attempts},
         )
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(e, msg="NAT gateway failed to reach expected state.")
@@ -319,19 +319,13 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
     existing_gateways = list()
 
     if not states:
-        states = ['available', 'pending']
+        states = ["available", "pending"]
     if nat_gateway_id:
-        params['NatGatewayIds'] = [nat_gateway_id]
+        params["NatGatewayIds"] = [nat_gateway_id]
     else:
-        params['Filter'] = [
-            {
-                'Name': 'subnet-id',
-                'Values': [subnet_id]
-            },
-            {
-                'Name': 'state',
-                'Values': states
-            }
+        params["Filter"] = [
+            {"Name": "subnet-id", "Values": [subnet_id]},
+            {"Name": "state", "Values": states},
         ]
 
     try:

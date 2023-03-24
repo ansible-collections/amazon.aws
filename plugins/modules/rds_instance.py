@@ -1111,7 +1111,7 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
             if isinstance(desired_option, list):
                 if (
                     set(desired_option) < set(current_option) and
-                    option in ('DBSecurityGroups', 'VpcSecurityGroupIds',) and purge_security_groups
+                    option in ["DBSecurityGroups", "VpcSecurityGroupIds"] and purge_security_groups
                 ):
                     changing_params[option] = desired_option
                 elif set(desired_option) <= set(current_option):
@@ -1139,7 +1139,7 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
                 format_option['DisableLogTypes'] = list(current_option.difference(desired_option))
             if format_option['EnableLogTypes'] or format_option['DisableLogTypes']:
                 changing_params[option] = format_option
-        elif option in ('DBSecurityGroups', 'VpcSecurityGroupIds',):
+        elif option in ["DBSecurityGroups", "VpcSecurityGroupIds"]:
             if purge_security_groups:
                 changing_params[option] = desired_option
             else:
@@ -1371,27 +1371,35 @@ def main():
     )
     arg_spec.update(parameter_options)
 
+    required_if_s3_creation_source = [
+        "s3_bucket_name",
+        "engine",
+        "master_username",
+        "master_user_password",
+        "source_engine",
+        "source_engine_version",
+        "s3_ingestion_role_arn",
+    ]
+
     required_if = [
-        ('engine', 'aurora', ('db_cluster_identifier',)),
-        ('engine', 'aurora-mysql', ('db_cluster_identifier',)),
-        ('engine', 'aurora-postresql', ('db_cluster_identifier',)),
-        ('storage_type', 'io1', ('iops', 'allocated_storage')),
-        ('creation_source', 'snapshot', ('db_snapshot_identifier', 'engine')),
-        ('creation_source', 's3', (
-            's3_bucket_name', 'engine', 'master_username', 'master_user_password',
-            'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
+        ["engine", "aurora", ["db_cluster_identifier"]],
+        ["engine", "aurora-mysql", ["db_cluster_identifier"]],
+        ["engine", "aurora-postresql", ["db_cluster_identifier"]],
+        ["storage_type", "io1", ["iops", "allocated_storage"]],
+        ["creation_source", "snapshot", ["db_snapshot_identifier", "engine"]],
+        ["creation_source", "s3", required_if_s3_creation_source],
     ]
     mutually_exclusive = [
-        ('s3_bucket_name', 'source_db_instance_identifier', 'db_snapshot_identifier'),
-        ('use_latest_restorable_time', 'restore_time'),
-        ('availability_zone', 'multi_az'),
+        ["s3_bucket_name", "source_db_instance_identifier", "db_snapshot_identifier"],
+        ["use_latest_restorable_time", "restore_time"],
+        ["availability_zone", "multi_az"],
     ]
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         required_if=required_if,
         mutually_exclusive=mutually_exclusive,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     # Sanitize instance identifiers

@@ -250,7 +250,7 @@ def main():
         filters=dict(default={}, type='dict'),
     )
     mutually_exclusive = [
-        ['eni_id', 'filters']
+        ["eni_id", "filters"],
     ]
 
     module = AnsibleAWSModule(

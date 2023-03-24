@@ -337,15 +337,16 @@ def create_vpc(connection, module, cidr_block, tenancy, tags, ipv6_cidr, name):
 
     # wait up to 30 seconds for vpc to exist
     wait_for_vpc_to_exist(
-        module, connection,
-        VpcIds=[vpc_obj['Vpc']['VpcId']],
-        WaiterConfig=dict(MaxAttempts=30)
+        module,
+        connection,
+        VpcIds=[vpc_obj["Vpc"]["VpcId"]],
+        WaiterConfig=dict(MaxAttempts=30),
     )
     # Wait for the VPC to enter an 'Available' State
     wait_for_vpc(
         module, connection,
         VpcIds=[vpc_obj['Vpc']['VpcId']],
-        WaiterConfig=dict(MaxAttempts=30)
+        WaiterConfig=dict(MaxAttempts=30),
     )
 
     return vpc_obj['Vpc']['VpcId']

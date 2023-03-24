@@ -517,8 +517,9 @@ def validate_params(module, image_id=None, instance_id=None, name=None, state=No
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     if state == "present" and not image_id and not (instance_id or device_mapping):
-        module.fail_json("The parameters instance_id or device_mapping "
-                         "(register from EBS snapshot) are required for a new image.")
+        module.fail_json(
+            "The parameters instance_id or device_mapping (register from EBS snapshot) are required for a new image."
+        )
 
 
 class DeregisterImage:

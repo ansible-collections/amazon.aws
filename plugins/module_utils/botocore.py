@@ -64,12 +64,12 @@ MINIMUM_BOTO3_VERSION = '1.22.0'
 def _get_user_agent_string():
 
     info = get_collection_info()
-    result = "APN/1.0 Ansible/{0}".format(__version__)
+    result = f"APN/1.0 Ansible/{__version__}"
     if info['name']:
         if info['version'] is not None:
-            result += " {0}/{1}".format(info['name'], info['version'])
+            result += f" {info['name']}/{info['version']}"
         else:
-            result += " {0}".format(info['name'])
+            result += f" {info['name']}"
     return result
 
 
@@ -85,13 +85,19 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
     except ValueError as e:
-        module.fail_json(msg="Couldn't connect to AWS: %s" % to_native(e))
+        module.fail_json(
+            msg=f"Couldn't connect to AWS: {to_native(e)}",
+        )
     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
             botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError) as e:
-        module.fail_json(msg=to_native(e))
+        module.fail_json(
+            msg=to_native(e),
+        )
     except botocore.exceptions.NoRegionError:
-        module.fail_json(msg="The %s module requires a region and none was found in configuration, "
-                         "environment variables or module parameters" % module._name)
+        module.fail_json(
+            msg=f"The {module._name} module requires a region and none was found in configuration, "
+            "environment variables or module parameters",
+        )
 
 
 def _merge_botocore_config(config_a, config_b):
@@ -297,8 +303,10 @@ def gather_sdk_versions():
     if not HAS_BOTO3:
         return {}
 
-    return dict(boto3_version=boto3.__version__,
-                botocore_version=botocore.__version__)
+    return dict(
+        boto3_version=boto3.__version__,
+        botocore_version=botocore.__version__,
+    )
 
 
 def is_boto3_error_code(code, e=None):
@@ -432,11 +440,11 @@ def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=
     if not botocore_at_least(botocore_version):
         supported = False
         if warn:
-            warn('botocore < {0} is not supported or tested.  Some features may not work.'.format(MINIMUM_BOTOCORE_VERSION))
+            warn(f"botocore < {MINIMUM_BOTOCORE_VERSION} is not supported or tested.  Some features may not work.")
     if not boto3_at_least(boto3_version):
         supported = False
         if warn:
-            warn('boto3 < {0} is not supported or tested.  Some features may not work.'.format(MINIMUM_BOTO3_VERSION))
+            warn(f"boto3 < {MINIMUM_BOTO3_VERSION} is not supported or tested.  Some features may not work.")
 
     return supported
 

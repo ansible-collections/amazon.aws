@@ -362,7 +362,7 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)

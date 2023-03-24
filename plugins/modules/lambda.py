@@ -465,7 +465,7 @@ def set_tag(client, module, tags, function, purge_tags):
             client.untag_resource(
                 Resource=arn,
                 TagKeys=tags_to_remove,
-                aws_retry=True
+                aws_retry=True,
             )
             changed = True
 
@@ -473,7 +473,7 @@ def set_tag(client, module, tags, function, purge_tags):
             client.tag_resource(
                 Resource=arn,
                 Tags=tags_to_add,
-                aws_retry=True
+                aws_retry=True,
             )
             changed = True
 
@@ -602,17 +602,21 @@ def main():
         ),
     )
 
-    mutually_exclusive = [['zip_file', 's3_key'],
-                          ['zip_file', 's3_bucket'],
-                          ['zip_file', 's3_object_version']]
+    mutually_exclusive = [
+        ["zip_file", "s3_key"],
+        ["zip_file", "s3_bucket"],
+        ["zip_file", "s3_object_version"],
+    ]
 
-    required_together = [['s3_key', 's3_bucket'],
-                         ['vpc_subnet_ids', 'vpc_security_group_ids']]
+    required_together = [
+        ["s3_key", "s3_bucket"],
+        ["vpc_subnet_ids", "vpc_security_group_ids"],
+    ]
 
     required_if = [
-        ['state', 'present', ['runtime', 'handler', 'role']],
-        ['architecture', 'x86_64', ['zip_file', 's3_bucket'], True],
-        ['architecture', 'arm64', ['zip_file', 's3_bucket'], True],
+        ["state", "present", ["runtime", "handler", "role"]],
+        ["architecture", "x86_64", ["zip_file", "s3_bucket"], True],
+        ["architecture", "arm64", ["zip_file", "s3_bucket"], True],
     ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec,

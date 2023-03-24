@@ -71,7 +71,7 @@ class CloudFrontFactsServiceManager:
             "error": "Error describing streaming distribution",
         },
         "get_invalidation": {
-            "error": "Error describing invalidation"
+            "error": "Error describing invalidation",
         },
         "list_distributions_by_web_acl_id": {
             "error": "Error listing distributions by web acl id",

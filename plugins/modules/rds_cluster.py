@@ -1057,17 +1057,25 @@ def main():
     )
     arg_spec.update(parameter_options)
 
+    required_by_s3_creation_source = [
+        "s3_bucket_name",
+        "engine",
+        "master_username",
+        "master_user_password",
+        "source_engine",
+        "source_engine_version",
+        "s3_ingestion_role_arn",
+    ]
+
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         required_if=[
-            ('creation_source', 'snapshot', ('snapshot_identifier', 'engine')),
-            ('creation_source', 's3', (
-                's3_bucket_name', 'engine', 'master_username', 'master_user_password',
-                'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
+            ["creation_source", "snapshot", ["snapshot_identifier", "engine"]],
+            ["creation_source", "s3", required_by_s3_creation_source],
         ],
         mutually_exclusive=[
-            ('s3_bucket_name', 'source_db_cluster_identifier', 'snapshot_identifier'),
-            ('use_latest_restorable_time', 'restore_to_time'),
+            ["s3_bucket_name", "source_db_cluster_identifier", "snapshot_identifier"],
+            ["use_latest_restorable_time", "restore_to_time"],
         ],
         supports_check_mode=True,
     )

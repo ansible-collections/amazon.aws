@@ -279,7 +279,14 @@ class InventoryModule(AWSInventoryBase):
             self._populate_from_source(cached_result)
             return
 
-        results = self._get_all_db_hosts(regions, instance_filters, cluster_filters, strict_permissions, statuses, include_clusters)
+        results = self._get_all_db_hosts(
+            regions,
+            instance_filters,
+            cluster_filters,
+            strict_permissions,
+            statuses,
+            include_clusters,
+        )
         self._populate(results)
 
         # Update the cache once we're done

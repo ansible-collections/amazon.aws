@@ -392,8 +392,12 @@ def _get_tag_hostname(preference, instance):
     return tag_values
 
 
-def _prepare_host_vars(original_host_vars, hostvars_prefix=None, hostvars_suffix=None,
-                       use_contrib_script_compatible_ec2_tag_keys=False):
+def _prepare_host_vars(
+    original_host_vars,
+    hostvars_prefix=None,
+    hostvars_suffix=None,
+    use_contrib_script_compatible_ec2_tag_keys=False,
+):
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=['Tags'])
     host_vars['tags'] = boto3_tag_list_to_ansible_dict(original_host_vars.get('Tags', []))
 
@@ -607,15 +611,17 @@ class InventoryModule(AWSInventoryBase):
         ids_to_ignore = []
         for filter in exclude_filters:
             for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
+                regions,
+                ansible_dict_to_boto3_filter_list(filter),
+                strict_permissions,
+            ):
                 ids_to_ignore.append(i['InstanceId'])
         for filter in include_filters:
             for i in self._get_instances_by_region(
-                    regions,
-                    ansible_dict_to_boto3_filter_list(filter),
-                    strict_permissions):
+                regions,
+                ansible_dict_to_boto3_filter_list(filter),
+                strict_permissions,
+            ):
                 if i['InstanceId'] not in ids_to_ignore:
                     instances.append(i)
                     ids_to_ignore.append(i['InstanceId'])
@@ -668,7 +674,8 @@ class InventoryModule(AWSInventoryBase):
                 host,
                 hostvars_prefix,
                 hostvars_suffix,
-                use_contrib_script_compatible_ec2_tag_keys)
+                use_contrib_script_compatible_ec2_tag_keys,
+            )
             for name in hostname_list:
                 yield to_text(name), host_vars
 

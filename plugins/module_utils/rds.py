@@ -125,8 +125,10 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'db_snapshot_available'
             retry_codes = ['InvalidDBSnapshotState']
     else:
-        if module.params.get('wait'):
-            raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
+        if module.params.get("wait"):
+            raise NotImplementedError(
+                f"method {method_name} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py"
+            )
 
     return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op,
                              resource=resource, retry_codes=retry_codes)
@@ -147,7 +149,9 @@ def get_final_identifier(method_name, module):
     elif resource == 'cluster_snapshot':
         identifier = module.params['db_cluster_snapshot_identifier']
     else:
-        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods in module_utils/rds.py".format(method_name))
+        raise NotImplementedError(
+            f"method {method_name} hasn't been added to the list of accepted methods in module_utils/rds.py"
+        )
     if not module.check_mode and updated_identifier and apply_immediately:
         identifier = updated_identifier
     return identifier

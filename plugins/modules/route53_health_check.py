@@ -547,7 +547,7 @@ def main():
     ]
 
     args_mutually_exclusive = [
-        ['health_check_id', 'health_check_name']
+        ["health_check_id", "health_check_name"],
     ]
 
     global module

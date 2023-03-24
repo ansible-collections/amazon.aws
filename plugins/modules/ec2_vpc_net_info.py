@@ -215,8 +215,8 @@ def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
 
 def main():
     argument_spec = dict(
-        vpc_ids=dict(type='list', elements='str', default=[]),
-        filters=dict(type='dict', default={})
+        vpc_ids=dict(type="list", elements="str", default=[]),
+        filters=dict(type="dict", default={}),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

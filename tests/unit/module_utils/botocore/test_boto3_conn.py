@@ -67,19 +67,35 @@ def test_boto3_conn_success(monkeypatch, aws_module, botocore_utils):
 @pytest.mark.parametrize(
     "failure, custom_error",
     [
-        (ValueError(sentinel.VALUE_ERROR),
-         "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
-        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR),
-         None),
-        (botocore.exceptions.PartialCredentialsError(provider=sentinel.CRED_ERROR_PROV,
-                                                     cred_var=sentinel.CRED_ERROR_VAR),
-         None),
-        (botocore.exceptions.NoCredentialsError(),
-         None),
-        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR),
-         None),
-        (botocore.exceptions.NoRegionError(),
-         "The sentinel.MODULE_NAME module requires a region and none was found"),
+        (
+            ValueError(sentinel.VALUE_ERROR),
+            "Couldn't connect to AWS: sentinel.VALUE_ERROR",
+        ),
+        (
+            botocore.exceptions.ProfileNotFound(
+                profile=sentinel.PROFILE_ERROR,
+            ),
+            None,
+        ),
+        (
+            botocore.exceptions.PartialCredentialsError(
+                provider=sentinel.CRED_ERROR_PROV,
+                cred_var=sentinel.CRED_ERROR_VAR,
+            ),
+            None,
+        ),
+        (
+            botocore.exceptions.NoCredentialsError(),
+            None,
+        ),
+        (
+            botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR),
+            None,
+        ),
+        (
+            botocore.exceptions.NoRegionError(),
+            "The sentinel.MODULE_NAME module requires a region and none was found",
+        ),
     ],
 )
 def test_boto3_conn_exception(monkeypatch, aws_module, botocore_utils, failure, custom_error):

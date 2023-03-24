@@ -415,8 +415,8 @@ def instance_info(conn, instance_name, filters):
 
 def main():
     argument_spec = dict(
-        db_instance_identifier=dict(aliases=['id']),
-        filters=dict(type='dict')
+        db_instance_identifier=dict(aliases=["id"]),
+        filters=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
