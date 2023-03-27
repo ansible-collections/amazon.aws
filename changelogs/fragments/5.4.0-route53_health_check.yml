@@ -1,2 +1,0 @@
-trivial:
-- route53_health_check - bump version_added on check-latency.

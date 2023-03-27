@@ -1552,8 +1552,7 @@ releases:
   5.3.0:
     changes:
       bugfixes:
-      - "cloudtrail - support to disabling encryption using ``kms_key_id``
-        (https://github.com/ansible-collections/amazon.aws/pull/1384)."
+      - cloudtrail - support to disabling encryption using ``kms_key_id`` (https://github.com/ansible-collections/amazon.aws/pull/1384).
       - ec2_key - fix issue when trying to update existing key pair with the same
         key material (https://github.com/ansible-collections/amazon.aws/pull/1383).
       - module_utils/elbv2 - fix change detection by adding default values for ``Scope``
@@ -1570,8 +1569,8 @@ releases:
         release 6.0.0. After release 6.0.0 it will only be possible to pass either
         a profile or security tokens, regardless of mechanism used to pass them.  To
         explicitly block a parameter coming from an environment variable pass an empty
-        string as the parameter value.  Support for passing profile and security
-        tokens together was originally deprecated in release 1.2.0, however only partially
+        string as the parameter value.  Support for passing profile and security tokens
+        together was originally deprecated in release 1.2.0, however only partially
         implemented in release 5.0.0 (https://github.com/ansible-collections/amazon.aws/pull/1355).
       minor_changes:
       - ec2_instance - more consistently return ``instances`` information (https://github.com/ansible-collections/amazon.aws/pull/964).
@@ -1604,3 +1603,32 @@ releases:
     - release_summary.yml
     - unit-tests_test_ec2_key_only.yaml
     release_date: '2023-03-05'
+  5.4.0:
+    changes:
+      bugfixes:
+      - ec2_metadata_facts - fix ``AttributeError`` when running the ec2_metadata_facts
+        module on Python 2 managed nodes (https://github.com/ansible-collections/amazon.aws/issues/1358).
+      - ec2_vol - handle ec2_vol.tags when the associated instance already exists
+        (https://github.com/ansible-collections/amazon.aws/pull/1071).
+      - rds_instance - Fixed ``TypeError`` when tagging RDS DB with storage type ``gp3``
+        (https://github.com/ansible-collections/amazon.aws/pull/1437).
+      - route53_info - Add new return key ``health_check_observations`` for health
+        check operations (https://github.com/ansible-collections/amazon.aws/pull/1419).
+      - route53_info - Fixed ``Key Error`` when getting status or failure_reason of
+        a health check (https://github.com/ansible-collections/amazon.aws/pull/1419).
+      minor_changes:
+      - ec2_spot_instance - add parameter ``terminate_instances`` to support terminate
+        instances associated with spot requests. (https://github.com/ansible-collections/amazon.aws/pull/1402).
+      - route53_health_check -  added support for enabling Latency graphs (MeasureLatency)
+        during creation of a Route53 Health Check. (https://github.com/ansible-collections/amazon.aws/pull/1201).
+      release_summary: This minor release brings bugfixes and minor new features.
+    fragments:
+    - 1071-ec2_vol_tags_idempotent.yaml
+    - 1201-route53_health_check-add-support-for-latency-graphs.yml
+    - 1358-ec2_metadata_facts.yml
+    - 1402-ec2_spot_instance-ability-to-terminate-instances.yml
+    - 1419-route53_info-fix-keyerror-for-healthcheck-operations.yml
+    - 1437-rds_instance-gp3-tagging-bugfix.yml
+    - 5.4.0-release.yml
+    - 5.4.0-route53_health_check.yml
+    release_date: '2023-03-27'
