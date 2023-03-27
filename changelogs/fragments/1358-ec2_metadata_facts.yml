@@ -1,3 +1,0 @@
-bugfixes:
-- ec2_metadata_facts - fix ``AttributeError`` when running the ec2_metadata_facts module on Python 2 managed nodes
-  (https://github.com/ansible-collections/amazon.aws/issues/1358).
