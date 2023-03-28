@@ -101,7 +101,7 @@ backup_vault:
         creation_date:
             description: The date and time a backup vault is created, in Unix format and Coordinated Universal Time (UTC).
             returned: success
-            type: datetime
+            type: str
             sample: 1516925490.087 (represents Friday, January 26, 2018 12:11:30.087 AM).
         tags:
             description: hash/dictionary of tags applied to this resource
