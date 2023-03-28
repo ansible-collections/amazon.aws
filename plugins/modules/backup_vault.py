@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 DOCUMENTATION = r"""
 ---
 module: backup_vault
@@ -108,6 +109,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
 
@@ -187,9 +189,13 @@ def get_vault_facts(module, client, vault_name):
     client : boto3 client connection object
     name : Name of the backup vault
     """
+    resp = None
     # get Backup Vault info
     try:
         resp = client.describe_backup_vault(BackupVaultName=vault_name)
+    except is_boto3_error_code('AccessDeniedException'):
+        module.warn(
+            'Access Denied trying to describe backup vault')
     except (BotoCoreError, ClientError) as err:
         module.fail_json_aws(err, msg="Unable to get vault facts")
 
@@ -200,16 +206,6 @@ def get_vault_facts(module, client, vault_name):
             resp["tags"] = get_backup_resource_tags(module, client)
 
         # Check for non-existent values and populate with None
-        optional_vals = set(
-            [
-                "S3KeyPrefix",
-                "SnsTopicName",
-                "SnsTopicARN",
-                "CloudWatchLogsLogGroupArn",
-                "CloudWatchLogsRoleArn",
-                "KmsKeyId",
-            ]
-        )
         optional_vals = set(
             [
                 "S3KeyPrefix",
@@ -250,7 +246,7 @@ def main():
         encryption_key_arn=dict(type="str", no_log=False),
         creator_request_id=dict(type="str"),
         backup_vault_tags=dict(type="dict", aliases=["tags"]),
-        purge_tags=dict(default=False , type="bool"),
+        purge_tags=dict(default=False, type="bool"),
     )
 
     required_if = [("state", "present", ["backup_vault_name"]), ("state", "enabled", ["backup_vault_name"])]
