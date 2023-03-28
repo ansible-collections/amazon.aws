@@ -5,7 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 DOCUMENTATION = r"""
 ---
 module: backup_vault
@@ -43,7 +42,7 @@ options:
   creator_request_id:
     description:
       - A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice.
-      - If used, this parameter must contain 1 to 50 alphanumeric or ‘-_.’ characters.
+      - If used, this parameter must contain 1 to 50 alphanumeric or "-_." characters.
     type: str
   purge_tags:
     description:
