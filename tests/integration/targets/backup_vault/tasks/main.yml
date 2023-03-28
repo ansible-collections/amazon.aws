@@ -1,0 +1,53 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: create a key
+      kms_key:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: yes
+        enable_key_rotation: no
+      register: key
+
+    - name: Create an AWS Backup Vault
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        encryption_key_arn: "{{ key.key_arn }}"
+        tags:
+          environment: dev
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: backup_vault_result
+
+    - assert:
+        that:
+          - backup_vault_result is changed
+          - backup_vault_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_result.vault.encryption_key_arn == key.key_arn
+ 
+  always:
+    - name: Delete AWS Backup Vault created during this test
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
+      ignore_errors: true
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+
+    - name: finish off by deleting keys
+      kms_key:
+        state: absent
+        alias: '{{ kms_key_alias }}'
+        pending_window: 7
+      ignore_errors: true

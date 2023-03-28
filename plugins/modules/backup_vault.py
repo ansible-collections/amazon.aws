@@ -9,6 +9,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
+
 
 DOCUMENTATION = r"""
 ---
@@ -123,16 +125,10 @@ def create_backup_vault(module, client, params):
     params : The parameters to create a backup vault
     """
     resp = {}
+    params = {k: v for k, v in params.items() if v is not None}
     try:
         resp = client.create_backup_vault(**params)
     except (
-        client.Client.exceptions.InvalidParameterValueException,
-        client.Client.exceptions.InvalidParameterValueException,
-        client.Client.exceptions.InvalidParameterValueException,
-        client.exceptions.MissingParameterValueException,
-        client.Client.exceptions.ServiceUnavailableException,
-        client.Client.exceptions.LimitExceededException,
-        client.Client.exceptions.AlreadyExistsException,
         BotoCoreError,
         ClientError,
     ) as err:
@@ -156,7 +152,7 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
         return False
 
     curr_tags = curr_tags or {}
-    tags_to_add, tags_to_remove = compare_aws_tags( curr_tags, tags, purge_tags=purge_tags)
+    tags_to_add, tags_to_remove = compare_aws_tags(curr_tags, tags, purge_tags=purge_tags)
 
     if not tags_to_add and not tags_to_remove:
         return False
@@ -182,19 +178,6 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
     return True
 
 
-def get_tag_list(keys, tags):
-    """
-    Returns a list of dicts with tags to act on
-    keys : set of keys to get the values for
-    tags : the dict of tags to turn into a list
-    """
-    tag_list = []
-    for k in keys:
-        tag_list.append({"Key": k, "Value": tags[k]})
-
-    return tag_list
-
-
 def get_vault_facts(module, client, vault_name):
     """
     Describes existing vault in an account
@@ -205,19 +188,17 @@ def get_vault_facts(module, client, vault_name):
     """
     # get Backup Vault info
     try:
-        resp = client.describe_backup_vault(vault_name)
+        resp = client.describe_backup_vault(BackupVaultName=vault_name)
     except (BotoCoreError, ClientError) as err:
-        module.fail_json_aws(err, msg="Failed to describe the Backup Vault")
+        resp = None
 
     # Now check to see if our vault exists and get status and tags
     if resp:
-        try:
-            tags_list = client.list_tags(ResourceIdList=[resp["BackupVaultArn"]])
-                ResourceIdList=[resp["BackupVaultArn"]])
-        except (BotoCoreError, ClientError) as err:
-            module.fail_json_aws(err, msg="Failed to describe the Backup Vault")
+        q(resp)
+        if resp.get("BackupVaultArn"):
+            module.params["resource"] = resp.get("BackupVaultArn")
+            resp["tags"] = get_backup_resource_tags(module, client)
 
-            resp["tags"] = boto3_tag_list_to_ansible_dict(tags_list["ResourceTagList"][0]["TagsList"])
         # Check for non-existent values and populate with None
         optional_vals = set(
             [
@@ -229,8 +210,16 @@ def get_vault_facts(module, client, vault_name):
                 "KmsKeyId",
             ]
         )
-        optional_vals = set(["S3KeyPrefix", "SnsTopicName", "SnsTopicARN",
-                            "CloudWatchLogsLogGroupArn", "CloudWatchLogsRoleArn", "KmsKeyId"])
+        optional_vals = set(
+            [
+                "S3KeyPrefix",
+                "SnsTopicName",
+                "SnsTopicARN",
+                "CloudWatchLogsLogGroupArn",
+                "CloudWatchLogsRoleArn",
+                "KmsKeyId",
+            ]
+        )
         for v in optional_vals - set(resp.keys()):
             resp[v] = None
         return resp
@@ -249,7 +238,7 @@ def delete_backup_vault(module, client, vault_name):
     vault_name : Backup Vault Name
     """
     try:
-        client.delete_backup_vault(Name=vault_name)
+        client.delete_backup_vault(BackupVaultName=vault_name)
     except (BotoCoreError, ClientError) as err:
         module.fail_json_aws(err, msg="Failed to delete the Backup Vault")
 
@@ -273,14 +262,13 @@ def main():
         state = "present"
     elif module.params["state"] in ("absent", "disabled"):
         state = "absent"
-    tags = module.params["tags"]
+    tags = module.params["backup_vault_tags"]
     purge_tags = module.params["purge_tags"]
     ct_params = dict(
         BackupVaultName=module.params["backup_vault_name"],
         BackupVaultTags=module.params["backup_vault_tags"],
         EncryptionKeyArn=module.params["encryption_key_arn"],
         CreatorRequestId=module.params["creator_request_id"],
-        CreationDate=module.params["creation_date"],
     )
 
     client = module.client("backup")
@@ -289,7 +277,10 @@ def main():
     results = dict(changed=False, exists=False)
 
     # Get existing backup vault facts
-    vault = get_vault_facts(module, client, ct_params["BackupVaultName"])
+    try:
+        vault = get_vault_facts(module, client, ct_params["BackupVaultName"])
+    except (BotoCoreError, ClientError) as err:
+        pass
 
     # If the vault exists set the result exists variable
     if vault is not None:
@@ -301,7 +292,7 @@ def main():
         results["exists"] = False
         results["backupvault"] = dict()
         if not module.check_mode:
-            delete_backup_vault(module, client, trail["BackupVaultName"])
+            delete_backup_vault(module, client, vault["BackupVaultName"])
 
     elif state == "present" and not results["exists"]:
         # Backup Vault doesn't exist just go create it
@@ -309,12 +300,12 @@ def main():
         results["exists"] = True
         if not module.check_mode:
             if tags:
-                ct_params["TagsList"] = ansible_dict_to_boto3_tag_list(tags)
+                ct_params["BackupVaultTags"] = tags
             # If we aren't in check_mode then actually create it
-            created_vault = create_backup_vault(module, client, ct_params)
+            create_backup_vault(module, client, ct_params)
 
             # Get facts for newly created Backup Vault
-            vault = get_vault_facts(module, client, ct_params["Name"])
+            vault = get_vault_facts(module, client, ct_params["BackupVaultName"])
 
         # If we are in check mode create a fake return structure for the newly created vault
         if module.check_mode:
@@ -330,9 +321,28 @@ def main():
 
             vault["EncryptionKeyArn"] = fake_key_arn
             vault["tags"] = tags
-        # Populate backup vault facts in output
-        results["vault"] = camel_dict_to_snake_dict(vault, ignore_list=["tags"])
 
+    elif state == "present" and results["exists"]:
+        q("innnn", tags_to_add, module.params)
+        # Check if we need to update tags on resource
+        tags_changed = tag_vault(
+            module,
+            client,
+            tags=tags,
+            vault_arn=module.params["resource"],
+            curr_tags=vault["tags"],
+            purge_tags=purge_tags,
+        )
+        if tags_changed:
+            updated_tags = dict()
+            if not purge_tags:
+                updated_tags = vault["tags"]
+            updated_tags.update(tags)
+            results["changed"] = True
+            vault["tags"] = updated_tags
+
+    # Populate backup vault facts in output
+    results["vault"] = camel_dict_to_snake_dict(vault, ignore_list=["tags"])
     module.exit_json(**results)
 
 
