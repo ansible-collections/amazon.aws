@@ -60,7 +60,6 @@ notes:
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
-  - amazon.aws.tags
   - amazon.aws.boto3
 """
 
