@@ -64,7 +64,7 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: create single region cloudtrail
+- name: create backup vault
   amazon.aws.backup_vault:
     state: present
     backup_vault_name: default-vault
