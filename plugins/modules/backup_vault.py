@@ -190,11 +190,10 @@ def get_vault_facts(module, client, vault_name):
     try:
         resp = client.describe_backup_vault(BackupVaultName=vault_name)
     except (BotoCoreError, ClientError) as err:
-        resp = None
+        module.fail_json_aws(err, msg="Unable to get vault facts")
 
     # Now check to see if our vault exists and get status and tags
     if resp:
-        q(resp)
         if resp.get("BackupVaultArn"):
             module.params["resource"] = resp.get("BackupVaultArn")
             resp["tags"] = get_backup_resource_tags(module, client)
@@ -280,7 +279,7 @@ def main():
     try:
         vault = get_vault_facts(module, client, ct_params["BackupVaultName"])
     except (BotoCoreError, ClientError) as err:
-        pass
+        module.debug("Unable to get vault facts {0}".format(err))
 
     # If the vault exists set the result exists variable
     if vault is not None:
@@ -323,7 +322,6 @@ def main():
             vault["tags"] = tags
 
     elif state == "present" and results["exists"]:
-        q("innnn", tags_to_add, module.params)
         # Check if we need to update tags on resource
         tags_changed = tag_vault(
             module,
@@ -342,7 +340,9 @@ def main():
             vault["tags"] = updated_tags
 
     # Populate backup vault facts in output
-    results["vault"] = camel_dict_to_snake_dict(vault, ignore_list=["tags"])
+
+    if vault:
+        results["vault"] = camel_dict_to_snake_dict(vault, ignore_list=["tags"])
     module.exit_json(**results)
 
 
