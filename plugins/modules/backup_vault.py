@@ -4,13 +4,6 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
-
 
 DOCUMENTATION = r"""
 ---
@@ -25,11 +18,8 @@ options:
   state:
     description:
       - Add or remove Backup Vault configuration.
-      - 'The following states have been preserved for backwards compatibility: I(state=enabled) and I(state=disabled).'
-      - I(state=enabled) is equivalet to I(state=present).
-      - I(state=disabled) is equivalet to I(state=absent).
     type: str
-    choices: ['present', 'absent', 'enabled', 'disabled']
+    choices: ['present', 'absent']
     default: present
   backup_vault_name:
     description:
@@ -54,8 +44,12 @@ options:
       - A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice.
       - If used, this parameter must contain 1 to 50 alphanumeric or ‘-_.’ characters.
     type: str
-notes:
-  - The I(purge_tags) option was added in release 4.0.0
+  purge_tags:
+    description:
+      - Whether unspecified tags should be removed from the resource.
+      - Note that when combined with I(state=absent), specified tag keys are not purged regardless of its current value.
+    type: bool
+    default: False
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -108,6 +102,14 @@ backup_vault:
             type: dict
             sample: {'environment': 'dev', 'Name': 'default'}
 """
+
+
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
@@ -243,12 +245,12 @@ def delete_backup_vault(module, client, vault_name):
 
 def main():
     argument_spec = dict(
-        state=dict(default="present", choices=["present", "absent", "enabled", "disabled"]),
-        backup_vault_name=dict(default="default", type="str"),
-        encryption_key_arn=dict(type="str"),
-        creator_request_id=dict(default="default", type="str"),
+        state=dict(default="present", choices=["present", "absent"]),
+        backup_vault_name=dict(required=True, type="str"),
+        encryption_key_arn=dict(type="str", no_log=False),
+        creator_request_id=dict(type="str"),
         backup_vault_tags=dict(type="dict", aliases=["tags"]),
-        purge_tags=dict(default=True, type="bool"),
+        purge_tags=dict(default=False , type="bool"),
     )
 
     required_if = [("state", "present", ["backup_vault_name"]), ("state", "enabled", ["backup_vault_name"])]
@@ -270,8 +272,6 @@ def main():
     )
 
     client = module.client("backup")
-    region = module.region
-
     results = dict(changed=False, exists=False)
 
     # Get existing backup vault facts
@@ -307,17 +307,9 @@ def main():
 
         # If we are in check mode create a fake return structure for the newly created vault
         if module.check_mode:
-            acct_id = "123456789012"
-            try:
-                sts_client = module.client("sts")
-                acct_id = sts_client.get_caller_identity()["Account"]
-            except (BotoCoreError, ClientError):
-                pass
             vault = dict()
             vault.update(ct_params)
-            fake_key_arn = "arn:aws:kms:" + region + ":" + acct_id + ":key/" + ct_params["BackupVaultName"]
-
-            vault["EncryptionKeyArn"] = fake_key_arn
+            vault["EncryptionKeyArn"] = ""
             vault["tags"] = tags
 
     elif state == "present" and results["exists"]:
