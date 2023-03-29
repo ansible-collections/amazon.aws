@@ -12,7 +12,8 @@ version_added: 6.0.0
 short_description: Gather information about AWS Backup Vaults.
 description:
   - Gather information about AWS Backup Vaults.
-author: Gomathi Selvi Srinivasan (@GomathiselviS)
+author:
+  - Gomathi Selvi Srinivasan (@GomathiselviS)
 options:
   backup_vault_names:
     type: list
@@ -37,7 +38,7 @@ EXAMPLES = r"""
 # Gather information about a particular backup vault
 - amazon.aws.backup_vault_info:
     backup vault_names:
-      - arn:aws:backup_vault:us-east-2:123456789012:backup_vault/defaultvault
+      - "arn:aws:backup_vault:us-east-2:123456789012:backup_vault/defaultvault"
 """
 
 RETURN = r"""
