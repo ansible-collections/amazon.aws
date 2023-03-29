@@ -8,7 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_restore_job_info
 version_added: 6.0.0
-short_description: List information about backup restore jobs.
+short_description: List information about backup restore jobs
 description:
     - List detailed information about AWS Backup restore jobs initiated to restore a saved resource.
 author:
@@ -29,26 +29,36 @@ options:
     description:
       - Specified date to filter result based on the restore job creation datetime.
       - If specified, only the restore jobs created before the specified datetime will be returned.
+      - The date must be in Unix format and Coordinated Universal Time (UTC), example "2023-02-25T00:05:36.309Z".
     required: false
     type: str
   created_after:
     description:
       - Specified date to filter result based on the restore job creation datetime.
       - If specified, only the restore jobs created after the specified datetime will be returned.
+      - The date must be in Unix format and Coordinated Universal Time (UTC), example "2023-02-25T00:05:36.309Z".
     required: false
     type: str
   completed_before:
     description:
       - Specified date to filter result based on the restore job completion datetime.
       - If specified, only the restore jobs created before the specified datetime will be returned.
+      - The date must be in Unix format and Coordinated Universal Time (UTC), example "2023-02-25T00:05:36.309Z".
     required: false
     type: str
   completed_after:
     description:
       - Specified date to filter result based on the restore job completion datetime.
       - If specified, only the restore jobs created after the specified datetime will be returned.
+      - The date must be in Unix format and Coordinated Universal Time (UTC), example "2023-02-25T00:05:36.309Z".
     required: false
     type: str
+  restore_job_id:
+      description:
+        - ID of the restore job to get information about.
+        - This parameter is mutually exlusive with all other parameters.
+      required: false
+      type: str
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -60,6 +70,10 @@ EXAMPLES = r"""
 
 - name: List all restore jobs
   amazon.aws.backup_restore_job_info:
+
+- name: List specific restore job's info by job ID
+  amazon.aws.backup_restore_job_info:
+    restore_job_id: "52BEE289-xxxx-xxxx-xxxx-47DCAA2E7ACD"
 
 - name: List restore jobs based on Account ID
   amazon.aws.backup_restore_job_info:
@@ -157,6 +171,16 @@ def build_request_args(account_id, status, created_before, created_after, comple
     return request_args
 
 
+def _describe_restore_job(connection, module, restore_job_id):
+    try:
+        response = connection.describe_restore_job(RestoreJobId=restore_job_id)
+        response.pop("ResponseMetadata", None)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe restore job with ID: {0}".format(restore_job_id))
+
+    return [camel_dict_to_snake_dict(response)]
+
+
 @AWSRetry.jittered_backoff()
 def _list_restore_jobs(connection, **params):
     paginator = connection.get_paginator("list_restore_jobs")
@@ -169,9 +193,7 @@ def list_restore_jobs(connection, module, request_args):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list restore jobs")
 
-    snaked_restore_jobs = [camel_dict_to_snake_dict(restore_job) for restore_job in response["RestoreJobs"]]
-
-    return snaked_restore_jobs
+    return [camel_dict_to_snake_dict(restore_job) for restore_job in response["RestoreJobs"]]
 
 
 def main():
@@ -182,6 +204,7 @@ def main():
         created_after=dict(required=False, type="str"),
         completed_before=dict(required=False, type="str"),
         completed_after=dict(required=False, type="str"),
+        restore_job_id=dict(required=False, type="str"),
     )
 
     module = AnsibleAWSModule(
@@ -202,7 +225,10 @@ def main():
         completed_after=module.params["completed_after"],
     )
 
-    restore_jobs = list_restore_jobs(backup_client, module, request_args)
+    if module.params.get("restore_job_id"):
+        restore_jobs = _describe_restore_job(backup_client, module, module.params.get("restore_job_id"))
+    else:
+        restore_jobs = list_restore_jobs(backup_client, module, request_args)
 
     module.exit_json(changed=False, restore_jobs=restore_jobs)
 

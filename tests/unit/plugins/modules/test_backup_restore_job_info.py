@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.modules import backup_restore_job_info
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.backup_restore_job_info"
@@ -38,6 +39,34 @@ def test_build_request_args(
         )
         == expected
     )
+
+
+def test__describe_restore_job():
+    connection = MagicMock()
+    module = MagicMock()
+
+    restore_job_id = "52BEE289-xxxx-xxxx-xxxx-47DCAA2E7ACD"
+    restore_job_info = {
+        "AccountId": "123456789012",
+        "BackupSizeInBytes": "8589934592",
+        "CompletionDate": "2023-03-13T15:53:07.172000-07:00",
+        "CreatedResourceArn": "arn:aws:ec2:us-east-2:123456789012:instance/i-01234567ec51af3f",
+        "CreationDate": "2023-03-13T15:53:07.172000-07:00",
+        "IamRoleArn": "arn:aws:iam::123456789012:role/service-role/AWSBackupDefaultServiceRole",
+        "PercentDone": "0.00%",
+        "RecoveryPointArn": "arn:aws:ec2:us-east-2::image/ami-01234567ec51af3f",
+        "ResourceType": "EC2",
+        "RestoreJobId": "52BEE289-xxxx-xxxx-xxxx-47DCAA2E7ACD",
+        "Status": "COMPLETED",
+    }
+
+    connection.describe_restore_job.return_value = restore_job_info
+
+    result = backup_restore_job_info._describe_restore_job(connection, module, restore_job_id)
+
+    assert result == [camel_dict_to_snake_dict(restore_job_info)]
+    connection.describe_restore_job.assert_called_with(RestoreJobId=restore_job_id)
+    connection.describe_restore_job.call_count == 1
 
 
 def test__list_restore_jobs():
@@ -113,4 +142,4 @@ def test_main_success(m_AnsibleAWSModule):
     backup_restore_job_info.main()
 
     m_module.client.assert_called_with("backup")
-    m_module.exit_json.assert_called_with(changed=False, restore_jobs=[])
+    m_module.exit_json.assert_called_with(changed=False, restore_jobs=[{}])
