@@ -1,7 +1,9 @@
 #!/usr/bin/python
-# Copyright: Ansible Project
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
+
 import json
 from ansible.module_utils.resource_tags import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -10,13 +12,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-__metaclass__ = type
-DOCUMENTATION = '''
+
+DOCUMENTATION = r"""
 module: backup_selection
-short_description: create, delete backup selection
-version_added: 1.0.0
+short_description: create, delete and modify AWS Backup selection
+version_added: 6.0.0
 description:
-  - Read the AWS documentation for backup selections
+  - Manages AWS Backup selections.
+  - For more information see the AWS documentation for backup selections
     U(https://docs.aws.amazon.com/aws-backup/latest/devguide/assigning-resources.html).
 options:
   backup_plan_id:
@@ -71,12 +74,12 @@ notes: []
 author:
   - Kristof Imre Szabo (@krisek)
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
+  - amazon.aws.common.modules
+  - amazon.aws.region.modules
   - amazon.aws.boto3
   - amazon.aws.tags
-'''
-EXAMPLES = '''
+"""
+EXAMPLES = """
 - name: create backup selection
   backup_selection:
     selection_name: elastic
@@ -84,8 +87,8 @@ EXAMPLES = '''
     iam_role_arn: arn:aws:iam::111122223333:role/system-backup
     resources:
     - arn:aws:elasticfilesystem:*:*:file-system/*
-'''
-RETURN = '''
+"""
+RETURN = """
 selection_name:
   description: backup selection name
   returned: always
@@ -126,7 +129,7 @@ backup_selection:
       returned: always
       type: str
       sample:
-'''
+"""
 try:
     import botocore
 except ImportError:
@@ -135,132 +138,135 @@ except ImportError:
 
 def main():
     argument_spec = dict(
-        selection_name=dict(type='str', required=True),
-        backup_plan_id=dict(type='str', required=True),
-        iam_role_arn=dict(type='str', required=True),
-        resources=dict(type='list', required=False),
-        tags=dict(required=False, type='dict', aliases=['resource_tags']),
-        purge_tags=dict(default=True, type='bool'),
-        state=dict(default='present', choices=['present', 'absent'])
+        selection_name=dict(type="str", required=True),
+        backup_plan_id=dict(type="str", required=True),
+        iam_role_arn=dict(type="str", required=True),
+        resources=dict(type="list", required=False),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(default=True, type="bool"),
+        state=dict(default="present", choices=["present", "absent"]),
     )
     required_if = [
-        ('state', 'present', ['selection_name',
-         'backup_plan_id', 'iam_role_arn']),
-        ('state', 'absent', ['selection_name', 'backup_plan_id']),
+        ("state", "present", ["selection_name",
+         "backup_plan_id", "iam_role_arn"]),
+        ("state", "absent", ["selection_name", "backup_plan_id"]),
     ]
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec, required_if=required_if)
-    state = module.params.get('state')
-    selection_name = module.params.get('selection_name')
-    backup_plan_id = module.params.get('backup_plan_id')
-    iam_role_arn = module.params.get('iam_role_arn')
-    resources = module.params.get('resources')
-    list_of_tags = module.params.get('list_of_tags')
-    not_resources = module.params.get('not_resources')
-    conditions = module.params.get('conditions')
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if)
+    state = module.params.get("state")
+    selection_name = module.params.get("selection_name")
+    backup_plan_id = module.params.get("backup_plan_id")
+    iam_role_arn = module.params.get("iam_role_arn")
+    resources = module.params.get("resources")
+    list_of_tags = module.params.get("list_of_tags")
+    not_resources = module.params.get("not_resources")
+    conditions = module.params.get("conditions")
     try:
-        client = module.client(
-            'backup', retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
     changed = False
     # try to check if backup_selection is there
-    paginator = client.get_paginator('list_backup_selections')
+    paginator = client.get_paginator("list_backup_selections")
     backup_selections = []
     for page in paginator.paginate(BackupPlanId=backup_plan_id):
-        backup_selections.extend(page['BackupSelectionsList'])
+        backup_selections.extend(page["BackupSelectionsList"])
     exist = False
     response = {}
     for backup_selection in backup_selections:
-        if backup_selection['SelectionName'] == selection_name:
+        if backup_selection["SelectionName"] == selection_name:
             exist = True
             response = backup_selection
-    if state == 'present':
+    if state == "present":
         # build data specified by user
-        backup_selection_data = {
-            'SelectionName': selection_name,
-            'IamRoleArn': iam_role_arn
-        }
+        backup_selection_data = {"SelectionName": selection_name, "IamRoleArn": iam_role_arn}
         if resources:
-            backup_selection_data['Resources'] = resources
+            backup_selection_data["Resources"] = resources
         if list_of_tags:
-            backup_selection_data['ListOfTags'] = list_of_tags
+            backup_selection_data["ListOfTags"] = list_of_tags
         if not_resources:
-            backup_selection_data['NotResources'] = not_resources
+            backup_selection_data["NotResources"] = not_resources
         if conditions:
-            backup_selection_data['Conditions'] = conditions
+            backup_selection_data["Conditions"] = conditions
         # print(backup_selection_data)
         # print(exist)
-        if (exist):
+        if exist:
             # we need to get everything to manage the selection
             full_selection = client.get_backup_selection(
-                SelectionId=response['SelectionId'], BackupPlanId=backup_plan_id)
+                SelectionId=response["SelectionId"], BackupPlanId=backup_plan_id)
             update_needed = False
-            if (full_selection.get('BackupSelection', {}).get('IamRoleArn', None) != iam_role_arn):
+            if (full_selection.get("BackupSelection", {}).get("IamRoleArn", None) != iam_role_arn):
                 update_needed = True
             fields_to_check = [
                 {
-                    'field_name': 'Resources',
-                    'field_value_from_aws': json.dumps(full_selection.get('BackupSelection', {}).get('Resources', None), sort_keys=True),
-                    'field_value': json.dumps(resources, sort_keys=True)
+                    "field_name": "Resources",
+                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("Resources", None), sort_keys=True),
+                    "field_value": json.dumps(resources, sort_keys=True)
                 },
                 {
-                    'field_name': 'ListOfTags',
-                    'field_value_from_aws': json.dumps(full_selection.get('BackupSelection', {}).get('ListOfTags', None), sort_keys=True),
-                    'field_value': json.dumps(list_of_tags, sort_keys=True)
+                    "field_name": "ListOfTags",
+                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("ListOfTags", None), sort_keys=True),
+                    "field_value": json.dumps(list_of_tags, sort_keys=True)
                 },
                 {
-                    'field_name': 'NotResources',
-                    'field_value_from_aws': json.dumps(full_selection.get('BackupSelection', {}).get('NotResources', None), sort_keys=True),
-                    'field_value': json.dumps(not_resources, sort_keys=True)
+                    "field_name": "NotResources",
+                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("NotResources", None), sort_keys=True),
+                    "field_value": json.dumps(not_resources, sort_keys=True)
                 },
                 {
-                    'field_name': 'Conditions',
-                    'field_value_from_aws': json.dumps(full_selection.get('BackupSelection', {}).get('Conditions', None), sort_keys=True),
-                    'field_value': json.dumps(conditions, sort_keys=True)
+                    "field_name": "Conditions",
+                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("Conditions", None), sort_keys=True),
+                    "field_value": json.dumps(conditions, sort_keys=True)
                 }
             ]
             for field_to_check in fields_to_check:
-                if field_to_check['field_value_from_aws'] != field_to_check['field_value']:
-                    if (field_to_check['field_name'] != 'Conditions'
-                            and field_to_check['field_value_from_aws'] != '[]'
-                            and field_to_check['field_value'] != 'null'):
+                if field_to_check["field_value_from_aws"] != field_to_check["field_value"]:
+                    if (
+                        field_to_check["field_name"] != "Conditions"
+                        and field_to_check["field_value_from_aws"] != "[]"
+                        and field_to_check["field_value"] != "null"
+                    ):
                         # advanced settings to be updated
                         update_needed = True
-                    if (field_to_check['field_name'] == 'Conditions'
-                            and field_to_check['field_value_from_aws'] != '{"StringEquals": [], "StringLike": [], "StringNotEquals": [], "StringNotLike": []}'
-                            and field_to_check['field_value'] != 'null'):
+                    if (
+                        field_to_check["field_name"] == "Conditions"
+                        and field_to_check["field_value_from_aws"]
+                        != '{"StringEquals": [], "StringLike": [], "StringNotEquals": [], "StringNotLike": []}'
+                        and field_to_check["field_value"] != "null"
+                    ):
                         update_needed = True
             if update_needed:
                 response_delete = client.delete_backup_selection(
-                    aws_retry=True, SelectionId=response['SelectionID'], BackupPlanId=backup_plan_id)
+                    aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id)
     # state is present but backup vault doesnt exist
-        if (not exist or update_needed):
+        if not exist or update_needed:
             response = client.create_backup_selection(
-                aws_retry=True, BackupPlanId=backup_plan_id, BackupSelection=backup_selection_data)
-            ensure_tags(client, module, response['SelectionId'],
-                        purge_tags=module.params.get('purge_tags'),
-                        tags=module.params.get('tags'),
-                        resource_type='BackupSelection',
-                        )
+                aws_retry=True, BackupPlanId=backup_plan_id, BackupSelection=backup_selection_data
+            )
+            ensure_tags(
+                client,
+                module,
+                response["SelectionId"],
+                purge_tags=module.params.get("purge_tags"),
+                tags=module.params.get("tags"),
+                resource_type="BackupSelection",
+            )
             changed = True
-    elif state == 'absent':
+    elif state == "absent":
         if exist:
             try:
                 response_delete = client.delete_backup_selection(
-                    aws_retry=True, SelectionId=response['SelectionID'], BackupPlanId=backup_plan_id)
-                if (response_delete['ResponseMetadata']['HTTPStatusCode'] == 200):
+                    aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id
+                )
+                if (response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200):
                     changed = True
             except Exception as e:
                 module.exit_json(changed=changed, failed=True)
         # remove_peer_connection(client, module)
     formatted_results = camel_dict_to_snake_dict(response)
     # Turn the resource tags from boto3 into an ansible friendly tag dictionary
-    formatted_results['tags'] = boto3_tag_list_to_ansible_dict(
-        formatted_results.get('tags', []))
-    module.exit_json(
-        changed=changed, backup_selection=formatted_results, selection_name=selection_name)
+    formatted_results["tags"] = boto3_tag_list_to_ansible_dict(formatted_results.get("tags", []))
+    module.exit_json(changed=changed, backup_selection=formatted_results, selection_name=selection_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
