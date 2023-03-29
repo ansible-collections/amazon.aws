@@ -164,8 +164,7 @@ def main():
     if state == "present":
         if exist:  # state is present and backup plan exists => got to update
             # we need to get rules to manage the plan
-            full_plan = client.get_backup_plan(
-                BackupPlanId=response["BackupPlanId"])
+            full_plan = client.get_backup_plan(BackupPlanId=response["BackupPlanId"])
 
             update_needed = False
             configured_rules = [
@@ -190,13 +189,17 @@ def main():
                 if advanced_backup_settings:
                     backup_plan_data["AdvancedBackupSettings"] = advanced_backup_settings
                 update_response = client.update_backup_plan(
-                    aws_retry=True, BackupPlanId=response.get("BackupPlanId"), BackupPlan=backup_plan_data)
+                    aws_retry=True, BackupPlanId=response.get("BackupPlanId"), BackupPlan=backup_plan_data
+                )
                 changed = True
-            if ensure_tags(client, module, response["BackupPlanArn"],
-                           purge_tags=module.params.get("purge_tags"),
-                           tags=module.params.get("tags"),
-                           resource_type="BackupPlan",
-                           ):
+            if ensure_tags(
+                client,
+                module,
+                response["BackupPlanArn"],
+                purge_tags=module.params.get("purge_tags"),
+                tags=module.params.get("tags"),
+                resource_type="BackupPlan",
+            ):
                 changed = True
         else:  # state is present but backup plan doesnt exist => got to create
             backup_plan_data = {"BackupPlanName": backup_plan_name}
@@ -204,8 +207,7 @@ def main():
                 backup_plan_data["Rules"] = rules
             if advanced_backup_settings:
                 backup_plan_data["AdvancedBackupSettings"] = advanced_backup_settings
-            response = client.create_backup_plan(
-                aws_retry=True, BackupPlan=backup_plan_data)
+            response = client.create_backup_plan(aws_retry=True, BackupPlan=backup_plan_data)
             ensure_tags(
                 client,
                 module,
@@ -220,20 +222,19 @@ def main():
         if exist:
             try:
                 response_delete = client.delete_backup_plan(aws_retry=True, BackupPlanId=response.get("BackupPlanId"))
-                if (response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200):
+                if response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to delete plan")
 
     formatted_results = camel_dict_to_snake_dict(response)
     # Turn the resource tags from boto3 into an ansible friendly tag dictionary
-    formatted_results["tags"] = boto3_tag_list_to_ansible_dict(
-        formatted_results.get("tags", []))
+    formatted_results["tags"] = boto3_tag_list_to_ansible_dict(formatted_results.get("tags", []))
     module.exit_json(
         changed=changed,
         backup_plan=formatted_results,
         backup_plan_name=response.get("BackupPlanName"),
-        backup_plan_id=response.get("BackupPlanId")
+        backup_plan_id=response.get("BackupPlanId"),
     )
 
 
