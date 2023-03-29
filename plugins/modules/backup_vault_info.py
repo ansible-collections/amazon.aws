@@ -70,7 +70,10 @@ backup_vault_info:
             description: The number of recovery points that are stored in a backup vault.
             type: int
         locked:
-            description: A Boolean that indicates whether Backup Vault Lock is currently protecting the backup vault. True means that Vault Lock causes delete or update operations on the recovery points stored in the vault to fail.
+            description:
+            - A Boolean that indicates whether Backup Vault Lock is currently protecting
+            the backup vault. True means that Vault Lock causes delete or update operations
+            on the recovery points stored in the vault to fail.
             type: bool
             sample: true
         min_retention_days:
@@ -99,7 +102,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
-
 
 
 def get_backup_vaults(connection, module):
@@ -132,9 +134,9 @@ def get_backup_vault_detail(connection, module):
     snaked_backup_vault = []
     for backup_vault in output:
         try:
-          module.params["resource"] = backup_vault.get("BackupVaultArn", None)
-          tag_dict = get_backup_resource_tags(module, connection)
-          backup_vault.update({"tags": tag_dict})
+            module.params["resource"] = backup_vault.get("BackupVaultArn", None)
+            tag_dict = get_backup_resource_tags(module, connection)
+            backup_vault.update({"tags": tag_dict})
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.warn("Failed to get the backup vault tags - {0}".format(e))
         snaked_backup_vault.append(camel_dict_to_snake_dict(backup_vault))
