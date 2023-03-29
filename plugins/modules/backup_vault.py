@@ -192,7 +192,7 @@ def get_vault_facts(module, client, vault_name):
     # get Backup Vault info
     try:
         resp = client.describe_backup_vault(BackupVaultName=vault_name)
-    except is_boto3_error_code('AccessDeniedException'):
+    except is_boto3_error_code("AccessDeniedException"):
         module.warn("Access Denied trying to describe backup vault")
     except (BotoCoreError, ClientError) as err:
         module.fail_json_aws(err, msg="Unable to get vault facts")

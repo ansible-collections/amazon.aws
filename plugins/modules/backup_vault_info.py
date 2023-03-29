@@ -4,6 +4,7 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
 DOCUMENTATION = r"""
 ---
 module: backup_vault_info
@@ -11,7 +12,7 @@ version_added: 6.0.0
 short_description: Gather information about AWS Backup Vaults.
 description:
   - Gather information about AWS Backup Vaults.
-author: "Gomathi Selvi Srinivasan (@GomathiselviS)"
+author: Gomathi Selvi Srinivasan (@GomathiselviS)
 options:
   backup_vault_names:
     type: list
@@ -36,7 +37,7 @@ EXAMPLES = r"""
 # Gather information about a particular backup vault
 - amazon.aws.backup_vault_info:
     backup vault_names:
-      - arn:aws:backup_vault:us-east-2:123456789012:backup vault/MyTrail
+      - arn:aws:backup_vault:us-east-2:123456789012:backup_vault/defaultvault
 """
 
 RETURN = r"""
@@ -107,7 +108,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backu
 def get_backup_vaults(connection, module):
     all_backup_vaults = []
     try:
-        result = connection.get_paginator('list_backup_vaults')
+        result = connection.get_paginator("list_backup_vaults")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the backup vaults.")
     for backup_vault in result.paginate():
@@ -143,29 +144,29 @@ def get_backup_vault_detail(connection, module):
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for v in snaked_backup_vault:
-        if 'tags_list' in v:
-            v['tags'] = boto3_tag_list_to_ansible_dict(v['tags_list'], 'key', 'value')
-            del (v['tags_list'])
-        if 'response_metadata' in v:
-            del (v['response_metadata'])
-    result['backup_vault_list'] = snaked_backup_vault
+        if "tags_list" in v:
+            v["tags"] = boto3_tag_list_to_ansible_dict(v["tags_list"], "key", "value")
+            del v["tags_list"]
+        if "response_metadata" in v:
+            del v["response_metadata"]
+    result["backup_vault_list"] = snaked_backup_vault
     return result
 
 
 def main():
     argument_spec = dict(
-        backup_vault_names=dict(type='list', elements='str', default=[]),
+        backup_vault_names=dict(type="list", elements="str", default=[]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        connection = module.client('backup', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
     result = get_backup_vault_detail(connection, module)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
