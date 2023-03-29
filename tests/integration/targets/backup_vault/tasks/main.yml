@@ -20,11 +20,6 @@
         encryption_key_arn: "{{ key.key_arn }}"
         tags:
           environment: dev
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: backup_vault_result
 
     - assert:
@@ -32,6 +27,18 @@
           - backup_vault_result is changed
           - backup_vault_result.vault.backup_vault_name == backup_vault_name
           - backup_vault_result.vault.encryption_key_arn == key.key_arn
+    
+    - name: Get backup vault info by passing the vault name
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: vault_info
+
+    - assert:
+        that:
+          - vault_info.backup_vault_list[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
+          - vault_info.backup_vault_list[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
+
  
   always:
     - name: Delete AWS Backup Vault created during this test
@@ -39,11 +46,6 @@
         backup_vault_name: "{{ backup_vault_name }}"
         state: absent
       ignore_errors: true
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
 
     - name: finish off by deleting keys
       kms_key:

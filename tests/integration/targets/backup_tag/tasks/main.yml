@@ -10,11 +10,6 @@
     - name: Create an AWS Backup Vault so we have something to tag
       amazon.aws.backup_vault:
         backup_vault_name: "{{ backup_vault_name }}"
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: backup_vault_create_result
 
     - set_fact:
@@ -123,9 +118,4 @@
       amazon.aws.backup_vault:
         backup_vault_name: "{{ backup_vault_name }}"
         state: absent
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
       ignore_errors: true

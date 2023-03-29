@@ -9,7 +9,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_vault
 version_added: 6.0.0
-short_description: manage BackupVault create, delete, list
+short_description: manage AWS Backup Vaults.
 description:
   - Creates, deletes, or lists Backup Vault configuration.
 author:
@@ -193,8 +193,7 @@ def get_vault_facts(module, client, vault_name):
     try:
         resp = client.describe_backup_vault(BackupVaultName=vault_name)
     except is_boto3_error_code('AccessDeniedException'):
-        module.warn(
-            'Access Denied trying to describe backup vault')
+        module.warn("Access Denied trying to describe backup vault")
     except (BotoCoreError, ClientError) as err:
         module.fail_json_aws(err, msg="Unable to get vault facts")
 
