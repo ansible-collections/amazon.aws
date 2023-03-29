@@ -147,8 +147,7 @@ def main():
         state=dict(default="present", choices=["present", "absent"]),
     )
     required_if = [
-        ("state", "present", ["selection_name",
-         "backup_plan_id", "iam_role_arn"]),
+        ("state", "present", ["selection_name", "backup_plan_id", "iam_role_arn"]),
         ("state", "absent", ["selection_name", "backup_plan_id"]),
     ]
     module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if)
@@ -192,29 +191,38 @@ def main():
         if exist:
             # we need to get everything to manage the selection
             full_selection = client.get_backup_selection(
-                SelectionId=response["SelectionId"], BackupPlanId=backup_plan_id)
+                SelectionId=response["SelectionId"], BackupPlanId=backup_plan_id
+            )
             update_needed = False
-            if (full_selection.get("BackupSelection", {}).get("IamRoleArn", None) != iam_role_arn):
+            if full_selection.get("BackupSelection", {}).get("IamRoleArn", None) != iam_role_arn:
                 update_needed = True
             fields_to_check = [
                 {
                     "field_name": "Resources",
-                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("Resources", None), sort_keys=True),
+                    "field_value_from_aws": json.dumps(
+                        full_selection.get("BackupSelection", {}).get("Resources", None), sort_keys=True
+                    ),
                     "field_value": json.dumps(resources, sort_keys=True)
                 },
                 {
                     "field_name": "ListOfTags",
-                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("ListOfTags", None), sort_keys=True),
+                    "field_value_from_aws": json.dumps(
+                        full_selection.get("BackupSelection", {}).get("ListOfTags", None), sort_keys=True
+                    ),
                     "field_value": json.dumps(list_of_tags, sort_keys=True)
                 },
                 {
                     "field_name": "NotResources",
-                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("NotResources", None), sort_keys=True),
+                    "field_value_from_aws": json.dumps(
+                        full_selection.get("BackupSelection", {}).get("NotResources", None), sort_keys=True
+                    ),
                     "field_value": json.dumps(not_resources, sort_keys=True)
                 },
                 {
                     "field_name": "Conditions",
-                    "field_value_from_aws": json.dumps(full_selection.get("BackupSelection", {}).get("Conditions", None), sort_keys=True),
+                    "field_value_from_aws": json.dumps(
+                        full_selection.get("BackupSelection", {}).get("Conditions", None), sort_keys=True
+                    ),
                     "field_value": json.dumps(conditions, sort_keys=True)
                 }
             ]
@@ -236,7 +244,8 @@ def main():
                         update_needed = True
             if update_needed:
                 response_delete = client.delete_backup_selection(
-                    aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id)
+                    aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id
+                )
     # state is present but backup vault doesnt exist
         if not exist or update_needed:
             response = client.create_backup_selection(
@@ -257,7 +266,7 @@ def main():
                 response_delete = client.delete_backup_selection(
                     aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id
                 )
-                if (response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200):
+                if response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     changed = True
             except Exception as e:
                 module.exit_json(changed=changed, failed=True)
