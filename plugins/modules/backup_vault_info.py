@@ -9,9 +9,9 @@ DOCUMENTATION = r"""
 ---
 module: backup_vault_info
 version_added: 6.0.0
-short_description: Describe AWS Backup Vaults.
+short_description: Describe AWS Backup Vaults
 description:
-  - Gets info about Backup Vault configuration.
+  - Lists info about Backup Vault configuration.
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
 options:
@@ -43,7 +43,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 backup_vault_info:
-    description: List of backup vault pbjects. Each element consists of a dict with all the information related to that backup vault.
+    description: List of backup vault objects. Each element consists of a dict with all the information related to that backup vault.
     type: list
     elements: dict
     returned: always
@@ -73,9 +73,8 @@ backup_vault_info:
             type: int
         locked:
             description:
-            - A Boolean that indicates whether Backup Vault Lock is currently protecting
-            the backup vault. True means that Vault Lock causes delete or update operations
-            on the recovery points stored in the vault to fail.
+            - Indicates whether Backup Vault Lock is currently protecting the backup vault.
+            - True means that Vault Lock causes delete or update operations on the recovery points stored in the vault to fail.
             type: bool
             sample: true
         min_retention_days:

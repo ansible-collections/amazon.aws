@@ -9,7 +9,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_vault
 version_added: 6.0.0
-short_description: manage AWS Backup Vaults.
+short_description: Manage AWS Backup Vaults
 description:
   - Creates, deletes, or lists Backup Vault configuration.
 author:
