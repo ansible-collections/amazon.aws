@@ -28,13 +28,6 @@ options:
       - They consist of letters, numbers, and hyphens.
     type: str
     required: true
-  backup_vault_tags:
-    description:
-      - Metadata that you can assign to help organize the resources that you create.
-      - A dictionary of tags to add or remove from the resource.
-      - If the value provided for a tag key is null and I(state=absent), the tag will be removed regardless of its current value.
-    type: dict
-    aliases: ['tags']
   encryption_key_arn:
     description:
       - The server-side encryption key that is used to protect the backups.
@@ -44,17 +37,12 @@ options:
       - A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice.
       - If used, this parameter must contain 1 to 50 alphanumeric or "-_." characters.
     type: str
-  purge_tags:
-    description:
-      - Whether unspecified tags should be removed from the resource.
-      - Note that when combined with I(state=absent), specified tag keys are not purged regardless of its current value.
-    type: bool
-    default: False
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
   - amazon.aws.boto3
+  - amazon.aws.tags
 """
 
 EXAMPLES = r"""
@@ -243,7 +231,7 @@ def main():
         backup_vault_name=dict(required=True, type="str"),
         encryption_key_arn=dict(type="str", no_log=False),
         creator_request_id=dict(type="str"),
-        backup_vault_tags=dict(type="dict", aliases=["tags"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=False, type="bool"),
     )
 
@@ -256,11 +244,11 @@ def main():
         state = "present"
     elif module.params["state"] in ("absent", "disabled"):
         state = "absent"
-    tags = module.params["backup_vault_tags"]
+    tags = module.params["tags"]
     purge_tags = module.params["purge_tags"]
     ct_params = dict(
         BackupVaultName=module.params["backup_vault_name"],
-        BackupVaultTags=module.params["backup_vault_tags"],
+        BackupVaultTags=module.params["tags"],
         EncryptionKeyArn=module.params["encryption_key_arn"],
         CreatorRequestId=module.params["creator_request_id"],
     )

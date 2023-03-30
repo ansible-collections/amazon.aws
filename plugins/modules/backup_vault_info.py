@@ -9,9 +9,9 @@ DOCUMENTATION = r"""
 ---
 module: backup_vault_info
 version_added: 6.0.0
-short_description: Gather information about AWS Backup Vaults.
+short_description: Describe AWS Backup Vaults.
 description:
-  - Gather information about AWS Backup Vaults.
+  - Gets info about Backup Vault configuration.
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
 options:
@@ -33,7 +33,7 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all backup vaults
-- amazon.aws.backup_vault_info:
+- amazon.aws.backup_vault_info
 
 # Gather information about a particular backup vault
 - amazon.aws.backup_vault_info:
