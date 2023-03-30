@@ -261,6 +261,7 @@ route_table:
           returned: when the route is via a Carrier gateway
           type: str
           sample: local
+          version_added: 6.0.0
         origin:
           description: mechanism through which the route is in the table.
           returned: always
