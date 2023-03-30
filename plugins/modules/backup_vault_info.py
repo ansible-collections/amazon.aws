@@ -78,11 +78,15 @@ backup_vault_info:
             type: bool
             sample: true
         min_retention_days:
-            description: The minimum retention period that the vault retains its recovery points. If this parameter is not specified, Vault Lock does not enforce a minimum retention period.
+            description:
+            - The minimum retention period that the vault retains its recovery points.
+            - If this parameter is not specified, Vault Lock does not enforce a minimum retention period.
             type: int
             sample: 120
         max_retention_days:
-            description: The maximum retention period that the vault retains its recovery points. If this parameter is not specified, Vault Lock does not enforce a maximum retention period (allowing indefinite storage).
+            description:
+            - The maximum retention period that the vault retains its recovery points.
+            - If this parameter is not specified, Vault Lock does not enforce a maximum retention period (allowing indefinite storage).
             type: int
             sample: 123
         lock_date:

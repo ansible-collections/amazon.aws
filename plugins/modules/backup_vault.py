@@ -232,7 +232,7 @@ def main():
         encryption_key_arn=dict(type="str", no_log=False),
         creator_request_id=dict(type="str"),
         tags=dict(type="dict", aliases=["resource_tags"]),
-        purge_tags=dict(default=False, type="bool"),
+        purge_tags=dict(default=True, type="bool"),
     )
 
     required_if = [("state", "present", ["backup_vault_name"]), ("state", "enabled", ["backup_vault_name"])]
