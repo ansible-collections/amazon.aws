@@ -51,8 +51,8 @@
 
     - assert:
         that:
-          - vault_info.backup_vault_list[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
-          - vault_info.backup_vault_list[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
+          - vault_info.backup_vaults[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
+          - vault_info.backup_vaults[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
 
     - name: Create an AWS Backup Vault - idempotency check
       amazon.aws.backup_vault:

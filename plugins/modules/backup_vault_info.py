@@ -42,7 +42,7 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-backup_vault_info:
+backup_vaults:
     description: List of backup vault objects. Each element consists of a dict with all the information related to that backup vault.
     type: list
     elements: dict
@@ -153,7 +153,7 @@ def get_backup_vault_detail(connection, module):
             del v["tags_list"]
         if "response_metadata" in v:
             del v["response_metadata"]
-    result["backup_vault_list"] = snaked_backup_vault
+    result["backup_vaults"] = snaked_backup_vault
     return result
 
 
