@@ -135,7 +135,7 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
     tags : Dict of tags converted from ansible_dict to boto3 list of dicts
     vault_arn : The ARN of the Backup Vault to operate on
     curr_tags : Dict of the current tags on resource, if any
-    dry_run : true/false to determine if changes will be made if needed
+    purge_tags : true/false to determine if current tags will be retained or not
     """
 
     if tags is None:
@@ -174,7 +174,7 @@ def get_vault_facts(module, client, vault_name):
 
     module : AnsibleAWSModule object
     client : boto3 client connection object
-    name : Name of the backup vault
+    vault_name : Name of the backup vault
     """
     resp = None
     # get Backup Vault info
@@ -235,7 +235,10 @@ def main():
         purge_tags=dict(default=True, type="bool"),
     )
 
-    required_if = [("state", "present", ["backup_vault_name"]), ("state", "enabled", ["backup_vault_name"])]
+    required_if = [
+        ("state", "present", ["backup_vault_name"]),
+        ("state", "enabled", ["backup_vault_name"]),
+    ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_if=required_if)
 
