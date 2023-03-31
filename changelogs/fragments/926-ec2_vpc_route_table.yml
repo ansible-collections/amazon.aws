@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).

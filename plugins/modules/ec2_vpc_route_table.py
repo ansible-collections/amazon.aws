@@ -256,6 +256,12 @@ route_table:
           returned: when the route is via a NAT gateway
           type: str
           sample: local
+        carrier_gateway_id:
+          description: ID of the Carrier gateway.
+          returned: when the route is via a Carrier gateway
+          type: str
+          sample: local
+          version_added: 6.0.0
         origin:
           description: mechanism through which the route is in the table.
           returned: always
@@ -708,6 +714,8 @@ def create_route_spec(connection, module, vpc_id):
             route_spec['gateway_id'] = igw
         if route_spec.get('gateway_id') and route_spec['gateway_id'].startswith('nat-'):
             rename_key(route_spec, 'gateway_id', 'nat_gateway_id')
+        if route_spec.get('gateway_id') and route_spec['gateway_id'].startswith('cagw-'):
+            rename_key(route_spec, 'gateway_id', 'carrier_gateway_id')
 
     return snake_dict_to_camel_dict(routes, capitalize_first=True)
 
