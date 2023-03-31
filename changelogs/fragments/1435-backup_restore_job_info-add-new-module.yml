@@ -1,0 +1,2 @@
+trivial:
+- backup_restore_job_info - Added a new module that lists info of AWS Backup restore jobs (https://github.com/ansible-collections/amazon.aws/pull/1435).
