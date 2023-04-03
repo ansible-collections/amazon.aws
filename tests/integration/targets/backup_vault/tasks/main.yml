@@ -1,0 +1,83 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: create a key
+      kms_key:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: yes
+        enable_key_rotation: no
+      register: key
+
+    - name: Create an AWS Backup Vault - check mode
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        encryption_key_arn: "{{ key.key_arn }}"
+        tags:
+          environment: dev
+      register: backup_vault_result_check
+      check_mode: yes
+
+    - assert:
+        that:
+          - backup_vault_result_check is changed
+          - backup_vault_result_check.vault.backup_vault_name == backup_vault_name
+          - backup_vault_result_check.vault.encryption_key_arn == ""
+
+    - name: Create an AWS Backup Vault
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        encryption_key_arn: "{{ key.key_arn }}"
+        tags:
+          environment: dev
+      register: backup_vault_result
+
+    - assert:
+        that:
+          - backup_vault_result is changed
+          - backup_vault_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_result.vault.encryption_key_arn == key.key_arn
+    
+    - name: Get backup vault info by passing the vault name
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: vault_info
+
+    - assert:
+        that:
+          - vault_info.backup_vaults[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
+          - vault_info.backup_vaults[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
+
+    - name: Create an AWS Backup Vault - idempotency check
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        encryption_key_arn: "{{ key.key_arn }}"
+        tags:
+          environment: dev
+      register: backup_vault_result_idem
+
+    - assert:
+        that:
+          - backup_vault_result_idem is not changed
+          - backup_vault_result_idem.vault.backup_vault_name == backup_vault_name
+          - backup_vault_result_idem.vault.encryption_key_arn == key.key_arn
+ 
+  always:
+    - name: Delete AWS Backup Vault created during this test
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: finish off by deleting keys
+      kms_key:
+        state: absent
+        alias: '{{ kms_key_alias }}'
+        pending_window: 7
+      ignore_errors: true

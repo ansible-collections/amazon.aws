@@ -9,6 +9,8 @@ action_groups:
   - aws_s3
   - backup_tag
   - backup_tag_info
+  - backup_vault
+  - backup_vault_info
   - cloudformation
   - cloudformation_info
   - cloudtrail

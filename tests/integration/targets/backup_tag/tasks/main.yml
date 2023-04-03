@@ -8,20 +8,12 @@
   block:
 
     - name: Create an AWS Backup Vault so we have something to tag
-      command: 'aws backup create-backup-vault --backup-vault-name {{ backup_vault_name }}'
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
       register: backup_vault_create_result
 
-    - name: convert it to an object
-      set_fact:
-        backup_vault: "{{ backup_vault_create_result.stdout | from_json }}"
-
     - set_fact:
-        vault_arn: "{{ backup_vault.BackupVaultArn }}"
+        vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
 
     - name: List tags on a backup vault
       amazon.aws.backup_tag_info:
@@ -123,10 +115,7 @@
 
   always:
     - name: Delete AWS Backup Vault created during this test
-      command: 'aws backup delete-backup-vault --backup-vault-name {{ backup_vault_name }}'
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
       ignore_errors: true
