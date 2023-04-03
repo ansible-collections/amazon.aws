@@ -151,6 +151,7 @@ def update_resource(client, module, params, result):
 
     del current_params['ConfigRules'][0]['ConfigRuleArn']
     del current_params['ConfigRules'][0]['ConfigRuleId']
+    del current_params['ConfigRules'][0]['EvaluationModes']
 
     if params != current_params['ConfigRules'][0]:
         try:
