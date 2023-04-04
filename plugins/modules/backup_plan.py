@@ -208,6 +208,7 @@ def main():
             if advanced_backup_settings:
                 backup_plan_data["AdvancedBackupSettings"] = advanced_backup_settings
             response = client.create_backup_plan(aws_retry=True, BackupPlan=backup_plan_data)
+            response["BackupPlanName"] = backup_plan_name
             ensure_tags(
                 client,
                 module,
