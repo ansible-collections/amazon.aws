@@ -268,8 +268,8 @@ def main():
                 )
                 if response_delete["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     changed = True
-            except Exception as e:
-                module.exit_json(changed=changed, failed=True)
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Failed to delete selection")
         # remove_peer_connection(client, module)
     formatted_results = camel_dict_to_snake_dict(response)
     # Turn the resource tags from boto3 into an ansible friendly tag dictionary
