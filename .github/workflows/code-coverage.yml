@@ -1,11 +1,10 @@
 ---
 name: CodeCoverage
 on:
-  workflow_call:
-    inputs:
-      collection_pre_install:
-        required: true
-        type: string
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 jobs:
   codecoverage:
     env:
