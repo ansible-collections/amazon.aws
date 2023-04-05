@@ -1,4 +1,7 @@
 # Amazon AWS Collection
+
+[![Codecov](https://codecov.io/gh/ansible-collections/amazon.aws/branch/main/graph/badge.svg)](https://codecov.io/gh/ansible-collections/amazon.aws)
+
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible cloud team.
 
 AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.

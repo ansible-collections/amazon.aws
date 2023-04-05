@@ -1,0 +1,11 @@
+---
+name: Code Coverage
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  codecoverage:
+    uses: ansible-network/github_actions/.github/workflows/coverage_network_devices.yml@main
