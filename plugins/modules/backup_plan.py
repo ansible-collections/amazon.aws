@@ -219,7 +219,6 @@ def main():
             )
             changed = True
     elif state == "absent":
-
         if exist:
             try:
                 response_delete = client.delete_backup_plan(aws_retry=True, BackupPlanId=response.get("BackupPlanId"))

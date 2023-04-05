@@ -202,28 +202,28 @@ def main():
                     "field_value_from_aws": json.dumps(
                         full_selection.get("BackupSelection", {}).get("Resources", None), sort_keys=True
                     ),
-                    "field_value": json.dumps(resources, sort_keys=True)
+                    "field_value": json.dumps(resources, sort_keys=True),
                 },
                 {
                     "field_name": "ListOfTags",
                     "field_value_from_aws": json.dumps(
                         full_selection.get("BackupSelection", {}).get("ListOfTags", None), sort_keys=True
                     ),
-                    "field_value": json.dumps(list_of_tags, sort_keys=True)
+                    "field_value": json.dumps(list_of_tags, sort_keys=True),
                 },
                 {
                     "field_name": "NotResources",
                     "field_value_from_aws": json.dumps(
                         full_selection.get("BackupSelection", {}).get("NotResources", None), sort_keys=True
                     ),
-                    "field_value": json.dumps(not_resources, sort_keys=True)
+                    "field_value": json.dumps(not_resources, sort_keys=True),
                 },
                 {
                     "field_name": "Conditions",
                     "field_value_from_aws": json.dumps(
                         full_selection.get("BackupSelection", {}).get("Conditions", None), sort_keys=True
                     ),
-                    "field_value": json.dumps(conditions, sort_keys=True)
+                    "field_value": json.dumps(conditions, sort_keys=True),
                 }
             ]
             for field_to_check in fields_to_check:
@@ -246,7 +246,7 @@ def main():
                 response_delete = client.delete_backup_selection(
                     aws_retry=True, SelectionId=response["SelectionID"], BackupPlanId=backup_plan_id
                 )
-    # state is present but backup vault doesnt exist
+        # state is present but backup vault doesnt exist
         if not exist or update_needed:
             response = client.create_backup_selection(
                 aws_retry=True, BackupPlanId=backup_plan_id, BackupSelection=backup_selection_data
