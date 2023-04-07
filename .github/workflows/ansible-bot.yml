@@ -4,14 +4,18 @@ on:
     types:
       - opened
       - reopened
+  pull_request_review:
+    types:
+      - submitted
+      - edited
+      - dismissed
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
 
 jobs:
-  add_label:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-    steps:
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          labels: needs_triage
+  labeler:
+    uses: abikouo/gha_testing/.github/workflows/ansible_bot.yml@main
