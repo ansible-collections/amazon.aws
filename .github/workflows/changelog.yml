@@ -1,0 +1,17 @@
+---
+name: CI
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.sha }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - 'stable-*'
+  pull_request:
+
+jobs:
+  changelog:
+    uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
