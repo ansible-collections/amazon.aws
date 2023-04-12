@@ -35,6 +35,7 @@ jobs:
           repository: ansible-collections/community.aws
           path: ${{ env.community_dir }}
           ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: "0"
 
       - name: list changes for pull request
         id: splitter
