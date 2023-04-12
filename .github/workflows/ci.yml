@@ -1,0 +1,50 @@
+---
+name: CI
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.sha }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - 'stable-*'
+  pull_request:
+
+jobs:
+  changelog:
+    uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
+  splitter:
+    env:
+      amazon_dir: "./amazon"
+      community_dir: "./community"
+    runs-on: ubuntu-latest
+    outputs:
+      test_targets: ${{ steps.display.outputs.test_targets }}
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.amazon_dir }}
+          fetch-depth: "0"
+
+      - name: checkout the community.aws collection
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.community_dir }}
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: list changes for pull request
+        id: splitter
+        uses: abikouo/github_actions/.github/actions/ansible_test_splitter@ansible_test_splitter
+        with:
+          collections_to_test: |
+            ${{ env.amazon_dir }}:${{ github.event.pull_request.base.ref }}
+            ${{ env.community_dir }}:${{ github.event.pull_request.base.ref }}
+
+      - name: display targets
+        id: display
+        run: echo "test_targets=${{ steps.splitter.outputs.test_targets }}" >> $GITHUB_OUTPUT
+        shell: bash
