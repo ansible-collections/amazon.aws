@@ -69,6 +69,21 @@
         - lt.latest_version == 4
         - lt.latest_template.launch_template_data.instance_type == "c4.large"
 
+  - name: update simple instance template
+    ec2_launch_template:
+      name: "{{ resource_prefix }}-simple"
+      version_description: "Fix something."
+    register: lt
+
+  - name: instance with cpu_options created with the right options
+    assert:
+      that:
+        - lt is success
+        - lt is changed
+        - lt.default_version == 5
+        - lt.latest_version == 5
+        - lt.latest_template.version_description == "Fix something."
+
   always:
   - name: delete the template
     ec2_launch_template:
