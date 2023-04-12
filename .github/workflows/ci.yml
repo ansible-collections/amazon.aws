@@ -40,9 +40,7 @@ jobs:
         id: splitter
         uses: abikouo/github_actions/.github/actions/ansible_test_splitter@ansible_test_splitter
         with:
-          collections_to_test: |
-            ${{ env.amazon_dir }}:${{ github.event.pull_request.base.ref }}
-            ${{ env.community_dir }}:${{ github.event.pull_request.base.ref }}
+          collections_to_test: "${{ env.amazon_dir }},${{ env.community_dir }}"
 
       - name: display targets
         id: display
