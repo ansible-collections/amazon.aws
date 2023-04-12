@@ -39,7 +39,7 @@ jobs:
 
       - name: list changes for pull request
         id: splitter
-        uses: abikouo/github_actions/.github/actions/ansible_test_splitter@ansible_test_splitter
+        uses: ansible-network/github_actions/.github/actions/ansible_test_splitter@main
         with:
           collections_to_test: |
             ${{ env.amazon_dir }}
@@ -49,3 +49,84 @@ jobs:
         id: display
         run: echo "test_targets=${{ steps.splitter.outputs.test_targets }}" >> $GITHUB_OUTPUT
         shell: bash
+  integration:
+    needs:
+      - splitter
+    env:
+      amazon_dir: "./amazon"
+      community_dir: "./community"
+      test_targets: ${{ needs.splitter.outputs.test_targets }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        collection-to-test:
+          - amazon.aws
+          - community.aws
+        ansible-version:
+          - milestone
+        python-version:
+          - "3.9"
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    name: "${{ matrix.collection-to-test }}-py${{ matrix.python-version }}-${{ matrix.ansible-version }}-${{ matrix.batch }}"
+    steps:
+      - name: Read ansible-test targets
+        id: read-targets
+        run: >-
+          echo "ansible_test_targets=$(echo "${{ env.test_targets }}" | sed s/';'/'\n'/g |
+          grep "${{ matrix.collection-to-test }}-${{ matrix.batch }}" | cut -d ':' -f2 | sed s/','/' '/g)" >> $GITHUB_OUTPUT
+        shell: bash
+      
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.amazon_dir }}
+
+      - name: checkout the community.aws collection
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.community_dir }}
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Build and install amazon.aws collection
+        id: install-amazon
+        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.amazon_dir }}
+
+      - name: Build and install community.aws collection
+        id: install-community
+        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.community_dir }}
+
+      - name: Get path for collection to test
+        id: identify-path
+        run: |
+          run: |
+            if [ "$COLLECTION_TO_TEST" == "amazon.aws" ]; then
+              echo "collection_path=$AMAZON_AWS_PATH" >> $GITHUB_OUTPUT
+            else
+              echo "collection_path=$COMMUNITY_AWS_PATH" >> $GITHUB_OUTPUT
+            fi
+        env:
+          AMAZON_AWS_PATH: ${{ steps.install-amazon.outputs.collection_path }}
+          COMMUNITY_AWS_PATH: ${{ steps.install-community.outputs.collection_path }}
+          COLLECTION_TO_TEST: ${{ matrix.collection-to-test }}
+        shell: bash
+
+      - name: Create AWS/sts session credentials
+        uses: abikouo/github_actions/.github/actions/ansible_aws_test_provider@ansible_test_integration_a
+        with:
+          collection_path: ${{ steps.identify-path.outputs.collection_path }}
+          ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
+
+      - name: Run integration tests
+        uses: abikouo/github_actions/.github/actions/ansible_test_integration@ansible_test_integration_a
+        with:
+          collection_path: ${{ steps.identify-path.outputs.collection_path }}
+          python_version: ${{ matrix.python-version }}
+          ansible_version: ${{ matrix.ansible-version }}
