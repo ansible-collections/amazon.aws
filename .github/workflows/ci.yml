@@ -110,12 +110,11 @@ jobs:
       - name: Get path for collection to test
         id: identify-path
         run: |
-          run: |
-            if [ "$COLLECTION_TO_TEST" == "amazon.aws" ]; then
-              echo "collection_path=$AMAZON_AWS_PATH" >> $GITHUB_OUTPUT
-            else
-              echo "collection_path=$COMMUNITY_AWS_PATH" >> $GITHUB_OUTPUT
-            fi
+          if [ "$COLLECTION_TO_TEST" == "amazon.aws" ]; then
+            echo "collection_path=$AMAZON_AWS_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "collection_path=$COMMUNITY_AWS_PATH" >> $GITHUB_OUTPUT
+          fi
         env:
           AMAZON_AWS_PATH: ${{ steps.install-amazon.outputs.collection_path }}
           COMMUNITY_AWS_PATH: ${{ steps.install-community.outputs.collection_path }}
