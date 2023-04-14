@@ -1496,6 +1496,10 @@ def main():
         supports_check_mode=True,
     )
 
+
+    if module.params['ca_certificate_identifier']:
+        module.require_botocore_at_least("1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance")
+
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
     if module.params["new_db_instance_identifier"]:
