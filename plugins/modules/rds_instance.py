@@ -1008,6 +1008,12 @@ def get_parameters(client, module, parameters, method_name):
     if method_name == "modify_db_instance":
         parameters = get_options_with_changing_values(client, module, parameters)
 
+    if parameters.get("CACertificateIdentifier") is not None and method_name in [
+        "create_db_instance",
+        "modify_db_instance",
+    ]:
+        parameters["CACertificateIdentifier"] = parameters.get("CACertificateIdentifier")
+
     return parameters
 
 
@@ -1019,7 +1025,10 @@ def get_options_with_changing_values(client, module, parameters):
     apply_immediately = parameters.pop("ApplyImmediately", None)
     cloudwatch_logs_enabled = module.params["enable_cloudwatch_logs_exports"]
     purge_security_groups = module.params["purge_security_groups"]
+    ca_certificate_identifier = module.params["ca_certificate_identifier"]
 
+    if ca_certificate_identifier:
+        parameters["CACertificateIdentifier"] = ca_certificate_identifier
     if port:
         parameters["DBPortNumber"] = port
     if not force_update_password:

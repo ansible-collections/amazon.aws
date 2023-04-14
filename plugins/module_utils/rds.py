@@ -249,6 +249,9 @@ def call_method(client, module, method_name, parameters):
         retry_codes = get_rds_method_attribute(method_name, module).retry_codes
         method = getattr(client, method_name)
         try:
+            import q
+
+            q("creating db ", method, parameters)
             result = AWSRetry.jittered_backoff(catch_extra_error_codes=retry_codes)(method)(**parameters)
         except (BotoCoreError, ClientError) as e:
             changed = handle_errors(module, e, method_name, parameters)
@@ -363,7 +366,7 @@ def arg_spec_to_rds_params(options_dict):
         processor_features = options_dict.pop("processor_features")
     camel_options = snake_dict_to_camel_dict(options_dict, capitalize_first=True)
     for key in list(camel_options.keys()):
-        for old, new in (("Db", "DB"), ("Iam", "IAM"), ("Az", "AZ")):
+        for old, new in (("Db", "DB"), ("Iam", "IAM"), ("Az", "AZ"), ("Ca", "CA")):
             if old in key:
                 camel_options[key.replace(old, new)] = camel_options.pop(key)
     camel_options["Tags"] = tags
