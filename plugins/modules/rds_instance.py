@@ -1403,7 +1403,7 @@ def main():
         auto_minor_version_upgrade=dict(type="bool"),
         availability_zone=dict(aliases=["az", "zone"]),
         backup_retention_period=dict(type="int"),
-        ca_certificate_identifier=dict(),
+        ca_certificate_identifier=dict(type="str"),
         character_set_name=dict(),
         copy_tags_to_snapshot=dict(type="bool"),
         db_cluster_identifier=dict(aliases=["cluster_id"]),
@@ -1496,9 +1496,10 @@ def main():
         supports_check_mode=True,
     )
 
-
-    if module.params['ca_certificate_identifier']:
-        module.require_botocore_at_least("1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance")
+    if module.params["ca_certificate_identifier"]:
+        module.require_botocore_at_least(
+            "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
+        )
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
