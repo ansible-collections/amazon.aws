@@ -568,7 +568,7 @@ options:
       description:
         - The version of the http protocol to use for the distribution.
         - AWS defaults this to C(http2).
-        - Valid values are C(http1.1) and C(http2).
+        - Valid values are C(http1.1), C(http2), C(http3) and C(http2and3).
       type: str
 
     ipv6_enabled:
@@ -1617,35 +1617,16 @@ class CloudFrontValidationManager(object):
             self.__valid_methods_cached_methods[1],
             self.__valid_methods
         ]
-        self.__valid_lambda_function_association_event_types = set([
-            'viewer-request',
-            'viewer-response',
-            'origin-request',
-            'origin-response'
-        ])
-        self.__valid_viewer_certificate_ssl_support_methods = set([
-            'sni-only',
-            'vip'
-        ])
-        self.__valid_viewer_certificate_minimum_protocol_versions = set([
-            'SSLv3',
-            'TLSv1',
-            'TLSv1_2016',
-            'TLSv1.1_2016',
-            'TLSv1.2_2018',
-            'TLSv1.2_2019',
-            'TLSv1.2_2021'
-        ])
-        self.__valid_viewer_certificate_certificate_sources = set([
-            'cloudfront',
-            'iam',
-            'acm'
-        ])
-        self.__valid_http_versions = set([
-            'http1.1',
-            'http2'
-        ])
-        self.__s3_bucket_domain_identifier = '.s3.amazonaws.com'
+        self.__valid_lambda_function_association_event_types = set(
+            ["viewer-request", "viewer-response", "origin-request", "origin-response"]
+        )
+        self.__valid_viewer_certificate_ssl_support_methods = set(["sni-only", "vip"])
+        self.__valid_viewer_certificate_minimum_protocol_versions = set(
+            ["SSLv3", "TLSv1", "TLSv1_2016", "TLSv1.1_2016", "TLSv1.2_2018", "TLSv1.2_2019", "TLSv1.2_2021"]
+        )
+        self.__valid_viewer_certificate_certificate_sources = set(["cloudfront", "iam", "acm"])
+        self.__valid_http_versions = set(["http1.1", "http2", "http3", "http2and3"])
+        self.__s3_bucket_domain_identifier = ".s3.amazonaws.com"
 
     def add_missing_key(self, dict_object, key_to_set, value_to_set):
         if key_to_set not in dict_object and value_to_set is not None:
