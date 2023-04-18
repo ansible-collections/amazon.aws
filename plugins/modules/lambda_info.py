@@ -395,7 +395,14 @@ def config_details(client, module, function_name):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Trying to get {0} configuration".format(function_name))
 
-    return camel_dict_to_snake_dict(lambda_info)
+    if "Environment" in lambda_info and "Variables" in lambda_info["Environment"]:
+        env_vars = lambda_info["Environment"]["Variables"]
+        snaked_lambda_info = camel_dict_to_snake_dict(lambda_info)
+        snaked_lambda_info["environment"]["variables"] = env_vars
+    else:
+        snaked_lambda_info = camel_dict_to_snake_dict(lambda_info)
+
+    return snaked_lambda_info
 
 
 def mapping_details(client, module, function_name):

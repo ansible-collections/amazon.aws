@@ -1,0 +1,2 @@
+bugfixes:
+- lambda_info - Do not convert environment variables to snake_case when querying lambda config. (https://github.com/ansible-collections/amazon.aws/pull/1457).
