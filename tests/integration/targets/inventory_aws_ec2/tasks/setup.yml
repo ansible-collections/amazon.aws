@@ -57,5 +57,7 @@
     instance_type: t2.micro
     security_groups: '{{ sg_id }}'
     vpc_subnet_id: '{{ subnet_id }}'
-    wait: no
+    wait: false
+    resource_tags:
+      resource_prefix: '{{ resource_prefix }}'
   register: setup_instance

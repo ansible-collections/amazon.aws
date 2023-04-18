@@ -1,0 +1,21 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+
+    - meta: refresh_inventory
+
+    - name: "Ensure we've got a hostvars entry for the new host {{ item }}"
+      assert:
+        that:
+          - item in hostvars
+      with_items: "{{ test_inventory_hosts }}"
+      when: test_inventory_hosts | default([]) | length > 0
+
+    - name: "Ensure we've got no hosts from inventory"
+      assert:
+        that:
+          - hostvars.keys() | list | length == 0
+      when: test_inventory_hosts | default([]) | length == 0

@@ -441,6 +441,8 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
         "include_filters": [],
         "exclude_filters": [],
         "use_ssm_inventory": False,
+        "include_filter_and_logic": False,
+        "exclude_filter_and_logic": False,
     }
 
     for u in include_filters:
@@ -452,6 +454,66 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
     assert inventory._query(**params) == {'aws_ec2': instances}
     if not instances_by_region:
         inventory._get_instances_by_region.assert_not_called()
+
+
+def test_inventory_query_include_filters_with_and_logic(inventory):
+    instances = [{"InstanceId": 2, "name": "instance-2"}]
+
+    inventory._get_instances_by_region = MagicMock()
+    inventory._get_instances_by_region.side_effect = [instances]
+
+    regions = ["some-region", "another-region"]
+    strict = True
+
+    include_filters = [
+        {"tag-key": "environment"},
+        {"tag:Project": "Ansible"},
+    ]
+
+    params = {
+        "regions": regions,
+        "strict_permissions": strict,
+        "include_filters": include_filters,
+        "exclude_filters": [],
+        "use_ssm_inventory": False,
+        "include_filter_and_logic": True,
+        "exclude_filter_and_logic": False,
+    }
+
+    assert inventory._query(**params) == {"aws_ec2": instances}
+
+    aws_filters = [{"Name": "tag-key", "Values": ["environment"]}, {"Name": "tag:Project", "Values": ["Ansible"]}]
+    inventory._get_instances_by_region.assert_called_once_with(regions, aws_filters, strict)
+
+
+def test_inventory_query_exclude_filters_with_and_logic(inventory):
+    instances = [{"InstanceId": 2, "name": "instance-2"}]
+
+    inventory._get_instances_by_region = MagicMock()
+    inventory._get_instances_by_region.side_effect = [instances]
+
+    regions = ["some-region", "another-region"]
+    strict = True
+
+    exclude_filters = [
+        {"tag-key": "environment"},
+        {"tag:Project": "Ansible"},
+    ]
+
+    params = {
+        "regions": regions,
+        "strict_permissions": strict,
+        "use_ssm_inventory": False,
+        "include_filters": [],
+        "exclude_filters": exclude_filters,
+        "include_filter_and_logic": False,
+        "exclude_filter_and_logic": True,
+    }
+
+    assert inventory._query(**params) == {"aws_ec2": []}
+
+    aws_filters = [{"Name": "tag-key", "Values": ["environment"]}, {"Name": "tag:Project", "Values": ["Ansible"]}]
+    inventory._get_instances_by_region.assert_called_once_with(regions, aws_filters, strict)
 
 
 @pytest.mark.parametrize(

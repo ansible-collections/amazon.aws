@@ -65,6 +65,13 @@ ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_include_or_exclude_filters.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_include_or_exclude_filters.yml "$@"
 
+# generate inventory config with and logic for include/exclude filters
+for var_file in playbooks/vars/filters_*.yml
+do
+    ansible-playbook playbooks/create_inventory_config.yml -e "@${var_file}" -e "template='inventory_with_include_exclude_filters_and_apply_logic.yml.j2'" "$@"
+    ansible-playbook playbooks/test_populating_inventory_with_AND_logic_on_filters.yml -e "@${var_file}" "$@"
+done
+
 # generate inventory config with caching and test using it
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_use_contrib_script_keys.yml.j2'" "$@"
 ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=never ansible-playbook playbooks/test_populating_inventory_with_use_contrib_script_keys.yml "$@"
