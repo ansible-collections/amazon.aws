@@ -11,8 +11,8 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  ansible-lint:
-    uses: ansible-network/github_actions/.github/workflows/ansible-lint.yml@main
+  linters:
+    uses: abikouo/github_actions/.github/workflows/tox-linters.yml@tox_linters
   changelog:
     uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
   sanity:

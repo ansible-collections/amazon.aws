@@ -1,5 +1,0 @@
----
-# Once the issues are fixed, the files can be removed from exclude_path
-exclude_paths:
-  - tests/integration/targets/module_utils_core/setup.yml
-  - tests/integration/targets/inventory_aws_ec2/playbooks/test_inventory_ssm.yml
