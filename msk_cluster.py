@@ -122,7 +122,15 @@ options:
             sasl_scram:
                 description: SASL/SCRAM authentication is enabled or not.
                 type: bool
-                default: False
+            sasl_iam:
+                version_added: 5.5.0
+                description: IAM authentication is enabled or not.
+                type: bool
+            unauthenticated:
+                version_added: 5.5.0
+                description: Option to explicitly turn on or off authentication
+                type: bool
+                default: True
     enhanced_monitoring:
         description: Specifies the level of monitoring for the MSK cluster.
         choices:
@@ -382,13 +390,21 @@ def prepare_create_options(module):
 
     if module.params["authentication"]:
         c_params["ClientAuthentication"] = {}
-        if module.params["authentication"].get("sasl_scram"):
-            c_params["ClientAuthentication"]["Sasl"] = {
-                "Scram": module.params["authentication"]["sasl_scram"]
-            }
+        if module.params["authentication"].get("sasl_scram") or module.params["authentication"].get("sasl_iam"):
+            sasl = {}
+            if module.params["authentication"].get("sasl_scram"):
+                sasl["Scram"] = {"Enabled": True}
+            if module.params["authentication"].get("sasl_iam"):
+                sasl["Iam"] = {"Enabled": True}
+            c_params["ClientAuthentication"]["Sasl"] = sasl
         if module.params["authentication"].get("tls_ca_arn"):
             c_params["ClientAuthentication"]["Tls"] = {
-                "CertificateAuthorityArnList": module.params["authentication"]["tls_ca_arn"]
+                "CertificateAuthorityArnList": module.params["authentication"]["tls_ca_arn"],
+                "Enabled": True,
+            }
+        if module.params["authentication"].get("unauthenticated"):
+            c_params["ClientAuthentication"] = {
+                "Unauthenticated": {"Enabled": True},
             }
 
     c_params.update(prepare_enhanced_monitoring_options(module))
@@ -713,7 +729,9 @@ def main():
             type="dict",
             options=dict(
                 tls_ca_arn=dict(type="list", elements="str", required=False),
-                sasl_scram=dict(type="bool", default=False),
+                sasl_scram=dict(type="bool", required=False),
+                sasl_iam=dict(type="bool", required=False),
+                unauthenticated=dict(type="bool", default=True, required=False),
             ),
         ),
         enhanced_monitoring=dict(
