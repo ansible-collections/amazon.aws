@@ -203,7 +203,7 @@ next_token_id:
 """
 
 try:
-    from botocore.exceptions import ClientError
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -243,6 +243,15 @@ def get_snapshots(connection, module, request_args):
     return snapshots
 
 
+def _describe_snapshot_attribute(module, ec2, snapshot_id):
+    try:
+        response = ec2.describe_snapshot_attribute(Attribute='createVolumePermission', SnapshotId=snapshot_id)
+    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
+
+    return response['CreateVolumePermissions']
+
+
 def list_ec2_snapshots(connection, module, request_args):
     try:
         snapshots = get_snapshots(connection, module, request_args)
@@ -250,6 +259,13 @@ def list_ec2_snapshots(connection, module, request_args):
         module.fail_json_aws(e, msg="Failed to describe snapshots")
 
     result = {}
+
+    # Add createVolumePermission info to snapshots result
+    for snapshot in snapshots['Snapshots']:
+        snapshot_id = snapshot.get('SnapshotId')
+        create_vol_permission = _describe_snapshot_attribute(module, connection, snapshot_id)
+        snapshot['CreateVolumePermissions'] = create_vol_permission
+
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
     for snapshot in snapshots["Snapshots"]:
