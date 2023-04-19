@@ -356,6 +356,29 @@ def _reset_snapshpot_attribute(module, ec2, snapshot_id):
     module.exit_json(changed=True, msg='Successfully reset CreateVolumePermission to private')
 
 
+def _modify_snapshot_attribute(module, ec2, snapshot_id, permission_operation_type):
+
+    params = {
+        'Attribute': 'createVolumePermission',
+        'OperationType': permission_operation_type,
+        'SnapshotId': snapshot_id
+    }
+
+    if module.params.get('group_names'):
+        params['GroupNames'] = module.params.get('group_names')
+    if module.params.get('user_ids'):
+        params['UserIds'] = module.params.get('user_ids')
+
+    if module.check_mode:
+        module.exit_json(changed=True, msg='Would have modified CreateVolumePermission')
+    try:
+        response = ec2.modify_snapshot_attribute(**params)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to modify createVolumePermission")
+
+    module.exit_json(changed=True, msg='Successfully modified CreateVolumePermission')
+
+
 def create_snapshot_ansible_module():
     argument_spec = dict(
         volume_id=dict(),
@@ -369,12 +392,19 @@ def create_snapshot_ansible_module():
         snapshot_tags=dict(type='dict', default=dict()),
         state=dict(choices=['absent', 'present'], default='present'),
         reset_create_volume_permission=dict(type='bool', default=False),
+        modify_create_volume_permission=dict(type='bool', default=False),
+        permission_operation_type=dict(type='str', choices=['add', 'remove']),
+        user_ids=dict(type='list'),
+        group_names=dict(type='list'),
     )
     mutually_exclusive = [
-        ("instance_id", "snapshot_id", "volume_id"),
+        ('instance_id', 'snapshot_id', 'volume_id'),
+        ('reset_create_volume_permission', 'modify_create_volume_permission'),
+        ('group_names', 'user_ids')
     ]
     required_if = [
-        ("state", "absent", ("snapshot_id",)),
+        ('state', 'absent', ('snapshot_id',)),
+        ('modify_create_volume_permission', True, ('permission_operation_type',)),
     ]
     required_one_of = [
         ("instance_id", "snapshot_id", "volume_id"),
@@ -409,6 +439,8 @@ def main():
     snapshot_tags = module.params.get('snapshot_tags')
     state = module.params.get('state')
     reset_create_volume_permission = module.params.get('reset_create_volume_permission')
+    modify_create_volume_permission = module.params.get('modify_create_volume_permission')
+    permission_operation_type = module.params.get('permission_operation_type')
 
     ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
@@ -420,6 +452,10 @@ def main():
         )
     elif reset_create_volume_permission is True:
         _reset_snapshpot_attribute(module, ec2, snapshot_id)
+    elif modify_create_volume_permission is True:
+        if not module.params.get('group_names') and not module.params.get('user_ids'):
+            module.fail_json(msg='Please provide Group IDs or User IDs to modify permissions')
+        _modify_snapshot_attribute(module, ec2, snapshot_id, permission_operation_type)
     else:
         create_snapshot(
             module=module,
