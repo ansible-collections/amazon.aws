@@ -515,7 +515,11 @@ def create_or_update_nodegroups(client, module):
     if module.params['release_version'] is not None:
         params['releaseVersion'] = module.params['release_version']
     if module.params['remote_access'] is not None:
-        params['remoteAccess'] = module.params['remote_access']
+        params['remoteAccess'] = dict()
+        if module.params['remote_access']['ec2_ssh_key'] is not None:
+            params['remoteAccess']['ec2SshKey'] = module.params['remote_access']['ec2_ssh_key']
+        if module.params['remote_access']['source_sg'] is not None:
+            params['remoteAccess']['sourceSecurityGroups'] = module.params['remote_access']['source_sg']
     if module.params['capacity_type'] is not None:
         params['capacityType'] = module.params['capacity_type'].upper()
     if module.params['labels'] is not None:
