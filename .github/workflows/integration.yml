@@ -1,0 +1,83 @@
+name: integration
+
+concurrency:
+  group: amazon-aws-integration-${{ github.sha }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    
+env:
+  AMAZON_PATH: "./amazon"
+  COMMUNITY_PATH: "./community"
+
+jobs:
+  splitter:
+    runs-on: ubuntu-latest
+    outputs:
+      test_targets: ${{ steps.display.outputs.test_targets }}
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.AMAZON_PATH }}
+          fetch-depth: "0"
+
+      - name: Checkout the collection repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          path: ${{ env.COMMUNITY_PATH }}
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: "0"
+
+      - name: list changes for pull request
+        id: splitter
+        uses: ansible-network/github_actions/.github/actions/ansible_test_splitter@main
+        with:
+          collections_to_test: "${{ env.AMAZON_PATH }} ${{ env.COMMUNITY_PATH }}"
+
+      - name: display targets
+        id: display
+        run: echo "test_targets=${{ steps.splitter.outputs.test_targets }}" >> $GITHUB_OUTPUT
+        shell: bash
+  # integration:
+  #   needs:
+  #     - splitter
+  #   env:
+  #     amazon: "./amazon"
+  #     community: "./community"
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       ansible-version:
+  #         - milestone
+  #       python-version:
+  #         - "3.9"
+  #   name: "ansible-test-integration-py${{ matrix.python-version }}-${{ matrix.ansible-version }}"
+  #   steps:
+  #     - name: Checkout collection
+  #       uses: actions/checkout@v3
+  #       with:
+  #         path: ${{ env.amazon }}
+  #         fetch-depth: "0"
+
+  #     - name: Build and install collection
+  #       id: install-collection
+  #       uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+  #       with:
+  #         install_python_dependencies: true
+  #         source_path: ${{ env.amazon }}
+
+  #     - name: Create AWS/sts session credentials
+  #       uses: abikouo/github_actions/.github/actions/ansible_aws_test_provider@ansible_test_integration_a
+  #       with:
+  #         collection_path: ${{ steps.install-collection.outputs.collection_path }}
+  #         ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
+
+  #     - name: Run integration tests
+  #       uses: abikouo/github_actions/.github/actions/ansible_test_integration@ansible_test_integration_a
+  #       with:
+  #         collection_path: ${{ steps.install-collection.outputs.collection_path }}
+  #         python_version: ${{ matrix.python-version }}
+  #         ansible_version: ${{ matrix.ansible-version }}
