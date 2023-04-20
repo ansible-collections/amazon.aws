@@ -1,4 +1,6 @@
-- set_fact:
+---
+- name: Set facts vpc_cidr, subnet_cidr
+  ansible.builtin.set_fact:
     vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
     subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
 
@@ -8,8 +10,10 @@
       tag:Name: '{{ resource_prefix }}_setup'
   register: vpc_info
 
-- block:
-    - set_fact:
+- name: Tear down
+  block:
+    - name: Set facts vpc_cidr, subnet_cidr
+      ansible.builtin.set_fact:
         vpc_id: "{{ vpc_info.vpcs.0.vpc_id }}"
 
     - name: list existing instances
@@ -21,7 +25,7 @@
     - name: remove ec2 instances
       ec2_instance:
         instance_ids: "{{ existing.instances | map(attribute='instance_id') | list }}"
-        wait: yes
+        wait: true
         state: absent
 
     - name: remove setup security group
@@ -30,7 +34,7 @@
         description: 'created by Ansible integration tests'
         state: absent
         vpc_id: '{{ vpc_id }}'
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: remove setup subnet
       ec2_vpc_subnet:
@@ -41,7 +45,7 @@
         state: absent
         resource_tags:
           Name: '{{ resource_prefix }}_setup'
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: remove setup VPC
       ec2_vpc_net:
@@ -50,6 +54,6 @@
         name: '{{ resource_prefix }}_setup'
         resource_tags:
           Name: '{{ resource_prefix }}_setup'
-      ignore_errors: yes
+      ignore_errors: true
 
   when: vpc_info.vpcs | length > 0

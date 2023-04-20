@@ -5,7 +5,6 @@
 
 import pytest
 from unittest.mock import MagicMock
-from unittest.mock import call
 from unittest.mock import patch
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
