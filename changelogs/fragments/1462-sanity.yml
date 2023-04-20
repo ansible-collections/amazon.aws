@@ -1,0 +1,6 @@
+minor_changes:
+- route53_info - drop unused imports (https://github.com/ansible-collections/amazon.aws/pull/1462).
+trivial:
+# Not yet released
+- backup_tag_info - sanity fixes
+- backup_vault - sanity fixes

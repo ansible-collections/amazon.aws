@@ -1,5 +1,6 @@
+---
 - name: get image ID to create an instance
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     filters:
       architecture: x86_64
       # CentOS Community Platform Engineering (CPE)
@@ -9,13 +10,14 @@
       name: 'Fedora-Cloud-Base-34-1.2.x86_64*'
   register: fedora_images
 
-- set_fact:
+- name: Set image id, vpc cidr and subnet cidr
+  ansible.builtin.set_fact:
     image_id: '{{ fedora_images.images.0.image_id }}'
     vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
     subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
 
 - name: create a VPC to work in
-  ec2_vpc_net:
+  amazon.aws.ec2_vpc_net:
     cidr_block: '{{ vpc_cidr }}'
     state: present
     name: '{{ resource_prefix }}_setup'
@@ -23,11 +25,12 @@
       Name: '{{ resource_prefix }}_setup'
   register: setup_vpc
 
-- set_fact:
+- name: Set vpc id
+  ansible.builtin.set_fact:
     vpc_id: '{{ setup_vpc.vpc.id }}'
 
 - name: create a subnet to use for creating an ec2 instance
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     az: '{{ aws_region }}a'
     vpc_id: '{{ setup_vpc.vpc.id }}'
     cidr: '{{ subnet_cidr }}'
@@ -36,7 +39,8 @@
       Name: '{{ resource_prefix }}_setup'
   register: setup_subnet
 
-- set_fact:
+- name: Set subnet id
+  ansible.builtin.set_fact:
     subnet_id: '{{ setup_subnet.subnet.id }}'
 
 - name: create a security group to use for creating an ec2 instance
@@ -47,7 +51,8 @@
     vpc_id: '{{ setup_vpc.vpc.id }}'
   register: setup_sg
 
-- set_fact:
+- name: Set sg id
+  ansible.builtin.set_fact:
     sg_id: '{{ setup_sg.group_id }}'
 
 - name: Create ec2 instance
@@ -57,5 +62,5 @@
     instance_type: t2.micro
     security_groups: '{{ sg_id }}'
     vpc_subnet_id: '{{ subnet_id }}'
-    wait: no
+    wait: false
   register: setup_instance
