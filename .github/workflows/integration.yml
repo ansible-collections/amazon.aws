@@ -66,10 +66,12 @@ jobs:
     steps:
       - name: Read ansible-test targets
         id: read-targets
-        run: >-
-          echo "ansible_test_targets=$(echo "${{ env.test_targets }}" | sed s/';'/'\n'/g |
-          grep "${{ matrix.collection }}-${{ matrix.workflow-id }}" | cut -d ':' -f2 | sed s/','/' '/g)" >> $GITHUB_OUTPUT
+        run: |
+          python -c "import os; splitter_d={x.split(':', maxsplit=1)[0]:x.split(':', maxsplit=1)[1] for x in os.environ.get('TEST_TARGETS').split(';')}; context=os.environ.get('TEST_CONTEXT'); result=splitter_d.get(context); result and print(f'ansible_test_targets={result}')" >> $GITHUB_OUTPUT
         shell: bash
+        env:
+          TEST_CONTEXT: "${{ matrix.collection }}-${{ matrix.workflow-id }}"
+          TEST_TARGETS: "${{ env.test_targets }}"
 
       - name: Checkout repository
         uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
