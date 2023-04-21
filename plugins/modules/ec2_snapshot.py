@@ -70,6 +70,40 @@ options:
     required: false
     default: 0
     type: int
+  reset_create_volume_permission:
+    description:
+      - If set to I(true), ec2 snapshot's createVolumePermissions is set to 'private'.
+      - Mutually exclusive with I(modify_create_volume_permission).
+    required: false
+    default: false
+    type: bool
+  modify_create_volume_permission:
+    description:
+      - If set to I(true), ec2 snapshot's createVolumePermissions is can be modified.
+      - Mutually exclusive with I(reset_create_volume_permission).
+      - Must specify I(permission_operation_type) to add or remove createVolumePermissions.
+    required: false
+    default: false
+    type: bool
+  permission_operation_type:
+    description:
+      - Whether to add or remove createVolumePermission.
+      - Set to I(add) to add permissions and set to I(remove) to remove permissions.
+      - Must specify either I(user_ids) or I(group_names) to add or remove permissions.
+    required: false
+    type: str
+  group_names:
+    description:
+      - The group to be added or removed. The possible value is all.
+      - Mutually exclusive with I(user_ids).
+    required: false
+    type: str
+  user_ids:
+    description:
+      - The account user IDs to be added or removed. The possible value is all.
+      - Mutually exclusive with I(group_names).
+    required: false
+    type: str
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -106,6 +140,28 @@ EXAMPLES = r"""
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     last_snapshot_min_age: 60
+
+- name: Reset snapshot createVolumePermission
+  amazon.aws.ec2_snapshot:
+    snapshot_id: snap-06a6f641234567890
+    reset_create_volume_permission: true
+
+- name: Modify snapshot createVolmePermission to add user IDs
+  amazon.aws.ec2_snapshot:
+    snapshot_id: snap-06a6f641234567890
+    modify_create_volume_permission: true
+    permission_operation_type: add
+    user_ids:
+      - '123456789012'
+      - '098765432109'
+
+- name: Modify snapshot createVolmePermission to remove user ID
+  amazon.aws.ec2_snapshot:
+    snapshot_id: snap-06a6f641234567890
+    modify_create_volume_permission: true
+    permission_operation_type: remove
+    user_ids:
+      - '123456789012'
 """
 
 RETURN = r"""
