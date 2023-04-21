@@ -1365,7 +1365,7 @@ def build_run_instance_spec(params, current_count=0):
 
     if not (params.get("instance_type") or params.get("launch_template")):
         raise Ec2InstanceAWSError(
-            "At least one of 'instance_type' and 'launch_template' " "must be passed when launching instances."
+            "At least one of 'instance_type' and 'launch_template' must be passed when launching instances."
         )
 
     return spec

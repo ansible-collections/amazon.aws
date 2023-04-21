@@ -514,7 +514,7 @@ class Ec2Metadata:
 
         new_fields = {}
         for key, value in fields.items():
-            split_fields = key[len(uri) :].split("/")
+            split_fields = key[len(uri):].split("/")  # fmt: skip
             # Parse out the IAM role name (which is _not_ the same as the instance profile name)
             if (
                 len(split_fields) == 3

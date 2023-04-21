@@ -148,7 +148,7 @@ def test_validate_params():
     ec2_ami.validate_params(module, state="present", name="bobby")
     assert module.require_botocore_at_least.call_count == 0
     module.fail_json.assert_any_call(
-        "The parameters instance_id or device_mapping " "(register from EBS snapshot) are required for a new image."
+        "The parameters instance_id or device_mapping (register from EBS snapshot) are required for a new image."
     )
 
 

@@ -775,7 +775,7 @@ class InventoryModule(AWSInventoryBase):
 
         if self.get_option("include_extra_api_calls"):
             self.display.deprecate(
-                "The include_extra_api_calls option has been deprecated " " and will be removed in release 6.0.0.",
+                "The include_extra_api_calls option has been deprecated and will be removed in release 6.0.0.",
                 date="2024-09-01",
                 collection_name="amazon.aws",
             )

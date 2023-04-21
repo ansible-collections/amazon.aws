@@ -190,7 +190,7 @@ class LookupModule(AWSLookupBase):
                 # duplicate names with different values.
                 if self.get_option("shortnames"):
                     for x in paramlist:
-                        x["Name"] = x["Name"][x["Name"].rfind("/") + 1 :]
+                        x["Name"] = x["Name"][x["Name"].rfind("/") + 1:]  # fmt: skip
 
                 display.vvvv("AWS_ssm path lookup returned: {0}".format(to_native(paramlist)))
 

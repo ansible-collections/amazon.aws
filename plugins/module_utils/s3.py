@@ -47,7 +47,7 @@ def calculate_checksum_with_content(client, parts, bucket, obj, versionId, conte
     offset = 0
     for head in s3_head_objects(client, parts, bucket, obj, versionId):
         length = int(head["ContentLength"])
-        digests.append(md5(content[offset : offset + length]).digest())
+        digests.append(md5(content[offset:offset + length]).digest())  # fmt: skip
         offset += length
 
     digest_squared = b"".join(digests)
