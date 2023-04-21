@@ -36,6 +36,7 @@ jobs:
         id: splitter
         uses: ansible-network/github_actions/.github/actions/ansible_test_splitter@main
         with:
+          total_jobs: 22
           collections_to_test: |
             ${{ env.AMAZON_PATH }}
             ${{ env.COMMUNITY_PATH }}
