@@ -538,8 +538,8 @@ def _paginated_result(paginator_name, **params):
 def get_hosted_zone():
     params = dict()
 
-    if module.params.get('hosted_zone_id'):
-        params['Id'] = module.params.get('hosted_zone_id')
+    if module.params.get("hosted_zone_id"):
+        params["Id"] = module.params.get("hosted_zone_id")
     else:
         module.fail_json(msg="Hosted Zone Id is required")
 
@@ -549,23 +549,26 @@ def get_hosted_zone():
 def reusable_delegation_set_details():
     params = dict()
 
-    if not module.params.get('delegation_set_id'):
-        if module.params.get('max_items'):
-            params['MaxItems'] = str(module.params.get('max_items'))
+    if not module.params.get("delegation_set_id"):
+        if module.params.get("max_items"):
+            params["MaxItems"] = str(module.params.get("max_items"))
 
-        if module.params.get('next_marker'):
-            params['Marker'] = module.params.get('next_marker')
+        if module.params.get("next_marker"):
+            params["Marker"] = module.params.get("next_marker")
 
         results = client.list_reusable_delegation_sets(**params)
     else:
-        params['DelegationSetId'] = module.params.get('delegation_set_id')
+        params["DelegationSetId"] = module.params.get("delegation_set_id")
         results = client.get_reusable_delegation_set(**params)
 
-    results['delegation_sets'] = results['DelegationSets']
-    module.deprecate("The 'CamelCase' return values with key 'DelegationSets' is deprecated and \
+    results["delegation_sets"] = results["DelegationSets"]
+    module.deprecate(
+        "The 'CamelCase' return values with key 'DelegationSets' is deprecated and \
                     will be replaced by 'snake_case' return values with key 'delegation_sets'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+        date="2025-01-01",
+        collection_name="amazon.aws",
+    )
 
     return results
 
@@ -574,24 +577,25 @@ def list_hosted_zones():
     params = dict()
 
     # Set PaginationConfig with max_items
-    if module.params.get('max_items'):
-        params['PaginationConfig'] = dict(
-            MaxItems=module.params.get('max_items')
-        )
+    if module.params.get("max_items"):
+        params["PaginationConfig"] = dict(MaxItems=module.params.get("max_items"))
 
-    if module.params.get('next_marker'):
-        params['Marker'] = module.params.get('next_marker')
+    if module.params.get("next_marker"):
+        params["Marker"] = module.params.get("next_marker")
 
-    if module.params.get('delegation_set_id'):
-        params['DelegationSetId'] = module.params.get('delegation_set_id')
+    if module.params.get("delegation_set_id"):
+        params["DelegationSetId"] = module.params.get("delegation_set_id")
 
-    zones = _paginated_result('list_hosted_zones', **params)['HostedZones']
+    zones = _paginated_result("list_hosted_zones", **params)["HostedZones"]
     snaked_zones = [camel_dict_to_snake_dict(zone) for zone in zones]
 
-    module.deprecate("The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and \
+    module.deprecate(
+        "The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'hosted_zones'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+        date="2025-01-01",
+        collection_name="amazon.aws",
+    )
 
     return {
         "HostedZones": zones,
@@ -603,14 +607,14 @@ def list_hosted_zones():
 def list_hosted_zones_by_name():
     params = dict()
 
-    if module.params.get('hosted_zone_id'):
-        params['HostedZoneId'] = module.params.get('hosted_zone_id')
+    if module.params.get("hosted_zone_id"):
+        params["HostedZoneId"] = module.params.get("hosted_zone_id")
 
-    if module.params.get('dns_name'):
-        params['DNSName'] = module.params.get('dns_name')
+    if module.params.get("dns_name"):
+        params["DNSName"] = module.params.get("dns_name")
 
-    if module.params.get('max_items'):
-        params['MaxItems'] = str(module.params.get('max_items'))
+    if module.params.get("max_items"):
+        params["MaxItems"] = str(module.params.get("max_items"))
 
     return client.list_hosted_zones_by_name(**params)
 
@@ -618,8 +622,8 @@ def list_hosted_zones_by_name():
 def change_details():
     params = dict()
 
-    if module.params.get('change_id'):
-        params['Id'] = module.params.get('change_id')
+    if module.params.get("change_id"):
+        params["Id"] = module.params.get("change_id")
     else:
         module.fail_json(msg="change_id is required")
 
@@ -629,17 +633,20 @@ def change_details():
 
 def checker_ip_range_details():
     results = client.get_checker_ip_ranges()
-    results['checker_ip_ranges'] = results['CheckerIpRanges']
-    module.deprecate("The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and \
+    results["checker_ip_ranges"] = results["CheckerIpRanges"]
+    module.deprecate(
+        "The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and \
                     will be replaced by 'snake_case' return values with key 'checker_ip_ranges'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+        date="2025-01-01",
+        collection_name="amazon.aws",
+    )
 
     return results
 
 
 def get_count():
-    if module.params.get('query') == 'health_check':
+    if module.params.get("query") == "health_check":
         results = client.get_health_check_count()
     else:
         results = client.get_hosted_zone_count()
@@ -651,12 +658,12 @@ def get_health_check():
     params = dict()
     results = dict()
 
-    if not module.params.get('health_check_id'):
+    if not module.params.get("health_check_id"):
         module.fail_json(msg="health_check_id is required")
     else:
-        params['HealthCheckId'] = module.params.get('health_check_id')
+        params["HealthCheckId"] = module.params.get("health_check_id")
 
-    if module.params.get('health_check_method') == 'details':
+    if module.params.get("health_check_method") == "details":
         results = client.get_health_check(**params)
         results["health_check"] = camel_dict_to_snake_dict(results["HealthCheck"])
         module.deprecate(
@@ -667,13 +674,13 @@ def get_health_check():
             collection_name="amazon.aws",
         )
 
-    elif module.params.get('health_check_method') == 'failure_reason':
+    elif module.params.get("health_check_method") == "failure_reason":
         response = client.get_health_check_last_failure_reason(**params)
         results["health_check_observations"] = [
             camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
         ]
 
-    elif module.params.get('health_check_method') == 'status':
+    elif module.params.get("health_check_method") == "status":
         response = client.get_health_check_status(**params)
         results["health_check_observations"] = [
             camel_dict_to_snake_dict(health_check) for health_check in response["HealthCheckObservations"]
@@ -685,15 +692,15 @@ def get_health_check():
 def get_resource_tags():
     params = dict()
 
-    if module.params.get('resource_id'):
-        params['ResourceIds'] = module.params.get('resource_id')
+    if module.params.get("resource_id"):
+        params["ResourceIds"] = module.params.get("resource_id")
     else:
         module.fail_json(msg="resource_id or resource_ids is required")
 
-    if module.params.get('query') == 'health_check':
-        params['ResourceType'] = 'healthcheck'
+    if module.params.get("query") == "health_check":
+        params["ResourceType"] = "healthcheck"
     else:
-        params['ResourceType'] = 'hostedzone'
+        params["ResourceType"] = "hostedzone"
 
     return client.list_tags_for_resources(**params)
 
@@ -701,22 +708,23 @@ def get_resource_tags():
 def list_health_checks():
     params = dict()
 
-    if module.params.get('next_marker'):
-        params['Marker'] = module.params.get('next_marker')
+    if module.params.get("next_marker"):
+        params["Marker"] = module.params.get("next_marker")
 
     # Set PaginationConfig with max_items
-    if module.params.get('max_items'):
-        params['PaginationConfig'] = dict(
-            MaxItems=module.params.get('max_items')
-        )
+    if module.params.get("max_items"):
+        params["PaginationConfig"] = dict(MaxItems=module.params.get("max_items"))
 
-    health_checks = _paginated_result('list_health_checks', **params)['HealthChecks']
+    health_checks = _paginated_result("list_health_checks", **params)["HealthChecks"]
     snaked_health_checks = [camel_dict_to_snake_dict(health_check) for health_check in health_checks]
 
-    module.deprecate("The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and \
+    module.deprecate(
+        "The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'health_checks'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+        date="2025-01-01",
+        collection_name="amazon.aws",
+    )
 
     return {
         "HealthChecks": health_checks,
@@ -728,34 +736,35 @@ def list_health_checks():
 def record_sets_details():
     params = dict()
 
-    if module.params.get('hosted_zone_id'):
-        params['HostedZoneId'] = module.params.get('hosted_zone_id')
+    if module.params.get("hosted_zone_id"):
+        params["HostedZoneId"] = module.params.get("hosted_zone_id")
     else:
         module.fail_json(msg="Hosted Zone Id is required")
 
-    if module.params.get('start_record_name'):
-        params['StartRecordName'] = module.params.get('start_record_name')
+    if module.params.get("start_record_name"):
+        params["StartRecordName"] = module.params.get("start_record_name")
 
     # Check that both params are set if type is applied
-    if module.params.get('type') and not module.params.get('start_record_name'):
+    if module.params.get("type") and not module.params.get("start_record_name"):
         module.fail_json(msg="start_record_name must be specified if type is set")
 
-    if module.params.get('type'):
-        params['StartRecordType'] = module.params.get('type')
+    if module.params.get("type"):
+        params["StartRecordType"] = module.params.get("type")
 
     # Set PaginationConfig with max_items
-    if module.params.get('max_items'):
-        params['PaginationConfig'] = dict(
-            MaxItems=module.params.get('max_items')
-        )
+    if module.params.get("max_items"):
+        params["PaginationConfig"] = dict(MaxItems=module.params.get("max_items"))
 
-    record_sets = _paginated_result('list_resource_record_sets', **params)['ResourceRecordSets']
+    record_sets = _paginated_result("list_resource_record_sets", **params)["ResourceRecordSets"]
     snaked_record_sets = [camel_dict_to_snake_dict(record_set) for record_set in record_sets]
 
-    module.deprecate("The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and \
+    module.deprecate(
+        "The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and \
                     will be replaced by 'snake_case' return values with key 'resource_record_sets'. \
                     Both case values are returned for now.",
-                     date='2025-01-01', collection_name='amazon.aws')
+        date="2025-01-01",
+        collection_name="amazon.aws",
+    )
 
     return {
         "ResourceRecordSets": record_sets,
@@ -766,28 +775,28 @@ def record_sets_details():
 
 def health_check_details():
     health_check_invocations = {
-        'list': list_health_checks,
-        'details': get_health_check,
-        'status': get_health_check,
-        'failure_reason': get_health_check,
-        'count': get_count,
-        'tags': get_resource_tags,
+        "list": list_health_checks,
+        "details": get_health_check,
+        "status": get_health_check,
+        "failure_reason": get_health_check,
+        "count": get_count,
+        "tags": get_resource_tags,
     }
 
-    results = health_check_invocations[module.params.get('health_check_method')]()
+    results = health_check_invocations[module.params.get("health_check_method")]()
     return results
 
 
 def hosted_zone_details():
     hosted_zone_invocations = {
-        'details': get_hosted_zone,
-        'list': list_hosted_zones,
-        'list_by_name': list_hosted_zones_by_name,
-        'count': get_count,
-        'tags': get_resource_tags,
+        "details": get_hosted_zone,
+        "list": list_hosted_zones,
+        "list_by_name": list_hosted_zones_by_name,
+        "count": get_count,
+        "tags": get_resource_tags,
     }
 
-    results = hosted_zone_invocations[module.params.get('hosted_zone_method')]()
+    results = hosted_zone_invocations[module.params.get("hosted_zone_method")]()
     return results
 
 
@@ -796,74 +805,75 @@ def main():
     global client
 
     argument_spec = dict(
-        query=dict(choices=[
-            'change',
-            'checker_ip_range',
-            'health_check',
-            'hosted_zone',
-            'record_sets',
-            'reusable_delegation_set',
-        ], required=True),
+        query=dict(
+            choices=[
+                "change",
+                "checker_ip_range",
+                "health_check",
+                "hosted_zone",
+                "record_sets",
+                "reusable_delegation_set",
+            ],
+            required=True,
+        ),
         change_id=dict(),
         hosted_zone_id=dict(),
-        max_items=dict(type='int'),
+        max_items=dict(type="int"),
         next_marker=dict(),
         delegation_set_id=dict(),
         start_record_name=dict(),
-        type=dict(type='str', choices=[
-            'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS', 'NAPTR', 'SOA', 'DS'
-        ]),
+        type=dict(
+            type="str",
+            choices=["A", "CNAME", "MX", "AAAA", "TXT", "PTR", "SRV", "SPF", "CAA", "NS", "NAPTR", "SOA", "DS"],
+        ),
         dns_name=dict(),
-        resource_id=dict(type='list', aliases=['resource_ids'], elements='str'),
+        resource_id=dict(type="list", aliases=["resource_ids"], elements="str"),
         health_check_id=dict(),
-        hosted_zone_method=dict(choices=[
-            'details',
-            'list',
-            'list_by_name',
-            'count',
-            'tags'
-        ], default='list'),
-        health_check_method=dict(choices=[
-            'list',
-            'details',
-            'status',
-            'failure_reason',
-            'count',
-            'tags',
-        ], default='list'),
+        hosted_zone_method=dict(choices=["details", "list", "list_by_name", "count", "tags"], default="list"),
+        health_check_method=dict(
+            choices=[
+                "list",
+                "details",
+                "status",
+                "failure_reason",
+                "count",
+                "tags",
+            ],
+            default="list",
+        ),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ['hosted_zone_method', 'health_check_method'],
+            ["hosted_zone_method", "health_check_method"],
         ],
         check_boto3=False,
     )
 
     try:
-        client = module.client('route53', retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("route53", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     invocations = {
-        'change': change_details,
-        'checker_ip_range': checker_ip_range_details,
-        'health_check': health_check_details,
-        'hosted_zone': hosted_zone_details,
-        'record_sets': record_sets_details,
-        'reusable_delegation_set': reusable_delegation_set_details,
+        "change": change_details,
+        "checker_ip_range": checker_ip_range_details,
+        "health_check": health_check_details,
+        "hosted_zone": hosted_zone_details,
+        "record_sets": record_sets_details,
+        "reusable_delegation_set": reusable_delegation_set_details,
     }
 
     results = dict(changed=False)
     try:
-        results = invocations[module.params.get('query')]()
+        results = invocations[module.params.get("query")]()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Query failed")
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

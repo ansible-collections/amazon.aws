@@ -165,7 +165,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 def get_trails(connection, module):
     all_trails = []
     try:
-        result = connection.get_paginator('list_trails')
+        result = connection.get_paginator("list_trails")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the trails.")
     for trail in result.paginate():
@@ -184,12 +184,14 @@ def get_trail_detail(connection, module):
     if not trail_name_list:
         trail_name_list = get_trails(connection, module)
     try:
-        result = connection.describe_trails(trailNameList=trail_name_list, includeShadowTrails=include_shadow_trails, aws_retry=True)
+        result = connection.describe_trails(
+            trailNameList=trail_name_list, includeShadowTrails=include_shadow_trails, aws_retry=True
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get the trails.")
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_cloud_trail = []
-    for cloud_trail in result['trailList']:
+    for cloud_trail in result["trailList"]:
         try:
             status_dict = connection.get_trail_status(Name=cloud_trail["TrailARN"], aws_retry=True)
             cloud_trail.update(status_dict)
@@ -205,30 +207,30 @@ def get_trail_detail(connection, module):
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for tr in snaked_cloud_trail:
-        if 'tags_list' in tr:
-            tr['tags'] = boto3_tag_list_to_ansible_dict(tr['tags_list'], 'key', 'value')
-            del (tr['tags_list'])
-        if 'response_metadata' in tr:
-            del (tr['response_metadata'])
-    output['trail_list'] = snaked_cloud_trail
+        if "tags_list" in tr:
+            tr["tags"] = boto3_tag_list_to_ansible_dict(tr["tags_list"], "key", "value")
+            del tr["tags_list"]
+        if "response_metadata" in tr:
+            del tr["response_metadata"]
+    output["trail_list"] = snaked_cloud_trail
     return output
 
 
 def main():
     argument_spec = dict(
-        trail_names=dict(type='list', elements='str', default=[]),
-        include_shadow_trails=dict(type='bool', default=True),
+        trail_names=dict(type="list", elements="str", default=[]),
+        include_shadow_trails=dict(type="bool", default=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        connection = module.client('cloudtrail', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("cloudtrail", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
     result = get_trail_detail(connection, module)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -204,10 +204,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 def build_request_args(eni_id, filters):
-
     request_args = {
-        'NetworkInterfaceIds': [eni_id] if eni_id else [],
-        'Filters': ansible_dict_to_boto3_filter_list(filters),
+        "NetworkInterfaceIds": [eni_id] if eni_id else [],
+        "Filters": ansible_dict_to_boto3_filter_list(filters),
     }
 
     request_args = {k: v for k, v in request_args.items() if v}
@@ -218,7 +217,7 @@ def build_request_args(eni_id, filters):
 def get_network_interfaces(connection, module, request_args):
     try:
         network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **request_args)
-    except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
+    except is_boto3_error_code("InvalidNetworkInterfaceID.NotFound"):
         module.exit_json(network_interfaces=[])
     except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
@@ -227,27 +226,26 @@ def get_network_interfaces(connection, module, request_args):
 
 
 def list_eni(connection, module, request_args):
-
     network_interfaces_result = get_network_interfaces(connection, module, request_args)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
-    for network_interface in network_interfaces_result['NetworkInterfaces']:
-        network_interface['TagSet'] = boto3_tag_list_to_ansible_dict(network_interface['TagSet'])
-        network_interface['Tags'] = network_interface['TagSet']
-        if 'Name' in network_interface['Tags']:
-            network_interface['Name'] = network_interface['Tags']['Name']
+    for network_interface in network_interfaces_result["NetworkInterfaces"]:
+        network_interface["TagSet"] = boto3_tag_list_to_ansible_dict(network_interface["TagSet"])
+        network_interface["Tags"] = network_interface["TagSet"]
+        if "Name" in network_interface["Tags"]:
+            network_interface["Name"] = network_interface["Tags"]["Name"]
         # Added id to interface info to be compatible with return values of ec2_eni module:
-        network_interface['Id'] = network_interface['NetworkInterfaceId']
-        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=['Tags', 'TagSet']))
+        network_interface["Id"] = network_interface["NetworkInterfaceId"]
+        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=["Tags", "TagSet"]))
 
     return camel_network_interfaces
 
 
 def main():
     argument_spec = dict(
-        eni_id=dict(type='str'),
-        filters=dict(default={}, type='dict'),
+        eni_id=dict(type="str"),
+        filters=dict(default={}, type="dict"),
     )
     mutually_exclusive = [
         ["eni_id", "filters"],
@@ -259,7 +257,7 @@ def main():
         mutually_exclusive=mutually_exclusive,
     )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     request_args = build_request_args(
         eni_id=module.params["eni_id"],
@@ -271,5 +269,5 @@ def main():
     module.exit_json(network_interfaces=result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

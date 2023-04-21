@@ -28,8 +28,10 @@ def hexdigest(s):
     """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.urls.hexdigest is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.hexdigest is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
@@ -42,8 +44,10 @@ def format_querystring(params=None):
     """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.urls.format_querystring is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.format_querystring is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     if not params:
         return ""
@@ -55,25 +59,29 @@ def format_querystring(params=None):
 # Key derivation functions. See:
 # http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-python
 def sign(key, msg):
-    '''
+    """
     Return digest for key applied to msg
-    '''
+    """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.urls.sign is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.sign is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
 
 def get_signature_key(key, dateStamp, regionName, serviceName):
-    '''
+    """
     Returns signature key for AWS resource
-    '''
+    """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.urls.get_signature_key is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.get_signature_key is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     kDate = sign(("AWS4" + key).encode("utf-8"), dateStamp)
     kRegion = sign(kDate, regionName)
@@ -83,13 +91,15 @@ def get_signature_key(key, dateStamp, regionName, serviceName):
 
 
 def get_aws_credentials_object(module):
-    '''
+    """
     Returns aws_access_key_id, aws_secret_access_key, session_token for a module.
-    '''
+    """
 
     ansible_warnings.deprecate(
-        'amazon.aws.module_utils.urls.get_aws_credentials_object is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.get_aws_credentials_object is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     if not HAS_BOTO3:
         module.fail_json("get_aws_credentials_object requires boto3")
@@ -102,10 +112,16 @@ def get_aws_credentials_object(module):
 
 # Reference: https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
 def signed_request(
-        module=None,
-        method="GET", service=None, host=None, uri=None,
-        query=None, body="", headers=None,
-        session_in_header=True, session_in_query=False
+    module=None,
+    method="GET",
+    service=None,
+    host=None,
+    uri=None,
+    query=None,
+    body="",
+    headers=None,
+    session_in_header=True,
+    session_in_query=False,
 ):
     """Generate a SigV4 request to an AWS resource for a module
 
@@ -136,8 +152,10 @@ def signed_request(
     """
 
     module.deprecate(
-        'amazon.aws.module_utils.urls.signed_request is unused and has been deprecated.',
-        version='7.0.0', collection_name='amazon.aws')
+        "amazon.aws.module_utils.urls.signed_request is unused and has been deprecated.",
+        version="7.0.0",
+        collection_name="amazon.aws",
+    )
 
     if not HAS_BOTO3:
         module.fail_json("A sigv4 signed_request requires boto3")
@@ -172,10 +190,12 @@ def signed_request(
     headers = headers or dict()
     query = query or dict()
 
-    headers.update({
-        "host": host,
-        "x-amz-date": amz_date,
-    })
+    headers.update(
+        {
+            "host": host,
+            "x-amz-date": amz_date,
+        }
+    )
 
     # Handle adding of session_token if present
     if session_token:
@@ -194,18 +214,20 @@ def signed_request(
 
     # Setup Cannonical request to generate auth token
 
-    cannonical_headers = "\n".join([
-        key.lower().strip() + ":" + value for key, value in headers.items()
-    ]) + "\n"  # Note additional trailing newline
+    cannonical_headers = (
+        "\n".join([key.lower().strip() + ":" + value for key, value in headers.items()]) + "\n"
+    )  # Note additional trailing newline
 
-    cannonical_request = "\n".join([
-        method,
-        uri,
-        query_string,
-        cannonical_headers,
-        signed_headers,
-        body_hash,
-    ])
+    cannonical_request = "\n".join(
+        [
+            method,
+            uri,
+            query_string,
+            cannonical_headers,
+            signed_headers,
+            body_hash,
+        ]
+    )
 
     string_to_sign = "\n".join([algorithm, amz_date, credential_scope, hexdigest(cannonical_request)])
 

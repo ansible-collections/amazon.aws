@@ -164,13 +164,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 @AWSRetry.jittered_backoff()
 def _list_layer_versions(client, **params):
-    paginator = client.get_paginator('list_layer_versions')
+    paginator = client.get_paginator("list_layer_versions")
     return paginator.paginate(**params).build_full_result()
 
 
 @AWSRetry.jittered_backoff()
 def _list_layers(client, **params):
-    paginator = client.get_paginator('list_layers')
+    paginator = client.get_paginator("list_layers")
     return paginator.paginate(**params).build_full_result()
 
 
@@ -182,28 +182,26 @@ class LambdaLayerInfoFailure(Exception):
 
 
 def list_layer_versions(lambda_client, name, compatible_runtime=None, compatible_architecture=None):
-
     params = {"LayerName": name}
     if compatible_runtime:
         params["CompatibleRuntime"] = compatible_runtime
     if compatible_architecture:
         params["CompatibleArchitecture"] = compatible_architecture
     try:
-        layer_versions = _list_layer_versions(lambda_client, **params)['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, **params)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layer versions for name {0}".format(name))
 
 
 def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=None):
-
     params = {}
     if compatible_runtime:
         params["CompatibleRuntime"] = compatible_runtime
     if compatible_architecture:
         params["CompatibleArchitecture"] = compatible_architecture
     try:
-        layers = _list_layers(lambda_client, **params)['Layers']
+        layers = _list_layers(lambda_client, **params)["Layers"]
         layer_versions = []
         for item in layers:
             layer = {key: value for key, value in item.items() if key != "LatestMatchingVersion"}
@@ -215,7 +213,6 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
 
 
 def get_layer_version(lambda_client, layer_name, version_number):
-
     try:
         layer_version = lambda_client.get_layer_version(LayerName=layer_name, VersionNumber=version_number)
         if layer_version:
@@ -226,7 +223,6 @@ def get_layer_version(lambda_client, layer_name, version_number):
 
 
 def execute_module(module, lambda_client):
-
     name = module.params.get("name")
     version_number = module.params.get("version_number")
 
@@ -261,16 +257,12 @@ def main():
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True,
-        required_by=dict(
-            version_number=('name', )
-        )
+        argument_spec=argument_spec, supports_check_mode=True, required_by=dict(version_number=("name",))
     )
 
-    lambda_client = module.client('lambda')
+    lambda_client = module.client("lambda")
     execute_module(module, lambda_client)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

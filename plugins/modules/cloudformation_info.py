@@ -307,29 +307,32 @@ class CloudFormationServiceManager:
 
     def __init__(self, module):
         self.module = module
-        self.client = module.client('cloudformation')
+        self.client = module.client("cloudformation")
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
     def describe_stacks_with_backoff(self, **kwargs):
-        paginator = self.client.get_paginator('describe_stacks')
-        return paginator.paginate(**kwargs).build_full_result()['Stacks']
+        paginator = self.client.get_paginator("describe_stacks")
+        return paginator.paginate(**kwargs).build_full_result()["Stacks"]
 
     def describe_stacks(self, stack_name=None):
         try:
-            kwargs = {'StackName': stack_name} if stack_name else {}
+            kwargs = {"StackName": stack_name} if stack_name else {}
             response = self.describe_stacks_with_backoff(**kwargs)
             if response is not None:
                 return response
             self.module.fail_json(msg="Error describing stack(s) - an empty response was returned")
-        except is_boto3_error_message('does not exist'):
+        except is_boto3_error_message("does not exist"):
             return {}
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Error describing stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
     def list_stack_resources_with_backoff(self, stack_name):
-        paginator = self.client.get_paginator('list_stack_resources')
-        return paginator.paginate(StackName=stack_name).build_full_result()['StackResourceSummaries']
+        paginator = self.client.get_paginator("list_stack_resources")
+        return paginator.paginate(StackName=stack_name).build_full_result()["StackResourceSummaries"]
 
     def list_stack_resources(self, stack_name):
         try:
@@ -339,8 +342,8 @@ class CloudFormationServiceManager:
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
     def describe_stack_events_with_backoff(self, stack_name):
-        paginator = self.client.get_paginator('describe_stack_events')
-        return paginator.paginate(StackName=stack_name).build_full_result()['StackEvents']
+        paginator = self.client.get_paginator("describe_stack_events")
+        return paginator.paginate(StackName=stack_name).build_full_result()["StackEvents"]
 
     def describe_stack_events(self, stack_name):
         try:
@@ -350,12 +353,12 @@ class CloudFormationServiceManager:
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
     def list_stack_change_sets_with_backoff(self, stack_name):
-        paginator = self.client.get_paginator('list_change_sets')
-        return paginator.paginate(StackName=stack_name).build_full_result()['Summaries']
+        paginator = self.client.get_paginator("list_change_sets")
+        return paginator.paginate(StackName=stack_name).build_full_result()["Summaries"]
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
     def describe_stack_change_set_with_backoff(self, **kwargs):
-        paginator = self.client.get_paginator('describe_change_set')
+        paginator = self.client.get_paginator("describe_change_set")
         return paginator.paginate(**kwargs).build_full_result()
 
     def describe_stack_change_sets(self, stack_name):
@@ -363,9 +366,11 @@ class CloudFormationServiceManager:
         try:
             change_sets = self.list_stack_change_sets_with_backoff(stack_name)
             for item in change_sets:
-                changes.append(self.describe_stack_change_set_with_backoff(
-                               StackName=stack_name,
-                               ChangeSetName=item['ChangeSetName']))
+                changes.append(
+                    self.describe_stack_change_set_with_backoff(
+                        StackName=stack_name, ChangeSetName=item["ChangeSetName"]
+                    )
+                )
             return changes
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Error describing stack change sets for stack " + stack_name)
@@ -377,7 +382,7 @@ class CloudFormationServiceManager:
     def get_stack_policy(self, stack_name):
         try:
             response = self.get_stack_policy_with_backoff(stack_name)
-            stack_policy = response.get('StackPolicyBody')
+            stack_policy = response.get("StackPolicyBody")
             if stack_policy:
                 return json.loads(stack_policy)
             return dict()
@@ -391,13 +396,13 @@ class CloudFormationServiceManager:
     def get_template(self, stack_name):
         try:
             response = self.get_template_with_backoff(stack_name)
-            return response.get('TemplateBody')
+            return response.get("TemplateBody")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Error getting stack template for stack " + stack_name)
 
 
 def to_dict(items, key, value):
-    ''' Transforms a list of items to a Key/Value dictionary '''
+    """Transforms a list of items to a Key/Value dictionary"""
     if items:
         return dict(zip([i.get(key) for i in items], [i.get(value) for i in items]))
     else:
@@ -407,53 +412,60 @@ def to_dict(items, key, value):
 def main():
     argument_spec = dict(
         stack_name=dict(),
-        all_facts=dict(required=False, default=False, type='bool'),
-        stack_policy=dict(required=False, default=False, type='bool'),
-        stack_events=dict(required=False, default=False, type='bool'),
-        stack_resources=dict(required=False, default=False, type='bool'),
-        stack_template=dict(required=False, default=False, type='bool'),
-        stack_change_sets=dict(required=False, default=False, type='bool'),
+        all_facts=dict(required=False, default=False, type="bool"),
+        stack_policy=dict(required=False, default=False, type="bool"),
+        stack_events=dict(required=False, default=False, type="bool"),
+        stack_resources=dict(required=False, default=False, type="bool"),
+        stack_template=dict(required=False, default=False, type="bool"),
+        stack_change_sets=dict(required=False, default=False, type="bool"),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     service_mgr = CloudFormationServiceManager(module)
 
-    result = {'cloudformation': {}}
+    result = {"cloudformation": {}}
 
-    for stack_description in service_mgr.describe_stacks(module.params.get('stack_name')):
-        facts = {'stack_description': stack_description}
-        stack_name = stack_description.get('StackName')
+    for stack_description in service_mgr.describe_stacks(module.params.get("stack_name")):
+        facts = {"stack_description": stack_description}
+        stack_name = stack_description.get("StackName")
 
         # Create stack output and stack parameter dictionaries
-        if facts['stack_description']:
-            facts['stack_outputs'] = to_dict(facts['stack_description'].get('Outputs'), 'OutputKey', 'OutputValue')
-            facts['stack_parameters'] = to_dict(facts['stack_description'].get('Parameters'),
-                                                'ParameterKey', 'ParameterValue')
-            facts['stack_tags'] = boto3_tag_list_to_ansible_dict(facts['stack_description'].get('Tags'))
+        if facts["stack_description"]:
+            facts["stack_outputs"] = to_dict(facts["stack_description"].get("Outputs"), "OutputKey", "OutputValue")
+            facts["stack_parameters"] = to_dict(
+                facts["stack_description"].get("Parameters"), "ParameterKey", "ParameterValue"
+            )
+            facts["stack_tags"] = boto3_tag_list_to_ansible_dict(facts["stack_description"].get("Tags"))
 
         # Create optional stack outputs
-        all_facts = module.params.get('all_facts')
-        if all_facts or module.params.get('stack_resources'):
-            facts['stack_resource_list'] = service_mgr.list_stack_resources(stack_name)
-            facts['stack_resources'] = to_dict(facts.get('stack_resource_list'),
-                                               'LogicalResourceId', 'PhysicalResourceId')
-        if all_facts or module.params.get('stack_template'):
-            facts['stack_template'] = service_mgr.get_template(stack_name)
-        if all_facts or module.params.get('stack_policy'):
-            facts['stack_policy'] = service_mgr.get_stack_policy(stack_name)
-        if all_facts or module.params.get('stack_events'):
-            facts['stack_events'] = service_mgr.describe_stack_events(stack_name)
-        if all_facts or module.params.get('stack_change_sets'):
-            facts['stack_change_sets'] = service_mgr.describe_stack_change_sets(stack_name)
+        all_facts = module.params.get("all_facts")
+        if all_facts or module.params.get("stack_resources"):
+            facts["stack_resource_list"] = service_mgr.list_stack_resources(stack_name)
+            facts["stack_resources"] = to_dict(
+                facts.get("stack_resource_list"), "LogicalResourceId", "PhysicalResourceId"
+            )
+        if all_facts or module.params.get("stack_template"):
+            facts["stack_template"] = service_mgr.get_template(stack_name)
+        if all_facts or module.params.get("stack_policy"):
+            facts["stack_policy"] = service_mgr.get_stack_policy(stack_name)
+        if all_facts or module.params.get("stack_events"):
+            facts["stack_events"] = service_mgr.describe_stack_events(stack_name)
+        if all_facts or module.params.get("stack_change_sets"):
+            facts["stack_change_sets"] = service_mgr.describe_stack_change_sets(stack_name)
 
-        result['cloudformation'][stack_name] = camel_dict_to_snake_dict(facts, ignore_list=('stack_outputs',
-                                                                                            'stack_parameters',
-                                                                                            'stack_policy',
-                                                                                            'stack_resources',
-                                                                                            'stack_tags',
-                                                                                            'stack_template'))
+        result["cloudformation"][stack_name] = camel_dict_to_snake_dict(
+            facts,
+            ignore_list=(
+                "stack_outputs",
+                "stack_parameters",
+                "stack_policy",
+                "stack_resources",
+                "stack_tags",
+                "stack_template",
+            ),
+        )
     module.exit_json(changed=False, **result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

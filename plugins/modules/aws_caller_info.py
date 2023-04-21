@@ -73,34 +73,32 @@ def main():
         supports_check_mode=True,
     )
 
-    client = module.client('sts', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("sts", retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         caller_info = client.get_caller_identity(aws_retry=True)
-        caller_info.pop('ResponseMetadata', None)
+        caller_info.pop("ResponseMetadata", None)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to retrieve caller identity')
+        module.fail_json_aws(e, msg="Failed to retrieve caller identity")
 
-    iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    iam_client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         # Although a list is returned by list_account_aliases AWS supports maximum one alias per account.
         # If an alias is defined it will be returned otherwise a blank string is filled in as account_alias.
         # see https://docs.aws.amazon.com/cli/latest/reference/iam/list-account-aliases.html#output
         response = iam_client.list_account_aliases(aws_retry=True)
-        if response and response['AccountAliases']:
-            caller_info['account_alias'] = response['AccountAliases'][0]
+        if response and response["AccountAliases"]:
+            caller_info["account_alias"] = response["AccountAliases"][0]
         else:
-            caller_info['account_alias'] = ''
+            caller_info["account_alias"] = ""
     except (BotoCoreError, ClientError):
         # The iam:ListAccountAliases permission is required for this operation to succeed.
         # Lacking this permission is handled gracefully by not returning the account_alias.
         pass
 
-    module.exit_json(
-        changed=False,
-        **camel_dict_to_snake_dict(caller_info))
+    module.exit_json(changed=False, **camel_dict_to_snake_dict(caller_info))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

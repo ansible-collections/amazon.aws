@@ -5,7 +5,6 @@
 
 
 class ModuleDocFragment:
-
     # Standard Tagging related parameters
     DOCUMENTATION = r"""
 options:

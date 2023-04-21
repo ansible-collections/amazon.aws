@@ -72,24 +72,22 @@ def inventory():
     [
         (None, None),
         ({}, None),
-        ({'GroupId': "test01"}, "test01"),
-        ({'GroupId': ["test01"]}, "test01"),
-        ({'GroupId': ("test01")}, "test01"),
-        ({'GroupId': ["test01", "test02"]}, ["test01", "test02"]),
-        ([{'GroupId': ["test01", "test02"]}], ["test01", "test02"]),
-        ([{'GroupId': ["test01"]}], "test01"),
+        ({"GroupId": "test01"}, "test01"),
+        ({"GroupId": ["test01"]}, "test01"),
+        ({"GroupId": ("test01")}, "test01"),
+        ({"GroupId": ["test01", "test02"]}, ["test01", "test02"]),
+        ([{"GroupId": ["test01", "test02"]}], ["test01", "test02"]),
+        ([{"GroupId": ["test01"]}], "test01"),
         (
-            [{'GroupId': ["test01", "test02"]}, {'GroupId': ["test03", "test04"]}],
-            [["test01", "test02"], ["test03", "test04"]]
+            [{"GroupId": ["test01", "test02"]}, {"GroupId": ["test03", "test04"]}],
+            [["test01", "test02"], ["test03", "test04"]],
         ),
         (
-            ({'GroupId': ["test01", "test02"]}, {'GroupId': ["test03", "test04"]}),
-            [["test01", "test02"], ["test03", "test04"]]),
-        (
-            ({'GroupId': ["test01", "test02"]}, {}),
-            ["test01", "test02"]
+            ({"GroupId": ["test01", "test02"]}, {"GroupId": ["test03", "test04"]}),
+            [["test01", "test02"], ["test03", "test04"]],
         ),
-    ]
+        (({"GroupId": ["test01", "test02"]}, {}), ["test01", "test02"]),
+    ],
 )
 def test_compile_values(obj, expected):
     assert _compile_values(obj, "GroupId") == expected
@@ -99,22 +97,16 @@ def test_compile_values(obj, expected):
     "filter_name,expected",
     [
         ("ansible.aws.unexpected.file", "ansible.aws.unexpected.file"),
-        ('instance.group-id', "sg-0123456789"),
-        ('instance.group-name', "default"),
-        ('owner-id', "id-012345678L"),
-    ]
+        ("instance.group-id", "sg-0123456789"),
+        ("instance.group-name", "default"),
+        ("owner-id", "id-012345678L"),
+    ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._compile_values")
 def test_get_boto_attr_chain(m_compile_values, filter_name, expected):
-
     m_compile_values.side_effect = lambda obj, attr: obj.get(attr)
 
-    instance = {
-        'SecurityGroups': {
-            'GroupName': 'default', 'GroupId': 'sg-0123456789'
-        },
-        "OwnerId": "id-012345678L"
-    }
+    instance = {"SecurityGroups": {"GroupName": "default", "GroupId": "sg-0123456789"}, "OwnerId": "id-012345678L"}
 
     assert _get_boto_attr_chain(filter_name, instance) == expected
 
@@ -136,12 +128,11 @@ def test_get_boto_attr_chain(m_compile_values, filter_name, expected):
         (["private-dns-name", {"name": "Name", "separator": "-"}], "test-instance.localhost"),
         (["private-dns-name", "tag:os_version"], "test-instance.localhost"),
         (["OSRelease"], None),
-    ]
+    ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname")
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain")
 def test_inventory_get_preferred_hostname(m_get_boto_attr_chain, m_get_tag_hostname, inventory, hostnames, expected):
-
     instance = {
         "Name": "test-instance-01",
         "Phase": "dev",
@@ -161,7 +152,6 @@ def test_inventory_get_preferred_hostname(m_get_boto_attr_chain, m_get_tag_hostn
 
 
 def test_inventory_get_preferred_hostname_failure(inventory):
-
     instance = {}
     hostnames = [{"value": "saome_value"}]
 
@@ -177,15 +167,15 @@ def test_inventory_get_preferred_hostname_failure(inventory):
 @pytest.mark.parametrize(
     "filename,result",
     [
-        ('inventory_aws_ec2.yml', True),
-        ('inventory_aws_ec2.yaml', True),
-        ('inventory_aws_EC2.yaml', False),
-        ('inventory_Aws_ec2.yaml', False),
-        ('aws_ec2_inventory.yml', False),
-        ('aws_ec2.yml_inventory', False),
-        ('aws_ec2.yml', True),
-        ('aws_ec2.yaml', True),
-    ]
+        ("inventory_aws_ec2.yml", True),
+        ("inventory_aws_ec2.yaml", True),
+        ("inventory_aws_EC2.yaml", False),
+        ("inventory_Aws_ec2.yaml", False),
+        ("aws_ec2_inventory.yml", False),
+        ("aws_ec2.yml_inventory", False),
+        ("aws_ec2.yml", True),
+        ("aws_ec2.yaml", True),
+    ],
 )
 @patch("ansible.plugins.inventory.BaseInventoryPlugin.verify_file")
 def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_return, filename, result):
@@ -209,24 +199,24 @@ def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_r
         (
             "tag:os_provider=RedHat,os_release=7",
             {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "8"}]},
-            ["os_provider_RedHat"]
+            ["os_provider_RedHat"],
         ),
         (
             "tag:os_provider=RedHat,os_release=7",
             {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
-            ["os_provider_RedHat", "os_release_7"]
+            ["os_provider_RedHat", "os_release_7"],
         ),
         (
             "tag:os_provider,os_release",
             {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
-            ["RedHat", "7"]
+            ["RedHat", "7"],
         ),
         (
             "tag:os_provider=RedHat,os_release",
             {"Tags": [{"Key": "os_provider", "Value": "RedHat"}, {"Key": "os_release", "Value": "7"}]},
-            ["os_provider_RedHat", "7"]
+            ["os_provider_RedHat", "7"],
         ),
-    ]
+    ],
 )
 def test_get_tag_hostname(preference, instance, expected):
     assert expected == _get_tag_hostname(preference, instance)
@@ -235,41 +225,29 @@ def test_get_tag_hostname(preference, instance, expected):
 @pytest.mark.parametrize(
     "_options, expected",
     [
-        ({'filters': {}, 'include_filters': []}, [{}]),
-        ({'filters': {}, 'include_filters': [{"foo": "bar"}]}, [{"foo": "bar"}]),
+        ({"filters": {}, "include_filters": []}, [{}]),
+        ({"filters": {}, "include_filters": [{"foo": "bar"}]}, [{"foo": "bar"}]),
         (
             {
-                'filters': {"from_filter": 1},
-                'include_filters': [{"from_include_filter": "bar"}],
+                "filters": {"from_filter": 1},
+                "include_filters": [{"from_include_filter": "bar"}],
             },
-            [
-                {"from_filter": 1}, {"from_include_filter": "bar"}
-            ]
+            [{"from_filter": 1}, {"from_include_filter": "bar"}],
         ),
-    ]
+    ],
 )
 def test_inventory_build_include_filters(inventory, _options, expected):
     inventory._options = _options
     assert inventory.build_include_filters() == expected
 
 
-@pytest.mark.parametrize(
-    "hostname,expected",
-    [
-        (1, "1"),
-        ("a:b", "a_b"),
-        ("a:/b", "a__b"),
-        ("example", "example")
-    ]
-)
+@pytest.mark.parametrize("hostname,expected", [(1, "1"), ("a:b", "a_b"), ("a:/b", "a__b"), ("example", "example")])
 def test_sanitize_hostname(inventory, hostname, expected):
     assert inventory._sanitize_hostname(hostname) == expected
 
 
 def test_sanitize_hostname_legacy(inventory):
-    inventory._sanitize_group_name = (
-        inventory._legacy_script_compatible_group_sanitization
-    )
+    inventory._sanitize_group_name = inventory._legacy_script_compatible_group_sanitization
     assert inventory._sanitize_hostname("a:/b") == "a__b"
 
 
@@ -374,30 +352,28 @@ def test_iter_entry(inventory):
 @pytest.mark.parametrize(
     "include_filters,exclude_filters,instances_by_region,instances",
     [
-        (
-            [], [], [], []
-        ),
+        ([], [], [], []),
         (
             [4, 1, 2],
             [],
             [
-                [{'InstanceId': 4, 'name': 'instance-4'}],
-                [{'InstanceId': 1, 'name': 'instance-1'}],
-                [{'InstanceId': 2, 'name': 'instance-2'}]
+                [{"InstanceId": 4, "name": "instance-4"}],
+                [{"InstanceId": 1, "name": "instance-1"}],
+                [{"InstanceId": 2, "name": "instance-2"}],
             ],
             [
-                {'InstanceId': 1, 'name': 'instance-1'},
-                {'InstanceId': 2, 'name': 'instance-2'},
-                {'InstanceId': 4, 'name': 'instance-4'}
+                {"InstanceId": 1, "name": "instance-1"},
+                {"InstanceId": 2, "name": "instance-2"},
+                {"InstanceId": 4, "name": "instance-4"},
             ],
         ),
         (
             [],
             [4, 1, 2],
             [
-                [{'InstanceId': 4, 'name': 'instance-4'}],
-                [{'InstanceId': 1, 'name': 'instance-1'}],
-                [{'InstanceId': 2, 'name': 'instance-2'}]
+                [{"InstanceId": 4, "name": "instance-4"}],
+                [{"InstanceId": 1, "name": "instance-1"}],
+                [{"InstanceId": 2, "name": "instance-2"}],
             ],
             [],
         ),
@@ -405,34 +381,29 @@ def test_iter_entry(inventory):
             [1, 2],
             [4],
             [
-                [{'InstanceId': 4, 'name': 'instance-4'}],
-                [{'InstanceId': 1, 'name': 'instance-1'}],
-                [{'InstanceId': 2, 'name': 'instance-2'}]
+                [{"InstanceId": 4, "name": "instance-4"}],
+                [{"InstanceId": 1, "name": "instance-1"}],
+                [{"InstanceId": 2, "name": "instance-2"}],
             ],
-            [
-                {'InstanceId': 1, 'name': 'instance-1'},
-                {'InstanceId': 2, 'name': 'instance-2'}
-            ],
+            [{"InstanceId": 1, "name": "instance-1"}, {"InstanceId": 2, "name": "instance-2"}],
         ),
         (
             [1, 2],
             [1],
             [
-                [{'InstanceId': 1, 'name': 'instance-1'}],
-                [{'InstanceId': 1, 'name': 'instance-1'}],
-                [{'InstanceId': 2, 'name': 'instance-2'}]
+                [{"InstanceId": 1, "name": "instance-1"}],
+                [{"InstanceId": 1, "name": "instance-1"}],
+                [{"InstanceId": 2, "name": "instance-2"}],
             ],
-            [
-                {'InstanceId': 2, 'name': 'instance-2'}
-            ],
-        )
-    ]
+            [{"InstanceId": 2, "name": "instance-2"}],
+        ),
+    ],
 )
 def test_inventory_query(inventory, include_filters, exclude_filters, instances_by_region, instances):
     inventory._get_instances_by_region = MagicMock()
     inventory._get_instances_by_region.side_effect = instances_by_region
 
-    regions = ['us-east-1', 'us-east-2']
+    regions = ["us-east-1", "us-east-2"]
     strict = False
 
     params = {
@@ -444,12 +415,12 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
     }
 
     for u in include_filters:
-        params["include_filters"].append({'Name': 'in_filters_%d' % u, 'Values': [u]})
+        params["include_filters"].append({"Name": "in_filters_%d" % u, "Values": [u]})
 
     for u in exclude_filters:
-        params["exclude_filters"].append({'Name': 'ex_filters_%d' % u, 'Values': [u]})
+        params["exclude_filters"].append({"Name": "ex_filters_%d" % u, "Values": [u]})
 
-    assert inventory._query(**params) == {'aws_ec2': instances}
+    assert inventory._query(**params) == {"aws_ec2": instances}
     if not instances_by_region:
         inventory._get_instances_by_region.assert_not_called()
 
@@ -458,83 +429,96 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
     "filters",
     [
         [],
+        [{"Name": "provider", "Values": "sample"}, {"Name": "instance-state-name", "Values": ["active"]}],
         [
-            {'Name': 'provider', 'Values': 'sample'},
-            {'Name': 'instance-state-name', 'Values': ['active']}
+            {"Name": "tags", "Values": "one_tag"},
         ],
-        [
-            {'Name': 'tags', 'Values': 'one_tag'},
-        ],
-    ]
+    ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
 def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, filters):
-
-    boto3_conn = [
-        (MagicMock(), "us-east-1"), (MagicMock(), "us-east-2")
-    ]
+    boto3_conn = [(MagicMock(), "us-east-1"), (MagicMock(), "us-east-2")]
 
     inventory.all_clients = MagicMock()
     inventory.all_clients.return_value = boto3_conn
 
     m_describe_ec2_instances.side_effect = [
         {
-            'Reservations': [
+            "Reservations": [
                 {
-                    'OwnerId': "owner01",
-                    'RequesterId': "requester01",
-                    'ReservationId': "id-0123",
-                    'Instances': [
-                        {'name': 'id-1-0', 'os': 'RedHat'},
-                        {'name': 'id-1-1', 'os': 'CoreOS'},
-                        {'name': 'id-1-2', 'os': 'Fedora'}
-                    ]
+                    "OwnerId": "owner01",
+                    "RequesterId": "requester01",
+                    "ReservationId": "id-0123",
+                    "Instances": [
+                        {"name": "id-1-0", "os": "RedHat"},
+                        {"name": "id-1-1", "os": "CoreOS"},
+                        {"name": "id-1-2", "os": "Fedora"},
+                    ],
                 },
                 {
-                    'OwnerId': "owner01",
-                    'ReservationId': "id-0456",
-                    'Instances': [
-                        {'name': 'id-2-0', 'phase': 'uat'},
-                        {'name': 'id-2-1', 'phase': 'prod'}
-                    ]
-                }
+                    "OwnerId": "owner01",
+                    "ReservationId": "id-0456",
+                    "Instances": [{"name": "id-2-0", "phase": "uat"}, {"name": "id-2-1", "phase": "prod"}],
+                },
             ]
         },
         {
-            'Reservations': [
+            "Reservations": [
                 {
-                    'OwnerId': "owner02",
-                    'ReservationId': "id-0789",
-                    'Instances': [
-                        {'name': 'id012345789', 'tags': {'phase': 'units'}},
-                    ]
+                    "OwnerId": "owner02",
+                    "ReservationId": "id-0789",
+                    "Instances": [
+                        {"name": "id012345789", "tags": {"phase": "units"}},
+                    ],
                 }
             ],
-            'Metadata': {'Status': 'active'}
-        }
+            "Metadata": {"Status": "active"},
+        },
     ]
 
     expected = [
-        {'name': 'id-1-0', 'os': 'RedHat', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
-        {'name': 'id-1-1', 'os': 'CoreOS', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
-        {'name': 'id-1-2', 'os': 'Fedora', 'OwnerId': "owner01", 'RequesterId': "requester01", 'ReservationId': "id-0123"},
-        {'name': 'id-2-0', 'phase': 'uat', 'OwnerId': "owner01", 'ReservationId': "id-0456", 'RequesterId': ''},
-        {'name': 'id-2-1', 'phase': 'prod', 'OwnerId': "owner01", 'ReservationId': "id-0456", 'RequesterId': ''},
-        {'name': 'id012345789', 'tags': {'phase': 'units'}, 'OwnerId': "owner02", 'ReservationId': "id-0789", 'RequesterId': ''}
+        {
+            "name": "id-1-0",
+            "os": "RedHat",
+            "OwnerId": "owner01",
+            "RequesterId": "requester01",
+            "ReservationId": "id-0123",
+        },
+        {
+            "name": "id-1-1",
+            "os": "CoreOS",
+            "OwnerId": "owner01",
+            "RequesterId": "requester01",
+            "ReservationId": "id-0123",
+        },
+        {
+            "name": "id-1-2",
+            "os": "Fedora",
+            "OwnerId": "owner01",
+            "RequesterId": "requester01",
+            "ReservationId": "id-0123",
+        },
+        {"name": "id-2-0", "phase": "uat", "OwnerId": "owner01", "ReservationId": "id-0456", "RequesterId": ""},
+        {"name": "id-2-1", "phase": "prod", "OwnerId": "owner01", "ReservationId": "id-0456", "RequesterId": ""},
+        {
+            "name": "id012345789",
+            "tags": {"phase": "units"},
+            "OwnerId": "owner02",
+            "ReservationId": "id-0789",
+            "RequesterId": "",
+        },
     ]
 
-    default_filter = {'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']}
+    default_filter = {"Name": "instance-state-name", "Values": ["running", "pending", "stopping", "stopped"]}
     regions = ["us-east-2", "us-east-4"]
 
     assert inventory._get_instances_by_region(regions, filters, False) == expected
     inventory.all_clients.assert_called_with("ec2")
 
-    if any((f['Name'] == 'instance-state-name' for f in filters)):
+    if any((f["Name"] == "instance-state-name" for f in filters)):
         filters.append(default_filter)
 
-    m_describe_ec2_instances.assert_has_calls(
-        [call(conn, filters) for conn, region in boto3_conn], any_order=True
-    )
+    m_describe_ec2_instances.assert_has_calls([call(conn, filters) for conn, region in boto3_conn], any_order=True)
 
 
 @pytest.mark.parametrize("strict", [True, False])
@@ -542,29 +526,21 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
     "error",
     [
         botocore.exceptions.ClientError(
-            {
-                'Error': {'Code': 1, 'Message': 'Something went wrong'},
-                'ResponseMetadata': {
-                    'HTTPStatusCode': 404
-                }
-            },
-            "some_botocore_client_error"
+            {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"HTTPStatusCode": 404}},
+            "some_botocore_client_error",
         ),
         botocore.exceptions.ClientError(
             {
-                'Error': {'Code': 'UnauthorizedOperation', 'Message': 'Something went wrong'},
-                'ResponseMetadata': {
-                    'HTTPStatusCode': 403
-                }
+                "Error": {"Code": "UnauthorizedOperation", "Message": "Something went wrong"},
+                "ResponseMetadata": {"HTTPStatusCode": 403},
             },
-            "some_botocore_client_error"
+            "some_botocore_client_error",
         ),
-        botocore.exceptions.PaginationError(message="some pagination error")
-    ]
+        botocore.exceptions.PaginationError(message="some pagination error"),
+    ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
 def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, inventory, strict, error):
-
     inventory.all_clients = MagicMock()
     inventory.all_clients.return_value = [(MagicMock(), "us-west-2")]
     inventory.fail_aws = MagicMock()
@@ -573,7 +549,11 @@ def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, in
     m_describe_ec2_instances.side_effect = error
     regions = ["us-east-2", "us-east-4"]
 
-    if isinstance(error, botocore.exceptions.ClientError) and error.response['ResponseMetadata']['HTTPStatusCode'] == 403 and not strict:
+    if (
+        isinstance(error, botocore.exceptions.ClientError)
+        and error.response["ResponseMetadata"]["HTTPStatusCode"] == 403
+        and not strict
+    ):
         assert inventory._get_instances_by_region(regions, [], strict) == []
     else:
         with pytest.raises(SystemExit):
@@ -591,16 +571,18 @@ def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, in
         ([{"name": "Name", "prefix": "Phase", "separator": "-"}], ["dev-test-instance-01"]),
         ([{"name": "Name", "prefix": "OSVersion", "separator": "-"}], ["test-instance-01"]),
         ([{"name": "Name", "separator": "-"}], ["test-instance-01"]),
-        ([{"name": "Name", "prefix": "Phase"}, "private-dns-name"], ["dev_test-instance-01", "test-instance.localhost"]),
+        (
+            [{"name": "Name", "prefix": "Phase"}, "private-dns-name"],
+            ["dev_test-instance-01", "test-instance.localhost"],
+        ),
         ([{"name": "Name", "prefix": "Phase"}, "tag:os_version"], ["dev_test-instance-01", "RHEL", "CoreOS"]),
         (["private-dns-name", {"name": "Name", "separator": "-"}], ["test-instance.localhost", "test-instance-01"]),
         (["OSRelease"], []),
-    ]
+    ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname")
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain")
 def test_inventory_get_all_hostnames(m_get_boto_attr_chain, m_get_tag_hostname, inventory, hostnames, expected):
-
     instance = {
         "Name": "test-instance-01",
         "Phase": "dev",
@@ -620,7 +602,6 @@ def test_inventory_get_all_hostnames(m_get_boto_attr_chain, m_get_tag_hostname, 
 
 
 def test_inventory_get_all_hostnames_failure(inventory):
-
     instance = {}
     hostnames = [{"value": "some_value"}]
 

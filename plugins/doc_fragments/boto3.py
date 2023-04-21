@@ -7,10 +7,8 @@ from ansible_collections.amazon.aws.plugins.module_utils import botocore as boto
 
 
 class ModuleDocFragment:
-
     # Modules and Plugins can (currently) use the same fragment
     def __init__(self):
-
         # Minimum requirements for the collection
         requirements = f"""
 options: {{}}

@@ -34,8 +34,8 @@ def botocore_utils(monkeypatch):
 # module_utils.botocore.get_aws_region
 ###############################################################
 def test_get_aws_region_simple_plugin(monkeypatch, aws_plugin, botocore_utils):
-    region_method = MagicMock(name='_aws_region')
-    monkeypatch.setattr(botocore_utils, '_aws_region', region_method)
+    region_method = MagicMock(name="_aws_region")
+    monkeypatch.setattr(botocore_utils, "_aws_region", region_method)
     region_method.return_value = sentinel.RETURNED_REGION
 
     assert botocore_utils.get_aws_region(aws_plugin) is sentinel.RETURNED_REGION
@@ -46,8 +46,8 @@ def test_get_aws_region_simple_plugin(monkeypatch, aws_plugin, botocore_utils):
 
 
 def test_get_aws_region_exception_nested_plugin(monkeypatch, aws_plugin, botocore_utils):
-    region_method = MagicMock(name='_aws_region')
-    monkeypatch.setattr(botocore_utils, '_aws_region', region_method)
+    region_method = MagicMock(name="_aws_region")
+    monkeypatch.setattr(botocore_utils, "_aws_region", region_method)
 
     exception_nested = AnsibleBotocoreError(message=sentinel.ERROR_MSG, exception=sentinel.ERROR_EX)
     region_method.side_effect = exception_nested
@@ -61,12 +61,12 @@ def test_get_aws_region_exception_nested_plugin(monkeypatch, aws_plugin, botocor
     assert passed_args[0][0] is sentinel.PLUGIN_OPTIONS
 
     fail_args = aws_plugin.fail_aws.call_args
-    assert fail_args == call('sentinel.ERROR_MSG: sentinel.ERROR_EX')
+    assert fail_args == call("sentinel.ERROR_MSG: sentinel.ERROR_EX")
 
 
 def test_get_aws_region_exception_msg_plugin(monkeypatch, aws_plugin, botocore_utils):
-    region_method = MagicMock(name='_aws_region')
-    monkeypatch.setattr(botocore_utils, '_aws_region', region_method)
+    region_method = MagicMock(name="_aws_region")
+    monkeypatch.setattr(botocore_utils, "_aws_region", region_method)
 
     exception_nested = AnsibleBotocoreError(message=sentinel.ERROR_MSG)
     region_method.side_effect = exception_nested
@@ -80,4 +80,4 @@ def test_get_aws_region_exception_msg_plugin(monkeypatch, aws_plugin, botocore_u
     assert passed_args[0][0] is sentinel.PLUGIN_OPTIONS
 
     fail_args = aws_plugin.fail_aws.call_args
-    assert fail_args == call('sentinel.ERROR_MSG')
+    assert fail_args == call("sentinel.ERROR_MSG")

@@ -167,8 +167,8 @@ def describe_vpcs(connection, module):
     module  : AnsibleAWSModule object
     """
     # collect parameters
-    filters = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    vpc_ids = module.params.get('vpc_ids')
+    filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    vpc_ids = module.params.get("vpc_ids")
 
     # init empty list for return vars
     vpc_info = list()
@@ -183,21 +183,21 @@ def describe_vpcs(connection, module):
     dns_support = {}
     dns_hostnames = {}
     # Loop through the results and add the other VPC attributes we gathered
-    for vpc in response['Vpcs']:
+    for vpc in response["Vpcs"]:
         error_message = "Unable to describe VPC attribute {0} on VPC {1}"
-        dns_support = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsSupport', error_message)
-        dns_hostnames = describe_vpc_attribute(module, connection, vpc['VpcId'], 'enableDnsHostnames', error_message)
+        dns_support = describe_vpc_attribute(module, connection, vpc["VpcId"], "enableDnsSupport", error_message)
+        dns_hostnames = describe_vpc_attribute(module, connection, vpc["VpcId"], "enableDnsHostnames", error_message)
 
         # add the two DNS attributes
         if dns_support:
-            vpc['EnableDnsSupport'] = dns_support['EnableDnsSupport'].get('Value')
+            vpc["EnableDnsSupport"] = dns_support["EnableDnsSupport"].get("Value")
         if dns_hostnames:
-            vpc['EnableDnsHostnames'] = dns_hostnames['EnableDnsHostnames'].get('Value')
+            vpc["EnableDnsHostnames"] = dns_hostnames["EnableDnsHostnames"].get("Value")
         # for backwards compatibility
-        vpc['id'] = vpc['VpcId']
+        vpc["id"] = vpc["VpcId"]
         vpc_info.append(camel_dict_to_snake_dict(vpc))
         # convert tag list to ansible dict
-        vpc_info[-1]['tags'] = boto3_tag_list_to_ansible_dict(vpc.get('Tags', []))
+        vpc_info[-1]["tags"] = boto3_tag_list_to_ansible_dict(vpc.get("Tags", []))
 
     module.exit_json(vpcs=vpc_info)
 
@@ -206,7 +206,7 @@ def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
     result = None
     try:
         return connection.describe_vpc_attribute(VpcId=vpc, Attribute=attribute, aws_retry=True)
-    except is_boto3_error_code('InvalidVpcID.NotFound'):
+    except is_boto3_error_code("InvalidVpcID.NotFound"):
         module.warn(error_message.format(attribute, vpc))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
@@ -221,10 +221,10 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     describe_vpcs(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

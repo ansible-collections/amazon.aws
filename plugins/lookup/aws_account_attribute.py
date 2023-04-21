@@ -69,31 +69,31 @@ class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
         super().run(terms, variables, **kwargs)
 
-        client = self.client('ec2', AWSRetry.jittered_backoff())
+        client = self.client("ec2", AWSRetry.jittered_backoff())
 
-        attribute = kwargs.get('attribute')
-        params = {'AttributeNames': []}
+        attribute = kwargs.get("attribute")
+        params = {"AttributeNames": []}
         check_ec2_classic = False
-        if 'has-ec2-classic' == attribute:
+        if "has-ec2-classic" == attribute:
             check_ec2_classic = True
-            params['AttributeNames'] = ['supported-platforms']
+            params["AttributeNames"] = ["supported-platforms"]
         elif attribute:
-            params['AttributeNames'] = [attribute]
+            params["AttributeNames"] = [attribute]
 
         try:
-            response = _describe_account_attributes(client, **params)['AccountAttributes']
+            response = _describe_account_attributes(client, **params)["AccountAttributes"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             raise AnsibleLookupError("Failed to describe account attributes: {0}".format(to_native(e)))
 
         if check_ec2_classic:
             attr = response[0]
-            return any(value['AttributeValue'] == 'EC2' for value in attr['AttributeValues'])
+            return any(value["AttributeValue"] == "EC2" for value in attr["AttributeValues"])
 
         if attribute:
             attr = response[0]
-            return [value['AttributeValue'] for value in attr['AttributeValues']]
+            return [value["AttributeValue"] for value in attr["AttributeValues"]]
 
         flattened = {}
         for k_v_dict in response:
-            flattened[k_v_dict['AttributeName']] = [value['AttributeValue'] for value in k_v_dict['AttributeValues']]
+            flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
         return flattened

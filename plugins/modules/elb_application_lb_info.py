@@ -226,52 +226,54 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 @AWSRetry.jittered_backoff(retries=10)
 def get_paginator(connection, **kwargs):
-    paginator = connection.get_paginator('describe_load_balancers')
+    paginator = connection.get_paginator("describe_load_balancers")
     return paginator.paginate(**kwargs).build_full_result()
 
 
 def get_alb_listeners(connection, module, alb_arn):
-
     try:
-        return connection.describe_listeners(LoadBalancerArn=alb_arn)['Listeners']
+        return connection.describe_listeners(LoadBalancerArn=alb_arn)["Listeners"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe alb listeners")
 
 
 def get_listener_rules(connection, module, listener_arn):
-
     try:
-        return connection.describe_rules(ListenerArn=listener_arn)['Rules']
+        return connection.describe_rules(ListenerArn=listener_arn)["Rules"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe listener rules")
 
 
 def get_load_balancer_attributes(connection, module, load_balancer_arn):
-
     try:
-        load_balancer_attributes = boto3_tag_list_to_ansible_dict(connection.describe_load_balancer_attributes(LoadBalancerArn=load_balancer_arn)['Attributes'])
+        load_balancer_attributes = boto3_tag_list_to_ansible_dict(
+            connection.describe_load_balancer_attributes(LoadBalancerArn=load_balancer_arn)["Attributes"]
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
 
     # Replace '.' with '_' in attribute key names to make it more Ansibley
     for k, v in list(load_balancer_attributes.items()):
-        load_balancer_attributes[k.replace('.', '_')] = v
+        load_balancer_attributes[k.replace(".", "_")] = v
         del load_balancer_attributes[k]
 
     return load_balancer_attributes
 
 
 def get_load_balancer_tags(connection, module, load_balancer_arn):
-
     try:
-        return boto3_tag_list_to_ansible_dict(connection.describe_tags(ResourceArns=[load_balancer_arn])['TagDescriptions'][0]['Tags'])
+        return boto3_tag_list_to_ansible_dict(
+            connection.describe_tags(ResourceArns=[load_balancer_arn])["TagDescriptions"][0]["Tags"]
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
 
 def get_load_balancer_ipaddresstype(connection, module, load_balancer_arn):
     try:
-        return connection.describe_load_balancers(LoadBalancerArns=[load_balancer_arn])['LoadBalancers'][0]['IpAddressType']
+        return connection.describe_load_balancers(LoadBalancerArns=[load_balancer_arn])["LoadBalancers"][0][
+            "IpAddressType"
+        ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer ip address type")
 
@@ -287,55 +289,60 @@ def list_load_balancers(connection, module):
             load_balancers = get_paginator(connection, LoadBalancerArns=load_balancer_arns)
         if names:
             load_balancers = get_paginator(connection, Names=names)
-    except is_boto3_error_code('LoadBalancerNotFound'):
+    except is_boto3_error_code("LoadBalancerNotFound"):
         module.exit_json(load_balancers=[])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to list load balancers")
 
-    for load_balancer in load_balancers['LoadBalancers']:
+    for load_balancer in load_balancers["LoadBalancers"]:
         # Get the attributes for each alb
-        load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer['LoadBalancerArn']))
+        load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer["LoadBalancerArn"]))
 
         # Get the listeners for each alb
-        load_balancer['listeners'] = get_alb_listeners(connection, module, load_balancer['LoadBalancerArn'])
+        load_balancer["listeners"] = get_alb_listeners(connection, module, load_balancer["LoadBalancerArn"])
 
         # For each listener, get listener rules
-        for listener in load_balancer['listeners']:
-            listener['rules'] = get_listener_rules(connection, module, listener['ListenerArn'])
+        for listener in load_balancer["listeners"]:
+            listener["rules"] = get_listener_rules(connection, module, listener["ListenerArn"])
 
         # Get ALB ip address type
-        load_balancer['IpAddressType'] = get_load_balancer_ipaddresstype(connection, module, load_balancer['LoadBalancerArn'])
+        load_balancer["IpAddressType"] = get_load_balancer_ipaddresstype(
+            connection, module, load_balancer["LoadBalancerArn"]
+        )
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
-    snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers['LoadBalancers']]
+    snaked_load_balancers = [
+        camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers["LoadBalancers"]
+    ]
 
     # Get tags for each load balancer
     for snaked_load_balancer in snaked_load_balancers:
-        snaked_load_balancer['tags'] = get_load_balancer_tags(connection, module, snaked_load_balancer['load_balancer_arn'])
+        snaked_load_balancer["tags"] = get_load_balancer_tags(
+            connection, module, snaked_load_balancer["load_balancer_arn"]
+        )
 
     module.exit_json(load_balancers=snaked_load_balancers)
 
 
 def main():
-
-    argument_spec = dict(
-        load_balancer_arns=dict(type='list', elements='str'),
-        names=dict(type='list', elements='str')
-    )
+    argument_spec = dict(load_balancer_arns=dict(type="list", elements="str"), names=dict(type="list", elements="str"))
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[['load_balancer_arns', 'names']],
+        mutually_exclusive=[["load_balancer_arns", "names"]],
         supports_check_mode=True,
     )
 
     try:
-        connection = module.client('elbv2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+        connection = module.client("elbv2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     list_load_balancers(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

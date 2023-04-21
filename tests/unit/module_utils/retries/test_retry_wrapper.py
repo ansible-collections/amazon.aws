@@ -19,10 +19,10 @@ import ansible_collections.amazon.aws.plugins.module_utils.botocore as util_boto
 
 @pytest.fixture
 def fake_client():
-    retryable_response = {'Error': {'Code': 'RequestLimitExceeded', 'Message': 'Something went wrong'}}
-    retryable_exception = botocore.exceptions.ClientError(retryable_response, 'fail_retryable')
-    not_retryable_response = {'Error': {'Code': 'AnotherProblem', 'Message': 'Something went wrong'}}
-    not_retryable_exception = botocore.exceptions.ClientError(not_retryable_response, 'fail_not_retryable')
+    retryable_response = {"Error": {"Code": "RequestLimitExceeded", "Message": "Something went wrong"}}
+    retryable_exception = botocore.exceptions.ClientError(retryable_response, "fail_retryable")
+    not_retryable_response = {"Error": {"Code": "AnotherProblem", "Message": "Something went wrong"}}
+    not_retryable_exception = botocore.exceptions.ClientError(not_retryable_response, "fail_not_retryable")
 
     client = MagicMock()
 
@@ -61,8 +61,8 @@ def test_retry_wrapper_callable(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_retryable()
-    boto3_code = util_botocore.is_boto3_error_code('RequestLimitExceeded', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("RequestLimitExceeded", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_retryable.called
@@ -73,8 +73,8 @@ def test_retry_wrapper_callable(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_not_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_not_retryable()
-    boto3_code = util_botocore.is_boto3_error_code('AnotherProblem', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("AnotherProblem", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_not_retryable.called
@@ -107,8 +107,8 @@ def test_retry_wrapper_no_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_retryable(aws_retry=False)
-    boto3_code = util_botocore.is_boto3_error_code('RequestLimitExceeded', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("RequestLimitExceeded", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_retryable.called
@@ -120,8 +120,8 @@ def test_retry_wrapper_no_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_not_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_not_retryable(aws_retry=False)
-    boto3_code = util_botocore.is_boto3_error_code('AnotherProblem', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("AnotherProblem", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_not_retryable.called
@@ -148,8 +148,8 @@ def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_retryable(aws_retry=True)
-    boto3_code = util_botocore.is_boto3_error_code('RequestLimitExceeded', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("RequestLimitExceeded", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_retryable.called
@@ -161,8 +161,8 @@ def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_not_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_not_retryable(aws_retry=True)
-    boto3_code = util_botocore.is_boto3_error_code('AnotherProblem', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("AnotherProblem", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_not_retryable.called
@@ -183,7 +183,7 @@ def test_retry_wrapper_no_retry_args(fake_client, quick_backoff):
     # (In general) callables should be wrapped
     wrapped_client = util_retries.RetryingBotoClientWrapper(fake_client, quick_backoff)
     args = [sentinel.ARG_1, sentinel.ARG_2]
-    kwargs = {'kw1': sentinel.KWARG_1, 'kw2': sentinel.KWARG_2}
+    kwargs = {"kw1": sentinel.KWARG_1, "kw2": sentinel.KWARG_2}
     # aws_retry=False shouldn't be passed to the 'wrapped' call
     call_args = call(*args, **kwargs)
 
@@ -192,8 +192,8 @@ def test_retry_wrapper_no_retry_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_retryable(*args, aws_retry=False, **kwargs)
-    boto3_code = util_botocore.is_boto3_error_code('RequestLimitExceeded', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("RequestLimitExceeded", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_retryable.called
@@ -205,8 +205,8 @@ def test_retry_wrapper_no_retry_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_not_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_not_retryable(*args, aws_retry=False, **kwargs)
-    boto3_code = util_botocore.is_boto3_error_code('AnotherProblem', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("AnotherProblem", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_not_retryable.called
@@ -227,7 +227,7 @@ def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
     # (In general) callables should be wrapped
     wrapped_client = util_retries.RetryingBotoClientWrapper(fake_client, quick_backoff)
     args = [sentinel.ARG_1, sentinel.ARG_2]
-    kwargs = {'kw1': sentinel.KWARG_1, 'kw2': sentinel.KWARG_2}
+    kwargs = {"kw1": sentinel.KWARG_1, "kw2": sentinel.KWARG_2}
     # aws_retry=True shouldn't be passed to the 'wrapped' call
     call_args = call(*args, **kwargs)
 
@@ -236,8 +236,8 @@ def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_retryable(*args, aws_retry=True, **kwargs)
-    boto3_code = util_botocore.is_boto3_error_code('RequestLimitExceeded', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("RequestLimitExceeded", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_retryable.called
@@ -249,8 +249,8 @@ def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
     assert callable(wrapped_client.fail_not_retryable)
     with pytest.raises(botocore.exceptions.ClientError) as e:
         wrapped_client.fail_not_retryable(*args, aws_retry=True, **kwargs)
-    boto3_code = util_botocore.is_boto3_error_code('AnotherProblem', e=e.value)
-    boto3_message = util_botocore.is_boto3_error_message('Something went wrong', e=e.value)
+    boto3_code = util_botocore.is_boto3_error_code("AnotherProblem", e=e.value)
+    boto3_message = util_botocore.is_boto3_error_message("Something went wrong", e=e.value)
     assert boto3_code is botocore.exceptions.ClientError
     assert boto3_message is botocore.exceptions.ClientError
     assert fake_client.fail_not_retryable.called

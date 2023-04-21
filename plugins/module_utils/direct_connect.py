@@ -52,37 +52,43 @@ def delete_connection(client, connection_id):
     try:
         AWSRetry.jittered_backoff()(client.delete_connection)(connectionId=connection_id)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to delete DirectConnection {0}.".format(connection_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to delete DirectConnection {0}.".format(connection_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
 
 def associate_connection_and_lag(client, connection_id, lag_id):
     try:
-        AWSRetry.jittered_backoff()(client.associate_connection_with_lag)(connectionId=connection_id,
-                                                                          lagId=lag_id)
+        AWSRetry.jittered_backoff()(client.associate_connection_with_lag)(connectionId=connection_id, lagId=lag_id)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to associate Direct Connect connection {0}"
-                                 " with link aggregation group {1}.".format(connection_id, lag_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to associate Direct Connect connection {0}"
+            " with link aggregation group {1}.".format(connection_id, lag_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
 
 def disassociate_connection_and_lag(client, connection_id, lag_id):
     try:
-        AWSRetry.jittered_backoff()(client.disassociate_connection_from_lag)(connectionId=connection_id,
-                                                                             lagId=lag_id)
+        AWSRetry.jittered_backoff()(client.disassociate_connection_from_lag)(connectionId=connection_id, lagId=lag_id)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to disassociate Direct Connect connection {0}"
-                                 " from link aggregation group {1}.".format(connection_id, lag_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to disassociate Direct Connect connection {0}"
+            " from link aggregation group {1}.".format(connection_id, lag_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
 
 def delete_virtual_interface(client, virtual_interface):
     try:
         AWSRetry.jittered_backoff()(client.delete_virtual_interface)(virtualInterfaceId=virtual_interface)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Could not delete virtual interface {0}".format(virtual_interface),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Could not delete virtual interface {0}".format(virtual_interface),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )

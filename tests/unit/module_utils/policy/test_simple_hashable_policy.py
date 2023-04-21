@@ -11,14 +11,14 @@ def test_hashable_policy_none():
 
 
 def test_hashable_policy_boolean():
-    assert _hashable_policy(True, []) == ("true", )
-    assert _hashable_policy(False, []) == ("false", )
+    assert _hashable_policy(True, []) == ("true",)
+    assert _hashable_policy(False, []) == ("false",)
 
 
 def test_hashable_policy_int():
-    assert _hashable_policy(1, []) == ("1", )
-    assert _hashable_policy(42, []) == ("42", )
-    assert _hashable_policy(0, []) == ("0", )
+    assert _hashable_policy(1, []) == ("1",)
+    assert _hashable_policy(42, []) == ("42",)
+    assert _hashable_policy(0, []) == ("0",)
 
 
 def test_hashable_policy_string():

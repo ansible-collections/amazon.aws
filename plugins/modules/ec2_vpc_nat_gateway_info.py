@@ -161,11 +161,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import normali
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_nat_gateways(client, module, **params):
     try:
-        paginator = client.get_paginator('describe_nat_gateways')
-        return paginator.paginate(**params).build_full_result()['NatGateways']
-    except is_boto3_error_code('InvalidNatGatewayID.NotFound'):
+        paginator = client.get_paginator("describe_nat_gateways")
+        return paginator.paginate(**params).build_full_result()["NatGateways"]
+    except is_boto3_error_code("InvalidNatGatewayID.NotFound"):
         module.exit_json(msg="NAT gateway not found.")
-    except is_boto3_error_code('NatGatewayMalformed'):  # pylint: disable=duplicate-except
+    except is_boto3_error_code("NatGatewayMalformed"):  # pylint: disable=duplicate-except
         module.fail_json_aws(msg="NAT gateway id is malformed.")
 
 
@@ -173,20 +173,20 @@ def get_nat_gateways(client, module):
     params = dict()
     nat_gateways = list()
 
-    params['Filter'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    params['NatGatewayIds'] = module.params.get('nat_gateway_ids')
+    params["Filter"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    params["NatGatewayIds"] = module.params.get("nat_gateway_ids")
 
     try:
         result = normalize_boto3_result(_describe_nat_gateways(client, module, **params))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, 'Unable to describe NAT gateways.')
+        module.fail_json_aws(e, "Unable to describe NAT gateways.")
 
     for gateway in result:
         # Turn the boto3 result into ansible_friendly_snaked_names
         converted_gateway = camel_dict_to_snake_dict(gateway)
-        if 'tags' in converted_gateway:
+        if "tags" in converted_gateway:
             # Turn the boto3 result into ansible friendly tag dictionary
-            converted_gateway['tags'] = boto3_tag_list_to_ansible_dict(converted_gateway['tags'])
+            converted_gateway["tags"] = boto3_tag_list_to_ansible_dict(converted_gateway["tags"])
         nat_gateways.append(converted_gateway)
 
     return nat_gateways
@@ -194,22 +194,24 @@ def get_nat_gateways(client, module):
 
 def main():
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        nat_gateway_ids=dict(default=[], type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        nat_gateway_ids=dict(default=[], type="list", elements="str"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
 
     try:
-        connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     results = get_nat_gateways(connection, module)
 
     module.exit_json(result=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

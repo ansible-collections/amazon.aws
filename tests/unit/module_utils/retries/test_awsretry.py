@@ -19,7 +19,6 @@ if not HAS_BOTO3:
 
 
 class TestAWSRetry:
-
     def test_no_failures(self):
         self.counter = 0
 
@@ -32,62 +31,62 @@ class TestAWSRetry:
 
     def test_extend_boto3_failures(self):
         self.counter = 0
-        err_response = {'Error': {'Code': 'MalformedPolicyDocument'}}
+        err_response = {"Error": {"Code": "MalformedPolicyDocument"}}
 
-        @AWSRetry.exponential_backoff(retries=2, delay=0.1, catch_extra_error_codes=['MalformedPolicyDocument'])
+        @AWSRetry.exponential_backoff(retries=2, delay=0.1, catch_extra_error_codes=["MalformedPolicyDocument"])
         def extend_failures():
             self.counter += 1
             if self.counter < 2:
-                raise botocore.exceptions.ClientError(err_response, 'You did something wrong.')
+                raise botocore.exceptions.ClientError(err_response, "You did something wrong.")
             else:
-                return 'success'
+                return "success"
 
         result = extend_failures()
-        assert result == 'success'
+        assert result == "success"
         assert self.counter == 2
 
     def test_retry_once(self):
         self.counter = 0
-        err_response = {'Error': {'Code': 'InternalFailure'}}
+        err_response = {"Error": {"Code": "InternalFailure"}}
 
         @AWSRetry.exponential_backoff(retries=2, delay=0.1)
         def retry_once():
             self.counter += 1
             if self.counter < 2:
-                raise botocore.exceptions.ClientError(err_response, 'Something went wrong!')
+                raise botocore.exceptions.ClientError(err_response, "Something went wrong!")
             else:
-                return 'success'
+                return "success"
 
         result = retry_once()
-        assert result == 'success'
+        assert result == "success"
         assert self.counter == 2
 
     def test_reached_limit(self):
         self.counter = 0
-        err_response = {'Error': {'Code': 'RequestLimitExceeded'}}
+        err_response = {"Error": {"Code": "RequestLimitExceeded"}}
 
         @AWSRetry.exponential_backoff(retries=4, delay=0.1)
         def fail():
             self.counter += 1
-            raise botocore.exceptions.ClientError(err_response, 'toooo fast!!')
+            raise botocore.exceptions.ClientError(err_response, "toooo fast!!")
 
         with pytest.raises(botocore.exceptions.ClientError) as context:
             fail()
         response = context.value.response
-        assert response['Error']['Code'] == 'RequestLimitExceeded'
+        assert response["Error"]["Code"] == "RequestLimitExceeded"
         assert self.counter == 4
 
     def test_unexpected_exception_does_not_retry(self):
         self.counter = 0
-        err_response = {'Error': {'Code': 'AuthFailure'}}
+        err_response = {"Error": {"Code": "AuthFailure"}}
 
         @AWSRetry.exponential_backoff(retries=4, delay=0.1)
         def raise_unexpected_error():
             self.counter += 1
-            raise botocore.exceptions.ClientError(err_response, 'unexpected error')
+            raise botocore.exceptions.ClientError(err_response, "unexpected error")
 
         with pytest.raises(botocore.exceptions.ClientError) as context:
             raise_unexpected_error()
         response = context.value.response
-        assert response['Error']['Code'] == 'AuthFailure'
+        assert response["Error"]["Code"] == "AuthFailure"
         assert self.counter == 1

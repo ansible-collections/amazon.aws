@@ -31,11 +31,18 @@ def test_init(monkeypatch):
     monkeypatch.setattr(utils_connection.ConnectionBase, "__init__", MagicMock(name="__init__"))
     monkeypatch.setattr(utils_connection.AWSConnectionBase, "require_aws_sdk", require_aws_sdk)
 
-    connection_plugin = utils_connection.AWSConnectionBase(sentinel.PARAM_TERMS, sentinel.PARAM_VARS, **kwargs)  # pylint: disable=abstract-class-instantiated
+    connection_plugin = utils_connection.AWSConnectionBase(
+        sentinel.PARAM_TERMS, sentinel.PARAM_VARS, **kwargs
+    )  # pylint: disable=abstract-class-instantiated
     assert require_aws_sdk.call_args == call(botocore_version=None, boto3_version=None)
 
     connection_plugin = utils_connection.AWSConnectionBase(  # pylint: disable=abstract-class-instantiated
-        sentinel.PARAM_ONE, sentinel.PARAM_TWO,
-        boto3_version=sentinel.PARAM_BOTO3, botocore_version=sentinel.PARAM_BOTOCORE,
-        **kwargs)
-    assert require_aws_sdk.call_args == call(botocore_version=sentinel.PARAM_BOTOCORE, boto3_version=sentinel.PARAM_BOTO3)
+        sentinel.PARAM_ONE,
+        sentinel.PARAM_TWO,
+        boto3_version=sentinel.PARAM_BOTO3,
+        botocore_version=sentinel.PARAM_BOTOCORE,
+        **kwargs,
+    )
+    assert require_aws_sdk.call_args == call(
+        botocore_version=sentinel.PARAM_BOTOCORE, boto3_version=sentinel.PARAM_BOTO3
+    )

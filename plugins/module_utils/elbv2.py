@@ -24,12 +24,12 @@ from .waiters import get_waiter
 def _simple_forward_config_arn(config, parent_arn):
     config = deepcopy(config)
 
-    stickiness = config.pop('TargetGroupStickinessConfig', {'Enabled': False})
+    stickiness = config.pop("TargetGroupStickinessConfig", {"Enabled": False})
     # Stickiness options set, non default value
-    if stickiness != {'Enabled': False}:
+    if stickiness != {"Enabled": False}:
         return False
 
-    target_groups = config.pop('TargetGroups', [])
+    target_groups = config.pop("TargetGroups", [])
 
     # non-default config left over, probably invalid
     if config:
@@ -44,9 +44,9 @@ def _simple_forward_config_arn(config, parent_arn):
 
     target_group = target_groups[0]
     # We don't care about the weight with a single TG
-    target_group.pop('Weight', None)
+    target_group.pop("Weight", None)
 
-    target_group_arn = target_group.pop('TargetGroupArn', None)
+    target_group_arn = target_group.pop("TargetGroupArn", None)
 
     # non-default config left over
     if target_group:
@@ -74,12 +74,12 @@ def _prune_ForwardConfig(action):
     Drops a redundant ForwardConfig where TargetGroupARN has already been set.
     (So we can perform comparisons)
     """
-    if action.get('Type', "") != 'forward':
+    if action.get("Type", "") != "forward":
         return action
     if "ForwardConfig" not in action:
         return action
 
-    parent_arn = action.get('TargetGroupArn', None)
+    parent_arn = action.get("TargetGroupArn", None)
     arn = _simple_forward_config_arn(action["ForwardConfig"], parent_arn)
     if not arn:
         return action
@@ -94,17 +94,17 @@ def _prune_ForwardConfig(action):
 # remove the client secret if UseExistingClientSecret, because aws won't return it
 # add default values when they are not requested
 def _prune_secret(action):
-    if action['Type'] != 'authenticate-oidc':
+    if action["Type"] != "authenticate-oidc":
         return action
 
-    if not action['AuthenticateOidcConfig'].get('Scope', False):
-        action['AuthenticateOidcConfig']['Scope'] = 'openid'
+    if not action["AuthenticateOidcConfig"].get("Scope", False):
+        action["AuthenticateOidcConfig"]["Scope"] = "openid"
 
-    if not action['AuthenticateOidcConfig'].get('SessionTimeout', False):
-        action['AuthenticateOidcConfig']['SessionTimeout'] = 604800
+    if not action["AuthenticateOidcConfig"].get("SessionTimeout", False):
+        action["AuthenticateOidcConfig"]["SessionTimeout"] = 604800
 
-    if action['AuthenticateOidcConfig'].get('UseExistingClientSecret', False):
-        action['AuthenticateOidcConfig'].pop('ClientSecret', None)
+    if action["AuthenticateOidcConfig"].get("UseExistingClientSecret", False):
+        action["AuthenticateOidcConfig"].pop("ClientSecret", None)
 
     return action
 
@@ -112,22 +112,20 @@ def _prune_secret(action):
 # while AWS api also won't return UseExistingClientSecret key
 # it must be added, because it's requested and compared
 def _append_use_existing_client_secretn(action):
-    if action['Type'] != 'authenticate-oidc':
+    if action["Type"] != "authenticate-oidc":
         return action
 
-    action['AuthenticateOidcConfig']['UseExistingClientSecret'] = True
+    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = True
 
     return action
 
 
 def _sort_actions(actions):
-    return sorted(actions, key=lambda x: x.get('Order', 0))
+    return sorted(actions, key=lambda x: x.get("Order", 0))
 
 
 class ElasticLoadBalancerV2:
-
     def __init__(self, connection, module):
-
         self.connection = connection
         self.module = module
         self.changed = False
@@ -151,7 +149,7 @@ class ElasticLoadBalancerV2:
         if self.elb is not None:
             self.elb_attributes = self.get_elb_attributes()
             self.elb_ip_addr_type = self.get_elb_ip_address_type()
-            self.elb['tags'] = self.get_elb_tags()
+            self.elb["tags"] = self.get_elb_tags()
         else:
             self.elb_attributes = None
 
@@ -167,8 +165,8 @@ class ElasticLoadBalancerV2:
             return
 
         waiter_names = {
-            'ipv4': 'load_balancer_ip_address_type_ipv4',
-            'dualstack': 'load_balancer_ip_address_type_dualstack',
+            "ipv4": "load_balancer_ip_address_type_ipv4",
+            "dualstack": "load_balancer_ip_address_type_dualstack",
         }
         if ip_type not in waiter_names:
             return
@@ -191,7 +189,7 @@ class ElasticLoadBalancerV2:
             return
 
         try:
-            waiter = get_waiter(self.connection, 'load_balancer_available')
+            waiter = get_waiter(self.connection, "load_balancer_available")
             waiter.wait(LoadBalancerArns=[elb_arn])
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
@@ -208,7 +206,7 @@ class ElasticLoadBalancerV2:
             return
 
         try:
-            waiter = get_waiter(self.connection, 'load_balancers_deleted')
+            waiter = get_waiter(self.connection, "load_balancers_deleted")
             waiter.wait(LoadBalancerArns=[elb_arn])
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
@@ -221,16 +219,16 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            attr_list = AWSRetry.jittered_backoff()(
-                self.connection.describe_load_balancer_attributes
-            )(LoadBalancerArn=self.elb['LoadBalancerArn'])['Attributes']
+            attr_list = AWSRetry.jittered_backoff()(self.connection.describe_load_balancer_attributes)(
+                LoadBalancerArn=self.elb["LoadBalancerArn"]
+            )["Attributes"]
 
             elb_attributes = boto3_tag_list_to_ansible_dict(attr_list)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
         # Replace '.' with '_' in attribute key names to make it more Ansibley
-        return dict((k.replace('.', '_'), v) for k, v in elb_attributes.items())
+        return dict((k.replace(".", "_"), v) for k, v in elb_attributes.items())
 
     def get_elb_ip_address_type(self):
         """
@@ -239,7 +237,7 @@ class ElasticLoadBalancerV2:
         :return:
         """
 
-        return self.elb.get('IpAddressType', None)
+        return self.elb.get("IpAddressType", None)
 
     def update_elb_attributes(self):
         """
@@ -256,9 +254,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            return AWSRetry.jittered_backoff()(
-                self.connection.describe_tags
-            )(ResourceArns=[self.elb['LoadBalancerArn']])['TagDescriptions'][0]['Tags']
+            return AWSRetry.jittered_backoff()(self.connection.describe_tags)(
+                ResourceArns=[self.elb["LoadBalancerArn"]]
+            )["TagDescriptions"][0]["Tags"]
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -270,9 +268,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.remove_tags
-            )(ResourceArns=[self.elb['LoadBalancerArn']], TagKeys=tags_to_delete)
+            AWSRetry.jittered_backoff()(self.connection.remove_tags)(
+                ResourceArns=[self.elb["LoadBalancerArn"]], TagKeys=tags_to_delete
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -286,9 +284,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.add_tags
-            )(ResourceArns=[self.elb['LoadBalancerArn']], Tags=self.tags)
+            AWSRetry.jittered_backoff()(self.connection.add_tags)(
+                ResourceArns=[self.elb["LoadBalancerArn"]], Tags=self.tags
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -301,13 +299,13 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.delete_load_balancer
-            )(LoadBalancerArn=self.elb['LoadBalancerArn'])
+            AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
+                LoadBalancerArn=self.elb["LoadBalancerArn"]
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
-        self.wait_for_deletion(self.elb['LoadBalancerArn'])
+        self.wait_for_deletion(self.elb["LoadBalancerArn"])
 
         self.changed = True
 
@@ -325,7 +323,7 @@ class ElasticLoadBalancerV2:
         if self.subnets is not None:
             # Convert subnets to subnet_mappings format for comparison
             for subnet in self.subnets:
-                subnet_mappings.append({'SubnetId': subnet})
+                subnet_mappings.append({"SubnetId": subnet})
 
         if self.subnet_mappings is not None:
             # Use this directly since we're comparing as a mapping
@@ -333,16 +331,18 @@ class ElasticLoadBalancerV2:
 
         # Build a subnet_mapping style struture of what's currently
         # on the load balancer
-        for subnet in self.elb['AvailabilityZones']:
-            this_mapping = {'SubnetId': subnet['SubnetId']}
-            for address in subnet.get('LoadBalancerAddresses', []):
-                if 'AllocationId' in address:
-                    this_mapping['AllocationId'] = address['AllocationId']
+        for subnet in self.elb["AvailabilityZones"]:
+            this_mapping = {"SubnetId": subnet["SubnetId"]}
+            for address in subnet.get("LoadBalancerAddresses", []):
+                if "AllocationId" in address:
+                    this_mapping["AllocationId"] = address["AllocationId"]
                     break
 
             subnet_mapping_id_list.append(this_mapping)
 
-        return set(frozenset(mapping.items()) for mapping in subnet_mapping_id_list) == set(frozenset(mapping.items()) for mapping in subnet_mappings)
+        return set(frozenset(mapping.items()) for mapping in subnet_mapping_id_list) == set(
+            frozenset(mapping.items()) for mapping in subnet_mappings
+        )
 
     def modify_subnets(self):
         """
@@ -351,9 +351,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.set_subnets
-            )(LoadBalancerArn=self.elb['LoadBalancerArn'], Subnets=self.subnets)
+            AWSRetry.jittered_backoff()(self.connection.set_subnets)(
+                LoadBalancerArn=self.elb["LoadBalancerArn"], Subnets=self.subnets
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -366,7 +366,7 @@ class ElasticLoadBalancerV2:
         """
 
         self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
-        self.elb['tags'] = self.get_elb_tags()
+        self.elb["tags"] = self.get_elb_tags()
 
     def modify_ip_address_type(self, ip_addr_type):
         """
@@ -379,30 +379,30 @@ class ElasticLoadBalancerV2:
             return
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.set_ip_address_type
-            )(LoadBalancerArn=self.elb['LoadBalancerArn'], IpAddressType=ip_addr_type)
+            AWSRetry.jittered_backoff()(self.connection.set_ip_address_type)(
+                LoadBalancerArn=self.elb["LoadBalancerArn"], IpAddressType=ip_addr_type
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
         self.changed = True
-        self.wait_for_ip_type(self.elb['LoadBalancerArn'], ip_addr_type)
+        self.wait_for_ip_type(self.elb["LoadBalancerArn"], ip_addr_type)
 
     def _elb_create_params(self):
         # Required parameters
         params = dict()
-        params['Name'] = self.name
-        params['Type'] = self.type
+        params["Name"] = self.name
+        params["Type"] = self.type
 
         # Other parameters
         if self.elb_ip_addr_type is not None:
-            params['IpAddressType'] = self.elb_ip_addr_type
+            params["IpAddressType"] = self.elb_ip_addr_type
         if self.subnets is not None:
-            params['Subnets'] = self.subnets
+            params["Subnets"] = self.subnets
         if self.subnet_mappings is not None:
-            params['SubnetMappings'] = self.subnet_mappings
+            params["SubnetMappings"] = self.subnet_mappings
         if self.tags:
-            params['Tags'] = self.tags
+            params["Tags"] = self.tags
         # Scheme isn't supported for GatewayLBs, so we won't add it here, even though we don't
         # support them yet.
 
@@ -417,17 +417,16 @@ class ElasticLoadBalancerV2:
         params = self._elb_create_params()
 
         try:
-            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)['LoadBalancers'][0]
+            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)["LoadBalancers"][0]
             self.changed = True
             self.new_load_balancer = True
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
-        self.wait_for_status(self.elb['LoadBalancerArn'])
+        self.wait_for_status(self.elb["LoadBalancerArn"])
 
 
 class ApplicationLoadBalancer(ElasticLoadBalancerV2):
-
     def __init__(self, connection, connection_ec2, module):
         """
 
@@ -439,18 +438,18 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         self.connection_ec2 = connection_ec2
 
         # Ansible module parameters specific to ALBs
-        self.type = 'application'
-        if module.params.get('security_groups') is not None:
+        self.type = "application"
+        if module.params.get("security_groups") is not None:
             try:
-                self.security_groups = AWSRetry.jittered_backoff()(
-                    get_ec2_security_group_ids_from_names
-                )(module.params.get('security_groups'), self.connection_ec2, boto3=True)
+                self.security_groups = AWSRetry.jittered_backoff()(get_ec2_security_group_ids_from_names)(
+                    module.params.get("security_groups"), self.connection_ec2, boto3=True
+                )
             except ValueError as e:
                 self.module.fail_json(msg=str(e), exception=traceback.format_exc())
             except (BotoCoreError, ClientError) as e:
                 self.module.fail_json_aws(e)
         else:
-            self.security_groups = module.params.get('security_groups')
+            self.security_groups = module.params.get("security_groups")
         self.access_logs_enabled = module.params.get("access_logs_enabled")
         self.access_logs_s3_bucket = module.params.get("access_logs_s3_bucket")
         self.access_logs_s3_prefix = module.params.get("access_logs_s3_prefix")
@@ -462,15 +461,17 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         self.http_xff_client_port = module.params.get("http_xff_client_port")
         self.waf_fail_open = module.params.get("waf_fail_open")
 
-        if self.elb is not None and self.elb['Type'] != 'application':
-            self.module.fail_json(msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead.")
+        if self.elb is not None and self.elb["Type"] != "application":
+            self.module.fail_json(
+                msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead."
+            )
 
     def _elb_create_params(self):
         params = super()._elb_create_params()
 
         if self.security_groups is not None:
-            params['SecurityGroups'] = self.security_groups
-        params['Scheme'] = self.scheme
+            params["SecurityGroups"] = self.security_groups
+        params["Scheme"] = self.scheme
 
         return params
 
@@ -481,34 +482,77 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         """
 
         update_attributes = []
-        if self.access_logs_enabled is not None and str(self.access_logs_enabled).lower() != self.elb_attributes['access_logs_s3_enabled']:
-            update_attributes.append({'Key': 'access_logs.s3.enabled', 'Value': str(self.access_logs_enabled).lower()})
-        if self.access_logs_s3_bucket is not None and self.access_logs_s3_bucket != self.elb_attributes['access_logs_s3_bucket']:
-            update_attributes.append({'Key': 'access_logs.s3.bucket', 'Value': self.access_logs_s3_bucket})
-        if self.access_logs_s3_prefix is not None and self.access_logs_s3_prefix != self.elb_attributes['access_logs_s3_prefix']:
-            update_attributes.append({'Key': 'access_logs.s3.prefix', 'Value': self.access_logs_s3_prefix})
-        if self.deletion_protection is not None and str(self.deletion_protection).lower() != self.elb_attributes['deletion_protection_enabled']:
-            update_attributes.append({'Key': 'deletion_protection.enabled', 'Value': str(self.deletion_protection).lower()})
-        if self.idle_timeout is not None and str(self.idle_timeout) != self.elb_attributes['idle_timeout_timeout_seconds']:
-            update_attributes.append({'Key': 'idle_timeout.timeout_seconds', 'Value': str(self.idle_timeout)})
-        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes['routing_http2_enabled']:
-            update_attributes.append({'Key': 'routing.http2.enabled', 'Value': str(self.http2).lower()})
-        if self.http_desync_mitigation_mode is not None and str(self.http_desync_mitigation_mode).lower() != \
-                self.elb_attributes['routing_http_desync_mitigation_mode']:
-            update_attributes.append({'Key': 'routing.http.desync_mitigation_mode', 'Value': str(self.http_desync_mitigation_mode).lower()})
-        if self.http_drop_invalid_header_fields is not None and str(self.http_drop_invalid_header_fields).lower() != \
-                self.elb_attributes['routing_http_drop_invalid_header_fields_enabled']:
-            update_attributes.append({'Key': 'routing.http.drop_invalid_header_fields.enabled', 'Value': str(self.http_drop_invalid_header_fields).lower()})
-        if self.http_x_amzn_tls_version_and_cipher_suite is not None and str(self.http_x_amzn_tls_version_and_cipher_suite).lower() != \
-                self.elb_attributes['routing_http_x_amzn_tls_version_and_cipher_suite_enabled']:
-            update_attributes.append({'Key': 'routing.http.x_amzn_tls_version_and_cipher_suite.enabled',
-                                      'Value': str(self.http_x_amzn_tls_version_and_cipher_suite).lower()})
-        if self.http_xff_client_port is not None and str(self.http_xff_client_port).lower() != \
-                self.elb_attributes['routing_http_xff_client_port_enabled']:
-            update_attributes.append({'Key': 'routing.http.xff_client_port.enabled', 'Value': str(self.http_xff_client_port).lower()})
-        if self.waf_fail_open is not None and str(self.waf_fail_open).lower() != \
-                self.elb_attributes['waf_fail_open_enabled']:
-            update_attributes.append({'Key': 'waf.fail_open.enabled', 'Value': str(self.waf_fail_open).lower()})
+        if (
+            self.access_logs_enabled is not None
+            and str(self.access_logs_enabled).lower() != self.elb_attributes["access_logs_s3_enabled"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.enabled", "Value": str(self.access_logs_enabled).lower()})
+        if (
+            self.access_logs_s3_bucket is not None
+            and self.access_logs_s3_bucket != self.elb_attributes["access_logs_s3_bucket"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.bucket", "Value": self.access_logs_s3_bucket})
+        if (
+            self.access_logs_s3_prefix is not None
+            and self.access_logs_s3_prefix != self.elb_attributes["access_logs_s3_prefix"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.prefix", "Value": self.access_logs_s3_prefix})
+        if (
+            self.deletion_protection is not None
+            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
+            )
+        if (
+            self.idle_timeout is not None
+            and str(self.idle_timeout) != self.elb_attributes["idle_timeout_timeout_seconds"]
+        ):
+            update_attributes.append({"Key": "idle_timeout.timeout_seconds", "Value": str(self.idle_timeout)})
+        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes["routing_http2_enabled"]:
+            update_attributes.append({"Key": "routing.http2.enabled", "Value": str(self.http2).lower()})
+        if (
+            self.http_desync_mitigation_mode is not None
+            and str(self.http_desync_mitigation_mode).lower()
+            != self.elb_attributes["routing_http_desync_mitigation_mode"]
+        ):
+            update_attributes.append(
+                {"Key": "routing.http.desync_mitigation_mode", "Value": str(self.http_desync_mitigation_mode).lower()}
+            )
+        if (
+            self.http_drop_invalid_header_fields is not None
+            and str(self.http_drop_invalid_header_fields).lower()
+            != self.elb_attributes["routing_http_drop_invalid_header_fields_enabled"]
+        ):
+            update_attributes.append(
+                {
+                    "Key": "routing.http.drop_invalid_header_fields.enabled",
+                    "Value": str(self.http_drop_invalid_header_fields).lower(),
+                }
+            )
+        if (
+            self.http_x_amzn_tls_version_and_cipher_suite is not None
+            and str(self.http_x_amzn_tls_version_and_cipher_suite).lower()
+            != self.elb_attributes["routing_http_x_amzn_tls_version_and_cipher_suite_enabled"]
+        ):
+            update_attributes.append(
+                {
+                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
+                    "Value": str(self.http_x_amzn_tls_version_and_cipher_suite).lower(),
+                }
+            )
+        if (
+            self.http_xff_client_port is not None
+            and str(self.http_xff_client_port).lower() != self.elb_attributes["routing_http_xff_client_port_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "routing.http.xff_client_port.enabled", "Value": str(self.http_xff_client_port).lower()}
+            )
+        if (
+            self.waf_fail_open is not None
+            and str(self.waf_fail_open).lower() != self.elb_attributes["waf_fail_open_enabled"]
+        ):
+            update_attributes.append({"Key": "waf.fail_open.enabled", "Value": str(self.waf_fail_open).lower()})
 
         if update_attributes:
             return False
@@ -524,45 +568,90 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         update_attributes = []
 
-        if self.access_logs_enabled is not None and str(self.access_logs_enabled).lower() != self.elb_attributes['access_logs_s3_enabled']:
-            update_attributes.append({'Key': 'access_logs.s3.enabled', 'Value': str(self.access_logs_enabled).lower()})
-        if self.access_logs_s3_bucket is not None and self.access_logs_s3_bucket != self.elb_attributes['access_logs_s3_bucket']:
-            update_attributes.append({'Key': 'access_logs.s3.bucket', 'Value': self.access_logs_s3_bucket})
-        if self.access_logs_s3_prefix is not None and self.access_logs_s3_prefix != self.elb_attributes['access_logs_s3_prefix']:
-            update_attributes.append({'Key': 'access_logs.s3.prefix', 'Value': self.access_logs_s3_prefix})
-        if self.deletion_protection is not None and str(self.deletion_protection).lower() != self.elb_attributes['deletion_protection_enabled']:
-            update_attributes.append({'Key': 'deletion_protection.enabled', 'Value': str(self.deletion_protection).lower()})
-        if self.idle_timeout is not None and str(self.idle_timeout) != self.elb_attributes['idle_timeout_timeout_seconds']:
-            update_attributes.append({'Key': 'idle_timeout.timeout_seconds', 'Value': str(self.idle_timeout)})
-        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes['routing_http2_enabled']:
-            update_attributes.append({'Key': 'routing.http2.enabled', 'Value': str(self.http2).lower()})
-        if self.http_desync_mitigation_mode is not None and str(self.http_desync_mitigation_mode).lower() != \
-                self.elb_attributes['routing_http_desync_mitigation_mode']:
-            update_attributes.append({'Key': 'routing.http.desync_mitigation_mode', 'Value': str(self.http_desync_mitigation_mode).lower()})
-        if self.http_drop_invalid_header_fields is not None and str(self.http_drop_invalid_header_fields).lower() != \
-                self.elb_attributes['routing_http_drop_invalid_header_fields_enabled']:
-            update_attributes.append({'Key': 'routing.http.drop_invalid_header_fields.enabled', 'Value': str(self.http_drop_invalid_header_fields).lower()})
-        if self.http_x_amzn_tls_version_and_cipher_suite is not None and str(self.http_x_amzn_tls_version_and_cipher_suite).lower() != \
-                self.elb_attributes['routing_http_x_amzn_tls_version_and_cipher_suite_enabled']:
-            update_attributes.append({'Key': 'routing.http.x_amzn_tls_version_and_cipher_suite.enabled',
-                                      'Value': str(self.http_x_amzn_tls_version_and_cipher_suite).lower()})
-        if self.http_xff_client_port is not None and str(self.http_xff_client_port).lower() != \
-                self.elb_attributes['routing_http_xff_client_port_enabled']:
-            update_attributes.append({'Key': 'routing.http.xff_client_port.enabled', 'Value': str(self.http_xff_client_port).lower()})
-        if self.waf_fail_open is not None and str(self.waf_fail_open).lower() != \
-                self.elb_attributes['waf_fail_open_enabled']:
-            update_attributes.append({'Key': 'waf.fail_open.enabled', 'Value': str(self.waf_fail_open).lower()})
+        if (
+            self.access_logs_enabled is not None
+            and str(self.access_logs_enabled).lower() != self.elb_attributes["access_logs_s3_enabled"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.enabled", "Value": str(self.access_logs_enabled).lower()})
+        if (
+            self.access_logs_s3_bucket is not None
+            and self.access_logs_s3_bucket != self.elb_attributes["access_logs_s3_bucket"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.bucket", "Value": self.access_logs_s3_bucket})
+        if (
+            self.access_logs_s3_prefix is not None
+            and self.access_logs_s3_prefix != self.elb_attributes["access_logs_s3_prefix"]
+        ):
+            update_attributes.append({"Key": "access_logs.s3.prefix", "Value": self.access_logs_s3_prefix})
+        if (
+            self.deletion_protection is not None
+            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
+            )
+        if (
+            self.idle_timeout is not None
+            and str(self.idle_timeout) != self.elb_attributes["idle_timeout_timeout_seconds"]
+        ):
+            update_attributes.append({"Key": "idle_timeout.timeout_seconds", "Value": str(self.idle_timeout)})
+        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes["routing_http2_enabled"]:
+            update_attributes.append({"Key": "routing.http2.enabled", "Value": str(self.http2).lower()})
+        if (
+            self.http_desync_mitigation_mode is not None
+            and str(self.http_desync_mitigation_mode).lower()
+            != self.elb_attributes["routing_http_desync_mitigation_mode"]
+        ):
+            update_attributes.append(
+                {"Key": "routing.http.desync_mitigation_mode", "Value": str(self.http_desync_mitigation_mode).lower()}
+            )
+        if (
+            self.http_drop_invalid_header_fields is not None
+            and str(self.http_drop_invalid_header_fields).lower()
+            != self.elb_attributes["routing_http_drop_invalid_header_fields_enabled"]
+        ):
+            update_attributes.append(
+                {
+                    "Key": "routing.http.drop_invalid_header_fields.enabled",
+                    "Value": str(self.http_drop_invalid_header_fields).lower(),
+                }
+            )
+        if (
+            self.http_x_amzn_tls_version_and_cipher_suite is not None
+            and str(self.http_x_amzn_tls_version_and_cipher_suite).lower()
+            != self.elb_attributes["routing_http_x_amzn_tls_version_and_cipher_suite_enabled"]
+        ):
+            update_attributes.append(
+                {
+                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
+                    "Value": str(self.http_x_amzn_tls_version_and_cipher_suite).lower(),
+                }
+            )
+        if (
+            self.http_xff_client_port is not None
+            and str(self.http_xff_client_port).lower() != self.elb_attributes["routing_http_xff_client_port_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "routing.http.xff_client_port.enabled", "Value": str(self.http_xff_client_port).lower()}
+            )
+        if (
+            self.waf_fail_open is not None
+            and str(self.waf_fail_open).lower() != self.elb_attributes["waf_fail_open_enabled"]
+        ):
+            update_attributes.append({"Key": "waf.fail_open.enabled", "Value": str(self.waf_fail_open).lower()})
 
         if update_attributes:
             try:
-                AWSRetry.jittered_backoff()(
-                    self.connection.modify_load_balancer_attributes
-                )(LoadBalancerArn=self.elb['LoadBalancerArn'], Attributes=update_attributes)
+                AWSRetry.jittered_backoff()(self.connection.modify_load_balancer_attributes)(
+                    LoadBalancerArn=self.elb["LoadBalancerArn"], Attributes=update_attributes
+                )
                 self.changed = True
             except (BotoCoreError, ClientError) as e:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
-                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(LoadBalancerArn=self.elb['LoadBalancerArn'])
+                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
+                        LoadBalancerArn=self.elb["LoadBalancerArn"]
+                    )
                 self.module.fail_json_aws(e)
 
     def compare_security_groups(self):
@@ -572,7 +661,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         :return: bool True if they match otherwise False
         """
 
-        if set(self.elb['SecurityGroups']) != set(self.security_groups):
+        if set(self.elb["SecurityGroups"]) != set(self.security_groups):
             return False
         else:
             return True
@@ -584,9 +673,9 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         """
 
         try:
-            AWSRetry.jittered_backoff()(
-                self.connection.set_security_groups
-            )(LoadBalancerArn=self.elb['LoadBalancerArn'], SecurityGroups=self.security_groups)
+            AWSRetry.jittered_backoff()(self.connection.set_security_groups)(
+                LoadBalancerArn=self.elb["LoadBalancerArn"], SecurityGroups=self.security_groups
+            )
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -594,9 +683,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
 
 class NetworkLoadBalancer(ElasticLoadBalancerV2):
-
     def __init__(self, connection, connection_ec2, module):
-
         """
 
         :param connection: boto3 connection
@@ -607,16 +694,18 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         self.connection_ec2 = connection_ec2
 
         # Ansible module parameters specific to NLBs
-        self.type = 'network'
-        self.cross_zone_load_balancing = module.params.get('cross_zone_load_balancing')
+        self.type = "network"
+        self.cross_zone_load_balancing = module.params.get("cross_zone_load_balancing")
 
-        if self.elb is not None and self.elb['Type'] != 'network':
-            self.module.fail_json(msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead.")
+        if self.elb is not None and self.elb["Type"] != "network":
+            self.module.fail_json(
+                msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead."
+            )
 
     def _elb_create_params(self):
         params = super()._elb_create_params()
 
-        params['Scheme'] = self.scheme
+        params["Scheme"] = self.scheme
 
         return params
 
@@ -629,22 +718,33 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
         update_attributes = []
 
-        if self.cross_zone_load_balancing is not None and str(self.cross_zone_load_balancing).lower() != \
-                self.elb_attributes['load_balancing_cross_zone_enabled']:
-            update_attributes.append({'Key': 'load_balancing.cross_zone.enabled', 'Value': str(self.cross_zone_load_balancing).lower()})
-        if self.deletion_protection is not None and str(self.deletion_protection).lower() != self.elb_attributes['deletion_protection_enabled']:
-            update_attributes.append({'Key': 'deletion_protection.enabled', 'Value': str(self.deletion_protection).lower()})
+        if (
+            self.cross_zone_load_balancing is not None
+            and str(self.cross_zone_load_balancing).lower() != self.elb_attributes["load_balancing_cross_zone_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "load_balancing.cross_zone.enabled", "Value": str(self.cross_zone_load_balancing).lower()}
+            )
+        if (
+            self.deletion_protection is not None
+            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
+        ):
+            update_attributes.append(
+                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
+            )
 
         if update_attributes:
             try:
-                AWSRetry.jittered_backoff()(
-                    self.connection.modify_load_balancer_attributes
-                )(LoadBalancerArn=self.elb['LoadBalancerArn'], Attributes=update_attributes)
+                AWSRetry.jittered_backoff()(self.connection.modify_load_balancer_attributes)(
+                    LoadBalancerArn=self.elb["LoadBalancerArn"], Attributes=update_attributes
+                )
                 self.changed = True
             except (BotoCoreError, ClientError) as e:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
-                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(LoadBalancerArn=self.elb['LoadBalancerArn'])
+                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
+                        LoadBalancerArn=self.elb["LoadBalancerArn"]
+                    )
                 self.module.fail_json_aws(e)
 
     def modify_subnets(self):
@@ -653,20 +753,21 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         :return:
         """
 
-        self.module.fail_json(msg='Modifying subnets and elastic IPs is not supported for Network Load Balancer')
+        self.module.fail_json(msg="Modifying subnets and elastic IPs is not supported for Network Load Balancer")
 
 
 class ELBListeners:
-
     def __init__(self, connection, module, elb_arn):
-
         self.connection = connection
         self.module = module
         self.elb_arn = elb_arn
         listeners = module.params.get("listeners")
         if listeners is not None:
             # Remove suboption argspec defaults of None from each listener
-            listeners = [dict((x, listener_dict[x]) for x in listener_dict if listener_dict[x] is not None) for listener_dict in listeners]
+            listeners = [
+                dict((x, listener_dict[x]) for x in listener_dict if listener_dict[x] is not None)
+                for listener_dict in listeners
+            ]
         self.listeners = self._ensure_listeners_default_action_has_arn(listeners)
         self.current_listeners = self._get_elb_listeners()
         self.purge_listeners = module.params.get("purge_listeners")
@@ -688,8 +789,12 @@ class ELBListeners:
         """
 
         try:
-            listener_paginator = self.connection.get_paginator('describe_listeners')
-            return (AWSRetry.jittered_backoff()(listener_paginator.paginate)(LoadBalancerArn=self.elb_arn).build_full_result())['Listeners']
+            listener_paginator = self.connection.get_paginator("describe_listeners")
+            return (
+                AWSRetry.jittered_backoff()(listener_paginator.paginate)(
+                    LoadBalancerArn=self.elb_arn
+                ).build_full_result()
+            )["Listeners"]
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -708,14 +813,14 @@ class ELBListeners:
         fixed_listeners = []
         for listener in listeners:
             fixed_actions = []
-            for action in listener['DefaultActions']:
-                if 'TargetGroupName' in action:
-                    action['TargetGroupArn'] = convert_tg_name_to_arn(self.connection,
-                                                                      self.module,
-                                                                      action['TargetGroupName'])
-                    del action['TargetGroupName']
+            for action in listener["DefaultActions"]:
+                if "TargetGroupName" in action:
+                    action["TargetGroupArn"] = convert_tg_name_to_arn(
+                        self.connection, self.module, action["TargetGroupName"]
+                    )
+                    del action["TargetGroupName"]
                 fixed_actions.append(action)
-            listener['DefaultActions'] = fixed_actions
+            listener["DefaultActions"] = fixed_actions
             fixed_listeners.append(listener)
 
         return fixed_listeners
@@ -733,21 +838,21 @@ class ELBListeners:
         for current_listener in self.current_listeners:
             current_listener_passed_to_module = False
             for new_listener in self.listeners[:]:
-                new_listener['Port'] = int(new_listener['Port'])
-                if current_listener['Port'] == new_listener['Port']:
+                new_listener["Port"] = int(new_listener["Port"])
+                if current_listener["Port"] == new_listener["Port"]:
                     current_listener_passed_to_module = True
                     # Remove what we match so that what is left can be marked as 'to be added'
                     listeners_to_add.remove(new_listener)
                     modified_listener = self._compare_listener(current_listener, new_listener)
                     if modified_listener:
-                        modified_listener['Port'] = current_listener['Port']
-                        modified_listener['ListenerArn'] = current_listener['ListenerArn']
+                        modified_listener["Port"] = current_listener["Port"]
+                        modified_listener["ListenerArn"] = current_listener["ListenerArn"]
                         listeners_to_modify.append(modified_listener)
                     break
 
             # If the current listener was not matched against passed listeners and purge is True, mark for removal
             if not current_listener_passed_to_module and self.purge_listeners:
-                listeners_to_delete.append(current_listener['ListenerArn'])
+                listeners_to_delete.append(current_listener["ListenerArn"])
 
         return listeners_to_add, listeners_to_modify, listeners_to_delete
 
@@ -763,52 +868,61 @@ class ELBListeners:
         modified_listener = {}
 
         # Port
-        if current_listener['Port'] != new_listener['Port']:
-            modified_listener['Port'] = new_listener['Port']
+        if current_listener["Port"] != new_listener["Port"]:
+            modified_listener["Port"] = new_listener["Port"]
 
         # Protocol
-        if current_listener['Protocol'] != new_listener['Protocol']:
-            modified_listener['Protocol'] = new_listener['Protocol']
+        if current_listener["Protocol"] != new_listener["Protocol"]:
+            modified_listener["Protocol"] = new_listener["Protocol"]
 
         # If Protocol is HTTPS, check additional attributes
-        if current_listener['Protocol'] == 'HTTPS' and new_listener['Protocol'] == 'HTTPS':
+        if current_listener["Protocol"] == "HTTPS" and new_listener["Protocol"] == "HTTPS":
             # Cert
-            if current_listener['SslPolicy'] != new_listener['SslPolicy']:
-                modified_listener['SslPolicy'] = new_listener['SslPolicy']
-            if current_listener['Certificates'][0]['CertificateArn'] != new_listener['Certificates'][0]['CertificateArn']:
-                modified_listener['Certificates'] = []
-                modified_listener['Certificates'].append({})
-                modified_listener['Certificates'][0]['CertificateArn'] = new_listener['Certificates'][0]['CertificateArn']
-        elif current_listener['Protocol'] != 'HTTPS' and new_listener['Protocol'] == 'HTTPS':
-            modified_listener['SslPolicy'] = new_listener['SslPolicy']
-            modified_listener['Certificates'] = []
-            modified_listener['Certificates'].append({})
-            modified_listener['Certificates'][0]['CertificateArn'] = new_listener['Certificates'][0]['CertificateArn']
+            if current_listener["SslPolicy"] != new_listener["SslPolicy"]:
+                modified_listener["SslPolicy"] = new_listener["SslPolicy"]
+            if (
+                current_listener["Certificates"][0]["CertificateArn"]
+                != new_listener["Certificates"][0]["CertificateArn"]
+            ):
+                modified_listener["Certificates"] = []
+                modified_listener["Certificates"].append({})
+                modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0][
+                    "CertificateArn"
+                ]
+        elif current_listener["Protocol"] != "HTTPS" and new_listener["Protocol"] == "HTTPS":
+            modified_listener["SslPolicy"] = new_listener["SslPolicy"]
+            modified_listener["Certificates"] = []
+            modified_listener["Certificates"].append({})
+            modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0]["CertificateArn"]
 
         # Default action
 
         # Check proper rule format on current listener
-        if len(current_listener['DefaultActions']) > 1:
-            for action in current_listener['DefaultActions']:
-                if 'Order' not in action:
-                    self.module.fail_json(msg="'Order' key not found in actions. "
-                                              "installed version of botocore does not support "
-                                              "multiple actions, please upgrade botocore to version "
-                                              "1.10.30 or higher")
+        if len(current_listener["DefaultActions"]) > 1:
+            for action in current_listener["DefaultActions"]:
+                if "Order" not in action:
+                    self.module.fail_json(
+                        msg="'Order' key not found in actions. "
+                        "installed version of botocore does not support "
+                        "multiple actions, please upgrade botocore to version "
+                        "1.10.30 or higher"
+                    )
 
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
-        if len(current_listener['DefaultActions']) == len(new_listener['DefaultActions']):
-            current_actions_sorted = _sort_actions(current_listener['DefaultActions'])
-            new_actions_sorted = _sort_actions(new_listener['DefaultActions'])
+        if len(current_listener["DefaultActions"]) == len(new_listener["DefaultActions"]):
+            current_actions_sorted = _sort_actions(current_listener["DefaultActions"])
+            new_actions_sorted = _sort_actions(new_listener["DefaultActions"])
 
             new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
-                modified_listener['DefaultActions'] = new_listener['DefaultActions']
+            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
+                _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
+            ]:
+                modified_listener["DefaultActions"] = new_listener["DefaultActions"]
         # If the action lengths are different, then replace with the new actions
         else:
-            modified_listener['DefaultActions'] = new_listener['DefaultActions']
+            modified_listener["DefaultActions"] = new_listener["DefaultActions"]
 
         if modified_listener:
             return modified_listener
@@ -817,7 +931,6 @@ class ELBListeners:
 
 
 class ELBListener:
-
     def __init__(self, connection, module, listener, elb_arn):
         """
 
@@ -833,37 +946,38 @@ class ELBListener:
         self.elb_arn = elb_arn
 
     def add(self):
-
         try:
             # Rules is not a valid parameter for create_listener
-            if 'Rules' in self.listener:
-                self.listener.pop('Rules')
+            if "Rules" in self.listener:
+                self.listener.pop("Rules")
             AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
         except (BotoCoreError, ClientError) as e:
             if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
+                self.module.fail_json(
+                    msg="installed version of botocore does not support "
+                    "multiple actions, please upgrade botocore to version "
+                    "1.10.30 or higher"
+                )
             else:
                 self.module.fail_json_aws(e)
 
     def modify(self):
-
         try:
             # Rules is not a valid parameter for modify_listener
-            if 'Rules' in self.listener:
-                self.listener.pop('Rules')
+            if "Rules" in self.listener:
+                self.listener.pop("Rules")
             AWSRetry.jittered_backoff()(self.connection.modify_listener)(**self.listener)
         except (BotoCoreError, ClientError) as e:
             if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
+                self.module.fail_json(
+                    msg="installed version of botocore does not support "
+                    "multiple actions, please upgrade botocore to version "
+                    "1.10.30 or higher"
+                )
             else:
                 self.module.fail_json_aws(e)
 
     def delete(self):
-
         try:
             AWSRetry.jittered_backoff()(self.connection.delete_listener)(ListenerArn=self.listener)
         except (BotoCoreError, ClientError) as e:
@@ -871,9 +985,7 @@ class ELBListener:
 
 
 class ELBListenerRules:
-
     def __init__(self, connection, module, elb_arn, listener_rules, listener_port):
-
         self.connection = connection
         self.module = module
         self.elb_arn = elb_arn
@@ -882,13 +994,13 @@ class ELBListenerRules:
 
         # Get listener based on port so we can use ARN
         self.current_listener = get_elb_listener(connection, module, elb_arn, listener_port)
-        self.listener_arn = self.current_listener['ListenerArn']
+        self.listener_arn = self.current_listener["ListenerArn"]
         self.rules_to_add = deepcopy(self.rules)
         self.rules_to_modify = []
         self.rules_to_delete = []
 
         # If the listener exists (i.e. has an ARN) get rules for the listener
-        if 'ListenerArn' in self.current_listener:
+        if "ListenerArn" in self.current_listener:
             self.current_rules = self._get_elb_listener_rules()
         else:
             self.current_rules = []
@@ -905,20 +1017,23 @@ class ELBListenerRules:
         fixed_rules = []
         for rule in rules:
             fixed_actions = []
-            for action in rule['Actions']:
-                if 'TargetGroupName' in action:
-                    action['TargetGroupArn'] = convert_tg_name_to_arn(self.connection, self.module, action['TargetGroupName'])
-                    del action['TargetGroupName']
+            for action in rule["Actions"]:
+                if "TargetGroupName" in action:
+                    action["TargetGroupArn"] = convert_tg_name_to_arn(
+                        self.connection, self.module, action["TargetGroupName"]
+                    )
+                    del action["TargetGroupName"]
                 fixed_actions.append(action)
-            rule['Actions'] = fixed_actions
+            rule["Actions"] = fixed_actions
             fixed_rules.append(rule)
 
         return fixed_rules
 
     def _get_elb_listener_rules(self):
-
         try:
-            return AWSRetry.jittered_backoff()(self.connection.describe_rules)(ListenerArn=self.current_listener['ListenerArn'])['Rules']
+            return AWSRetry.jittered_backoff()(self.connection.describe_rules)(
+                ListenerArn=self.current_listener["ListenerArn"]
+            )["Rules"]
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -936,44 +1051,56 @@ class ELBListenerRules:
             # host-header: current_condition includes both HostHeaderConfig AND Values while
             # condition can be defined with either HostHeaderConfig OR Values. Only use
             # HostHeaderConfig['Values'] comparison if both conditions includes HostHeaderConfig.
-            if current_condition.get('HostHeaderConfig') and condition.get('HostHeaderConfig'):
-                if (current_condition['Field'] == condition['Field'] and
-                        sorted(current_condition['HostHeaderConfig']['Values']) == sorted(condition['HostHeaderConfig']['Values'])):
+            if current_condition.get("HostHeaderConfig") and condition.get("HostHeaderConfig"):
+                if current_condition["Field"] == condition["Field"] and sorted(
+                    current_condition["HostHeaderConfig"]["Values"]
+                ) == sorted(condition["HostHeaderConfig"]["Values"]):
                     condition_found = True
                     break
-            elif current_condition.get('HttpHeaderConfig'):
-                if (current_condition['Field'] == condition['Field'] and
-                        sorted(current_condition['HttpHeaderConfig']['Values']) == sorted(condition['HttpHeaderConfig']['Values']) and
-                        current_condition['HttpHeaderConfig']['HttpHeaderName'] == condition['HttpHeaderConfig']['HttpHeaderName']):
+            elif current_condition.get("HttpHeaderConfig"):
+                if (
+                    current_condition["Field"] == condition["Field"]
+                    and sorted(current_condition["HttpHeaderConfig"]["Values"])
+                    == sorted(condition["HttpHeaderConfig"]["Values"])
+                    and current_condition["HttpHeaderConfig"]["HttpHeaderName"]
+                    == condition["HttpHeaderConfig"]["HttpHeaderName"]
+                ):
                     condition_found = True
                     break
-            elif current_condition.get('HttpRequestMethodConfig'):
-                if (current_condition['Field'] == condition['Field'] and
-                        sorted(current_condition['HttpRequestMethodConfig']['Values']) == sorted(condition['HttpRequestMethodConfig']['Values'])):
+            elif current_condition.get("HttpRequestMethodConfig"):
+                if current_condition["Field"] == condition["Field"] and sorted(
+                    current_condition["HttpRequestMethodConfig"]["Values"]
+                ) == sorted(condition["HttpRequestMethodConfig"]["Values"]):
                     condition_found = True
                     break
             # path-pattern: current_condition includes both PathPatternConfig AND Values while
             # condition can be defined with either PathPatternConfig OR Values. Only use
             # PathPatternConfig['Values'] comparison if both conditions includes PathPatternConfig.
-            elif current_condition.get('PathPatternConfig') and condition.get('PathPatternConfig'):
-                if (current_condition['Field'] == condition['Field'] and
-                        sorted(current_condition['PathPatternConfig']['Values']) == sorted(condition['PathPatternConfig']['Values'])):
+            elif current_condition.get("PathPatternConfig") and condition.get("PathPatternConfig"):
+                if current_condition["Field"] == condition["Field"] and sorted(
+                    current_condition["PathPatternConfig"]["Values"]
+                ) == sorted(condition["PathPatternConfig"]["Values"]):
                     condition_found = True
                     break
-            elif current_condition.get('QueryStringConfig'):
+            elif current_condition.get("QueryStringConfig"):
                 # QueryString Values is not sorted as it is the only list of dicts (not strings).
-                if (current_condition['Field'] == condition['Field'] and
-                        current_condition['QueryStringConfig']['Values'] == condition['QueryStringConfig']['Values']):
+                if (
+                    current_condition["Field"] == condition["Field"]
+                    and current_condition["QueryStringConfig"]["Values"] == condition["QueryStringConfig"]["Values"]
+                ):
                     condition_found = True
                     break
-            elif current_condition.get('SourceIpConfig'):
-                if (current_condition['Field'] == condition['Field'] and
-                        sorted(current_condition['SourceIpConfig']['Values']) == sorted(condition['SourceIpConfig']['Values'])):
+            elif current_condition.get("SourceIpConfig"):
+                if current_condition["Field"] == condition["Field"] and sorted(
+                    current_condition["SourceIpConfig"]["Values"]
+                ) == sorted(condition["SourceIpConfig"]["Values"]):
                     condition_found = True
                     break
             # Not all fields are required to have Values list nested within a *Config dict
             # e.g. fields host-header/path-pattern can directly list Values
-            elif current_condition['Field'] == condition['Field'] and sorted(current_condition['Values']) == sorted(condition['Values']):
+            elif current_condition["Field"] == condition["Field"] and sorted(current_condition["Values"]) == sorted(
+                condition["Values"]
+            ):
                 condition_found = True
                 break
 
@@ -988,45 +1115,49 @@ class ELBListenerRules:
         modified_rule = {}
 
         # Priority
-        if int(current_rule['Priority']) != int(new_rule['Priority']):
-            modified_rule['Priority'] = new_rule['Priority']
+        if int(current_rule["Priority"]) != int(new_rule["Priority"]):
+            modified_rule["Priority"] = new_rule["Priority"]
 
         # Actions
 
         # Check proper rule format on current listener
-        if len(current_rule['Actions']) > 1:
-            for action in current_rule['Actions']:
-                if 'Order' not in action:
-                    self.module.fail_json(msg="'Order' key not found in actions. "
-                                              "installed version of botocore does not support "
-                                              "multiple actions, please upgrade botocore to version "
-                                              "1.10.30 or higher")
+        if len(current_rule["Actions"]) > 1:
+            for action in current_rule["Actions"]:
+                if "Order" not in action:
+                    self.module.fail_json(
+                        msg="'Order' key not found in actions. "
+                        "installed version of botocore does not support "
+                        "multiple actions, please upgrade botocore to version "
+                        "1.10.30 or higher"
+                    )
 
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
-        if len(current_rule['Actions']) == len(new_rule['Actions']):
+        if len(current_rule["Actions"]) == len(new_rule["Actions"]):
             # if actions have just one element, compare the contents and then update if
             # they're different
-            current_actions_sorted = _sort_actions(current_rule['Actions'])
-            new_actions_sorted = _sort_actions(new_rule['Actions'])
+            current_actions_sorted = _sort_actions(current_rule["Actions"])
+            new_actions_sorted = _sort_actions(new_rule["Actions"])
 
             new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
             new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-            if [_prune_ForwardConfig(i) for i in new_current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
-                modified_rule['Actions'] = new_rule['Actions']
+            if [_prune_ForwardConfig(i) for i in new_current_actions_sorted] != [
+                _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
+            ]:
+                modified_rule["Actions"] = new_rule["Actions"]
         # If the action lengths are different, then replace with the new actions
         else:
-            modified_rule['Actions'] = new_rule['Actions']
+            modified_rule["Actions"] = new_rule["Actions"]
 
         # Conditions
         modified_conditions = []
-        for condition in new_rule['Conditions']:
-            if not self._compare_condition(current_rule['Conditions'], condition):
+        for condition in new_rule["Conditions"]:
+            if not self._compare_condition(current_rule["Conditions"], condition):
                 modified_conditions.append(condition)
 
         if modified_conditions:
-            modified_rule['Conditions'] = modified_conditions
+            modified_rule["Conditions"] = modified_conditions
 
         return modified_rule
 
@@ -1043,30 +1174,28 @@ class ELBListenerRules:
         for current_rule in self.current_rules:
             current_rule_passed_to_module = False
             for new_rule in self.rules[:]:
-                if current_rule['Priority'] == str(new_rule['Priority']):
+                if current_rule["Priority"] == str(new_rule["Priority"]):
                     current_rule_passed_to_module = True
                     # Remove what we match so that what is left can be marked as 'to be added'
                     rules_to_add.remove(new_rule)
                     modified_rule = self._compare_rule(current_rule, new_rule)
                     if modified_rule:
-                        modified_rule['Priority'] = int(current_rule['Priority'])
-                        modified_rule['RuleArn'] = current_rule['RuleArn']
-                        modified_rule['Actions'] = new_rule['Actions']
-                        modified_rule['Conditions'] = new_rule['Conditions']
+                        modified_rule["Priority"] = int(current_rule["Priority"])
+                        modified_rule["RuleArn"] = current_rule["RuleArn"]
+                        modified_rule["Actions"] = new_rule["Actions"]
+                        modified_rule["Conditions"] = new_rule["Conditions"]
                         rules_to_modify.append(modified_rule)
                     break
 
             # If the current rule was not matched against passed rules, mark for removal
-            if not current_rule_passed_to_module and not current_rule['IsDefault']:
-                rules_to_delete.append(current_rule['RuleArn'])
+            if not current_rule_passed_to_module and not current_rule["IsDefault"]:
+                rules_to_delete.append(current_rule["RuleArn"])
 
         return rules_to_add, rules_to_modify, rules_to_delete
 
 
 class ELBListenerRule:
-
     def __init__(self, connection, module, rule, listener_arn):
-
         self.connection = connection
         self.module = module
         self.rule = rule
@@ -1081,14 +1210,16 @@ class ELBListenerRule:
         """
 
         try:
-            self.rule['ListenerArn'] = self.listener_arn
-            self.rule['Priority'] = int(self.rule['Priority'])
+            self.rule["ListenerArn"] = self.listener_arn
+            self.rule["Priority"] = int(self.rule["Priority"])
             AWSRetry.jittered_backoff()(self.connection.create_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
+                self.module.fail_json(
+                    msg="installed version of botocore does not support "
+                    "multiple actions, please upgrade botocore to version "
+                    "1.10.30 or higher"
+                )
             else:
                 self.module.fail_json_aws(e)
 
@@ -1102,13 +1233,15 @@ class ELBListenerRule:
         """
 
         try:
-            del self.rule['Priority']
+            del self.rule["Priority"]
             AWSRetry.jittered_backoff()(self.connection.modify_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
+                self.module.fail_json(
+                    msg="installed version of botocore does not support "
+                    "multiple actions, please upgrade botocore to version "
+                    "1.10.30 or higher"
+                )
             else:
                 self.module.fail_json_aws(e)
 
@@ -1122,7 +1255,7 @@ class ELBListenerRule:
         """
 
         try:
-            AWSRetry.jittered_backoff()(self.connection.delete_rule)(RuleArn=self.rule['RuleArn'])
+            AWSRetry.jittered_backoff()(self.connection.delete_rule)(RuleArn=self.rule["RuleArn"])
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 

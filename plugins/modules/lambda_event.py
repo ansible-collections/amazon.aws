@@ -162,38 +162,35 @@ class AWSConnection:
     """
 
     def __init__(self, ansible_obj, resources, use_boto3=True):
-
         try:
             self.region, self.endpoint, aws_connect_kwargs = get_aws_connection_info(ansible_obj, boto3=use_boto3)
 
             self.resource_client = dict()
             if not resources:
-                resources = ['lambda']
+                resources = ["lambda"]
 
-            resources.append('iam')
+            resources.append("iam")
 
             for resource in resources:
-                aws_connect_kwargs.update(dict(region=self.region,
-                                               endpoint=self.endpoint,
-                                               conn_type='client',
-                                               resource=resource
-                                               ))
+                aws_connect_kwargs.update(
+                    dict(region=self.region, endpoint=self.endpoint, conn_type="client", resource=resource)
+                )
                 self.resource_client[resource] = boto3_conn(ansible_obj, **aws_connect_kwargs)
 
             # if region is not provided, then get default profile/session region
             if not self.region:
-                self.region = self.resource_client['lambda'].meta.region_name
+                self.region = self.resource_client["lambda"].meta.region_name
 
         except (ClientError, ParamValidationError, MissingParametersError) as e:
             ansible_obj.fail_json(msg="Unable to connect, authorize or access resource: {0}".format(e))
 
         # set account ID
         try:
-            self.account_id = self.resource_client['iam'].get_user()['User']['Arn'].split(':')[4]
+            self.account_id = self.resource_client["iam"].get_user()["User"]["Arn"].split(":")[4]
         except (ClientError, ValueError, KeyError, IndexError):
-            self.account_id = ''
+            self.account_id = ""
 
-    def client(self, resource='lambda'):
+    def client(self, resource="lambda"):
         return self.resource_client[resource]
 
 
@@ -205,7 +202,7 @@ def pc(key):
     :return:
     """
 
-    return "".join([token.capitalize() for token in key.split('_')])
+    return "".join([token.capitalize() for token in key.split("_")])
 
 
 def ordered_obj(obj):
@@ -251,28 +248,32 @@ def validate_params(module, aws):
     :return:
     """
 
-    function_name = module.params['lambda_function_arn']
+    function_name = module.params["lambda_function_arn"]
 
     # validate function name
-    if not re.search(r'^[\w\-:]+$', function_name):
+    if not re.search(r"^[\w\-:]+$", function_name):
         module.fail_json(
-            msg='Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.'.format(function_name)
+            msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(
+                function_name
+            )
         )
-    if len(function_name) > 64 and not function_name.startswith('arn:aws:lambda:'):
+    if len(function_name) > 64 and not function_name.startswith("arn:aws:lambda:"):
         module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
 
-    elif len(function_name) > 140 and function_name.startswith('arn:aws:lambda:'):
+    elif len(function_name) > 140 and function_name.startswith("arn:aws:lambda:"):
         module.fail_json(msg='ARN "{0}" exceeds 140 character limit'.format(function_name))
 
     # check if 'function_name' needs to be expanded in full ARN format
-    if not module.params['lambda_function_arn'].startswith('arn:aws:lambda:'):
-        function_name = module.params['lambda_function_arn']
-        module.params['lambda_function_arn'] = 'arn:aws:lambda:{0}:{1}:function:{2}'.format(aws.region, aws.account_id, function_name)
+    if not module.params["lambda_function_arn"].startswith("arn:aws:lambda:"):
+        function_name = module.params["lambda_function_arn"]
+        module.params["lambda_function_arn"] = "arn:aws:lambda:{0}:{1}:function:{2}".format(
+            aws.region, aws.account_id, function_name
+        )
 
     qualifier = get_qualifier(module)
     if qualifier:
-        function_arn = module.params['lambda_function_arn']
-        module.params['lambda_function_arn'] = '{0}:{1}'.format(function_arn, qualifier)
+        function_arn = module.params["lambda_function_arn"]
+        module.params["lambda_function_arn"] = "{0}:{1}".format(function_arn, qualifier)
 
     return
 
@@ -286,10 +287,10 @@ def get_qualifier(module):
     """
 
     qualifier = None
-    if module.params['version'] > 0:
-        qualifier = str(module.params['version'])
-    elif module.params['alias']:
-        qualifier = str(module.params['alias'])
+    if module.params["version"] > 0:
+        qualifier = str(module.params["version"])
+    elif module.params["alias"]:
+        qualifier = str(module.params["alias"])
 
     return qualifier
 
@@ -303,6 +304,7 @@ def get_qualifier(module):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def lambda_event_stream(module, aws):
     """
     Adds, updates or deletes lambda stream (DynamoDb, Kinesis) event notifications.
@@ -311,49 +313,50 @@ def lambda_event_stream(module, aws):
     :return:
     """
 
-    client = aws.client('lambda')
+    client = aws.client("lambda")
     facts = dict()
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
+    current_state = "absent"
+    state = module.params["state"]
 
-    api_params = dict(FunctionName=module.params['lambda_function_arn'])
+    api_params = dict(FunctionName=module.params["lambda_function_arn"])
 
     # check if required sub-parameters are present and valid
-    source_params = module.params['source_params']
+    source_params = module.params["source_params"]
 
-    source_arn = source_params.get('source_arn')
+    source_arn = source_params.get("source_arn")
     if source_arn:
         api_params.update(EventSourceArn=source_arn)
     else:
         module.fail_json(msg="Source parameter 'source_arn' is required for stream event notification.")
 
     # check if optional sub-parameters are valid, if present
-    batch_size = source_params.get('batch_size')
+    batch_size = source_params.get("batch_size")
     if batch_size:
         try:
-            source_params['batch_size'] = int(batch_size)
+            source_params["batch_size"] = int(batch_size)
         except ValueError:
-            module.fail_json(msg="Source parameter 'batch_size' must be an integer, found: {0}".format(source_params['batch_size']))
+            module.fail_json(
+                msg="Source parameter 'batch_size' must be an integer, found: {0}".format(source_params["batch_size"])
+            )
 
     # optional boolean value needs special treatment as not present does not imply False
-    source_param_enabled = module.boolean(source_params.get('enabled', 'True'))
+    source_param_enabled = module.boolean(source_params.get("enabled", "True"))
 
     # check if event mapping exist
     try:
-        facts = client.list_event_source_mappings(**api_params)['EventSourceMappings']
+        facts = client.list_event_source_mappings(**api_params)["EventSourceMappings"]
         if facts:
-            current_state = 'present'
+            current_state = "present"
     except ClientError as e:
-        module.fail_json(msg='Error retrieving stream event notification configuration: {0}'.format(e))
+        module.fail_json(msg="Error retrieving stream event notification configuration: {0}".format(e))
 
-    if state == 'present':
-        if current_state == 'absent':
-
-            starting_position = source_params.get('starting_position')
+    if state == "present":
+        if current_state == "absent":
+            starting_position = source_params.get("starting_position")
             if starting_position:
                 api_params.update(StartingPosition=starting_position)
-            elif module.params.get('event_source') == 'sqs':
+            elif module.params.get("event_source") == "sqs":
                 # starting position is not required for SQS
                 pass
             else:
@@ -361,37 +364,37 @@ def lambda_event_stream(module, aws):
 
             if source_arn:
                 api_params.update(Enabled=source_param_enabled)
-            if source_params.get('batch_size'):
-                api_params.update(BatchSize=source_params.get('batch_size'))
-            if source_params.get('function_response_types'):
-                api_params.update(FunctionResponseTypes=source_params.get('function_response_types'))
+            if source_params.get("batch_size"):
+                api_params.update(BatchSize=source_params.get("batch_size"))
+            if source_params.get("function_response_types"):
+                api_params.update(FunctionResponseTypes=source_params.get("function_response_types"))
 
             try:
                 if not module.check_mode:
                     facts = client.create_event_source_mapping(**api_params)
                 changed = True
             except (ClientError, ParamValidationError, MissingParametersError) as e:
-                module.fail_json(msg='Error creating stream source event mapping: {0}'.format(e))
+                module.fail_json(msg="Error creating stream source event mapping: {0}".format(e))
 
         else:
             # current_state is 'present'
-            api_params = dict(FunctionName=module.params['lambda_function_arn'])
+            api_params = dict(FunctionName=module.params["lambda_function_arn"])
             current_mapping = facts[0]
-            api_params.update(UUID=current_mapping['UUID'])
+            api_params.update(UUID=current_mapping["UUID"])
             mapping_changed = False
 
             # check if anything changed
-            if source_params.get('batch_size') and source_params['batch_size'] != current_mapping['BatchSize']:
-                api_params.update(BatchSize=source_params['batch_size'])
+            if source_params.get("batch_size") and source_params["batch_size"] != current_mapping["BatchSize"]:
+                api_params.update(BatchSize=source_params["batch_size"])
                 mapping_changed = True
 
             if source_param_enabled is not None:
                 if source_param_enabled:
-                    if current_mapping['State'] not in ('Enabled', 'Enabling'):
+                    if current_mapping["State"] not in ("Enabled", "Enabling"):
                         api_params.update(Enabled=True)
                         mapping_changed = True
                 else:
-                    if current_mapping['State'] not in ('Disabled', 'Disabling'):
+                    if current_mapping["State"] not in ("Disabled", "Disabling"):
                         api_params.update(Enabled=False)
                         mapping_changed = True
 
@@ -401,19 +404,19 @@ def lambda_event_stream(module, aws):
                         facts = client.update_event_source_mapping(**api_params)
                     changed = True
                 except (ClientError, ParamValidationError, MissingParametersError) as e:
-                    module.fail_json(msg='Error updating stream source event mapping: {0}'.format(e))
+                    module.fail_json(msg="Error updating stream source event mapping: {0}".format(e))
 
     else:
-        if current_state == 'present':
+        if current_state == "present":
             # remove the stream event mapping
-            api_params = dict(UUID=facts[0]['UUID'])
+            api_params = dict(UUID=facts[0]["UUID"])
 
             try:
                 if not module.check_mode:
                     facts = client.delete_event_source_mapping(**api_params)
                 changed = True
             except (ClientError, ParamValidationError, MissingParametersError) as e:
-                module.fail_json(msg='Error removing stream source event mapping: {0}'.format(e))
+                module.fail_json(msg="Error removing stream source event mapping: {0}".format(e))
 
     return camel_dict_to_snake_dict(dict(changed=changed, events=facts))
 
@@ -423,32 +426,32 @@ def main():
     source_choices = ["stream", "sqs"]
 
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
-        lambda_function_arn=dict(required=True, aliases=['function_name', 'function_arn']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
+        lambda_function_arn=dict(required=True, aliases=["function_name", "function_arn"]),
         event_source=dict(required=False, default="stream", choices=source_choices),
-        source_params=dict(type='dict', required=True),
+        source_params=dict(type="dict", required=True),
         alias=dict(required=False, default=None),
-        version=dict(type='int', required=False, default=0),
+        version=dict(type="int", required=False, default=0),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[['alias', 'version']],
+        mutually_exclusive=[["alias", "version"]],
         required_together=[],
     )
 
-    aws = AWSConnection(module, ['lambda'])
+    aws = AWSConnection(module, ["lambda"])
 
     validate_params(module, aws)
 
-    if module.params['event_source'].lower() in ('stream', 'sqs'):
+    if module.params["event_source"].lower() in ("stream", "sqs"):
         results = lambda_event_stream(module, aws)
     else:
-        module.fail_json(msg='Please select `stream` or `sqs` as the event type')
+        module.fail_json(msg="Please select `stream` or `sqs` as the event type")
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

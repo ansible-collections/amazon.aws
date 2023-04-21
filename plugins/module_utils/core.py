@@ -57,4 +57,4 @@ from .modules import AnsibleAWSModule  # pylint: disable=unused-import
 from .transformation import scrub_none_parameters  # pylint: disable=unused-import
 
 # We will also export HAS_BOTO3 so end user modules can use it.
-__all__ = ('AnsibleAWSModule', 'HAS_BOTO3', 'is_boto3_error_code', 'is_boto3_error_message')
+__all__ = ("AnsibleAWSModule", "HAS_BOTO3", "is_boto3_error_code", "is_boto3_error_message")

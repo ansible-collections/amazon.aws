@@ -309,15 +309,15 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 
 def create_metric_alarm(connection, module, params):
-    alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
-    if params.get('Dimensions'):
-        if not isinstance(params['Dimensions'], list):
+    alarms = connection.describe_alarms(AlarmNames=[params["AlarmName"]])
+    if params.get("Dimensions"):
+        if not isinstance(params["Dimensions"], list):
             fixed_dimensions = []
-            for key, value in params['Dimensions'].items():
-                fixed_dimensions.append({'Name': key, 'Value': value})
-            params['Dimensions'] = fixed_dimensions
+            for key, value in params["Dimensions"].items():
+                fixed_dimensions.append({"Name": key, "Value": value})
+            params["Dimensions"] = fixed_dimensions
 
-    if not alarms['MetricAlarms']:
+    if not alarms["MetricAlarms"]:
         try:
             if not module.check_mode:
                 connection.put_metric_alarm(**params)
@@ -327,17 +327,24 @@ def create_metric_alarm(connection, module, params):
 
     else:
         changed = False
-        alarm = alarms['MetricAlarms'][0]
+        alarm = alarms["MetricAlarms"][0]
 
         # Workaround for alarms created before TreatMissingData was introduced
-        if 'TreatMissingData' not in alarm.keys():
-            alarm['TreatMissingData'] = 'missing'
+        if "TreatMissingData" not in alarm.keys():
+            alarm["TreatMissingData"] = "missing"
 
         # Exclude certain props from change detection
-        for key in ['ActionsEnabled', 'StateValue', 'StateReason',
-                    'StateReasonData', 'StateUpdatedTimestamp',
-                    'StateTransitionedTimestamp',
-                    'AlarmArn', 'AlarmConfigurationUpdatedTimestamp', 'Metrics']:
+        for key in [
+            "ActionsEnabled",
+            "StateValue",
+            "StateReason",
+            "StateReasonData",
+            "StateUpdatedTimestamp",
+            "StateTransitionedTimestamp",
+            "AlarmArn",
+            "AlarmConfigurationUpdatedTimestamp",
+            "Metrics",
+        ]:
             alarm.pop(key, None)
         if alarm != params:
             changed = True
@@ -351,53 +358,55 @@ def create_metric_alarm(connection, module, params):
             module.fail_json_aws(e)
 
     try:
-        alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
+        alarms = connection.describe_alarms(AlarmNames=[params["AlarmName"]])
     except ClientError as e:
         module.fail_json_aws(e)
 
     result = {}
-    if alarms['MetricAlarms']:
-        if alarms['MetricAlarms'][0].get('Metrics'):
+    if alarms["MetricAlarms"]:
+        if alarms["MetricAlarms"][0].get("Metrics"):
             metric_list = []
-            for metric_element in alarms['MetricAlarms'][0]['Metrics']:
+            for metric_element in alarms["MetricAlarms"][0]["Metrics"]:
                 metric_list.append(camel_dict_to_snake_dict(metric_element))
-            alarms['MetricAlarms'][0]['Metrics'] = metric_list
-        result = alarms['MetricAlarms'][0]
+            alarms["MetricAlarms"][0]["Metrics"] = metric_list
+        result = alarms["MetricAlarms"][0]
 
-    module.exit_json(changed=changed,
-                     name=result.get('AlarmName'),
-                     actions_enabled=result.get('ActionsEnabled'),
-                     alarm_actions=result.get('AlarmActions'),
-                     alarm_arn=result.get('AlarmArn'),
-                     comparison=result.get('ComparisonOperator'),
-                     description=result.get('AlarmDescription'),
-                     dimensions=result.get('Dimensions'),
-                     evaluation_periods=result.get('EvaluationPeriods'),
-                     insufficient_data_actions=result.get('InsufficientDataActions'),
-                     last_updated=result.get('AlarmConfigurationUpdatedTimestamp'),
-                     metric=result.get('MetricName'),
-                     metric_name=result.get('MetricName'),
-                     metrics=result.get('Metrics'),
-                     namespace=result.get('Namespace'),
-                     ok_actions=result.get('OKActions'),
-                     period=result.get('Period'),
-                     state_reason=result.get('StateReason'),
-                     state_value=result.get('StateValue'),
-                     statistic=result.get('Statistic'),
-                     threshold=result.get('Threshold'),
-                     treat_missing_data=result.get('TreatMissingData'),
-                     unit=result.get('Unit'))
+    module.exit_json(
+        changed=changed,
+        name=result.get("AlarmName"),
+        actions_enabled=result.get("ActionsEnabled"),
+        alarm_actions=result.get("AlarmActions"),
+        alarm_arn=result.get("AlarmArn"),
+        comparison=result.get("ComparisonOperator"),
+        description=result.get("AlarmDescription"),
+        dimensions=result.get("Dimensions"),
+        evaluation_periods=result.get("EvaluationPeriods"),
+        insufficient_data_actions=result.get("InsufficientDataActions"),
+        last_updated=result.get("AlarmConfigurationUpdatedTimestamp"),
+        metric=result.get("MetricName"),
+        metric_name=result.get("MetricName"),
+        metrics=result.get("Metrics"),
+        namespace=result.get("Namespace"),
+        ok_actions=result.get("OKActions"),
+        period=result.get("Period"),
+        state_reason=result.get("StateReason"),
+        state_value=result.get("StateValue"),
+        statistic=result.get("Statistic"),
+        threshold=result.get("Threshold"),
+        treat_missing_data=result.get("TreatMissingData"),
+        unit=result.get("Unit"),
+    )
 
 
 def delete_metric_alarm(connection, module, params):
-    alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
+    alarms = connection.describe_alarms(AlarmNames=[params["AlarmName"]])
 
-    if alarms['MetricAlarms']:
+    if alarms["MetricAlarms"]:
         try:
             if not module.check_mode:
-                connection.delete_alarms(AlarmNames=[params['AlarmName']])
+                connection.delete_alarms(AlarmNames=[params["AlarmName"]])
             module.exit_json(changed=True)
-        except (ClientError) as e:
+        except ClientError as e:
             module.fail_json_aws(e)
     else:
         module.exit_json(changed=False)
@@ -405,40 +414,76 @@ def delete_metric_alarm(connection, module, params):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        metric_name=dict(type='str', aliases=['metric']),
-        namespace=dict(type='str'),
-        statistic=dict(type='str', choices=['SampleCount', 'Average', 'Sum', 'Minimum', 'Maximum']),
-        comparison=dict(type='str', choices=['LessThanOrEqualToThreshold', 'LessThanThreshold', 'GreaterThanThreshold',
-                                             'GreaterThanOrEqualToThreshold']),
-        threshold=dict(type='float'),
-        period=dict(type='int'),
-        unit=dict(type='str', choices=['Seconds', 'Microseconds', 'Milliseconds', 'Bytes', 'Kilobytes', 'Megabytes', 'Gigabytes',
-                                       'Terabytes', 'Bits', 'Kilobits', 'Megabits', 'Gigabits', 'Terabits', 'Percent', 'Count',
-                                       'Bytes/Second', 'Kilobytes/Second', 'Megabytes/Second', 'Gigabytes/Second',
-                                       'Terabytes/Second', 'Bits/Second', 'Kilobits/Second', 'Megabits/Second', 'Gigabits/Second',
-                                       'Terabits/Second', 'Count/Second', 'None']),
-        evaluation_periods=dict(type='int'),
-        extended_statistic=dict(type='str'),
-        description=dict(type='str'),
-        dimensions=dict(type='dict'),
-        alarm_actions=dict(type='list', default=[], elements='str'),
-        insufficient_data_actions=dict(type='list', default=[], elements='str'),
-        ok_actions=dict(type='list', default=[], elements='str'),
-        treat_missing_data=dict(type='str', choices=['breaching', 'notBreaching', 'ignore', 'missing'], default='missing'),
-        state=dict(default='present', choices=['present', 'absent']),
-        metrics=dict(type='list', elements='dict', default=[]),
+        name=dict(required=True, type="str"),
+        metric_name=dict(type="str", aliases=["metric"]),
+        namespace=dict(type="str"),
+        statistic=dict(type="str", choices=["SampleCount", "Average", "Sum", "Minimum", "Maximum"]),
+        comparison=dict(
+            type="str",
+            choices=[
+                "LessThanOrEqualToThreshold",
+                "LessThanThreshold",
+                "GreaterThanThreshold",
+                "GreaterThanOrEqualToThreshold",
+            ],
+        ),
+        threshold=dict(type="float"),
+        period=dict(type="int"),
+        unit=dict(
+            type="str",
+            choices=[
+                "Seconds",
+                "Microseconds",
+                "Milliseconds",
+                "Bytes",
+                "Kilobytes",
+                "Megabytes",
+                "Gigabytes",
+                "Terabytes",
+                "Bits",
+                "Kilobits",
+                "Megabits",
+                "Gigabits",
+                "Terabits",
+                "Percent",
+                "Count",
+                "Bytes/Second",
+                "Kilobytes/Second",
+                "Megabytes/Second",
+                "Gigabytes/Second",
+                "Terabytes/Second",
+                "Bits/Second",
+                "Kilobits/Second",
+                "Megabits/Second",
+                "Gigabits/Second",
+                "Terabits/Second",
+                "Count/Second",
+                "None",
+            ],
+        ),
+        evaluation_periods=dict(type="int"),
+        extended_statistic=dict(type="str"),
+        description=dict(type="str"),
+        dimensions=dict(type="dict"),
+        alarm_actions=dict(type="list", default=[], elements="str"),
+        insufficient_data_actions=dict(type="list", default=[], elements="str"),
+        ok_actions=dict(type="list", default=[], elements="str"),
+        treat_missing_data=dict(
+            type="str", choices=["breaching", "notBreaching", "ignore", "missing"], default="missing"
+        ),
+        state=dict(default="present", choices=["present", "absent"]),
+        metrics=dict(type="list", elements="dict", default=[]),
     )
 
     mutually_exclusive = [
-        ['metric_name', 'metrics'],
-        ['dimensions', 'metrics'],
-        ['period', 'metrics'],
-        ['namespace', 'metrics'],
-        ['statistic', 'metrics'],
-        ['extended_statistic', 'metrics'],
-        ['unit', 'metrics'],
-        ['statistic', 'extended_statistic'],
+        ["metric_name", "metrics"],
+        ["dimensions", "metrics"],
+        ["period", "metrics"],
+        ["namespace", "metrics"],
+        ["statistic", "metrics"],
+        ["extended_statistic", "metrics"],
+        ["unit", "metrics"],
+        ["statistic", "extended_statistic"],
     ]
 
     module = AnsibleAWSModule(
@@ -447,41 +492,41 @@ def main():
         supports_check_mode=True,
     )
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
     params = dict()
-    params['AlarmName'] = module.params.get('name')
-    params['MetricName'] = module.params.get('metric_name')
-    params['Namespace'] = module.params.get('namespace')
-    params['Statistic'] = module.params.get('statistic')
-    params['ComparisonOperator'] = module.params.get('comparison')
-    params['Threshold'] = module.params.get('threshold')
-    params['Period'] = module.params.get('period')
-    params['EvaluationPeriods'] = module.params.get('evaluation_periods')
-    if module.params.get('unit'):
-        params['Unit'] = module.params.get('unit')
-    params['AlarmDescription'] = module.params.get('description')
-    params['Dimensions'] = module.params.get('dimensions')
-    params['AlarmActions'] = module.params.get('alarm_actions', [])
-    params['InsufficientDataActions'] = module.params.get('insufficient_data_actions', [])
-    params['OKActions'] = module.params.get('ok_actions', [])
-    params['TreatMissingData'] = module.params.get('treat_missing_data')
-    if module.params.get('metrics'):
-        params['Metrics'] = snake_dict_to_camel_dict(module.params['metrics'], capitalize_first=True)
-    if module.params.get('extended_statistic'):
-        params['ExtendedStatistic'] = module.params.get('extended_statistic')
+    params["AlarmName"] = module.params.get("name")
+    params["MetricName"] = module.params.get("metric_name")
+    params["Namespace"] = module.params.get("namespace")
+    params["Statistic"] = module.params.get("statistic")
+    params["ComparisonOperator"] = module.params.get("comparison")
+    params["Threshold"] = module.params.get("threshold")
+    params["Period"] = module.params.get("period")
+    params["EvaluationPeriods"] = module.params.get("evaluation_periods")
+    if module.params.get("unit"):
+        params["Unit"] = module.params.get("unit")
+    params["AlarmDescription"] = module.params.get("description")
+    params["Dimensions"] = module.params.get("dimensions")
+    params["AlarmActions"] = module.params.get("alarm_actions", [])
+    params["InsufficientDataActions"] = module.params.get("insufficient_data_actions", [])
+    params["OKActions"] = module.params.get("ok_actions", [])
+    params["TreatMissingData"] = module.params.get("treat_missing_data")
+    if module.params.get("metrics"):
+        params["Metrics"] = snake_dict_to_camel_dict(module.params["metrics"], capitalize_first=True)
+    if module.params.get("extended_statistic"):
+        params["ExtendedStatistic"] = module.params.get("extended_statistic")
 
     for key, value in list(params.items()):
         if value is None:
             del params[key]
 
-    connection = module.client('cloudwatch')
+    connection = module.client("cloudwatch")
 
-    if state == 'present':
+    if state == "present":
         create_metric_alarm(connection, module, params)
-    elif state == 'absent':
+    elif state == "absent":
         delete_metric_alarm(connection, module, params)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -217,14 +217,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 def build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id):
-
     request_args = {
-        'Filters': ansible_dict_to_boto3_filter_list(filters),
-        'MaxResults': max_results,
-        'NextToken': next_token_id,
-        'OwnerIds': owner_ids,
-        'RestorableByUserIds': [str(user_id) for user_id in restorable_by_user_ids],
-        'SnapshotIds': snapshot_ids
+        "Filters": ansible_dict_to_boto3_filter_list(filters),
+        "MaxResults": max_results,
+        "NextToken": next_token_id,
+        "OwnerIds": owner_ids,
+        "RestorableByUserIds": [str(user_id) for user_id in restorable_by_user_ids],
+        "SnapshotIds": snapshot_ids,
     }
 
     request_args = {k: v for k, v in request_args.items() if v}
@@ -236,62 +235,60 @@ def get_snapshots(connection, module, request_args):
     snapshot_ids = request_args.get("snapshot_ids")
     try:
         snapshots = connection.describe_snapshots(aws_retry=True, **request_args)
-    except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
+    except is_boto3_error_code("InvalidSnapshot.NotFound") as e:
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
-        snapshots = {'Snapshots': []}
+        snapshots = {"Snapshots": []}
 
     return snapshots
 
 
 def list_ec2_snapshots(connection, module, request_args):
-
     try:
         snapshots = get_snapshots(connection, module, request_args)
     except ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Failed to describe snapshots')
+        module.fail_json_aws(e, msg="Failed to describe snapshots")
 
     result = {}
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
-    for snapshot in snapshots['Snapshots']:
+    for snapshot in snapshots["Snapshots"]:
         snaked_snapshots.append(camel_dict_to_snake_dict(snapshot))
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for snapshot in snaked_snapshots:
-        if 'tags' in snapshot:
-            snapshot['tags'] = boto3_tag_list_to_ansible_dict(snapshot['tags'], 'key', 'value')
+        if "tags" in snapshot:
+            snapshot["tags"] = boto3_tag_list_to_ansible_dict(snapshot["tags"], "key", "value")
 
-    result['snapshots'] = snaked_snapshots
+    result["snapshots"] = snaked_snapshots
 
-    if snapshots.get('NextToken'):
-        result.update(camel_dict_to_snake_dict({'NextTokenId': snapshots.get('NextToken')}))
+    if snapshots.get("NextToken"):
+        result.update(camel_dict_to_snake_dict({"NextTokenId": snapshots.get("NextToken")}))
 
     return result
 
 
 def main():
-
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        max_results=dict(type='int'),
-        next_token_id=dict(type='str'),
-        owner_ids=dict(default=[], type='list', elements='str'),
-        restorable_by_user_ids=dict(default=[], type='list', elements='str'),
-        snapshot_ids=dict(default=[], type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        max_results=dict(type="int"),
+        next_token_id=dict(type="str"),
+        owner_ids=dict(default=[], type="list", elements="str"),
+        restorable_by_user_ids=dict(default=[], type="list", elements="str"),
+        snapshot_ids=dict(default=[], type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
-            ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters'],
-            ['snapshot_ids', 'max_results'],
-            ['snapshot_ids', 'next_token_id']
+            ["snapshot_ids", "owner_ids", "restorable_by_user_ids", "filters"],
+            ["snapshot_ids", "max_results"],
+            ["snapshot_ids", "next_token_id"],
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     request_args = build_request_args(
         filters=module.params["filters"],
@@ -307,5 +304,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

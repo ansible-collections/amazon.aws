@@ -28,10 +28,7 @@ class TestFailJsonAwsTestSuite:
     def setup_method(self):
         # Basic information that ClientError needs to spawn off an error
         self.EXAMPLE_EXCEPTION_DATA = {
-            "Error": {
-                "Code": "InvalidParameterValue",
-                "Message": "The filter 'exampleFilter' is invalid"
-            },
+            "Error": {"Code": "InvalidParameterValue", "Message": "The filter 'exampleFilter' is invalid"},
             "ResponseMetadata": {
                 "RequestId": "01234567-89ab-cdef-0123-456789abcdef",
                 "HTTPStatusCode": 400,
@@ -39,10 +36,10 @@ class TestFailJsonAwsTestSuite:
                     "transfer-encoding": "chunked",
                     "date": "Fri, 13 Nov 2020 00:00:00 GMT",
                     "connection": "close",
-                    "server": "AmazonEC2"
+                    "server": "AmazonEC2",
                 },
-                "RetryAttempts": 0
-            }
+                "RetryAttempts": 0,
+            },
         }
         self.CAMEL_RESPONSE = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("ResponseMetadata"))
         self.CAMEL_ERROR = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("Error"))

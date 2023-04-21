@@ -51,14 +51,10 @@ if not HAS_BOTO3:
 def make_clienterror_exception(code="AccessDenied"):
     return botocore.exceptions.ClientError(
         {
-            "Error": {
-                "Code": code,
-                "Message": "User is not authorized to perform: xxx on resource: user yyyy"
-            },
-            "ResponseMetadata": {
-                "RequestId": "01234567-89ab-cdef-0123-456789abcdef"
-            }
-        }, 'getXXX'
+            "Error": {"Code": code, "Message": "User is not authorized to perform: xxx on resource: user yyyy"},
+            "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+        },
+        "getXXX",
     )
 
 
@@ -92,25 +88,23 @@ def connection():
 @pytest.mark.parametrize(
     "suffix,result",
     [
-        ('aws_rds.yml', True),
-        ('aws_rds.yaml', True),
-        ('aws_RDS.yml', False),
-        ('AWS_rds.yaml', False),
-    ]
+        ("aws_rds.yml", True),
+        ("aws_rds.yaml", True),
+        ("aws_RDS.yml", False),
+        ("AWS_rds.yaml", False),
+    ],
 )
 def test_inventory_verify_file_suffix(inventory, suffix, result, tmp_path):
-
     test_dir = tmp_path / "test_aws_rds"
     test_dir.mkdir()
     inventory_file = "inventory" + suffix
     inventory_file = test_dir / inventory_file
-    inventory_file.write_text('my inventory')
+    inventory_file.write_text("my inventory")
     assert result == inventory.verify_file(str(inventory_file))
 
 
 def test_inventory_verify_file_with_missing_file(inventory):
-
-    inventory_file = 'this_file_does_not_exist_aws_rds.yml'
+    inventory_file = "this_file_does_not_exist_aws_rds.yml"
     assert not inventory.verify_file(inventory_file)
 
 
@@ -134,39 +128,37 @@ def generate_random_string(with_digits=True, with_punctuation=True, length=16):
                 {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"},
             ],
             ["Available"],
-            [
-                {"host": "host1", "DBInstanceStatus": "Available", "Status": "active"}
-            ]
+            [{"host": "host1", "DBInstanceStatus": "Available", "Status": "active"}],
         ),
         (
             [
                 {"host": "host1", "DBInstanceStatus": "Available", "Status": "active"},
                 {"host": "host2", "DBInstanceStatus": "Creating", "Status": "active"},
                 {"host": "host3", "DBInstanceStatus": "Stopped", "Status": "active"},
-                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"}
+                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"},
             ],
             ["all"],
             [
                 {"host": "host1", "DBInstanceStatus": "Available", "Status": "active"},
                 {"host": "host2", "DBInstanceStatus": "Creating", "Status": "active"},
                 {"host": "host3", "DBInstanceStatus": "Stopped", "Status": "active"},
-                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"}
-            ]
+                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"},
+            ],
         ),
         (
             [
                 {"host": "host1", "DBInstanceStatus": "Available", "Status": "active"},
                 {"host": "host2", "DBInstanceStatus": "Creating", "Status": "Available"},
                 {"host": "host3", "DBInstanceStatus": "Stopped", "Status": "active"},
-                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"}
+                {"host": "host4", "DBInstanceStatus": "Configuring", "Status": "active"},
             ],
             ["Available"],
             [
                 {"host": "host1", "DBInstanceStatus": "Available", "Status": "active"},
-                {"host": "host2", "DBInstanceStatus": "Creating", "Status": "Available"}
-            ]
+                {"host": "host2", "DBInstanceStatus": "Creating", "Status": "Available"},
+            ],
         ),
-    ]
+    ],
 )
 def test_find_hosts_with_valid_statuses(hosts, statuses, expected):
     assert expected == _find_hosts_with_valid_statuses(hosts, statuses)
@@ -177,7 +169,7 @@ def test_find_hosts_with_valid_statuses(hosts, statuses, expected):
     [
         ({"DBClusterIdentifier": "my_cluster_id"}, "my_cluster_id"),
         ({"DBClusterIdentifier": "my_cluster_id", "DBInstanceIdentifier": "my_instance_id"}, "my_instance_id"),
-    ]
+    ],
 )
 def test_get_rds_hostname(host, expected):
     assert expected == _get_rds_hostname(host)
@@ -186,7 +178,6 @@ def test_get_rds_hostname(host, expected):
 @pytest.mark.parametrize("hosts", ["", "host1", "host2,host3", "host2,host3,host1"])
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_rds._get_rds_hostname")
 def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
-
     hosts_vars = {
         "host1": {"var10": "value10"},
         "host2": {"var20": "value20", "var21": "value21"},
@@ -196,7 +187,6 @@ def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
     m_get_rds_hostname.side_effect = lambda h: h["name"]
 
     class _inventory_host(object):
-
         def __init__(self, name, host_vars):
             self.name = name
             self.vars = host_vars
@@ -206,8 +196,8 @@ def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
 
     hosts = [{"name": x} for x in hosts.split(",") if x]
     expected = {
-        '_meta': {"hostvars": {x["name"]: hosts_vars.get(x["name"]) for x in hosts}},
-        'aws_rds': {'hosts': [x["name"] for x in hosts]}
+        "_meta": {"hostvars": {x["name"]: hosts_vars.get(x["name"]) for x in hosts}},
+        "aws_rds": {"hosts": [x["name"] for x in hosts]},
     }
 
     assert expected == inventory._format_inventory(hosts)
@@ -217,7 +207,6 @@ def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
 
 @pytest.mark.parametrize("length", range(0, 10, 2))
 def test_inventory_populate(inventory, length):
-
     group = "aws_rds"
     hosts = ["host_%d" % i for i in range(length)]
 
@@ -235,7 +224,6 @@ def test_inventory_populate(inventory, length):
 
 
 def test_inventory_populate_from_source(inventory):
-
     source_data = {
         "_meta": {
             "hostvars": {
@@ -257,7 +245,7 @@ def test_inventory_populate_from_source(inventory):
             call("aws_host_2"),
             call("aws_host_3"),
         ],
-        any_order=True
+        any_order=True,
     )
     inventory.inventory.add_child.assert_has_calls(
         [
@@ -265,7 +253,7 @@ def test_inventory_populate_from_source(inventory):
             call("all", "aws_host_2"),
             call("all", "aws_host_3"),
         ],
-        any_order=True
+        any_order=True,
     )
 
     inventory._populate_host_vars.assert_has_calls(
@@ -275,7 +263,7 @@ def test_inventory_populate_from_source(inventory):
             call(["host_2"], {"var2": "value2"}, "aws_host_2"),
             call(["host_3"], {"var3": ["value30", "value31", "value32"]}, "aws_host_3"),
         ],
-        any_order=True
+        any_order=True,
     )
 
 
@@ -288,7 +276,6 @@ def test_add_tags_for_rds_hosts_with_no_hosts(connection, strict):
 
 
 def test_add_tags_for_rds_hosts_with_hosts(connection):
-
     hosts = [
         {"DBInstanceArn": "dbarn1"},
         {"DBInstanceArn": "dbarn2"},
@@ -296,15 +283,9 @@ def test_add_tags_for_rds_hosts_with_hosts(connection):
     ]
 
     rds_hosts_tags = {
-        "dbarn1": {
-            "TagList": ["tag1=dbarn1", "phase=units"]
-        },
-        "dbarn2": {
-            "TagList": ["tag2=dbarn2", "collection=amazon.aws"]
-        },
-        "clusterarn1": {
-            "TagList": ["tag1=clusterarn1", "tool=ansible-test"]
-        }
+        "dbarn1": {"TagList": ["tag1=dbarn1", "phase=units"]},
+        "dbarn2": {"TagList": ["tag2=dbarn2", "collection=amazon.aws"]},
+        "clusterarn1": {"TagList": ["tag1=clusterarn1", "tool=ansible-test"]},
     }
     connection.list_tags_for_resource.side_effect = lambda **kwargs: rds_hosts_tags.get(kwargs.get("ResourceName"))
 
@@ -318,7 +299,6 @@ def test_add_tags_for_rds_hosts_with_hosts(connection):
 
 
 def test_add_tags_for_rds_hosts_with_failure_not_strict(connection):
-
     hosts = [{"DBInstanceArn": "dbarn1"}]
 
     connection.list_tags_for_resource.side_effect = make_clienterror_exception()
@@ -331,7 +311,6 @@ def test_add_tags_for_rds_hosts_with_failure_not_strict(connection):
 
 
 def test_add_tags_for_rds_hosts_with_failure_strict(connection):
-
     hosts = [{"DBInstanceArn": "dbarn1"}]
 
     connection.list_tags_for_resource.side_effect = make_clienterror_exception()
@@ -345,17 +324,16 @@ ADD_TAGS_FOR_RDS_HOSTS = "ansible_collections.amazon.aws.plugins.inventory.aws_r
 
 @patch(ADD_TAGS_FOR_RDS_HOSTS)
 def test_describe_db_clusters(m_add_tags_for_rds_hosts, connection):
-
     db_cluster = {
-        'DatabaseName': 'my_sample_db',
-        'DBClusterIdentifier': 'db_id_01',
-        'Status': 'Stopped',
-        'DbClusterResourceId': 'cluster_resource_id',
-        'DBClusterArn': 'arn:xxx:xxxx',
-        'DeletionProtection': True,
+        "DatabaseName": "my_sample_db",
+        "DBClusterIdentifier": "db_id_01",
+        "Status": "Stopped",
+        "DbClusterResourceId": "cluster_resource_id",
+        "DBClusterArn": "arn:xxx:xxxx",
+        "DeletionProtection": True,
     }
 
-    connection.describe_db_clusters.return_value = {'DBClusters': [db_cluster]}
+    connection.describe_db_clusters.return_value = {"DBClusters": [db_cluster]}
 
     filters = generate_random_string(with_punctuation=False)
     strict = False
@@ -370,7 +348,6 @@ def test_describe_db_clusters(m_add_tags_for_rds_hosts, connection):
 @pytest.mark.parametrize("strict", [True, False])
 @patch(ADD_TAGS_FOR_RDS_HOSTS)
 def test_describe_db_clusters_with_access_denied(m_add_tags_for_rds_hosts, connection, strict):
-
     connection.describe_db_clusters.side_effect = make_clienterror_exception()
 
     filters = generate_random_string(with_punctuation=False)
@@ -386,7 +363,6 @@ def test_describe_db_clusters_with_access_denied(m_add_tags_for_rds_hosts, conne
 
 @patch(ADD_TAGS_FOR_RDS_HOSTS)
 def test_describe_db_clusters_with_client_error(m_add_tags_for_rds_hosts, connection):
-
     connection.describe_db_clusters.side_effect = make_clienterror_exception(code="Unknown")
 
     filters = generate_random_string(with_punctuation=False)
@@ -398,14 +374,13 @@ def test_describe_db_clusters_with_client_error(m_add_tags_for_rds_hosts, connec
 
 @patch(ADD_TAGS_FOR_RDS_HOSTS)
 def test_describe_db_instances(m_add_tags_for_rds_hosts, connection):
-
     db_instance = {
-        'DBInstanceIdentifier': 'db_id_01',
-        'Status': 'Stopped',
-        'DBName': 'my_sample_db_01',
-        'DBClusterIdentifier': 'db_cluster_001',
-        'DBInstanceArn': 'arn:db:xxxx:xxxx:xxxx',
-        'Engine': 'mysql',
+        "DBInstanceIdentifier": "db_id_01",
+        "Status": "Stopped",
+        "DBName": "my_sample_db_01",
+        "DBClusterIdentifier": "db_cluster_001",
+        "DBInstanceArn": "arn:db:xxxx:xxxx:xxxx",
+        "Engine": "mysql",
     }
 
     conn_paginator = MagicMock()
@@ -414,7 +389,7 @@ def test_describe_db_instances(m_add_tags_for_rds_hosts, connection):
     connection.get_paginator.return_value = conn_paginator
     conn_paginator.paginate.return_value = paginate
 
-    paginate.build_full_result.return_value = {'DBInstances': [db_instance]}
+    paginate.build_full_result.return_value = {"DBInstances": [db_instance]}
 
     filters = generate_random_string(with_punctuation=False)
     strict = False
@@ -430,7 +405,9 @@ def test_describe_db_instances(m_add_tags_for_rds_hosts, connection):
 
 DESCRIBE_DB_INSTANCES = "ansible_collections.amazon.aws.plugins.inventory.aws_rds._describe_db_instances"
 DESCRIBE_DB_CLUSTERS = "ansible_collections.amazon.aws.plugins.inventory.aws_rds._describe_db_clusters"
-FIND_HOSTS_WITH_VALID_STATUSES = "ansible_collections.amazon.aws.plugins.inventory.aws_rds._find_hosts_with_valid_statuses"
+FIND_HOSTS_WITH_VALID_STATUSES = (
+    "ansible_collections.amazon.aws.plugins.inventory.aws_rds._find_hosts_with_valid_statuses"
+)
 
 
 @pytest.mark.parametrize("gather_clusters", [True, False])
@@ -438,8 +415,9 @@ FIND_HOSTS_WITH_VALID_STATUSES = "ansible_collections.amazon.aws.plugins.invento
 @patch(DESCRIBE_DB_INSTANCES)
 @patch(DESCRIBE_DB_CLUSTERS)
 @patch(FIND_HOSTS_WITH_VALID_STATUSES)
-def test_inventory_get_all_db_hosts(m_find_hosts, m_describe_db_clusters, m_describe_db_instances, inventory, gather_clusters, regions):
-
+def test_inventory_get_all_db_hosts(
+    m_find_hosts, m_describe_db_clusters, m_describe_db_instances, inventory, gather_clusters, regions
+):
     params = {
         "gather_clusters": gather_clusters,
         "regions": ["us-east-%d" % i for i in range(regions)],
@@ -451,24 +429,18 @@ def test_inventory_get_all_db_hosts(m_find_hosts, m_describe_db_clusters, m_desc
 
     connections = [MagicMock() for i in range(regions)]
 
-    inventory.all_clients.return_value = [
-        (connections[i], "us-east-%d" % i) for i in range(regions)
-    ]
+    inventory.all_clients.return_value = [(connections[i], "us-east-%d" % i) for i in range(regions)]
 
     ids = list(reversed(range(regions)))
-    db_instances = [
-        {"DBInstanceIdentifier": "db_00%d" % i} for i in ids
-    ]
-    db_clusters = [
-        {"DBClusterIdentifier": "cluster_00%d" % i} for i in ids
-    ]
+    db_instances = [{"DBInstanceIdentifier": "db_00%d" % i} for i in ids]
+    db_clusters = [{"DBClusterIdentifier": "cluster_00%d" % i} for i in ids]
 
     m_describe_db_instances.side_effect = [[i] for i in db_instances]
     m_describe_db_clusters.side_effect = [[i] for i in db_clusters]
 
-    result = list(sorted(db_instances, key=lambda x: x['DBInstanceIdentifier']))
+    result = list(sorted(db_instances, key=lambda x: x["DBInstanceIdentifier"]))
     if gather_clusters:
-        result += list(sorted(db_clusters, key=lambda x: x['DBClusterIdentifier']))
+        result += list(sorted(db_clusters, key=lambda x: x["DBClusterIdentifier"]))
 
     m_find_hosts.return_value = result
 
@@ -490,14 +462,11 @@ def test_inventory_get_all_db_hosts(m_find_hosts, m_describe_db_clusters, m_desc
 @pytest.mark.parametrize("hostvars_suffix", [True])
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_rds._get_rds_hostname")
 def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hostvars_suffix):
-
     _options = {
         "strict": random.choice((False, True)),
         "compose": random.choice((False, True)),
         "keyed_groups": "keyed_group_test_inventory_add_hosts",
-        "groups": [
-            "all", "test_inventory_add_hosts"
-        ]
+        "groups": ["all", "test_inventory_add_hosts"],
     }
 
     if hostvars_prefix:
@@ -510,75 +479,53 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
 
     inventory.get_option.side_effect = _get_option_side_effect
 
-    m_get_rds_hostname.side_effect = lambda h: h['DBInstanceIdentifier'] if 'DBInstanceIdentifier' in h else h['DBClusterIdentifier']
+    m_get_rds_hostname.side_effect = (
+        lambda h: h["DBInstanceIdentifier"] if "DBInstanceIdentifier" in h else h["DBClusterIdentifier"]
+    )
 
     hosts = [
         {
             "DBInstanceIdentifier": "db_i_001",
-            "Tags": [
-                {"Key": "Name", "Value": "db_001"},
-                {"Key": "RunningEngine", "Value": "mysql"}
-            ],
-            "availability_zone": "us-east-1a"
+            "Tags": [{"Key": "Name", "Value": "db_001"}, {"Key": "RunningEngine", "Value": "mysql"}],
+            "availability_zone": "us-east-1a",
         },
         {
             "DBInstanceIdentifier": "db_i_002",
-            "Tags": [
-                {"Key": "ClusterName", "Value": "test_cluster"},
-                {"Key": "RunningOS", "Value": "CoreOS"}
-            ]
+            "Tags": [{"Key": "ClusterName", "Value": "test_cluster"}, {"Key": "RunningOS", "Value": "CoreOS"}],
         },
         {
             "DBClusterIdentifier": "test_cluster",
-            "Tags": [
-                {"Key": "CluserVersionOrigin", "Value": "2.0"},
-                {"Key": "Provider", "Value": "RedHat"}
-            ]
+            "Tags": [{"Key": "CluserVersionOrigin", "Value": "2.0"}, {"Key": "Provider", "Value": "RedHat"}],
         },
         {
             "DBClusterIdentifier": "another_cluster",
-            "Tags": [
-                {"Key": "TestingPurpose", "Value": "Ansible"}
-            ],
-            "availability_zones": ["us-west-1a", "us-east-1b"]
+            "Tags": [{"Key": "TestingPurpose", "Value": "Ansible"}],
+            "availability_zones": ["us-west-1a", "us-east-1b"],
         },
     ]
 
     group = "test_add_hosts_group_%s" % generate_random_string(length=10, with_punctuation=False)
     inventory._add_hosts(hosts, group)
 
-    m_get_rds_hostname.assert_has_calls(
-        [call(h) for h in hosts], any_order=True
-    )
+    m_get_rds_hostname.assert_has_calls([call(h) for h in hosts], any_order=True)
 
     hosts_names = ["db_i_001", "db_i_002", "test_cluster", "another_cluster"]
-    inventory.inventory.add_host.assert_has_calls(
-        [
-            call(name, group=group) for name in hosts_names
-        ],
-        any_order=True
-    )
+    inventory.inventory.add_host.assert_has_calls([call(name, group=group) for name in hosts_names], any_order=True)
 
     camel_hosts = [
         {
             "db_instance_identifier": "db_i_001",
             "tags": {"Name": "db_001", "RunningEngine": "mysql"},
             "availability_zone": "us-east-1a",
-            "region": "us-east-1"
+            "region": "us-east-1",
         },
-        {
-            "db_instance_identifier": "db_i_002",
-            "tags": {"ClusterName": "test_cluster", "RunningOS": "CoreOS"}
-        },
-        {
-            "db_cluster_identifier": "test_cluster",
-            "tags": {"CluserVersionOrigin": "2.0", "Provider": "RedHat"}
-        },
+        {"db_instance_identifier": "db_i_002", "tags": {"ClusterName": "test_cluster", "RunningOS": "CoreOS"}},
+        {"db_cluster_identifier": "test_cluster", "tags": {"CluserVersionOrigin": "2.0", "Provider": "RedHat"}},
         {
             "db_cluster_identifier": "another_cluster",
             "tags": {"TestingPurpose": "Ansible"},
             "availability_zones": ["us-west-1a", "us-east-1b"],
-            "region": "us-west-1"
+            "region": "us-west-1",
         },
     ]
 
@@ -609,21 +556,24 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
 
     inventory._set_composite_vars.assert_has_calls(
         [
-            call(_options["compose"], camel_hosts[i], hosts_names[i], strict=_options["strict"]) for i in range(len(camel_hosts))
+            call(_options["compose"], camel_hosts[i], hosts_names[i], strict=_options["strict"])
+            for i in range(len(camel_hosts))
         ],
-        any_order=True
+        any_order=True,
     )
     inventory._add_host_to_composed_groups.assert_has_calls(
         [
-            call(_options["groups"], camel_hosts[i], hosts_names[i], strict=_options["strict"]) for i in range(len(camel_hosts))
+            call(_options["groups"], camel_hosts[i], hosts_names[i], strict=_options["strict"])
+            for i in range(len(camel_hosts))
         ],
-        any_order=True
+        any_order=True,
     )
     inventory._add_host_to_keyed_groups.assert_has_calls(
         [
-            call(_options["keyed_groups"], camel_hosts[i], hosts_names[i], strict=_options["strict"]) for i in range(len(camel_hosts))
+            call(_options["keyed_groups"], camel_hosts[i], hosts_names[i], strict=_options["strict"])
+            for i in range(len(camel_hosts))
         ],
-        any_order=True
+        any_order=True,
     )
 
 
@@ -636,8 +586,9 @@ BASE_INVENTORY_PARSE = "ansible_collections.amazon.aws.plugins.inventory.aws_rds
 @pytest.mark.parametrize("cache", [True, False])
 @pytest.mark.parametrize("cache_hit", [True, False])
 @patch(BASE_INVENTORY_PARSE)
-def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster_id, user_cache_directive, cache, cache_hit):
-
+def test_inventory_parse(
+    m_parse, inventory, include_clusters, filter_db_cluster_id, user_cache_directive, cache, cache_hit
+):
     inventory_data = MagicMock()
     loader = MagicMock()
     path = generate_random_string(with_punctuation=False, with_digits=False)
@@ -648,13 +599,17 @@ def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster
     options["statuses"] = generate_random_string(with_punctuation=False)
     options["include_clusters"] = include_clusters
     options["filters"] = {
-        "db-instance-id": ["arn:db:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))],
+        "db-instance-id": [
+            "arn:db:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))
+        ],
         "dbi-resource-id": generate_random_string(with_punctuation=False),
         "domain": generate_random_string(with_digits=False, with_punctuation=False),
-        "engine": generate_random_string(with_digits=False, with_punctuation=False)
+        "engine": generate_random_string(with_digits=False, with_punctuation=False),
     }
     if filter_db_cluster_id:
-        options["filters"]["db-cluster-id"] = ["arn:cluster:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))]
+        options["filters"]["db-cluster-id"] = [
+            "arn:cluster:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))
+        ]
 
     options["cache"] = user_cache_directive
 
@@ -692,7 +647,9 @@ def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster
     boto3_instance_filters = ansible_dict_to_boto3_filter_list(options["filters"])
     boto3_cluster_filters = []
     if filter_db_cluster_id and include_clusters:
-        boto3_cluster_filters = ansible_dict_to_boto3_filter_list({'db-cluster-id': options["filters"]['db-cluster-id']})
+        boto3_cluster_filters = ansible_dict_to_boto3_filter_list(
+            {"db-cluster-id": options["filters"]["db-cluster-id"]}
+        )
 
     if not cache or not user_cache_directive or (cache and user_cache_directive and not cache_hit):
         inventory._get_all_db_hosts.assert_called_with(
@@ -701,7 +658,7 @@ def test_inventory_parse(m_parse, inventory, include_clusters, filter_db_cluster
             boto3_cluster_filters,
             options["strict_permissions"],
             options["statuses"],
-            include_clusters
+            include_clusters,
         )
         inventory._populate.assert_called_with(all_db_hosts)
         inventory._format_inventory.assert_called_with(all_db_hosts)

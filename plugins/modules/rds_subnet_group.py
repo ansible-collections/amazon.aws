@@ -194,89 +194,79 @@ except ImportError:
 
 def create_result(changed, subnet_group=None):
     if subnet_group is None:
-        return dict(
-            changed=changed
-        )
+        return dict(changed=changed)
     result_subnet_group = dict(subnet_group)
-    result_subnet_group['name'] = result_subnet_group.get(
-        'db_subnet_group_name')
-    result_subnet_group['description'] = result_subnet_group.get(
-        'db_subnet_group_description')
-    result_subnet_group['status'] = result_subnet_group.get(
-        'subnet_group_status')
-    result_subnet_group['subnet_ids'] = create_subnet_list(
-        subnet_group.get('subnets'))
-    return dict(
-        changed=changed,
-        subnet_group=result_subnet_group
-    )
+    result_subnet_group["name"] = result_subnet_group.get("db_subnet_group_name")
+    result_subnet_group["description"] = result_subnet_group.get("db_subnet_group_description")
+    result_subnet_group["status"] = result_subnet_group.get("subnet_group_status")
+    result_subnet_group["subnet_ids"] = create_subnet_list(subnet_group.get("subnets"))
+    return dict(changed=changed, subnet_group=result_subnet_group)
 
 
 @AWSRetry.jittered_backoff()
 def _describe_db_subnet_groups_with_backoff(client, **kwargs):
-    paginator = client.get_paginator('describe_db_subnet_groups')
+    paginator = client.get_paginator("describe_db_subnet_groups")
     return paginator.paginate(**kwargs).build_full_result()
 
 
 def get_subnet_group(client, module):
     params = dict()
-    params['DBSubnetGroupName'] = module.params.get('name').lower()
+    params["DBSubnetGroupName"] = module.params.get("name").lower()
 
     try:
         _result = _describe_db_subnet_groups_with_backoff(client, **params)
-    except is_boto3_error_code('DBSubnetGroupNotFoundFault'):
+    except is_boto3_error_code("DBSubnetGroupNotFoundFault"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't describe subnet groups.")
 
     if _result:
-        result = camel_dict_to_snake_dict(_result['DBSubnetGroups'][0])
-        result['tags'] = get_tags(client, module, result['db_subnet_group_arn'])
+        result = camel_dict_to_snake_dict(_result["DBSubnetGroups"][0])
+        result["tags"] = get_tags(client, module, result["db_subnet_group_arn"])
 
     return result
 
 
 def create_subnet_list(subnets):
-    r'''
+    r"""
     Construct a list of subnet ids from a list of subnets dicts returned by boto3.
     Parameters:
         subnets (list): A list of subnets definitions.
         @see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups
     Returns:
         (list): List of subnet ids (str)
-    '''
+    """
     subnets_ids = []
     for subnet in subnets:
-        subnets_ids.append(subnet.get('subnet_identifier'))
+        subnets_ids.append(subnet.get("subnet_identifier"))
     return subnets_ids
 
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
+        state=dict(required=True, choices=["present", "absent"]),
         name=dict(required=True),
         description=dict(required=False),
-        subnets=dict(required=False, type='list', elements='str'),
-        tags=dict(required=False, type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        subnets=dict(required=False, type="list", elements="str"),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
-    required_if = [('state', 'present', ['description', 'subnets'])]
+    required_if = [("state", "present", ["description", "subnets"])]
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        required_if=required_if,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if, supports_check_mode=True)
 
-    state = module.params.get('state')
-    group_name = module.params.get('name').lower()
-    group_description = module.params.get('description')
-    group_subnets = module.params.get('subnets') or []
+    state = module.params.get("state")
+    group_name = module.params.get("name").lower()
+    group_description = module.params.get("description")
+    group_subnets = module.params.get("subnets") or []
 
     try:
-        connection = module.client('rds', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, 'Failed to instantiate AWS connection.')
+        module.fail_json_aws(e, "Failed to instantiate AWS connection.")
 
     # Default.
     changed = None
@@ -291,7 +281,7 @@ def main():
 
     matching_groups = get_subnet_group(connection, module)
 
-    if state == 'present':
+    if state == "present":
         if matching_groups:
             # We have one or more subnets at this point.
 
@@ -299,22 +289,22 @@ def main():
             tags_update = ensure_tags(
                 connection,
                 module,
-                matching_groups['db_subnet_group_arn'],
-                matching_groups['tags'],
+                matching_groups["db_subnet_group_arn"],
+                matching_groups["tags"],
                 module.params.get("tags"),
-                module.params['purge_tags']
+                module.params["purge_tags"],
             )
 
             # Sort the subnet groups before we compare them
-            existing_subnets = create_subnet_list(matching_groups['subnets'])
+            existing_subnets = create_subnet_list(matching_groups["subnets"])
             existing_subnets.sort()
             group_subnets.sort()
 
             # See if anything changed.
             if (
-                matching_groups['db_subnet_group_name'] != group_name or
-                matching_groups['db_subnet_group_description'] != group_description or
-                existing_subnets != group_subnets
+                matching_groups["db_subnet_group_name"] != group_name
+                or matching_groups["db_subnet_group_description"] != group_description
+                or existing_subnets != group_subnets
             ):
                 if not module.check_mode:
                     # Modify existing group.
@@ -323,10 +313,10 @@ def main():
                             aws_retry=True,
                             DBSubnetGroupName=group_name,
                             DBSubnetGroupDescription=group_description,
-                            SubnetIds=group_subnets
+                            SubnetIds=group_subnets,
                         )
                     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                        module.fail_json_aws(e, 'Failed to update a subnet group.')
+                        module.fail_json_aws(e, "Failed to update a subnet group.")
                 subnet_update = True
         else:
             if not module.check_mode:
@@ -336,19 +326,22 @@ def main():
                         DBSubnetGroupName=group_name,
                         DBSubnetGroupDescription=group_description,
                         SubnetIds=group_subnets,
-                        Tags=_tags
+                        Tags=_tags,
                     )
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, 'Failed to create a new subnet group.')
+                    module.fail_json_aws(e, "Failed to create a new subnet group.")
             subnet_update = True
-    elif state == 'absent':
+    elif state == "absent":
         if not module.check_mode:
             try:
                 connection.delete_db_subnet_group(aws_retry=True, DBSubnetGroupName=group_name)
-            except is_boto3_error_code('DBSubnetGroupNotFoundFault'):
+            except is_boto3_error_code("DBSubnetGroupNotFoundFault"):
                 module.exit_json(**result)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-                module.fail_json_aws(e, 'Failed to delete a subnet group.')
+            except (
+                botocore.exceptions.BotoCoreError,
+                botocore.exceptions.ClientError,
+            ) as e:  # pylint: disable=duplicate-except
+                module.fail_json_aws(e, "Failed to delete a subnet group.")
         else:
             subnet_group = get_subnet_group(connection, module)
             if subnet_group:
@@ -364,5 +357,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

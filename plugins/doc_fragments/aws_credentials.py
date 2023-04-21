@@ -10,7 +10,6 @@
 
 
 class ModuleDocFragment:
-
     # Plugin options for AWS credentials
     DOCUMENTATION = r"""
 options:

@@ -22,13 +22,12 @@ def generate_random_string(size, include_digits=True):
     if include_digits:
         buffer += string.digits
 
-    return ''.join(random.choice(buffer) for i in range(size))
+    return "".join(random.choice(buffer) for i in range(size))
 
 
 @pytest.mark.parametrize("parts", range(0, 10, 3))
 @pytest.mark.parametrize("version", [True, False])
 def test_s3_head_objects(parts, version):
-
     client = MagicMock()
 
     s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
@@ -53,15 +52,10 @@ def test_s3_head_objects(parts, version):
 
 def raise_botoclient_exception():
     params = {
-        'Error': {
-            'Code': 1,
-            'Message': 'Something went wrong'
-        },
-        'ResponseMetadata': {
-            'RequestId': '01234567-89ab-cdef-0123-456789abcdef'
-        }
+        "Error": {"Code": 1, "Message": "Something went wrong"},
+        "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
     }
-    return botocore.exceptions.ClientError(params, 'some_called_method')
+    return botocore.exceptions.ClientError(params, "some_called_method")
 
 
 @pytest.mark.parametrize("use_file", [False, True])
@@ -69,16 +63,13 @@ def raise_botoclient_exception():
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.md5")
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.s3_head_objects")
 def test_calculate_checksum(m_s3_head_objects, m_s3_md5, use_file, parts, tmp_path):
-
     client = MagicMock()
     mock_md5 = m_s3_md5.return_value
 
     mock_md5.digest.return_value = b"1"
-    mock_md5.hexdigest.return_value = ''.join(["f" for i in range(32)])
+    mock_md5.hexdigest.return_value = "".join(["f" for i in range(32)])
 
-    m_s3_head_objects.return_value = [
-        {"ContentLength": "%d" % (i + 1)} for i in range(parts)
-    ]
+    m_s3_head_objects.return_value = [{"ContentLength": "%d" % (i + 1)} for i in range(parts)]
 
     content = b'"f20e84ac3d0c33cea77b3f29e3323a09"'
     test_function = s3.calculate_checksum_with_content
@@ -109,7 +100,6 @@ def test_calculate_checksum(m_s3_head_objects, m_s3_md5, use_file, parts, tmp_pa
 @pytest.mark.parametrize("etag_multipart", [True, False])
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.calculate_checksum_with_file")
 def test_calculate_etag(m_checksum_file, etag_multipart):
-
     module = MagicMock()
     client = MagicMock()
 
@@ -135,15 +125,12 @@ def test_calculate_etag(m_checksum_file, etag_multipart):
         m_checksum_file.return_value = digest
         assert digest == s3.calculate_etag(module, file_name, etag, client, s3bucket_name, s3bucket_object, version)
 
-        m_checksum_file.assert_called_with(
-            client, parts, s3bucket_name, s3bucket_object, version, file_name
-        )
+        m_checksum_file.assert_called_with(client, parts, s3bucket_name, s3bucket_object, version, file_name)
 
 
 @pytest.mark.parametrize("etag_multipart", [True, False])
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.calculate_checksum_with_content")
 def test_calculate_etag_content(m_checksum_content, etag_multipart):
-
     module = MagicMock()
     client = MagicMock()
 
@@ -159,23 +146,22 @@ def test_calculate_etag_content(m_checksum_content, etag_multipart):
     digest = '"9aa254f7f76fd14435b21e9448525b99"'
 
     if not etag_multipart:
-        assert digest == s3.calculate_etag_content(module, content, etag, client, s3bucket_name, s3bucket_object, version)
+        assert digest == s3.calculate_etag_content(
+            module, content, etag, client, s3bucket_name, s3bucket_object, version
+        )
     else:
         etag = '"f20e84ac3d0c33cea77b3f29e3323a09-{0}"'.format(parts)
         m_checksum_content.return_value = digest
         result = s3.calculate_etag_content(module, content, etag, client, s3bucket_name, s3bucket_object, version)
         assert result == digest
 
-        m_checksum_content.assert_called_with(
-            client, parts, s3bucket_name, s3bucket_object, version, content
-        )
+        m_checksum_content.assert_called_with(client, parts, s3bucket_name, s3bucket_object, version, content)
 
 
 @pytest.mark.parametrize("using_file", [True, False])
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.calculate_checksum_with_content")
 @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.calculate_checksum_with_file")
 def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file):
-
     module = MagicMock()
     client = MagicMock()
 
@@ -216,13 +202,12 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
         ("doc-example-bucket-", "bucket names must begin and end with a letter or number"),
         (
             "this.string.has.more.than.63.characters.so.it.should.not.passed.the.validated",
-            "the length of an S3 bucket cannot exceed 63 characters"
+            "the length of an S3 bucket cannot exceed 63 characters",
         ),
-        ("my", "the length of an S3 bucket must be at least 3 characters")
-    ]
+        ("my", "the length of an S3 bucket must be at least 3 characters"),
+    ],
 )
 def test_validate_bucket_name(bucket_name, result):
-
     assert result == s3.validate_bucket_name(bucket_name)
 
 
@@ -230,7 +215,6 @@ mod_urlparse = "ansible_collections.amazon.aws.plugins.module_utils.s3.urlparse"
 
 
 class UrlInfo:
-
     def __init__(self, scheme=None, hostname=None, port=None):
         self.hostname = hostname
         self.scheme = scheme
@@ -251,7 +235,7 @@ def test_is_fakes3_with_none_arg(m_urlparse):
         ("https://test-s3.amazon.com", "https", False),
         ("fakes3://test-s3.amazon.com", "fakes3", True),
         ("fakes3s://test-s3.amazon.com", "fakes3s", True),
-    ]
+    ],
 )
 @patch(mod_urlparse)
 def test_is_fakes3(m_urlparse, url, scheme, result):
@@ -265,51 +249,25 @@ def test_is_fakes3(m_urlparse, url, scheme, result):
     [
         (
             "fakes3://test-s3.amazon.com",
-            {
-                "scheme": "fakes3",
-                "hostname": "test-s3.amazon.com"
-            },
-            {
-                "endpoint": "http://test-s3.amazon.com:80",
-                "use_ssl": False
-            }
+            {"scheme": "fakes3", "hostname": "test-s3.amazon.com"},
+            {"endpoint": "http://test-s3.amazon.com:80", "use_ssl": False},
         ),
         (
             "fakes3://test-s3.amazon.com:8080",
-            {
-                "scheme": "fakes3",
-                "hostname": "test-s3.amazon.com",
-                "port": 8080
-            },
-            {
-                "endpoint": "http://test-s3.amazon.com:8080",
-                "use_ssl": False
-            }
+            {"scheme": "fakes3", "hostname": "test-s3.amazon.com", "port": 8080},
+            {"endpoint": "http://test-s3.amazon.com:8080", "use_ssl": False},
         ),
         (
             "fakes3s://test-s3.amazon.com",
-            {
-                "scheme": "fakes3s",
-                "hostname": "test-s3.amazon.com"
-            },
-            {
-                "endpoint": "https://test-s3.amazon.com:443",
-                "use_ssl": True
-            }
+            {"scheme": "fakes3s", "hostname": "test-s3.amazon.com"},
+            {"endpoint": "https://test-s3.amazon.com:443", "use_ssl": True},
         ),
         (
             "fakes3s://test-s3.amazon.com:9096",
-            {
-                "scheme": "fakes3s",
-                "hostname": "test-s3.amazon.com",
-                "port": 9096
-            },
-            {
-                "endpoint": "https://test-s3.amazon.com:9096",
-                "use_ssl": True
-            }
-        )
-    ]
+            {"scheme": "fakes3s", "hostname": "test-s3.amazon.com", "port": 9096},
+            {"endpoint": "https://test-s3.amazon.com:9096", "use_ssl": True},
+        ),
+    ],
 )
 @patch(mod_urlparse)
 def test_parse_fakes3_endpoint(m_urlparse, url, urlinfo, endpoint):
@@ -324,7 +282,7 @@ def test_parse_fakes3_endpoint(m_urlparse, url, urlinfo, endpoint):
     [
         ("https://test-s3-ceph.amazon.com", "https", True),
         ("http://test-s3-ceph.amazon.com", "http", False),
-    ]
+    ],
 )
 @patch(mod_urlparse)
 def test_parse_ceph_endpoint(m_urlparse, url, scheme, use_ssl):

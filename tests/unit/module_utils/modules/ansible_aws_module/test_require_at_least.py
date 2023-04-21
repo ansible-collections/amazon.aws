@@ -16,25 +16,25 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
-DUMMY_VERSION = '5.5.5.5'
+DUMMY_VERSION = "5.5.5.5"
 
 TEST_VERSIONS = [
-    ['1.1.1', '2.2.2', True],
-    ['1.1.1', '0.0.1', False],
-    ['9.9.9', '9.9.9', True],
-    ['9.9.9', '9.9.10', True],
-    ['9.9.9', '9.10.9', True],
-    ['9.9.9', '10.9.9', True],
-    ['9.9.9', '9.9.8', False],
-    ['9.9.9', '9.8.9', False],
-    ['9.9.9', '8.9.9', False],
-    ['10.10.10', '10.10.10', True],
-    ['10.10.10', '10.10.11', True],
-    ['10.10.10', '10.11.10', True],
-    ['10.10.10', '11.10.10', True],
-    ['10.10.10', '10.10.9', False],
-    ['10.10.10', '10.9.10', False],
-    ['10.10.10', '9.19.10', False],
+    ["1.1.1", "2.2.2", True],
+    ["1.1.1", "0.0.1", False],
+    ["9.9.9", "9.9.9", True],
+    ["9.9.9", "9.9.10", True],
+    ["9.9.9", "9.10.9", True],
+    ["9.9.9", "10.9.9", True],
+    ["9.9.9", "9.9.8", False],
+    ["9.9.9", "9.8.9", False],
+    ["9.9.9", "8.9.9", False],
+    ["10.10.10", "10.10.10", True],
+    ["10.10.10", "10.10.11", True],
+    ["10.10.10", "10.11.10", True],
+    ["10.10.10", "11.10.10", True],
+    ["10.10.10", "10.10.9", False],
+    ["10.10.10", "10.9.10", False],
+    ["10.10.10", "9.19.10", False],
 ]
 
 if not HAS_BOTO3:
@@ -51,7 +51,9 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test botocore_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
     def test_botocore_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -66,7 +68,9 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test boto3_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
     def test_boto3_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         # Set botocore version to a known value (tests are on both sides) to make
         # sure we're comparing the right library
@@ -81,7 +85,9 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test require_botocore_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
     def test_require_botocore_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -114,7 +120,9 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test require_boto3_at_least
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
     def test_require_boto3_at_least(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
         monkeypatch.setattr(botocore, "__version__", DUMMY_VERSION)
         # Set boto3 version to a known value (tests are on both sides) to make
@@ -147,14 +155,18 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test require_botocore_at_least with reason
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
-    def test_require_botocore_at_least_with_reason(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
+    def test_require_botocore_at_least_with_reason(
+        self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd
+    ):
         monkeypatch.setattr(botocore, "__version__", compare_version)
         # Set boto3 version to a known value (tests are on both sides) to make
         # sure we're comparing the right library
         monkeypatch.setattr(boto3, "__version__", DUMMY_VERSION)
 
-        reason = 'testing in progress'
+        reason = "testing in progress"
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
@@ -183,14 +195,18 @@ class TestRequireAtLeastTestSuite:
     # ========================================================
     #   Test require_boto3_at_least with reason
     # ========================================================
-    @pytest.mark.parametrize("stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"])
-    def test_require_boto3_at_least_with_reason(self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd):
+    @pytest.mark.parametrize(
+        "stdin, desired_version, compare_version, at_least", [({}, *d) for d in TEST_VERSIONS], indirect=["stdin"]
+    )
+    def test_require_boto3_at_least_with_reason(
+        self, monkeypatch, stdin, desired_version, compare_version, at_least, capfd
+    ):
         monkeypatch.setattr(botocore, "__version__", DUMMY_VERSION)
         # Set boto3 version to a known value (tests are on both sides) to make
         # sure we're comparing the right library
         monkeypatch.setattr(boto3, "__version__", compare_version)
 
-        reason = 'testing in progress'
+        reason = "testing in progress"
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())

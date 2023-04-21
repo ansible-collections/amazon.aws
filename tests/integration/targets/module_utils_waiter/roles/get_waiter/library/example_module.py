@@ -14,9 +14,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_wait
 
 def main():
     argument_spec = dict(
-        client=dict(required=True, type='str'),
-        waiter_name=dict(required=True, type='str'),
-        with_decorator=dict(required=False, type='bool', default=False),
+        client=dict(required=True, type="str"),
+        waiter_name=dict(required=True, type="str"),
+        with_decorator=dict(required=False, type="bool", default=False),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -24,14 +24,14 @@ def main():
     )
 
     decorator = None
-    if module.params.get('with_decorator'):
+    if module.params.get("with_decorator"):
         decorator = AWSRetry.jittered_backoff()
 
-    client = module.client(module.params.get('client'), retry_decorator=decorator)
-    waiter = get_waiter(client, module.params.get('waiter_name'))
+    client = module.client(module.params.get("client"), retry_decorator=decorator)
+    waiter = get_waiter(client, module.params.get("waiter_name"))
 
     module.exit_json(changed=False, waiter_attributes=dir(waiter))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -32,6 +32,7 @@ from functools import wraps
 
 try:
     from botocore.exceptions import ClientError
+
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
@@ -54,7 +55,7 @@ class AWSRetry(CloudRetry):
 
     @staticmethod
     def status_code_from_exception(error):
-        return error.response['Error']['Code']
+        return error.response["Error"]["Code"]
 
     @staticmethod
     def found(response_code, catch_extra_error_codes=None):
@@ -69,9 +70,13 @@ class AWSRetry(CloudRetry):
         #
         # https://github.com/boto/boto3/issues/876 (and linked PRs etc)
         retry_on = [
-            'RequestLimitExceeded', 'Unavailable', 'ServiceUnavailable',
-            'InternalFailure', 'InternalError', 'TooManyRequestsException',
-            'Throttling'
+            "RequestLimitExceeded",
+            "Unavailable",
+            "ServiceUnavailable",
+            "InternalFailure",
+            "InternalError",
+            "TooManyRequestsException",
+            "Throttling",
         ]
         if catch_extra_error_codes:
             retry_on.extend(catch_extra_error_codes)
@@ -81,8 +86,10 @@ class AWSRetry(CloudRetry):
 
 class RetryingBotoClientWrapper:
     __never_wait = (
-        'get_paginator', 'can_paginate',
-        'get_waiter', 'generate_presigned_url',
+        "get_paginator",
+        "can_paginate",
+        "get_waiter",
+        "generate_presigned_url",
     )
 
     def __init__(self, client, retry):
@@ -98,6 +105,7 @@ class RetryingBotoClientWrapper:
                 return retrying_wrapper(*args, **kwargs)
             else:
                 return unwrapped(*args, **kwargs)
+
         return deciding_wrapper
 
     def __getattr__(self, name):

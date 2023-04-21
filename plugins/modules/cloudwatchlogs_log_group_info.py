@@ -87,23 +87,26 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 def describe_log_group(client, log_group_name, module):
     params = {}
     if log_group_name:
-        params['logGroupNamePrefix'] = log_group_name
+        params["logGroupNamePrefix"] = log_group_name
     try:
-        paginator = client.get_paginator('describe_log_groups')
+        paginator = client.get_paginator("describe_log_groups")
         desc_log_group = paginator.paginate(**params).build_full_result()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to describe log group {0}".format(log_group_name))
 
-    for log_group in desc_log_group['logGroups']:
-        log_group_name = log_group['logGroupName']
+    for log_group in desc_log_group["logGroups"]:
+        log_group_name = log_group["logGroupName"]
         try:
             tags = client.list_tags_log_group(logGroupName=log_group_name)
-        except is_boto3_error_code('AccessDeniedException'):
+        except is_boto3_error_code("AccessDeniedException"):
             tags = {}
-            module.warn('Permission denied listing tags for log group {0}'.format(log_group_name))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            module.warn("Permission denied listing tags for log group {0}".format(log_group_name))
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Unable to describe tags for log group {0}".format(log_group_name))
-        log_group['tags'] = tags.get('tags', {})
+        log_group["tags"] = tags.get("tags", {})
 
     return desc_log_group
 
@@ -116,21 +119,19 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        logs = module.client('logs')
+        logs = module.client("logs")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    desc_log_group = describe_log_group(client=logs,
-                                        log_group_name=module.params['log_group_name'],
-                                        module=module)
+    desc_log_group = describe_log_group(client=logs, log_group_name=module.params["log_group_name"], module=module)
     final_log_group_snake = []
 
-    for log_group in desc_log_group['logGroups']:
-        final_log_group_snake.append(camel_dict_to_snake_dict(log_group, ignore_list=['tags']))
+    for log_group in desc_log_group["logGroups"]:
+        final_log_group_snake.append(camel_dict_to_snake_dict(log_group, ignore_list=["tags"]))
 
     desc_log_group_result = dict(changed=False, log_groups=final_log_group_snake)
     module.exit_json(**desc_log_group_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

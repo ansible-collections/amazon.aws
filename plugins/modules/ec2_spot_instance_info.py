@@ -247,51 +247,48 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import a
 
 
 def _describe_spot_instance_requests(connection, **params):
-    paginator = connection.get_paginator('describe_spot_instance_requests')
+    paginator = connection.get_paginator("describe_spot_instance_requests")
     return paginator.paginate(**params).build_full_result()
 
 
 def describe_spot_instance_requests(connection, module):
-
     params = {}
 
-    if module.params.get('filters'):
-        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    if module.params.get('spot_instance_request_ids'):
-        params['SpotInstanceRequestIds'] = module.params.get('spot_instance_request_ids')
+    if module.params.get("filters"):
+        params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    if module.params.get("spot_instance_request_ids"):
+        params["SpotInstanceRequestIds"] = module.params.get("spot_instance_request_ids")
 
     try:
-        describe_spot_instance_requests_response = _describe_spot_instance_requests(connection, **params)['SpotInstanceRequests']
+        describe_spot_instance_requests_response = _describe_spot_instance_requests(connection, **params)[
+            "SpotInstanceRequests"
+        ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to describe spot instance requests')
+        module.fail_json_aws(e, msg="Failed to describe spot instance requests")
 
     spot_request = []
     for response_list_item in describe_spot_instance_requests_response:
         spot_request.append(camel_dict_to_snake_dict(response_list_item))
 
     if len(spot_request) == 0:
-        module.exit_json(msg='No spot requests found for specified options')
+        module.exit_json(msg="No spot requests found for specified options")
 
     module.exit_json(spot_request=spot_request)
 
 
 def main():
-
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        spot_instance_request_ids=dict(default=[], type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        spot_instance_request_ids=dict(default=[], type="list", elements="str"),
     )
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     try:
-        connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     describe_spot_instance_requests(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -261,13 +261,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 def main():
-    argument_spec = dict(
-        filters=dict(default={}, type='dict')
-    )
+    argument_spec = dict(filters=dict(default={}, type="dict"))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2', AWSRetry.jittered_backoff())
+    connection = module.client("ec2", AWSRetry.jittered_backoff())
 
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
     filters = module.params.get("filters")
@@ -281,22 +279,23 @@ def main():
 
     try:
         security_groups = connection.describe_security_groups(
-            aws_retry=True,
-            Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
+            aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
         )
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to describe security groups')
+        module.fail_json_aws(e, msg="Failed to describe security groups")
 
     snaked_security_groups = []
-    for security_group in security_groups['SecurityGroups']:
+    for security_group in security_groups["SecurityGroups"]:
         # Modify boto3 tags list to be ansible friendly dict
         # but don't camel case tags
         security_group = camel_dict_to_snake_dict(security_group)
-        security_group['tags'] = boto3_tag_list_to_ansible_dict(security_group.get('tags', {}), tag_name_key_name='key', tag_value_key_name='value')
+        security_group["tags"] = boto3_tag_list_to_ansible_dict(
+            security_group.get("tags", {}), tag_name_key_name="key", tag_value_key_name="value"
+        )
         snaked_security_groups.append(security_group)
 
     module.exit_json(security_groups=snaked_security_groups)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

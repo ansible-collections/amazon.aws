@@ -95,7 +95,7 @@ addresses:
 """
 
 try:
-    from botocore.exceptions import (BotoCoreError, ClientError)
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
@@ -108,35 +108,25 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 def get_eips_details(module):
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     filters = module.params.get("filters")
     try:
-        response = connection.describe_addresses(
-            aws_retry=True,
-            Filters=ansible_dict_to_boto3_filter_list(filters)
-        )
+        response = connection.describe_addresses(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(filters))
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(
-            e,
-            msg="Error retrieving EIPs")
+        module.fail_json_aws(e, msg="Error retrieving EIPs")
 
-    addresses = camel_dict_to_snake_dict(response)['addresses']
+    addresses = camel_dict_to_snake_dict(response)["addresses"]
     for address in addresses:
-        if 'tags' in address:
-            address['tags'] = boto3_tag_list_to_ansible_dict(address['tags'])
+        if "tags" in address:
+            address["tags"] = boto3_tag_list_to_ansible_dict(address["tags"])
     return addresses
 
 
 def main():
-    module = AnsibleAWSModule(
-        argument_spec=dict(
-            filters=dict(type='dict', default={})
-        ),
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=dict(filters=dict(type="dict", default={})), supports_check_mode=True)
 
     module.exit_json(changed=False, addresses=get_eips_details(module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

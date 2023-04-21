@@ -256,21 +256,21 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_db_clusters(client, **params):
     try:
-        paginator = client.get_paginator('describe_db_clusters')
-        return paginator.paginate(**params).build_full_result()['DBClusters']
-    except is_boto3_error_code('DBClusterNotFoundFault'):
+        paginator = client.get_paginator("describe_db_clusters")
+        return paginator.paginate(**params).build_full_result()["DBClusters"]
+    except is_boto3_error_code("DBClusterNotFoundFault"):
         return []
 
 
 def cluster_info(client, module):
-    cluster_id = module.params.get('db_cluster_identifier')
-    filters = module.params.get('filters')
+    cluster_id = module.params.get("db_cluster_identifier")
+    filters = module.params.get("filters")
 
     params = dict()
     if cluster_id:
-        params['DBClusterIdentifier'] = cluster_id
+        params["DBClusterIdentifier"] = cluster_id
     if filters:
-        params['Filters'] = ansible_dict_to_boto3_filter_list(filters)
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
     try:
         result = _describe_db_clusters(client, **params)
@@ -278,15 +278,15 @@ def cluster_info(client, module):
         module.fail_json_aws(e, "Couldn't get RDS cluster information.")
 
     for cluster in result:
-        cluster['Tags'] = get_tags(client, module, cluster['DBClusterArn'])
+        cluster["Tags"] = get_tags(client, module, cluster["DBClusterArn"])
 
-    return dict(changed=False, clusters=[camel_dict_to_snake_dict(cluster, ignore_list=['Tags']) for cluster in result])
+    return dict(changed=False, clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result])
 
 
 def main():
     argument_spec = dict(
-        db_cluster_identifier=dict(aliases=['cluster_id', 'id', 'cluster_name']),
-        filters=dict(type='dict'),
+        db_cluster_identifier=dict(aliases=["cluster_id", "id", "cluster_name"]),
+        filters=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
@@ -295,12 +295,12 @@ def main():
     )
 
     try:
-        client = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS.')
+        module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     module.exit_json(**cluster_info(client, module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

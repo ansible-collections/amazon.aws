@@ -273,17 +273,17 @@ def get_instance(module, ec2_conn, instance_id=None):
 
     try:
         reservation_response = ec2_conn.describe_instances(aws_retry=True, InstanceIds=[instance_id])
-        instance = camel_dict_to_snake_dict(reservation_response['Reservations'][0]['Instances'][0])
+        instance = camel_dict_to_snake_dict(reservation_response["Reservations"][0]["Instances"][0])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error while getting instance_id with id {0}'.format(instance))
+        module.fail_json_aws(e, msg="Error while getting instance_id with id {0}".format(instance))
 
     return instance
 
 
 def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
-    name = module.params.get('name')
-    param_id = module.params.get('id')
-    zone = module.params.get('zone')
+    name = module.params.get("name")
+    param_id = module.params.get("id")
+    zone = module.params.get("zone")
 
     if not vol_id:
         vol_id = param_id
@@ -296,26 +296,26 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
     vols = []
 
     if vol_id:
-        find_params['VolumeIds'] = [vol_id]
+        find_params["VolumeIds"] = [vol_id]
     elif name:
-        find_params['Filters'] = ansible_dict_to_boto3_filter_list({'tag:Name': name})
+        find_params["Filters"] = ansible_dict_to_boto3_filter_list({"tag:Name": name})
     elif zone:
-        find_params['Filters'] = ansible_dict_to_boto3_filter_list({'availability-zone': zone})
+        find_params["Filters"] = ansible_dict_to_boto3_filter_list({"availability-zone": zone})
 
     try:
-        paginator = ec2_conn.get_paginator('describe_volumes')
+        paginator = ec2_conn.get_paginator("describe_volumes")
         vols_response = paginator.paginate(**find_params)
-        vols = list(vols_response)[0].get('Volumes')
+        vols = list(vols_response)[0].get("Volumes")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        if is_boto3_error_code('InvalidVolume.NotFound'):
+        if is_boto3_error_code("InvalidVolume.NotFound"):
             module.exit_json(msg="Volume {0} does not exist".format(vol_id), changed=False)
-        module.fail_json_aws(e, msg='Error while getting EBS volumes with the parameters {0}'.format(find_params))
+        module.fail_json_aws(e, msg="Error while getting EBS volumes with the parameters {0}".format(find_params))
 
     if not vols:
         if fail_on_not_found and vol_id:
             msg = "Could not find volume with id: {0}".format(vol_id)
             if name:
-                msg += (" and name: {0}".format(name))
+                msg += " and name: {0}".format(name)
             module.fail_json(msg=msg)
         else:
             return None
@@ -323,25 +323,25 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
     if len(vols) > 1:
         module.fail_json(
             msg="Found more than one volume in zone (if specified) with name: {0}".format(name),
-            found=[v['VolumeId'] for v in vols]
+            found=[v["VolumeId"] for v in vols],
         )
     vol = camel_dict_to_snake_dict(vols[0])
     return vol
 
 
 def get_volumes(module, ec2_conn):
-    instance = module.params.get('instance')
+    instance = module.params.get("instance")
 
     find_params = dict()
     if instance:
-        find_params['Filters'] = ansible_dict_to_boto3_filter_list({'attachment.instance-id': instance})
+        find_params["Filters"] = ansible_dict_to_boto3_filter_list({"attachment.instance-id": instance})
 
     vols = []
     try:
         vols_response = ec2_conn.describe_volumes(aws_retry=True, **find_params)
-        vols = [camel_dict_to_snake_dict(vol) for vol in vols_response.get('Volumes', [])]
+        vols = [camel_dict_to_snake_dict(vol) for vol in vols_response.get("Volumes", [])]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error while getting EBS volumes')
+        module.fail_json_aws(e, msg="Error while getting EBS volumes")
     return vols
 
 
@@ -351,170 +351,166 @@ def delete_volume(module, ec2_conn, volume_id=None):
         try:
             ec2_conn.delete_volume(aws_retry=True, VolumeId=volume_id)
             changed = True
-        except is_boto3_error_code('InvalidVolume.NotFound'):
+        except is_boto3_error_code("InvalidVolume.NotFound"):
             module.exit_json(changed=False)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg='Error while deleting volume')
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Error while deleting volume")
     return changed
 
 
 def update_volume(module, ec2_conn, volume):
     changed = False
-    req_obj = {'VolumeId': volume['volume_id']}
+    req_obj = {"VolumeId": volume["volume_id"]}
 
-    if module.params.get('modify_volume'):
-        target_type = module.params.get('volume_type')
+    if module.params.get("modify_volume"):
+        target_type = module.params.get("volume_type")
         original_type = None
         type_changed = False
         if target_type:
-            original_type = volume['volume_type']
+            original_type = volume["volume_type"]
             if target_type != original_type:
                 type_changed = True
-                req_obj['VolumeType'] = target_type
+                req_obj["VolumeType"] = target_type
 
         iops_changed = False
-        target_iops = module.params.get('iops')
-        original_iops = volume.get('iops')
+        target_iops = module.params.get("iops")
+        original_iops = volume.get("iops")
         if target_iops:
             if target_iops != original_iops:
                 iops_changed = True
-                req_obj['Iops'] = target_iops
+                req_obj["Iops"] = target_iops
             else:
-                req_obj['Iops'] = original_iops
+                req_obj["Iops"] = original_iops
         else:
             # If no IOPS value is specified and there was a volume_type update to gp3,
             # the existing value is retained, unless a volume type is modified that supports different values,
             # otherwise, the default iops value is applied.
-            if type_changed and target_type == 'gp3':
-                if (
-                    (original_iops and (int(original_iops) < 3000 or int(original_iops) > 16000)) or not original_iops
-                ):
-                    req_obj['Iops'] = 3000
+            if type_changed and target_type == "gp3":
+                if (original_iops and (int(original_iops) < 3000 or int(original_iops) > 16000)) or not original_iops:
+                    req_obj["Iops"] = 3000
                     iops_changed = True
 
-        target_size = module.params.get('volume_size')
+        target_size = module.params.get("volume_size")
         size_changed = False
         if target_size:
-            original_size = volume['size']
+            original_size = volume["size"]
             if target_size != original_size:
                 size_changed = True
-                req_obj['Size'] = target_size
+                req_obj["Size"] = target_size
 
-        target_type = module.params.get('volume_type')
+        target_type = module.params.get("volume_type")
         original_type = None
         type_changed = False
         if target_type:
-            original_type = volume['volume_type']
+            original_type = volume["volume_type"]
             if target_type != original_type:
                 type_changed = True
-                req_obj['VolumeType'] = target_type
+                req_obj["VolumeType"] = target_type
 
-        target_throughput = module.params.get('throughput')
+        target_throughput = module.params.get("throughput")
         throughput_changed = False
         if target_throughput:
-            original_throughput = volume.get('throughput')
+            original_throughput = volume.get("throughput")
             if target_throughput != original_throughput:
                 throughput_changed = True
-                req_obj['Throughput'] = target_throughput
+                req_obj["Throughput"] = target_throughput
 
-        target_multi_attach = module.params.get('multi_attach')
+        target_multi_attach = module.params.get("multi_attach")
         multi_attach_changed = False
         if target_multi_attach is not None:
-            original_multi_attach = volume['multi_attach_enabled']
+            original_multi_attach = volume["multi_attach_enabled"]
             if target_multi_attach != original_multi_attach:
                 multi_attach_changed = True
-                req_obj['MultiAttachEnabled'] = target_multi_attach
+                req_obj["MultiAttachEnabled"] = target_multi_attach
 
         changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
         if changed:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have updated volume if not in check mode.')
+                module.exit_json(changed=True, msg="Would have updated volume if not in check mode.")
             response = ec2_conn.modify_volume(**req_obj)
 
-            volume['size'] = response.get('VolumeModification').get('TargetSize')
-            volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
-            volume['iops'] = response.get('VolumeModification').get('TargetIops')
-            volume['multi_attach_enabled'] = response.get('VolumeModification').get('TargetMultiAttachEnabled')
-            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
+            volume["size"] = response.get("VolumeModification").get("TargetSize")
+            volume["volume_type"] = response.get("VolumeModification").get("TargetVolumeType")
+            volume["iops"] = response.get("VolumeModification").get("TargetIops")
+            volume["multi_attach_enabled"] = response.get("VolumeModification").get("TargetMultiAttachEnabled")
+            volume["throughput"] = response.get("VolumeModification").get("TargetThroughput")
 
     return volume, changed
 
 
 def create_volume(module, ec2_conn, zone):
     changed = False
-    iops = module.params.get('iops')
-    encrypted = module.params.get('encrypted')
-    kms_key_id = module.params.get('kms_key_id')
-    volume_size = module.params.get('volume_size')
-    volume_type = module.params.get('volume_type')
-    snapshot = module.params.get('snapshot')
-    throughput = module.params.get('throughput')
-    multi_attach = module.params.get('multi_attach')
-    outpost_arn = module.params.get('outpost_arn')
-    tags = module.params.get('tags') or {}
-    name = module.params.get('name')
+    iops = module.params.get("iops")
+    encrypted = module.params.get("encrypted")
+    kms_key_id = module.params.get("kms_key_id")
+    volume_size = module.params.get("volume_size")
+    volume_type = module.params.get("volume_type")
+    snapshot = module.params.get("snapshot")
+    throughput = module.params.get("throughput")
+    multi_attach = module.params.get("multi_attach")
+    outpost_arn = module.params.get("outpost_arn")
+    tags = module.params.get("tags") or {}
+    name = module.params.get("name")
 
     volume = get_volume(module, ec2_conn)
 
     if module.check_mode:
-        module.exit_json(changed=True, msg='Would have created a volume if not in check mode.')
+        module.exit_json(changed=True, msg="Would have created a volume if not in check mode.")
 
     if volume is None:
-
         try:
             changed = True
             additional_params = dict()
 
             if volume_size:
-                additional_params['Size'] = int(volume_size)
+                additional_params["Size"] = int(volume_size)
 
             if kms_key_id:
-                additional_params['KmsKeyId'] = kms_key_id
+                additional_params["KmsKeyId"] = kms_key_id
 
             if snapshot:
-                additional_params['SnapshotId'] = snapshot
+                additional_params["SnapshotId"] = snapshot
 
             if iops:
-                additional_params['Iops'] = int(iops)
+                additional_params["Iops"] = int(iops)
 
             # Use the default value if any iops has been specified when volume_type=gp3
-            if volume_type == 'gp3' and not iops:
-                additional_params['Iops'] = 3000
+            if volume_type == "gp3" and not iops:
+                additional_params["Iops"] = 3000
 
             if throughput:
-                additional_params['Throughput'] = int(throughput)
+                additional_params["Throughput"] = int(throughput)
 
             if multi_attach:
-                additional_params['MultiAttachEnabled'] = True
+                additional_params["MultiAttachEnabled"] = True
 
             if outpost_arn:
                 if is_outpost_arn(outpost_arn):
-                    additional_params['OutpostArn'] = outpost_arn
+                    additional_params["OutpostArn"] = outpost_arn
                 else:
-                    module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
+                    module.fail_json("OutpostArn does not match the pattern specified in API specifications.")
 
             if name:
-                tags['Name'] = name
+                tags["Name"] = name
 
             if tags:
-                additional_params['TagSpecifications'] = boto3_tag_specifications(tags, types=['volume'])
+                additional_params["TagSpecifications"] = boto3_tag_specifications(tags, types=["volume"])
 
             create_vol_response = ec2_conn.create_volume(
-                aws_retry=True,
-                AvailabilityZone=zone,
-                Encrypted=encrypted,
-                VolumeType=volume_type,
-                **additional_params
+                aws_retry=True, AvailabilityZone=zone, Encrypted=encrypted, VolumeType=volume_type, **additional_params
             )
 
-            waiter = ec2_conn.get_waiter('volume_available')
+            waiter = ec2_conn.get_waiter("volume_available")
             waiter.wait(
-                VolumeIds=[create_vol_response['VolumeId']],
+                VolumeIds=[create_vol_response["VolumeId"]],
             )
-            volume = get_volume(module, ec2_conn, vol_id=create_vol_response['VolumeId'])
+            volume = get_volume(module, ec2_conn, vol_id=create_vol_response["VolumeId"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Error while creating EBS volume')
+            module.fail_json_aws(e, msg="Error while creating EBS volume")
 
     return volume, changed
 
@@ -528,45 +524,55 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
     # In future this needs to be more dynamic but combining block device mapping best practices
     # (bounds for devices, as above) with instance.block_device_mapping data would be tricky. For me ;)
 
-    attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
+    attachment_data = get_attachment_data(volume_dict, wanted_state="attached")
     if attachment_data:
         if module.check_mode:
-            if attachment_data[0].get('status') in ['attached', 'attaching']:
-                module.exit_json(changed=False, msg='IN CHECK MODE - volume already attached to instance: {0}.'.format(
-                                 attachment_data[0].get('instance_id', None)))
-        if not volume_dict['multi_attach_enabled']:
+            if attachment_data[0].get("status") in ["attached", "attaching"]:
+                module.exit_json(
+                    changed=False,
+                    msg="IN CHECK MODE - volume already attached to instance: {0}.".format(
+                        attachment_data[0].get("instance_id", None)
+                    ),
+                )
+        if not volume_dict["multi_attach_enabled"]:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
-            if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
-                module.fail_json(msg="Volume {0} is already attached to another instance: {1}."
-                                 .format(volume_dict['volume_id'], attachment_data[0].get('instance_id', None)))
+            if attachment_data[0].get("instance_id", None) != instance_dict["instance_id"]:
+                module.fail_json(
+                    msg="Volume {0} is already attached to another instance: {1}.".format(
+                        volume_dict["volume_id"], attachment_data[0].get("instance_id", None)
+                    )
+                )
             else:
                 return volume_dict, changed
 
     try:
         if module.check_mode:
-            module.exit_json(changed=True, msg='Would have attached volume if not in check mode.')
-        attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name,
-                                                 InstanceId=instance_dict['instance_id'],
-                                                 VolumeId=volume_dict['volume_id'])
+            module.exit_json(changed=True, msg="Would have attached volume if not in check mode.")
+        attach_response = ec2_conn.attach_volume(
+            aws_retry=True,
+            Device=device_name,
+            InstanceId=instance_dict["instance_id"],
+            VolumeId=volume_dict["volume_id"],
+        )
 
-        waiter = ec2_conn.get_waiter('volume_in_use')
-        waiter.wait(VolumeIds=[attach_response['VolumeId']])
+        waiter = ec2_conn.get_waiter("volume_in_use")
+        waiter.wait(VolumeIds=[attach_response["VolumeId"]])
         changed = True
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error while attaching EBS volume')
+        module.fail_json_aws(e, msg="Error while attaching EBS volume")
 
     modify_dot_attribute(module, ec2_conn, instance_dict, device_name)
 
-    volume = get_volume(module, ec2_conn, vol_id=volume_dict['volume_id'])
+    volume = get_volume(module, ec2_conn, vol_id=volume_dict["volume_id"])
 
     return volume, changed
 
 
 def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
-    """ Modify delete_on_termination attribute """
+    """Modify delete_on_termination attribute"""
 
-    delete_on_termination = module.params.get('delete_on_termination')
+    delete_on_termination = module.params.get("delete_on_termination")
     changed = False
 
     # volume_in_use can return *shortly* before it appears on the instance
@@ -575,30 +581,27 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
     _attempt = 0
     while mapped_block_device is None:
         _attempt += 1
-        instance_dict = get_instance(module, ec2_conn=ec2_conn, instance_id=instance_dict['instance_id'])
+        instance_dict = get_instance(module, ec2_conn=ec2_conn, instance_id=instance_dict["instance_id"])
         mapped_block_device = get_mapped_block_device(instance_dict=instance_dict, device_name=device_name)
         if mapped_block_device is None:
             if _attempt > 2:
-                module.fail_json(msg='Unable to find device on instance',
-                                 device=device_name, instance=instance_dict)
+                module.fail_json(msg="Unable to find device on instance", device=device_name, instance=instance_dict)
             time.sleep(1)
 
-    if delete_on_termination != mapped_block_device['ebs'].get('delete_on_termination'):
+    if delete_on_termination != mapped_block_device["ebs"].get("delete_on_termination"):
         try:
             ec2_conn.modify_instance_attribute(
                 aws_retry=True,
-                InstanceId=instance_dict['instance_id'],
-                BlockDeviceMappings=[{
-                    "DeviceName": device_name,
-                    "Ebs": {
-                        "DeleteOnTermination": delete_on_termination
-                    }
-                }]
+                InstanceId=instance_dict["instance_id"],
+                BlockDeviceMappings=[
+                    {"DeviceName": device_name, "Ebs": {"DeleteOnTermination": delete_on_termination}}
+                ],
             )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e,
-                                 msg='Error while modifying Block Device Mapping of instance {0}'.format(instance_dict['instance_id']))
+            module.fail_json_aws(
+                e, msg="Error while modifying Block Device Mapping of instance {0}".format(instance_dict["instance_id"])
+            )
 
     return changed
 
@@ -607,19 +610,21 @@ def get_attachment_data(volume_dict, wanted_state=None):
     attachment_data = []
     if not volume_dict:
         return attachment_data
-    resource = volume_dict.get('attachments', [])
+    resource = volume_dict.get("attachments", [])
     if wanted_state:
         # filter 'state', return attachment matching wanted state
-        resource = [data for data in resource if data['state'] == wanted_state]
+        resource = [data for data in resource if data["state"] == wanted_state]
 
     for data in resource:
-        attachment_data.append({
-            'attach_time': data.get('attach_time', None),
-            'device': data.get('device', None),
-            'instance_id': data.get('instance_id', None),
-            'status': data.get('state', None),
-            'delete_on_termination': data.get('delete_on_termination', None)
-        })
+        attachment_data.append(
+            {
+                "attach_time": data.get("attach_time", None),
+                "device": data.get("device", None),
+                "instance_id": data.get("instance_id", None),
+                "status": data.get("state", None),
+                "delete_on_termination": data.get("delete_on_termination", None),
+            }
+        )
 
     return attachment_data
 
@@ -627,42 +632,42 @@ def get_attachment_data(volume_dict, wanted_state=None):
 def detach_volume(module, ec2_conn, volume_dict):
     changed = False
 
-    attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
+    attachment_data = get_attachment_data(volume_dict, wanted_state="attached")
     # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
     for attachment in attachment_data:
         if module.check_mode:
-            module.exit_json(changed=True, msg='Would have detached volume if not in check mode.')
-        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
-        waiter = ec2_conn.get_waiter('volume_available')
+            module.exit_json(changed=True, msg="Would have detached volume if not in check mode.")
+        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment["instance_id"], VolumeId=volume_dict["volume_id"])
+        waiter = ec2_conn.get_waiter("volume_available")
         waiter.wait(
-            VolumeIds=[volume_dict['volume_id']],
+            VolumeIds=[volume_dict["volume_id"]],
         )
         changed = True
 
-    volume_dict = get_volume(module, ec2_conn, vol_id=volume_dict['volume_id'])
+    volume_dict = get_volume(module, ec2_conn, vol_id=volume_dict["volume_id"])
     return volume_dict, changed
 
 
 def get_volume_info(module, volume, tags=None):
     if not tags:
-        tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
+        tags = boto3_tag_list_to_ansible_dict(volume.get("tags"))
     attachment_data = get_attachment_data(volume)
     volume_info = {
-        'create_time': volume.get('create_time'),
-        'encrypted': volume.get('encrypted'),
-        'id': volume.get('volume_id'),
-        'iops': volume.get('iops'),
-        'size': volume.get('size'),
-        'snapshot_id': volume.get('snapshot_id'),
-        'status': volume.get('state'),
-        'type': volume.get('volume_type'),
-        'zone': volume.get('availability_zone'),
-        'attachment_set': attachment_data,
-        'multi_attach_enabled': volume.get('multi_attach_enabled'),
-        'tags': tags
+        "create_time": volume.get("create_time"),
+        "encrypted": volume.get("encrypted"),
+        "id": volume.get("volume_id"),
+        "iops": volume.get("iops"),
+        "size": volume.get("size"),
+        "snapshot_id": volume.get("snapshot_id"),
+        "status": volume.get("state"),
+        "type": volume.get("volume_type"),
+        "zone": volume.get("availability_zone"),
+        "attachment_set": attachment_data,
+        "multi_attach_enabled": volume.get("multi_attach_enabled"),
+        "tags": tags,
     }
 
-    volume_info['throughput'] = volume.get('throughput')
+    volume_info["throughput"] = volume.get("throughput")
 
     return volume_info
 
@@ -674,8 +679,8 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
     if not device_name:
         return mapped_block_device
 
-    for device in instance_dict.get('block_device_mappings', []):
-        if device['device_name'] == device_name:
+    for device in instance_dict.get("block_device_mappings", []):
+        if device["device_name"] == device_name:
             mapped_block_device = device
             break
 
@@ -685,7 +690,7 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
     if module.check_mode:
         return {}, True
-    changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ['InvalidVolume.NotFound'])
+    changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ["InvalidVolume.NotFound"])
     final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 
     return final_tags, changed
@@ -696,81 +701,81 @@ def main():
         instance=dict(),
         id=dict(),
         name=dict(),
-        volume_size=dict(type='int'),
-        volume_type=dict(default='standard', choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']),
-        iops=dict(type='int'),
-        encrypted=dict(default=False, type='bool'),
+        volume_size=dict(type="int"),
+        volume_type=dict(default="standard", choices=["standard", "gp2", "io1", "st1", "sc1", "gp3", "io2"]),
+        iops=dict(type="int"),
+        encrypted=dict(default=False, type="bool"),
         kms_key_id=dict(),
         device_name=dict(),
-        delete_on_termination=dict(default=False, type='bool'),
-        zone=dict(aliases=['availability_zone', 'aws_zone', 'ec2_zone']),
+        delete_on_termination=dict(default=False, type="bool"),
+        zone=dict(aliases=["availability_zone", "aws_zone", "ec2_zone"]),
         snapshot=dict(),
-        state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        modify_volume=dict(default=False, type='bool'),
-        throughput=dict(type='int'),
-        outpost_arn=dict(type='str'),
-        purge_tags=dict(type='bool', default=True),
-        multi_attach=dict(type='bool'),
+        state=dict(default="present", choices=["absent", "present"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        modify_volume=dict(default=False, type="bool"),
+        throughput=dict(type="int"),
+        outpost_arn=dict(type="str"),
+        purge_tags=dict(type="bool", default=True),
+        multi_attach=dict(type="bool"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[
-            ['volume_type', 'io1', ['iops']],
-            ['volume_type', 'io2', ['iops']],
+            ["volume_type", "io1", ["iops"]],
+            ["volume_type", "io2", ["iops"]],
         ],
         supports_check_mode=True,
     )
 
-    param_id = module.params.get('id')
-    name = module.params.get('name')
-    instance = module.params.get('instance')
-    volume_size = module.params.get('volume_size')
-    device_name = module.params.get('device_name')
-    zone = module.params.get('zone')
-    snapshot = module.params.get('snapshot')
-    state = module.params.get('state')
-    tags = module.params.get('tags')
-    iops = module.params.get('iops')
-    volume_type = module.params.get('volume_type')
-    throughput = module.params.get('throughput')
-    multi_attach = module.params.get('multi_attach')
+    param_id = module.params.get("id")
+    name = module.params.get("name")
+    instance = module.params.get("instance")
+    volume_size = module.params.get("volume_size")
+    device_name = module.params.get("device_name")
+    zone = module.params.get("zone")
+    snapshot = module.params.get("snapshot")
+    state = module.params.get("state")
+    tags = module.params.get("tags")
+    iops = module.params.get("iops")
+    volume_type = module.params.get("volume_type")
+    throughput = module.params.get("throughput")
+    multi_attach = module.params.get("multi_attach")
 
     # Ensure we have the zone or can get the zone
-    if instance is None and zone is None and state == 'present':
+    if instance is None and zone is None and state == "present":
         module.fail_json(msg="You must specify either instance or zone")
 
     # Set volume detach flag
-    if instance == 'None' or instance == '':
+    if instance == "None" or instance == "":
         instance = None
         detach_vol_flag = True
     else:
         detach_vol_flag = False
 
     if iops:
-        if volume_type in ('gp2', 'st1', 'sc1', 'standard'):
-            module.fail_json(msg='IOPS is not supported for gp2, st1, sc1, or standard volumes.')
+        if volume_type in ("gp2", "st1", "sc1", "standard"):
+            module.fail_json(msg="IOPS is not supported for gp2, st1, sc1, or standard volumes.")
 
-        if volume_type == 'gp3' and (int(iops) < 3000 or int(iops) > 16000):
-            module.fail_json(msg='For a gp3 volume type, IOPS values must be between 3000 and 16000.')
+        if volume_type == "gp3" and (int(iops) < 3000 or int(iops) > 16000):
+            module.fail_json(msg="For a gp3 volume type, IOPS values must be between 3000 and 16000.")
 
-        if volume_type in ('io1', 'io2') and (int(iops) < 100 or int(iops) > 64000):
-            module.fail_json(msg='For io1 and io2 volume types, IOPS values must be between 100 and 64000.')
+        if volume_type in ("io1", "io2") and (int(iops) < 100 or int(iops) > 64000):
+            module.fail_json(msg="For io1 and io2 volume types, IOPS values must be between 100 and 64000.")
 
     if throughput:
-        if volume_type != 'gp3':
-            module.fail_json(msg='Throughput is only supported for gp3 volume.')
+        if volume_type != "gp3":
+            module.fail_json(msg="Throughput is only supported for gp3 volume.")
         if throughput < 125 or throughput > 1000:
-            module.fail_json(msg='Throughput values must be between 125 and 1000.')
+            module.fail_json(msg="Throughput values must be between 125 and 1000.")
 
-    if multi_attach is True and volume_type not in ('io1', 'io2'):
-        module.fail_json(msg='multi_attach is only supported for io1 and io2 volumes.')
+    if multi_attach is True and volume_type not in ("io1", "io2"):
+        module.fail_json(msg="multi_attach is only supported for io1 and io2 volumes.")
 
     # Set changed flag
     changed = False
 
-    ec2_conn = module.client('ec2', AWSRetry.jittered_backoff())
+    ec2_conn = module.client("ec2", AWSRetry.jittered_backoff())
 
     # Here we need to get the zone info for the instance. This covers situation where
     # instance is specified but zone isn't.
@@ -785,24 +790,24 @@ def main():
 
     # Try getting volume
     volume = get_volume(module, ec2_conn, fail_on_not_found=False)
-    if state == 'present':
+    if state == "present":
         if instance:
             inst = get_instance(module, ec2_conn, instance_id=instance)
-            zone = inst['placement']['availability_zone']
+            zone = inst["placement"]["availability_zone"]
 
             # Use platform attribute to guess whether the instance is Windows or Linux
             if device_name is None:
-                if inst.get('platform', '') == 'Windows':
-                    device_name = '/dev/xvdf'
+                if inst.get("platform", "") == "Windows":
+                    device_name = "/dev/xvdf"
                 else:
-                    device_name = '/dev/sdf'
+                    device_name = "/dev/sdf"
 
             # Check if there is a volume already mounted there.
             mapped_device = get_mapped_block_device(instance_dict=inst, device_name=device_name)
             if mapped_device:
                 other_volume_mapped = False
                 if volume:
-                    if volume['volume_id'] != mapped_device['ebs']['volume_id']:
+                    if volume["volume_id"] != mapped_device["ebs"]["volume_id"]:
                         other_volume_mapped = True
                 else:
                     # No volume found so this is another volume
@@ -811,10 +816,10 @@ def main():
                 if other_volume_mapped:
                     module.exit_json(
                         msg="Volume mapping for {0} already exists on instance {1}".format(device_name, instance),
-                        volume_id=mapped_device['ebs']['volume_id'],
+                        volume_id=mapped_device["ebs"]["volume_id"],
                         found_volume=volume,
                         device=device_name,
-                        changed=False
+                        changed=False,
                     )
 
         final_tags = None
@@ -823,16 +828,20 @@ def main():
             volume, changed = update_volume(module, ec2_conn, volume)
             if name:
                 if not tags:
-                    tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
-                tags['Name'] = name
-            final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
+                    tags = boto3_tag_list_to_ansible_dict(volume.get("tags"))
+                tags["Name"] = name
+            final_tags, tags_changed = ensure_tags(
+                module, ec2_conn, volume["volume_id"], "volume", tags, module.params.get("purge_tags")
+            )
         else:
             volume, changed = create_volume(module, ec2_conn, zone=zone)
 
         if detach_vol_flag:
             volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
         elif inst is not None:
-            volume, attach_changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
+            volume, attach_changed = attach_volume(
+                module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name
+            )
         else:
             attach_changed = False
 
@@ -842,18 +851,23 @@ def main():
         if tags_changed or attach_changed:
             changed = True
 
-        module.exit_json(changed=changed, volume=volume_info, device=device_name,
-                         volume_id=volume_info['id'], volume_type=volume_info['type'])
-    elif state == 'absent':
+        module.exit_json(
+            changed=changed,
+            volume=volume_info,
+            device=device_name,
+            volume_id=volume_info["id"],
+            volume_type=volume_info["type"],
+        )
+    elif state == "absent":
         if not name and not param_id:
-            module.fail_json('A volume name or id is required for deletion')
+            module.fail_json("A volume name or id is required for deletion")
         if volume:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have deleted volume if not in check mode.')
+                module.exit_json(changed=True, msg="Would have deleted volume if not in check mode.")
             detach_volume(module, ec2_conn, volume_dict=volume)
-            changed = delete_volume(module, ec2_conn, volume_id=volume['volume_id'])
+            changed = delete_volume(module, ec2_conn, volume_id=volume["volume_id"])
         module.exit_json(changed=changed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

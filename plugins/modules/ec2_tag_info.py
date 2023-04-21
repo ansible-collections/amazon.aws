@@ -59,13 +59,13 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    resource = module.params['resource']
-    ec2 = module.client('ec2')
+    resource = module.params["resource"]
+    ec2 = module.client("ec2")
 
     current_tags = describe_ec2_tags(ec2, module, resource)
 
     module.exit_json(changed=False, tags=current_tags)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

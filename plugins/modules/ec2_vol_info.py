@@ -138,46 +138,46 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 def get_volume_info(volume, region):
-
     attachment_data = []
     for data in volume["attachments"]:
-        attachment_data.append({
-            'attach_time': data.get('attach_time', None),
-            'device': data.get('device', None),
-            'instance_id': data.get('instance_id', None),
-            'status': data.get('state', None),
-            'delete_on_termination': data.get('delete_on_termination', None)
-        })
+        attachment_data.append(
+            {
+                "attach_time": data.get("attach_time", None),
+                "device": data.get("device", None),
+                "instance_id": data.get("instance_id", None),
+                "status": data.get("state", None),
+                "delete_on_termination": data.get("delete_on_termination", None),
+            }
+        )
 
     volume_info = {
-        'create_time': volume["create_time"],
-        'id': volume["volume_id"],
-        'encrypted': volume["encrypted"],
-        'iops': volume["iops"] if "iops" in volume else None,
-        'size': volume["size"],
-        'snapshot_id': volume["snapshot_id"],
-        'status': volume["state"],
-        'type': volume["volume_type"],
-        'zone': volume["availability_zone"],
-        'region': region,
-        'attachment_set': attachment_data,
-        'tags': boto3_tag_list_to_ansible_dict(volume['tags']) if "tags" in volume else None
+        "create_time": volume["create_time"],
+        "id": volume["volume_id"],
+        "encrypted": volume["encrypted"],
+        "iops": volume["iops"] if "iops" in volume else None,
+        "size": volume["size"],
+        "snapshot_id": volume["snapshot_id"],
+        "status": volume["state"],
+        "type": volume["volume_type"],
+        "zone": volume["availability_zone"],
+        "region": region,
+        "attachment_set": attachment_data,
+        "tags": boto3_tag_list_to_ansible_dict(volume["tags"]) if "tags" in volume else None,
     }
 
-    if 'throughput' in volume:
-        volume_info['throughput'] = volume["throughput"]
+    if "throughput" in volume:
+        volume_info["throughput"] = volume["throughput"]
 
     return volume_info
 
 
 @AWSRetry.jittered_backoff()
 def describe_volumes_with_backoff(connection, filters):
-    paginator = connection.get_paginator('describe_volumes')
+    paginator = connection.get_paginator("describe_volumes")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
 def list_ec2_volumes(connection, module):
-
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
     sanitized_filters = module.params.get("filters")
     for key in list(sanitized_filters):
@@ -191,20 +191,20 @@ def list_ec2_volumes(connection, module):
         module.fail_json_aws(e, msg="Failed to describe volumes.")
 
     for volume in all_volumes["Volumes"]:
-        volume = camel_dict_to_snake_dict(volume, ignore_list=['Tags'])
+        volume = camel_dict_to_snake_dict(volume, ignore_list=["Tags"])
         volume_dict_array.append(get_volume_info(volume, module.region))
     module.exit_json(volumes=volume_dict_array)
 
 
 def main():
-    argument_spec = dict(filters=dict(default={}, type='dict'))
+    argument_spec = dict(filters=dict(default={}, type="dict"))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     list_ec2_volumes(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

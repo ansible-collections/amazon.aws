@@ -148,67 +148,67 @@ def main():
     argument_spec = dict(
         name=dict(),
         function_arn=dict(),
-        wait=dict(default=True, type='bool'),
-        tail_log=dict(default=False, type='bool'),
-        dry_run=dict(default=False, type='bool'),
+        wait=dict(default=True, type="bool"),
+        tail_log=dict(default=False, type="bool"),
+        dry_run=dict(default=False, type="bool"),
         version_qualifier=dict(),
-        payload=dict(default={}, type='dict'),
+        payload=dict(default={}, type="dict"),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ['name', 'function_arn'],
+            ["name", "function_arn"],
         ],
-        required_one_of=[
-            ('name', 'function_arn')
-        ],
+        required_one_of=[("name", "function_arn")],
     )
 
-    name = module.params.get('name')
-    function_arn = module.params.get('function_arn')
-    await_return = module.params.get('wait')
-    dry_run = module.params.get('dry_run')
-    tail_log = module.params.get('tail_log')
-    version_qualifier = module.params.get('version_qualifier')
-    payload = module.params.get('payload')
+    name = module.params.get("name")
+    function_arn = module.params.get("function_arn")
+    await_return = module.params.get("wait")
+    dry_run = module.params.get("dry_run")
+    tail_log = module.params.get("tail_log")
+    version_qualifier = module.params.get("version_qualifier")
+    payload = module.params.get("payload")
 
     try:
-        client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     invoke_params = {}
 
     if await_return:
         # await response
-        invoke_params['InvocationType'] = 'RequestResponse'
+        invoke_params["InvocationType"] = "RequestResponse"
     else:
         # fire and forget
-        invoke_params['InvocationType'] = 'Event'
+        invoke_params["InvocationType"] = "Event"
     if dry_run or module.check_mode:
         # dry_run overrides invocation type
-        invoke_params['InvocationType'] = 'DryRun'
+        invoke_params["InvocationType"] = "DryRun"
 
     if tail_log and await_return:
-        invoke_params['LogType'] = 'Tail'
+        invoke_params["LogType"] = "Tail"
     elif tail_log and not await_return:
-        module.fail_json(msg="The `tail_log` parameter is only available if "
-                         "the invocation waits for the function to complete. "
-                         "Set `wait` to true or turn off `tail_log`.")
+        module.fail_json(
+            msg="The `tail_log` parameter is only available if "
+            "the invocation waits for the function to complete. "
+            "Set `wait` to true or turn off `tail_log`."
+        )
     else:
-        invoke_params['LogType'] = 'None'
+        invoke_params["LogType"] = "None"
 
     if version_qualifier:
-        invoke_params['Qualifier'] = version_qualifier
+        invoke_params["Qualifier"] = version_qualifier
 
     if payload:
-        invoke_params['Payload'] = json.dumps(payload)
+        invoke_params["Payload"] = json.dumps(payload)
 
     if function_arn:
-        invoke_params['FunctionName'] = function_arn
+        invoke_params["FunctionName"] = function_arn
     elif name:
-        invoke_params['FunctionName'] = name
+        invoke_params["FunctionName"] = name
 
     if module.check_mode:
         module.exit_json(changed=True)
@@ -216,10 +216,13 @@ def main():
     try:
         wait_for_lambda(client, module, name or function_arn)
         response = client.invoke(**invoke_params, aws_retry=True)
-    except is_boto3_error_code('ResourceNotFoundException') as nfe:
-        module.fail_json_aws(nfe, msg="Could not find Lambda to execute. Make sure "
-                             "the ARN is correct and your profile has "
-                             "permissions to execute this function.")
+    except is_boto3_error_code("ResourceNotFoundException") as nfe:
+        module.fail_json_aws(
+            nfe,
+            msg="Could not find Lambda to execute. Make sure "
+            "the ARN is correct and your profile has "
+            "permissions to execute this function.",
+        )
     except botocore.exceptions.ClientError as ce:  # pylint: disable=duplicate-except
         module.fail_json_aws(ce, msg="Client-side error when invoking Lambda, check inputs and specific error")
     except botocore.exceptions.ParamValidationError as ve:  # pylint: disable=duplicate-except
@@ -228,39 +231,43 @@ def main():
         module.fail_json_aws(e, msg="Unexpected failure while invoking Lambda function")
 
     results = {
-        'logs': '',
-        'status': response['StatusCode'],
-        'output': '',
+        "logs": "",
+        "status": response["StatusCode"],
+        "output": "",
     }
 
-    if response.get('LogResult'):
+    if response.get("LogResult"):
         try:
             # logs are base64 encoded in the API response
-            results['logs'] = base64.b64decode(response.get('LogResult', ''))
+            results["logs"] = base64.b64decode(response.get("LogResult", ""))
         except Exception as e:
             module.fail_json_aws(e, msg="Failed while decoding logs")
 
-    if invoke_params['InvocationType'] == 'RequestResponse':
+    if invoke_params["InvocationType"] == "RequestResponse":
         try:
-            results['output'] = json.loads(response['Payload'].read().decode('utf8'))
+            results["output"] = json.loads(response["Payload"].read().decode("utf8"))
         except Exception as e:
             module.fail_json_aws(e, msg="Failed while decoding function return value")
 
-        if isinstance(results.get('output'), dict) and any(
-                [results['output'].get('stackTrace'), results['output'].get('errorMessage')]):
+        if isinstance(results.get("output"), dict) and any(
+            [results["output"].get("stackTrace"), results["output"].get("errorMessage")]
+        ):
             # AWS sends back stack traces and error messages when a function failed
             # in a RequestResponse (synchronous) context.
-            template = ("Function executed, but there was an error in the Lambda function. "
-                        "Message: {errmsg}, Type: {type}, Stack Trace: {trace}")
+            template = (
+                "Function executed, but there was an error in the Lambda function. "
+                "Message: {errmsg}, Type: {type}, Stack Trace: {trace}"
+            )
             error_data = {
                 # format the stacktrace sent back as an array into a multiline string
-                'trace': '\n'.join(
-                    [' '.join([
-                        str(x) for x in line  # cast line numbers to strings
-                    ]) for line in results.get('output', {}).get('stackTrace', [])]
+                "trace": "\n".join(
+                    [
+                        " ".join([str(x) for x in line])  # cast line numbers to strings
+                        for line in results.get("output", {}).get("stackTrace", [])
+                    ]
                 ),
-                'errmsg': results['output'].get('errorMessage'),
-                'type': results['output'].get('errorType')
+                "errmsg": results["output"].get("errorMessage"),
+                "type": results["output"].get("errorType"),
             }
             module.fail_json(msg=template.format(**error_data), result=results)
 
@@ -269,15 +276,15 @@ def main():
 
 def wait_for_lambda(client, module, name_or_arn):
     try:
-        client_active_waiter = client.get_waiter('function_active')
-        client_updated_waiter = client.get_waiter('function_updated')
+        client_active_waiter = client.get_waiter("function_active")
+        client_updated_waiter = client.get_waiter("function_updated")
         client_active_waiter.wait(FunctionName=name_or_arn)
         client_updated_waiter.wait(FunctionName=name_or_arn)
     except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg='Timeout while waiting on lambda to be Active')
+        module.fail_json_aws(e, msg="Timeout while waiting on lambda to be Active")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed while waiting on lambda to be Active')
+        module.fail_json_aws(e, msg="Failed while waiting on lambda to be Active")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

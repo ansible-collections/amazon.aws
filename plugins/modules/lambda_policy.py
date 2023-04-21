@@ -148,11 +148,11 @@ def pc(key):
     :return:
     """
 
-    return "".join([token.capitalize() for token in key.split('_')])
+    return "".join([token.capitalize() for token in key.split("_")])
 
 
 def policy_equal(module, current_statement):
-    for param in ('action', 'principal', 'source_arn', 'source_account', 'event_source_token'):
+    for param in ("action", "principal", "source_arn", "source_account", "event_source_token"):
         if module.params.get(param) != current_statement.get(param):
             return False
 
@@ -186,25 +186,27 @@ def validate_params(module):
     :return:
     """
 
-    function_name = module.params['function_name']
+    function_name = module.params["function_name"]
 
     # validate function name
-    if function_name.startswith('arn:'):
-        if not re.search(r'^[\w\-:]+$', function_name):
+    if function_name.startswith("arn:"):
+        if not re.search(r"^[\w\-:]+$", function_name):
             module.fail_json(
-                msg='ARN {0} is invalid. ARNs must contain only alphanumeric characters, hyphens and colons.'.format(function_name)
+                msg="ARN {0} is invalid. ARNs must contain only alphanumeric characters, hyphens and colons.".format(
+                    function_name
+                )
             )
         if len(function_name) > 140:
             module.fail_json(msg='ARN name "{0}" exceeds 140 character limit'.format(function_name))
     else:
-        if not re.search(r'^[\w\-]+$', function_name):
+        if not re.search(r"^[\w\-]+$", function_name):
             module.fail_json(
-                msg='Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.'.format(
-                    function_name)
+                msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(
+                    function_name
+                )
             )
         if len(function_name) > 64:
-            module.fail_json(
-                msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
+            module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
 
 
 def get_qualifier(module):
@@ -215,10 +217,10 @@ def get_qualifier(module):
     :return:
     """
 
-    if module.params.get('version') is not None:
-        return to_native(module.params['version'])
-    elif module.params['alias']:
-        return to_native(module.params['alias'])
+    if module.params.get("version") is not None:
+        return to_native(module.params["version"])
+    elif module.params["alias"]:
+        return to_native(module.params["alias"])
 
     return None
 
@@ -230,32 +232,34 @@ def extract_statement(policy, sid):
     return it in a flattened form.  Otherwise return an empty
     dictionary.
     """
-    if 'Statement' not in policy:
+    if "Statement" not in policy:
         return {}
     policy_statement = {}
     # Now that we have the policy, check if required permission statement is present and flatten to
     # simple dictionary if found.
-    for statement in policy['Statement']:
-        if statement['Sid'] == sid:
-            policy_statement['action'] = statement['Action']
+    for statement in policy["Statement"]:
+        if statement["Sid"] == sid:
+            policy_statement["action"] = statement["Action"]
             try:
-                policy_statement['principal'] = statement['Principal']['Service']
+                policy_statement["principal"] = statement["Principal"]["Service"]
             except KeyError:
                 pass
             try:
-                policy_statement['principal'] = statement['Principal']['AWS']
+                policy_statement["principal"] = statement["Principal"]["AWS"]
             except KeyError:
                 pass
             try:
-                policy_statement['source_arn'] = statement['Condition']['ArnLike']['AWS:SourceArn']
+                policy_statement["source_arn"] = statement["Condition"]["ArnLike"]["AWS:SourceArn"]
             except KeyError:
                 pass
             try:
-                policy_statement['source_account'] = statement['Condition']['StringEquals']['AWS:SourceAccount']
+                policy_statement["source_account"] = statement["Condition"]["StringEquals"]["AWS:SourceAccount"]
             except KeyError:
                 pass
             try:
-                policy_statement['event_source_token'] = statement['Condition']['StringEquals']['lambda:EventSourceToken']
+                policy_statement["event_source_token"] = statement["Condition"]["StringEquals"][
+                    "lambda:EventSourceToken"
+                ]
             except KeyError:
                 pass
             break
@@ -270,10 +274,10 @@ def get_policy_statement(module, client):
     :param client:
     :return:
     """
-    sid = module.params['statement_id']
+    sid = module.params["statement_id"]
 
     # set API parameters
-    api_params = set_api_params(module, ('function_name', ))
+    api_params = set_api_params(module, ("function_name",))
     qualifier = get_qualifier(module)
     if qualifier:
         api_params.update(Qualifier=qualifier)
@@ -282,13 +286,16 @@ def get_policy_statement(module, client):
     # check if function policy exists
     try:
         policy_results = client.get_policy(**api_params)
-    except is_boto3_error_code('ResourceNotFoundException'):
+    except is_boto3_error_code("ResourceNotFoundException"):
         return {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="retrieving function policy")
 
     # get_policy returns a JSON string so must convert to dict before reassigning to its key
-    policy = json.loads(policy_results.get('Policy', '{}'))
+    policy = json.loads(policy_results.get("Policy", "{}"))
     return extract_statement(policy, sid)
 
 
@@ -305,13 +312,14 @@ def add_policy_permission(module, client):
 
     # set API parameters
     params = (
-        'function_name',
-        'statement_id',
-        'action',
-        'principal',
-        'source_arn',
-        'source_account',
-        'event_source_token')
+        "function_name",
+        "statement_id",
+        "action",
+        "principal",
+        "source_arn",
+        "source_account",
+        "event_source_token",
+    )
     api_params = set_api_params(module, params)
     qualifier = get_qualifier(module)
     if qualifier:
@@ -339,7 +347,7 @@ def remove_policy_permission(module, client):
     changed = False
 
     # set API parameters
-    api_params = set_api_params(module, ('function_name', 'statement_id'))
+    api_params = set_api_params(module, ("function_name", "statement_id"))
     qualifier = get_qualifier(module)
     if qualifier:
         api_params.update(Qualifier=qualifier)
@@ -356,40 +364,44 @@ def remove_policy_permission(module, client):
 
 def manage_state(module, lambda_client):
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
-    action_taken = 'none'
+    current_state = "absent"
+    state = module.params["state"]
+    action_taken = "none"
 
     # check if the policy exists
     current_policy_statement = get_policy_statement(module, lambda_client)
     if current_policy_statement:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present' and not policy_equal(module, current_policy_statement):
+    if state == "present":
+        if current_state == "present" and not policy_equal(module, current_policy_statement):
             remove_policy_permission(module, lambda_client)
             changed = add_policy_permission(module, lambda_client)
-            action_taken = 'updated'
-        if not current_state == 'present':
+            action_taken = "updated"
+        if not current_state == "present":
             changed = add_policy_permission(module, lambda_client)
-            action_taken = 'added'
-    elif current_state == 'present':
+            action_taken = "added"
+    elif current_state == "present":
         # remove the policy statement
         changed = remove_policy_permission(module, lambda_client)
-        action_taken = 'deleted'
+        action_taken = "deleted"
 
     return dict(changed=changed, ansible_facts=dict(lambda_policy_action=action_taken))
 
 
 def setup_module_object():
     argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent']),
-        function_name=dict(required=True, aliases=['lambda_function_arn', 'function_arn']),
-        statement_id=dict(required=True, aliases=['sid']),
+        state=dict(default="present", choices=["present", "absent"]),
+        function_name=dict(required=True, aliases=["lambda_function_arn", "function_arn"]),
+        statement_id=dict(required=True, aliases=["sid"]),
         alias=dict(),
-        version=dict(type='int'),
-        action=dict(required=True, ),
-        principal=dict(required=True, ),
+        version=dict(type="int"),
+        action=dict(
+            required=True,
+        ),
+        principal=dict(
+            required=True,
+        ),
         source_arn=dict(),
         source_account=dict(),
         event_source_token=dict(no_log=False),
@@ -398,9 +410,11 @@ def setup_module_object():
     return AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[['alias', 'version'],
-                            ['event_source_token', 'source_arn'],
-                            ['event_source_token', 'source_account']],
+        mutually_exclusive=[
+            ["alias", "version"],
+            ["event_source_token", "source_arn"],
+            ["event_source_token", "source_account"],
+        ],
     )
 
 
@@ -412,12 +426,12 @@ def main():
     """
 
     module = setup_module_object()
-    client = module.client('lambda')
+    client = module.client("lambda")
     validate_params(module)
     results = manage_state(module, client)
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

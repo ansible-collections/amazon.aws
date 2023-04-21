@@ -14,5 +14,5 @@ import ansible_collections.amazon.aws.plugins.module_utils.retries as util_retri
 def test_botocore_exception_maybe(monkeypatch):
     none_type = type(None)
     assert util_retries._botocore_exception_maybe() is botocore.exceptions.ClientError
-    monkeypatch.setattr(util_retries, 'HAS_BOTO3', False)
+    monkeypatch.setattr(util_retries, "HAS_BOTO3", False)
     assert util_retries._botocore_exception_maybe() is none_type

@@ -9,6 +9,7 @@ from unittest.mock import sentinel
 
 import ansible_collections.amazon.aws.plugins.plugin_utils.inventory as utils_inventory
 import ansible_collections.amazon.aws.plugins.plugin_utils.base as utils_base
+
 # import ansible_collections.amazon.aws.plugins.module_utils.
 
 
@@ -30,17 +31,12 @@ def test_client(monkeypatch):
     inventory_plugin._frozen_credentials = frozen_creds
 
     client = inventory_plugin.client(sentinel.SERVICE_NAME)
-    assert super_client.call_args == call(
-        sentinel.SERVICE_NAME,
-        credential_one=sentinel.CREDENTIAL_ONE
-    )
+    assert super_client.call_args == call(sentinel.SERVICE_NAME, credential_one=sentinel.CREDENTIAL_ONE)
     assert client is sentinel.SUPER_CLIENT
 
     client = inventory_plugin.client(sentinel.SERVICE_NAME, extra_arg=sentinel.EXTRA_ARG)
     assert super_client.call_args == call(
-        sentinel.SERVICE_NAME,
-        credential_one=sentinel.CREDENTIAL_ONE,
-        extra_arg=sentinel.EXTRA_ARG
+        sentinel.SERVICE_NAME, credential_one=sentinel.CREDENTIAL_ONE, extra_arg=sentinel.EXTRA_ARG
     )
     assert client is sentinel.SUPER_CLIENT
 
@@ -70,17 +66,12 @@ def test_resource(monkeypatch):
     inventory_plugin._frozen_credentials = frozen_creds
 
     resource = inventory_plugin.resource(sentinel.SERVICE_NAME)
-    assert super_resource.call_args == call(
-        sentinel.SERVICE_NAME,
-        credential_one=sentinel.CREDENTIAL_ONE
-    )
+    assert super_resource.call_args == call(sentinel.SERVICE_NAME, credential_one=sentinel.CREDENTIAL_ONE)
     assert resource is sentinel.SUPER_RESOURCE
 
     resource = inventory_plugin.resource(sentinel.SERVICE_NAME, extra_arg=sentinel.EXTRA_ARG)
     assert super_resource.call_args == call(
-        sentinel.SERVICE_NAME,
-        credential_one=sentinel.CREDENTIAL_ONE,
-        extra_arg=sentinel.EXTRA_ARG
+        sentinel.SERVICE_NAME, credential_one=sentinel.CREDENTIAL_ONE, extra_arg=sentinel.EXTRA_ARG
     )
     assert resource is sentinel.SUPER_RESOURCE
 
@@ -93,7 +84,7 @@ def test_resource(monkeypatch):
 
 
 def test_all_clients(monkeypatch):
-    test_regions = ['us-east-1', 'us-east-2']
+    test_regions = ["us-east-1", "us-east-2"]
     inventory_plugin = utils_inventory.AWSInventoryBase()
     mock_client = MagicMock(name="client")
     mock_client.return_value = sentinel.RETURN_CLIENT
@@ -103,7 +94,7 @@ def test_all_clients(monkeypatch):
     monkeypatch.setattr(inventory_plugin, "_boto3_regions", boto3_regions)
 
     regions = []
-    for (client, region) in inventory_plugin.all_clients(sentinel.ARG_SERVICE):
+    for client, region in inventory_plugin.all_clients(sentinel.ARG_SERVICE):
         assert boto3_regions.call_args == call(service=sentinel.ARG_SERVICE)
         assert mock_client.call_args == call(sentinel.ARG_SERVICE, region=region)
         assert client is sentinel.RETURN_CLIENT

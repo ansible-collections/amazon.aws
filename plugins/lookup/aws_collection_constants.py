@@ -42,6 +42,7 @@ import ansible_collections.amazon.aws.plugins.module_utils.common as common_util
 
 try:
     import ansible_collections.community.aws.plugins.module_utils.common as community_utils
+
     HAS_COMMUNITY = True
 except ImportError:
     HAS_COMMUNITY = False
@@ -49,27 +50,25 @@ except ImportError:
 
 class LookupModule(LookupBase):
     def lookup_constant(self, name):
-        if name == 'MINIMUM_BOTOCORE_VERSION':
+        if name == "MINIMUM_BOTOCORE_VERSION":
             return botocore_utils.MINIMUM_BOTOCORE_VERSION
-        if name == 'MINIMUM_BOTO3_VERSION':
+        if name == "MINIMUM_BOTO3_VERSION":
             return botocore_utils.MINIMUM_BOTO3_VERSION
-        if name == 'HAS_BOTO3':
+        if name == "HAS_BOTO3":
             return botocore_utils.HAS_BOTO3
 
-        if name == 'AMAZON_AWS_COLLECTION_VERSION':
+        if name == "AMAZON_AWS_COLLECTION_VERSION":
             return common_utils.AMAZON_AWS_COLLECTION_VERSION
-        if name == 'AMAZON_AWS_COLLECTION_NAME':
+        if name == "AMAZON_AWS_COLLECTION_NAME":
             return common_utils.AMAZON_AWS_COLLECTION_NAME
 
-        if name == 'COMMUNITY_AWS_COLLECTION_VERSION':
+        if name == "COMMUNITY_AWS_COLLECTION_VERSION":
             if not HAS_COMMUNITY:
-                raise AnsibleLookupError(
-                    'Unable to load ansible_collections.community.aws.plugins.module_utils.common')
+                raise AnsibleLookupError("Unable to load ansible_collections.community.aws.plugins.module_utils.common")
             return community_utils.COMMUNITY_AWS_COLLECTION_VERSION
-        if name == 'COMMUNITY_AWS_COLLECTION_NAME':
+        if name == "COMMUNITY_AWS_COLLECTION_NAME":
             if not HAS_COMMUNITY:
-                raise AnsibleLookupError(
-                    'Unable to load ansible_collections.community.aws.plugins.module_utils.common')
+                raise AnsibleLookupError("Unable to load ansible_collections.community.aws.plugins.module_utils.common")
             return community_utils.COMMUNITY_AWS_COLLECTION_NAME
 
     def run(self, terms, variables, **kwargs):

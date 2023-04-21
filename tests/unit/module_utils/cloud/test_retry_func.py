@@ -11,7 +11,9 @@ from unittest.mock import sentinel
 import ansible_collections.amazon.aws.plugins.module_utils.cloud as cloud_utils
 
 if sys.version_info < (3, 8):
-    pytest.skip("accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True)
+    pytest.skip(
+        "accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True
+    )
 
 
 class ExceptionA(Exception):
@@ -95,9 +97,7 @@ def test_no_match_with_extra_error_codes(retrier):
     catch_extra_error_codes = sentinel.extra_codes
 
     with pytest.raises(ExceptionA):
-        _f, _result = retrier(
-            func=func, found_f=found_f, catch_extra_error_codes=catch_extra_error_codes
-        )
+        _f, _result = retrier(func=func, found_f=found_f, catch_extra_error_codes=catch_extra_error_codes)
     assert func.called is True
     assert func.call_count == 1
     assert found_f.called is True

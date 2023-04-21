@@ -18,9 +18,7 @@ def handler(event, context):
 
     name = event["pathParameters"]["greet_name"]
 
-    return {"statusCode": 200,
-            "body": 'hello: "' + name + '"',
-            "headers": {}}
+    return {"statusCode": 200, "body": 'hello: "' + name + '"', "headers": {}}
 
 
 def main():
@@ -33,5 +31,5 @@ def main():
     print(handler(event, context))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

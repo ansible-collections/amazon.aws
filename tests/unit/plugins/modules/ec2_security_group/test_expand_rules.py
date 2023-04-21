@@ -75,19 +75,31 @@ SOURCE_EXPANSION = [
     ),
     (
         {"cidr_ip": ["192.0.2.0/24", "198.51.100.0/24"]},
-        ({"cidr_ip": "192.0.2.0/24"}, {"cidr_ip": "198.51.100.0/24"},),
+        (
+            {"cidr_ip": "192.0.2.0/24"},
+            {"cidr_ip": "198.51.100.0/24"},
+        ),
     ),
     (
         {"cidr_ipv6": ["2001:db8::/32", "100::/64"]},
-        ({"cidr_ipv6": "2001:db8::/32"}, {"cidr_ipv6": "100::/64"},),
+        (
+            {"cidr_ipv6": "2001:db8::/32"},
+            {"cidr_ipv6": "100::/64"},
+        ),
     ),
     (
         {"group_id": ["sg-123456789", "sg-abcdef1234"]},
-        ({"group_id": "sg-123456789"}, {"group_id": "sg-abcdef1234"},),
+        (
+            {"group_id": "sg-123456789"},
+            {"group_id": "sg-abcdef1234"},
+        ),
     ),
     (
         {"group_name": ["MyExampleGroupName", "AnotherExample"]},
-        ({"group_name": "MyExampleGroupName"}, {"group_name": "AnotherExample"},),
+        (
+            {"group_name": "MyExampleGroupName"},
+            {"group_name": "AnotherExample"},
+        ),
     ),
     (
         {"ip_prefix": ["pl-123456abcde123456", "pl-abcdef12345abcdef"]},
@@ -175,7 +187,8 @@ def test_expand_ports_list(rule, expected):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 7), reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6"
+    sys.version_info < (3, 7),
+    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
 )
 @pytest.mark.parametrize("source_type", sorted(ec2_security_group_module.SOURCE_TYPES_ALL))
 def test_strip_rule_source(source_type):
@@ -189,7 +202,8 @@ def test_strip_rule_source(source_type):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 7), reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6"
+    sys.version_info < (3, 7),
+    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
 )
 @pytest.mark.parametrize("port_type", sorted(ec2_security_group_module.PORT_TYPES_ALL))
 def test_strip_rule_port(port_type):
@@ -203,7 +217,8 @@ def test_strip_rule_port(port_type):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 7), reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6"
+    sys.version_info < (3, 7),
+    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
 )
 @pytest.mark.parametrize("rule, expected", RULE_EXPANSION)
 def test_rule_expand(rule, expected):
