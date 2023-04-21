@@ -113,12 +113,14 @@ jobs:
           COLLECTION_TO_TEST: ${{ matrix.collection }}
           AMAZON_COLLECTION_PATH: ${{ steps.install-amazon.outputs.collection_path }}
           COMMUNITY_COLLECTION_PATH: ${{ steps.install-community.outputs.collection_path }}
+        if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Create AWS/sts session credentials
         uses: abikouo/github_actions/.github/actions/ansible_aws_test_provider@ansible_test_integration_b
         with:
           collection_path: ${{ steps.collection-path.outputs.path }}
           ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
+        if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Run integration tests
         uses: abikouo/github_actions/.github/actions/ansible_test_integration@ansible_test_integration_b
@@ -131,3 +133,4 @@ jobs:
             test-requirements.txt
             tests/integration/requirements.txt
           ansible_test_constraint_files: tests/integration/constraints.txt
+        if: steps.read-targets.outputs.ansible_test_targets != ''
