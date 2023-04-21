@@ -5,7 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  pull_request:
+  pull_request_target:
     
 env:
   AMAZON_PATH: "./amazon"
@@ -18,9 +18,10 @@ jobs:
       test_targets: ${{ steps.display.outputs.test_targets }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
         with:
           path: ${{ env.AMAZON_PATH }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
 
       - name: Checkout dependency (community.aws)
@@ -70,10 +71,10 @@ jobs:
         shell: bash
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
         with:
           path: ${{ env.AMAZON_PATH }}
-          fetch-depth: "0"
+          ref: ${{ github.event.pull_request.head.sha }}
         if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Checkout dependency (community.aws)
@@ -82,7 +83,6 @@ jobs:
           repository: ansible-collections/community.aws
           path: ${{ env.COMMUNITY_PATH }}
           ref: ${{ github.event.pull_request.base.ref }}
-          fetch-depth: "0"
         if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Build and install collection
