@@ -6,10 +6,11 @@
 import pytest
 
 # Magic...
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import (
-    maybe_sleep,
-    placeboify,
-)  # pylint: disable=unused-import
+# pylint: disable-next=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep
+
+# pylint: disable-next=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
 from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper

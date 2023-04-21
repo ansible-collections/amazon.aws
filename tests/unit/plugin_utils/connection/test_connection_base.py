@@ -17,7 +17,8 @@ def test_fail(monkeypatch):
     monkeypatch.setattr(utils_connection.AWSConnectionBase, "__abstractmethods__", set())
     monkeypatch.setattr(utils_connection.ConnectionBase, "__init__", MagicMock(name="__init__"))
 
-    connection_plugin = utils_connection.AWSConnectionBase()  # pylint: disable=abstract-class-instantiated
+    # pylint: disable-next=abstract-class-instantiated
+    connection_plugin = utils_connection.AWSConnectionBase()
     with pytest.raises(AnsibleConnectionFailure, match=str(sentinel.ERROR_MSG)):
         connection_plugin._do_fail(sentinel.ERROR_MSG)
 
@@ -31,12 +32,12 @@ def test_init(monkeypatch):
     monkeypatch.setattr(utils_connection.ConnectionBase, "__init__", MagicMock(name="__init__"))
     monkeypatch.setattr(utils_connection.AWSConnectionBase, "require_aws_sdk", require_aws_sdk)
 
-    connection_plugin = utils_connection.AWSConnectionBase(
-        sentinel.PARAM_TERMS, sentinel.PARAM_VARS, **kwargs
-    )  # pylint: disable=abstract-class-instantiated
+    # pylint: disable-next=abstract-class-instantiated
+    connection_plugin = utils_connection.AWSConnectionBase(sentinel.PARAM_TERMS, sentinel.PARAM_VARS, **kwargs)
     assert require_aws_sdk.call_args == call(botocore_version=None, boto3_version=None)
 
-    connection_plugin = utils_connection.AWSConnectionBase(  # pylint: disable=abstract-class-instantiated
+    # pylint: disable-next=abstract-class-instantiated
+    connection_plugin = utils_connection.AWSConnectionBase(
         sentinel.PARAM_ONE,
         sentinel.PARAM_TWO,
         boto3_version=sentinel.PARAM_BOTO3,

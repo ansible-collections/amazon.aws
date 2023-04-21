@@ -6,9 +6,8 @@
 from unittest.mock import patch
 
 # Magic...  Incorrectly identified by pylint as unused
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import (
-    placeboify,
-)  # pylint: disable=unused-import
+# pylint: disable-next=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
 from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase
