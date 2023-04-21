@@ -5,7 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
-from ansible.module_utils.resource_tags import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
@@ -77,7 +76,6 @@ extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
   - amazon.aws.boto3
-  - amazon.aws.tags
 """
 EXAMPLES = """
 - name: create backup selection
@@ -124,11 +122,6 @@ backup_selection:
       returned: always
       type: str
       sample: elastic
-    tags:
-      description: backup selection tags
-      returned: always
-      type: str
-      sample:
 """
 try:
     import botocore
@@ -142,7 +135,6 @@ def main():
         backup_plan_id=dict(type="str", required=True),
         iam_role_arn=dict(type="str", required=True),
         resources=dict(type="list", required=False),
-        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=True, type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
     )
@@ -251,14 +243,6 @@ def main():
             response = client.create_backup_selection(
                 aws_retry=True, BackupPlanId=backup_plan_id, BackupSelection=backup_selection_data
             )
-            ensure_tags(
-                client,
-                module,
-                response["SelectionId"],
-                purge_tags=module.params.get("purge_tags"),
-                tags=module.params.get("tags"),
-                resource_type="BackupSelection",
-            )
             changed = True
     elif state == "absent":
         if exist:
@@ -272,8 +256,6 @@ def main():
                 module.fail_json_aws(e, msg="Failed to delete selection")
         # remove_peer_connection(client, module)
     formatted_results = camel_dict_to_snake_dict(response)
-    # Turn the resource tags from boto3 into an ansible friendly tag dictionary
-    formatted_results["tags"] = boto3_tag_list_to_ansible_dict(formatted_results.get("tags", []))
     module.exit_json(changed=changed, backup_selection=formatted_results, selection_name=selection_name)
 
 
