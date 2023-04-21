@@ -141,12 +141,12 @@ def describe_resource_with_tags(func):
         except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
             if not strict:
                 return []
-            raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+            raise AnsibleError(f"Failed to query RDS: {to_native(e)}")
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
-            raise AnsibleError("Failed to query RDS: {0}".format(to_native(e)))
+            raise AnsibleError(f"Failed to query RDS: {to_native(e)}")
 
         return results
 
