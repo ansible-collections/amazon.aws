@@ -110,26 +110,30 @@ class AnsibleAWSModule:
         deprecated_vars = {"EC2_REGION", "EC2_SECURITY_TOKEN", "EC2_SECRET_KEY", "EC2_ACCESS_KEY", "EC2_URL", "S3_URL"}
         if deprecated_vars.intersection(set(os.environ.keys())):
             self._module.deprecate(
-                "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
-                "'EC2_SECURITY_TOKEN', 'EC2_URL', and 'S3_URL' environment "
-                "variables has been deprecated.  "
-                "These variables are currently used for all AWS services which can "
-                "cause confusion.  We recomend using the relevant module "
-                "parameters or alternatively the 'AWS_REGION', 'AWS_ACCESS_KEY_ID', "
-                "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
-                "environment variables can be used instead.",
+                (
+                    "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
+                    "'EC2_SECURITY_TOKEN', 'EC2_URL', and 'S3_URL' environment "
+                    "variables has been deprecated.  "
+                    "These variables are currently used for all AWS services which can "
+                    "cause confusion.  We recomend using the relevant module "
+                    "parameters or alternatively the 'AWS_REGION', 'AWS_ACCESS_KEY_ID', "
+                    "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
+                    "environment variables can be used instead."
+                ),
                 date="2024-12-01",
                 collection_name="amazon.aws",
             )
 
         if "AWS_SECURITY_TOKEN" in os.environ.keys():
             self._module.deprecate(
-                "Support for the 'AWS_SECURITY_TOKEN' environment variable "
-                "has been deprecated.  This variable was based on the original "
-                "boto SDK, support for which has now been dropped.  "
-                "We recommend using the 'session_token' module parameter "
-                "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
-                "can be used instead.",
+                (
+                    "Support for the 'AWS_SECURITY_TOKEN' environment variable "
+                    "has been deprecated.  This variable was based on the original "
+                    "boto SDK, support for which has now been dropped.  "
+                    "We recommend using the 'session_token' module parameter "
+                    "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
+                    "can be used instead."
+                ),
                 date="2024-12-01",
                 collection_name="amazon.aws",
             )
@@ -159,7 +163,7 @@ class AnsibleAWSModule:
             if found_operational_request:
                 operation_request = found_operational_request.group(0)[20:-1]
                 resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]
-                actions.append("{0}:{1}".format(resource, operation_request))
+                actions.append(f"{resource}:{operation_request}")
         return list(set(actions))
 
     def exit_json(self, *args, **kwargs):
@@ -220,7 +224,7 @@ class AnsibleAWSModule:
             except_msg = to_native(exception)
 
         if msg is not None:
-            message = "{0}: {1}".format(msg, except_msg)
+            message = f"{msg}: {except_msg}"
         else:
             message = except_msg
 
@@ -261,7 +265,8 @@ class AnsibleAWSModule:
         """
         if not self.boto3_at_least(desired):
             self._module.fail_json(
-                msg=missing_required_lib("boto3>={0}".format(desired), **kwargs), **self._gather_versions()
+                msg=missing_required_lib(f"boto3>={desired}", **kwargs),
+                **self._gather_versions(),
             )
 
     def boto3_at_least(self, desired):
@@ -282,7 +287,8 @@ class AnsibleAWSModule:
         """
         if not self.botocore_at_least(desired):
             self._module.fail_json(
-                msg=missing_required_lib("botocore>={0}".format(desired), **kwargs), **self._gather_versions()
+                msg=missing_required_lib(f"botocore>={desired}", **kwargs),
+                **self._gather_versions(),
             )
 
     def botocore_at_least(self, desired):

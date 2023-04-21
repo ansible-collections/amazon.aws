@@ -953,8 +953,7 @@ def get_waiter(client, waiter_name):
     try:
         return waiters_by_name[(client.__class__.__name__, waiter_name)](client)
     except KeyError:
+        available_waiters = ", ".join(repr(k) for k in waiters_by_name.keys())
         raise NotImplementedError(
-            "Waiter {0} could not be found for client {1}. Available waiters: {2}".format(
-                waiter_name, type(client), ", ".join(repr(k) for k in waiters_by_name.keys())
-            )
+            f"Waiter {waiter_name} could not be found for client {type(client)}. Available waiters: {available_waiters}"
         )
