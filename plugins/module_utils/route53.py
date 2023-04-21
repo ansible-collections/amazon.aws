@@ -38,7 +38,7 @@ def manage_tags(module, client, resource_type, resource_id, new_tags, purge_tags
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(
             e,
-            msg="Failed to update tags on {0}".format(resource_type),
+            msg=f"Failed to update tags on {resource_type}",
             resource_id=resource_id,
             change_params=change_params,
         )
@@ -59,7 +59,7 @@ def get_tags(module, client, resource_type, resource_id):
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to fetch tags on {0}".format(resource_type), resource_id=resource_id)
+        module.fail_json_aws(e, msg=f"Failed to fetch tags on {resource_type}", resource_id=resource_id)
 
     tags = boto3_tag_list_to_ansible_dict(tagset["ResourceTagSet"]["Tags"])
     return tags

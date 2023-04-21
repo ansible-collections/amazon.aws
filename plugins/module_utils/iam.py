@@ -72,7 +72,7 @@ def get_aws_account_info(module):
 
     if account_id is None or partition is None:
         module.fail_json(
-            msg="Failed to get AWS account information, Try allowing sts:GetCallerIdentity or iam:GetUser permissions."
+            msg="Failed to get AWS account information, Try allowing sts:GetCallerIdentity or iam:GetUser permissions.",
         )
 
     return (to_native(account_id), to_native(partition))

@@ -238,8 +238,8 @@ def signed_request(
 
     # Make auth header with that info
 
-    authorization_header = "{0} Credential={1}/{2}, SignedHeaders={3}, Signature={4}".format(
-        algorithm, access_key, credential_scope, signed_headers, signature
+    authorization_header = (
+        f"{algorithm} Credential={access_key}/{credential_scope}, SignedHeaders={signed_headers}, Signature={signature}"
     )
 
     # PERFORM THE REQUEST!

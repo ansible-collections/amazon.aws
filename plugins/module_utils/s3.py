@@ -39,7 +39,7 @@ def calculate_checksum_with_file(client, parts, bucket, obj, versionId, filename
             digests.append(md5(f.read(int(head["ContentLength"]))).digest())
 
     digest_squared = b"".join(digests)
-    return '"{0}-{1}"'.format(md5(digest_squared).hexdigest(), len(digests))
+    return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
 
 
 def calculate_checksum_with_content(client, parts, bucket, obj, versionId, content):
@@ -51,7 +51,7 @@ def calculate_checksum_with_content(client, parts, bucket, obj, versionId, conte
         offset += length
 
     digest_squared = b"".join(digests)
-    return '"{0}-{1}"'.format(md5(digest_squared).hexdigest(), len(digests))
+    return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
 
 
 def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
@@ -66,7 +66,7 @@ def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
-        return '"{0}"'.format(module.md5(filename))
+        return f'"{module.md5(filename)}"'
 
 
 def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None):
@@ -81,7 +81,7 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
-        return '"{0}"'.format(md5(content).hexdigest())
+        return f'"{md5(content).hexdigest()}"'
 
 
 def validate_bucket_name(name):
