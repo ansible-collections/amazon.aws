@@ -353,7 +353,7 @@ def find_subnets(connection, module, vpc_id, identified_subnets):
         try:
             subnets_by_id = describe_subnets_with_backoff(connection, SubnetIds=subnet_ids, Filters=filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't find subnet with id %s" % subnet_ids)
+            module.fail_json_aws(e, msg=f"Couldn't find subnet with id {subnet_ids}")
 
     subnets_by_cidr = []
     if subnet_cidrs:
@@ -361,7 +361,7 @@ def find_subnets(connection, module, vpc_id, identified_subnets):
         try:
             subnets_by_cidr = describe_subnets_with_backoff(connection, Filters=filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't find subnet with cidr %s" % subnet_cidrs)
+            module.fail_json_aws(e, msg=f"Couldn't find subnet with cidr {subnet_cidrs}")
 
     subnets_by_name = []
     if subnet_names:
@@ -369,16 +369,16 @@ def find_subnets(connection, module, vpc_id, identified_subnets):
         try:
             subnets_by_name = describe_subnets_with_backoff(connection, Filters=filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't find subnet with names %s" % subnet_names)
+            module.fail_json_aws(e, msg=f"Couldn't find subnet with names {subnet_names}")
 
         for name in subnet_names:
             matching_count = len(
                 [1 for s in subnets_by_name for t in s.get("Tags", []) if t["Key"] == "Name" and t["Value"] == name]
             )
             if matching_count == 0:
-                module.fail_json(msg='Subnet named "{0}" does not exist'.format(name))
+                module.fail_json(msg=f'Subnet named "{name}" does not exist')
             elif matching_count > 1:
-                module.fail_json(msg='Multiple subnets named "{0}"'.format(name))
+                module.fail_json(msg=f'Multiple subnets named "{name}"')
 
     return subnets_by_id + subnets_by_cidr + subnets_by_name
 
@@ -391,13 +391,13 @@ def find_igw(connection, module, vpc_id):
     try:
         igw = describe_igws_with_backoff(connection, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="No IGW found for VPC {0}".format(vpc_id))
+        module.fail_json_aws(e, msg=f"No IGW found for VPC {vpc_id}")
     if len(igw) == 1:
         return igw[0]["InternetGatewayId"]
     elif len(igw) == 0:
-        module.fail_json(msg="No IGWs found for VPC {0}".format(vpc_id))
+        module.fail_json(msg=f"No IGWs found for VPC {vpc_id}")
     else:
-        module.fail_json(msg="Multiple IGWs found for VPC {0}".format(vpc_id))
+        module.fail_json(msg=f"Multiple IGWs found for VPC {vpc_id}")
 
 
 def tags_match(match_tags, candidate_tags):
@@ -478,17 +478,15 @@ def ensure_routes(connection, module, route_table, route_specs, purge_routes):
                 route_specs_to_create.append(route_spec)
             else:
                 module.warn(
-                    "Skipping creating {0} because it has no destination cidr block. "
-                    "To add VPC endpoints to route tables use the ec2_vpc_endpoint module.".format(route_spec)
+                    f"Skipping creating {route_spec} because it has no destination cidr block. To add VPC endpoints to"
+                    " route tables use the ec2_vpc_endpoint module."
                 )
         else:
             if match[0] == "replace":
                 if route_spec.get("DestinationCidrBlock"):
                     route_specs_to_recreate.append(route_spec)
                 else:
-                    module.warn(
-                        "Skipping recreating route {0} because it has no destination cidr block.".format(route_spec)
-                    )
+                    module.warn(f"Skipping recreating route {route_spec} because it has no destination cidr block.")
             del routes_to_match[match[1]]
 
     routes_to_delete = []
@@ -496,8 +494,8 @@ def ensure_routes(connection, module, route_table, route_specs, purge_routes):
         for route in routes_to_match:
             if not route.get("DestinationCidrBlock"):
                 module.warn(
-                    "Skipping purging route {0} because it has no destination cidr block. "
-                    "To remove VPC endpoints from route tables use the ec2_vpc_endpoint module.".format(route)
+                    f"Skipping purging route {route} because it has no destination cidr block. To remove VPC endpoints"
+                    " from route tables use the ec2_vpc_endpoint module."
                 )
                 continue
             if route["Origin"] == "CreateRoute":

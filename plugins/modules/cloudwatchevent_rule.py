@@ -227,7 +227,7 @@ class CloudWatchEventRule:
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
-            self.module.fail_json_aws(e, msg="Could not describe rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not describe rule {self.name}")
         return self._snakify(rule_info)
 
     def put(self, enabled=True):
@@ -247,7 +247,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.put_rule(**request)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not create/update rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not create/update rule {self.name}")
         self.changed = True
         return response
 
@@ -258,7 +258,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.delete_rule(Name=self.name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not delete rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not delete rule {self.name}")
         self.changed = True
         return response
 
@@ -267,7 +267,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.enable_rule(Name=self.name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not enable rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not enable rule {self.name}")
         self.changed = True
         return response
 
@@ -276,7 +276,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.disable_rule(Name=self.name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not disable rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not disable rule {self.name}")
         self.changed = True
         return response
 
@@ -290,7 +290,7 @@ class CloudWatchEventRule:
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
-            self.module.fail_json_aws(e, msg="Could not find target for rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not find target for rule {self.name}")
         return self._snakify(targets)["targets"]
 
     def put_targets(self, targets):
@@ -304,7 +304,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.put_targets(**request)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not create/update rule targets for rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not create/update rule targets for rule {self.name}")
         self.changed = True
         return response
 
@@ -316,7 +316,7 @@ class CloudWatchEventRule:
         try:
             response = self.client.remove_targets(**request)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Could not remove rule targets from rule %s" % self.name)
+            self.module.fail_json_aws(e, msg=f"Could not remove rule targets from rule {self.name}")
         self.changed = True
         return response
 
@@ -502,7 +502,7 @@ def main():
     elif state == "absent":
         cwe_rule_manager.ensure_absent()
     else:
-        module.fail_json(msg="Invalid state '{0}' provided".format(state))
+        module.fail_json(msg=f"Invalid state '{state}' provided")
 
     module.exit_json(**cwe_rule_manager.fetch_aws_state())
 

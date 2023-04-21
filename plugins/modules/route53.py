@@ -588,7 +588,7 @@ def main():
             failover=("identifier",),
             region=("identifier",),
             weight=("identifier",),
-            geo_location=("identifier"),
+            geo_location=("identifier",),
         ),
     )
 
@@ -638,7 +638,10 @@ def main():
             weight_in is None and region_in is None and failover_in is None and geo_location is None
         ) and identifier_in is not None:
             module.fail_json(
-                msg="You have specified identifier which makes sense only if you specify one of: weight, region, geo_location or failover."
+                msg=(
+                    "You have specified identifier which makes sense only if you specify one of: weight, region,"
+                    " geo_location or failover."
+                )
             )
 
     retry_decorator = AWSRetry.jittered_backoff(
@@ -659,7 +662,7 @@ def main():
 
     # Verify that the requested zone is already defined in Route53
     if zone_id is None:
-        errmsg = "Zone %s does not exist in Route53" % (zone_in or hosted_zone_id_in)
+        errmsg = f"Zone {zone_in or hosted_zone_id_in} does not exist in Route53"
         module.fail_json(msg=errmsg)
 
     aws_record = get_record(route53, zone_id, record_in, type_in, identifier_in)
@@ -686,7 +689,10 @@ def main():
         if continent_code and (country_code or subdivision_code):
             module.fail_json(
                 changed=False,
-                msg="While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.",
+                msg=(
+                    "While using geo_location, continent_code is mutually exclusive with country_code and"
+                    " subdivision_code."
+                ),
             )
 
         if not any([continent_code, country_code, subdivision_code]):
@@ -787,7 +793,7 @@ def main():
         ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to update records")
         except Exception as e:
-            module.fail_json(msg="Unhandled exception. (%s)" % to_native(e))
+            module.fail_json(msg=f"Unhandled exception. ({to_native(e)})")
 
     rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)

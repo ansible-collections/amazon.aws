@@ -237,7 +237,7 @@ def get_snapshots(connection, module, request_args):
         snapshots = connection.describe_snapshots(aws_retry=True, **request_args)
     except is_boto3_error_code("InvalidSnapshot.NotFound") as e:
         if len(snapshot_ids) > 1:
-            module.warn("Some of your snapshots may exist, but %s" % str(e))
+            module.warn(f"Some of your snapshots may exist, but {str(e)}")
         snapshots = {"Snapshots": []}
 
     return snapshots

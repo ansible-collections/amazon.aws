@@ -595,7 +595,7 @@ def to_permission(rule):
         if rule.description:
             perm["PrefixListIds"][0]["Description"] = rule.description
     elif rule.target_type not in TARGET_TYPES_ALL:
-        raise ValueError("Invalid target type for rule {0}".format(rule))
+        raise ValueError(f"Invalid target type for rule {rule}")
     return fix_port_and_protocol(perm)
 
 
@@ -753,9 +753,9 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
         # Try searching on a filter for the name, and allow a retry window for AWS to update
         # the model on their end.
         fail_msg = (
-            "Could not create or use existing group '{0}' in rule {1}.  "
+            f"Could not create or use existing group '{group_name}' in rule {rule}.  "
             "Make sure the group exists and try using the group_id "
-            "instead of the name".format(group_name, rule)
+            "instead of the name"
         )
         return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
     except (BotoCoreError, ClientError) as e:
@@ -799,8 +799,8 @@ def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id,
     if not rule.get("group_desc", "").strip():
         # retry describing the group
         fail_msg = (
-            "group '{0}' not found and would be automatically created by rule {1} but "
-            "no description was provided".format(group_name, rule)
+            f"group '{group_name}' not found and would be automatically created by rule {rule} but "
+            "no description was provided"
         )
         return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
 
@@ -932,7 +932,7 @@ def update_rules_description(module, client, rule_type, group_id, ip_permissions
                 aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions
             )
     except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to update rule description for group %s" % group_id)
+        module.fail_json_aws(e, msg=f"Unable to update rule description for group {group_id}")
 
 
 def fix_port_and_protocol(permission):
@@ -965,7 +965,7 @@ def revoke(client, module, ip_permissions, group_id, rule_type):
                 client.revoke_security_group_egress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = "ingress rules" if rule_type == "in" else "egress rules"
-            module.fail_json_aws(e, "Unable to revoke {0}: {1}".format(rules, ip_permissions))
+            module.fail_json_aws(e, f"Unable to revoke {rules}: {ip_permissions}")
 
 
 def add_new_permissions(client, module, new_ingress, new_egress, group_id):
@@ -985,7 +985,7 @@ def authorize(client, module, ip_permissions, group_id, rule_type):
                 client.authorize_security_group_egress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = "ingress rules" if rule_type == "in" else "egress rules"
-            module.fail_json_aws(e, "Unable to authorize {0}: {1}".format(rules, ip_permissions))
+            module.fail_json_aws(e, f"Unable to authorize {rules}: {ip_permissions}")
 
 
 def validate_ip(module, cidr_ip):
@@ -1006,8 +1006,8 @@ def validate_ip(module, cidr_ip):
     try:
         ip = to_subnet(split_addr[0], split_addr[1])
         module.warn(
-            "One of your CIDR addresses ({0}) has host bits set. To get rid of this warning, "
-            "check the network mask and make sure that only network bits are set: {1}.".format(cidr_ip, ip)
+            f"One of your CIDR addresses ({cidr_ip}) has host bits set. To get rid of this warning, check the network"
+            f" mask and make sure that only network bits are set: {ip}."
         )
         return ip
     except ValueError:
@@ -1017,12 +1017,12 @@ def validate_ip(module, cidr_ip):
     try:
         ip6 = to_ipv6_subnet(split_addr[0]) + "/" + split_addr[1]
         module.warn(
-            "One of your IPv6 CIDR addresses ({0}) has host bits set. To get rid of this warning, "
-            "check the network mask and make sure that only network bits are set: {1}.".format(cidr_ip, ip6)
+            f"One of your IPv6 CIDR addresses ({cidr_ip}) has host bits set. To get rid of this warning, check the"
+            f" network mask and make sure that only network bits are set: {ip6}."
         )
         return ip6
     except ValueError:
-        module.warn("Unable to parse CIDR ({0}).".format(cidr_ip))
+        module.warn(f"Unable to parse CIDR ({cidr_ip}).")
         return cidr_ip
 
 
@@ -1124,9 +1124,7 @@ def wait_for_rule_propagation(module, client, group, desired_ingress, desired_eg
             sleep(10)
             group = get_security_groups_with_backoff(client, GroupIds=[group_id])["SecurityGroups"][0]
         module.warn(
-            "Ran out of time waiting for {0} {1}. Current: {2}, Desired: {3}".format(
-                group_id, rule_key, current_rules, desired_rules
-            )
+            f"Ran out of time waiting for {group_id} {rule_key}. Current: {current_rules}, Desired: {desired_rules}"
         )
         return group
 
@@ -1176,7 +1174,7 @@ def get_diff_final_resource(client, module, security_group):
         try:
             owner_id = security_group.get("owner_id", current_account_id)
         except (BotoCoreError, ClientError) as e:
-            owner_id = "Unable to determine owner_id: {0}".format(to_text(e))
+            owner_id = f"Unable to determine owner_id: {to_text(e)}"
         return owner_id
 
     def get_final_tags(security_group_tags, specified_tags, purge_tags):
@@ -1293,8 +1291,10 @@ def flatten_nested_targets(module, rules):
         for target in targets:
             if isinstance(target, list):
                 module.deprecate(
-                    "Support for nested lists in cidr_ip and cidr_ipv6 has been "
-                    "deprecated.  The flatten filter can be used instead.",
+                    (
+                        "Support for nested lists in cidr_ip and cidr_ipv6 has been "
+                        "deprecated.  The flatten filter can be used instead."
+                    ),
                     date="2024-12-01",
                     collection_name="amazon.aws",
                 )
@@ -1383,7 +1383,7 @@ def ensure_absent(client, group, check_mode):
     except is_boto3_error_code("InvalidGroup.NotFound"):
         return False
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise SecurityGroupError("Unable to delete security group '{0}'".format(group), e=e)
+        raise SecurityGroupError(f"Unable to delete security group '{group}'", e=e)
 
     return True
 

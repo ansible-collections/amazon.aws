@@ -142,7 +142,7 @@ def list_iam_users(connection, module):
         except is_boto3_error_code("NoSuchEntity"):
             pass
         except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Couldn't get IAM user info for user %s" % name)
+            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for user {name}")
 
     if group:
         params["GroupName"] = group
@@ -151,7 +151,7 @@ def list_iam_users(connection, module):
         except is_boto3_error_code("NoSuchEntity"):
             pass
         except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Couldn't get IAM user info for group %s" % group)
+            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for group {group}")
         if name:
             iam_users = [user for user in iam_users if user["UserName"] == name]
 
@@ -162,7 +162,7 @@ def list_iam_users(connection, module):
         except is_boto3_error_code("NoSuchEntity"):
             pass
         except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Couldn't get IAM user info for path %s" % path)
+            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for path {path}")
         if name:
             iam_users = [user for user in iam_users if user["UserName"] == name]
 

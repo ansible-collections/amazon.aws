@@ -563,9 +563,11 @@ def reusable_delegation_set_details():
 
     results["delegation_sets"] = results["DelegationSets"]
     module.deprecate(
-        "The 'CamelCase' return values with key 'DelegationSets' is deprecated and \
-                    will be replaced by 'snake_case' return values with key 'delegation_sets'. \
-                    Both case values are returned for now.",
+        (
+            "The 'CamelCase' return values with key 'DelegationSets' is deprecated and will be"
+            " replaced by 'snake_case' return values with key 'delegation_sets'.  Both case values"
+            " are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )
@@ -590,9 +592,11 @@ def list_hosted_zones():
     snaked_zones = [camel_dict_to_snake_dict(zone) for zone in zones]
 
     module.deprecate(
-        "The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and \
-                    will be replaced by 'snake_case' return values with key 'hosted_zones'. \
-                    Both case values are returned for now.",
+        (
+            "The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and"
+            " will be replaced by 'snake_case' return values with key 'hosted_zones'.  Both case"
+            " values are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )
@@ -635,9 +639,11 @@ def checker_ip_range_details():
     results = client.get_checker_ip_ranges()
     results["checker_ip_ranges"] = results["CheckerIpRanges"]
     module.deprecate(
-        "The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and \
-                    will be replaced by 'snake_case' return values with key 'checker_ip_ranges'. \
-                    Both case values are returned for now.",
+        (
+            "The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and will be"
+            " replaced by 'snake_case' return values with key 'checker_ip_ranges'.  Both case values"
+            " are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )
@@ -667,9 +673,11 @@ def get_health_check():
         results = client.get_health_check(**params)
         results["health_check"] = camel_dict_to_snake_dict(results["HealthCheck"])
         module.deprecate(
-            "The 'CamelCase' return values with key 'HealthCheck' is deprecated \
-                and will be replaced by 'snake_case' return values with key 'health_check'. \
-                Both case values are returned for now.",
+            (
+                "The 'CamelCase' return values with key 'HealthCheck' is deprecated and will be"
+                " replaced by 'snake_case' return values with key 'health_check'.  Both case values are"
+                " returned for now."
+            ),
             date="2025-01-01",
             collection_name="amazon.aws",
         )
@@ -719,9 +727,11 @@ def list_health_checks():
     snaked_health_checks = [camel_dict_to_snake_dict(health_check) for health_check in health_checks]
 
     module.deprecate(
-        "The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and \
-                    will be replaced by 'snake_case' return values with key 'health_checks'. \
-                    Both case values are returned for now.",
+        (
+            "The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and"
+            " will be replaced by 'snake_case' return values with key 'health_checks'.  Both case"
+            " values are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )
@@ -759,9 +769,11 @@ def record_sets_details():
     snaked_record_sets = [camel_dict_to_snake_dict(record_set) for record_set in record_sets]
 
     module.deprecate(
-        "The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and \
-                    will be replaced by 'snake_case' return values with key 'resource_record_sets'. \
-                    Both case values are returned for now.",
+        (
+            "The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and"
+            " will be replaced by 'snake_case' return values with key 'resource_record_sets'."
+            "  Both case values are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )

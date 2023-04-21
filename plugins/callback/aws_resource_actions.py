@@ -66,4 +66,4 @@ class CallbackModule(CallbackBase):
     def playbook_on_stats(self, stats):
         if self.aws_resource_actions:
             self.aws_resource_actions = sorted(list(to_native(action) for action in set(self.aws_resource_actions)))
-            self._display.display("AWS ACTIONS: {0}".format(self.aws_resource_actions))
+            self._display.display(f"AWS ACTIONS: {self.aws_resource_actions}")

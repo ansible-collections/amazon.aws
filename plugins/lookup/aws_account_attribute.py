@@ -83,7 +83,7 @@ class LookupModule(AWSLookupBase):
         try:
             response = _describe_account_attributes(client, **params)["AccountAttributes"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleLookupError("Failed to describe account attributes: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Failed to describe account attributes: {to_native(e)}")
 
         if check_ec2_classic:
             attr = response[0]

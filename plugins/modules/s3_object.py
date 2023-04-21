@@ -452,13 +452,13 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
         if validate is True:
             module.fail_json_aws(
                 e,
-                msg="Failed while looking up object (during key check) %s." % obj,
+                msg=f"Failed while looking up object (during key check) {obj}.",
             )
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Failed while looking up object (during key check) %s." % obj, e)
+        raise S3ObjectFailure(f"Failed while looking up object (during key check) {obj}.", e)
 
     return True
 
@@ -509,9 +509,11 @@ def bucket_check(module, s3, bucket, validate=True):
     except is_boto3_error_code("404") as e:
         if validate:
             raise S3ObjectFailure(
-                f"Bucket '{bucket}' not found (during bucket_check).  "
-                "Support for automatically creating buckets was removed in release 6.0.0.  "
-                "The amazon.aws.s3_bucket module can be used to create buckets.",
+                (
+                    f"Bucket '{bucket}' not found (during bucket_check).  "
+                    "Support for automatically creating buckets was removed in release 6.0.0.  "
+                    "The amazon.aws.s3_bucket module can be used to create buckets."
+                ),
                 e,
             )
     except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
@@ -570,7 +572,7 @@ def list_keys(module, s3, bucket, prefix, marker, max_keys):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:
-        raise S3ObjectFailure("Failed while listing the keys in the bucket {0}".format(bucket), e)
+        raise S3ObjectFailure(f"Failed while listing the keys in the bucket {bucket}", e)
 
 
 def delete_key(module, s3, bucket, obj):
@@ -581,12 +583,12 @@ def delete_key(module, s3, bucket, obj):
         )
     try:
         s3.delete_object(aws_retry=True, Bucket=bucket, Key=obj)
-        module.exit_json(msg="Object deleted from bucket %s." % (bucket), changed=True)
+        module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:
-        raise S3ObjectFailure("Failed while trying to delete %s." % obj, e)
+        raise S3ObjectFailure(f"Failed while trying to delete {obj}.", e)
 
 
 def put_object_acl(module, s3, bucket, obj, params=None):
@@ -597,7 +599,8 @@ def put_object_acl(module, s3, bucket, obj, params=None):
             s3.put_object_acl(aws_retry=True, ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn(
-            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning"
+            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list"
+            " to avoid this warning"
         )
     except is_boto3_error_code("AccessControlListNotSupported"):  # pylint: disable=duplicate-except
         module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
@@ -605,7 +608,7 @@ def put_object_acl(module, s3, bucket, obj, params=None):
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Failed while creating object %s." % obj, e)
+        raise S3ObjectFailure(f"Failed while creating object {obj}.", e)
 
 
 def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
@@ -627,7 +630,7 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
     url = put_download_url(s3, bucket, obj, expiry)
 
     module.exit_json(
-        msg="Virtual directory %s created in bucket %s" % (obj, bucket),
+        msg=f"Virtual directory {obj} created in bucket {bucket}",
         url=url,
         tags=tags,
         changed=True,
@@ -775,16 +778,16 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
     except is_boto3_error_code(["404", "403"]) as e:
         # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
         # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
-        module.fail_json_aws(e, msg="Could not find the key %s." % obj)
+        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
     except is_boto3_error_message("require AWS Signature Version 4"):  # pylint: disable=duplicate-except
         raise Sigv4Required()
     except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Could not find the key %s." % obj)
+        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Could not find the key %s." % obj, e)
+        raise S3ObjectFailure(f"Could not find the key {obj}.", e)
 
     optional_kwargs = {"ExtraArgs": {"VersionId": version}} if version else {}
     for x in range(0, retries + 1):
@@ -797,7 +800,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         ) as e:
             # actually fail on last pass through the loop.
             if x >= retries:
-                raise S3ObjectFailure("Failed while downloading %s." % obj, e)
+                raise S3ObjectFailure(f"Failed while downloading {obj}.", e)
             # otherwise, try again, this may be a transient timeout.
         except SSLError as e:  # will ClientError catch SSLError?
             # actually fail on last pass through the loop.
@@ -822,13 +825,13 @@ def download_s3str(module, s3, bucket, obj, version=None):
     except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
-            msg="Failed while getting contents of object %s as a string." % obj,
+            msg=f"Failed while getting contents of object {obj} as a string.",
         )
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Failed while getting contents of object %s as a string." % obj, e)
+        raise S3ObjectFailure(f"Failed while getting contents of object {obj} as a string.", e)
 
 
 def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
@@ -893,7 +896,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         ):
             # Key does not exist in source bucket
             module.exit_json(
-                msg="Key %s does not exist in bucket %s." % (bucketsrc["Key"], bucketsrc["Bucket"]),
+                msg=f"Key {bucketsrc['Key']} does not exist in bucket {bucketsrc['Bucket']}.",
                 changed=False,
             )
 
@@ -927,7 +930,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             # Tags
             tags, changed = ensure_tags(s3, module, bucket, obj)
             module.exit_json(
-                msg="Object copied from bucket %s to bucket %s." % (bucketsrc["Bucket"], bucket),
+                msg=f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}.",
                 tags=tags,
                 changed=True,
             )
@@ -936,7 +939,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(
-            "Failed while copying object %s from bucket %s." % (obj, module.params["copy_src"].get("Bucket")),
+            f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
             e,
         )
 
@@ -1067,8 +1070,8 @@ def s3_object_do_get(module, connection, connection_v4, s3_vars):
     )
     if not keyrtn:
         if s3_vars["version"]:
-            module.fail_json(msg="Key %s with version id %s does not exist." % (s3_vars["object"], s3_vars["version"]))
-        module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+            module.fail_json(msg=f"Key {s3_vars['object']} with version id {s3_vars['version']} does not exist.")
+        module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
     if s3_vars["dest"] and path_check(s3_vars["dest"]) and s3_vars["overwrite"] != "always":
         if s3_vars["overwrite"] == "never":
             module.exit_json(
@@ -1133,7 +1136,7 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
         connection = connection_v4
 
     if s3_vars["src"] is not None and not path_check(s3_vars["src"]):
-        module.fail_json(msg='Local object "%s" does not exist for PUT operation' % (s3_vars["src"]))
+        module.fail_json(msg=f"Local object \"{s3_vars['src']}\" does not exist for PUT operation")
 
     keyrtn = key_check(
         module,
@@ -1194,7 +1197,7 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
         module.fail_json(msg="object parameter is required")
     elif s3_vars["bucket"] and delete_key(module, connection, s3_vars["bucket"], s3_vars["object"]):
         module.exit_json(
-            msg="Object deleted from bucket %s." % s3_vars["bucket"],
+            msg=f"Object deleted from bucket {s3_vars['bucket']}.",
             changed=True,
         )
     else:
@@ -1222,7 +1225,7 @@ def s3_object_do_create(module, connection, connection_v4, s3_vars):
 
     if key_check(module, connection, s3_vars["bucket"], s3_vars["object"]):
         module.exit_json(
-            msg="Bucket %s and key %s already exists." % (s3_vars["bucket"], s3_vars["object"]),
+            msg=f"Bucket {s3_vars['bucket']} and key {s3_vars['object']} already exists.",
             changed=False,
         )
     if not s3_vars["acl_disabled"]:
@@ -1265,7 +1268,7 @@ def s3_object_do_geturl(module, connection, connection_v4, s3_vars):
             s3_vars["expiry"],
             tags,
         )
-    module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+    module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
 def s3_object_do_getstr(module, connection, connection_v4, s3_vars):
@@ -1298,9 +1301,9 @@ def s3_object_do_getstr(module, connection, connection_v4, s3_vars):
                     version=s3_vars["version"],
                 )
         elif s3_vars["version"]:
-            module.fail_json(msg="Key %s with version id %s does not exist." % (s3_vars["object"], s3_vars["version"]))
+            module.fail_json(msg=f"Key {s3_vars['object']} with version id {s3_vars['version']} does not exist.")
         else:
-            module.fail_json(msg="Key %s does not exist." % s3_vars["object"])
+            module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
 def s3_object_do_copy(module, connection, connection_v4, s3_vars):
@@ -1451,8 +1454,10 @@ def main():
 
     if dualstack and endpoint_url:
         module.deprecate(
-            "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
-            "time has been deprecated.",
+            (
+                "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
+                "time has been deprecated."
+            ),
             date="2024-12-01",
             collection_name="amazon.aws",
         )
@@ -1461,8 +1466,10 @@ def main():
 
     if module.params.get("overwrite") not in ("always", "never", "different", "last"):
         module.deprecate(
-            "Support for passing values of 'overwrite' other than 'always', 'never', "
-            "'different' or 'last', has been deprecated.",
+            (
+                "Support for passing values of 'overwrite' other than 'always', 'never', "
+                "'different' or 'last', has been deprecated."
+            ),
             date="2024-12-01",
             collection_name="amazon.aws",
         )

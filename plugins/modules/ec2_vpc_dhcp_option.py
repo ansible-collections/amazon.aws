@@ -250,14 +250,14 @@ def fetch_dhcp_options_for_vpc(client, module, vpc_id):
     try:
         vpcs = client.describe_vpcs(aws_retry=True, VpcIds=[vpc_id])["Vpcs"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to describe vpc {0}".format(vpc_id))
+        module.fail_json_aws(e, msg=f"Unable to describe vpc {vpc_id}")
 
     if len(vpcs) != 1:
         return None
     try:
         dhcp_options = client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[vpcs[0]["DhcpOptionsId"]])
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to describe dhcp option {0}".format(vpcs[0]["DhcpOptionsId"]))
+        module.fail_json_aws(e, msg=f"Unable to describe dhcp option {vpcs[0]['DhcpOptionsId']}")
 
     if len(dhcp_options["DhcpOptions"]) != 1:
         return None
@@ -272,9 +272,7 @@ def remove_dhcp_options_by_id(client, module, dhcp_options_id):
             aws_retry=True, Filters=[{"Name": "dhcp-options-id", "Values": [dhcp_options_id]}]
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(
-            e, msg="Unable to describe VPC associations for dhcp option id {0}".format(dhcp_options_id)
-        )
+        module.fail_json_aws(e, msg=f"Unable to describe VPC associations for dhcp option id {dhcp_options_id}")
     if len(associations["Vpcs"]) > 0:
         return changed
 
@@ -288,7 +286,7 @@ def remove_dhcp_options_by_id(client, module, dhcp_options_id):
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to delete dhcp option {0}".format(dhcp_options_id))
+            module.fail_json_aws(e, msg=f"Unable to delete dhcp option {dhcp_options_id}")
 
     return changed
 
@@ -441,7 +439,7 @@ def associate_options(client, module, vpc_id, dhcp_options_id):
         if not module.check_mode:
             client.associate_dhcp_options(aws_retry=True, DhcpOptionsId=dhcp_options_id, VpcId=vpc_id)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to associate dhcp option {0} to VPC {1}".format(dhcp_options_id, vpc_id))
+        module.fail_json_aws(e, msg=f"Unable to associate dhcp option {dhcp_options_id} to VPC {vpc_id}")
 
 
 def main():

@@ -950,7 +950,7 @@ def get_arn_from_role_name(iam, rolename):
     ret = iam.get_role(RoleName=rolename)
     if ret.get("Role") and ret["Role"].get("Arn"):
         return ret["Role"]["Arn"]
-    raise Exception("could not find arn for name {0}.".format(rolename))
+    raise Exception(f"could not find arn for name {rolename}.")
 
 
 def canonicalize_alias_name(alias):
@@ -986,7 +986,7 @@ def fetch_key_metadata(connection, module, key_id, alias):
 def validate_params(module, key_metadata):
     # We can't create keys with a specific ID, if we can't access the key we'll have to fail
     if module.params.get("state") == "present" and module.params.get("key_id") and not key_metadata:
-        module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get("key_id")))
+        module.fail_json(msg=f"Could not find key with id {module.params.get('key_id')} to update")
     if module.params.get("multi_region") and key_metadata and module.params.get("state") == "present":
         module.fail_json(msg="You cannot change the multi-region property on an existing key.")
 
@@ -1037,7 +1037,10 @@ def main():
     kms = module.client("kms")
 
     module.deprecate(
-        "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
+        (
+            "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned"
+            " for now."
+        ),
         date="2024-05-01",
         collection_name="amazon.aws",
     )

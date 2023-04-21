@@ -438,14 +438,14 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
 
         if allocation:
             if allocation.get("Domain") != "vpc":
-                msg = "EIP {0} is a non-VPC EIP, please allocate a VPC scoped EIP".format(eip_address)
+                msg = f"EIP {eip_address} is a non-VPC EIP, please allocate a VPC scoped EIP"
             else:
                 allocation_id = allocation.get("AllocationId")
 
     except is_boto3_error_code("InvalidAddress.Malformed"):
-        module.fail_json(msg="EIP address {0} is invalid.".format(eip_address))
+        module.fail_json(msg=f"EIP address {eip_address} is invalid.")
     except is_boto3_error_code("InvalidAddress.NotFound"):  # pylint: disable=duplicate-except
-        msg = "EIP {0} does not exist".format(eip_address)
+        msg = f"EIP {eip_address} does not exist"
         allocation_id = None
     except (
         botocore.exceptions.ClientError,
@@ -488,7 +488,7 @@ def allocate_eip_address(client, module):
     try:
         new_eip = client.allocate_address(aws_retry=True, **params)["AllocationId"]
         ip_allocated = True
-        msg = "eipalloc id {0} created".format(new_eip)
+        msg = f"eipalloc id {new_eip} created"
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e)
 
@@ -733,9 +733,7 @@ def pre_create(
                 return changed, msg, results
 
             changed = False
-            msg = "NAT Gateway {0} already exists in subnet_id {1}".format(
-                existing_gateways[0]["nat_gateway_id"], subnet_id
-            )
+            msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
             return changed, msg, results
         else:
             changed, msg, allocation_id = allocate_eip_address(client, module)
@@ -764,9 +762,7 @@ def pre_create(
                 return changed, msg, results
 
             changed = False
-            msg = "NAT Gateway {0} already exists in subnet_id {1}".format(
-                existing_gateways[0]["nat_gateway_id"], subnet_id
-            )
+            msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
             return changed, msg, results
 
     changed, results, msg = create(
@@ -839,7 +835,7 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
             if connectivity_type == "public":
                 allocation_id = results["nat_gateway_addresses"][0]["allocation_id"]
             changed = True
-            msg = "NAT gateway {0} is in a deleting state. Delete was successful".format(nat_gateway_id)
+            msg = f"NAT gateway {nat_gateway_id} is in a deleting state. Delete was successful"
 
             if wait and results.get("state") != "deleted":
                 wait_for_status(client, module, "nat_gateway_deleted", nat_gateway_id)
@@ -853,7 +849,7 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
     if release_eip and allocation_id:
         eip_released, msg = release_address(client, module, allocation_id)
         if not eip_released:
-            module.fail_json(msg="Failed to release EIP {0}: {1}".format(allocation_id, msg))
+            module.fail_json(msg=f"Failed to release EIP {allocation_id}: {msg}")
 
     return changed, msg, results
 

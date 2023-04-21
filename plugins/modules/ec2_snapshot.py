@@ -183,9 +183,7 @@ def get_volume_by_instance(module, ec2, device_name, instance_id):
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
-        module.fail_json(
-            msg="Could not find volume with name {0} attached to instance {1}".format(device_name, instance_id)
-        )
+        module.fail_json(msg=f"Could not find volume with name {device_name} attached to instance {instance_id}")
 
     volume = volumes[0]
     return volume
@@ -201,7 +199,7 @@ def get_volume_by_id(module, ec2, volume):
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
-        module.fail_json(msg="Could not find volume with id {0}".format(volume))
+        module.fail_json(msg=f"Could not find volume with id {volume}")
 
     volume = volumes[0]
     return volume

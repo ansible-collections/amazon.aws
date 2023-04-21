@@ -148,9 +148,7 @@ class AnsibleEc2Igw:
 
         igw = None
         if len(igws) > 1:
-            self._module.fail_json(
-                msg="EC2 returned more than one Internet Gateway for VPC {0}, aborting".format(vpc_id)
-            )
+            self._module.fail_json(msg=f"EC2 returned more than one Internet Gateway for VPC {vpc_id}, aborting")
         elif igws:
             igw = camel_dict_to_snake_dict(igws[0])
 

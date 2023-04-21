@@ -173,10 +173,13 @@ def input_retention_policy(client, log_group_name, retention, module):
         else:
             delete_log_group(client=client, log_group_name=log_group_name, module=module)
             module.fail_json(
-                msg="Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]"
+                msg=(
+                    "Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400,"
+                    " 545, 731, 1827, 3653]"
+                )
             )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to put retention policy for log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to put retention policy for log group {log_group_name}")
 
 
 def delete_retention_policy(client, log_group_name, module):
@@ -186,7 +189,7 @@ def delete_retention_policy(client, log_group_name, module):
     try:
         client.delete_retention_policy(logGroupName=log_group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to delete retention policy for log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to delete retention policy for log group {log_group_name}")
 
 
 def delete_log_group(client, log_group_name, module):
@@ -201,14 +204,14 @@ def delete_log_group(client, log_group_name, module):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to delete log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to delete log group {log_group_name}")
 
 
 def describe_log_group(client, log_group_name, module):
     try:
         desc_log_group = client.describe_log_groups(logGroupNamePrefix=log_group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to describe log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to describe log group {log_group_name}")
 
     matching_logs = [log for log in desc_log_group.get("logGroups", []) if log["logGroupName"] == log_group_name]
 
@@ -221,12 +224,12 @@ def describe_log_group(client, log_group_name, module):
         tags = client.list_tags_log_group(logGroupName=log_group_name)
     except is_boto3_error_code("AccessDeniedException"):
         tags = {}
-        module.warn("Permission denied listing tags for log group {0}".format(log_group_name))
+        module.warn(f"Permission denied listing tags for log group {log_group_name}")
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to describe tags for log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to describe tags for log group {log_group_name}")
 
     found_log_group["tags"] = tags.get("tags", {})
     return found_log_group

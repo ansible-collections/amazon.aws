@@ -656,14 +656,14 @@ def bucket_check(
     try:
         connection.head_bucket(Bucket=bucket_name)
     except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg="The bucket %s does not exist or is missing access permissions." % bucket_name)
+        module.fail_json_aws(e, msg=f"The bucket {bucket_name} does not exist or is missing access permissions.")
 
 
 def object_check(connection, module, bucket_name, object_name):
     try:
         connection.head_object(Bucket=bucket_name, Key=object_name)
     except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg="The object %s does not exist or is missing access permissions." % object_name)
+        module.fail_json_aws(e, msg=f"The object {object_name} does not exist or is missing access permissions.")
 
 
 def main():
@@ -711,8 +711,10 @@ def main():
 
     if dualstack and endpoint_url:
         module.deprecate(
-            "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
-            "time has been deprecated.",
+            (
+                "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
+                "time has been deprecated."
+            ),
             date="2024-12-01",
             collection_name="amazon.aws",
         )

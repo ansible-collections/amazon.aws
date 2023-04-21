@@ -535,9 +535,7 @@ def cancel_spot_instance_requests(module, connection):
         if len(requests_exist["SpotInstanceRequests"]) > 0:
             changed = True
             if module.check_mode:
-                module.exit_json(
-                    changed=changed, msg="Would have cancelled Spot request {0}".format(spot_instance_request_ids)
-                )
+                module.exit_json(changed=changed, msg=f"Would have cancelled Spot request {spot_instance_request_ids}")
 
             connection.cancel_spot_instance_requests(
                 aws_retry=True, SpotInstanceRequestIds=module.params.get("spot_instance_request_ids")
@@ -548,7 +546,7 @@ def cancel_spot_instance_requests(module, connection):
                 terminate_associated_instances(connection, module, associated_instances)
 
             module.exit_json(
-                changed=changed, msg="Cancelled Spot request {0}".format(module.params.get("spot_instance_request_ids"))
+                changed=changed, msg=f"Cancelled Spot request {module.params.get('spot_instance_request_ids')}"
             )
         else:
             module.exit_json(changed=changed, msg="Spot request not found or already cancelled")

@@ -476,7 +476,7 @@ def get_image_by_id(connection, image_id):
         return None
 
     if image_counter > 1:
-        raise Ec2AmiFailure("Invalid number of instances (%s) found for image_id: %s." % (str(len(images)), image_id))
+        raise Ec2AmiFailure(f"Invalid number of instances ({str(len(images))}) found for image_id: {image_id}.")
 
     result = images[0]
     try:
@@ -492,7 +492,7 @@ def get_image_by_id(connection, image_id):
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        raise Ec2AmiFailure("Error retrieving image attributes for image %s" % image_id, e)
+        raise Ec2AmiFailure(f"Error retrieving image attributes for image {image_id}", e)
     return result
 
 
@@ -550,7 +550,7 @@ class DeregisterImage:
         if "ImageId" in image:
             module.exit_json(changed=True, msg="Would have deregistered AMI if not in check mode.")
         else:
-            module.exit_json(msg="Image %s has already been deregistered." % image_id, changed=False)
+            module.exit_json(msg=f"Image {image_id} has already been deregistered.", changed=False)
 
     @staticmethod
     def defer_purge_snapshots(image):
@@ -605,7 +605,7 @@ class DeregisterImage:
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 raise Ec2AmiFailure("Error deregistering image", e)
         else:
-            module.exit_json(msg="Image %s has already been deregistered." % image_id, changed=False)
+            module.exit_json(msg=f"Image {image_id} has already been deregistered.", changed=False)
 
         if wait:
             cls.timeout(connection, image_id, wait_timeout)
@@ -656,7 +656,7 @@ class UpdateImage:
                 )
             changed = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            raise Ec2AmiFailure("Error updating launch permissions of image %s" % image["ImageId"], e)
+            raise Ec2AmiFailure(f"Error updating launch permissions of image {image['ImageId']}", e)
         return changed
 
     @staticmethod
@@ -684,7 +684,7 @@ class UpdateImage:
                 )
             return True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            raise Ec2AmiFailure("Error setting description for image %s" % image["ImageId"], e)
+            raise Ec2AmiFailure(f"Error setting description for image {image['ImageId']}", e)
 
     @classmethod
     def do(cls, module, connection, image_id):
@@ -692,7 +692,7 @@ class UpdateImage:
         launch_permissions = module.params.get("launch_permissions")
         image = get_image_by_id(connection, image_id)
         if image is None:
-            raise Ec2AmiFailure("Image %s does not exist" % image_id)
+            raise Ec2AmiFailure(f"Image {image_id} does not exist")
 
         changed = False
         changed |= cls.set_launch_permission(connection, image, launch_permissions, module.check_mode)
@@ -754,7 +754,7 @@ class CreateImage:
             if params["LaunchPermission"]["Add"]:
                 connection.modify_image_attribute(aws_retry=True, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            raise Ec2AmiFailure("Error setting launch permissions for image %s" % image_id, e)
+            raise Ec2AmiFailure(f"Error setting launch permissions for image {image_id}", e)
 
     @staticmethod
     def create_or_register(connection, create_image_parameters):

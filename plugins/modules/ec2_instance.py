@@ -1103,7 +1103,10 @@ def build_network_spec(params):
             default_vpc = get_default_vpc()
             if default_vpc is None:
                 module.fail_json(
-                    msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to create an instance"
+                    msg=(
+                        "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
+                        " to create an instance"
+                    )
                 )
             else:
                 sub = get_default_subnet(default_vpc, availability_zone=module.params.get("availability_zone"))
@@ -1158,7 +1161,7 @@ def build_network_spec(params):
             spec["SubnetId"] = interface_params.get("subnet_id", params.get("vpc_subnet_id"))
         elif not spec.get("SubnetId") and not interface_params["id"]:
             # TODO grab a subnet from default VPC
-            raise ValueError("Failed to assign subnet to interface {0}".format(interface_params))
+            raise ValueError(f"Failed to assign subnet to interface {interface_params}")
 
         interfaces.append(spec)
     return interfaces
@@ -1174,10 +1177,8 @@ def warn_if_public_ip_assignment_changed(instance):
     public_dns_name = instance.get("PublicDnsName")
     if (public_dns_name and not assign_public_ip) or (assign_public_ip and not public_dns_name):
         module.warn(
-            "Unable to modify public ip assignment to {0} for instance {1}. "
-            "Whether or not to assign a public IP is determined during instance creation.".format(
-                assign_public_ip, instance["InstanceId"]
-            )
+            f"Unable to modify public ip assignment to {assign_public_ip} for instance {instance['InstanceId']}."
+            " Whether or not to assign a public IP is determined during instance creation."
         )
 
 
@@ -1194,16 +1195,14 @@ def warn_if_cpu_options_changed(instance):
     threads_per_core = cpu_options.get("threads_per_core")
     if core_count_curr != core_count:
         module.warn(
-            "Unable to modify core_count from {0} to {1}. "
-            "Assigning a number of core is determinted during instance creation".format(core_count_curr, core_count)
+            f"Unable to modify core_count from {core_count_curr} to {core_count}. Assigning a number of core is"
+            " determinted during instance creation"
         )
 
     if threads_per_core_curr != threads_per_core:
         module.warn(
-            "Unable to modify threads_per_core from {0} to {1}. "
-            "Assigning a number of threads per core is determined during instance creation.".format(
-                threads_per_core_curr, threads_per_core
-            )
+            f"Unable to modify threads_per_core from {threads_per_core_curr} to {threads_per_core}. Assigning a number"
+            " of threads per core is determined during instance creation."
         )
 
 
@@ -1213,15 +1212,14 @@ def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None):
             sub = client.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
         except is_boto3_error_code("InvalidGroup.NotFound"):
             module.fail_json(
-                "Could not find subnet {0} to associate security groups. Please check the vpc_subnet_id and security_groups parameters.".format(
-                    subnet_id
-                )
+                f"Could not find subnet {subnet_id} to associate security groups. Please check the vpc_subnet_id and"
+                " security_groups parameters."
             )
         except (
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Error while searching for subnet {0} parent VPC.".format(subnet_id))
+            module.fail_json_aws(e, msg=f"Error while searching for subnet {subnet_id} parent VPC.")
         parent_vpc_id = sub["Subnets"][0]["VpcId"]
 
     if group:
@@ -1271,7 +1269,10 @@ def build_top_level_options(params):
         spec["LaunchTemplate"] = {}
         if not params.get("launch_template").get("id") and not params.get("launch_template").get("name"):
             module.fail_json(
-                msg="Could not create instance with launch template. Either launch_template.name or launch_template.id parameters are required"
+                msg=(
+                    "Could not create instance with launch template. Either launch_template.name or launch_template.id"
+                    " parameters are required"
+                )
             )
 
         if params.get("launch_template").get("id") is not None:
@@ -1304,8 +1305,9 @@ def build_top_level_options(params):
                 spec["HibernationOptions"] = {"Configured": True}
             else:
                 module.fail_json(
-                    msg="Hibernation prerequisites not satisfied. Refer {0}".format(
-                        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html"
+                    msg=(
+                        "Hibernation prerequisites not satisfied. Refer to"
+                        " https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html"
                     )
                 )
     if params.get("cpu_options") is not None:
@@ -1392,7 +1394,7 @@ def await_instances(ids, desired_module_state="present", force_wait=False):
         "absent": "instance_terminated",
     }
     if desired_module_state not in state_to_boto3_waiter:
-        module.fail_json(msg="Cannot wait for state {0}, invalid state".format(desired_module_state))
+        module.fail_json(msg=f"Cannot wait for state {desired_module_state}, invalid state")
     boto3_waiter_type = state_to_boto3_waiter[desired_module_state]
     waiter = client.get_waiter(boto3_waiter_type)
     try:
@@ -1404,17 +1406,13 @@ def await_instances(ids, desired_module_state="present", force_wait=False):
             },
         )
     except botocore.exceptions.WaiterConfigError as e:
+        instance_ids = ", ".join(ids)
         module.fail_json(
-            msg="{0}. Error waiting for instances {1} to reach state {2}".format(
-                to_native(e), ", ".join(ids), boto3_waiter_type
-            )
+            msg=f"{to_native(e)}. Error waiting for instances {instance_ids} to reach state {boto3_waiter_type}"
         )
     except botocore.exceptions.WaiterError as e:
-        module.warn(
-            "Instances {0} took too long to reach state {1}. {2}".format(
-                ", ".join(ids), boto3_waiter_type, to_native(e)
-            )
-        )
+        instance_ids = ", ".join(ids)
+        module.warn(f"Instances {instance_ids} took too long to reach state {boto3_waiter_type}. {to_native(e)}")
 
 
 def diff_instance_and_params(instance, params, skip=None):
@@ -1447,9 +1445,7 @@ def diff_instance_and_params(instance, params, skip=None):
         try:
             value = client.describe_instance_attribute(aws_retry=True, Attribute=mapping.attribute_name, InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Could not describe attribute {0} for instance {1}".format(mapping.attribute_name, id_)
-            )
+            module.fail_json_aws(e, msg=f"Could not describe attribute {mapping.attribute_name} for instance {id_}")
         if value[mapping.instance_key]["Value"] != params.get(mapping.param_key):
             arguments = dict(
                 InstanceId=instance["InstanceId"],
@@ -1462,7 +1458,7 @@ def diff_instance_and_params(instance, params, skip=None):
         try:
             value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Could not describe attribute groupSet for instance {0}".format(id_))
+            module.fail_json_aws(e, msg=f"Could not describe attribute groupSet for instance {id_}")
         # managing security groups
         if params.get("vpc_subnet_id"):
             subnet_id = params.get("vpc_subnet_id")
@@ -1470,7 +1466,10 @@ def diff_instance_and_params(instance, params, skip=None):
             default_vpc = get_default_vpc()
             if default_vpc is None:
                 module.fail_json(
-                    msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to modify security groups."
+                    msg=(
+                        "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
+                        " to modify security groups."
+                    )
                 )
             else:
                 sub = get_default_subnet(default_vpc)
@@ -1520,9 +1519,7 @@ def change_network_attachments(instance, params):
                     NetworkInterfaceId=eni_id,
                 )
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(
-                    e, msg="Could not attach interface {0} to instance {1}".format(eni_id, instance["InstanceId"])
-                )
+                module.fail_json_aws(e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}")
         return bool(len(to_attach))
     return False
 
@@ -1580,7 +1577,7 @@ def get_default_subnet(vpc, availability_zone=None):
             ),
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Could not describe default subnets for VPC {0}".format(vpc["VpcId"]))
+        module.fail_json_aws(e, msg=f"Could not describe default subnets for VPC {vpc['VpcId']}")
     if len(subnets.get("Subnets", [])):
         if availability_zone is not None:
             subs_by_az = dict((subnet["AvailabilityZone"], subnet) for subnet in subnets.get("Subnets"))
@@ -1608,7 +1605,7 @@ def ensure_instance_state(desired_module_state, filters):
 
         if failed:
             module.fail_json(
-                msg="Unable to start instances: {0}".format(failure_reason),
+                msg=f"Unable to start instances: {failure_reason}",
                 reboot_success=list(_changed),
                 reboot_failed=failed,
             )
@@ -1634,7 +1631,7 @@ def ensure_instance_state(desired_module_state, filters):
 
         if failed:
             module.fail_json(
-                msg="Unable to stop instances: {0}".format(failure_reason),
+                msg=f"Unable to stop instances: {failure_reason}",
                 stop_success=list(_changed),
                 stop_failed=failed,
             )
@@ -1648,7 +1645,7 @@ def ensure_instance_state(desired_module_state, filters):
 
         if failed:
             module.fail_json(
-                msg="Unable to restart instances: {0}".format(failure_reason),
+                msg=f"Unable to restart instances: {failure_reason}",
                 reboot_success=list(_changed),
                 reboot_failed=failed,
             )
@@ -1669,7 +1666,7 @@ def ensure_instance_state(desired_module_state, filters):
 
         if failed:
             module.fail_json(
-                msg="Unable to stop instances: {0}".format(failure_reason),
+                msg=f"Unable to stop instances: {failure_reason}",
                 stop_success=list(_changed),
                 stop_failed=failed,
             )
@@ -1689,7 +1686,7 @@ def ensure_instance_state(desired_module_state, filters):
 
         if terminate_failed:
             module.fail_json(
-                msg="Unable to terminate instances: {0}".format(failure_reason),
+                msg=f"Unable to terminate instances: {failure_reason}",
                 terminate_success=list(terminated),
                 terminate_failed=terminate_failed,
             )
@@ -1799,16 +1796,14 @@ def determine_iam_role(name_or_arn):
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
         return role["InstanceProfile"]["Arn"]
     except is_boto3_error_code("NoSuchEntity") as e:
-        module.fail_json_aws(e, msg="Could not find iam_instance_profile {0}".format(name_or_arn))
+        module.fail_json_aws(e, msg=f"Could not find iam_instance_profile {name_or_arn}")
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
-            msg="An error occurred while searching for iam_instance_profile {0}. Please try supplying the full ARN.".format(
-                name_or_arn
-            ),
+            msg=f"An error occurred while searching for iam_instance_profile {name_or_arn}. Please try supplying the full ARN.",
         )
 
 
@@ -1837,7 +1832,7 @@ def handle_existing(existing_matches, state, filters):
                 try:
                     client.modify_instance_attribute(aws_retry=True, **c)
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
+                    module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to existing instance.")
         all_changes.extend(changes)
         changed |= bool(changes)
         changed |= add_or_update_instance_profile(existing_matches[0], module.params.get("iam_instance_profile"))
@@ -1966,7 +1961,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                 try:
                     client.modify_instance_attribute(aws_retry=True, **c)
                 except botocore.exceptions.ClientError as e:
-                    module.fail_json_aws(e, msg="Could not apply change {0} to new instance.".format(str(c)))
+                    module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to new instance.")
         if existing_matches:
             # If we came from enforce_count, create a second list to distinguish
             # between existing and new instances when returning the entire cohort

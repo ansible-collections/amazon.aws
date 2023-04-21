@@ -254,7 +254,7 @@ def associate_ip_and_device(
                     params["PublicIp"] = address["PublicIp"]
                 res = ec2.associate_address(aws_retry=True, **params)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                msg = "Couldn't associate Elastic IP address with instance '{0}'".format(device_id)
+                msg = f"Couldn't associate Elastic IP address with instance '{device_id}'"
                 module.fail_json_aws(e, msg=msg)
         else:
             params = dict(
@@ -269,7 +269,7 @@ def associate_ip_and_device(
             try:
                 res = ec2.associate_address(aws_retry=True, **params)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                msg = "Couldn't associate Elastic IP address with network interface '{0}'".format(device_id)
+                msg = f"Couldn't associate Elastic IP address with network interface '{device_id}'"
                 module.fail_json_aws(e, msg=msg)
         if not res:
             module.fail_json_aws(e, msg="Association failed.")
@@ -325,8 +325,7 @@ def find_address(ec2, module, public_ip, device_id, is_instance=True):
     if len(addresses) == 1:
         return addresses[0]
     elif len(addresses) > 1:
-        msg = "Found more than one address using args {0}".format(kwargs)
-        msg += "Addresses found: {0}".format(addresses)
+        msg = f"Found more than one address using args {kwargs} Addresses found: {addresses}"
         module.fail_json_aws(botocore.exceptions.ClientError, msg=msg)
 
 

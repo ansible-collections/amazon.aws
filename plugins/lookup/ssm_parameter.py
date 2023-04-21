@@ -163,13 +163,13 @@ class LookupModule(AWSLookupBase):
             not isinstance(on_missing, string_types) or on_missing.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
-                '"on_missing" must be a string and one of "error", "warn" or "skip", not {0}'.format(on_missing)
+                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {on_missing}'
             )
         if on_denied is not None and (
             not isinstance(on_denied, string_types) or on_denied.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
-                '"on_denied" must be a string and one of "error", "warn" or "skip", not {0}'.format(on_denied)
+                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
             )
 
         ret = []
@@ -183,7 +183,7 @@ class LookupModule(AWSLookupBase):
         if self.get_option("bypath"):
             ssm_dict["Recursive"] = self.get_option("recursive")
             for term in terms:
-                display.vvv("AWS_ssm path lookup term: {0} in region: {1}".format(term, self.region))
+                display.vvv(f"AWS_ssm path lookup term: {term} in region: {self.region}")
 
                 paramlist = self.get_path_parameters(client, ssm_dict, term, on_missing.lower(), on_denied.lower())
                 # Shorten parameter names. Yes, this will return
@@ -192,7 +192,7 @@ class LookupModule(AWSLookupBase):
                     for x in paramlist:
                         x["Name"] = x["Name"][x["Name"].rfind("/") + 1:]  # fmt: skip
 
-                display.vvvv("AWS_ssm path lookup returned: {0}".format(to_native(paramlist)))
+                display.vvvv(f"AWS_ssm path lookup returned: {to_native(paramlist)}")
 
                 ret.append(
                     boto3_tag_list_to_ansible_dict(paramlist, tag_name_key_name="Name", tag_value_key_name="Value")
@@ -200,10 +200,10 @@ class LookupModule(AWSLookupBase):
         # Lookup by parameter name - always returns a list with one or
         # no entry.
         else:
-            display.vvv("AWS_ssm name lookup term: {0}".format(terms))
+            display.vvv(f"AWS_ssm name lookup term: {terms}")
             for term in terms:
                 ret.append(self.get_parameter_value(client, ssm_dict, term, on_missing.lower(), on_denied.lower()))
-        display.vvvv("AWS_ssm path lookup returning: {0} ".format(to_native(ret)))
+        display.vvvv(f"AWS_ssm path lookup returning: {to_native(ret)} ")
         return ret
 
     def get_path_parameters(self, client, ssm_dict, term, on_missing, on_denied):
@@ -213,20 +213,20 @@ class LookupModule(AWSLookupBase):
             paramlist = paginator.paginate(**ssm_dict).build_full_result()["Parameters"]
         except is_boto3_error_code("AccessDeniedException"):
             if on_denied == "error":
-                raise AnsibleLookupError("Failed to access SSM parameter path {0} (AccessDenied)".format(term))
+                raise AnsibleLookupError(f"Failed to access SSM parameter path {term} (AccessDenied)")
             elif on_denied == "warn":
-                self.warn("Skipping, access denied for SSM parameter path {0}".format(term))
+                self.warn(f"Skipping, access denied for SSM parameter path {term}")
                 paramlist = [{}]
             elif on_denied == "skip":
                 paramlist = [{}]
         except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError("SSM lookup exception: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"SSM lookup exception: {to_native(e)}")
 
         if not len(paramlist):
             if on_missing == "error":
-                raise AnsibleLookupError("Failed to find SSM parameter path {0} (ResourceNotFound)".format(term))
+                raise AnsibleLookupError(f"Failed to find SSM parameter path {term} (ResourceNotFound)")
             elif on_missing == "warn":
-                self.warn("Skipping, did not find SSM parameter path {0}".format(term))
+                self.warn(f"Skipping, did not find SSM parameter path {term}")
 
         return paramlist
 
@@ -237,14 +237,14 @@ class LookupModule(AWSLookupBase):
             return response["Parameter"]["Value"]
         except is_boto3_error_code("ParameterNotFound"):
             if on_missing == "error":
-                raise AnsibleLookupError("Failed to find SSM parameter {0} (ResourceNotFound)".format(term))
+                raise AnsibleLookupError(f"Failed to find SSM parameter {term} (ResourceNotFound)")
             elif on_missing == "warn":
-                self.warn("Skipping, did not find SSM parameter {0}".format(term))
+                self.warn(f"Skipping, did not find SSM parameter {term}")
         except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
             if on_denied == "error":
-                raise AnsibleLookupError("Failed to access SSM parameter {0} (AccessDenied)".format(term))
+                raise AnsibleLookupError(f"Failed to access SSM parameter {term} (AccessDenied)")
             elif on_denied == "warn":
-                self.warn("Skipping, access denied for SSM parameter {0}".format(term))
+                self.warn(f"Skipping, access denied for SSM parameter {term}")
         except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError("SSM lookup exception: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"SSM lookup exception: {to_native(e)}")
         return None

@@ -353,7 +353,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
             StackName=stack_name, PaginationConfig={"MaxItems": events_limit}
         )
         if token_filter is not None:
-            events = list(retry_decorator(pg.search)("StackEvents[?ClientRequestToken == '{0}']".format(token_filter)))
+            events = list(retry_decorator(pg.search)(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
         else:
             events = list(pg.search("StackEvents[*]"))
     except is_boto3_error_message("does not exist"):
@@ -368,12 +368,12 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
         return ret
 
     for e in events:
-        eventline = "StackEvent {ResourceType} {LogicalResourceId} {ResourceStatus}".format(**e)
+        eventline = f"StackEvent {e['ResourceType']} {e['LogicalResourceId']} {e['ResourceStatus']}"
         ret["events"].append(eventline)
 
         if e["ResourceStatus"].endswith("FAILED"):
-            failline = "{ResourceType} {LogicalResourceId} {ResourceStatus}: {ResourceStatusReason}".format(**e)
-            ret["log"].append(failline)
+            failure = f"{e['ResourceType']} {e['LogicalResourceId']} {e['ResourceStatus']}: {e['ResourceStatusReason']}"
+            ret["log"].append(failure)
 
     return ret
 
@@ -403,7 +403,7 @@ def create_stack(module, stack_params, cfn, events_limit):
             module, cfn, response["StackId"], "CREATE", events_limit, stack_params.get("ClientRequestToken", None)
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
-        module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get("StackName")))
+        module.fail_json_aws(err, msg=f"Failed to create stack {stack_params.get('StackName')}")
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -430,8 +430,8 @@ def create_changeset(module, stack_params, cfn, events_limit):
         # Determine if this changeset already exists
         pending_changesets = list_changesets(cfn, stack_params["StackName"])
         if changeset_name in pending_changesets:
-            warning = "WARNING: %d pending changeset(s) exist(s) for this stack!" % len(pending_changesets)
-            result = dict(changed=False, output="ChangeSet %s already exists." % changeset_name, warnings=[warning])
+            warning = f"WARNING: {len(pending_changesets)} pending changeset(s) exist(s) for this stack!"
+            result = dict(changed=False, output=f"ChangeSet {changeset_name} already exists.", warnings=[warning])
         else:
             cs = cfn.create_change_set(aws_retry=True, **stack_params)
             # Make sure we don't enter an infinite loop
@@ -462,8 +462,8 @@ def create_changeset(module, stack_params, cfn, events_limit):
             result = stack_operation(module, cfn, stack_params["StackName"], "CREATE_CHANGESET", events_limit)
             result["change_set_id"] = cs["Id"]
             result["warnings"] = [
-                "Created changeset named %s for stack %s" % (changeset_name, stack_params["StackName"]),
-                "You can execute it using: aws cloudformation execute-change-set --change-set-name %s" % cs["Id"],
+                f"Created changeset named {changeset_name} for stack {stack_params['StackName']}",
+                f"You can execute it using: aws cloudformation execute-change-set --change-set-name {cs['Id']}",
                 "NOTE that dependencies on this stack might fail due to pending changes!",
             ]
     except is_boto3_error_message("No updates are to be performed."):
@@ -494,7 +494,7 @@ def update_stack(module, stack_params, cfn, events_limit):
     except is_boto3_error_message("No updates are to be performed."):
         result = dict(changed=False, output="Stack is already up-to-date.")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
-        module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get("StackName")))
+        module.fail_json_aws(err, msg=f"Failed to update stack {stack_params.get('StackName')}")
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -548,21 +548,21 @@ def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=N
         # it covers ROLLBACK_COMPLETE and UPDATE_ROLLBACK_COMPLETE
         # Possible states: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w1ab2c15c17c21c13
         elif stack["StackStatus"].endswith("ROLLBACK_COMPLETE") and operation != "CREATE_CHANGESET":
-            ret.update({"changed": True, "failed": True, "output": "Problem with %s. Rollback complete" % operation})
+            ret.update({"changed": True, "failed": True, "output": f"Problem with {operation}. Rollback complete"})
             return ret
         elif stack["StackStatus"] == "DELETE_COMPLETE" and operation == "CREATE":
             ret.update({"changed": True, "failed": True, "output": "Stack create failed. Delete complete."})
             return ret
         # note the ordering of ROLLBACK_COMPLETE, DELETE_COMPLETE, and COMPLETE, because otherwise COMPLETE will match all cases.
         elif stack["StackStatus"].endswith("_COMPLETE"):
-            ret.update({"changed": True, "output": "Stack %s complete" % operation})
+            ret.update({"changed": True, "output": f"Stack {operation} complete"})
             return ret
         elif stack["StackStatus"].endswith("_ROLLBACK_FAILED"):
-            ret.update({"changed": True, "failed": True, "output": "Stack %s rollback failed" % operation})
+            ret.update({"changed": True, "failed": True, "output": f"Stack {operation} rollback failed"})
             return ret
         # note the ordering of ROLLBACK_FAILED and FAILED, because otherwise FAILED will match both cases.
         elif stack["StackStatus"].endswith("_FAILED"):
-            ret.update({"changed": True, "failed": True, "output": "Stack %s failed" % operation})
+            ret.update({"changed": True, "failed": True, "output": f"Stack {operation} failed"})
             return ret
         else:
             # this can loop forever :/
@@ -576,9 +576,8 @@ def build_changeset_name(stack_params):
 
     json_params = json.dumps(stack_params, sort_keys=True)
 
-    return "Ansible-{0}-{1}".format(
-        stack_params["StackName"], sha1(to_bytes(json_params, errors="surrogate_or_strict")).hexdigest()
-    )
+    changeset_sha = sha1(to_bytes(json_params, errors="surrogate_or_strict")).hexdigest()
+    return f"Ansible-{stack_params['StackName']}-{changeset_sha}"
 
 
 def check_mode_changeset(module, stack_params, cfn):
@@ -596,7 +595,7 @@ def check_mode_changeset(module, stack_params, cfn):
             time.sleep(5)
         else:
             # if the changeset doesn't finish in 5 mins, this `else` will trigger and fail
-            module.fail_json(msg="Failed to create change set %s" % stack_params["ChangeSetName"])
+            module.fail_json(msg=f"Failed to create change set {stack_params['ChangeSetName']}")
 
         cfn.delete_change_set(aws_retry=True, ChangeSetName=change_set["Id"])
 
@@ -675,8 +674,7 @@ def main():
 
     if invalid_capabilities:
         module.fail_json(
-            msg="Specified capabilities are invalid : %r,"
-            " please check documentation for valid capabilities" % invalid_capabilities
+            msg=f"Specified capabilities are invalid : {invalid_capabilities!r}, please check documentation for valid capabilities"
         )
 
     # collect the parameters that are passed to boto3. Keeps us from having so many scalars floating around.

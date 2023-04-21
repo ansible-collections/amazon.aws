@@ -830,7 +830,7 @@ class ElbManager:
 
         # Shouldn't happen, but Amazon could change the rules on us...
         if len(elbs) > 1:
-            self.module.fail_json("Found multiple ELBs with name {0}".format(self.name))
+            self.module.fail_json(f"Found multiple ELBs with name {self.name}")
 
         self.status = "exists" if self.status == "gone" else self.status
 
@@ -903,7 +903,7 @@ class ElbManager:
         if protocol in ["HTTP", "HTTPS"] and "ping_path" in self.health_check:
             path = self.health_check["ping_path"]
 
-        return "%s:%s%s" % (protocol, self.health_check["ping_port"], path)
+        return f"{protocol}:{self.health_check['ping_port']}{path}"
 
     def _format_healthcheck(self):
         return dict(
@@ -1031,7 +1031,7 @@ class ElbManager:
         backend_policies = list()
         for port, policies in self._get_backend_policies().items():
             for policy in policies:
-                backend_policies.append("{0}:{1}".format(port, policy))
+                backend_policies.append(f"{port}:{policy}")
 
         info = dict(
             name=check_elb.get("LoadBalancerName"),
@@ -1124,9 +1124,7 @@ class ElbManager:
             return True
         waiter = get_waiter(self.ec2_client, "network_interface_available")
 
-        filters = ansible_dict_to_boto3_filter_list(
-            {"requester-id": "amazon-elb", "description": "ELB {0}".format(self.name)}
-        )
+        filters = ansible_dict_to_boto3_filter_list({"requester-id": "amazon-elb", "description": f"ELB {self.name}"})
 
         try:
             waiter.wait(
@@ -1160,9 +1158,7 @@ class ElbManager:
 
         waiter = get_waiter(self.ec2_client, "network_interface_deleted")
 
-        filters = ansible_dict_to_boto3_filter_list(
-            {"requester-id": "amazon-elb", "description": "ELB {0}".format(self.name)}
-        )
+        filters = ansible_dict_to_boto3_filter_list({"requester-id": "amazon-elb", "description": f"ELB {self.name}"})
 
         try:
             waiter.wait(
@@ -1492,7 +1488,7 @@ class ElbManager:
         return "ProxyProtocol-policy"
 
     def _policy_name(self, policy_type):
-        return "ec2-elb-lb-{0}".format(policy_type)
+        return f"ec2-elb-lb-{policy_type}"
 
     def _get_listener_policies(self):
         """Get a list of listener policies mapped to the LoadBalancerPort"""
@@ -1584,7 +1580,7 @@ class ElbManager:
             add_method = self.client.create_app_cookie_stickiness_policy
         else:
             # We shouldn't get here...
-            self.module.fail_json(msg="Unknown stickiness policy {0}".format(self.stickiness["type"]))
+            self.module.fail_json(msg=f"Unknown stickiness policy {self.stickiness['type']}")
 
         changed = False
         # To update a policy we need to delete then re-add, and we can only
@@ -1624,7 +1620,7 @@ class ElbManager:
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
-            self.module.fail_json_aws(e, msg="Failed to load balancer policy {0}".format(policy_name))
+            self.module.fail_json_aws(e, msg=f"Failed to load balancer policy {policy_name}")
         return True
 
     def _set_stickiness_policy(self, method, description, existing_policies=None):
@@ -1714,7 +1710,7 @@ class ElbManager:
             if proxy_ports.get(instance_port, None) is not None:
                 if proxy_ports[instance_port] != proxy_protocol:
                     self.module.fail_json_aws(
-                        "proxy_protocol set to conflicting values for listeners" " on port {0}".format(instance_port)
+                        f"proxy_protocol set to conflicting values for listeners on port {instance_port}"
                     )
             proxy_ports[instance_port] = proxy_protocol
 
@@ -1783,8 +1779,7 @@ class ElbManager:
 
         if existing_policy is not None:
             self.module.fail_json(
-                msg="Unable to configure ProxyProtocol policy. "
-                "Policy with name {0} already exists and doesn't match.".format(policy_name),
+                msg=f"Unable to configure ProxyProtocol policy. Policy with name {policy_name} already exists and doesn't match.",
                 policy=proxy_policy,
                 existing_policy=existing_policy,
             )
@@ -1966,7 +1961,7 @@ class ElbManager:
             problem = self._validate_protocol(value)
             problem_found |= problem
             if problem:
-                self.module.fail_json(msg="Invalid protocol ({0}) in listener".format(value), listener=listener)
+                self.module.fail_json(msg=f"Invalid protocol ({value}) in listener", listener=listener)
         return problem_found
 
     def _validate_health_check(self, health_check):
@@ -1975,7 +1970,7 @@ class ElbManager:
         protocol = health_check["ping_protocol"]
         if self._validate_protocol(protocol):
             self.module.fail_json(
-                msg="Invalid protocol ({0}) defined in health check".format(protocol),
+                msg=f"Invalid protocol ({protocol}) defined in health check",
                 health_check=health_check,
             )
         if protocol.upper() in ["HTTP", "HTTPS"]:
