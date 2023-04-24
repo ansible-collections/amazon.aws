@@ -172,7 +172,7 @@ def boto_exception(err):
     elif hasattr(err, "message"):
         error = str(err.message) + " " + str(err) + " - " + str(type(err))
     else:
-        error = "%s: %s" % (Exception, err)
+        error = f"{Exception}: {err}"
 
     return error
 

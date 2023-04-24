@@ -9,7 +9,7 @@ from ansible.module_utils._text import to_native
 class AnsibleAWSError(Exception):
     def __str__(self):
         if self.exception and self.message:
-            return "{0}: {1}".format(self.message, to_native(self.exception))
+            return f"{self.message}: {to_native(self.exception)}"
 
         return super().__str__()
 
