@@ -1,0 +1,71 @@
+name: integration
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.sha }}'
+  cancel-in-progress: true
+
+on:
+  pull_request_target:
+    branches:
+      - main
+      - stable-*
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  integration:
+    env:
+      source: "./source"
+      community: "./community"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - devel
+        python-version:
+          - "3.9"
+    name: "ansible-test-integration-py${{ matrix.python-version }}-${{ matrix.ansible-version }}"
+    steps:
+      - name: Checkout collection
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source }}
+          fetch-depth: "0"
+      
+      - name: checkout community.aws
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.amazon }}
+          ref: main
+
+      - name: Build and install collection
+        id: install-src
+        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source }}
+      
+      - name: Build and install community.aws collection
+        id: install-amazon
+        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.community }}
+
+      - name: Create AWS/sts session credentials
+        uses: abikouo/github_actions/.github/actions/ansible_aws_test_provider@ansible_test_integration_a
+        with:
+          collection_path: ${{ steps.install-src.outputs.collection_path }}
+          ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
+
+      - name: Run integration tests
+        uses: abikouo/github_actions/.github/actions/ansible_test_integration@ansible_test_integration_a
+        with:
+          collection_path: ${{ steps.install-src.outputs.collection_path }}
+          python_version: ${{ matrix.python-version }}
+          ansible_version: ${{ matrix.ansible-version }}
