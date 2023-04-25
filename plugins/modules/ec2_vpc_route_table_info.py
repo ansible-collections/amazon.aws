@@ -203,35 +203,34 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 @AWSRetry.jittered_backoff()
 def describe_route_tables_with_backoff(connection, **params):
     try:
-        paginator = connection.get_paginator('describe_route_tables')
+        paginator = connection.get_paginator("describe_route_tables")
         return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code('InvalidRouteTableID.NotFound'):
+    except is_boto3_error_code("InvalidRouteTableID.NotFound"):
         return None
 
 
 def normalize_route(route):
     # Historically these were all there, but set to null when empty'
-    for legacy_key in ['DestinationCidrBlock', 'GatewayId', 'InstanceId',
-                       'Origin', 'State', 'NetworkInterfaceId']:
+    for legacy_key in ["DestinationCidrBlock", "GatewayId", "InstanceId", "Origin", "State", "NetworkInterfaceId"]:
         if legacy_key not in route:
             route[legacy_key] = None
-    route['InterfaceId'] = route['NetworkInterfaceId']
+    route["InterfaceId"] = route["NetworkInterfaceId"]
     return route
 
 
 def normalize_association(assoc):
     # Name change between boto v2 and boto v3, return both
-    assoc['Id'] = assoc['RouteTableAssociationId']
+    assoc["Id"] = assoc["RouteTableAssociationId"]
     return assoc
 
 
 def normalize_route_table(table):
-    table['tags'] = boto3_tag_list_to_ansible_dict(table['Tags'])
-    table['Associations'] = [normalize_association(assoc) for assoc in table['Associations']]
-    table['Routes'] = [normalize_route(route) for route in table['Routes']]
-    table['Id'] = table['RouteTableId']
-    del table['Tags']
-    return camel_dict_to_snake_dict(table, ignore_list=['tags'])
+    table["tags"] = boto3_tag_list_to_ansible_dict(table["Tags"])
+    table["Associations"] = [normalize_association(assoc) for assoc in table["Associations"]]
+    table["Routes"] = [normalize_route(route) for route in table["Routes"]]
+    table["Id"] = table["RouteTableId"]
+    del table["Tags"]
+    return camel_dict_to_snake_dict(table, ignore_list=["tags"])
 
 
 def normalize_results(results):
@@ -240,15 +239,14 @@ def normalize_results(results):
     maintained and the shape of the return values are what people expect
     """
 
-    routes = [normalize_route_table(route) for route in results['RouteTables']]
-    del results['RouteTables']
+    routes = [normalize_route_table(route) for route in results["RouteTables"]]
+    del results["RouteTables"]
     results = camel_dict_to_snake_dict(results)
-    results['route_tables'] = routes
+    results["route_tables"] = routes
     return results
 
 
 def list_ec2_vpc_route_tables(connection, module):
-
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
@@ -262,16 +260,15 @@ def list_ec2_vpc_route_tables(connection, module):
 
 def main():
     argument_spec = dict(
-        filters=dict(default=None, type='dict'),
+        filters=dict(default=None, type="dict"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     list_ec2_vpc_route_tables(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

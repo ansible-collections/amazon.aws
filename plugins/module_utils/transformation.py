@@ -33,8 +33,7 @@ from ansible.module_utils.six import integer_types
 
 
 def ansible_dict_to_boto3_filter_list(filters_dict):
-
-    """ Convert an Ansible dict of filters to list of dicts that boto3 can use
+    """Convert an Ansible dict of filters to list of dicts that boto3 can use
     Args:
         filters_dict (dict): Dict of AWS filters.
     Basic Usage:
@@ -57,15 +56,15 @@ def ansible_dict_to_boto3_filter_list(filters_dict):
 
     filters_list = []
     for k, v in filters_dict.items():
-        filter_dict = {'Name': k}
+        filter_dict = {"Name": k}
         if isinstance(v, bool):
-            filter_dict['Values'] = [str(v).lower()]
+            filter_dict["Values"] = [str(v).lower()]
         elif isinstance(v, integer_types):
-            filter_dict['Values'] = [str(v)]
+            filter_dict["Values"] = [str(v)]
         elif isinstance(v, string_types):
-            filter_dict['Values'] = [v]
+            filter_dict["Values"] = [v]
         else:
-            filter_dict['Values'] = v
+            filter_dict["Values"] = v
 
         filters_list.append(filter_dict)
 
@@ -74,18 +73,18 @@ def ansible_dict_to_boto3_filter_list(filters_dict):
 
 def map_complex_type(complex_type, type_map):
     """
-        Allows to cast elements within a dictionary to a specific type
-        Example of usage:
+    Allows to cast elements within a dictionary to a specific type
+    Example of usage:
 
-        DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
-            'maximum_percent': 'int',
-            'minimum_healthy_percent': 'int'
-        }
+    DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
+        'maximum_percent': 'int',
+        'minimum_healthy_percent': 'int'
+    }
 
-        deployment_configuration = map_complex_type(module.params['deployment_configuration'],
-                                                    DEPLOYMENT_CONFIGURATION_TYPE_MAP)
+    deployment_configuration = map_complex_type(module.params['deployment_configuration'],
+                                                DEPLOYMENT_CONFIGURATION_TYPE_MAP)
 
-        This ensures all keys within the root element are casted and valid integers
+    This ensures all keys within the root element are casted and valid integers
     """
 
     if complex_type is None:
@@ -95,22 +94,16 @@ def map_complex_type(complex_type, type_map):
         for key in complex_type:
             if key in type_map:
                 if isinstance(type_map[key], list):
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key][0])
+                    new_type[key] = map_complex_type(complex_type[key], type_map[key][0])
                 else:
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key])
+                    new_type[key] = map_complex_type(complex_type[key], type_map[key])
             else:
                 new_type[key] = complex_type[key]
     elif isinstance(complex_type, list):
         for i in range(len(complex_type)):
-            new_type.append(map_complex_type(
-                complex_type[i],
-                type_map))
+            new_type.append(map_complex_type(complex_type[i], type_map))
     elif type_map:
-        return globals()['__builtins__'][type_map](complex_type)
+        return globals()["__builtins__"][type_map](complex_type)
     return new_type
 
 
@@ -132,7 +125,10 @@ def scrub_none_parameters(parameters, descend_into_lists=True):
         if isinstance(v, dict):
             clean_parameters[k] = scrub_none_parameters(v, descend_into_lists=descend_into_lists)
         elif descend_into_lists and isinstance(v, list):
-            clean_parameters[k] = [scrub_none_parameters(vv, descend_into_lists=descend_into_lists) if isinstance(vv, dict) else vv for vv in v]
+            clean_parameters[k] = [
+                scrub_none_parameters(vv, descend_into_lists=descend_into_lists) if isinstance(vv, dict) else vv
+                for vv in v
+            ]
         elif v is not None:
             clean_parameters[k] = v
 

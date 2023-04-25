@@ -65,9 +65,9 @@ class LookupModule(LookupBase):
             ip_prefix_label = "ip_prefix"
 
         try:
-            resp = open_url('https://ip-ranges.amazonaws.com/ip-ranges.json')
+            resp = open_url("https://ip-ranges.amazonaws.com/ip-ranges.json")
             amazon_response = json.load(resp)[prefixes_label]
-        except getattr(json.decoder, 'JSONDecodeError', ValueError) as e:
+        except getattr(json.decoder, "JSONDecodeError", ValueError) as e:
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
             raise AnsibleLookupError("Could not decode AWS IP ranges: {0}".format(to_native(e)))
@@ -80,11 +80,11 @@ class LookupModule(LookupBase):
         except ConnectionError as e:
             raise AnsibleLookupError("Error connecting to IP range service: {0}".format(to_native(e)))
 
-        if 'region' in kwargs:
-            region = kwargs['region']
-            amazon_response = (item for item in amazon_response if item['region'] == region)
-        if 'service' in kwargs:
-            service = str.upper(kwargs['service'])
-            amazon_response = (item for item in amazon_response if item['service'] == service)
+        if "region" in kwargs:
+            region = kwargs["region"]
+            amazon_response = (item for item in amazon_response if item["region"] == region)
+        if "service" in kwargs:
+            service = str.upper(kwargs["service"])
+            amazon_response = (item for item in amazon_response if item["service"] == service)
         iprange = [item[ip_prefix_label] for item in amazon_response]
         return iprange

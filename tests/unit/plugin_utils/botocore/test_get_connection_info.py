@@ -33,8 +33,8 @@ def botocore_utils(monkeypatch):
 # module_utils.botocore.get_aws_connection_info
 ###############################################################
 def test_get_aws_connection_info_simple_plugin(monkeypatch, aws_plugin, botocore_utils):
-    connection_info_method = MagicMock(name='_aws_connection_info')
-    monkeypatch.setattr(botocore_utils, '_aws_connection_info', connection_info_method)
+    connection_info_method = MagicMock(name="_aws_connection_info")
+    monkeypatch.setattr(botocore_utils, "_aws_connection_info", connection_info_method)
     connection_info_method.return_value = sentinel.RETURNED_INFO
 
     assert botocore_utils.get_aws_connection_info(aws_plugin) is sentinel.RETURNED_INFO
@@ -45,8 +45,8 @@ def test_get_aws_connection_info_simple_plugin(monkeypatch, aws_plugin, botocore
 
 
 def test_get_aws_connection_info_exception_nested_plugin(monkeypatch, aws_plugin, botocore_utils):
-    connection_info_method = MagicMock(name='_aws_connection_info')
-    monkeypatch.setattr(botocore_utils, '_aws_connection_info', connection_info_method)
+    connection_info_method = MagicMock(name="_aws_connection_info")
+    monkeypatch.setattr(botocore_utils, "_aws_connection_info", connection_info_method)
 
     exception_nested = AnsibleBotocoreError(message=sentinel.ERROR_MSG, exception=sentinel.ERROR_EX)
     connection_info_method.side_effect = exception_nested
@@ -60,12 +60,12 @@ def test_get_aws_connection_info_exception_nested_plugin(monkeypatch, aws_plugin
     assert passed_args[0][0] is sentinel.PLUGIN_OPTIONS
 
     fail_args = aws_plugin.fail_aws.call_args
-    assert fail_args == call('sentinel.ERROR_MSG: sentinel.ERROR_EX')
+    assert fail_args == call("sentinel.ERROR_MSG: sentinel.ERROR_EX")
 
 
 def test_get_aws_connection_info_exception_msg_plugin(monkeypatch, aws_plugin, botocore_utils):
-    connection_info_method = MagicMock(name='_aws_connection_info')
-    monkeypatch.setattr(botocore_utils, '_aws_connection_info', connection_info_method)
+    connection_info_method = MagicMock(name="_aws_connection_info")
+    monkeypatch.setattr(botocore_utils, "_aws_connection_info", connection_info_method)
 
     exception_nested = AnsibleBotocoreError(message=sentinel.ERROR_MSG)
     connection_info_method.side_effect = exception_nested
@@ -79,4 +79,4 @@ def test_get_aws_connection_info_exception_msg_plugin(monkeypatch, aws_plugin, b
     assert passed_args[0][0] is sentinel.PLUGIN_OPTIONS
 
     fail_args = aws_plugin.fail_aws.call_args
-    assert fail_args == call('sentinel.ERROR_MSG')
+    assert fail_args == call("sentinel.ERROR_MSG")

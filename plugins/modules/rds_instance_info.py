@@ -367,10 +367,10 @@ except ImportError:
 
 @AWSRetry.jittered_backoff()
 def _describe_db_instances(conn, **params):
-    paginator = conn.get_paginator('describe_db_instances')
+    paginator = conn.get_paginator("describe_db_instances")
     try:
-        results = paginator.paginate(**params).build_full_result()['DBInstances']
-    except is_boto3_error_code('DBInstanceNotFound'):
+        results = paginator.paginate(**params).build_full_result()["DBInstances"]
+    except is_boto3_error_code("DBInstanceNotFound"):
         results = []
 
     return results
@@ -385,9 +385,7 @@ class RdsInstanceInfoFailure(Exception):
 
 def get_instance_tags(conn, arn):
     try:
-        return boto3_tag_list_to_ansible_dict(
-            conn.list_tags_for_resource(ResourceName=arn,
-                                        aws_retry=True)['TagList'])
+        return boto3_tag_list_to_ansible_dict(conn.list_tags_for_resource(ResourceName=arn, aws_retry=True)["TagList"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         raise RdsInstanceInfoFailure(e, "Couldn't get tags for instance %s" % arn)
 
@@ -395,9 +393,9 @@ def get_instance_tags(conn, arn):
 def instance_info(conn, instance_name, filters):
     params = {}
     if instance_name:
-        params['DBInstanceIdentifier'] = instance_name
+        params["DBInstanceIdentifier"] = instance_name
     if filters:
-        params['Filters'] = ansible_dict_to_boto3_filter_list(filters)
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
     try:
         results = _describe_db_instances(conn, **params)
@@ -405,18 +403,18 @@ def instance_info(conn, instance_name, filters):
         raise RdsInstanceInfoFailure(e, "Couldn't get instance information")
 
     for instance in results:
-        instance['Tags'] = get_instance_tags(conn, arn=instance['DBInstanceArn'])
+        instance["Tags"] = get_instance_tags(conn, arn=instance["DBInstanceArn"])
 
     return {
         "changed": False,
-        "instances": [camel_dict_to_snake_dict(instance, ignore_list=['Tags']) for instance in results]
+        "instances": [camel_dict_to_snake_dict(instance, ignore_list=["Tags"]) for instance in results],
     }
 
 
 def main():
     argument_spec = dict(
-        db_instance_identifier=dict(aliases=['id']),
-        filters=dict(type='dict')
+        db_instance_identifier=dict(aliases=["id"]),
+        filters=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
@@ -424,10 +422,10 @@ def main():
         supports_check_mode=True,
     )
 
-    conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
-    instance_name = module.params.get('db_instance_identifier')
-    filters = module.params.get('filters')
+    instance_name = module.params.get("db_instance_identifier")
+    filters = module.params.get("filters")
 
     try:
         module.exit_json(**instance_info(conn, instance_name, filters))
@@ -435,5 +433,5 @@ def main():
         module.fail_json_aws(e.original_e, e.user_message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

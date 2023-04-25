@@ -234,85 +234,80 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_alarms(connection, **params):
-    paginator = connection.get_paginator('describe_alarms')
+    paginator = connection.get_paginator("describe_alarms")
     return paginator.paginate(**params).build_full_result()
 
 
 def describe_metric_alarms_info(connection, module):
-
     params = build_params(module)
 
-    alarm_type_to_return = module.params.get('alarm_type')
+    alarm_type_to_return = module.params.get("alarm_type")
 
     try:
         describe_metric_alarms_info_response = _describe_alarms(connection, **params)
         # describe_metric_alarms_info_response = describe_metric_alarms_info_response[alarm_type_to_return]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to describe cloudwatch metric alarm')
+        module.fail_json_aws(e, msg="Failed to describe cloudwatch metric alarm")
 
     result = []
 
-    if alarm_type_to_return == 'CompositeAlarm':
-        for response_list_item in describe_metric_alarms_info_response['CompositeAlarms']:
+    if alarm_type_to_return == "CompositeAlarm":
+        for response_list_item in describe_metric_alarms_info_response["CompositeAlarms"]:
             result.append(camel_dict_to_snake_dict(response_list_item))
         module.exit_json(composite_alarms=result)
 
-    for response_list_item in describe_metric_alarms_info_response['MetricAlarms']:
+    for response_list_item in describe_metric_alarms_info_response["MetricAlarms"]:
         result.append(camel_dict_to_snake_dict(response_list_item))
 
     module.exit_json(metric_alarms=result)
 
 
 def build_params(module):
-
     params = {}
 
-    if module.params.get('alarm_names'):
-        params['AlarmNames'] = module.params.get('alarm_names')
+    if module.params.get("alarm_names"):
+        params["AlarmNames"] = module.params.get("alarm_names")
 
-    if module.params.get('alarm_name_prefix'):
-        params['AlarmNamePrefix'] = module.params.get('alarm_name_prefix')
+    if module.params.get("alarm_name_prefix"):
+        params["AlarmNamePrefix"] = module.params.get("alarm_name_prefix")
 
-    if module.params.get('children_of_alarm_name'):
-        params['ChildrenOfAlarmName'] = module.params.get('children_of_alarm_name')
+    if module.params.get("children_of_alarm_name"):
+        params["ChildrenOfAlarmName"] = module.params.get("children_of_alarm_name")
 
-    if module.params.get('parents_of_alarm_name'):
-        params['ParentsOfAlarmName'] = module.params.get('parents_of_alarm_name')
+    if module.params.get("parents_of_alarm_name"):
+        params["ParentsOfAlarmName"] = module.params.get("parents_of_alarm_name")
 
-    if module.params.get('state_value'):
-        params['StateValue'] = module.params.get('state_value')
+    if module.params.get("state_value"):
+        params["StateValue"] = module.params.get("state_value")
 
-    if module.params.get('action_prefix'):
-        params['ActionPrefix'] = module.params.get('action_prefix')
+    if module.params.get("action_prefix"):
+        params["ActionPrefix"] = module.params.get("action_prefix")
 
     return params
 
 
 def main():
-
     argument_spec = dict(
-        alarm_names=dict(type='list', elements='str', required=False),
-        alarm_name_prefix=dict(type='str', required=False),
-        alarm_type=dict(type='str', choices=['CompositeAlarm', 'MetricAlarm'], default='MetricAlarm', required=False),
-        children_of_alarm_name=dict(type='str', required=False),
-        parents_of_alarm_name=dict(type='str', required=False),
-        state_value=dict(type='str', choices=['OK', 'ALARM', 'INSUFFICIENT_DATA'], required=False),
-        action_prefix=dict(type='str', required=False),
+        alarm_names=dict(type="list", elements="str", required=False),
+        alarm_name_prefix=dict(type="str", required=False),
+        alarm_type=dict(type="str", choices=["CompositeAlarm", "MetricAlarm"], default="MetricAlarm", required=False),
+        children_of_alarm_name=dict(type="str", required=False),
+        parents_of_alarm_name=dict(type="str", required=False),
+        state_value=dict(type="str", choices=["OK", "ALARM", "INSUFFICIENT_DATA"], required=False),
+        action_prefix=dict(type="str", required=False),
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        mutually_exclusive=[['alarm_names', 'alarm_name_prefix']],
-        supports_check_mode=True
+        argument_spec=argument_spec, mutually_exclusive=[["alarm_names", "alarm_name_prefix"]], supports_check_mode=True
     )
 
     try:
-        connection = module.client('cloudwatch', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("cloudwatch", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     describe_metric_alarms_info(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

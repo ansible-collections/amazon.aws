@@ -173,11 +173,7 @@ class Ec2KeyFailure(Exception):
 
 
 def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
-    params = {
-        'KeyName': name,
-        'PublicKeyMaterial': to_bytes(key_material),
-        'TagSpecifications': tag_spec
-    }
+    params = {"KeyName": name, "PublicKeyMaterial": to_bytes(key_material), "TagSpecifications": tag_spec}
 
     params = scrub_none_parameters(params)
 
@@ -190,26 +186,26 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
 
 def extract_key_data(key, key_type=None):
     data = {
-        'name': key['KeyName'],
-        'fingerprint': key['KeyFingerprint'],
-        'id': key['KeyPairId'],
-        'tags': boto3_tag_list_to_ansible_dict(key.get('Tags') or []),
+        "name": key["KeyName"],
+        "fingerprint": key["KeyFingerprint"],
+        "id": key["KeyPairId"],
+        "tags": boto3_tag_list_to_ansible_dict(key.get("Tags") or []),
         # KeyMaterial is returned by create_key_pair, but not by describe_key_pairs
-        'private_key': key.get('KeyMaterial'),
+        "private_key": key.get("KeyMaterial"),
         # KeyType is only set by describe_key_pairs
-        'type': key.get('KeyType') or key_type
+        "type": key.get("KeyType") or key_type,
     }
 
     return scrub_none_parameters(data)
 
 
 def get_key_fingerprint(check_mode, ec2_client, key_material):
-    '''
+    """
     EC2's fingerprints are non-trivial to generate, so push this key
     to a temporary name and make ec2 calculate the fingerprint for us.
     http://blog.jbrowne.com/?p=23
     https://forums.aws.amazon.com/thread.jspa?messageID=352828
-    '''
+    """
     # find an unused name
     name_in_use = True
     while name_in_use:
@@ -217,27 +213,30 @@ def get_key_fingerprint(check_mode, ec2_client, key_material):
         name_in_use = find_key_pair(ec2_client, random_name)
     temp_key = _import_key_pair(ec2_client, random_name, key_material)
     delete_key_pair(check_mode, ec2_client, random_name, finish_task=False)
-    return temp_key['KeyFingerprint']
+    return temp_key["KeyFingerprint"]
 
 
 def find_key_pair(ec2_client, name):
     try:
         key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])
-    except is_boto3_error_code('InvalidKeyPair.NotFound'):
+    except is_boto3_error_code("InvalidKeyPair.NotFound"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as err:  # pylint: disable=duplicate-except
         raise Ec2KeyFailure(err, "error finding keypair")
     except IndexError:
         key = None
 
-    return key['KeyPairs'][0]
+    return key["KeyPairs"][0]
 
 
 def _create_key_pair(ec2_client, name, tag_spec, key_type):
     params = {
-        'KeyName': name,
-        'TagSpecifications': tag_spec,
-        'KeyType': key_type,
+        "KeyName": name,
+        "TagSpecifications": tag_spec,
+        "KeyType": key_type,
     }
 
     params = scrub_none_parameters(params)
@@ -250,30 +249,30 @@ def _create_key_pair(ec2_client, name, tag_spec, key_type):
 
 
 def create_new_key_pair(ec2_client, name, key_material, key_type, tags, check_mode):
-    '''
+    """
     key does not exist, we create new key
-    '''
+    """
     if check_mode:
-        return {'changed': True, 'key': None, 'msg': 'key pair created'}
+        return {"changed": True, "key": None, "msg": "key pair created"}
 
-    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    tag_spec = boto3_tag_specifications(tags, ["key-pair"])
     if key_material:
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
     else:
         key = _create_key_pair(ec2_client, name, tag_spec, key_type)
     key_data = extract_key_data(key, key_type)
 
-    result = {'changed': True, 'key': key_data, 'msg': 'key pair created'}
+    result = {"changed": True, "key": key_data, "msg": "key pair created"}
     return result
 
 
 def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_material, tag_spec):
     if check_mode:
-        return {'changed': True, 'key': None, 'msg': 'key pair updated'}
+        return {"changed": True, "key": None, "msg": "key pair updated"}
     new_fingerprint = get_key_fingerprint(check_mode, ec2_client, key_material)
     changed = False
     msg = "key pair already exists"
-    if key['KeyFingerprint'] != new_fingerprint:
+    if key["KeyFingerprint"] != new_fingerprint:
         delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
         msg = "key pair updated"
@@ -284,12 +283,12 @@ def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_mater
 
 def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec):
     if check_mode:
-        return {'changed': True, 'key': None, 'msg': 'key pair updated'}
+        return {"changed": True, "key": None, "msg": "key pair updated"}
     else:
         delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _create_key_pair(ec2_client, name, tag_spec, key_type)
         key_data = extract_key_data(key, key_type)
-        return {'changed': True, 'key': key_data, 'msg': "key pair updated"}
+        return {"changed": True, "key": key_data, "msg": "key pair updated"}
 
 
 def _delete_key_pair(ec2_client, key_name):
@@ -303,33 +302,33 @@ def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
     key = find_key_pair(ec2_client, name)
 
     if key and check_mode:
-        result = {'changed': True, 'key': None, 'msg': 'key deleted'}
+        result = {"changed": True, "key": None, "msg": "key deleted"}
     elif not key:
-        result = {'key': None, 'msg': 'key did not exist'}
+        result = {"key": None, "msg": "key did not exist"}
     else:
         _delete_key_pair(ec2_client, name)
         if not finish_task:
             return
-        result = {'changed': True, 'key': None, 'msg': 'key deleted'}
+        result = {"changed": True, "key": None, "msg": "key deleted"}
 
     return result
 
 
 def handle_existing_key_pair_update(module, ec2_client, name, key):
-    key_material = module.params.get('key_material')
-    force = module.params.get('force')
-    key_type = module.params.get('key_type')
-    tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
-    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    key_material = module.params.get("key_material")
+    force = module.params.get("force")
+    key_type = module.params.get("key_type")
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+    tag_spec = boto3_tag_specifications(tags, ["key-pair"])
     check_mode = module.check_mode
     if key_material and force:
         result = update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_material, tag_spec)
-    elif key_type and key_type != key['KeyType']:
+    elif key_type and key_type != key["KeyType"]:
         result = update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec)
     else:
         changed = False
-        changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
+        changed |= ensure_ec2_tags(ec2_client, module, key["KeyPairId"], tags=tags, purge_tags=purge_tags)
         key = find_key_pair(ec2_client, name)
         key_data = extract_key_data(key)
         result = {"changed": changed, "key": key_data, "msg": "key pair already exists"}
@@ -337,40 +336,35 @@ def handle_existing_key_pair_update(module, ec2_client, name, key):
 
 
 def main():
-
     argument_spec = dict(
         name=dict(required=True),
         key_material=dict(no_log=False),
-        force=dict(type='bool', default=True),
-        state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        key_type=dict(type='str', choices=['rsa', 'ed25519']),
+        force=dict(type="bool", default=True),
+        state=dict(default="present", choices=["present", "absent"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        key_type=dict(type="str", choices=["rsa", "ed25519"]),
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        mutually_exclusive=[
-            ['key_material', 'key_type']
-        ],
-        supports_check_mode=True
+        argument_spec=argument_spec, mutually_exclusive=[["key_material", "key_type"]], supports_check_mode=True
     )
 
-    ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
-    name = module.params['name']
-    state = module.params.get('state')
-    key_material = module.params.get('key_material')
-    key_type = module.params.get('key_type')
-    tags = module.params.get('tags')
+    name = module.params["name"]
+    state = module.params.get("state")
+    key_material = module.params.get("key_material")
+    key_type = module.params.get("key_type")
+    tags = module.params.get("tags")
 
     result = {}
 
     try:
-        if state == 'absent':
+        if state == "absent":
             result = delete_key_pair(module.check_mode, ec2_client, name)
 
-        elif state == 'present':
+        elif state == "present":
             # check if key already exists
             key = find_key_pair(ec2_client, name)
             if key:
@@ -387,5 +381,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

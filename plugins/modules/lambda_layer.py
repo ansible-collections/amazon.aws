@@ -232,7 +232,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 @AWSRetry.jittered_backoff()
 def _list_layer_versions(client, **params):
-    paginator = client.get_paginator('list_layer_versions')
+    paginator = client.get_paginator("list_layer_versions")
     return paginator.paginate(**params).build_full_result()
 
 
@@ -244,9 +244,8 @@ class LambdaLayerFailure(Exception):
 
 
 def list_layer_versions(lambda_client, name):
-
     try:
-        layer_versions = _list_layer_versions(lambda_client, LayerName=name)['LayerVersions']
+        layer_versions = _list_layer_versions(lambda_client, LayerName=name)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         raise LambdaLayerFailure(e, "Unable to list layer versions for name {0}".format(name))
@@ -258,10 +257,10 @@ def create_layer_version(lambda_client, params, check_mode=False):
 
     opt = {"LayerName": params.get("name"), "Content": {}}
     keys = [
-        ('description', 'Description'),
-        ('compatible_runtimes', 'CompatibleRuntimes'),
-        ('license_info', 'LicenseInfo'),
-        ('compatible_architectures', 'CompatibleArchitectures'),
+        ("description", "Description"),
+        ("compatible_runtimes", "CompatibleRuntimes"),
+        ("license_info", "LicenseInfo"),
+        ("compatible_architectures", "CompatibleArchitectures"),
     ]
     for k, d in keys:
         if params.get(k) is not None:
@@ -300,14 +299,14 @@ def delete_layer_version(lambda_client, params, check_mode=False):
                 try:
                     lambda_client.delete_layer_version(LayerName=name, VersionNumber=layer["version"])
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    raise LambdaLayerFailure(e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version))
+                    raise LambdaLayerFailure(
+                        e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version)
+                    )
     return {"changed": changed, "layer_versions": deleted_versions}
 
 
 def execute_module(module, lambda_client):
-
     try:
-
         state = module.params.get("state")
         f_operation = create_layer_version
         if state == "absent":
@@ -331,9 +330,9 @@ def main():
                 s3_object_version=dict(type="str"),
                 zip_file=dict(type="path"),
             ),
-            required_together=[['s3_bucket', 's3_key']],
-            required_one_of=[['s3_bucket', 'zip_file']],
-            mutually_exclusive=[['s3_bucket', 'zip_file']],
+            required_together=[["s3_bucket", "s3_key"]],
+            required_one_of=[["s3_bucket", "zip_file"]],
+            mutually_exclusive=[["s3_bucket", "zip_file"]],
         ),
         compatible_runtimes=dict(type="list", elements="str"),
         license_info=dict(type="str"),
@@ -348,18 +347,18 @@ def main():
             ("state", "absent", ["version"]),
         ],
         mutually_exclusive=[
-            ['version', 'description'],
-            ['version', 'content'],
-            ['version', 'compatible_runtimes'],
-            ['version', 'license_info'],
-            ['version', 'compatible_architectures'],
+            ["version", "description"],
+            ["version", "content"],
+            ["version", "compatible_runtimes"],
+            ["version", "license_info"],
+            ["version", "compatible_architectures"],
         ],
         supports_check_mode=True,
     )
 
-    lambda_client = module.client('lambda')
+    lambda_client = module.client("lambda")
     execute_module(module, lambda_client)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

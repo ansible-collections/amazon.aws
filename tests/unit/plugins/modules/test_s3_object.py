@@ -25,9 +25,7 @@ def test_list_keys_success(m_paginated_list):
     s3_object.list_keys(module, s3, "a987e6b6026ab04e4717", "", "", 1000)
 
     assert m_paginated_list.call_count == 1
-    module.exit_json.assert_called_with(
-        msg="LIST operation complete", s3_keys=["delete.txt"]
-    )
+    module.exit_json.assert_called_with(msg="LIST operation complete", s3_keys=["delete.txt"])
 
 
 @patch(module_name + ".paginated_list")
@@ -51,9 +49,7 @@ def test_s3_object_do_delobj_success(m_delete_key):
     }
     s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
     assert m_delete_key.call_count == 1
-    module.exit_json.assert_called_with(
-        msg="Object deleted from bucket a987e6b6026ab04e4717.", changed=True
-    )
+    module.exit_json.assert_called_with(msg="Object deleted from bucket a987e6b6026ab04e4717.", changed=True)
 
 
 @patch(module_name + ".delete_key")
@@ -153,6 +149,4 @@ def test_populate_facts(m_get_aws_connection_info):
 
     module.params.update({"object": "example.txt", "mode": "delete"})
     result = s3_object.populate_facts(module)
-    module.fail_json.assert_called_with(
-        msg="Parameter obj cannot be used with mode=delete"
-    )
+    module.fail_json.assert_called_with(msg="Parameter obj cannot be used with mode=delete")

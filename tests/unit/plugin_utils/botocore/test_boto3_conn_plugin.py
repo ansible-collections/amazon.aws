@@ -24,7 +24,7 @@ class FailException(Exception):
 def aws_plugin(monkeypatch):
     aws_plugin = MagicMock()
     aws_plugin.fail_aws.side_effect = FailException()
-    monkeypatch.setattr(aws_plugin, 'ansible_name', sentinel.PLUGIN_NAME)
+    monkeypatch.setattr(aws_plugin, "ansible_name", sentinel.PLUGIN_NAME)
     return aws_plugin
 
 
@@ -37,8 +37,8 @@ def botocore_utils(monkeypatch):
 # module_utils.botocore.boto3_conn
 ###############################################################
 def test_boto3_conn_success_plugin(monkeypatch, aws_plugin, botocore_utils):
-    connection_method = MagicMock(name='_boto3_conn')
-    monkeypatch.setattr(botocore_utils, '_boto3_conn', connection_method)
+    connection_method = MagicMock(name="_boto3_conn")
+    monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.return_value = sentinel.RETURNED_CONNECTION
 
     assert botocore_utils.boto3_conn(aws_plugin) is sentinel.RETURNED_CONNECTION
@@ -67,25 +67,22 @@ def test_boto3_conn_success_plugin(monkeypatch, aws_plugin, botocore_utils):
 @pytest.mark.parametrize(
     "failure, custom_error",
     [
-        (ValueError(sentinel.VALUE_ERROR),
-         "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
-        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR),
-         None),
-        (botocore.exceptions.PartialCredentialsError(provider=sentinel.CRED_ERROR_PROV,
-                                                     cred_var=sentinel.CRED_ERROR_VAR),
-         None),
-        (botocore.exceptions.NoCredentialsError(),
-         None),
-        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR),
-         None),
-        (botocore.exceptions.NoRegionError(),
-         "The sentinel.PLUGIN_NAME plugin requires a region"
-         ),
+        (ValueError(sentinel.VALUE_ERROR), "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
+        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR), None),
+        (
+            botocore.exceptions.PartialCredentialsError(
+                provider=sentinel.CRED_ERROR_PROV, cred_var=sentinel.CRED_ERROR_VAR
+            ),
+            None,
+        ),
+        (botocore.exceptions.NoCredentialsError(), None),
+        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None),
+        (botocore.exceptions.NoRegionError(), "The sentinel.PLUGIN_NAME plugin requires a region"),
     ],
 )
 def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):
-    connection_method = MagicMock(name='_boto3_conn')
-    monkeypatch.setattr(botocore_utils, '_boto3_conn', connection_method)
+    connection_method = MagicMock(name="_boto3_conn")
+    monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.side_effect = failure
 
     if custom_error is None:
@@ -101,25 +98,25 @@ def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, fa
 @pytest.mark.parametrize(
     "failure, custom_error",
     [
-        (ValueError(sentinel.VALUE_ERROR),
-         "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
-        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR),
-         None),
-        (botocore.exceptions.PartialCredentialsError(provider=sentinel.CRED_ERROR_PROV,
-                                                     cred_var=sentinel.CRED_ERROR_VAR),
-         None),
-        (botocore.exceptions.NoCredentialsError(),
-         None),
-        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR),
-         None),
-        (botocore.exceptions.NoRegionError(),
-         "A region is required and none was found",
-         ),
+        (ValueError(sentinel.VALUE_ERROR), "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
+        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR), None),
+        (
+            botocore.exceptions.PartialCredentialsError(
+                provider=sentinel.CRED_ERROR_PROV, cred_var=sentinel.CRED_ERROR_VAR
+            ),
+            None,
+        ),
+        (botocore.exceptions.NoCredentialsError(), None),
+        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None),
+        (
+            botocore.exceptions.NoRegionError(),
+            "A region is required and none was found",
+        ),
     ],
 )
 def test_boto3_conn_exception_no_plugin_name(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):
-    connection_method = MagicMock(name='_boto3_conn')
-    monkeypatch.setattr(botocore_utils, '_boto3_conn', connection_method)
+    connection_method = MagicMock(name="_boto3_conn")
+    monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.side_effect = failure
     del aws_plugin.ansible_name
 

@@ -544,23 +544,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_el
 
 @AWSRetry.jittered_backoff()
 def describe_sgs_with_backoff(connection, **params):
-    paginator = connection.get_paginator('describe_security_groups')
-    return paginator.paginate(**params).build_full_result()['SecurityGroups']
+    paginator = connection.get_paginator("describe_security_groups")
+    return paginator.paginate(**params).build_full_result()["SecurityGroups"]
 
 
 def find_default_sg(connection, module, vpc_id):
     """
     Finds the default security group for the given VPC ID.
     """
-    filters = ansible_dict_to_boto3_filter_list({'vpc-id': vpc_id, 'group-name': 'default'})
+    filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "group-name": "default"})
     try:
         sg = describe_sgs_with_backoff(connection, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='No default security group found for VPC {0}'.format(vpc_id))
+        module.fail_json_aws(e, msg="No default security group found for VPC {0}".format(vpc_id))
     if len(sg) == 1:
-        return sg[0]['GroupId']
+        return sg[0]["GroupId"]
     elif len(sg) == 0:
-        module.fail_json(msg='No default security group found for VPC {0}'.format(vpc_id))
+        module.fail_json(msg="No default security group found for VPC {0}".format(vpc_id))
     else:
         module.fail_json(msg='Multiple security groups named "default" found for VPC {0}'.format(vpc_id))
 
@@ -572,31 +572,33 @@ def create_or_update_alb(alb_obj):
         # Subnets
         if not alb_obj.compare_subnets():
             if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.modify_subnets()
 
         # Security Groups
         if not alb_obj.compare_security_groups():
             if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.modify_security_groups()
 
         # ALB attributes
         if not alb_obj.compare_elb_attributes():
             if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.update_elb_attributes()
             alb_obj.modify_elb_attributes()
 
         # Tags - only need to play with tags if tags parameter has been set to something
         if alb_obj.tags is not None:
-
-            tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(alb_obj.elb['tags']),
-                                                                boto3_tag_list_to_ansible_dict(alb_obj.tags), alb_obj.purge_tags)
+            tags_need_modify, tags_to_delete = compare_aws_tags(
+                boto3_tag_list_to_ansible_dict(alb_obj.elb["tags"]),
+                boto3_tag_list_to_ansible_dict(alb_obj.tags),
+                alb_obj.purge_tags,
+            )
 
             # Exit on check_mode
             if alb_obj.module.check_mode and (tags_need_modify or tags_to_delete):
-                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
             # Delete necessary tags
             if tags_to_delete:
@@ -609,32 +611,36 @@ def create_or_update_alb(alb_obj):
     else:
         # Create load balancer
         if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg='Would have created ALB if not in check mode.')
+            alb_obj.module.exit_json(changed=True, msg="Would have created ALB if not in check mode.")
         alb_obj.create_elb()
 
     # Listeners
-    listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'])
+    listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
     listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
 
     # Exit on check_mode
     if alb_obj.module.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
-        alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+        alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
     # Delete listeners
     for listener_to_delete in listeners_to_delete:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(
+            alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"]
+        )
         listener_obj.delete()
         listeners_obj.changed = True
 
     # Add listeners
     for listener_to_add in listeners_to_add:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_add, alb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_add, alb_obj.elb["LoadBalancerArn"])
         listener_obj.add()
         listeners_obj.changed = True
 
     # Modify listeners
     for listener_to_modify in listeners_to_modify:
-        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_modify, alb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(
+            alb_obj.connection, alb_obj.module, listener_to_modify, alb_obj.elb["LoadBalancerArn"]
+        )
         listener_obj.modify()
         listeners_obj.changed = True
 
@@ -644,18 +650,22 @@ def create_or_update_alb(alb_obj):
 
     # Rules of each listener
     for listener in listeners_obj.listeners:
-        if 'Rules' in listener:
-            rules_obj = ELBListenerRules(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'], listener['Rules'], listener['Port'])
+        if "Rules" in listener:
+            rules_obj = ELBListenerRules(
+                alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"], listener["Rules"], listener["Port"]
+            )
             rules_to_add, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
             # Exit on check_mode
             if alb_obj.module.check_mode and (rules_to_add or rules_to_modify or rules_to_delete):
-                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
             # Delete rules
-            if alb_obj.module.params['purge_rules']:
+            if alb_obj.module.params["purge_rules"]:
                 for rule in rules_to_delete:
-                    rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, {'RuleArn': rule}, rules_obj.listener_arn)
+                    rule_obj = ELBListenerRule(
+                        alb_obj.connection, alb_obj.module, {"RuleArn": rule}, rules_obj.listener_arn
+                    )
                     rule_obj.delete()
                     alb_obj.changed = True
 
@@ -672,16 +682,18 @@ def create_or_update_alb(alb_obj):
                 alb_obj.changed = True
 
     # Update ALB ip address type only if option has been provided
-    if alb_obj.module.params.get('ip_address_type') and alb_obj.elb_ip_addr_type != alb_obj.module.params.get('ip_address_type'):
+    if alb_obj.module.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.module.params.get(
+        "ip_address_type"
+    ):
         # Exit on check_mode
         if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+            alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
-        alb_obj.modify_ip_address_type(alb_obj.module.params.get('ip_address_type'))
+        alb_obj.modify_ip_address_type(alb_obj.module.params.get("ip_address_type"))
 
     # Exit on check_mode - no changes
     if alb_obj.module.check_mode:
-        alb_obj.module.exit_json(changed=False, msg='IN CHECK MODE - no changes to make to ALB specified.')
+        alb_obj.module.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
 
     # Get the ALB again
     alb_obj.update()
@@ -695,123 +707,119 @@ def create_or_update_alb(alb_obj):
     # Convert to snake_case and merge in everything we want to return to the user
     snaked_alb = camel_dict_to_snake_dict(alb_obj.elb)
     snaked_alb.update(camel_dict_to_snake_dict(alb_obj.elb_attributes))
-    snaked_alb['listeners'] = []
+    snaked_alb["listeners"] = []
     for listener in listeners_obj.current_listeners:
         # For each listener, get listener rules
-        listener['rules'] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener['ListenerArn'])
-        snaked_alb['listeners'].append(camel_dict_to_snake_dict(listener))
+        listener["rules"] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener["ListenerArn"])
+        snaked_alb["listeners"].append(camel_dict_to_snake_dict(listener))
 
     # Change tags to ansible friendly dict
-    snaked_alb['tags'] = boto3_tag_list_to_ansible_dict(snaked_alb['tags'])
+    snaked_alb["tags"] = boto3_tag_list_to_ansible_dict(snaked_alb["tags"])
 
     # ip address type
-    snaked_alb['ip_address_type'] = alb_obj.get_elb_ip_address_type()
+    snaked_alb["ip_address_type"] = alb_obj.get_elb_ip_address_type()
 
     alb_obj.module.exit_json(changed=alb_obj.changed, **snaked_alb)
 
 
 def delete_alb(alb_obj):
-
     if alb_obj.elb:
-
         # Exit on check_mode
         if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg='Would have deleted ALB if not in check mode.')
+            alb_obj.module.exit_json(changed=True, msg="Would have deleted ALB if not in check mode.")
 
-        listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'])
-        for listener_to_delete in [i['ListenerArn'] for i in listeners_obj.current_listeners]:
-            listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb['LoadBalancerArn'])
+        listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
+        for listener_to_delete in [i["ListenerArn"] for i in listeners_obj.current_listeners]:
+            listener_obj = ELBListener(
+                alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"]
+            )
             listener_obj.delete()
 
         alb_obj.delete()
 
     else:
-
         # Exit on check_mode - no changes
         if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=False, msg='IN CHECK MODE - ALB already absent.')
+            alb_obj.module.exit_json(changed=False, msg="IN CHECK MODE - ALB already absent.")
 
     alb_obj.module.exit_json(changed=alb_obj.changed)
 
 
 def main():
-
     argument_spec = dict(
-        access_logs_enabled=dict(type='bool'),
-        access_logs_s3_bucket=dict(type='str'),
-        access_logs_s3_prefix=dict(type='str'),
-        deletion_protection=dict(type='bool'),
-        http2=dict(type='bool'),
-        http_desync_mitigation_mode=dict(type='str', choices=['monitor', 'defensive', 'strictest']),
-        http_drop_invalid_header_fields=dict(type='bool'),
-        http_x_amzn_tls_version_and_cipher_suite=dict(type='bool'),
-        http_xff_client_port=dict(type='bool'),
-        idle_timeout=dict(type='int'),
-        listeners=dict(type='list',
-                       elements='dict',
-                       options=dict(
-                           Protocol=dict(type='str', required=True),
-                           Port=dict(type='int', required=True),
-                           SslPolicy=dict(type='str'),
-                           Certificates=dict(type='list', elements='dict'),
-                           DefaultActions=dict(type='list', required=True, elements='dict'),
-                           Rules=dict(type='list', elements='dict')
-                       )
-                       ),
-        name=dict(required=True, type='str'),
-        purge_listeners=dict(default=True, type='bool'),
-        purge_tags=dict(default=True, type='bool'),
-        subnets=dict(type='list', elements='str'),
-        security_groups=dict(type='list', elements='str'),
-        scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
-        state=dict(choices=['present', 'absent'], default='present'),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        waf_fail_open=dict(type='bool'),
-        wait_timeout=dict(type='int'),
-        wait=dict(default=False, type='bool'),
-        purge_rules=dict(default=True, type='bool'),
-        ip_address_type=dict(type='str', choices=['ipv4', 'dualstack'])
+        access_logs_enabled=dict(type="bool"),
+        access_logs_s3_bucket=dict(type="str"),
+        access_logs_s3_prefix=dict(type="str"),
+        deletion_protection=dict(type="bool"),
+        http2=dict(type="bool"),
+        http_desync_mitigation_mode=dict(type="str", choices=["monitor", "defensive", "strictest"]),
+        http_drop_invalid_header_fields=dict(type="bool"),
+        http_x_amzn_tls_version_and_cipher_suite=dict(type="bool"),
+        http_xff_client_port=dict(type="bool"),
+        idle_timeout=dict(type="int"),
+        listeners=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                Protocol=dict(type="str", required=True),
+                Port=dict(type="int", required=True),
+                SslPolicy=dict(type="str"),
+                Certificates=dict(type="list", elements="dict"),
+                DefaultActions=dict(type="list", required=True, elements="dict"),
+                Rules=dict(type="list", elements="dict"),
+            ),
+        ),
+        name=dict(required=True, type="str"),
+        purge_listeners=dict(default=True, type="bool"),
+        purge_tags=dict(default=True, type="bool"),
+        subnets=dict(type="list", elements="str"),
+        security_groups=dict(type="list", elements="str"),
+        scheme=dict(default="internet-facing", choices=["internet-facing", "internal"]),
+        state=dict(choices=["present", "absent"], default="present"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        waf_fail_open=dict(type="bool"),
+        wait_timeout=dict(type="int"),
+        wait=dict(default=False, type="bool"),
+        purge_rules=dict(default=True, type="bool"),
+        ip_address_type=dict(type="str", choices=["ipv4", "dualstack"]),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[
-                                  ('state', 'present', ['subnets', 'security_groups'])
-                              ],
-                              required_together=[
-                                  ['access_logs_enabled', 'access_logs_s3_bucket']
-                              ],
-                              supports_check_mode=True,
-                              )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[("state", "present", ["subnets", "security_groups"])],
+        required_together=[["access_logs_enabled", "access_logs_s3_bucket"]],
+        supports_check_mode=True,
+    )
 
     # Quick check of listeners parameters
     listeners = module.params.get("listeners")
     if listeners is not None:
         for listener in listeners:
             for key in listener.keys():
-                if key == 'Protocol' and listener[key] == 'HTTPS':
-                    if listener.get('SslPolicy') is None:
+                if key == "Protocol" and listener[key] == "HTTPS":
+                    if listener.get("SslPolicy") is None:
                         module.fail_json(msg="'SslPolicy' is a required listener dict key when Protocol = HTTPS")
 
-                    if listener.get('Certificates') is None:
+                    if listener.get("Certificates") is None:
                         module.fail_json(msg="'Certificates' is a required listener dict key when Protocol = HTTPS")
 
-    connection = module.client('elbv2')
-    connection_ec2 = module.client('ec2')
+    connection = module.client("elbv2")
+    connection_ec2 = module.client("ec2")
 
     state = module.params.get("state")
 
     alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
     # Update security group if default is specified
-    if alb.elb and module.params.get('security_groups') == []:
-        module.params['security_groups'] = [find_default_sg(connection_ec2, module, alb.elb['VpcId'])]
+    if alb.elb and module.params.get("security_groups") == []:
+        module.params["security_groups"] = [find_default_sg(connection_ec2, module, alb.elb["VpcId"])]
         alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
-    if state == 'present':
+    if state == "present":
         create_or_update_alb(alb)
-    elif state == 'absent':
+    elif state == "absent":
         delete_alb(alb)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

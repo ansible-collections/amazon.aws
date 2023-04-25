@@ -20,22 +20,28 @@ def test_fail_aws():
 
 
 def test_run(monkeypatch):
-    kwargs = {'example': sentinel.KWARG}
-    require_aws_sdk = MagicMock(name='require_aws_sdk')
+    kwargs = {"example": sentinel.KWARG}
+    require_aws_sdk = MagicMock(name="require_aws_sdk")
     require_aws_sdk.return_value = sentinel.RETURNED_SDK
-    set_options = MagicMock(name='set_options')
+    set_options = MagicMock(name="set_options")
     set_options.return_value = sentinel.RETURNED_OPTIONS
 
     lookup_plugin = utils_lookup.AWSLookupBase()
-    monkeypatch.setattr(lookup_plugin, 'require_aws_sdk', require_aws_sdk)
-    monkeypatch.setattr(lookup_plugin, 'set_options', set_options)
+    monkeypatch.setattr(lookup_plugin, "require_aws_sdk", require_aws_sdk)
+    monkeypatch.setattr(lookup_plugin, "set_options", set_options)
 
     lookup_plugin.run(sentinel.PARAM_TERMS, sentinel.PARAM_VARS, **kwargs)
     assert require_aws_sdk.call_args == call(botocore_version=None, boto3_version=None)
     assert set_options.call_args == call(var_options=sentinel.PARAM_VARS, direct=kwargs)
 
-    lookup_plugin.run(sentinel.PARAM_TERMS, sentinel.PARAM_VARS,
-                      boto3_version=sentinel.PARAM_BOTO3, botocore_version=sentinel.PARAM_BOTOCORE,
-                      **kwargs)
-    assert require_aws_sdk.call_args == call(botocore_version=sentinel.PARAM_BOTOCORE, boto3_version=sentinel.PARAM_BOTO3)
+    lookup_plugin.run(
+        sentinel.PARAM_TERMS,
+        sentinel.PARAM_VARS,
+        boto3_version=sentinel.PARAM_BOTO3,
+        botocore_version=sentinel.PARAM_BOTOCORE,
+        **kwargs,
+    )
+    assert require_aws_sdk.call_args == call(
+        botocore_version=sentinel.PARAM_BOTOCORE, boto3_version=sentinel.PARAM_BOTO3
+    )
     assert set_options.call_args == call(var_options=sentinel.PARAM_VARS, direct=kwargs)

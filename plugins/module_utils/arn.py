@@ -43,11 +43,11 @@ def is_outpost_arn(arn):
     if not details:
         return False
 
-    service = details.get('service') or ""
-    if service.lower() != 'outposts':
+    service = details.get("service") or ""
+    if service.lower() != "outposts":
         return False
-    resource = details.get('resource') or ""
-    if not re.match('^outpost/op-[a-f0-9]{17}$', resource):
+    resource = details.get("resource") or ""
+    if not re.match("^outpost/op-[a-f0-9]{17}$", resource):
         return False
 
     return True

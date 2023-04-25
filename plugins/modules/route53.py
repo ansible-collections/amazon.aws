@@ -426,23 +426,23 @@ WAIT_RETRY = 5  # how many seconds to wait between propagation status polls
 
 @AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES)
 def _list_record_sets(route53, **kwargs):
-    paginator = route53.get_paginator('list_resource_record_sets')
-    return paginator.paginate(**kwargs).build_full_result()['ResourceRecordSets']
+    paginator = route53.get_paginator("list_resource_record_sets")
+    return paginator.paginate(**kwargs).build_full_result()["ResourceRecordSets"]
 
 
 @AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES)
 def _list_hosted_zones(route53, **kwargs):
-    paginator = route53.get_paginator('list_hosted_zones')
-    return paginator.paginate(**kwargs).build_full_result()['HostedZones']
+    paginator = route53.get_paginator("list_hosted_zones")
+    return paginator.paginate(**kwargs).build_full_result()["HostedZones"]
 
 
 def get_record(route53, zone_id, record_name, record_type, record_identifier):
     record_sets_results = _list_record_sets(route53, HostedZoneId=zone_id)
 
     for record_set in record_sets_results:
-        record_set['Name'] = record_set['Name'].encode().decode('unicode_escape')
+        record_set["Name"] = record_set["Name"].encode().decode("unicode_escape")
         # If the record name and type is not equal, move to the next record
-        if (record_name.lower(), record_type) != (record_set['Name'].lower(), record_set['Type']):
+        if (record_name.lower(), record_type) != (record_set["Name"].lower(), record_set["Type"]):
             continue
 
         if record_identifier and record_identifier != record_set.get("SetIdentifier"):
@@ -460,15 +460,15 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
     for zone in hosted_zones_results:
         # only save this zone id if the private status of the zone matches
         # the private_zone_in boolean specified in the params
-        private_zone = module.boolean(zone['Config'].get('PrivateZone', False))
-        zone_id = zone['Id'].replace("/hostedzone/", "")
+        private_zone = module.boolean(zone["Config"].get("PrivateZone", False))
+        zone_id = zone["Id"].replace("/hostedzone/", "")
 
-        if private_zone == want_private and zone['Name'] == zone_name:
+        if private_zone == want_private and zone["Name"] == zone_name:
             if want_vpc_id:
                 # NOTE: These details aren't available in other boto3 methods, hence the necessary
                 # extra API call
                 hosted_zone = route53.get_hosted_zone(aws_retry=True, Id=zone_id)
-                if want_vpc_id in [v['VPCId'] for v in hosted_zone['VPCs']]:
+                if want_vpc_id in [v["VPCId"] for v in hosted_zone["VPCs"]]:
                     return zone_id
             else:
                 return zone_id
@@ -484,164 +484,175 @@ def format_record(record_in, zone_in, zone_id):
         return None
 
     record = dict(record_in)
-    record['zone'] = zone_in
-    record['hosted_zone_id'] = zone_id
+    record["zone"] = zone_in
+    record["hosted_zone_id"] = zone_id
 
-    record['type'] = record_in.get('Type', None)
-    record['record'] = record_in.get('Name').encode().decode('unicode_escape')
-    record['ttl'] = record_in.get('TTL', None)
-    record['identifier'] = record_in.get('SetIdentifier', None)
-    record['weight'] = record_in.get('Weight', None)
-    record['region'] = record_in.get('Region', None)
-    record['failover'] = record_in.get('Failover', None)
-    record['health_check'] = record_in.get('HealthCheckId', None)
+    record["type"] = record_in.get("Type", None)
+    record["record"] = record_in.get("Name").encode().decode("unicode_escape")
+    record["ttl"] = record_in.get("TTL", None)
+    record["identifier"] = record_in.get("SetIdentifier", None)
+    record["weight"] = record_in.get("Weight", None)
+    record["region"] = record_in.get("Region", None)
+    record["failover"] = record_in.get("Failover", None)
+    record["health_check"] = record_in.get("HealthCheckId", None)
 
-    if record['ttl']:
-        record['ttl'] = str(record['ttl'])
-    if record['weight']:
-        record['weight'] = str(record['weight'])
-    if record['region']:
-        record['region'] = str(record['region'])
+    if record["ttl"]:
+        record["ttl"] = str(record["ttl"])
+    if record["weight"]:
+        record["weight"] = str(record["weight"])
+    if record["region"]:
+        record["region"] = str(record["region"])
 
-    if record_in.get('AliasTarget'):
-        record['alias'] = True
-        record['value'] = record_in['AliasTarget'].get('DNSName')
-        record['values'] = [record_in['AliasTarget'].get('DNSName')]
-        record['alias_hosted_zone_id'] = record_in['AliasTarget'].get('HostedZoneId')
-        record['alias_evaluate_target_health'] = record_in['AliasTarget'].get('EvaluateTargetHealth')
+    if record_in.get("AliasTarget"):
+        record["alias"] = True
+        record["value"] = record_in["AliasTarget"].get("DNSName")
+        record["values"] = [record_in["AliasTarget"].get("DNSName")]
+        record["alias_hosted_zone_id"] = record_in["AliasTarget"].get("HostedZoneId")
+        record["alias_evaluate_target_health"] = record_in["AliasTarget"].get("EvaluateTargetHealth")
     else:
-        record['alias'] = False
-        records = [r.get('Value') for r in record_in.get('ResourceRecords')]
-        record['value'] = ','.join(sorted(records))
-        record['values'] = sorted(records)
+        record["alias"] = False
+        records = [r.get("Value") for r in record_in.get("ResourceRecords")]
+        record["value"] = ",".join(sorted(records))
+        record["values"] = sorted(records)
 
     return record
 
 
 def get_hosted_zone_nameservers(route53, zone_id):
-    hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)['HostedZone']['Name']
+    hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)["HostedZone"]["Name"]
     resource_records_sets = _list_record_sets(route53, HostedZoneId=zone_id)
 
     nameservers_records = list(
-        filter(lambda record: record['Name'] == hosted_zone_name and record['Type'] == 'NS', resource_records_sets)
-    )[0]['ResourceRecords']
+        filter(lambda record: record["Name"] == hosted_zone_name and record["Type"] == "NS", resource_records_sets)
+    )[0]["ResourceRecords"]
 
-    return [ns_record['Value'] for ns_record in nameservers_records]
+    return [ns_record["Value"] for ns_record in nameservers_records]
 
 
 def main():
     argument_spec = dict(
-        state=dict(type='str', required=True, choices=['absent', 'create', 'delete', 'get', 'present'], aliases=['command']),
-        zone=dict(type='str'),
-        hosted_zone_id=dict(type='str'),
-        record=dict(type='str', required=True),
-        ttl=dict(type='int', default=3600),
-        type=dict(type='str', required=True, choices=['A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SPF', 'SRV', 'TXT']),
-        alias=dict(type='bool'),
-        alias_hosted_zone_id=dict(type='str'),
-        alias_evaluate_target_health=dict(type='bool', default=False),
-        value=dict(type='list', elements='str'),
-        overwrite=dict(type='bool'),
-        retry_interval=dict(type='int', default=500),
-        private_zone=dict(type='bool', default=False),
-        identifier=dict(type='str'),
-        weight=dict(type='int'),
-        region=dict(type='str'),
-        geo_location=dict(type='dict',
-                          options=dict(
-                              continent_code=dict(type="str"),
-                              country_code=dict(type="str"),
-                              subdivision_code=dict(type="str")),
-                          required=False),
-        health_check=dict(type='str'),
-        failover=dict(type='str', choices=['PRIMARY', 'SECONDARY']),
-        vpc_id=dict(type='str'),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=300),
+        state=dict(
+            type="str", required=True, choices=["absent", "create", "delete", "get", "present"], aliases=["command"]
+        ),
+        zone=dict(type="str"),
+        hosted_zone_id=dict(type="str"),
+        record=dict(type="str", required=True),
+        ttl=dict(type="int", default=3600),
+        type=dict(
+            type="str",
+            required=True,
+            choices=["A", "AAAA", "CAA", "CNAME", "MX", "NS", "PTR", "SOA", "SPF", "SRV", "TXT"],
+        ),
+        alias=dict(type="bool"),
+        alias_hosted_zone_id=dict(type="str"),
+        alias_evaluate_target_health=dict(type="bool", default=False),
+        value=dict(type="list", elements="str"),
+        overwrite=dict(type="bool"),
+        retry_interval=dict(type="int", default=500),
+        private_zone=dict(type="bool", default=False),
+        identifier=dict(type="str"),
+        weight=dict(type="int"),
+        region=dict(type="str"),
+        geo_location=dict(
+            type="dict",
+            options=dict(
+                continent_code=dict(type="str"), country_code=dict(type="str"), subdivision_code=dict(type="str")
+            ),
+            required=False,
+        ),
+        health_check=dict(type="str"),
+        failover=dict(type="str", choices=["PRIMARY", "SECONDARY"]),
+        vpc_id=dict(type="str"),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=300),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_one_of=[['zone', 'hosted_zone_id']],
+        required_one_of=[["zone", "hosted_zone_id"]],
         # If alias is True then you must specify alias_hosted_zone as well
-        required_together=[['alias', 'alias_hosted_zone_id']],
+        required_together=[["alias", "alias_hosted_zone_id"]],
         # state=present, absent, create, delete THEN value is required
         required_if=(
-            ('state', 'present', ['value']),
-            ('state', 'create', ['value']),
+            ("state", "present", ["value"]),
+            ("state", "create", ["value"]),
         ),
         # failover, region and weight are mutually exclusive
         mutually_exclusive=[
-            ('failover', 'region', 'weight'),
-            ('alias', 'ttl'),
+            ("failover", "region", "weight"),
+            ("alias", "ttl"),
         ],
         # failover, region, weight and geo_location require identifier
         required_by=dict(
-            failover=('identifier',),
-            region=('identifier',),
-            weight=('identifier',),
-            geo_location=('identifier'),
+            failover=("identifier",),
+            region=("identifier",),
+            weight=("identifier",),
+            geo_location=("identifier"),
         ),
     )
 
-    if module.params['state'] in ('present', 'create'):
-        command_in = 'create'
-    elif module.params['state'] in ('absent', 'delete'):
-        command_in = 'delete'
-    elif module.params['state'] == 'get':
-        command_in = 'get'
+    if module.params["state"] in ("present", "create"):
+        command_in = "create"
+    elif module.params["state"] in ("absent", "delete"):
+        command_in = "delete"
+    elif module.params["state"] == "get":
+        command_in = "get"
 
-    zone_in = (module.params.get('zone') or '').lower()
-    hosted_zone_id_in = module.params.get('hosted_zone_id')
-    ttl_in = module.params.get('ttl')
-    record_in = module.params.get('record').lower()
-    type_in = module.params.get('type')
-    value_in = module.params.get('value') or []
-    alias_in = module.params.get('alias')
-    alias_hosted_zone_id_in = module.params.get('alias_hosted_zone_id')
-    alias_evaluate_target_health_in = module.params.get('alias_evaluate_target_health')
-    retry_interval_in = module.params.get('retry_interval')
+    zone_in = (module.params.get("zone") or "").lower()
+    hosted_zone_id_in = module.params.get("hosted_zone_id")
+    ttl_in = module.params.get("ttl")
+    record_in = module.params.get("record").lower()
+    type_in = module.params.get("type")
+    value_in = module.params.get("value") or []
+    alias_in = module.params.get("alias")
+    alias_hosted_zone_id_in = module.params.get("alias_hosted_zone_id")
+    alias_evaluate_target_health_in = module.params.get("alias_evaluate_target_health")
+    retry_interval_in = module.params.get("retry_interval")
 
-    if module.params['vpc_id'] is not None:
+    if module.params["vpc_id"] is not None:
         private_zone_in = True
     else:
-        private_zone_in = module.params.get('private_zone')
+        private_zone_in = module.params.get("private_zone")
 
-    identifier_in = module.params.get('identifier')
-    weight_in = module.params.get('weight')
-    region_in = module.params.get('region')
-    health_check_in = module.params.get('health_check')
-    failover_in = module.params.get('failover')
-    vpc_id_in = module.params.get('vpc_id')
-    wait_in = module.params.get('wait')
-    wait_timeout_in = module.params.get('wait_timeout')
-    geo_location = module.params.get('geo_location')
+    identifier_in = module.params.get("identifier")
+    weight_in = module.params.get("weight")
+    region_in = module.params.get("region")
+    health_check_in = module.params.get("health_check")
+    failover_in = module.params.get("failover")
+    vpc_id_in = module.params.get("vpc_id")
+    wait_in = module.params.get("wait")
+    wait_timeout_in = module.params.get("wait_timeout")
+    geo_location = module.params.get("geo_location")
 
-    if zone_in[-1:] != '.':
+    if zone_in[-1:] != ".":
         zone_in += "."
 
-    if record_in[-1:] != '.':
+    if record_in[-1:] != ".":
         record_in += "."
 
-    if command_in == 'create' or command_in == 'delete':
+    if command_in == "create" or command_in == "delete":
         if alias_in and len(value_in) != 1:
             module.fail_json(msg="parameter 'value' must contain a single dns name for alias records")
-        if (weight_in is None and region_in is None and failover_in is None and geo_location is None) and identifier_in is not None:
-            module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region, geo_location or failover.")
+        if (
+            weight_in is None and region_in is None and failover_in is None and geo_location is None
+        ) and identifier_in is not None:
+            module.fail_json(
+                msg="You have specified identifier which makes sense only if you specify one of: weight, region, geo_location or failover."
+            )
 
     retry_decorator = AWSRetry.jittered_backoff(
         retries=MAX_AWS_RETRIES,
         delay=retry_interval_in,
-        catch_extra_error_codes=['PriorRequestNotComplete'],
+        catch_extra_error_codes=["PriorRequestNotComplete"],
         max_delay=max(60, retry_interval_in),
     )
 
     # connect to the route53 endpoint
     try:
-        route53 = module.client('route53', retry_decorator=retry_decorator)
+        route53 = module.client("route53", retry_decorator=retry_decorator)
     except botocore.exceptions.HTTPClientError as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # Find the named zone ID
     zone_id = hosted_zone_id_in or get_zone_id_by_name(route53, module, zone_in, private_zone_in, vpc_id_in)
@@ -653,70 +664,78 @@ def main():
 
     aws_record = get_record(route53, zone_id, record_in, type_in, identifier_in)
 
-    resource_record_set = scrub_none_parameters({
-        'Name': record_in,
-        'Type': type_in,
-        'Weight': weight_in,
-        'Region': region_in,
-        'Failover': failover_in,
-        'TTL': ttl_in,
-        'ResourceRecords': [dict(Value=value) for value in value_in],
-        'HealthCheckId': health_check_in,
-        'SetIdentifier': identifier_in,
-    })
+    resource_record_set = scrub_none_parameters(
+        {
+            "Name": record_in,
+            "Type": type_in,
+            "Weight": weight_in,
+            "Region": region_in,
+            "Failover": failover_in,
+            "TTL": ttl_in,
+            "ResourceRecords": [dict(Value=value) for value in value_in],
+            "HealthCheckId": health_check_in,
+            "SetIdentifier": identifier_in,
+        }
+    )
 
     if geo_location:
-        continent_code = geo_location.get('continent_code')
-        country_code = geo_location.get('country_code')
-        subdivision_code = geo_location.get('subdivision_code')
+        continent_code = geo_location.get("continent_code")
+        country_code = geo_location.get("country_code")
+        subdivision_code = geo_location.get("subdivision_code")
 
         if continent_code and (country_code or subdivision_code):
-            module.fail_json(changed=False, msg='While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.')
+            module.fail_json(
+                changed=False,
+                msg="While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.",
+            )
 
         if not any([continent_code, country_code, subdivision_code]):
-            module.fail_json(changed=False, msg='To use geo_location please specify either continent_code, country_code, or subdivision_code.')
+            module.fail_json(
+                changed=False,
+                msg="To use geo_location please specify either continent_code, country_code, or subdivision_code.",
+            )
 
-        if geo_location.get('subdivision_code') and geo_location.get('country_code').lower() != 'us':
-            module.fail_json(changed=False, msg='To use subdivision_code, you must specify country_code as US.')
+        if geo_location.get("subdivision_code") and geo_location.get("country_code").lower() != "us":
+            module.fail_json(changed=False, msg="To use subdivision_code, you must specify country_code as US.")
 
         # Build geo_location suboptions specification
-        resource_record_set['GeoLocation'] = {}
+        resource_record_set["GeoLocation"] = {}
         if continent_code:
-            resource_record_set['GeoLocation']['ContinentCode'] = continent_code
+            resource_record_set["GeoLocation"]["ContinentCode"] = continent_code
         if country_code:
-            resource_record_set['GeoLocation']['CountryCode'] = country_code
+            resource_record_set["GeoLocation"]["CountryCode"] = country_code
         if subdivision_code:
-            resource_record_set['GeoLocation']['SubdivisionCode'] = subdivision_code
+            resource_record_set["GeoLocation"]["SubdivisionCode"] = subdivision_code
 
-    if command_in == 'delete' and aws_record is not None:
-        resource_record_set['TTL'] = aws_record.get('TTL')
-        if not resource_record_set['ResourceRecords']:
-            resource_record_set['ResourceRecords'] = aws_record.get('ResourceRecords')
+    if command_in == "delete" and aws_record is not None:
+        resource_record_set["TTL"] = aws_record.get("TTL")
+        if not resource_record_set["ResourceRecords"]:
+            resource_record_set["ResourceRecords"] = aws_record.get("ResourceRecords")
 
     if alias_in:
-        resource_record_set['AliasTarget'] = dict(
+        resource_record_set["AliasTarget"] = dict(
             HostedZoneId=alias_hosted_zone_id_in,
             DNSName=value_in[0],
-            EvaluateTargetHealth=alias_evaluate_target_health_in
+            EvaluateTargetHealth=alias_evaluate_target_health_in,
         )
-        if 'ResourceRecords' in resource_record_set:
-            del resource_record_set['ResourceRecords']
-        if 'TTL' in resource_record_set:
-            del resource_record_set['TTL']
+        if "ResourceRecords" in resource_record_set:
+            del resource_record_set["ResourceRecords"]
+        if "TTL" in resource_record_set:
+            del resource_record_set["TTL"]
 
     # On CAA records order doesn't matter
-    if type_in == 'CAA':
-        resource_record_set['ResourceRecords'] = sorted(resource_record_set['ResourceRecords'], key=itemgetter('Value'))
+    if type_in == "CAA":
+        resource_record_set["ResourceRecords"] = sorted(resource_record_set["ResourceRecords"], key=itemgetter("Value"))
         if aws_record:
-            aws_record['ResourceRecords'] = sorted(aws_record['ResourceRecords'], key=itemgetter('Value'))
+            aws_record["ResourceRecords"] = sorted(aws_record["ResourceRecords"], key=itemgetter("Value"))
 
-    if command_in == 'create' and aws_record == resource_record_set:
+    if command_in == "create" and aws_record == resource_record_set:
         rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
         module.exit_json(changed=False, resource_records_sets=rr_sets)
 
-    if command_in == 'get':
-        if type_in == 'NS':
-            ns = aws_record.get('values', [])
+    if command_in == "get":
+        if type_in == "NS":
+            ns = aws_record.get("values", [])
         else:
             # Retrieve name servers associated to the zone.
             ns = get_hosted_zone_nameservers(route53, zone_id)
@@ -730,14 +749,14 @@ def main():
         rr_sets = [camel_dict_to_snake_dict(aws_record)]
         module.exit_json(changed=False, set=formatted_aws, nameservers=ns, resource_record_sets=rr_sets)
 
-    if command_in == 'delete' and not aws_record:
+    if command_in == "delete" and not aws_record:
         module.exit_json(changed=False)
 
-    if command_in == 'create' or command_in == 'delete':
-        if command_in == 'create' and aws_record:
-            if not module.params['overwrite']:
+    if command_in == "create" or command_in == "delete":
+        if command_in == "create" and aws_record:
+            if not module.params["overwrite"]:
                 module.fail_json(msg="Record already exists with different value. Set 'overwrite' to replace it")
-            command = 'UPSERT'
+            command = "UPSERT"
         else:
             command = command_in.upper()
 
@@ -746,33 +765,29 @@ def main():
             change_resource_record_sets = route53.change_resource_record_sets(
                 aws_retry=True,
                 HostedZoneId=zone_id,
-                ChangeBatch=dict(
-                    Changes=[
-                        dict(
-                            Action=command,
-                            ResourceRecordSet=resource_record_set
-                        )
-                    ]
-                )
+                ChangeBatch=dict(Changes=[dict(Action=command, ResourceRecordSet=resource_record_set)]),
             )
 
             if wait_in:
-                waiter = get_waiter(route53, 'resource_record_sets_changed')
+                waiter = get_waiter(route53, "resource_record_sets_changed")
                 waiter.wait(
-                    Id=change_resource_record_sets['ChangeInfo']['Id'],
+                    Id=change_resource_record_sets["ChangeInfo"]["Id"],
                     WaiterConfig=dict(
                         Delay=WAIT_RETRY,
                         MaxAttempts=wait_timeout_in // WAIT_RETRY,
-                    )
+                    ),
                 )
-        except is_boto3_error_message('but it already exists'):
+        except is_boto3_error_message("but it already exists"):
             module.exit_json(changed=False)
         except botocore.exceptions.WaiterError as e:
-            module.fail_json_aws(e, msg='Timeout waiting for resource records changes to be applied')
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg='Failed to update records')
+            module.fail_json_aws(e, msg="Timeout waiting for resource records changes to be applied")
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Failed to update records")
         except Exception as e:
-            module.fail_json(msg='Unhandled exception. (%s)' % to_native(e))
+            module.fail_json(msg="Unhandled exception. (%s)" % to_native(e))
 
     rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)
@@ -782,11 +797,11 @@ def main():
         changed=True,
         diff=dict(
             before=formatted_aws,
-            after=formatted_record if command_in != 'delete' else {},
+            after=formatted_record if command_in != "delete" else {},
             resource_record_sets=rr_sets,
         ),
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

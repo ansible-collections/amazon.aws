@@ -253,8 +253,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 
 def match_asg_tags(tags_to_match, asg):
     for key, value in tags_to_match.items():
-        for tag in asg['Tags']:
-            if key == tag['Key'] and value == tag['Value']:
+        for tag in asg["Tags"]:
+            if key == tag["Key"] and value == tag["Value"]:
                 break
         else:
             return False
@@ -371,16 +371,16 @@ def find_asgs(conn, module, name=None, tags=None):
     """
 
     try:
-        asgs_paginator = conn.get_paginator('describe_auto_scaling_groups')
+        asgs_paginator = conn.get_paginator("describe_auto_scaling_groups")
         asgs = asgs_paginator.paginate().build_full_result()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to describe AutoScalingGroups')
+        module.fail_json_aws(e, msg="Failed to describe AutoScalingGroups")
 
     if not asgs:
         return asgs
 
     try:
-        elbv2 = module.client('elbv2')
+        elbv2 = module.client("elbv2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         # This is nice to have, not essential
         elbv2 = None
@@ -388,11 +388,11 @@ def find_asgs(conn, module, name=None, tags=None):
 
     if name is not None:
         # if the user didn't specify a name
-        name_prog = re.compile(r'^' + name)
+        name_prog = re.compile(r"^" + name)
 
-    for asg in asgs['AutoScalingGroups']:
+    for asg in asgs["AutoScalingGroups"]:
         if name:
-            matched_name = name_prog.search(asg['AutoScalingGroupName'])
+            matched_name = name_prog.search(asg["AutoScalingGroupName"])
         else:
             matched_name = True
 
@@ -404,28 +404,31 @@ def find_asgs(conn, module, name=None, tags=None):
         if matched_name and matched_tags:
             asg = camel_dict_to_snake_dict(asg)
             # compatibility with autoscaling_group module
-            if 'launch_configuration_name' in asg:
-                asg['launch_config_name'] = asg['launch_configuration_name']
+            if "launch_configuration_name" in asg:
+                asg["launch_config_name"] = asg["launch_configuration_name"]
             # workaround for https://github.com/ansible/ansible/pull/25015
-            if 'target_group_ar_ns' in asg:
-                asg['target_group_arns'] = asg['target_group_ar_ns']
-                del asg['target_group_ar_ns']
-            if asg.get('target_group_arns'):
+            if "target_group_ar_ns" in asg:
+                asg["target_group_arns"] = asg["target_group_ar_ns"]
+                del asg["target_group_ar_ns"]
+            if asg.get("target_group_arns"):
                 if elbv2:
                     try:
-                        tg_paginator = elbv2.get_paginator('describe_target_groups')
-                        tg_result = tg_paginator.paginate(TargetGroupArns=asg['target_group_arns']).build_full_result()
-                        asg['target_group_names'] = [tg['TargetGroupName'] for tg in tg_result['TargetGroups']]
-                    except is_boto3_error_code('TargetGroupNotFound'):
-                        asg['target_group_names'] = []
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+                        tg_paginator = elbv2.get_paginator("describe_target_groups")
+                        tg_result = tg_paginator.paginate(TargetGroupArns=asg["target_group_arns"]).build_full_result()
+                        asg["target_group_names"] = [tg["TargetGroupName"] for tg in tg_result["TargetGroups"]]
+                    except is_boto3_error_code("TargetGroupNotFound"):
+                        asg["target_group_names"] = []
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:  # pylint: disable=duplicate-except
                         module.fail_json_aws(e, msg="Failed to describe Target Groups")
             else:
-                asg['target_group_names'] = []
+                asg["target_group_names"] = []
             # get asg lifecycle hooks if any
             try:
-                asg_lifecyclehooks = conn.describe_lifecycle_hooks(AutoScalingGroupName=asg['auto_scaling_group_name'])
-                asg['lifecycle_hooks'] = asg_lifecyclehooks['LifecycleHooks']
+                asg_lifecyclehooks = conn.describe_lifecycle_hooks(AutoScalingGroupName=asg["auto_scaling_group_name"])
+                asg["lifecycle_hooks"] = asg_lifecyclehooks["LifecycleHooks"]
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to fetch information about ASG lifecycle hooks")
             matched_asgs.append(asg)
@@ -434,10 +437,9 @@ def find_asgs(conn, module, name=None, tags=None):
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str'),
-        tags=dict(type='dict'),
+        name=dict(type="str"),
+        tags=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
@@ -445,14 +447,14 @@ def main():
         supports_check_mode=True,
     )
 
-    asg_name = module.params.get('name')
-    asg_tags = module.params.get('tags')
+    asg_name = module.params.get("name")
+    asg_tags = module.params.get("tags")
 
-    autoscaling = module.client('autoscaling')
+    autoscaling = module.client("autoscaling")
 
     results = find_asgs(autoscaling, module, name=asg_name, tags=asg_tags)
     module.exit_json(results=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

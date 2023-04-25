@@ -46,11 +46,7 @@ def test_create_image_uefi_data(m_get_image_by_id):
 
 
 def test_get_block_device_mapping_virtual_name():
-    image = {
-        "block_device_mappings": [
-            {"device_name": "/dev/sdc", "virtual_name": "ephemeral0"}
-        ]
-    }
+    image = {"block_device_mappings": [{"device_name": "/dev/sdc", "virtual_name": "ephemeral0"}]}
     block_device = ec2_ami.get_block_device_mapping(image)
     assert block_device == {"/dev/sdc": {"virtual_name": "ephemeral0"}}
 
@@ -58,9 +54,7 @@ def test_get_block_device_mapping_virtual_name():
 def test_get_image_by_id_found():
     connection = MagicMock()
 
-    connection.describe_images.return_value = {
-        "Images": [{"ImageId": "ami-0c7a795306730b288"}]
-    }
+    connection.describe_images.return_value = {"Images": [{"ImageId": "ami-0c7a795306730b288"}]}
 
     image = ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
     assert image["ImageId"] == "ami-0c7a795306730b288"
@@ -148,16 +142,13 @@ def test_validate_params():
     module = MagicMock()
     ec2_ami.validate_params(module, tpm_support=True, boot_mode="legacy-bios")
     assert module.require_botocore_at_least.call_count == 1
-    module.fail_json.assert_any_call(
-        "To specify 'tpm_support', 'boot_mode' must be 'uefi'."
-    )
+    module.fail_json.assert_any_call("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     module = MagicMock()
     ec2_ami.validate_params(module, state="present", name="bobby")
     assert module.require_botocore_at_least.call_count == 0
     module.fail_json.assert_any_call(
-        "The parameters instance_id or device_mapping "
-        "(register from EBS snapshot) are required for a new image."
+        "The parameters instance_id or device_mapping (register from EBS snapshot) are required for a new image."
     )
 
 
@@ -185,9 +176,7 @@ def test_DeregisterImage_defer_purge_snapshots():
 
     connection = MagicMock()
     assert list(func(connection)) == ["My_snapshot"]
-    connection.delete_snapshot.assert_called_with(
-        aws_retry=True, SnapshotId="My_snapshot"
-    )
+    connection.delete_snapshot.assert_called_with(aws_retry=True, SnapshotId="My_snapshot")
 
 
 @patch(module_name + ".get_image_by_id")
@@ -217,9 +206,7 @@ def test_UpdateImage_set_launch_permission_check_mode_no_change():
     connection = MagicMock()
     image = {"ImageId": "ami-0c7a795306730b288", "LaunchPermissions": {}}
 
-    changed = ec2_ami.UpdateImage.set_launch_permission(
-        connection, image, launch_permissions={}, check_mode=True
-    )
+    changed = ec2_ami.UpdateImage.set_launch_permission(connection, image, launch_permissions={}, check_mode=True)
     assert changed is False
     assert connection.modify_image_attribute.call_count == 0
 
@@ -238,9 +225,7 @@ def test_UpdateImage_set_launch_permission_check_mode_with_change():
     connection = MagicMock()
     image = {"ImageId": "ami-0c7a795306730b288", "LaunchPermissions": {}}
     launch_permissions = {"user_ids": ["123456789012"], "group_names": ["foo", "bar"]}
-    changed = ec2_ami.UpdateImage.set_launch_permission(
-        connection, image, launch_permissions, check_mode=True
-    )
+    changed = ec2_ami.UpdateImage.set_launch_permission(connection, image, launch_permissions, check_mode=True)
     assert changed is True
     assert connection.modify_image_attribute.call_count == 0
 
@@ -249,9 +234,7 @@ def test_UpdateImage_set_launch_permission_with_change():
     connection = MagicMock()
     image = {"ImageId": "ami-0c7a795306730b288", "LaunchPermissions": {}}
     launch_permissions = {"user_ids": ["123456789012"], "group_names": ["foo", "bar"]}
-    changed = ec2_ami.UpdateImage.set_launch_permission(
-        connection, image, launch_permissions, check_mode=False
-    )
+    changed = ec2_ami.UpdateImage.set_launch_permission(connection, image, launch_permissions, check_mode=False)
     assert changed is True
     assert connection.modify_image_attribute.call_count == 1
     connection.modify_image_attribute.assert_called_with(
@@ -270,21 +253,17 @@ def test_UpdateImage_set_description():
     module = MagicMock()
     module.check_mode = False
     image = {"ImageId": "ami-0c7a795306730b288", "Description": "My description"}
-    changed = ec2_ami.UpdateImage.set_description(
-        connection, module, image, "My description"
-    )
+    changed = ec2_ami.UpdateImage.set_description(connection, module, image, "My description")
     assert changed is False
 
-    changed = ec2_ami.UpdateImage.set_description(
-        connection, module, image, "New description"
-    )
+    changed = ec2_ami.UpdateImage.set_description(connection, module, image, "New description")
     assert changed is True
     assert connection.modify_image_attribute.call_count == 1
     connection.modify_image_attribute.assert_called_with(
         aws_retry=True,
         ImageId="ami-0c7a795306730b288",
         Attribute="Description",
-        Description={"Value": "New description"}
+        Description={"Value": "New description"},
     )
 
 
@@ -293,14 +272,10 @@ def test_UpdateImage_set_description_check_mode():
     module = MagicMock()
     module.check_mode = True
     image = {"ImageId": "ami-0c7a795306730b288", "Description": "My description"}
-    changed = ec2_ami.UpdateImage.set_description(
-        connection, module, image, "My description"
-    )
+    changed = ec2_ami.UpdateImage.set_description(connection, module, image, "My description")
     assert changed is False
 
-    changed = ec2_ami.UpdateImage.set_description(
-        connection, module, image, "New description"
-    )
+    changed = ec2_ami.UpdateImage.set_description(connection, module, image, "New description")
     assert changed is True
     assert connection.modify_image_attribute.call_count == 0
 
@@ -364,9 +339,7 @@ def test_CreateImage_do_check_mode_with_change():
     connection.describe_images.return_value = {"Images": []}
 
     ec2_ami.CreateImage.do_check_mode(module, connection, None)
-    module.exit_json.assert_called_with(
-        changed=True, msg="Would have created a AMI if not in check mode."
-    )
+    module.exit_json.assert_called_with(changed=True, msg="Would have created a AMI if not in check mode.")
 
 
 @patch(module_name + ".get_waiter")
@@ -377,9 +350,7 @@ def test_CreateImage_wait(m_get_waiter):
 
     assert ec2_ami.CreateImage.wait(connection, wait_timeout=0, image_id=None) is None
 
-    ec2_ami.CreateImage.wait(
-        connection, wait_timeout=600, image_id="ami-0c7a795306730b288"
-    )
+    ec2_ami.CreateImage.wait(connection, wait_timeout=600, image_id="ami-0c7a795306730b288")
     assert m_waiter.wait.call_count == 1
     m_waiter.wait.assert_called_with(
         ImageIds=["ami-0c7a795306730b288"],
@@ -405,19 +376,13 @@ def test_CreateImage_set_tags(m_get_image_by_id, m_add_ec2_tags):
         ],
     }
     tags = {}
-    ec2_ami.CreateImage.set_tags(
-        connection, module, tags, image_id="ami-0c7a795306730b288"
-    )
+    ec2_ami.CreateImage.set_tags(connection, module, tags, image_id="ami-0c7a795306730b288")
     assert m_add_ec2_tags.call_count == 0
 
     tags = {"metro": "LaSalle"}
-    ec2_ami.CreateImage.set_tags(
-        connection, module, tags, image_id="ami-0c7a795306730b288"
-    )
+    ec2_ami.CreateImage.set_tags(connection, module, tags, image_id="ami-0c7a795306730b288")
     assert m_add_ec2_tags.call_count == 3
-    m_add_ec2_tags.assert_called_with(
-        connection, module, "snap-066877671789bd71b", tags
-    )
+    m_add_ec2_tags.assert_called_with(connection, module, "snap-066877671789bd71b", tags)
 
 
 def test_CreateInage_set_launch_permissions():
@@ -430,8 +395,6 @@ def test_CreateInage_set_launch_permissions():
     connection.modify_image_attribute.assert_called_with(
         Attribute="LaunchPermission",
         ImageId="ami-0c7a795306730b288",
-        LaunchPermission={
-            "Add": [{"Group": "foo"}, {"Group": "bar"}, {"UserId": "123456789012"}]
-        },
+        LaunchPermission={"Add": [{"Group": "foo"}, {"Group": "bar"}, {"UserId": "123456789012"}]},
         aws_retry=True,
     )

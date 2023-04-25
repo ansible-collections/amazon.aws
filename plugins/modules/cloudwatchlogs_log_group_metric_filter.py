@@ -103,11 +103,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 
 
 def metricTransformationHandler(metricTransformations, originMetricTransformations=None):
-
     if originMetricTransformations:
         change = False
-        originMetricTransformations = camel_dict_to_snake_dict(
-            originMetricTransformations)
+        originMetricTransformations = camel_dict_to_snake_dict(originMetricTransformations)
         for item in ["default_value", "metric_name", "metric_namespace", "metric_value"]:
             if metricTransformations.get(item) != originMetricTransformations.get(item):
                 change = True
@@ -118,18 +116,18 @@ def metricTransformationHandler(metricTransformations, originMetricTransformatio
     if isinstance(defaultValue, int) or isinstance(defaultValue, float):
         retval = [
             {
-                'metricName': metricTransformations.get("metric_name"),
-                'metricNamespace': metricTransformations.get("metric_namespace"),
-                'metricValue': metricTransformations.get("metric_value"),
-                'defaultValue': defaultValue
+                "metricName": metricTransformations.get("metric_name"),
+                "metricNamespace": metricTransformations.get("metric_namespace"),
+                "metricValue": metricTransformations.get("metric_value"),
+                "defaultValue": defaultValue,
             }
         ]
     else:
         retval = [
             {
-                'metricName': metricTransformations.get("metric_name"),
-                'metricNamespace': metricTransformations.get("metric_namespace"),
-                'metricValue': metricTransformations.get("metric_value"),
+                "metricName": metricTransformations.get("metric_name"),
+                "metricNamespace": metricTransformations.get("metric_namespace"),
+                "metricValue": metricTransformations.get("metric_value"),
             }
         ]
 
@@ -137,24 +135,26 @@ def metricTransformationHandler(metricTransformations, originMetricTransformatio
 
 
 def main():
-
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        log_group_name=dict(type='str', required=True),
-        filter_name=dict(type='str', required=True),
-        filter_pattern=dict(type='str'),
-        metric_transformation=dict(type='dict', options=dict(
-            metric_name=dict(type='str'),
-            metric_namespace=dict(type='str'),
-            metric_value=dict(type='str'),
-            default_value=dict(type='float')
-        )),
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        log_group_name=dict(type="str", required=True),
+        filter_name=dict(type="str", required=True),
+        filter_pattern=dict(type="str"),
+        metric_transformation=dict(
+            type="dict",
+            options=dict(
+                metric_name=dict(type="str"),
+                metric_namespace=dict(type="str"),
+                metric_value=dict(type="str"),
+                default_value=dict(type="float"),
+            ),
+        ),
     )
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         supports_check_mode=True,
-        required_if=[('state', 'present', ['metric_transformation', 'filter_pattern'])]
+        required_if=[("state", "present", ["metric_transformation", "filter_pattern"])],
     )
 
     log_group_name = module.params.get("log_group_name")
@@ -163,19 +163,14 @@ def main():
     metric_transformation = module.params.get("metric_transformation")
     state = module.params.get("state")
 
-    cwl = module.client('logs')
+    cwl = module.client("logs")
 
     # check if metric filter exists
-    response = cwl.describe_metric_filters(
-        logGroupName=log_group_name,
-        filterNamePrefix=filter_name
-    )
+    response = cwl.describe_metric_filters(logGroupName=log_group_name, filterNamePrefix=filter_name)
 
     if len(response.get("metricFilters")) == 1:
-        originMetricTransformations = response.get(
-            "metricFilters")[0].get("metricTransformations")[0]
-        originFilterPattern = response.get("metricFilters")[
-            0].get("filterPattern")
+        originMetricTransformations = response.get("metricFilters")[0].get("metricTransformations")[0]
+        originFilterPattern = response.get("metricFilters")[0].get("filterPattern")
     else:
         originMetricTransformations = None
         originFilterPattern = None
@@ -184,16 +179,14 @@ def main():
 
     if state == "absent" and originMetricTransformations:
         if not module.check_mode:
-            response = cwl.delete_metric_filter(
-                logGroupName=log_group_name,
-                filterName=filter_name
-            )
+            response = cwl.delete_metric_filter(logGroupName=log_group_name, filterName=filter_name)
         change = True
         metricTransformation = [camel_dict_to_snake_dict(item) for item in [originMetricTransformations]]
 
     elif state == "present":
         metricTransformation, change = metricTransformationHandler(
-            metricTransformations=metric_transformation, originMetricTransformations=originMetricTransformations)
+            metricTransformations=metric_transformation, originMetricTransformations=originMetricTransformations
+        )
 
         change = change or filter_pattern != originFilterPattern
 
@@ -203,7 +196,7 @@ def main():
                     logGroupName=log_group_name,
                     filterName=filter_name,
                     filterPattern=filter_pattern,
-                    metricTransformations=metricTransformation
+                    metricTransformations=metricTransformation,
                 )
 
         metricTransformation = [camel_dict_to_snake_dict(item) for item in metricTransformation]
@@ -211,5 +204,5 @@ def main():
     module.exit_json(changed=change, metric_filters=metricTransformation)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

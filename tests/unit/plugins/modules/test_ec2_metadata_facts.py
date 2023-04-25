@@ -32,10 +32,7 @@ def test__fetch_401(m_fetch_url, ec2_instance):
 @patch(module_name + ".fetch_url")
 def test__fetch_200(m_fetch_url, ec2_instance):
     m_fetch_url.return_value = (io.StringIO("my-value"), {"status": 200})
-    assert (
-        ec2_instance._fetch("http://169.254.169.254/latest/meta-data/ami-id")
-        == "my-value"
-    )
+    assert ec2_instance._fetch("http://169.254.169.254/latest/meta-data/ami-id") == "my-value"
 
     m_fetch_url.return_value = (io.StringIO("1"), {"status": 200})
     assert ec2_instance._fetch("http://169.254.169.254/latest/meta-data/ami-id") == "1"
@@ -49,9 +46,7 @@ def test_fetch(m_fetch_url, ec2_instance):
         (io.StringIO("my-value"), {"status": 200}),
     ]
     ec2_instance.fetch("http://169.254.169.254/latest/meta-data/")
-    assert ec2_instance._data == {
-        "http://169.254.169.254/latest/meta-data/ami-id": "my-value"
-    }
+    assert ec2_instance._data == {"http://169.254.169.254/latest/meta-data/ami-id": "my-value"}
 
 
 @patch(module_name + ".fetch_url")
@@ -63,6 +58,4 @@ def test_fetch_recusive(m_fetch_url, ec2_instance):
         (io.StringIO("my-value"), {"status": 200}),
     ]
     ec2_instance.fetch("http://169.254.169.254/latest/meta-data/")
-    assert ec2_instance._data == {
-        "http://169.254.169.254/latest/meta-data/whatever/my-key": "my-value"
-    }
+    assert ec2_instance._data == {"http://169.254.169.254/latest/meta-data/whatever/my-key": "my-value"}

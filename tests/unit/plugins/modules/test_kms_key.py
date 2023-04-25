@@ -59,7 +59,6 @@ key_details = {
 
 @patch(module_name + ".get_kms_metadata_with_backoff")
 def test_fetch_key_metadata(m_get_kms_metadata_with_backoff):
-
     module = MagicMock()
     kms_client = MagicMock()
 
@@ -69,14 +68,8 @@ def test_fetch_key_metadata(m_get_kms_metadata_with_backoff):
 
 
 def test_validate_params():
-
     module = MagicMock()
-    module.params = {
-        "state": "present",
-        "multi_region": True
-    }
+    module.params = {"state": "present", "multi_region": True}
 
     result = kms_key.validate_params(module, key_details["KeyMetadata"])
-    module.fail_json.assert_called_with(
-        msg="You cannot change the multi-region property on an existing key."
-    )
+    module.fail_json.assert_called_with(msg="You cannot change the multi-region property on an existing key.")

@@ -412,43 +412,42 @@ def get_current_function(connection, function_name, qualifier=None):
         if qualifier is not None:
             return connection.get_function(FunctionName=function_name, Qualifier=qualifier, aws_retry=True)
         return connection.get_function(FunctionName=function_name, aws_retry=True)
-    except is_boto3_error_code('ResourceNotFoundException'):
+    except is_boto3_error_code("ResourceNotFoundException"):
         return None
 
 
 def get_layer_version_arn(module, connection, layer_name, version_number):
     try:
-        layer_versions = connection.list_layer_versions(LayerName=layer_name, aws_retry=True)['LayerVersions']
+        layer_versions = connection.list_layer_versions(LayerName=layer_name, aws_retry=True)["LayerVersions"]
         for v in layer_versions:
             if v["Version"] == version_number:
                 return v["LayerVersionArn"]
-        module.fail_json(msg='Unable to find version {0} from Lambda layer {1}'.format(version_number, layer_name))
-    except is_boto3_error_code('ResourceNotFoundException'):
-        module.fail_json(msg='Lambda layer {0} not found'.format(layer_name))
+        module.fail_json(msg="Unable to find version {0} from Lambda layer {1}".format(version_number, layer_name))
+    except is_boto3_error_code("ResourceNotFoundException"):
+        module.fail_json(msg="Lambda layer {0} not found".format(layer_name))
 
 
 def sha256sum(filename):
     hasher = hashlib.sha256()
-    with open(filename, 'rb') as f:
+    with open(filename, "rb") as f:
         hasher.update(f.read())
 
     code_hash = hasher.digest()
     code_b64 = base64.b64encode(code_hash)
-    hex_digest = code_b64.decode('utf-8')
+    hex_digest = code_b64.decode("utf-8")
 
     return hex_digest
 
 
 def set_tag(client, module, tags, function, purge_tags):
-
     if tags is None:
         return False
 
     changed = False
-    arn = function['Configuration']['FunctionArn']
+    arn = function["Configuration"]["FunctionArn"]
 
     try:
-        current_tags = client.list_tags(Resource=arn, aws_retry=True).get('Tags', {})
+        current_tags = client.list_tags(Resource=arn, aws_retry=True).get("Tags", {})
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Unable to list tags")
 
@@ -465,7 +464,7 @@ def set_tag(client, module, tags, function, purge_tags):
             client.untag_resource(
                 Resource=arn,
                 TagKeys=tags_to_remove,
-                aws_retry=True
+                aws_retry=True,
             )
             changed = True
 
@@ -473,7 +472,7 @@ def set_tag(client, module, tags, function, purge_tags):
             client.tag_resource(
                 Resource=arn,
                 Tags=tags_to_add,
-                aws_retry=True
+                aws_retry=True,
             )
             changed = True
 
@@ -485,14 +484,14 @@ def set_tag(client, module, tags, function, purge_tags):
 
 def wait_for_lambda(client, module, name):
     try:
-        client_active_waiter = client.get_waiter('function_active')
-        client_updated_waiter = client.get_waiter('function_updated')
+        client_active_waiter = client.get_waiter("function_active")
+        client_updated_waiter = client.get_waiter("function_updated")
         client_active_waiter.wait(FunctionName=name)
         client_updated_waiter.wait(FunctionName=name)
     except WaiterError as e:
-        module.fail_json_aws(e, msg='Timeout while waiting on lambda to finish updating')
+        module.fail_json_aws(e, msg="Timeout while waiting on lambda to finish updating")
     except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed while waiting on lambda to finish updating')
+        module.fail_json_aws(e, msg="Failed while waiting on lambda to finish updating")
 
 
 def format_response(response):
@@ -510,13 +509,13 @@ def _zip_args(zip_file, current_config, ignore_checksum):
     # If there's another change that needs to happen, we always re-upload the code
     if not ignore_checksum:
         local_checksum = sha256sum(zip_file)
-        remote_checksum = current_config.get('CodeSha256', '')
+        remote_checksum = current_config.get("CodeSha256", "")
         if local_checksum == remote_checksum:
             return {}
 
-    with open(zip_file, 'rb') as f:
+    with open(zip_file, "rb") as f:
         zip_content = f.read()
-    return {'ZipFile': zip_content}
+    return {"ZipFile": zip_content}
 
 
 def _s3_args(s3_bucket, s3_key, s3_object_version):
@@ -525,26 +524,25 @@ def _s3_args(s3_bucket, s3_key, s3_object_version):
     if not s3_key:
         return {}
 
-    code = {'S3Bucket': s3_bucket,
-            'S3Key': s3_key}
+    code = {"S3Bucket": s3_bucket, "S3Key": s3_key}
     if s3_object_version:
-        code.update({'S3ObjectVersion': s3_object_version})
+        code.update({"S3ObjectVersion": s3_object_version})
 
     return code
 
 
 def _code_args(module, current_config):
-    s3_bucket = module.params.get('s3_bucket')
-    s3_key = module.params.get('s3_key')
-    s3_object_version = module.params.get('s3_object_version')
-    zip_file = module.params.get('zip_file')
-    architectures = module.params.get('architecture')
+    s3_bucket = module.params.get("s3_bucket")
+    s3_key = module.params.get("s3_key")
+    s3_object_version = module.params.get("s3_object_version")
+    zip_file = module.params.get("zip_file")
+    architectures = module.params.get("architecture")
 
     code_kwargs = {}
 
-    if architectures and current_config.get('Architectures', None) != [architectures]:
-        module.warn('Arch Change')
-        code_kwargs.update({'Architectures': [architectures]})
+    if architectures and current_config.get("Architectures", None) != [architectures]:
+        module.warn("Arch Change")
+        code_kwargs.update({"Architectures": [architectures]})
 
     try:
         code_kwargs.update(_zip_args(zip_file, current_config, bool(code_kwargs)))
@@ -556,8 +554,8 @@ def _code_args(module, current_config):
     if not code_kwargs:
         return {}
 
-    if not architectures and current_config.get('Architectures', None):
-        code_kwargs.update({'Architectures': current_config.get('Architectures', None)})
+    if not architectures and current_config.get("Architectures", None):
+        code_kwargs.update({"Architectures": current_config.get("Architectures", None)})
 
     return code_kwargs
 
@@ -565,172 +563,177 @@ def _code_args(module, current_config):
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        state=dict(default='present', choices=['present', 'absent']),
+        state=dict(default="present", choices=["present", "absent"]),
         runtime=dict(),
         role=dict(),
         handler=dict(),
-        zip_file=dict(aliases=['src']),
+        zip_file=dict(aliases=["src"]),
         s3_bucket=dict(),
         s3_key=dict(no_log=False),
         s3_object_version=dict(),
-        description=dict(default=''),
-        timeout=dict(type='int', default=3),
-        memory_size=dict(type='int', default=128),
-        vpc_subnet_ids=dict(type='list', elements='str'),
-        vpc_security_group_ids=dict(type='list', elements='str'),
-        environment_variables=dict(type='dict'),
+        description=dict(default=""),
+        timeout=dict(type="int", default=3),
+        memory_size=dict(type="int", default=128),
+        vpc_subnet_ids=dict(type="list", elements="str"),
+        vpc_security_group_ids=dict(type="list", elements="str"),
+        environment_variables=dict(type="dict"),
         dead_letter_arn=dict(),
-        kms_key_arn=dict(type='str', no_log=False),
-        tracing_mode=dict(choices=['Active', 'PassThrough']),
-        architecture=dict(choices=['x86_64', 'arm64'], type='str', aliases=['architectures']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        kms_key_arn=dict(type="str", no_log=False),
+        tracing_mode=dict(choices=["Active", "PassThrough"]),
+        architecture=dict(choices=["x86_64", "arm64"], type="str", aliases=["architectures"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
         layers=dict(
-            type='list',
-            elements='dict',
+            type="list",
+            elements="dict",
             options=dict(
-                layer_version_arn=dict(type='str'),
-                layer_name=dict(type='str', aliases=['layer_arn']),
-                version=dict(type='int', aliases=['layer_version']),
+                layer_version_arn=dict(type="str"),
+                layer_name=dict(type="str", aliases=["layer_arn"]),
+                version=dict(type="int", aliases=["layer_version"]),
             ),
-            required_together=[['layer_name', 'version']],
-            required_one_of=[['layer_version_arn', 'layer_name']],
-            mutually_exclusive=[
-                ['layer_name', 'layer_version_arn'],
-                ['version', 'layer_version_arn']
-            ],
+            required_together=[["layer_name", "version"]],
+            required_one_of=[["layer_version_arn", "layer_name"]],
+            mutually_exclusive=[["layer_name", "layer_version_arn"], ["version", "layer_version_arn"]],
         ),
     )
 
-    mutually_exclusive = [['zip_file', 's3_key'],
-                          ['zip_file', 's3_bucket'],
-                          ['zip_file', 's3_object_version']]
-
-    required_together = [['s3_key', 's3_bucket'],
-                         ['vpc_subnet_ids', 'vpc_security_group_ids']]
-
-    required_if = [
-        ['state', 'present', ['runtime', 'handler', 'role']],
-        ['architecture', 'x86_64', ['zip_file', 's3_bucket'], True],
-        ['architecture', 'arm64', ['zip_file', 's3_bucket'], True],
+    mutually_exclusive = [
+        ["zip_file", "s3_key"],
+        ["zip_file", "s3_bucket"],
+        ["zip_file", "s3_object_version"],
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,
-                              mutually_exclusive=mutually_exclusive,
-                              required_together=required_together,
-                              required_if=required_if)
+    required_together = [
+        ["s3_key", "s3_bucket"],
+        ["vpc_subnet_ids", "vpc_security_group_ids"],
+    ]
 
-    name = module.params.get('name')
-    state = module.params.get('state').lower()
-    runtime = module.params.get('runtime')
-    role = module.params.get('role')
-    handler = module.params.get('handler')
-    description = module.params.get('description')
-    timeout = module.params.get('timeout')
-    memory_size = module.params.get('memory_size')
-    vpc_subnet_ids = module.params.get('vpc_subnet_ids')
-    vpc_security_group_ids = module.params.get('vpc_security_group_ids')
-    environment_variables = module.params.get('environment_variables')
-    dead_letter_arn = module.params.get('dead_letter_arn')
-    tracing_mode = module.params.get('tracing_mode')
-    tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
-    kms_key_arn = module.params.get('kms_key_arn')
-    architectures = module.params.get('architecture')
+    required_if = [
+        ["state", "present", ["runtime", "handler", "role"]],
+        ["architecture", "x86_64", ["zip_file", "s3_bucket"], True],
+        ["architecture", "arm64", ["zip_file", "s3_bucket"], True],
+    ]
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+        required_together=required_together,
+        required_if=required_if,
+    )
+
+    name = module.params.get("name")
+    state = module.params.get("state").lower()
+    runtime = module.params.get("runtime")
+    role = module.params.get("role")
+    handler = module.params.get("handler")
+    description = module.params.get("description")
+    timeout = module.params.get("timeout")
+    memory_size = module.params.get("memory_size")
+    vpc_subnet_ids = module.params.get("vpc_subnet_ids")
+    vpc_security_group_ids = module.params.get("vpc_security_group_ids")
+    environment_variables = module.params.get("environment_variables")
+    dead_letter_arn = module.params.get("dead_letter_arn")
+    tracing_mode = module.params.get("tracing_mode")
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+    kms_key_arn = module.params.get("kms_key_arn")
+    architectures = module.params.get("architecture")
     layers = []
 
     check_mode = module.check_mode
     changed = False
 
     try:
-        client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Trying to connect to AWS")
 
-    if state == 'present':
-        if re.match(r'^arn:aws(-([a-z\-]+))?:iam', role):
+    if state == "present":
+        if re.match(r"^arn:aws(-([a-z\-]+))?:iam", role):
             role_arn = role
         else:
             # get account ID and assemble ARN
             account_id, partition = get_aws_account_info(module)
-            role_arn = 'arn:{0}:iam::{1}:role/{2}'.format(partition, account_id, role)
+            role_arn = "arn:{0}:iam::{1}:role/{2}".format(partition, account_id, role)
 
         # create list of layer version arn
         if module.params.get("layers"):
             for layer in module.params.get("layers"):
                 layer_version_arn = layer.get("layer_version_arn")
                 if layer_version_arn is None:
-                    layer_version_arn = get_layer_version_arn(module, client, layer.get("layer_name"), layer.get("version"))
+                    layer_version_arn = get_layer_version_arn(
+                        module, client, layer.get("layer_name"), layer.get("version")
+                    )
                 layers.append(layer_version_arn)
 
     # Get function configuration if present, False otherwise
     current_function = get_current_function(client, name)
 
     # Update existing Lambda function
-    if state == 'present' and current_function:
-
+    if state == "present" and current_function:
         # Get current state
-        current_config = current_function['Configuration']
+        current_config = current_function["Configuration"]
         current_version = None
 
         # Update function configuration
-        func_kwargs = {'FunctionName': name}
+        func_kwargs = {"FunctionName": name}
 
         # Update configuration if needed
-        if role_arn and current_config['Role'] != role_arn:
-            func_kwargs.update({'Role': role_arn})
-        if handler and current_config['Handler'] != handler:
-            func_kwargs.update({'Handler': handler})
-        if description and current_config['Description'] != description:
-            func_kwargs.update({'Description': description})
-        if timeout and current_config['Timeout'] != timeout:
-            func_kwargs.update({'Timeout': timeout})
-        if memory_size and current_config['MemorySize'] != memory_size:
-            func_kwargs.update({'MemorySize': memory_size})
-        if runtime and current_config['Runtime'] != runtime:
-            func_kwargs.update({'Runtime': runtime})
-        if (environment_variables is not None) and (current_config.get(
-                'Environment', {}).get('Variables', {}) != environment_variables):
-            func_kwargs.update({'Environment': {'Variables': environment_variables}})
+        if role_arn and current_config["Role"] != role_arn:
+            func_kwargs.update({"Role": role_arn})
+        if handler and current_config["Handler"] != handler:
+            func_kwargs.update({"Handler": handler})
+        if description and current_config["Description"] != description:
+            func_kwargs.update({"Description": description})
+        if timeout and current_config["Timeout"] != timeout:
+            func_kwargs.update({"Timeout": timeout})
+        if memory_size and current_config["MemorySize"] != memory_size:
+            func_kwargs.update({"MemorySize": memory_size})
+        if runtime and current_config["Runtime"] != runtime:
+            func_kwargs.update({"Runtime": runtime})
+        if (environment_variables is not None) and (
+            current_config.get("Environment", {}).get("Variables", {}) != environment_variables
+        ):
+            func_kwargs.update({"Environment": {"Variables": environment_variables}})
         if dead_letter_arn is not None:
-            if current_config.get('DeadLetterConfig'):
-                if current_config['DeadLetterConfig']['TargetArn'] != dead_letter_arn:
-                    func_kwargs.update({'DeadLetterConfig': {'TargetArn': dead_letter_arn}})
+            if current_config.get("DeadLetterConfig"):
+                if current_config["DeadLetterConfig"]["TargetArn"] != dead_letter_arn:
+                    func_kwargs.update({"DeadLetterConfig": {"TargetArn": dead_letter_arn}})
             else:
                 if dead_letter_arn != "":
-                    func_kwargs.update({'DeadLetterConfig': {'TargetArn': dead_letter_arn}})
-        if tracing_mode and (current_config.get('TracingConfig', {}).get('Mode', 'PassThrough') != tracing_mode):
-            func_kwargs.update({'TracingConfig': {'Mode': tracing_mode}})
+                    func_kwargs.update({"DeadLetterConfig": {"TargetArn": dead_letter_arn}})
+        if tracing_mode and (current_config.get("TracingConfig", {}).get("Mode", "PassThrough") != tracing_mode):
+            func_kwargs.update({"TracingConfig": {"Mode": tracing_mode}})
         if kms_key_arn:
-            func_kwargs.update({'KMSKeyArn': kms_key_arn})
+            func_kwargs.update({"KMSKeyArn": kms_key_arn})
 
         # If VPC configuration is desired
         if vpc_subnet_ids:
-
-            if 'VpcConfig' in current_config:
+            if "VpcConfig" in current_config:
                 # Compare VPC config with current config
-                current_vpc_subnet_ids = current_config['VpcConfig']['SubnetIds']
-                current_vpc_security_group_ids = current_config['VpcConfig']['SecurityGroupIds']
+                current_vpc_subnet_ids = current_config["VpcConfig"]["SubnetIds"]
+                current_vpc_security_group_ids = current_config["VpcConfig"]["SecurityGroupIds"]
 
                 subnet_net_id_changed = sorted(vpc_subnet_ids) != sorted(current_vpc_subnet_ids)
-                vpc_security_group_ids_changed = sorted(vpc_security_group_ids) != sorted(current_vpc_security_group_ids)
+                vpc_security_group_ids_changed = sorted(vpc_security_group_ids) != sorted(
+                    current_vpc_security_group_ids
+                )
 
-            if 'VpcConfig' not in current_config or subnet_net_id_changed or vpc_security_group_ids_changed:
-                new_vpc_config = {'SubnetIds': vpc_subnet_ids,
-                                  'SecurityGroupIds': vpc_security_group_ids}
-                func_kwargs.update({'VpcConfig': new_vpc_config})
+            if "VpcConfig" not in current_config or subnet_net_id_changed or vpc_security_group_ids_changed:
+                new_vpc_config = {"SubnetIds": vpc_subnet_ids, "SecurityGroupIds": vpc_security_group_ids}
+                func_kwargs.update({"VpcConfig": new_vpc_config})
         else:
             # No VPC configuration is desired, assure VPC config is empty when present in current config
-            if 'VpcConfig' in current_config and current_config['VpcConfig'].get('VpcId'):
-                func_kwargs.update({'VpcConfig': {'SubnetIds': [], 'SecurityGroupIds': []}})
+            if "VpcConfig" in current_config and current_config["VpcConfig"].get("VpcId"):
+                func_kwargs.update({"VpcConfig": {"SubnetIds": [], "SecurityGroupIds": []}})
 
         # Check layers
         if layers:
             # compare two lists to see if the target layers are equal to the current
-            current_layers = current_config.get('Layers', [])
-            if Counter(layers) != Counter((f['Arn'] for f in current_layers)):
-                func_kwargs.update({'Layers': layers})
+            current_layers = current_config.get("Layers", [])
+            if Counter(layers) != Counter((f["Arn"] for f in current_layers)):
+                func_kwargs.update({"Layers": layers})
 
         # Upload new configuration if configuration has changed
         if len(func_kwargs) > 1:
@@ -740,7 +743,7 @@ def main():
             try:
                 if not check_mode:
                     response = client.update_function_configuration(aws_retry=True, **func_kwargs)
-                    current_version = response['Version']
+                    current_version = response["Version"]
                 changed = True
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Trying to update lambda configuration")
@@ -752,9 +755,8 @@ def main():
 
         code_kwargs = _code_args(module, current_config)
         if code_kwargs:
-
             # Update code configuration
-            code_kwargs.update({'FunctionName': name, 'Publish': True})
+            code_kwargs.update({"FunctionName": name, "Publish": True})
 
             if not check_mode:
                 wait_for_lambda(client, module, name)
@@ -762,7 +764,7 @@ def main():
             try:
                 if not check_mode:
                     response = client.update_function_code(aws_retry=True, **code_kwargs)
-                    current_version = response['Version']
+                    current_version = response["Version"]
                 changed = True
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Trying to upload new code")
@@ -770,59 +772,58 @@ def main():
         # Describe function code and configuration
         response = get_current_function(client, name, qualifier=current_version)
         if not response:
-            module.fail_json(msg='Unable to get function information after updating')
+            module.fail_json(msg="Unable to get function information after updating")
         response = format_response(response)
         # We're done
         module.exit_json(changed=changed, code_kwargs=code_kwargs, func_kwargs=func_kwargs, **response)
 
     # Function doesn't exists, create new Lambda function
-    elif state == 'present':
-
-        func_kwargs = {'FunctionName': name,
-                       'Publish': True,
-                       'Runtime': runtime,
-                       'Role': role_arn,
-                       'Timeout': timeout,
-                       'MemorySize': memory_size,
-                       }
+    elif state == "present":
+        func_kwargs = {
+            "FunctionName": name,
+            "Publish": True,
+            "Runtime": runtime,
+            "Role": role_arn,
+            "Timeout": timeout,
+            "MemorySize": memory_size,
+        }
 
         code = _code_args(module, {})
         if not code:
-            module.fail_json(msg='Either S3 object or path to zipfile required')
-        if 'Architectures' in code:
-            func_kwargs.update({'Architectures': code.pop('Architectures')})
-        func_kwargs.update({'Code': code})
+            module.fail_json(msg="Either S3 object or path to zipfile required")
+        if "Architectures" in code:
+            func_kwargs.update({"Architectures": code.pop("Architectures")})
+        func_kwargs.update({"Code": code})
 
         if description is not None:
-            func_kwargs.update({'Description': description})
+            func_kwargs.update({"Description": description})
 
         if handler is not None:
-            func_kwargs.update({'Handler': handler})
+            func_kwargs.update({"Handler": handler})
 
         if environment_variables:
-            func_kwargs.update({'Environment': {'Variables': environment_variables}})
+            func_kwargs.update({"Environment": {"Variables": environment_variables}})
 
         if dead_letter_arn:
-            func_kwargs.update({'DeadLetterConfig': {'TargetArn': dead_letter_arn}})
+            func_kwargs.update({"DeadLetterConfig": {"TargetArn": dead_letter_arn}})
 
         if tracing_mode:
-            func_kwargs.update({'TracingConfig': {'Mode': tracing_mode}})
+            func_kwargs.update({"TracingConfig": {"Mode": tracing_mode}})
 
         if kms_key_arn:
-            func_kwargs.update({'KMSKeyArn': kms_key_arn})
+            func_kwargs.update({"KMSKeyArn": kms_key_arn})
 
         # If VPC configuration is given
         if vpc_subnet_ids:
-            func_kwargs.update({'VpcConfig': {'SubnetIds': vpc_subnet_ids,
-                                              'SecurityGroupIds': vpc_security_group_ids}})
+            func_kwargs.update({"VpcConfig": {"SubnetIds": vpc_subnet_ids, "SecurityGroupIds": vpc_security_group_ids}})
 
         # Layers
         if layers:
-            func_kwargs.update({'Layers': layers})
+            func_kwargs.update({"Layers": layers})
 
         # Tag Function
         if tags:
-            func_kwargs.update({'Tags': tags})
+            func_kwargs.update({"Tags": tags})
 
         # Function would have been created if not check mode
         if check_mode:
@@ -832,19 +833,19 @@ def main():
         current_version = None
         try:
             response = client.create_function(aws_retry=True, **func_kwargs)
-            current_version = response['Version']
+            current_version = response["Version"]
             changed = True
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Trying to create function")
 
         response = get_current_function(client, name, qualifier=current_version)
         if not response:
-            module.fail_json(msg='Unable to get function information after creating')
+            module.fail_json(msg="Unable to get function information after creating")
         response = format_response(response)
         module.exit_json(changed=changed, **response)
 
     # Delete existing Lambda function
-    if state == 'absent' and current_function:
+    if state == "absent" and current_function:
         try:
             if not check_mode:
                 client.delete_function(FunctionName=name, aws_retry=True)
@@ -855,9 +856,9 @@ def main():
         module.exit_json(changed=changed)
 
     # Function already absent, do nothing
-    elif state == 'absent':
+    elif state == "absent":
         module.exit_json(changed=changed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

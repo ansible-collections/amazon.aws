@@ -42,6 +42,7 @@ import re
 from ansible.module_utils.ansible_release import __version__
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six import integer_types
+
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
 from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
@@ -93,18 +94,17 @@ except ImportError:
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
-
-    """ Return list of security group IDs from security group names. Note that security group names are not unique
-     across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
-     will probably lead to a boto exception if you attempt to assign both IDs to a resource so ensure you wrap the call in
-     a try block
-     """
+    """Return list of security group IDs from security group names. Note that security group names are not unique
+    across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
+    will probably lead to a boto exception if you attempt to assign both IDs to a resource so ensure you wrap the call in
+    a try block
+    """
 
     def get_sg_name(sg, boto3=None):
-        return str(sg['GroupName'])
+        return str(sg["GroupName"])
 
     def get_sg_id(sg, boto3=None):
-        return str(sg['GroupId'])
+        return str(sg["GroupId"])
 
     sec_group_id_list = []
 
@@ -115,25 +115,25 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     if vpc_id:
         filters = [
             {
-                'Name': 'vpc-id',
-                'Values': [
+                "Name": "vpc-id",
+                "Values": [
                     vpc_id,
-                ]
+                ],
             }
         ]
-        all_sec_groups = ec2_connection.describe_security_groups(Filters=filters)['SecurityGroups']
+        all_sec_groups = ec2_connection.describe_security_groups(Filters=filters)["SecurityGroups"]
     else:
-        all_sec_groups = ec2_connection.describe_security_groups()['SecurityGroups']
+        all_sec_groups = ec2_connection.describe_security_groups()["SecurityGroups"]
 
     unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg, boto3)) for all_sg in all_sec_groups)
     sec_group_name_list = list(set(sec_group_list) - set(unmatched))
 
     if len(unmatched) > 0:
         # If we have unmatched names that look like an ID, assume they are
-        sec_group_id_list[:] = [sg for sg in unmatched if re.match('sg-[a-fA-F0-9]+$', sg)]
-        still_unmatched = [sg for sg in unmatched if not re.match('sg-[a-fA-F0-9]+$', sg)]
+        sec_group_id_list[:] = [sg for sg in unmatched if re.match("sg-[a-fA-F0-9]+$", sg)]
+        still_unmatched = [sg for sg in unmatched if not re.match("sg-[a-fA-F0-9]+$", sg)]
         if len(still_unmatched) > 0:
-            raise ValueError("The following group names are not valid: %s" % ', '.join(still_unmatched))
+            raise ValueError("The following group names are not valid: %s" % ", ".join(still_unmatched))
 
     sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
@@ -161,9 +161,7 @@ def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
 
     try:
         tags_to_add = ansible_dict_to_boto3_tag_list(tags_to_set)
-        AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(
-            client.create_tags
-        )(
+        AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(client.create_tags)(
             Resources=[resource_id], Tags=tags_to_add
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -193,9 +191,7 @@ def remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes=None
     tags_to_remove = [dict(Key=tagkey) for tagkey in tags_to_unset]
 
     try:
-        AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(
-            client.delete_tags
-        )(
+        AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(client.delete_tags)(
             Resources=[resource_id], Tags=tags_to_remove
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -213,9 +209,9 @@ def describe_ec2_tags(client, module, resource_id, resource_type=None, retry_cod
     :param resource_type: the type of the resource
     :param retry_codes: additional boto3 error codes to trigger retries
     """
-    filters = {'resource-id': resource_id}
+    filters = {"resource-id": resource_id}
     if resource_type:
-        filters['resource-type'] = resource_type
+        filters["resource-type"] = resource_type
     filters = ansible_dict_to_boto3_filter_list(filters)
 
     if not retry_codes:
@@ -223,9 +219,10 @@ def describe_ec2_tags(client, module, resource_id, resource_type=None, retry_cod
 
     try:
         retry_decorator = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)
-        results = paginated_query_with_retries(client, 'describe_tags', retry_decorator=retry_decorator,
-                                               Filters=filters)
-        return boto3_tag_list_to_ansible_dict(results.get('Tags', None))
+        results = paginated_query_with_retries(
+            client, "describe_tags", retry_decorator=retry_decorator, Filters=filters
+        )
+        return boto3_tag_list_to_ansible_dict(results.get("Tags", None))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe tags for EC2 Resource: {0}".format(resource_id))
 
@@ -296,14 +293,14 @@ def normalize_ec2_vpc_dhcp_config(option_config):
 
     for config_item in option_config:
         # Handle single value keys
-        if config_item['Key'] == 'netbios-node-type':
-            if isinstance(config_item['Values'], integer_types):
-                config_data['netbios-node-type'] = str((config_item['Values']))
-            elif isinstance(config_item['Values'], list):
-                config_data['netbios-node-type'] = str((config_item['Values'][0]['Value']))
+        if config_item["Key"] == "netbios-node-type":
+            if isinstance(config_item["Values"], integer_types):
+                config_data["netbios-node-type"] = str((config_item["Values"]))
+            elif isinstance(config_item["Values"], list):
+                config_data["netbios-node-type"] = str((config_item["Values"][0]["Value"]))
         # Handle actual lists of values
-        for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
-            if config_item['Key'] == option:
-                config_data[option] = [val['Value'] for val in config_item['Values']]
+        for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers"]:
+            if config_item["Key"] == option:
+                config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data

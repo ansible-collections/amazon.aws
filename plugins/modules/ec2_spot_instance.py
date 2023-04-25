@@ -434,29 +434,27 @@ def build_launch_specification(launch_spec):
     """
     assigned_keys = dict((k, v) for k, v in launch_spec.items() if v is not None)
 
-    sub_key_to_build = ['placement', 'iam_instance_profile', 'monitoring']
+    sub_key_to_build = ["placement", "iam_instance_profile", "monitoring"]
     for subkey in sub_key_to_build:
         if launch_spec[subkey] is not None:
             assigned_keys[subkey] = dict((k, v) for k, v in launch_spec[subkey].items() if v is not None)
 
-    if launch_spec['network_interfaces'] is not None:
+    if launch_spec["network_interfaces"] is not None:
         interfaces = []
-        for iface in launch_spec['network_interfaces']:
+        for iface in launch_spec["network_interfaces"]:
             interfaces.append(dict((k, v) for k, v in iface.items() if v is not None))
-        assigned_keys['network_interfaces'] = interfaces
+        assigned_keys["network_interfaces"] = interfaces
 
-    if launch_spec['block_device_mappings'] is not None:
+    if launch_spec["block_device_mappings"] is not None:
         block_devs = []
-        for dev in launch_spec['block_device_mappings']:
-            block_devs.append(
-                dict((k, v) for k, v in dev.items() if v is not None))
-        assigned_keys['block_device_mappings'] = block_devs
+        for dev in launch_spec["block_device_mappings"]:
+            block_devs.append(dict((k, v) for k, v in dev.items() if v is not None))
+        assigned_keys["block_device_mappings"] = block_devs
 
     return snake_dict_to_camel_dict(assigned_keys, capitalize_first=True)
 
 
 def request_spot_instances(module, connection):
-
     # connection.request_spot_instances() always creates a new spot request
     changed = True
 
@@ -465,83 +463,97 @@ def request_spot_instances(module, connection):
 
     params = {}
 
-    if module.params.get('launch_specification'):
-        params['LaunchSpecification'] = build_launch_specification(module.params.get('launch_specification'))
+    if module.params.get("launch_specification"):
+        params["LaunchSpecification"] = build_launch_specification(module.params.get("launch_specification"))
 
-    if module.params.get('zone_group'):
-        params['AvailabilityZoneGroup'] = module.params.get('zone_group')
+    if module.params.get("zone_group"):
+        params["AvailabilityZoneGroup"] = module.params.get("zone_group")
 
-    if module.params.get('count'):
-        params['InstanceCount'] = module.params.get('count')
+    if module.params.get("count"):
+        params["InstanceCount"] = module.params.get("count")
 
-    if module.params.get('launch_group'):
-        params['LaunchGroup'] = module.params.get('launch_group')
+    if module.params.get("launch_group"):
+        params["LaunchGroup"] = module.params.get("launch_group")
 
-    if module.params.get('spot_price'):
-        params['SpotPrice'] = module.params.get('spot_price')
+    if module.params.get("spot_price"):
+        params["SpotPrice"] = module.params.get("spot_price")
 
-    if module.params.get('spot_type'):
-        params['Type'] = module.params.get('spot_type')
+    if module.params.get("spot_type"):
+        params["Type"] = module.params.get("spot_type")
 
-    if module.params.get('client_token'):
-        params['ClientToken'] = module.params.get('client_token')
+    if module.params.get("client_token"):
+        params["ClientToken"] = module.params.get("client_token")
 
-    if module.params.get('interruption'):
-        params['InstanceInterruptionBehavior'] = module.params.get('interruption')
+    if module.params.get("interruption"):
+        params["InstanceInterruptionBehavior"] = module.params.get("interruption")
 
-    if module.params.get('tags'):
-        params['TagSpecifications'] = [{
-            'ResourceType': 'spot-instances-request',
-            'Tags': ansible_dict_to_boto3_tag_list(module.params.get('tags')),
-        }]
+    if module.params.get("tags"):
+        params["TagSpecifications"] = [
+            {
+                "ResourceType": "spot-instances-request",
+                "Tags": ansible_dict_to_boto3_tag_list(module.params.get("tags")),
+            }
+        ]
 
     # TODO: add support for datetime-based parameters
     # params['ValidFrom'] = module.params.get('valid_from')
     # params['ValidUntil'] = module.params.get('valid_until')
 
     try:
-        request_spot_instance_response = (connection.request_spot_instances(aws_retry=True, **params))['SpotInstanceRequests'][0]
+        request_spot_instance_response = (connection.request_spot_instances(aws_retry=True, **params))[
+            "SpotInstanceRequests"
+        ][0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error while creating the spot instance request')
+        module.fail_json_aws(e, msg="Error while creating the spot instance request")
 
-    request_spot_instance_response['Tags'] = boto3_tag_list_to_ansible_dict(request_spot_instance_response.get('Tags', []))
-    spot_request = camel_dict_to_snake_dict(request_spot_instance_response, ignore_list=['Tags'])
+    request_spot_instance_response["Tags"] = boto3_tag_list_to_ansible_dict(
+        request_spot_instance_response.get("Tags", [])
+    )
+    spot_request = camel_dict_to_snake_dict(request_spot_instance_response, ignore_list=["Tags"])
     module.exit_json(spot_request=spot_request, changed=changed)
 
 
 def cancel_spot_instance_requests(module, connection):
-
     changed = False
-    spot_instance_request_ids = module.params.get('spot_instance_request_ids')
+    spot_instance_request_ids = module.params.get("spot_instance_request_ids")
     requests_exist = dict()
     try:
-        paginator = connection.get_paginator('describe_spot_instance_requests').paginate(SpotInstanceRequestIds=spot_instance_request_ids,
-                                                                                         Filters=[{'Name': 'state', 'Values': ['open', 'active']}])
+        paginator = connection.get_paginator("describe_spot_instance_requests").paginate(
+            SpotInstanceRequestIds=spot_instance_request_ids, Filters=[{"Name": "state", "Values": ["open", "active"]}]
+        )
         jittered_retry = AWSRetry.jittered_backoff()
         requests_exist = jittered_retry(paginator.build_full_result)()
-    except is_boto3_error_code('InvalidSpotInstanceRequestID.NotFound'):
-        requests_exist['SpotInstanceRequests'] = []
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("InvalidSpotInstanceRequestID.NotFound"):
+        requests_exist["SpotInstanceRequests"] = []
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failure when describing spot requests")
 
     try:
-        if len(requests_exist['SpotInstanceRequests']) > 0:
+        if len(requests_exist["SpotInstanceRequests"]) > 0:
             changed = True
             if module.check_mode:
-                module.exit_json(changed=changed,
-                                 msg='Would have cancelled Spot request {0}'.format(spot_instance_request_ids))
+                module.exit_json(
+                    changed=changed, msg="Would have cancelled Spot request {0}".format(spot_instance_request_ids)
+                )
 
-            connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
+            connection.cancel_spot_instance_requests(
+                aws_retry=True, SpotInstanceRequestIds=module.params.get("spot_instance_request_ids")
+            )
 
             if module.params.get("terminate_instances") is True:
                 associated_instances = [request["InstanceId"] for request in requests_exist["SpotInstanceRequests"]]
                 terminate_associated_instances(connection, module, associated_instances)
 
-            module.exit_json(changed=changed, msg='Cancelled Spot request {0}'.format(module.params.get('spot_instance_request_ids')))
+            module.exit_json(
+                changed=changed, msg="Cancelled Spot request {0}".format(module.params.get("spot_instance_request_ids"))
+            )
         else:
-            module.exit_json(changed=changed, msg='Spot request not found or already cancelled')
+            module.exit_json(changed=changed, msg="Spot request not found or already cancelled")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error while cancelling the spot instance request')
+        module.fail_json_aws(e, msg="Error while cancelling the spot instance request")
 
 
 def terminate_associated_instances(connection, module, instance_ids):
@@ -553,97 +565,89 @@ def terminate_associated_instances(connection, module, instance_ids):
 
 def main():
     network_interface_options = dict(
-        associate_public_ip_address=dict(type='bool'),
-        delete_on_termination=dict(type='bool'),
-        description=dict(type='str'),
-        device_index=dict(type='int'),
-        groups=dict(type='list', elements='str'),
-        ipv6_address_count=dict(type='int'),
-        ipv6_addresses=dict(type='list', elements='dict', options=dict(ipv6address=dict(type='str'))),
-        network_interface_id=dict(type='str'),
-        private_ip_address=dict(type='str'),
-        private_ip_addresses=dict(type='list', elements='dict'),
-        secondary_private_ip_address_count=dict(type='int'),
-        subnet_id=dict(type='str'),
-        associate_carrier_ip_address=dict(type='bool'),
-        interface_type=dict(type='str', choices=['interface', 'efa']),
-        network_card_index=dict(type='int'),
-        ipv4_prefixes=dict(type='list', elements='dict'),
-        ipv4_prefix_count=dict(type='int'),
-        ipv6_prefixes=dict(type='list', elements='dict'),
-        ipv6_prefix_count=dict(type='int')
+        associate_public_ip_address=dict(type="bool"),
+        delete_on_termination=dict(type="bool"),
+        description=dict(type="str"),
+        device_index=dict(type="int"),
+        groups=dict(type="list", elements="str"),
+        ipv6_address_count=dict(type="int"),
+        ipv6_addresses=dict(type="list", elements="dict", options=dict(ipv6address=dict(type="str"))),
+        network_interface_id=dict(type="str"),
+        private_ip_address=dict(type="str"),
+        private_ip_addresses=dict(type="list", elements="dict"),
+        secondary_private_ip_address_count=dict(type="int"),
+        subnet_id=dict(type="str"),
+        associate_carrier_ip_address=dict(type="bool"),
+        interface_type=dict(type="str", choices=["interface", "efa"]),
+        network_card_index=dict(type="int"),
+        ipv4_prefixes=dict(type="list", elements="dict"),
+        ipv4_prefix_count=dict(type="int"),
+        ipv6_prefixes=dict(type="list", elements="dict"),
+        ipv6_prefix_count=dict(type="int"),
     )
     block_device_mappings_options = dict(
-        device_name=dict(type='str'),
-        virtual_name=dict(type='str'),
-        ebs=dict(type='dict'),
-        no_device=dict(type='str'),
+        device_name=dict(type="str"),
+        virtual_name=dict(type="str"),
+        ebs=dict(type="dict"),
+        no_device=dict(type="str"),
     )
-    monitoring_options = dict(
-        enabled=dict(type='bool', default=False)
-    )
+    monitoring_options = dict(enabled=dict(type="bool", default=False))
     placement_options = dict(
-        availability_zone=dict(type='str'),
-        group_name=dict(type='str'),
-        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'], default='default')
+        availability_zone=dict(type="str"),
+        group_name=dict(type="str"),
+        tenancy=dict(type="str", choices=["default", "dedicated", "host"], default="default"),
     )
-    iam_instance_profile_options = dict(
-        arn=dict(type='str'),
-        name=dict(type='str')
-    )
+    iam_instance_profile_options = dict(arn=dict(type="str"), name=dict(type="str"))
     launch_specification_options = dict(
-        security_group_ids=dict(type='list', elements='str'),
-        security_groups=dict(type='list', elements='str'),
-        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options),
-        ebs_optimized=dict(type='bool', default=False),
-        iam_instance_profile=dict(type='dict', options=iam_instance_profile_options),
-        image_id=dict(type='str'),
-        instance_type=dict(type='str'),
-        kernel_id=dict(type='str'),
-        key_name=dict(type='str'),
-        monitoring=dict(type='dict', options=monitoring_options),
-        network_interfaces=dict(type='list', elements='dict', options=network_interface_options, default=[]),
-        placement=dict(type='dict', options=placement_options),
-        ramdisk_id=dict(type='str'),
-        user_data=dict(type='str'),
-        subnet_id=dict(type='str')
+        security_group_ids=dict(type="list", elements="str"),
+        security_groups=dict(type="list", elements="str"),
+        block_device_mappings=dict(type="list", elements="dict", options=block_device_mappings_options),
+        ebs_optimized=dict(type="bool", default=False),
+        iam_instance_profile=dict(type="dict", options=iam_instance_profile_options),
+        image_id=dict(type="str"),
+        instance_type=dict(type="str"),
+        kernel_id=dict(type="str"),
+        key_name=dict(type="str"),
+        monitoring=dict(type="dict", options=monitoring_options),
+        network_interfaces=dict(type="list", elements="dict", options=network_interface_options, default=[]),
+        placement=dict(type="dict", options=placement_options),
+        ramdisk_id=dict(type="str"),
+        user_data=dict(type="str"),
+        subnet_id=dict(type="str"),
     )
 
     argument_spec = dict(
-        zone_group=dict(type='str'),
-        client_token=dict(type='str', no_log=False),
-        count=dict(type='int', default=1),
-        interruption=dict(type='str', default="terminate", choices=['hibernate', 'stop', 'terminate']),
-        launch_group=dict(type='str'),
-        launch_specification=dict(type='dict', options=launch_specification_options),
-        state=dict(default='present', choices=['present', 'absent']),
-        spot_price=dict(type='str'),
-        spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        tags=dict(type='dict'),
+        zone_group=dict(type="str"),
+        client_token=dict(type="str", no_log=False),
+        count=dict(type="int", default=1),
+        interruption=dict(type="str", default="terminate", choices=["hibernate", "stop", "terminate"]),
+        launch_group=dict(type="str"),
+        launch_specification=dict(type="dict", options=launch_specification_options),
+        state=dict(default="present", choices=["present", "absent"]),
+        spot_price=dict(type="str"),
+        spot_type=dict(default="one-time", choices=["one-time", "persistent"]),
+        tags=dict(type="dict"),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
         spot_instance_request_ids=dict(type="list", elements="str"),
         terminate_instances=dict(type="bool", default="False"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     state = module.params["state"]
 
     if module.params.get("terminate_instances") and state != "absent":
         module.fail_json("terminate_instances can only be used when state is absent.")
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
-    if state == 'present':
+    if state == "present":
         request_spot_instances(module, connection)
 
-    if state == 'absent':
+    if state == "absent":
         cancel_spot_instance_requests(module, connection)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

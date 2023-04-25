@@ -251,39 +251,39 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_option_groups(client, **params):
     try:
-        paginator = client.get_paginator('describe_option_groups')
+        paginator = client.get_paginator("describe_option_groups")
         return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code('OptionGroupNotFoundFault'):
+    except is_boto3_error_code("OptionGroupNotFoundFault"):
         return {}
 
 
 def list_option_groups(client, module):
     option_groups = list()
     params = dict()
-    params['OptionGroupName'] = module.params.get('option_group_name')
+    params["OptionGroupName"] = module.params.get("option_group_name")
 
-    if module.params.get('marker'):
-        params['Marker'] = module.params.get('marker')
-        if int(params['Marker']) < 20 or int(params['Marker']) > 100:
+    if module.params.get("marker"):
+        params["Marker"] = module.params.get("marker")
+        if int(params["Marker"]) < 20 or int(params["Marker"]) > 100:
             module.fail_json(msg="marker must be between 20 and 100 minutes")
 
-    if module.params.get('max_records'):
-        params['MaxRecords'] = module.params.get('max_records')
-        if params['MaxRecords'] > 100:
+    if module.params.get("max_records"):
+        params["MaxRecords"] = module.params.get("max_records")
+        if params["MaxRecords"] > 100:
             module.fail_json(msg="The maximum number of records to include in the response is 100.")
 
-    params['EngineName'] = module.params.get('engine_name')
-    params['MajorEngineVersion'] = module.params.get('major_engine_version')
+    params["EngineName"] = module.params.get("engine_name")
+    params["MajorEngineVersion"] = module.params.get("major_engine_version")
 
     try:
         result = _describe_option_groups(client, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't describe option groups.")
 
-    for option_group in result['OptionGroupsList']:
+    for option_group in result["OptionGroupsList"]:
         # Turn the boto3 result into ansible_friendly_snaked_names
         converted_option_group = camel_dict_to_snake_dict(option_group)
-        converted_option_group['tags'] = get_tags(client, module, converted_option_group['option_group_arn'])
+        converted_option_group["tags"] = get_tags(client, module, converted_option_group["option_group_arn"])
         option_groups.append(converted_option_group)
 
     return option_groups
@@ -291,35 +291,35 @@ def list_option_groups(client, module):
 
 def main():
     argument_spec = dict(
-        option_group_name=dict(default='', type='str'),
-        marker=dict(type='str'),
-        max_records=dict(type='int', default=100),
-        engine_name=dict(type='str', default=''),
-        major_engine_version=dict(type='str', default=''),
+        option_group_name=dict(default="", type="str"),
+        marker=dict(type="str"),
+        max_records=dict(type="int", default=100),
+        engine_name=dict(type="str", default=""),
+        major_engine_version=dict(type="str", default=""),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ['option_group_name', 'engine_name'],
-            ['option_group_name', 'major_engine_version'],
+            ["option_group_name", "engine_name"],
+            ["option_group_name", "major_engine_version"],
         ],
         required_together=[
-            ['engine_name', 'major_engine_version'],
+            ["engine_name", "major_engine_version"],
         ],
     )
 
     # Validate Requirements
     try:
-        connection = module.client('rds', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     results = list_option_groups(connection, module)
 
     module.exit_json(result=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

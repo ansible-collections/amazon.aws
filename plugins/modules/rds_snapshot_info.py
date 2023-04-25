@@ -303,87 +303,98 @@ except ImportError:
 def common_snapshot_info(module, conn, method, prefix, params):
     paginator = conn.get_paginator(method)
     try:
-        results = paginator.paginate(**params).build_full_result()['%ss' % prefix]
-    except is_boto3_error_code('%sNotFound' % prefix):
+        results = paginator.paginate(**params).build_full_result()["%ss" % prefix]
+    except is_boto3_error_code("%sNotFound" % prefix):
         results = []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "trying to get snapshot information")
 
     for snapshot in results:
         try:
-            if snapshot['SnapshotType'] != 'shared':
-                snapshot['Tags'] = boto3_tag_list_to_ansible_dict(conn.list_tags_for_resource(ResourceName=snapshot['%sArn' % prefix],
-                                                                                              aws_retry=True)['TagList'])
+            if snapshot["SnapshotType"] != "shared":
+                snapshot["Tags"] = boto3_tag_list_to_ansible_dict(
+                    conn.list_tags_for_resource(ResourceName=snapshot["%sArn" % prefix], aws_retry=True)["TagList"]
+                )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get tags for snapshot %s" % snapshot['%sIdentifier' % prefix])
+            module.fail_json_aws(e, "Couldn't get tags for snapshot %s" % snapshot["%sIdentifier" % prefix])
 
-    return [camel_dict_to_snake_dict(snapshot, ignore_list=['Tags']) for snapshot in results]
+    return [camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]) for snapshot in results]
 
 
 def cluster_snapshot_info(module, conn):
-    snapshot_name = module.params.get('db_cluster_snapshot_identifier')
-    snapshot_type = module.params.get('snapshot_type')
-    instance_name = module.params.get('db_cluster_identifier')
+    snapshot_name = module.params.get("db_cluster_snapshot_identifier")
+    snapshot_type = module.params.get("snapshot_type")
+    instance_name = module.params.get("db_cluster_identifier")
 
     params = dict()
     if snapshot_name:
-        params['DBClusterSnapshotIdentifier'] = snapshot_name
+        params["DBClusterSnapshotIdentifier"] = snapshot_name
     if instance_name:
-        params['DBClusterIdentifier'] = instance_name
+        params["DBClusterIdentifier"] = instance_name
     if snapshot_type:
-        params['SnapshotType'] = snapshot_type
-        if snapshot_type == 'public':
-            params['IncludePublic'] = True
-        elif snapshot_type == 'shared':
-            params['IncludeShared'] = True
+        params["SnapshotType"] = snapshot_type
+        if snapshot_type == "public":
+            params["IncludePublic"] = True
+        elif snapshot_type == "shared":
+            params["IncludeShared"] = True
 
-    return common_snapshot_info(module, conn, 'describe_db_cluster_snapshots', 'DBClusterSnapshot', params)
+    return common_snapshot_info(module, conn, "describe_db_cluster_snapshots", "DBClusterSnapshot", params)
 
 
 def standalone_snapshot_info(module, conn):
-    snapshot_name = module.params.get('db_snapshot_identifier')
-    snapshot_type = module.params.get('snapshot_type')
-    instance_name = module.params.get('db_instance_identifier')
+    snapshot_name = module.params.get("db_snapshot_identifier")
+    snapshot_type = module.params.get("snapshot_type")
+    instance_name = module.params.get("db_instance_identifier")
 
     params = dict()
     if snapshot_name:
-        params['DBSnapshotIdentifier'] = snapshot_name
+        params["DBSnapshotIdentifier"] = snapshot_name
     if instance_name:
-        params['DBInstanceIdentifier'] = instance_name
+        params["DBInstanceIdentifier"] = instance_name
     if snapshot_type:
-        params['SnapshotType'] = snapshot_type
-        if snapshot_type == 'public':
-            params['IncludePublic'] = True
-        elif snapshot_type == 'shared':
-            params['IncludeShared'] = True
+        params["SnapshotType"] = snapshot_type
+        if snapshot_type == "public":
+            params["IncludePublic"] = True
+        elif snapshot_type == "shared":
+            params["IncludeShared"] = True
 
-    return common_snapshot_info(module, conn, 'describe_db_snapshots', 'DBSnapshot', params)
+    return common_snapshot_info(module, conn, "describe_db_snapshots", "DBSnapshot", params)
 
 
 def main():
     argument_spec = dict(
-        db_snapshot_identifier=dict(aliases=['snapshot_name']),
+        db_snapshot_identifier=dict(aliases=["snapshot_name"]),
         db_instance_identifier=dict(),
         db_cluster_identifier=dict(),
         db_cluster_snapshot_identifier=dict(),
-        snapshot_type=dict(choices=['automated', 'manual', 'shared', 'public'])
+        snapshot_type=dict(choices=["automated", "manual", "shared", "public"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[['db_snapshot_identifier', 'db_instance_identifier', 'db_cluster_identifier', 'db_cluster_snapshot_identifier']]
+        mutually_exclusive=[
+            [
+                "db_snapshot_identifier",
+                "db_instance_identifier",
+                "db_cluster_identifier",
+                "db_cluster_snapshot_identifier",
+            ]
+        ],
     )
 
-    conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
     results = dict()
-    if not module.params['db_cluster_identifier'] and not module.params['db_cluster_snapshot_identifier']:
-        results['snapshots'] = standalone_snapshot_info(module, conn)
-    if not module.params['db_snapshot_identifier'] and not module.params['db_instance_identifier']:
-        results['cluster_snapshots'] = cluster_snapshot_info(module, conn)
+    if not module.params["db_cluster_identifier"] and not module.params["db_cluster_snapshot_identifier"]:
+        results["snapshots"] = standalone_snapshot_info(module, conn)
+    if not module.params["db_snapshot_identifier"] and not module.params["db_instance_identifier"]:
+        results["cluster_snapshots"] = cluster_snapshot_info(module, conn)
 
     module.exit_json(changed=False, **results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

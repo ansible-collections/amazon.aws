@@ -12,7 +12,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import BackoffIterator
 
 if sys.version_info < (3, 8):
-    pytest.skip("accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True)
+    pytest.skip(
+        "accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True
+    )
 
 
 @pytest.fixture
@@ -23,10 +25,11 @@ def patch_cloud_retry(monkeypatch):
     Note: this doesn't test the operation of CloudRetry.base_decorator itself, but does make sure
     we can fully exercise the various wrapper functions built over the top of it.
     """
+
     def perform_patch():
         decorator_generator = MagicMock()
         decorator_generator.return_value = sentinel.decorator
-        monkeypatch.setattr(CloudRetry, 'base_decorator', decorator_generator)
+        monkeypatch.setattr(CloudRetry, "base_decorator", decorator_generator)
         return CloudRetry, decorator_generator
 
     return perform_patch
@@ -46,10 +49,10 @@ def check_common_side_effects(decorator_generator):
     assert decorator_generator.call_count == 1
 
     gen_kw_args = decorator_generator.call_args.kwargs
-    assert gen_kw_args['found'] is CloudRetry.found
-    assert gen_kw_args['status_code_from_exception'] is CloudRetry.status_code_from_exception
+    assert gen_kw_args["found"] is CloudRetry.found
+    assert gen_kw_args["status_code_from_exception"] is CloudRetry.status_code_from_exception
 
-    sleep_time_generator = gen_kw_args['sleep_time_generator']
+    sleep_time_generator = gen_kw_args["sleep_time_generator"]
     assert isinstance(sleep_time_generator, BackoffIterator)
 
     # Return the KW args used when CloudRetry.base_decorator was called and the sleep_time_generator
@@ -66,8 +69,8 @@ def test_create_exponential_backoff_with_defaults(patch_cloud_retry):
 
     gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-    assert gen_kw_args['retries'] == 10
-    assert gen_kw_args['catch_extra_error_codes'] is None
+    assert gen_kw_args["retries"] == 10
+    assert gen_kw_args["catch_extra_error_codes"] is None
     assert sleep_time_generator.delay == 3
     assert sleep_time_generator.backoff == 2
     assert sleep_time_generator.max_delay == 60
@@ -77,13 +80,15 @@ def test_create_exponential_backoff_with_defaults(patch_cloud_retry):
 def test_create_exponential_backoff_with_args(patch_cloud_retry):
     cloud_retry, decorator_generator = patch_cloud_retry()
 
-    decorator = cloud_retry.exponential_backoff(retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42])
+    decorator = cloud_retry.exponential_backoff(
+        retries=11, delay=4, backoff=3, max_delay=61, catch_extra_error_codes=[42]
+    )
     assert decorator is sentinel.decorator
 
     gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-    assert gen_kw_args['catch_extra_error_codes'] == [42]
-    assert gen_kw_args['retries'] == 11
+    assert gen_kw_args["catch_extra_error_codes"] == [42]
+    assert gen_kw_args["retries"] == 11
     assert sleep_time_generator.delay == 4
     assert sleep_time_generator.backoff == 3
     assert sleep_time_generator.max_delay == 61
@@ -98,8 +103,8 @@ def test_create_jittered_backoff_with_defaults(patch_cloud_retry):
 
     gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-    assert gen_kw_args['catch_extra_error_codes'] is None
-    assert gen_kw_args['retries'] == 10
+    assert gen_kw_args["catch_extra_error_codes"] is None
+    assert gen_kw_args["retries"] == 10
     assert sleep_time_generator.delay == 3
     assert sleep_time_generator.backoff == 2
     assert sleep_time_generator.max_delay == 60
@@ -114,8 +119,8 @@ def test_create_jittered_backoff_with_args(patch_cloud_retry):
 
     gen_kw_args, sleep_time_generator = check_common_side_effects(decorator_generator)
 
-    assert gen_kw_args['catch_extra_error_codes'] == [42]
-    assert gen_kw_args['retries'] == 11
+    assert gen_kw_args["catch_extra_error_codes"] == [42]
+    assert gen_kw_args["retries"] == 11
     assert sleep_time_generator.delay == 4
     assert sleep_time_generator.backoff == 3
     assert sleep_time_generator.max_delay == 61

@@ -14,9 +14,19 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_snapshot_info
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_snapshot_info"
 
 
-@pytest.mark.parametrize("snapshot_ids,owner_ids,restorable_by_user_ids,filters,max_results,next_token_id,expected", [([], [], [], {}, None, None, {})])
-def test_build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id, expected):
-    assert ec2_snapshot_info.build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id) == expected
+@pytest.mark.parametrize(
+    "snapshot_ids,owner_ids,restorable_by_user_ids,filters,max_results,next_token_id,expected",
+    [([], [], [], {}, None, None, {})],
+)
+def test_build_request_args(
+    snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id, expected
+):
+    assert (
+        ec2_snapshot_info.build_request_args(
+            snapshot_ids, owner_ids, restorable_by_user_ids, filters, max_results, next_token_id
+        )
+        == expected
+    )
 
 
 def test_get_snapshots():
@@ -35,13 +45,10 @@ def test_get_snapshots():
                 "State": "completed",
                 "StorageTier": "standard",
                 "Tags": [
-                    {
-                        'Key': 'TagKey',
-                        'Value': 'TagValue'
-                    },
+                    {"Key": "TagKey", "Value": "TagValue"},
                 ],
                 "VolumeId": "vol-0ae6c5e1234567890",
-                "VolumeSize": 10
+                "VolumeSize": 10,
             },
             {
                 "Description": "Created by CreateImage(i-083b9dd1234567890) for ami-01486e111234567890",
@@ -53,25 +60,21 @@ def test_get_snapshots():
                 "State": "completed",
                 "StorageTier": "standard",
                 "Tags": [
-                    {
-                        'Key': 'TagKey',
-                        'Value': 'TagValue'
-                    },
+                    {"Key": "TagKey", "Value": "TagValue"},
                 ],
                 "VolumeId": "vol-0ae6c5e1234567890",
-                "VolumeSize": 10
-            }
-        ]}
-
-    request_args = {
-        "SnapshotIds": ["snap-0f00cba1234567890"]
+                "VolumeSize": 10,
+            },
+        ]
     }
+
+    request_args = {"SnapshotIds": ["snap-0f00cba1234567890"]}
 
     snapshot_info = ec2_snapshot_info.get_snapshots(connection, module, request_args)
 
     assert connection.describe_snapshots.call_count == 1
     connection.describe_snapshots.assert_called_with(aws_retry=True, SnapshotIds=["snap-0f00cba1234567890"])
-    assert len(snapshot_info['Snapshots']) == 2
+    assert len(snapshot_info["Snapshots"]) == 2
 
 
 @patch(module_name + ".build_request_args")
@@ -92,19 +95,15 @@ def test_list_ec2_snapshots(m_get_snapshots, m_build_request_args):
                 "State": "completed",
                 "StorageTier": "standard",
                 "Tags": [
-                    {
-                        'Key': 'TagKey',
-                        'Value': 'TagValue'
-                    },
+                    {"Key": "TagKey", "Value": "TagValue"},
                 ],
                 "VolumeId": "vol-0ae6c5e1234567890",
-                "VolumeSize": 10
+                "VolumeSize": 10,
             }
-        ]}
-
-    m_build_request_args.return_value = {
-        'SnapshotIds': ["snap-0f00cba1234567890"]
+        ]
     }
+
+    m_build_request_args.return_value = {"SnapshotIds": ["snap-0f00cba1234567890"]}
 
     request_args = ec2_snapshot_info.build_request_args()
 

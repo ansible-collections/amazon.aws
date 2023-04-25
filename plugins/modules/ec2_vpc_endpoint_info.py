@@ -188,22 +188,27 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import a
 
 @AWSRetry.jittered_backoff()
 def _describe_endpoints(client, **params):
-    paginator = client.get_paginator('describe_vpc_endpoints')
+    paginator = client.get_paginator("describe_vpc_endpoints")
     return paginator.paginate(**params).build_full_result()
 
 
 def get_endpoints(client, module):
     results = list()
     params = dict()
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    if module.params.get('vpc_endpoint_ids'):
-        params['VpcEndpointIds'] = module.params.get('vpc_endpoint_ids')
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    if module.params.get("vpc_endpoint_ids"):
+        params["VpcEndpointIds"] = module.params.get("vpc_endpoint_ids")
     try:
-        results = _describe_endpoints(client, **params)['VpcEndpoints']
+        results = _describe_endpoints(client, **params)["VpcEndpoints"]
         results = normalize_boto3_result(results)
-    except is_boto3_error_code('InvalidVpcEndpointId.NotFound'):
-        module.exit_json(msg='VpcEndpoint {0} does not exist'.format(module.params.get('vpc_endpoint_ids')), vpc_endpoints=[])
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
+        module.exit_json(
+            msg="VpcEndpoint {0} does not exist".format(module.params.get("vpc_endpoint_ids")), vpc_endpoints=[]
+        )
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get endpoints")
 
     return dict(vpc_endpoints=[camel_dict_to_snake_dict(result) for result in results])
@@ -211,22 +216,22 @@ def get_endpoints(client, module):
 
 def main():
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        vpc_endpoint_ids=dict(type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        vpc_endpoint_ids=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     # Validate Requirements
     try:
-        connection = module.client('ec2')
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     results = get_endpoints(connection, module)
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

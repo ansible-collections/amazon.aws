@@ -519,14 +519,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 @AWSRetry.jittered_backoff()
 def _describe_instances(connection, **params):
-    paginator = connection.get_paginator('describe_instances')
+    paginator = connection.get_paginator("describe_instances")
     return paginator.paginate(**params).build_full_result()
 
 
 def list_ec2_instances(connection, module):
-
     instance_ids = module.params.get("instance_ids")
-    uptime = module.params.get('minimum_uptime')
+    uptime = module.params.get("minimum_uptime")
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
@@ -540,45 +539,46 @@ def list_ec2_instances(connection, module):
         timedelta = int(uptime) if uptime else 0
         oldest_launch_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=timedelta)
         # Get instances from reservations
-        for reservation in reservations['Reservations']:
-            instances += [instance for instance in reservation['Instances'] if instance['LaunchTime'].replace(tzinfo=None) < oldest_launch_time]
+        for reservation in reservations["Reservations"]:
+            instances += [
+                instance
+                for instance in reservation["Instances"]
+                if instance["LaunchTime"].replace(tzinfo=None) < oldest_launch_time
+            ]
     else:
-        for reservation in reservations['Reservations']:
-            instances = instances + reservation['Instances']
+        for reservation in reservations["Reservations"]:
+            instances = instances + reservation["Instances"]
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for instance in snaked_instances:
-        instance['tags'] = boto3_tag_list_to_ansible_dict(instance.get('tags', []), 'key', 'value')
+        instance["tags"] = boto3_tag_list_to_ansible_dict(instance.get("tags", []), "key", "value")
 
     module.exit_json(instances=snaked_instances)
 
 
 def main():
-
     argument_spec = dict(
-        minimum_uptime=dict(required=False, type='int', default=None, aliases=['uptime']),
-        instance_ids=dict(default=[], type='list', elements='str'),
-        filters=dict(default={}, type='dict')
+        minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
+        instance_ids=dict(default=[], type="list", elements="str"),
+        filters=dict(default={}, type="dict"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[
-            ['instance_ids', 'filters']
-        ],
+        mutually_exclusive=[["instance_ids", "filters"]],
         supports_check_mode=True,
     )
 
     try:
-        connection = module.client('ec2')
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     list_ec2_instances(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

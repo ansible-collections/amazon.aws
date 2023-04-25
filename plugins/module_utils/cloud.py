@@ -59,7 +59,9 @@ class BackoffIterator:
         return return_value
 
 
-def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, found_f, status_code_from_except_f, base_class):
+def _retry_func(
+    func, sleep_time_generator, retries, catch_extra_error_codes, found_f, status_code_from_except_f, base_class
+):
     counter = 0
     for sleep_time in sleep_time_generator:
         try:
@@ -105,6 +107,7 @@ class CloudRetry:
             else:
                 # iterable
                 return True
+
         return _is_iterable() and response_code in catch_extra_error_codes
 
     @classmethod
@@ -122,7 +125,9 @@ class CloudRetry:
                     status_code_from_except_f=status_code_from_exception,
                     base_class=cls.base_class,
                 )
+
             return _retry_wrapper
+
         return retry_decorator
 
     @classmethod

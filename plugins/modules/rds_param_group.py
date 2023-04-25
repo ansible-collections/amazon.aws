@@ -122,19 +122,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 INT_MODIFIERS = {
-    'K': 1024,
-    'M': pow(1024, 2),
-    'G': pow(1024, 3),
-    'T': pow(1024, 4),
+    "K": 1024,
+    "M": pow(1024, 2),
+    "G": pow(1024, 3),
+    "T": pow(1024, 4),
 }
 
 
 @AWSRetry.jittered_backoff()
 def _describe_db_parameters(connection, **params):
     try:
-        paginator = connection.get_paginator('describe_db_parameters')
+        paginator = connection.get_paginator("describe_db_parameters")
         return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code('DBParameterGroupNotFound'):
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         return None
 
 
@@ -144,7 +144,7 @@ def convert_parameter(param, value):
     """
     converted_value = value
 
-    if param['DataType'] == 'integer':
+    if param["DataType"] == "integer":
         if isinstance(value, string_types):
             try:
                 for modifier in INT_MODIFIERS.keys():
@@ -157,7 +157,7 @@ def convert_parameter(param, value):
         elif isinstance(value, bool):
             converted_value = 1 if value else 0
 
-    elif param['DataType'] == 'boolean':
+    elif param["DataType"] == "boolean":
         if isinstance(value, string_types):
             converted_value = value in BOOLEANS_TRUE
         # convert True/False to 1/0
@@ -166,29 +166,33 @@ def convert_parameter(param, value):
 
 
 def update_parameters(module, connection):
-    groupname = module.params['name']
-    desired = module.params['params']
-    apply_method = 'immediate' if module.params['immediate'] else 'pending-reboot'
+    groupname = module.params["name"]
+    desired = module.params["params"]
+    apply_method = "immediate" if module.params["immediate"] else "pending-reboot"
     errors = []
     modify_list = []
     existing = {}
     try:
         _existing = _describe_db_parameters(connection, DBParameterGroupName=groupname)
         if _existing:
-            existing = _existing['Parameters']
+            existing = _existing["Parameters"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe existing parameter groups")
-    lookup = dict((param['ParameterName'], param) for param in existing)
+    lookup = dict((param["ParameterName"], param) for param in existing)
     for param_key, param_value in desired.items():
         if param_key not in lookup:
-            errors.append("Parameter %s is not an available parameter for the %s engine" %
-                          (param_key, module.params.get('engine')))
+            errors.append(
+                "Parameter %s is not an available parameter for the %s engine"
+                % (param_key, module.params.get("engine"))
+            )
         else:
             converted_value = convert_parameter(lookup[param_key], param_value)
             # engine-default parameters do not have a ParameterValue, so we'll always override those.
-            if converted_value != lookup[param_key].get('ParameterValue'):
-                if lookup[param_key]['IsModifiable']:
-                    modify_list.append(dict(ParameterValue=converted_value, ParameterName=param_key, ApplyMethod=apply_method))
+            if converted_value != lookup[param_key].get("ParameterValue"):
+                if lookup[param_key]["IsModifiable"]:
+                    modify_list.append(
+                        dict(ParameterValue=converted_value, ParameterName=param_key, ApplyMethod=apply_method)
+                    )
                 else:
                     errors.append("Parameter %s is not modifiable" % param_key)
 
@@ -201,7 +205,9 @@ def update_parameters(module, connection):
         for modify_slice in zip_longest(*[iter(modify_list)] * 20, fillvalue=None):
             non_empty_slice = [item for item in modify_slice if item]
             try:
-                connection.modify_db_parameter_group(aws_retry=True, DBParameterGroupName=groupname, Parameters=non_empty_slice)
+                connection.modify_db_parameter_group(
+                    aws_retry=True, DBParameterGroupName=groupname, Parameters=non_empty_slice
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't update parameters")
         return True, errors
@@ -213,9 +219,12 @@ def update_tags(module, connection, group, tags):
         return False
     changed = False
 
-    existing_tags = connection.list_tags_for_resource(aws_retry=True, ResourceName=group['DBParameterGroupArn'])['TagList']
-    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(existing_tags),
-                                            tags, module.params['purge_tags'])
+    existing_tags = connection.list_tags_for_resource(aws_retry=True, ResourceName=group["DBParameterGroupArn"])[
+        "TagList"
+    ]
+    to_update, to_delete = compare_aws_tags(
+        boto3_tag_list_to_ansible_dict(existing_tags), tags, module.params["purge_tags"]
+    )
 
     if module.check_mode:
         if not to_update and not to_delete:
@@ -225,15 +234,19 @@ def update_tags(module, connection, group, tags):
 
     if to_update:
         try:
-            connection.add_tags_to_resource(aws_retry=True, ResourceName=group['DBParameterGroupArn'],
-                                            Tags=ansible_dict_to_boto3_tag_list(to_update))
+            connection.add_tags_to_resource(
+                aws_retry=True,
+                ResourceName=group["DBParameterGroupArn"],
+                Tags=ansible_dict_to_boto3_tag_list(to_update),
+            )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't add tags to parameter group")
     if to_delete:
         try:
-            connection.remove_tags_from_resource(aws_retry=True, ResourceName=group['DBParameterGroupArn'],
-                                                 TagKeys=to_delete)
+            connection.remove_tags_from_resource(
+                aws_retry=True, ResourceName=group["DBParameterGroupArn"], TagKeys=to_delete
+            )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't remove tags from parameter group")
@@ -241,22 +254,24 @@ def update_tags(module, connection, group, tags):
 
 
 def ensure_present(module, connection):
-    groupname = module.params['name']
-    tags = module.params.get('tags')
+    groupname = module.params["name"]
+    tags = module.params.get("tags")
     changed = False
     errors = []
     try:
         response = connection.describe_db_parameter_groups(aws_retry=True, DBParameterGroupName=groupname)
-    except is_boto3_error_code('DBParameterGroupNotFound'):
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         response = None
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access parameter group information")
     if not response:
-        params = dict(DBParameterGroupName=groupname,
-                      DBParameterGroupFamily=module.params['engine'],
-                      Description=module.params['description'])
+        params = dict(
+            DBParameterGroupName=groupname,
+            DBParameterGroupFamily=module.params["engine"],
+            Description=module.params["description"],
+        )
         if tags:
-            params['Tags'] = ansible_dict_to_boto3_tag_list(tags)
+            params["Tags"] = ansible_dict_to_boto3_tag_list(tags)
         if not module.check_mode:
             try:
                 response = connection.create_db_parameter_group(aws_retry=True, **params)
@@ -264,40 +279,45 @@ def ensure_present(module, connection):
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't create parameter group")
     else:
-        group = response['DBParameterGroups'][0]
-        db_parameter_group_family = group['DBParameterGroupFamily']
+        group = response["DBParameterGroups"][0]
+        db_parameter_group_family = group["DBParameterGroupFamily"]
 
-        if module.params.get('engine') != db_parameter_group_family:
+        if module.params.get("engine") != db_parameter_group_family:
             module.warn("The DB parameter group family (engine) can't be changed when updating a DB parameter group.")
 
         if tags:
             changed = update_tags(module, connection, group, tags)
 
-    if module.params.get('params'):
+    if module.params.get("params"):
         params_changed, errors = update_parameters(module, connection)
         changed = changed or params_changed
 
     try:
         response = connection.describe_db_parameter_groups(aws_retry=True, DBParameterGroupName=groupname)
-        group = camel_dict_to_snake_dict(response['DBParameterGroups'][0])
-    except is_boto3_error_code('DBParameterGroupNotFound'):
+        group = camel_dict_to_snake_dict(response["DBParameterGroups"][0])
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         module.exit_json(changed=True, errors=errors)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't obtain parameter group information")
     try:
-        tags = connection.list_tags_for_resource(aws_retry=True, ResourceName=group['db_parameter_group_arn'])['TagList']
+        tags = connection.list_tags_for_resource(aws_retry=True, ResourceName=group["db_parameter_group_arn"])[
+            "TagList"
+        ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't obtain parameter group tags")
-    group['tags'] = boto3_tag_list_to_ansible_dict(tags)
+    group["tags"] = boto3_tag_list_to_ansible_dict(tags)
 
     module.exit_json(changed=changed, errors=errors, **group)
 
 
 def ensure_absent(module, connection):
-    group = module.params['name']
+    group = module.params["name"]
     try:
         response = connection.describe_db_parameter_groups(DBParameterGroupName=group)
-    except is_boto3_error_code('DBParameterGroupNotFound'):
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         module.exit_json(changed=False)
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access parameter group information")
@@ -314,32 +334,32 @@ def ensure_absent(module, connection):
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
+        state=dict(required=True, choices=["present", "absent"]),
         name=dict(required=True),
         engine=dict(),
         description=dict(),
-        params=dict(aliases=['parameters'], type='dict'),
-        immediate=dict(type='bool', aliases=['apply_immediately']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        params=dict(aliases=["parameters"], type="dict"),
+        immediate=dict(type="bool", aliases=["apply_immediately"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_if=[['state', 'present', ['description', 'engine']]],
-        supports_check_mode=True
+        required_if=[["state", "present", ["description", "engine"]]],
+        supports_check_mode=True,
     )
 
     try:
-        conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff())
+        conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    state = module.params.get('state')
-    if state == 'present':
+    state = module.params.get("state")
+    if state == "present":
         ensure_present(module, conn)
-    if state == 'absent':
+    if state == "absent":
         ensure_absent(module, conn)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

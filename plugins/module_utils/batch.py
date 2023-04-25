@@ -42,7 +42,7 @@ def cc(key):
     :param key:
     :return:
     """
-    components = key.split('_')
+    components = key.split("_")
     return components[0] + "".join([token.capitalize() for token in components[1:]])
 
 

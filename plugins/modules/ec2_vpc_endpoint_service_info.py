@@ -127,53 +127,53 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 # We're using a paginator so we can't use the client decorators
 @AWSRetry.jittered_backoff()
 def get_services(client, module):
-    paginator = client.get_paginator('describe_vpc_endpoint_services')
+    paginator = client.get_paginator("describe_vpc_endpoint_services")
     params = {}
     if module.params.get("filters"):
-        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     if module.params.get("service_names"):
-        params['ServiceNames'] = module.params.get("service_names")
+        params["ServiceNames"] = module.params.get("service_names")
 
     results = paginator.paginate(**params).build_full_result()
     return results
 
 
 def normalize_service(service):
-    normalized = camel_dict_to_snake_dict(service, ignore_list=['Tags'])
-    normalized["tags"] = boto3_tag_list_to_ansible_dict(service.get('Tags'))
+    normalized = camel_dict_to_snake_dict(service, ignore_list=["Tags"])
+    normalized["tags"] = boto3_tag_list_to_ansible_dict(service.get("Tags"))
     return normalized
 
 
 def normalize_result(result):
     normalized = {}
-    normalized['service_details'] = [normalize_service(service) for service in result.get('ServiceDetails')]
-    normalized['service_names'] = result.get('ServiceNames', [])
+    normalized["service_details"] = [normalize_service(service) for service in result.get("ServiceDetails")]
+    normalized["service_names"] = result.get("ServiceNames", [])
     return normalized
 
 
 def main():
     argument_spec = dict(
-        filters=dict(default={}, type='dict'),
-        service_names=dict(type='list', elements='str'),
+        filters=dict(default={}, type="dict"),
+        service_names=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     # Validate Requirements
     try:
-        client = module.client('ec2')
+        client = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     try:
         results = get_services(client, module)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to retrieve service details')
+        module.fail_json_aws(e, msg="Failed to connect to retrieve service details")
     normalized_result = normalize_result(results)
 
     module.exit_json(changed=False, **normalized_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

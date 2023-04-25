@@ -192,30 +192,26 @@ def validate_params(module_params):
     :return:
     """
 
-    function_name = module_params['function_name']
+    function_name = module_params["function_name"]
 
     # validate function name
-    if not re.search(r'^[\w\-:]+$', function_name):
+    if not re.search(r"^[\w\-:]+$", function_name):
         raise LambdaAnsibleAWSError(
-            f"Function name {function_name} is invalid. "
-            "Names must contain only alphanumeric characters and hyphens."
+            f"Function name {function_name} is invalid. " "Names must contain only alphanumeric characters and hyphens."
         )
     if len(function_name) > 64:
-        raise LambdaAnsibleAWSError(
-            f"Function name '{function_name}' exceeds 64 character limit"
-        )
+        raise LambdaAnsibleAWSError(f"Function name '{function_name}' exceeds 64 character limit")
     return
 
 
 def normalize_params(module_params):
-
     params = dict(module_params)
 
     #  if parameter 'function_version' is zero, set it to $LATEST, else convert it to a string
-    if params['function_version'] == 0:
-        params['function_version'] = '$LATEST'
+    if params["function_version"] == 0:
+        params["function_version"] = "$LATEST"
     else:
-        params['function_version'] = str(params['function_version'])
+        params["function_version"] = str(params["function_version"])
 
     return params
 
@@ -230,14 +226,17 @@ def get_lambda_alias(module_params, client):
     """
 
     # set API parameters
-    api_params = set_api_params(module_params, ('function_name', 'name'))
+    api_params = set_api_params(module_params, ("function_name", "name"))
 
     # check if alias exists and get facts
     try:
         results = client.get_alias(aws_retry=True, **api_params)
-    except is_boto3_error_code('ResourceNotFoundException'):
+    except is_boto3_error_code("ResourceNotFoundException"):
         results = None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         raise LambdaAnsibleAWSError("Error retrieving function alias", exception=e)
 
     return results
@@ -253,19 +252,19 @@ def lambda_alias(module_params, client, check_mode):
     """
     results = dict()
     changed = False
-    current_state = 'absent'
-    state = module_params['state']
+    current_state = "absent"
+    state = module_params["state"]
 
     facts = get_lambda_alias(module_params, client)
     if facts:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present':
+    if state == "present":
+        if current_state == "present":
             snake_facts = camel_dict_to_snake_dict(facts)
 
             # check if alias has changed -- only version and description can change
-            alias_params = ('function_version', 'description')
+            alias_params = ("function_version", "description")
             for param in alias_params:
                 if module_params.get(param) is None:
                     continue
@@ -274,7 +273,7 @@ def lambda_alias(module_params, client, check_mode):
                     break
 
             if changed:
-                api_params = set_api_params(module_params, ('function_name', 'name'))
+                api_params = set_api_params(module_params, ("function_name", "name"))
                 api_params.update(set_api_params(module_params, alias_params))
 
                 if not check_mode:
@@ -285,7 +284,7 @@ def lambda_alias(module_params, client, check_mode):
 
         else:
             # create new function alias
-            api_params = set_api_params(module_params, ('function_name', 'name', 'function_version', 'description'))
+            api_params = set_api_params(module_params, ("function_name", "name", "function_version", "description"))
 
             try:
                 if not check_mode:
@@ -295,9 +294,9 @@ def lambda_alias(module_params, client, check_mode):
                 raise LambdaAnsibleAWSError("Error creating function alias", exception=e)
 
     else:  # state = 'absent'
-        if current_state == 'present':
+        if current_state == "present":
             # delete the function
-            api_params = set_api_params(module_params, ('function_name', 'name'))
+            api_params = set_api_params(module_params, ("function_name", "name"))
 
             try:
                 if not check_mode:
@@ -316,10 +315,10 @@ def main():
     :return dict: ansible facts
     """
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
         function_name=dict(required=True),
-        name=dict(required=True, aliases=['alias_name']),
-        function_version=dict(type='int', required=False, default=0, aliases=['version']),
+        name=dict(required=True, aliases=["alias_name"]),
+        function_version=dict(type="int", required=False, default=0, aliases=["version"]),
         description=dict(required=False, default=None),
     )
 
@@ -330,7 +329,7 @@ def main():
         required_together=[],
     )
 
-    client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         validate_params(module.params)
@@ -344,5 +343,5 @@ def main():
     module.exit_json(**camel_dict_to_snake_dict(results))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

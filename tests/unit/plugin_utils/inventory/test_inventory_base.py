@@ -44,7 +44,7 @@ def test_parse(monkeypatch):
         ("aws_ec2.yml_inventory", False),
         ("aws_ec2.yml", True),
         ("aws_ec2.yaml", True),
-    ]
+    ],
 )
 def test_inventory_verify_file(monkeypatch, filename, result):
     base_verify = MagicMock(name="verify_file")
