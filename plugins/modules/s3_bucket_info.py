@@ -424,18 +424,18 @@ def get_bucket_list(module, connection, name="", name_filter=""):
 
     # Get all buckets
     try:
-        buckets = camel_dict_to_snake_dict(connection.list_buckets())['buckets']
+        buckets = camel_dict_to_snake_dict(connection.list_buckets())["buckets"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err_code:
         module.fail_json_aws(err_code, msg="Failed to list buckets")
 
     # Filter buckets if requested
     if name_filter:
         for bucket in buckets:
-            if name_filter in bucket['name']:
+            if name_filter in bucket["name"]:
                 filtered_buckets.append(bucket)
     elif name:
         for bucket in buckets:
-            if name == bucket['name']:
+            if name == bucket["name"]:
                 filtered_buckets.append(bucket)
 
     # Return proper list (filtered or all)
@@ -453,7 +453,7 @@ def get_buckets_facts(connection, buckets, requested_facts, transform_location):
     full_bucket_list = []
     # Iterate over all buckets and append retrived facts to bucket
     for bucket in buckets:
-        bucket.update(get_bucket_details(connection, bucket['name'], requested_facts, transform_location))
+        bucket.update(get_bucket_details(connection, bucket["name"], requested_facts, transform_location))
         full_bucket_list.append(bucket)
 
     return full_bucket_list
@@ -467,14 +467,14 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
 
     for key in requested_facts:
         if requested_facts[key]:
-            if key == 'bucket_location':
+            if key == "bucket_location":
                 all_facts[key] = {}
                 try:
                     all_facts[key] = get_bucket_location(name, connection, transform_location)
                 # we just pass on error - error means that resources is undefined
                 except botocore.exceptions.ClientError:
                     pass
-            elif key == 'bucket_tagging':
+            elif key == "bucket_tagging":
                 all_facts[key] = {}
                 try:
                     all_facts[key] = get_bucket_tagging(name, connection)
@@ -492,7 +492,7 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
     return all_facts
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_location(name, connection, transform_location=False):
     """
     Get bucket location and optionally transform 'null' to 'us-east-1'
@@ -502,16 +502,16 @@ def get_bucket_location(name, connection, transform_location=False):
     # Replace 'null' with 'us-east-1'?
     if transform_location:
         try:
-            if not data['LocationConstraint']:
-                data['LocationConstraint'] = 'us-east-1'
+            if not data["LocationConstraint"]:
+                data["LocationConstraint"] = "us-east-1"
         except KeyError:
             pass
     # Strip response metadata (not needed)
-    data.pop('ResponseMetadata', None)
+    data.pop("ResponseMetadata", None)
     return data
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_tagging(name, connection):
     """
     Get bucket tags and transform them using `boto3_tag_list_to_ansible_dict` function
@@ -519,15 +519,15 @@ def get_bucket_tagging(name, connection):
     data = connection.get_bucket_tagging(Bucket=name)
 
     try:
-        bucket_tags = boto3_tag_list_to_ansible_dict(data['TagSet'])
+        bucket_tags = boto3_tag_list_to_ansible_dict(data["TagSet"])
         return bucket_tags
     except KeyError:
         # Strip response metadata (not needed)
-        data.pop('ResponseMetadata', None)
+        data.pop("ResponseMetadata", None)
         return data
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_property(name, connection, get_api_name):
     """
     Get bucket property
@@ -537,7 +537,7 @@ def get_bucket_property(name, connection, get_api_name):
     data = api_function(Bucket=name)
 
     # Strip response metadata (not needed)
-    data.pop('ResponseMetadata', None)
+    data.pop("ResponseMetadata", None)
     return data
 
 
@@ -547,27 +547,30 @@ def main():
     :return:
     """
     argument_spec = dict(
-        name=dict(type='str', default=""),
-        name_filter=dict(type='str', default=""),
-        bucket_facts=dict(type='dict', options=dict(
-            bucket_accelerate_configuration=dict(type='bool', default=False),
-            bucket_acl=dict(type='bool', default=False),
-            bucket_cors=dict(type='bool', default=False),
-            bucket_encryption=dict(type='bool', default=False),
-            bucket_lifecycle_configuration=dict(type='bool', default=False),
-            bucket_location=dict(type='bool', default=False),
-            bucket_logging=dict(type='bool', default=False),
-            bucket_notification_configuration=dict(type='bool', default=False),
-            bucket_ownership_controls=dict(type='bool', default=False),
-            bucket_policy=dict(type='bool', default=False),
-            bucket_policy_status=dict(type='bool', default=False),
-            bucket_replication=dict(type='bool', default=False),
-            bucket_request_payment=dict(type='bool', default=False),
-            bucket_tagging=dict(type='bool', default=False),
-            bucket_website=dict(type='bool', default=False),
-            public_access_block=dict(type='bool', default=False),
-        )),
-        transform_location=dict(type='bool', default=False)
+        name=dict(type="str", default=""),
+        name_filter=dict(type="str", default=""),
+        bucket_facts=dict(
+            type="dict",
+            options=dict(
+                bucket_accelerate_configuration=dict(type="bool", default=False),
+                bucket_acl=dict(type="bool", default=False),
+                bucket_cors=dict(type="bool", default=False),
+                bucket_encryption=dict(type="bool", default=False),
+                bucket_lifecycle_configuration=dict(type="bool", default=False),
+                bucket_location=dict(type="bool", default=False),
+                bucket_logging=dict(type="bool", default=False),
+                bucket_notification_configuration=dict(type="bool", default=False),
+                bucket_ownership_controls=dict(type="bool", default=False),
+                bucket_policy=dict(type="bool", default=False),
+                bucket_policy_status=dict(type="bool", default=False),
+                bucket_replication=dict(type="bool", default=False),
+                bucket_request_payment=dict(type="bool", default=False),
+                bucket_tagging=dict(type="bool", default=False),
+                bucket_website=dict(type="bool", default=False),
+                public_access_block=dict(type="bool", default=False),
+            ),
+        ),
+        transform_location=dict(type="bool", default=False),
     )
 
     # Ensure we have an empty dict
@@ -575,11 +578,15 @@ def main():
 
     # Define mutually exclusive options
     mutually_exclusive = [
-        ['name', 'name_filter']
+        ["name", "name_filter"],
     ]
 
     # Including ec2 argument spec
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, mutually_exclusive=mutually_exclusive)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     # Get parameters
     name = module.params.get("name")
@@ -590,29 +597,29 @@ def main():
     # Set up connection
     connection = {}
     try:
-        connection = module.client('s3')
+        connection = module.client("s3")
     except (connection.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err_code:
-        module.fail_json_aws(err_code, msg='Failed to connect to AWS')
+        module.fail_json_aws(err_code, msg="Failed to connect to AWS")
 
     # Get basic bucket list (name + creation date)
     bucket_list = get_bucket_list(module, connection, name, name_filter)
 
     # Add information about name/name_filter to result
     if name:
-        result['bucket_name'] = name
+        result["bucket_name"] = name
     elif name_filter:
-        result['bucket_name_filter'] = name_filter
+        result["bucket_name_filter"] = name_filter
 
     # Gather detailed information about buckets if requested
     bucket_facts = module.params.get("bucket_facts")
     if bucket_facts:
-        result['buckets'] = get_buckets_facts(connection, bucket_list, requested_facts, transform_location)
+        result["buckets"] = get_buckets_facts(connection, bucket_list, requested_facts, transform_location)
     else:
-        result['buckets'] = bucket_list
+        result["buckets"] = bucket_list
 
     module.exit_json(msg="Retrieved s3 info.", **result)
 
 
 # MAIN
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
