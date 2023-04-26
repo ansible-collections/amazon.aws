@@ -446,60 +446,85 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def determine_iam_role(module, name_or_arn):
-    if re.match(r'^arn:aws:iam::\d+:instance-profile/[\w+=/,.@-]+$', name_or_arn):
-        return {'arn': name_or_arn}
-    iam = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    if re.match(r"^arn:aws:iam::\d+:instance-profile/[\w+=/,.@-]+$", name_or_arn):
+        return {"arn": name_or_arn}
+    iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
     try:
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
-        return {'arn': role['InstanceProfile']['Arn']}
-    except is_boto3_error_code('NoSuchEntity') as e:
+        return {"arn": role["InstanceProfile"]["Arn"]}
+    except is_boto3_error_code("NoSuchEntity") as e:
         module.fail_json_aws(e, msg="Could not find instance_role {0}".format(name_or_arn))
     except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(name_or_arn))
+        module.fail_json_aws(
+            e,
+            msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(
+                name_or_arn
+            ),
+        )
 
 
 def existing_templates(module):
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     matches = None
     try:
-        if module.params.get('template_id'):
-            matches = ec2.describe_launch_templates(LaunchTemplateIds=[module.params.get('template_id')], aws_retry=True)
-        elif module.params.get('template_name'):
-            matches = ec2.describe_launch_templates(LaunchTemplateNames=[module.params.get('template_name')], aws_retry=True)
-    except is_boto3_error_code('InvalidLaunchTemplateName.NotFoundException') as e:
+        if module.params.get("template_id"):
+            matches = ec2.describe_launch_templates(
+                LaunchTemplateIds=[module.params.get("template_id")], aws_retry=True
+            )
+        elif module.params.get("template_name"):
+            matches = ec2.describe_launch_templates(
+                LaunchTemplateNames=[module.params.get("template_name")], aws_retry=True
+            )
+    except is_boto3_error_code("InvalidLaunchTemplateName.NotFoundException") as e:
         # no named template was found, return nothing/empty versions
         return None, []
-    except is_boto3_error_code('InvalidLaunchTemplateId.Malformed') as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Launch template with ID {0} is not a valid ID. It should start with `lt-....`'.format(
-            module.params.get('launch_template_id')))
-    except is_boto3_error_code('InvalidLaunchTemplateId.NotFoundException') as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("InvalidLaunchTemplateId.Malformed") as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
-            e, msg='Launch template with ID {0} could not be found, please supply a name '
-            'instead so that a new template can be created'.format(module.params.get('launch_template_id')))
+            e,
+            msg="Launch template with ID {0} is not a valid ID. It should start with `lt-....`".format(
+                module.params.get("launch_template_id")
+            ),
+        )
+    except is_boto3_error_code("InvalidLaunchTemplateId.NotFoundException") as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(
+            e,
+            msg="Launch template with ID {0} could not be found, please supply a name "
+            "instead so that a new template can be created".format(module.params.get("launch_template_id")),
+        )
     except (ClientError, BotoCoreError, WaiterError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Could not check existing launch templates. This may be an IAM permission problem.')
+        module.fail_json_aws(e, msg="Could not check existing launch templates. This may be an IAM permission problem.")
     else:
-        template = matches['LaunchTemplates'][0]
-        template_id, template_version, template_default = template['LaunchTemplateId'], template['LatestVersionNumber'], template['DefaultVersionNumber']
+        template = matches["LaunchTemplates"][0]
+        template_id, template_version, template_default = (
+            template["LaunchTemplateId"],
+            template["LatestVersionNumber"],
+            template["DefaultVersionNumber"],
+        )
         try:
-            return template, ec2.describe_launch_template_versions(LaunchTemplateId=template_id, aws_retry=True)['LaunchTemplateVersions']
+            return (
+                template,
+                ec2.describe_launch_template_versions(LaunchTemplateId=template_id, aws_retry=True)[
+                    "LaunchTemplateVersions"
+                ],
+            )
         except (ClientError, BotoCoreError, WaiterError) as e:
-            module.fail_json_aws(e, msg='Could not find launch template versions for {0} (ID: {1}).'.format(template['LaunchTemplateName'], template_id))
+            module.fail_json_aws(
+                e,
+                msg="Could not find launch template versions for {0} (ID: {1}).".format(
+                    template["LaunchTemplateName"], template_id
+                ),
+            )
 
 
 def params_to_launch_data(module, template_params):
-    if template_params.get('tags'):
-        tag_list = ansible_dict_to_boto3_tag_list(template_params.get('tags'))
-        template_params['tag_specifications'] = [
-            {
-                'resource_type': r_type,
-                'tags': tag_list
-            }
-            for r_type in ('instance', 'volume')
+    if template_params.get("tags"):
+        tag_list = ansible_dict_to_boto3_tag_list(template_params.get("tags"))
+        template_params["tag_specifications"] = [
+            {"resource_type": r_type, "tags": tag_list} for r_type in ("instance", "volume")
         ]
-        del template_params['tags']
-    if module.params.get('iam_instance_profile'):
-        template_params['iam_instance_profile'] = determine_iam_role(module, module.params['iam_instance_profile'])
+        del template_params["tags"]
+    if module.params.get("iam_instance_profile"):
+        template_params["iam_instance_profile"] = determine_iam_role(module, module.params["iam_instance_profile"])
     params = snake_dict_to_camel_dict(
         dict((k, v) for k, v in template_params.items() if v is not None),
         capitalize_first=True,
@@ -508,71 +533,82 @@ def params_to_launch_data(module, template_params):
 
 
 def delete_template(module):
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     template, template_versions = existing_templates(module)
     deleted_versions = []
     if template or template_versions:
-        non_default_versions = [to_text(t['VersionNumber']) for t in template_versions if not t['DefaultVersion']]
+        non_default_versions = [to_text(t["VersionNumber"]) for t in template_versions if not t["DefaultVersion"]]
         if non_default_versions:
             try:
                 v_resp = ec2.delete_launch_template_versions(
-                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateId=template["LaunchTemplateId"],
                     Versions=non_default_versions,
                     aws_retry=True,
                 )
-                if v_resp['UnsuccessfullyDeletedLaunchTemplateVersions']:
-                    module.warn('Failed to delete template versions {0} on launch template {1}'.format(
-                        v_resp['UnsuccessfullyDeletedLaunchTemplateVersions'],
-                        template['LaunchTemplateId'],
-                    ))
-                deleted_versions = [camel_dict_to_snake_dict(v) for v in v_resp['SuccessfullyDeletedLaunchTemplateVersions']]
+                if v_resp["UnsuccessfullyDeletedLaunchTemplateVersions"]:
+                    module.warn(
+                        "Failed to delete template versions {0} on launch template {1}".format(
+                            v_resp["UnsuccessfullyDeletedLaunchTemplateVersions"],
+                            template["LaunchTemplateId"],
+                        )
+                    )
+                deleted_versions = [
+                    camel_dict_to_snake_dict(v) for v in v_resp["SuccessfullyDeletedLaunchTemplateVersions"]
+                ]
             except (ClientError, BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Could not delete existing versions of the launch template {0}".format(template['LaunchTemplateId']))
+                module.fail_json_aws(
+                    e,
+                    msg="Could not delete existing versions of the launch template {0}".format(
+                        template["LaunchTemplateId"]
+                    ),
+                )
         try:
             resp = ec2.delete_launch_template(
-                LaunchTemplateId=template['LaunchTemplateId'],
+                LaunchTemplateId=template["LaunchTemplateId"],
                 aws_retry=True,
             )
         except (ClientError, BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Could not delete launch template {0}".format(template['LaunchTemplateId']))
+            module.fail_json_aws(e, msg="Could not delete launch template {0}".format(template["LaunchTemplateId"]))
         return {
-            'deleted_versions': deleted_versions,
-            'deleted_template': camel_dict_to_snake_dict(resp['LaunchTemplate']),
-            'changed': True,
+            "deleted_versions": deleted_versions,
+            "deleted_template": camel_dict_to_snake_dict(resp["LaunchTemplate"]),
+            "changed": True,
         }
     else:
-        return {'changed': False}
+        return {"changed": False}
 
 
 def create_or_update(module, template_options):
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidLaunchTemplateId.NotFound']))
+    ec2 = module.client(
+        "ec2", retry_decorator=AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidLaunchTemplateId.NotFound"])
+    )
     template, template_versions = existing_templates(module)
     out = {}
     lt_data = params_to_launch_data(module, dict((k, v) for k, v in module.params.items() if k in template_options))
     lt_data = scrub_none_parameters(lt_data, descend_into_lists=True)
 
-    if lt_data.get('MetadataOptions'):
-        if not module.botocore_at_least('1.23.30'):
+    if lt_data.get("MetadataOptions"):
+        if not module.botocore_at_least("1.23.30"):
             # fail only if enabled is requested
-            if lt_data['MetadataOptions'].get('InstanceMetadataTags') == 'enabled':
-                module.require_botocore_at_least('1.23.30', reason='to set instance_metadata_tags')
+            if lt_data["MetadataOptions"].get("InstanceMetadataTags") == "enabled":
+                module.require_botocore_at_least("1.23.30", reason="to set instance_metadata_tags")
             # pop if it's not requested to keep backwards compatibility.
             # otherwise the modules failes because parameters are set due default values
-            lt_data['MetadataOptions'].pop('InstanceMetadataTags')
+            lt_data["MetadataOptions"].pop("InstanceMetadataTags")
 
-        if not module.botocore_at_least('1.21.29'):
+        if not module.botocore_at_least("1.21.29"):
             # fail only if enabled is requested
-            if lt_data['MetadataOptions'].get('HttpProtocolIpv6') == 'enabled':
-                module.require_botocore_at_least('1.21.29', reason='to set http_protocol_ipv6')
+            if lt_data["MetadataOptions"].get("HttpProtocolIpv6") == "enabled":
+                module.require_botocore_at_least("1.21.29", reason="to set http_protocol_ipv6")
             # pop if it's not requested to keep backwards compatibility.
             # otherwise the modules failes because parameters are set due default values
-            lt_data['MetadataOptions'].pop('HttpProtocolIpv6')
+            lt_data["MetadataOptions"].pop("HttpProtocolIpv6")
 
     if not (template or template_versions):
         # create a full new one
         try:
             resp = ec2.create_launch_template(
-                LaunchTemplateName=module.params['template_name'],
+                LaunchTemplateName=module.params["template_name"],
                 LaunchTemplateData=lt_data,
                 ClientToken=uuid4().hex,
                 aws_retry=True,
@@ -580,26 +616,26 @@ def create_or_update(module, template_options):
         except (ClientError, BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create launch template")
         template, template_versions = existing_templates(module)
-        out['changed'] = True
+        out["changed"] = True
     elif template and template_versions:
         most_recent = sorted(template_versions, key=lambda x: x["VersionNumber"])[-1]
         if lt_data == most_recent["LaunchTemplateData"] and module.params["version_description"] == most_recent.get(
             "VersionDescription", ""
         ):
-            out['changed'] = False
+            out["changed"] = False
             return out
         try:
-            if module.params.get('source_version') in (None, ''):
+            if module.params.get("source_version") in (None, ""):
                 resp = ec2.create_launch_template_version(
-                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateId=template["LaunchTemplateId"],
                     LaunchTemplateData=lt_data,
                     ClientToken=uuid4().hex,
                     VersionDescription=str(module.params["version_description"]),
                     aws_retry=True,
                 )
-            elif module.params.get('source_version') == 'latest':
+            elif module.params.get("source_version") == "latest":
                 resp = ec2.create_launch_template_version(
-                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateId=template["LaunchTemplateId"],
                     LaunchTemplateData=lt_data,
                     ClientToken=uuid4().hex,
                     SourceVersion=str(most_recent["VersionNumber"]),
@@ -608,15 +644,24 @@ def create_or_update(module, template_options):
                 )
             else:
                 try:
-                    int(module.params.get('source_version'))
+                    int(module.params.get("source_version"))
                 except ValueError:
-                    module.fail_json(msg='source_version param was not a valid integer, got "{0}"'.format(module.params.get('source_version')))
+                    module.fail_json(
+                        msg='source_version param was not a valid integer, got "{0}"'.format(
+                            module.params.get("source_version")
+                        )
+                    )
                 # get source template version
-                source_version = next((v for v in template_versions if v['VersionNumber'] == int(module.params.get('source_version'))), None)
+                source_version = next(
+                    (v for v in template_versions if v["VersionNumber"] == int(module.params.get("source_version"))),
+                    None,
+                )
                 if source_version is None:
-                    module.fail_json(msg='source_version does not exist, got "{0}"'.format(module.params.get('source_version')))
+                    module.fail_json(
+                        msg='source_version does not exist, got "{0}"'.format(module.params.get("source_version"))
+                    )
                 resp = ec2.create_launch_template_version(
-                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateId=template["LaunchTemplateId"],
                     LaunchTemplateData=lt_data,
                     ClientToken=uuid4().hex,
                     SourceVersion=str(source_version["VersionNumber"]),
@@ -624,31 +669,35 @@ def create_or_update(module, template_options):
                     aws_retry=True,
                 )
 
-            if module.params.get('default_version') in (None, ''):
+            if module.params.get("default_version") in (None, ""):
                 # no need to do anything, leave the existing version as default
                 pass
-            elif module.params.get('default_version') == 'latest':
+            elif module.params.get("default_version") == "latest":
                 set_default = ec2.modify_launch_template(
-                    LaunchTemplateId=template['LaunchTemplateId'],
-                    DefaultVersion=to_text(resp['LaunchTemplateVersion']['VersionNumber']),
+                    LaunchTemplateId=template["LaunchTemplateId"],
+                    DefaultVersion=to_text(resp["LaunchTemplateVersion"]["VersionNumber"]),
                     ClientToken=uuid4().hex,
                     aws_retry=True,
                 )
             else:
                 try:
-                    int(module.params.get('default_version'))
+                    int(module.params.get("default_version"))
                 except ValueError:
-                    module.fail_json(msg='default_version param was not a valid integer, got "{0}"'.format(module.params.get('default_version')))
+                    module.fail_json(
+                        msg='default_version param was not a valid integer, got "{0}"'.format(
+                            module.params.get("default_version")
+                        )
+                    )
                 set_default = ec2.modify_launch_template(
-                    LaunchTemplateId=template['LaunchTemplateId'],
-                    DefaultVersion=to_text(int(module.params.get('default_version'))),
+                    LaunchTemplateId=template["LaunchTemplateId"],
+                    DefaultVersion=to_text(int(module.params.get("default_version"))),
                     ClientToken=uuid4().hex,
                     aws_retry=True,
                 )
         except (ClientError, BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create subsequent launch template version")
         template, template_versions = existing_templates(module)
-        out['changed'] = True
+        out["changed"] = True
     return out
 
 
@@ -658,43 +707,38 @@ def format_module_output(module):
     template = camel_dict_to_snake_dict(template)
     template_versions = [camel_dict_to_snake_dict(v) for v in template_versions]
     for v in template_versions:
-        for ts in (v['launch_template_data'].get('tag_specifications') or []):
-            ts['tags'] = boto3_tag_list_to_ansible_dict(ts.pop('tags'))
+        for ts in v["launch_template_data"].get("tag_specifications") or []:
+            ts["tags"] = boto3_tag_list_to_ansible_dict(ts.pop("tags"))
     output.update(dict(template=template, versions=template_versions))
-    output['default_template'] = [
-        v for v in template_versions
-        if v.get('default_version')
+    output["default_template"] = [v for v in template_versions if v.get("default_version")][0]
+    output["latest_template"] = [
+        v
+        for v in template_versions
+        if (v.get("version_number") and int(v["version_number"]) == int(template["latest_version_number"]))
     ][0]
-    output['latest_template'] = [
-        v for v in template_versions
-        if (
-            v.get('version_number') and
-            int(v['version_number']) == int(template['latest_version_number'])
-        )
-    ][0]
-    if "version_number" in output['default_template']:
-        output['default_version'] = output['default_template']['version_number']
-    if "version_number" in output['latest_template']:
-        output['latest_version'] = output['latest_template']['version_number']
+    if "version_number" in output["default_template"]:
+        output["default_version"] = output["default_template"]["version_number"]
+    if "version_number" in output["latest_template"]:
+        output["latest_version"] = output["latest_template"]["version_number"]
     return output
 
 
 def main():
     template_options = dict(
         block_device_mappings=dict(
-            type='list',
-            elements='dict',
+            type="list",
+            elements="dict",
             options=dict(
                 device_name=dict(),
                 ebs=dict(
-                    type='dict',
+                    type="dict",
                     options=dict(
-                        delete_on_termination=dict(type='bool'),
-                        encrypted=dict(type='bool'),
-                        iops=dict(type='int'),
+                        delete_on_termination=dict(type="bool"),
+                        encrypted=dict(type="bool"),
+                        iops=dict(type="int"),
                         kms_key_id=dict(),
                         snapshot_id=dict(),
-                        volume_size=dict(type='int'),
+                        volume_size=dict(type="int"),
                         volume_type=dict(),
                     ),
                 ),
@@ -703,39 +747,39 @@ def main():
             ),
         ),
         cpu_options=dict(
-            type='dict',
+            type="dict",
             options=dict(
-                core_count=dict(type='int'),
-                threads_per_core=dict(type='int'),
+                core_count=dict(type="int"),
+                threads_per_core=dict(type="int"),
             ),
         ),
         credit_specification=dict(
-            dict(type='dict'),
+            dict(type="dict"),
             options=dict(
                 cpu_credits=dict(),
             ),
         ),
-        disable_api_termination=dict(type='bool'),
-        ebs_optimized=dict(type='bool'),
+        disable_api_termination=dict(type="bool"),
+        ebs_optimized=dict(type="bool"),
         elastic_gpu_specifications=dict(
             options=dict(type=dict()),
-            type='list',
-            elements='dict',
+            type="list",
+            elements="dict",
         ),
         iam_instance_profile=dict(),
         image_id=dict(),
-        instance_initiated_shutdown_behavior=dict(choices=['stop', 'terminate']),
+        instance_initiated_shutdown_behavior=dict(choices=["stop", "terminate"]),
         instance_market_options=dict(
-            type='dict',
+            type="dict",
             options=dict(
                 market_type=dict(),
                 spot_options=dict(
-                    type='dict',
+                    type="dict",
                     options=dict(
-                        block_duration_minutes=dict(type='int'),
-                        instance_interruption_behavior=dict(choices=['hibernate', 'stop', 'terminate']),
+                        block_duration_minutes=dict(type="int"),
+                        instance_interruption_behavior=dict(choices=["hibernate", "stop", "terminate"]),
                         max_price=dict(),
-                        spot_instance_type=dict(choices=['one-time', 'persistent']),
+                        spot_instance_type=dict(choices=["one-time", "persistent"]),
                     ),
                 ),
             ),
@@ -744,32 +788,30 @@ def main():
         kernel_id=dict(),
         key_name=dict(),
         monitoring=dict(
-            type='dict',
-            options=dict(
-                enabled=dict(type='bool')
-            ),
+            type="dict",
+            options=dict(enabled=dict(type="bool")),
         ),
         metadata_options=dict(
-            type='dict',
+            type="dict",
             options=dict(
-                http_endpoint=dict(choices=['enabled', 'disabled'], default='enabled'),
-                http_put_response_hop_limit=dict(type='int', default=1),
-                http_tokens=dict(choices=['optional', 'required'], default='optional'),
-                http_protocol_ipv6=dict(choices=['disabled', 'enabled'], default='disabled'),
-                instance_metadata_tags=dict(choices=['disabled', 'enabled'], default='disabled'),
-            )
+                http_endpoint=dict(choices=["enabled", "disabled"], default="enabled"),
+                http_put_response_hop_limit=dict(type="int", default=1),
+                http_tokens=dict(choices=["optional", "required"], default="optional"),
+                http_protocol_ipv6=dict(choices=["disabled", "enabled"], default="disabled"),
+                instance_metadata_tags=dict(choices=["disabled", "enabled"], default="disabled"),
+            ),
         ),
         network_interfaces=dict(
-            type='list',
-            elements='dict',
+            type="list",
+            elements="dict",
             options=dict(
-                associate_public_ip_address=dict(type='bool'),
-                delete_on_termination=dict(type='bool'),
+                associate_public_ip_address=dict(type="bool"),
+                delete_on_termination=dict(type="bool"),
                 description=dict(),
-                device_index=dict(type='int'),
-                groups=dict(type='list', elements='str'),
-                ipv6_address_count=dict(type='int'),
-                ipv6_addresses=dict(type='list', elements='str'),
+                device_index=dict(type="int"),
+                groups=dict(type="list", elements="str"),
+                ipv6_address_count=dict(type="int"),
+                ipv6_addresses=dict(type="list", elements="str"),
                 network_interface_id=dict(),
                 private_ip_address=dict(),
                 subnet_id=dict(),
@@ -783,12 +825,12 @@ def main():
                 host_id=dict(),
                 tenancy=dict(),
             ),
-            type='dict',
+            type="dict",
         ),
         ram_disk_id=dict(),
-        security_group_ids=dict(type='list', elements='str'),
-        security_groups=dict(type='list', elements='str'),
-        tags=dict(type='dict', aliases=['resource_tags']),
+        security_group_ids=dict(type="list", elements="str"),
+        security_groups=dict(type="list", elements="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
         user_data=dict(),
     )
 
@@ -806,25 +848,25 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         required_one_of=[
-            ('template_name', 'template_id')
+            ("template_name", "template_id"),
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    for interface in (module.params.get('network_interfaces') or []):
-        if interface.get('ipv6_addresses'):
-            interface['ipv6_addresses'] = [{'ipv6_address': x} for x in interface['ipv6_addresses']]
+    for interface in module.params.get("network_interfaces") or []:
+        if interface.get("ipv6_addresses"):
+            interface["ipv6_addresses"] = [{"ipv6_address": x} for x in interface["ipv6_addresses"]]
 
-    if module.params.get('state') == 'present':
+    if module.params.get("state") == "present":
         out = create_or_update(module, template_options)
         out.update(format_module_output(module))
-    elif module.params.get('state') == 'absent':
+    elif module.params.get("state") == "absent":
         out = delete_template(module)
     else:
-        module.fail_json(msg='Unsupported value "{0}" for `state` parameter'.format(module.params.get('state')))
+        module.fail_json(msg='Unsupported value "{0}" for `state` parameter'.format(module.params.get("state")))
 
     module.exit_json(**out)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
