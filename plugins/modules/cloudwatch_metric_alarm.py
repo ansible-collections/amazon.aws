@@ -238,9 +238,11 @@ def create_metric_alarm(connection, module, params):
         if 'TreatMissingData' not in alarm.keys():
             alarm['TreatMissingData'] = 'missing'
 
+        # Exclude certain props from change detection
         for key in ['ActionsEnabled', 'StateValue', 'StateReason',
                     'StateReasonData', 'StateUpdatedTimestamp',
-                    'AlarmArn', 'AlarmConfigurationUpdatedTimestamp']:
+                    'StateTransitionedTimestamp',
+                    'AlarmArn', 'AlarmConfigurationUpdatedTimestamp', 'Metrics']:
             alarm.pop(key, None)
         if alarm != params:
             changed = True
