@@ -788,15 +788,6 @@ class ELBListeners(object):
 
         # Default action
 
-        # Check proper rule format on current listener
-        if len(current_listener['DefaultActions']) > 1:
-            for action in current_listener['DefaultActions']:
-                if 'Order' not in action:
-                    self.module.fail_json(msg="'Order' key not found in actions. "
-                                              "installed version of botocore does not support "
-                                              "multiple actions, please upgrade botocore to version "
-                                              "1.10.30 or higher")
-
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
         if len(current_listener['DefaultActions']) == len(new_listener['DefaultActions']):
@@ -841,12 +832,7 @@ class ELBListener(object):
                 self.listener.pop('Rules')
             AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
         except (BotoCoreError, ClientError) as e:
-            if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
-            else:
-                self.module.fail_json_aws(e)
+            self.module.fail_json_aws(e)
 
     def modify(self):
 
@@ -856,12 +842,7 @@ class ELBListener(object):
                 self.listener.pop('Rules')
             AWSRetry.jittered_backoff()(self.connection.modify_listener)(**self.listener)
         except (BotoCoreError, ClientError) as e:
-            if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
-            else:
-                self.module.fail_json_aws(e)
+            self.module.fail_json_aws(e)
 
     def delete(self):
 
@@ -994,15 +975,6 @@ class ELBListenerRules(object):
 
         # Actions
 
-        # Check proper rule format on current listener
-        if len(current_rule['Actions']) > 1:
-            for action in current_rule['Actions']:
-                if 'Order' not in action:
-                    self.module.fail_json(msg="'Order' key not found in actions. "
-                                              "installed version of botocore does not support "
-                                              "multiple actions, please upgrade botocore to version "
-                                              "1.10.30 or higher")
-
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
         if len(current_rule['Actions']) == len(new_rule['Actions']):
@@ -1086,12 +1058,7 @@ class ELBListenerRule(object):
             self.rule['Priority'] = int(self.rule['Priority'])
             AWSRetry.jittered_backoff()(self.connection.create_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
-            if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
-            else:
-                self.module.fail_json_aws(e)
+            self.module.fail_json_aws(e)
 
         self.changed = True
 
@@ -1106,12 +1073,7 @@ class ELBListenerRule(object):
             del self.rule['Priority']
             AWSRetry.jittered_backoff()(self.connection.modify_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
-            if '"Order", must be one of: Type, TargetGroupArn' in str(e):
-                self.module.fail_json(msg="installed version of botocore does not support "
-                                          "multiple actions, please upgrade botocore to version "
-                                          "1.10.30 or higher")
-            else:
-                self.module.fail_json_aws(e)
+            self.module.fail_json_aws(e)
 
         self.changed = True
 
