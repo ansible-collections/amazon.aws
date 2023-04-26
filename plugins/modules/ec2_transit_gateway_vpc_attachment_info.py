@@ -147,17 +147,16 @@ from ansible_collections.community.aws.plugins.module_utils.transitgateway impor
 
 
 def main():
-
     argument_spec = dict(
-        id=dict(type='str', required=False, aliases=['attachment_id']),
-        name=dict(type='str', required=False),
-        filters=dict(type='dict', required=False),
-        include_deleted=dict(type='bool', required=False, default=False)
+        id=dict(type="str", required=False, aliases=["attachment_id"]),
+        name=dict(type="str", required=False),
+        filters=dict(type="dict", required=False),
+        include_deleted=dict(type="bool", required=False, default=False),
     )
 
     mutually_exclusive = [
-        ['id', 'name'],
-        ['id', 'filters'],
+        ["id", "name"],
+        ["id", "filters"],
     ]
 
     module = AnsibleAWSModule(
@@ -165,22 +164,31 @@ def main():
         supports_check_mode=True,
     )
 
-    name = module.params.get('name', None)
-    id = module.params.get('id', None)
-    opt_filters = module.params.get('filters', None)
+    name = module.params.get("name", None)
+    id = module.params.get("id", None)
+    opt_filters = module.params.get("filters", None)
 
     search_manager = TransitGatewayVpcAttachmentManager(module=module)
     filters = dict()
 
     if name:
-        filters['tag:Name'] = name
+        filters["tag:Name"] = name
 
-    if not module.params.get('include_deleted'):
+    if not module.params.get("include_deleted"):
         # Attachments lurk in a 'deleted' state, for a while, ignore them so we
         # can reuse the names
-        filters['state'] = [
-            'available', 'deleting', 'failed', 'failing', 'initiatingRequest', 'modifying',
-            'pendingAcceptance', 'pending', 'rollingBack', 'rejected', 'rejecting'
+        filters["state"] = [
+            "available",
+            "deleting",
+            "failed",
+            "failing",
+            "initiatingRequest",
+            "modifying",
+            "pendingAcceptance",
+            "pending",
+            "rollingBack",
+            "rejected",
+            "rejecting",
         ]
 
     if opt_filters:
@@ -191,5 +199,5 @@ def main():
     module.exit_json(changed=False, attachments=attachments, filters=filters)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
