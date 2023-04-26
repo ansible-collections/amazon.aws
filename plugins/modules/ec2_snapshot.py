@@ -72,30 +72,34 @@ options:
     type: int
   modify_create_volume_permission:
     description:
-      - If set to I(true), ec2 snapshot's createVolumePermissions is can be modified.
+      - If set to C(true), ec2 snapshot's createVolumePermissions can be modified.
     required: false
     type: bool
+    version_added: 5.5.0
   purge_create_volume_permission:
     description:
       - Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.
-      - Must set I(modify_create_volume_permission) to I(True) for when I(purge_create_volume_permission) is set to I(purge_create_volume_permission).
+      - Must set I(modify_create_volume_permission) to C(True) for when I(purge_create_volume_permission) is set to I(purge_create_volume_permission).
     required: False
     type: bool
     default: False
+    version_added: 5.5.0
   group_names:
     description:
-      - The group to be added or removed. The possible value is all.
+      - The group to be added or removed. The possible value is C(all).
       - Mutually exclusive with I(user_ids).
     required: false
     type: list
     elements: str
+    version_added: 5.5.0
   user_ids:
     description:
-      - The account user IDs to be added or removed. The possible value is all.
+      - The account user IDs to be added or removed. The possible value is C(all).
       - Mutually exclusive with I(group_names).
     required: false
     type: list
     elements: str
+    version_added: 5.5.0
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
   - amazon.aws.common.modules
