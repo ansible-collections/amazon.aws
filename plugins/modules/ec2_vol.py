@@ -208,7 +208,7 @@ device:
     description: device name of attached volume
     returned: when success
     type: str
-    sample: "/def/sdf"
+    sample: "/dev/sdf"
 volume_id:
     description: the id of volume
     returned: when success
