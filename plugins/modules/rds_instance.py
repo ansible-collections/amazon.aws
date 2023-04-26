@@ -580,7 +580,9 @@ backup_retention_period:
   type: int
   sample: 1
 ca_certificate_identifier:
-  description: The identifier of the CA certificate for the DB instance.
+  description:
+    - The identifier of the CA certificate for the DB instance.
+    - Requires minimum botocore version 1.29.44.
   returned: always
   type: str
   sample: rds-ca-2015
