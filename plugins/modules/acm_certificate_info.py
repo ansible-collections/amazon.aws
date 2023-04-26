@@ -264,31 +264,42 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     argument_spec = dict(
-        certificate_arn=dict(aliases=['arn']),
-        domain_name=dict(aliases=['name']),
+        certificate_arn=dict(aliases=["arn"]),
+        domain_name=dict(aliases=["name"]),
         statuses=dict(
-            type='list',
-            elements='str',
-            choices=['PENDING_VALIDATION', 'ISSUED', 'INACTIVE', 'EXPIRED', 'VALIDATION_TIMED_OUT', 'REVOKED', 'FAILED']
+            type="list",
+            elements="str",
+            choices=[
+                "PENDING_VALIDATION",
+                "ISSUED",
+                "INACTIVE",
+                "EXPIRED",
+                "VALIDATION_TIMED_OUT",
+                "REVOKED",
+                "FAILED",
+            ],
         ),
-        tags=dict(type='dict'),
+        tags=dict(type="dict"),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     acm_info = ACMServiceManager(module)
 
-    client = module.client('acm')
+    client = module.client("acm")
 
-    certificates = acm_info.get_certificates(client, module,
-                                             domain_name=module.params['domain_name'],
-                                             statuses=module.params['statuses'],
-                                             arn=module.params['certificate_arn'],
-                                             only_tags=module.params['tags'])
+    certificates = acm_info.get_certificates(
+        client,
+        module,
+        domain_name=module.params["domain_name"],
+        statuses=module.params["statuses"],
+        arn=module.params["certificate_arn"],
+        only_tags=module.params["tags"],
+    )
 
-    if module.params['certificate_arn'] and len(certificates) != 1:
-        module.fail_json(msg="No certificate exists in this region with ARN %s" % module.params['certificate_arn'])
+    if module.params["certificate_arn"] and len(certificates) != 1:
+        module.fail_json(msg="No certificate exists in this region with ARN %s" % module.params["certificate_arn"])
 
     module.exit_json(certificates=certificates)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
