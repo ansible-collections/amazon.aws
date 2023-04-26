@@ -178,14 +178,13 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def compare_attached_group_policies(current_attached_policies, new_attached_policies):
-
     # If new_attached_policies is None it means we want to remove all policies
     if len(current_attached_policies) > 0 and new_attached_policies is None:
         return False
 
     current_attached_policies_arn_list = []
     for policy in current_attached_policies:
-        current_attached_policies_arn_list.append(policy['PolicyArn'])
+        current_attached_policies_arn_list.append(policy["PolicyArn"])
 
     if set(current_attached_policies_arn_list) == set(new_attached_policies):
         return True
@@ -194,7 +193,6 @@ def compare_attached_group_policies(current_attached_policies, new_attached_poli
 
 
 def compare_group_members(current_group_members, new_group_members):
-
     # If new_attached_policies is None it means we want to remove all policies
     if len(current_group_members) > 0 and new_group_members is None:
         return False
@@ -205,16 +203,15 @@ def compare_group_members(current_group_members, new_group_members):
 
 
 def convert_friendly_names_to_arns(connection, module, policy_names):
-
-    if not any(not policy.startswith('arn:') for policy in policy_names if policy is not None):
+    if not any(not policy.startswith("arn:") for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
-    paginator = connection.get_paginator('list_policies')
-    policies = paginator.paginate().build_full_result()['Policies']
+    paginator = connection.get_paginator("list_policies")
+    policies = paginator.paginate().build_full_result()["Policies"]
 
     for policy in policies:
-        allpolicies[policy['PolicyName']] = policy['Arn']
-        allpolicies[policy['Arn']] = policy['Arn']
+        allpolicies[policy["PolicyName"]] = policy["Arn"]
+        allpolicies[policy["Arn"]] = policy["Arn"]
     try:
         return [allpolicies[policy] for policy in policy_names]
     except KeyError as e:
@@ -222,20 +219,19 @@ def convert_friendly_names_to_arns(connection, module, policy_names):
 
 
 def create_or_update_group(connection, module):
-
     params = dict()
-    params['GroupName'] = module.params.get('name')
-    managed_policies = module.params.get('managed_policies')
-    users = module.params.get('users')
-    purge_users = module.params.get('purge_users')
-    purge_policies = module.params.get('purge_policies')
+    params["GroupName"] = module.params.get("name")
+    managed_policies = module.params.get("managed_policies")
+    users = module.params.get("users")
+    purge_users = module.params.get("purge_users")
+    purge_policies = module.params.get("purge_policies")
     changed = False
     if managed_policies:
         managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
 
     # Get group
     try:
-        group = get_group(connection, module, params['GroupName'])
+        group = get_group(connection, module, params["GroupName"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get group")
 
@@ -252,11 +248,11 @@ def create_or_update_group(connection, module):
             module.fail_json_aws(e, msg="Couldn't create group")
 
     # Manage managed policies
-    current_attached_policies = get_attached_policy_list(connection, module, params['GroupName'])
+    current_attached_policies = get_attached_policy_list(connection, module, params["GroupName"])
     if not compare_attached_group_policies(current_attached_policies, managed_policies):
         current_attached_policies_arn_list = []
         for policy in current_attached_policies:
-            current_attached_policies_arn_list.append(policy['PolicyArn'])
+            current_attached_policies_arn_list.append(policy["PolicyArn"])
 
         # If managed_policies has a single empty element we want to remove all attached policies
         if purge_policies:
@@ -265,9 +261,9 @@ def create_or_update_group(connection, module):
                 changed = True
                 if not module.check_mode:
                     try:
-                        connection.detach_group_policy(GroupName=params['GroupName'], PolicyArn=policy_arn)
+                        connection.detach_group_policy(GroupName=params["GroupName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't detach policy from group %s" % params['GroupName'])
+                        module.fail_json_aws(e, msg="Couldn't detach policy from group %s" % params["GroupName"])
         # If there are policies to adjust that aren't in the current list, then things have changed
         # Otherwise the only changes were in purging above
         if set(managed_policies) - set(current_attached_policies_arn_list):
@@ -276,22 +272,21 @@ def create_or_update_group(connection, module):
             if managed_policies != [None] and not module.check_mode:
                 for policy_arn in managed_policies:
                     try:
-                        connection.attach_group_policy(GroupName=params['GroupName'], PolicyArn=policy_arn)
+                        connection.attach_group_policy(GroupName=params["GroupName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't attach policy to group %s" % params['GroupName'])
+                        module.fail_json_aws(e, msg="Couldn't attach policy to group %s" % params["GroupName"])
 
     # Manage group memberships
     try:
-        current_group_members = get_group(connection, module, params['GroupName'])['Users']
+        current_group_members = get_group(connection, module, params["GroupName"])["Users"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params['GroupName'])
+        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
 
     current_group_members_list = []
     for member in current_group_members:
-        current_group_members_list.append(member['UserName'])
+        current_group_members_list.append(member["UserName"])
 
     if not compare_group_members(current_group_members_list, users):
-
         if purge_users:
             for user in list(set(current_group_members_list) - set(users)):
                 # Ensure we mark things have changed if any user gets purged
@@ -299,9 +294,11 @@ def create_or_update_group(connection, module):
                 # Skip actions for check mode
                 if not module.check_mode:
                     try:
-                        connection.remove_user_from_group(GroupName=params['GroupName'], UserName=user)
+                        connection.remove_user_from_group(GroupName=params["GroupName"], UserName=user)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't remove user %s from group %s" % (user, params['GroupName']))
+                        module.fail_json_aws(
+                            e, msg="Couldn't remove user %s from group %s" % (user, params["GroupName"])
+                        )
         # If there are users to adjust that aren't in the current list, then things have changed
         # Otherwise the only changes were in purging above
         if set(users) - set(current_group_members_list):
@@ -310,30 +307,29 @@ def create_or_update_group(connection, module):
             if users != [None] and not module.check_mode:
                 for user in users:
                     try:
-                        connection.add_user_to_group(GroupName=params['GroupName'], UserName=user)
+                        connection.add_user_to_group(GroupName=params["GroupName"], UserName=user)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't add user %s to group %s" % (user, params['GroupName']))
+                        module.fail_json_aws(e, msg="Couldn't add user %s to group %s" % (user, params["GroupName"]))
     if module.check_mode:
         module.exit_json(changed=changed)
 
     # Get the group again
     try:
-        group = get_group(connection, module, params['GroupName'])
+        group = get_group(connection, module, params["GroupName"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params['GroupName'])
+        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
 
     module.exit_json(changed=changed, iam_group=camel_dict_to_snake_dict(group))
 
 
 def destroy_group(connection, module):
-
     params = dict()
-    params['GroupName'] = module.params.get('name')
+    params["GroupName"] = module.params.get("name")
 
     try:
-        group = get_group(connection, module, params['GroupName'])
+        group = get_group(connection, module, params["GroupName"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params['GroupName'])
+        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
     if group:
         # Check mode means we would remove this group
         if module.check_mode:
@@ -341,29 +337,29 @@ def destroy_group(connection, module):
 
         # Remove any attached policies otherwise deletion fails
         try:
-            for policy in get_attached_policy_list(connection, module, params['GroupName']):
-                connection.detach_group_policy(GroupName=params['GroupName'], PolicyArn=policy['PolicyArn'])
+            for policy in get_attached_policy_list(connection, module, params["GroupName"]):
+                connection.detach_group_policy(GroupName=params["GroupName"], PolicyArn=policy["PolicyArn"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't remove policy from group %s" % params['GroupName'])
+            module.fail_json_aws(e, msg="Couldn't remove policy from group %s" % params["GroupName"])
 
         # Remove any users in the group otherwise deletion fails
         current_group_members_list = []
         try:
-            current_group_members = get_group(connection, module, params['GroupName'])['Users']
+            current_group_members = get_group(connection, module, params["GroupName"])["Users"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get group %s" % params['GroupName'])
+            module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
         for member in current_group_members:
-            current_group_members_list.append(member['UserName'])
+            current_group_members_list.append(member["UserName"])
         for user in current_group_members_list:
             try:
-                connection.remove_user_from_group(GroupName=params['GroupName'], UserName=user)
+                connection.remove_user_from_group(GroupName=params["GroupName"], UserName=user)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, "Couldn't remove user %s from group %s" % (user, params['GroupName']))
+                module.fail_json_aws(e, "Couldn't remove user %s from group %s" % (user, params["GroupName"]))
 
         try:
             connection.delete_group(**params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't delete group %s" % params['GroupName'])
+            module.fail_json_aws(e, "Couldn't delete group %s" % params["GroupName"])
 
     else:
         module.exit_json(changed=False)
@@ -374,47 +370,45 @@ def destroy_group(connection, module):
 @AWSRetry.exponential_backoff()
 def get_group(connection, module, name):
     try:
-        paginator = connection.get_paginator('get_group')
+        paginator = connection.get_paginator("get_group")
         return paginator.paginate(GroupName=name).build_full_result()
-    except is_boto3_error_code('NoSuchEntity'):
+    except is_boto3_error_code("NoSuchEntity"):
         return None
 
 
 @AWSRetry.exponential_backoff()
 def get_attached_policy_list(connection, module, name):
-
     try:
-        paginator = connection.get_paginator('list_attached_group_policies')
-        return paginator.paginate(GroupName=name).build_full_result()['AttachedPolicies']
-    except is_boto3_error_code('NoSuchEntity'):
+        paginator = connection.get_paginator("list_attached_group_policies")
+        return paginator.paginate(GroupName=name).build_full_result()["AttachedPolicies"]
+    except is_boto3_error_code("NoSuchEntity"):
         return None
 
 
 def main():
-
     argument_spec = dict(
         name=dict(required=True),
-        managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
-        users=dict(default=[], type='list', elements='str'),
-        state=dict(choices=['present', 'absent'], required=True),
-        purge_users=dict(default=False, type='bool'),
-        purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies'])
+        managed_policies=dict(default=[], type="list", aliases=["managed_policy"], elements="str"),
+        users=dict(default=[], type="list", elements="str"),
+        state=dict(choices=["present", "absent"], required=True),
+        purge_users=dict(default=False, type="bool"),
+        purge_policies=dict(default=False, type="bool", aliases=["purge_policy", "purge_managed_policies"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    connection = module.client('iam')
+    connection = module.client("iam")
 
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_or_update_group(connection, module)
     else:
         destroy_group(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
