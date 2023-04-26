@@ -161,63 +161,79 @@ def list_elbs(connection, load_balancer_names):
 
 def describe_elb(connection, lb):
     description = camel_dict_to_snake_dict(lb)
-    name = lb['LoadBalancerName']
-    instances = lb.get('Instances', [])
-    description['tags'] = get_tags(connection, name)
-    description['instances_inservice'], description['instances_inservice_count'] = lb_instance_health(connection, name, instances, 'InService')
-    description['instances_outofservice'], description['instances_outofservice_count'] = lb_instance_health(connection, name, instances, 'OutOfService')
-    description['instances_unknownservice'], description['instances_unknownservice_count'] = lb_instance_health(connection, name, instances, 'Unknown')
-    description['attributes'] = get_lb_attributes(connection, name)
+    name = lb["LoadBalancerName"]
+    instances = lb.get("Instances", [])
+    description["tags"] = get_tags(connection, name)
+    description["instances_inservice"], description["instances_inservice_count"] = lb_instance_health(
+        connection, name, instances, "InService"
+    )
+    description["instances_outofservice"], description["instances_outofservice_count"] = lb_instance_health(
+        connection, name, instances, "OutOfService"
+    )
+    description["instances_unknownservice"], description["instances_unknownservice_count"] = lb_instance_health(
+        connection, name, instances, "Unknown"
+    )
+    description["attributes"] = get_lb_attributes(connection, name)
     return description
 
 
 @AWSRetry.jittered_backoff()
 def get_all_lb(connection):
-    paginator = connection.get_paginator('describe_load_balancers')
-    return paginator.paginate().build_full_result()['LoadBalancerDescriptions']
+    paginator = connection.get_paginator("describe_load_balancers")
+    return paginator.paginate().build_full_result()["LoadBalancerDescriptions"]
 
 
 def get_lb(connection, load_balancer_name):
     try:
-        return connection.describe_load_balancers(aws_retry=True, LoadBalancerNames=[load_balancer_name])['LoadBalancerDescriptions'][0]
-    except is_boto3_error_code('LoadBalancerNotFound'):
+        return connection.describe_load_balancers(aws_retry=True, LoadBalancerNames=[load_balancer_name])[
+            "LoadBalancerDescriptions"
+        ][0]
+    except is_boto3_error_code("LoadBalancerNotFound"):
         return []
 
 
 def get_lb_attributes(connection, load_balancer_name):
-    attributes = connection.describe_load_balancer_attributes(aws_retry=True, LoadBalancerName=load_balancer_name).get('LoadBalancerAttributes', {})
+    attributes = connection.describe_load_balancer_attributes(aws_retry=True, LoadBalancerName=load_balancer_name).get(
+        "LoadBalancerAttributes", {}
+    )
     return camel_dict_to_snake_dict(attributes)
 
 
 def get_tags(connection, load_balancer_name):
-    tags = connection.describe_tags(aws_retry=True, LoadBalancerNames=[load_balancer_name])['TagDescriptions']
+    tags = connection.describe_tags(aws_retry=True, LoadBalancerNames=[load_balancer_name])["TagDescriptions"]
     if not tags:
         return {}
-    return boto3_tag_list_to_ansible_dict(tags[0]['Tags'])
+    return boto3_tag_list_to_ansible_dict(tags[0]["Tags"])
 
 
 def lb_instance_health(connection, load_balancer_name, instances, state):
-    instance_states = connection.describe_instance_health(LoadBalancerName=load_balancer_name, Instances=instances).get('InstanceStates', [])
-    instate = [instance['InstanceId'] for instance in instance_states if instance['State'] == state]
+    instance_states = connection.describe_instance_health(LoadBalancerName=load_balancer_name, Instances=instances).get(
+        "InstanceStates", []
+    )
+    instate = [instance["InstanceId"] for instance in instance_states if instance["State"] == state]
     return instate, len(instate)
 
 
 def main():
     argument_spec = dict(
-        names=dict(default=[], type='list', elements='str')
+        names=dict(default=[], type="list", elements="str"),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
 
-    connection = module.client('elb', retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=MAX_AWS_DELAY))
+    connection = module.client(
+        "elb", retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=MAX_AWS_DELAY)
+    )
 
     try:
-        elbs = list_elbs(connection, module.params.get('names'))
+        elbs = list_elbs(connection, module.params.get("names"))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get load balancer information.")
 
     module.exit_json(elbs=elbs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
