@@ -168,70 +168,73 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 @AWSRetry.jittered_backoff()
 def list_iam_roles_with_backoff(client, **kwargs):
-    paginator = client.get_paginator('list_roles')
+    paginator = client.get_paginator("list_roles")
     return paginator.paginate(**kwargs).build_full_result()
 
 
 @AWSRetry.jittered_backoff()
 def list_iam_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_role_policies')
-    return paginator.paginate(RoleName=role_name).build_full_result()['PolicyNames']
+    paginator = client.get_paginator("list_role_policies")
+    return paginator.paginate(RoleName=role_name).build_full_result()["PolicyNames"]
 
 
 @AWSRetry.jittered_backoff()
 def list_iam_attached_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_attached_role_policies')
-    return paginator.paginate(RoleName=role_name).build_full_result()['AttachedPolicies']
+    paginator = client.get_paginator("list_attached_role_policies")
+    return paginator.paginate(RoleName=role_name).build_full_result()["AttachedPolicies"]
 
 
 @AWSRetry.jittered_backoff()
 def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_instance_profiles_for_role')
-    return paginator.paginate(RoleName=role_name).build_full_result()['InstanceProfiles']
+    paginator = client.get_paginator("list_instance_profiles_for_role")
+    return paginator.paginate(RoleName=role_name).build_full_result()["InstanceProfiles"]
 
 
 def describe_iam_role(module, client, role):
-    name = role['RoleName']
+    name = role["RoleName"]
     try:
-        role['InlinePolicies'] = list_iam_role_policies_with_backoff(client, name)
+        role["InlinePolicies"] = list_iam_role_policies_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get inline policies for role %s" % name)
     try:
-        role['ManagedPolicies'] = list_iam_attached_role_policies_with_backoff(client, name)
+        role["ManagedPolicies"] = list_iam_attached_role_policies_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get managed  policies for role %s" % name)
     try:
-        role['InstanceProfiles'] = list_iam_instance_profiles_for_role_with_backoff(client, name)
+        role["InstanceProfiles"] = list_iam_instance_profiles_for_role_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get instance profiles for role %s" % name)
     try:
-        role['tags'] = boto3_tag_list_to_ansible_dict(role['Tags'])
-        del role['Tags']
+        role["tags"] = boto3_tag_list_to_ansible_dict(role["Tags"])
+        del role["Tags"]
     except KeyError:
-        role['tags'] = {}
+        role["tags"] = {}
     return role
 
 
 def describe_iam_roles(module, client):
-    name = module.params['name']
-    path_prefix = module.params['path_prefix']
+    name = module.params["name"]
+    path_prefix = module.params["path_prefix"]
     if name:
         try:
-            roles = [client.get_role(RoleName=name, aws_retry=True)['Role']]
-        except is_boto3_error_code('NoSuchEntity'):
+            roles = [client.get_role(RoleName=name, aws_retry=True)["Role"]]
+        except is_boto3_error_code("NoSuchEntity"):
             return []
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Couldn't get IAM role %s" % name)
     else:
         params = dict()
         if path_prefix:
-            if not path_prefix.startswith('/'):
-                path_prefix = '/' + path_prefix
-            if not path_prefix.endswith('/'):
-                path_prefix = path_prefix + '/'
-            params['PathPrefix'] = path_prefix
+            if not path_prefix.startswith("/"):
+                path_prefix = "/" + path_prefix
+            if not path_prefix.endswith("/"):
+                path_prefix = path_prefix + "/"
+            params["PathPrefix"] = path_prefix
         try:
-            roles = list_iam_roles_with_backoff(client, **params)['Roles']
+            roles = list_iam_roles_with_backoff(client, **params)["Roles"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't list IAM roles")
     return [normalize_role(describe_iam_role(module, client, role)) for role in roles]
@@ -245,7 +248,7 @@ def normalize_profile(profile):
 
 
 def normalize_role(role):
-    new_role = camel_dict_to_snake_dict(role, ignore_list=['tags'])
+    new_role = camel_dict_to_snake_dict(role, ignore_list=["tags"])
     new_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument")
     if role.get("InstanceProfiles"):
         role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
@@ -254,27 +257,32 @@ def normalize_role(role):
 
 def main():
     """
-     Module action handler
+    Module action handler
     """
     argument_spec = dict(
-        name=dict(aliases=['role_name']),
+        name=dict(aliases=["role_name"]),
         path_prefix=dict(),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,
-                              mutually_exclusive=[['name', 'path_prefix']])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=[["name", "path_prefix"]],
+    )
 
-    client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
-    module.deprecate("In a release after 2023-12-01 the contents of assume_role_policy_document "
-                     "will no longer be converted from CamelCase to snake_case.  The "
-                     ".assume_role_policy_document_raw return value already returns the "
-                     "policy document in this future format.",
-                     date="2023-12-01", collection_name="community.aws")
+    module.deprecate(
+        "In a release after 2023-12-01 the contents of assume_role_policy_document "
+        "will no longer be converted from CamelCase to snake_case.  The "
+        ".assume_role_policy_document_raw return value already returns the "
+        "policy document in this future format.",
+        date="2023-12-01",
+        collection_name="community.aws",
+    )
 
     module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
