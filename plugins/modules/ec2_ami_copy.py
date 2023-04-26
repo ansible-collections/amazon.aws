@@ -157,67 +157,67 @@ def copy_image(module, ec2):
 
     image = None
     changed = False
-    tags = module.params.get('tags')
+    tags = module.params.get("tags")
 
-    params = {'SourceRegion': module.params.get('source_region'),
-              'SourceImageId': module.params.get('source_image_id'),
-              'Name': module.params.get('name'),
-              'Description': module.params.get('description'),
-              'Encrypted': module.params.get('encrypted'),
-              }
-    if module.params.get('kms_key_id'):
-        params['KmsKeyId'] = module.params.get('kms_key_id')
+    params = {
+        "SourceRegion": module.params.get("source_region"),
+        "SourceImageId": module.params.get("source_image_id"),
+        "Name": module.params.get("name"),
+        "Description": module.params.get("description"),
+        "Encrypted": module.params.get("encrypted"),
+    }
+    if module.params.get("kms_key_id"):
+        params["KmsKeyId"] = module.params.get("kms_key_id")
 
     try:
-        if module.params.get('tag_equality'):
-            filters = [{'Name': 'tag:%s' % k, 'Values': [v]} for (k, v) in module.params.get('tags').items()]
-            filters.append(dict(Name='state', Values=['available', 'pending']))
+        if module.params.get("tag_equality"):
+            filters = [{"Name": "tag:%s" % k, "Values": [v]} for (k, v) in module.params.get("tags").items()]
+            filters.append(dict(Name="state", Values=["available", "pending"]))
             images = ec2.describe_images(Filters=filters)
-            if len(images['Images']) > 0:
-                image = images['Images'][0]
+            if len(images["Images"]) > 0:
+                image = images["Images"][0]
         if not image:
             image = ec2.copy_image(**params)
-            image_id = image['ImageId']
+            image_id = image["ImageId"]
             if tags:
-                ec2.create_tags(Resources=[image_id],
-                                Tags=ansible_dict_to_boto3_tag_list(tags))
+                ec2.create_tags(Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags))
             changed = True
 
-        if module.params.get('wait'):
+        if module.params.get("wait"):
             delay = 15
-            max_attempts = module.params.get('wait_timeout') // delay
-            image_id = image.get('ImageId')
-            ec2.get_waiter('image_available').wait(
-                ImageIds=[image_id],
-                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts}
+            max_attempts = module.params.get("wait_timeout") // delay
+            image_id = image.get("ImageId")
+            ec2.get_waiter("image_available").wait(
+                ImageIds=[image_id], WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts}
             )
 
         module.exit_json(changed=changed, **camel_dict_to_snake_dict(image))
     except WaiterError as e:
-        module.fail_json_aws(e, msg='An error occurred waiting for the image to become available')
+        module.fail_json_aws(e, msg="An error occurred waiting for the image to become available")
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Could not copy AMI")
     except Exception as e:
-        module.fail_json(msg='Unhandled exception. (%s)' % to_native(e))
+        module.fail_json(msg="Unhandled exception. (%s)" % to_native(e))
 
 
 def main():
     argument_spec = dict(
         source_region=dict(required=True),
         source_image_id=dict(required=True),
-        name=dict(default='default'),
-        description=dict(default=''),
-        encrypted=dict(type='bool', default=False, required=False),
-        kms_key_id=dict(type='str', required=False),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=600),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        tag_equality=dict(type='bool', default=False))
+        name=dict(default="default"),
+        description=dict(default=""),
+        encrypted=dict(type="bool", default=False, required=False),
+        kms_key_id=dict(type="str", required=False),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=600),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        tag_equality=dict(type="bool", default=False),
+    )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
-    ec2 = module.client('ec2')
+    ec2 = module.client("ec2")
     copy_image(module, ec2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
