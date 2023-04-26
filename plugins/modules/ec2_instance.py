@@ -1240,7 +1240,7 @@ def build_userdata(params):
             job_template_id=params.get("aap_callback").get("job_template_id"),
             host_config_key=params.get("aap_callback").get("host_config_key"),
             windows=params.get("aap_callback").get("windows"),
-            passwd=params.get("aap_callback").get("set_passwd"),
+            passwd=params.get("aap_callback").get("set_password"),
         )
         return {"UserData": userdata}
     return {}
