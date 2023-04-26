@@ -119,11 +119,10 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
-PROTOCOL_NAMES = {'-1': 'all', '1': 'icmp', '6': 'tcp', '17': 'udp'}
+PROTOCOL_NAMES = {"-1": "all", "1": "icmp", "6": "tcp", "17": "udp"}
 
 
 def list_ec2_vpc_nacls(connection, module):
-
     nacl_ids = module.params.get("nacl_ids")
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
@@ -132,86 +131,97 @@ def list_ec2_vpc_nacls(connection, module):
 
     try:
         nacls = connection.describe_network_acls(aws_retry=True, NetworkAclIds=nacl_ids, Filters=filters)
-    except is_boto3_error_code('InvalidNetworkAclID.NotFound'):
-        module.fail_json(msg='Unable to describe ACL.  NetworkAcl does not exist')
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("InvalidNetworkAclID.NotFound"):
+        module.fail_json(msg="Unable to describe ACL.  NetworkAcl does not exist")
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to describe network ACLs {0}".format(nacl_ids))
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_nacls = []
-    for nacl in nacls['NetworkAcls']:
+    for nacl in nacls["NetworkAcls"]:
         snaked_nacls.append(camel_dict_to_snake_dict(nacl))
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for nacl in snaked_nacls:
-        if 'tags' in nacl:
-            nacl['tags'] = boto3_tag_list_to_ansible_dict(nacl['tags'], 'key', 'value')
-        if 'entries' in nacl:
-            nacl['egress'] = [nacl_entry_to_list(entry) for entry in nacl['entries']
-                              if entry['rule_number'] < 32767 and entry['egress']]
-            nacl['ingress'] = [nacl_entry_to_list(entry) for entry in nacl['entries']
-                               if entry['rule_number'] < 32767 and not entry['egress']]
-            del nacl['entries']
-        if 'associations' in nacl:
-            nacl['subnets'] = [a['subnet_id'] for a in nacl['associations']]
-            del nacl['associations']
-        if 'network_acl_id' in nacl:
-            nacl['nacl_id'] = nacl['network_acl_id']
-            del nacl['network_acl_id']
+        if "tags" in nacl:
+            nacl["tags"] = boto3_tag_list_to_ansible_dict(nacl["tags"], "key", "value")
+        if "entries" in nacl:
+            nacl["egress"] = [
+                nacl_entry_to_list(entry)
+                for entry in nacl["entries"]
+                if entry["rule_number"] < 32767 and entry["egress"]
+            ]
+            nacl["ingress"] = [
+                nacl_entry_to_list(entry)
+                for entry in nacl["entries"]
+                if entry["rule_number"] < 32767 and not entry["egress"]
+            ]
+            del nacl["entries"]
+        if "associations" in nacl:
+            nacl["subnets"] = [a["subnet_id"] for a in nacl["associations"]]
+            del nacl["associations"]
+        if "network_acl_id" in nacl:
+            nacl["nacl_id"] = nacl["network_acl_id"]
+            del nacl["network_acl_id"]
 
     module.exit_json(nacls=snaked_nacls)
 
 
 def nacl_entry_to_list(entry):
-
     # entry list format
     # [ rule_num, protocol name or number, allow or deny, ipv4/6 cidr, icmp type, icmp code, port from, port to]
     elist = []
 
-    elist.append(entry['rule_number'])
+    elist.append(entry["rule_number"])
 
-    if entry.get('protocol') in PROTOCOL_NAMES:
-        elist.append(PROTOCOL_NAMES[entry['protocol']])
+    if entry.get("protocol") in PROTOCOL_NAMES:
+        elist.append(PROTOCOL_NAMES[entry["protocol"]])
     else:
-        elist.append(entry.get('protocol'))
+        elist.append(entry.get("protocol"))
 
-    elist.append(entry['rule_action'])
+    elist.append(entry["rule_action"])
 
-    if entry.get('cidr_block'):
-        elist.append(entry['cidr_block'])
-    elif entry.get('ipv6_cidr_block'):
-        elist.append(entry['ipv6_cidr_block'])
+    if entry.get("cidr_block"):
+        elist.append(entry["cidr_block"])
+    elif entry.get("ipv6_cidr_block"):
+        elist.append(entry["ipv6_cidr_block"])
     else:
         elist.append(None)
 
     elist = elist + [None, None, None, None]
 
-    if entry['protocol'] in ('1', '58'):
-        elist[4] = entry.get('icmp_type_code', {}).get('type')
-        elist[5] = entry.get('icmp_type_code', {}).get('code')
+    if entry["protocol"] in ("1", "58"):
+        elist[4] = entry.get("icmp_type_code", {}).get("type")
+        elist[5] = entry.get("icmp_type_code", {}).get("code")
 
-    if entry['protocol'] not in ('1', '6', '17', '58'):
+    if entry["protocol"] not in ("1", "6", "17", "58"):
         elist[6] = 0
         elist[7] = 65535
-    elif 'port_range' in entry:
-        elist[6] = entry['port_range']['from']
-        elist[7] = entry['port_range']['to']
+    elif "port_range" in entry:
+        elist[6] = entry["port_range"]["from"]
+        elist[7] = entry["port_range"]["to"]
 
     return elist
 
 
 def main():
-
     argument_spec = dict(
-        nacl_ids=dict(default=[], type='list', aliases=['nacl_id'], elements='str'),
-        filters=dict(default={}, type='dict'))
+        nacl_ids=dict(default=[], type="list", aliases=["nacl_id"], elements="str"),
+        filters=dict(default={}, type="dict"),
+    )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     list_ec2_vpc_nacls(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
