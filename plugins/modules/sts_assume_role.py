@@ -112,15 +112,14 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def _parse_response(response):
-    credentials = response.get('Credentials', {})
-    user = response.get('AssumedRoleUser', {})
+    credentials = response.get("Credentials", {})
+    user = response.get("AssumedRoleUser", {})
 
     sts_cred = {
-        'access_key': credentials.get('AccessKeyId'),
-        'secret_key': credentials.get('SecretAccessKey'),
-        'session_token': credentials.get('SessionToken'),
-        'expiration': credentials.get('Expiration')
-
+        "access_key": credentials.get("AccessKeyId"),
+        "secret_key": credentials.get("SecretAccessKey"),
+        "session_token": credentials.get("SessionToken"),
+        "expiration": credentials.get("Expiration"),
     }
     sts_user = camel_dict_to_snake_dict(user)
     return sts_cred, sts_user
@@ -128,13 +127,13 @@ def _parse_response(response):
 
 def assume_role_policy(connection, module):
     params = {
-        'RoleArn': module.params.get('role_arn'),
-        'RoleSessionName': module.params.get('role_session_name'),
-        'Policy': module.params.get('policy'),
-        'DurationSeconds': module.params.get('duration_seconds'),
-        'ExternalId': module.params.get('external_id'),
-        'SerialNumber': module.params.get('mfa_serial_number'),
-        'TokenCode': module.params.get('mfa_token')
+        "RoleArn": module.params.get("role_arn"),
+        "RoleSessionName": module.params.get("role_session_name"),
+        "Policy": module.params.get("policy"),
+        "DurationSeconds": module.params.get("duration_seconds"),
+        "ExternalId": module.params.get("external_id"),
+        "SerialNumber": module.params.get("mfa_serial_number"),
+        "TokenCode": module.params.get("mfa_token"),
     }
     changed = False
 
@@ -154,19 +153,19 @@ def main():
     argument_spec = dict(
         role_arn=dict(required=True),
         role_session_name=dict(required=True),
-        duration_seconds=dict(required=False, default=None, type='int'),
+        duration_seconds=dict(required=False, default=None, type="int"),
         external_id=dict(required=False, default=None),
         policy=dict(required=False, default=None),
         mfa_serial_number=dict(required=False, default=None),
-        mfa_token=dict(required=False, default=None, no_log=True)
+        mfa_token=dict(required=False, default=None, no_log=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
-    connection = module.client('sts')
+    connection = module.client("sts")
 
     assume_role_policy(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
