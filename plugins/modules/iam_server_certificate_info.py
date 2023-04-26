@@ -110,22 +110,24 @@ def get_server_certs(iam, name=None):
     results = dict()
     try:
         if name:
-            server_certs = [iam.get_server_certificate(ServerCertificateName=name)['ServerCertificate']]
+            server_certs = [iam.get_server_certificate(ServerCertificateName=name)["ServerCertificate"]]
         else:
-            server_certs = iam.list_server_certificates()['ServerCertificateMetadataList']
+            server_certs = iam.list_server_certificates()["ServerCertificateMetadataList"]
 
         for server_cert in server_certs:
             if not name:
-                server_cert = iam.get_server_certificate(ServerCertificateName=server_cert['ServerCertificateName'])['ServerCertificate']
-            cert_md = server_cert['ServerCertificateMetadata']
-            results[cert_md['ServerCertificateName']] = {
-                'certificate_body': server_cert['CertificateBody'],
-                'server_certificate_id': cert_md['ServerCertificateId'],
-                'server_certificate_name': cert_md['ServerCertificateName'],
-                'arn': cert_md['Arn'],
-                'path': cert_md['Path'],
-                'expiration': cert_md['Expiration'].isoformat(),
-                'upload_date': cert_md['UploadDate'].isoformat(),
+                server_cert = iam.get_server_certificate(ServerCertificateName=server_cert["ServerCertificateName"])[
+                    "ServerCertificate"
+                ]
+            cert_md = server_cert["ServerCertificateMetadata"]
+            results[cert_md["ServerCertificateName"]] = {
+                "certificate_body": server_cert["CertificateBody"],
+                "server_certificate_id": cert_md["ServerCertificateId"],
+                "server_certificate_name": cert_md["ServerCertificateName"],
+                "arn": cert_md["Arn"],
+                "path": cert_md["Path"],
+                "expiration": cert_md["Expiration"].isoformat(),
+                "upload_date": cert_md["UploadDate"].isoformat(),
             }
 
     except botocore.exceptions.ClientError:
@@ -136,7 +138,7 @@ def get_server_certs(iam, name=None):
 
 def main():
     argument_spec = dict(
-        name=dict(type='str'),
+        name=dict(type="str"),
     )
 
     module = AnsibleAWSModule(
@@ -145,14 +147,14 @@ def main():
     )
 
     try:
-        iam = module.client('iam')
+        iam = module.client("iam")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    cert_name = module.params.get('name')
+    cert_name = module.params.get("name")
     results = get_server_certs(iam, cert_name)
     module.exit_json(results=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
