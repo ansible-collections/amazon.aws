@@ -5,7 +5,7 @@ import pytest
 from asyncmock import AsyncMock
 from mock import MagicMock
 
-from extensions.eda.plugins.event_sources.aws_cloudtrail import main as cloudtrail_main
+from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
 
 
 @pytest.mark.asyncio
@@ -28,7 +28,7 @@ async def test_receive_from_cloudtrail(eda_queue):
         ]
     }
     with patch(
-        "extensions.eda.plugins.event_sources.aws_cloudtrail.get_session",  # noqa: E501
+        "extensions.eda.plugins.event_source.aws_cloudtrail.get_session",  # noqa: E501
         return_value=session,
     ):
         iterator = AsyncMock()
