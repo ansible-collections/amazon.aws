@@ -221,25 +221,24 @@ from ansible_collections.community.aws.plugins.module_utils.transitgateway impor
 
 
 def main():
-
     argument_spec = dict(
-        state=dict(type='str', required=False, default='present', choices=['absent', 'present']),
-        transit_gateway=dict(type='str', required=False, aliases=['transit_gateway_id']),
-        id=dict(type='str', required=False, aliases=['attachment_id']),
-        name=dict(type='str', required=False),
-        subnets=dict(type='list', elements='str', required=False),
-        purge_subnets=dict(type='bool', required=False, default=True),
-        tags=dict(type='dict', required=False, aliases=['resource_tags']),
-        purge_tags=dict(type='bool', required=False, default=True),
-        appliance_mode_support=dict(type='bool', required=False),
-        dns_support=dict(type='bool', required=False),
-        ipv6_support=dict(type='bool', required=False),
-        wait=dict(type='bool', required=False, default=True),
-        wait_timeout=dict(type='int', required=False),
+        state=dict(type="str", required=False, default="present", choices=["absent", "present"]),
+        transit_gateway=dict(type="str", required=False, aliases=["transit_gateway_id"]),
+        id=dict(type="str", required=False, aliases=["attachment_id"]),
+        name=dict(type="str", required=False),
+        subnets=dict(type="list", elements="str", required=False),
+        purge_subnets=dict(type="bool", required=False, default=True),
+        tags=dict(type="dict", required=False, aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", required=False, default=True),
+        appliance_mode_support=dict(type="bool", required=False),
+        dns_support=dict(type="bool", required=False),
+        ipv6_support=dict(type="bool", required=False),
+        wait=dict(type="bool", required=False, default=True),
+        wait_timeout=dict(type="int", required=False),
     )
 
     one_of = [
-        ['id', 'transit_gateway', 'name'],
+        ["id", "transit_gateway", "name"],
     ]
 
     module = AnsibleAWSModule(
@@ -248,55 +247,68 @@ def main():
         required_one_of=one_of,
     )
 
-    attach_id = module.params.get('id', None)
-    tgw = module.params.get('transit_gateway', None)
-    name = module.params.get('name', None)
-    tags = module.params.get('tags', None)
-    purge_tags = module.params.get('purge_tags')
-    state = module.params.get('state')
-    subnets = module.params.get('subnets', None)
-    purge_subnets = module.params.get('purge_subnets')
+    attach_id = module.params.get("id", None)
+    tgw = module.params.get("transit_gateway", None)
+    name = module.params.get("name", None)
+    tags = module.params.get("tags", None)
+    purge_tags = module.params.get("purge_tags")
+    state = module.params.get("state")
+    subnets = module.params.get("subnets", None)
+    purge_subnets = module.params.get("purge_subnets")
 
     # When not provided with an ID see if one exists.
     if not attach_id:
         search_manager = TransitGatewayVpcAttachmentManager(module=module)
         filters = dict()
         if tgw:
-            filters['transit-gateway-id'] = tgw
+            filters["transit-gateway-id"] = tgw
         if name:
-            filters['tag:Name'] = name
+            filters["tag:Name"] = name
         if subnets:
             vpc_id = search_manager.subnets_to_vpc(subnets)
-            filters['vpc-id'] = vpc_id
+            filters["vpc-id"] = vpc_id
 
         # Attachments lurk in a 'deleted' state, for a while, ignore them so we
         # can reuse the names
-        filters['state'] = [
-            'available', 'deleting', 'failed', 'failing', 'initiatingRequest', 'modifying',
-            'pendingAcceptance', 'pending', 'rollingBack', 'rejected', 'rejecting'
+        filters["state"] = [
+            "available",
+            "deleting",
+            "failed",
+            "failing",
+            "initiatingRequest",
+            "modifying",
+            "pendingAcceptance",
+            "pending",
+            "rollingBack",
+            "rejected",
+            "rejecting",
         ]
         attachments = search_manager.list(filters=filters)
         if len(attachments) > 1:
-            module.fail_json('Multiple matching attachments found, provide an ID', attachments=attachments)
+            module.fail_json("Multiple matching attachments found, provide an ID", attachments=attachments)
         # If we find a match then we'll modify it by ID, otherwise we'll be
         # creating a new RTB.
         if attachments:
-            attach_id = attachments[0]['transit_gateway_attachment_id']
+            attach_id = attachments[0]["transit_gateway_attachment_id"]
 
     manager = TransitGatewayVpcAttachmentManager(module=module, id=attach_id)
-    manager.set_wait(module.params.get('wait', None))
-    manager.set_wait_timeout(module.params.get('wait_timeout', None))
+    manager.set_wait(module.params.get("wait", None))
+    manager.set_wait_timeout(module.params.get("wait_timeout", None))
 
-    if state == 'absent':
+    if state == "absent":
         manager.delete()
     else:
         if not attach_id:
             if not tgw:
-                module.fail_json('No existing attachment found.  To create a new attachment'
-                                 ' the `transit_gateway` parameter must be provided.')
+                module.fail_json(
+                    "No existing attachment found.  To create a new attachment"
+                    " the `transit_gateway` parameter must be provided."
+                )
             if not subnets:
-                module.fail_json('No existing attachment found.  To create a new attachment'
-                                 ' the `subnets` parameter must be provided.')
+                module.fail_json(
+                    "No existing attachment found.  To create a new attachment"
+                    " the `subnets` parameter must be provided."
+                )
 
         # name is just a special case of tags.
         if name:
@@ -310,9 +322,9 @@ def main():
         manager.set_transit_gateway(tgw)
         manager.set_subnets(subnets, purge_subnets)
         manager.set_tags(tags, purge_tags)
-        manager.set_dns_support(module.params.get('dns_support', None))
-        manager.set_ipv6_support(module.params.get('ipv6_support', None))
-        manager.set_appliance_mode_support(module.params.get('appliance_mode_support', None))
+        manager.set_dns_support(module.params.get("dns_support", None))
+        manager.set_ipv6_support(module.params.get("ipv6_support", None))
+        manager.set_appliance_mode_support(module.params.get("appliance_mode_support", None))
         manager.flush_changes()
 
     results = dict(
@@ -320,7 +332,7 @@ def main():
         attachments=[manager.updated_resource],
     )
     if manager.changed:
-        results['diff'] = dict(
+        results["diff"] = dict(
             before=manager.original_resource,
             after=manager.updated_resource,
         )
@@ -328,5 +340,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

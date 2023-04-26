@@ -230,32 +230,31 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 class AnsibleEc2Tgw(object):
-
     def __init__(self, module, results):
         self._module = module
         self._results = results
         retry_decorator = AWSRetry.jittered_backoff(
-            catch_extra_error_codes=['IncorrectState'],
+            catch_extra_error_codes=["IncorrectState"],
         )
-        connection = module.client('ec2', retry_decorator=retry_decorator)
+        connection = module.client("ec2", retry_decorator=retry_decorator)
         self._connection = connection
         self._check_mode = self._module.check_mode
 
     def process(self):
-        """ Process the request based on state parameter .
-          state = present will search for an existing tgw based and return the object data.
-            if no object is found it will be created
+        """Process the request based on state parameter .
+        state = present will search for an existing tgw based and return the object data.
+          if no object is found it will be created
 
-          state = absent will attempt to remove the tgw however will fail if it still has
-            attachments or associations
-          """
-        description = self._module.params.get('description')
-        state = self._module.params.get('state', 'present')
-        tgw_id = self._module.params.get('transit_gateway_id')
+        state = absent will attempt to remove the tgw however will fail if it still has
+          attachments or associations
+        """
+        description = self._module.params.get("description")
+        state = self._module.params.get("state", "present")
+        tgw_id = self._module.params.get("transit_gateway_id")
 
-        if state == 'present':
+        if state == "present":
             self.ensure_tgw_present(tgw_id, description)
-        elif state == 'absent':
+        elif state == "absent":
             self.ensure_tgw_absent(tgw_id, description)
 
     def wait_for_status(self, wait_timeout, tgw_id, status, skip_deleted=True):
@@ -279,13 +278,13 @@ class AnsibleEc2Tgw(object):
 
                 if transit_gateway:
                     if self._check_mode:
-                        transit_gateway['state'] = status
+                        transit_gateway["state"] = status
 
-                    if transit_gateway.get('state') == status:
+                    if transit_gateway.get("state") == status:
                         status_achieved = True
                         break
 
-                    elif transit_gateway.get('state') == 'failed':
+                    elif transit_gateway.get("state") == "failed":
                         break
 
                 else:
@@ -295,13 +294,12 @@ class AnsibleEc2Tgw(object):
                 self._module.fail_json_aws(e)
 
         if not status_achieved:
-            self._module.fail_json(
-                msg="Wait time out reached, while waiting for results")
+            self._module.fail_json(msg="Wait time out reached, while waiting for results")
 
         return transit_gateway
 
     def get_matching_tgw(self, tgw_id, description=None, skip_deleted=True):
-        """ search for  an existing tgw by either tgw_id or description
+        """search for  an existing tgw by either tgw_id or description
         :param tgw_id:  The AWS id of the transit gateway
         :param description:  The description of the transit gateway.
         :param skip_deleted: ignore deleted transit gateways
@@ -309,7 +307,7 @@ class AnsibleEc2Tgw(object):
         """
         filters = []
         if tgw_id:
-            filters = ansible_dict_to_boto3_filter_list({'transit-gateway-id': tgw_id})
+            filters = ansible_dict_to_boto3_filter_list({"transit-gateway-id": tgw_id})
 
         try:
             response = AWSRetry.exponential_backoff()(self._connection.describe_transit_gateways)(Filters=filters)
@@ -319,20 +317,21 @@ class AnsibleEc2Tgw(object):
         tgw = None
         tgws = []
 
-        if len(response.get('TransitGateways', [])) == 1 and tgw_id:
-            if (response['TransitGateways'][0]['State'] != 'deleted') or not skip_deleted:
-                tgws.extend(response['TransitGateways'])
+        if len(response.get("TransitGateways", [])) == 1 and tgw_id:
+            if (response["TransitGateways"][0]["State"] != "deleted") or not skip_deleted:
+                tgws.extend(response["TransitGateways"])
 
-        for gateway in response.get('TransitGateways', []):
-            if description == gateway['Description'] and gateway['State'] != 'deleted':
+        for gateway in response.get("TransitGateways", []):
+            if description == gateway["Description"] and gateway["State"] != "deleted":
                 tgws.append(gateway)
 
         if len(tgws) > 1:
             self._module.fail_json(
-                msg='EC2 returned more than one transit Gateway for description {0}, aborting'.format(description))
+                msg="EC2 returned more than one transit Gateway for description {0}, aborting".format(description)
+            )
         elif tgws:
-            tgw = camel_dict_to_snake_dict(tgws[0], ignore_list=['Tags'])
-            tgw['tags'] = boto3_tag_list_to_ansible_dict(tgws[0]['Tags'])
+            tgw = camel_dict_to_snake_dict(tgws[0], ignore_list=["Tags"])
+            tgw["tags"] = boto3_tag_list_to_ansible_dict(tgws[0]["Tags"])
 
         return tgw
 
@@ -352,31 +351,31 @@ class AnsibleEc2Tgw(object):
         :return dict: transit gateway object
         """
         options = dict()
-        wait = self._module.params.get('wait')
-        wait_timeout = self._module.params.get('wait_timeout')
+        wait = self._module.params.get("wait")
+        wait_timeout = self._module.params.get("wait_timeout")
 
-        if self._module.params.get('asn'):
-            options['AmazonSideAsn'] = self._module.params.get('asn')
+        if self._module.params.get("asn"):
+            options["AmazonSideAsn"] = self._module.params.get("asn")
 
-        options['AutoAcceptSharedAttachments'] = self.enable_option_flag(self._module.params.get('auto_attach'))
-        options['DefaultRouteTableAssociation'] = self.enable_option_flag(self._module.params.get('auto_associate'))
-        options['DefaultRouteTablePropagation'] = self.enable_option_flag(self._module.params.get('auto_propagate'))
-        options['VpnEcmpSupport'] = self.enable_option_flag(self._module.params.get('vpn_ecmp_support'))
-        options['DnsSupport'] = self.enable_option_flag(self._module.params.get('dns_support'))
+        options["AutoAcceptSharedAttachments"] = self.enable_option_flag(self._module.params.get("auto_attach"))
+        options["DefaultRouteTableAssociation"] = self.enable_option_flag(self._module.params.get("auto_associate"))
+        options["DefaultRouteTablePropagation"] = self.enable_option_flag(self._module.params.get("auto_propagate"))
+        options["VpnEcmpSupport"] = self.enable_option_flag(self._module.params.get("vpn_ecmp_support"))
+        options["DnsSupport"] = self.enable_option_flag(self._module.params.get("dns_support"))
 
         try:
             response = self._connection.create_transit_gateway(Description=description, Options=options)
         except (ClientError, BotoCoreError) as e:
             self._module.fail_json_aws(e)
 
-        tgw_id = response['TransitGateway']['TransitGatewayId']
+        tgw_id = response["TransitGateway"]["TransitGatewayId"]
 
         if wait:
             result = self.wait_for_status(wait_timeout=wait_timeout, tgw_id=tgw_id, status="available")
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id)
 
-        self._results['msg'] = (' Transit gateway {0} created'.format(result['transit_gateway_id']))
+        self._results["msg"] = " Transit gateway {0} created".format(result["transit_gateway_id"])
 
         return result
 
@@ -387,8 +386,8 @@ class AnsibleEc2Tgw(object):
         :param tgw_id: The id of the transit gateway
         :return dict: transit gateway object
         """
-        wait = self._module.params.get('wait')
-        wait_timeout = self._module.params.get('wait_timeout')
+        wait = self._module.params.get("wait")
+        wait_timeout = self._module.params.get("wait_timeout")
 
         try:
             response = self._connection.delete_transit_gateway(TransitGatewayId=tgw_id)
@@ -396,11 +395,13 @@ class AnsibleEc2Tgw(object):
             self._module.fail_json_aws(e)
 
         if wait:
-            result = self.wait_for_status(wait_timeout=wait_timeout, tgw_id=tgw_id, status="deleted", skip_deleted=False)
+            result = self.wait_for_status(
+                wait_timeout=wait_timeout, tgw_id=tgw_id, status="deleted", skip_deleted=False
+            )
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id, skip_deleted=False)
 
-        self._results['msg'] = (' Transit gateway {0} deleted'.format(tgw_id))
+        self._results["msg"] = " Transit gateway {0} deleted".format(tgw_id)
 
         return result
 
@@ -417,25 +418,27 @@ class AnsibleEc2Tgw(object):
 
         if tgw is None:
             if self._check_mode:
-                self._results['changed'] = True
-                self._results['transit_gateway_id'] = None
+                self._results["changed"] = True
+                self._results["transit_gateway_id"] = None
                 return self._results
 
             try:
                 if not description:
                     self._module.fail_json(msg="Failed to create Transit Gateway: description argument required")
                 tgw = self.create_tgw(description)
-                self._results['changed'] = True
+                self._results["changed"] = True
             except (BotoCoreError, ClientError) as e:
-                self._module.fail_json_aws(e, msg='Unable to create Transit Gateway')
+                self._module.fail_json_aws(e, msg="Unable to create Transit Gateway")
 
-        self._results['changed'] |= ensure_ec2_tags(
-            self._connection, self._module, tgw['transit_gateway_id'],
-            tags=self._module.params.get('tags'),
-            purge_tags=self._module.params.get('purge_tags'),
+        self._results["changed"] |= ensure_ec2_tags(
+            self._connection,
+            self._module,
+            tgw["transit_gateway_id"],
+            tags=self._module.params.get("tags"),
+            purge_tags=self._module.params.get("purge_tags"),
         )
 
-        self._results['transit_gateway'] = self.get_matching_tgw(tgw_id=tgw['transit_gateway_id'])
+        self._results["transit_gateway"] = self.get_matching_tgw(tgw_id=tgw["transit_gateway_id"])
 
         return self._results
 
@@ -447,21 +450,22 @@ class AnsibleEc2Tgw(object):
         :param description:  The description of the transit gateway.
         :return doct: transit gateway object
         """
-        self._results['transit_gateway_id'] = None
+        self._results["transit_gateway_id"] = None
         tgw = self.get_matching_tgw(tgw_id, description)
 
         if tgw is not None:
             if self._check_mode:
-                self._results['changed'] = True
+                self._results["changed"] = True
                 return self._results
 
             try:
-                tgw = self.delete_tgw(tgw_id=tgw['transit_gateway_id'])
-                self._results['changed'] = True
-                self._results['transit_gateway'] = self.get_matching_tgw(tgw_id=tgw['transit_gateway_id'],
-                                                                         skip_deleted=False)
+                tgw = self.delete_tgw(tgw_id=tgw["transit_gateway_id"])
+                self._results["changed"] = True
+                self._results["transit_gateway"] = self.get_matching_tgw(
+                    tgw_id=tgw["transit_gateway_id"], skip_deleted=False
+                )
             except (BotoCoreError, ClientError) as e:
-                self._module.fail_json_aws(e, msg='Unable to delete Transit Gateway')
+                self._module.fail_json_aws(e, msg="Unable to delete Transit Gateway")
 
         return self._results
 
@@ -473,24 +477,24 @@ def setup_module_object():
     """
 
     argument_spec = dict(
-        asn=dict(type='int'),
-        auto_associate=dict(type='bool', default=True),
-        auto_attach=dict(type='bool', default=False),
-        auto_propagate=dict(type='bool', default=True),
-        description=dict(type='str'),
-        dns_support=dict(type='bool', default=True),
-        purge_tags=dict(type='bool', default=True),
-        state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        transit_gateway_id=dict(type='str'),
-        vpn_ecmp_support=dict(type='bool', default=True),
-        wait=dict(type='bool', default=True),
-        wait_timeout=dict(type='int', default=300)
+        asn=dict(type="int"),
+        auto_associate=dict(type="bool", default=True),
+        auto_attach=dict(type="bool", default=False),
+        auto_propagate=dict(type="bool", default=True),
+        description=dict(type="str"),
+        dns_support=dict(type="bool", default=True),
+        purge_tags=dict(type="bool", default=True),
+        state=dict(default="present", choices=["present", "absent"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        transit_gateway_id=dict(type="str"),
+        vpn_ecmp_support=dict(type="bool", default=True),
+        wait=dict(type="bool", default=True),
+        wait_timeout=dict(type="int", default=300),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_one_of=[('description', 'transit_gateway_id')],
+        required_one_of=[("description", "transit_gateway_id")],
         supports_check_mode=True,
     )
 
@@ -498,12 +502,9 @@ def setup_module_object():
 
 
 def main():
-
     module = setup_module_object()
 
-    results = dict(
-        changed=False
-    )
+    results = dict(changed=False)
 
     tgw_manager = AnsibleEc2Tgw(module=module, results=results)
     tgw_manager.process()
@@ -511,5 +512,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
