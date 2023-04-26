@@ -242,6 +242,7 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def set_api_params(module, module_params):
     """
     Sets module parameters to those expected by the boto3 API.
@@ -262,18 +263,19 @@ def validate_params(module):
     :return:
     """
 
-    compute_environment_name = module.params['compute_environment_name']
+    compute_environment_name = module.params["compute_environment_name"]
 
     # validate compute environment name
-    if not re.search(r'^[\w\_:]+$', compute_environment_name):
+    if not re.search(r"^[\w\_:]+$", compute_environment_name):
         module.fail_json(
             msg="Function compute_environment_name {0} is invalid. Names must contain only alphanumeric characters "
-                "and underscores.".format(compute_environment_name)
+            "and underscores.".format(compute_environment_name)
         )
-    if not compute_environment_name.startswith('arn:aws:batch:'):
+    if not compute_environment_name.startswith("arn:aws:batch:"):
         if len(compute_environment_name) > 128:
-            module.fail_json(msg='compute_environment_name "{0}" exceeds 128 character limit'
-                             .format(compute_environment_name))
+            module.fail_json(
+                msg='compute_environment_name "{0}" exceeds 128 character limit'.format(compute_environment_name)
+            )
 
     return
 
@@ -284,13 +286,14 @@ def validate_params(module):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def get_current_compute_environment(module, client):
     try:
         environments = client.describe_compute_environments(
-            computeEnvironments=[module.params['compute_environment_name']]
+            computeEnvironments=[module.params["compute_environment_name"]]
         )
-        if len(environments['computeEnvironments']) > 0:
-            return environments['computeEnvironments'][0]
+        if len(environments["computeEnvironments"]) > 0:
+            return environments["computeEnvironments"][0]
         else:
             return None
     except ClientError:
@@ -299,42 +302,52 @@ def get_current_compute_environment(module, client):
 
 def create_compute_environment(module, client):
     """
-        Adds a Batch compute environment
+    Adds a Batch compute environment
 
-        :param module:
-        :param client:
-        :return:
-        """
+    :param module:
+    :param client:
+    :return:
+    """
 
     changed = False
 
     # set API parameters
-    params = (
-        'compute_environment_name', 'type', 'service_role')
+    params = ("compute_environment_name", "type", "service_role")
     api_params = set_api_params(module, params)
 
-    if module.params['compute_environment_state'] is not None:
-        api_params['state'] = module.params['compute_environment_state']
+    if module.params["compute_environment_state"] is not None:
+        api_params["state"] = module.params["compute_environment_state"]
 
-    compute_resources_param_list = ('minv_cpus', 'maxv_cpus', 'desiredv_cpus', 'instance_types', 'image_id', 'subnets',
-                                    'security_group_ids', 'ec2_key_pair', 'instance_role', 'tags', 'bid_percentage',
-                                    'spot_iam_fleet_role')
+    compute_resources_param_list = (
+        "minv_cpus",
+        "maxv_cpus",
+        "desiredv_cpus",
+        "instance_types",
+        "image_id",
+        "subnets",
+        "security_group_ids",
+        "ec2_key_pair",
+        "instance_role",
+        "tags",
+        "bid_percentage",
+        "spot_iam_fleet_role",
+    )
     compute_resources_params = set_api_params(module, compute_resources_param_list)
 
-    if module.params['compute_resource_type'] is not None:
-        compute_resources_params['type'] = module.params['compute_resource_type']
+    if module.params["compute_resource_type"] is not None:
+        compute_resources_params["type"] = module.params["compute_resource_type"]
 
     # if module.params['minv_cpus'] is not None:
     #     compute_resources_params['minvCpus'] = module.params['minv_cpus']
 
-    api_params['computeResources'] = compute_resources_params
+    api_params["computeResources"] = compute_resources_params
 
     try:
         if not module.check_mode:
             client.create_compute_environment(**api_params)
         changed = True
     except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error creating compute environment')
+        module.fail_json_aws(e, msg="Error creating compute environment")
 
     return changed
 
@@ -351,29 +364,29 @@ def remove_compute_environment(module, client):
     changed = False
 
     # set API parameters
-    api_params = {'computeEnvironment': module.params['compute_environment_name']}
+    api_params = {"computeEnvironment": module.params["compute_environment_name"]}
 
     try:
         if not module.check_mode:
             client.delete_compute_environment(**api_params)
         changed = True
     except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Error removing compute environment')
+        module.fail_json_aws(e, msg="Error removing compute environment")
     return changed
 
 
 def manage_state(module, client):
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
-    compute_environment_state = module.params['compute_environment_state']
-    compute_environment_name = module.params['compute_environment_name']
-    service_role = module.params['service_role']
-    minv_cpus = module.params['minv_cpus']
-    maxv_cpus = module.params['maxv_cpus']
-    desiredv_cpus = module.params['desiredv_cpus']
-    action_taken = 'none'
-    update_env_response = ''
+    current_state = "absent"
+    state = module.params["state"]
+    compute_environment_state = module.params["compute_environment_state"]
+    compute_environment_name = module.params["compute_environment_name"]
+    service_role = module.params["service_role"]
+    minv_cpus = module.params["minv_cpus"]
+    maxv_cpus = module.params["maxv_cpus"]
+    desiredv_cpus = module.params["desiredv_cpus"]
+    action_taken = "none"
+    update_env_response = ""
 
     check_mode = module.check_mode
 
@@ -381,37 +394,40 @@ def manage_state(module, client):
     current_compute_environment = get_current_compute_environment(module, client)
     response = current_compute_environment
     if current_compute_environment:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present':
+    if state == "present":
+        if current_state == "present":
             updates = False
             # Update Batch Compute Environment configuration
-            compute_kwargs = {'computeEnvironment': compute_environment_name}
+            compute_kwargs = {"computeEnvironment": compute_environment_name}
 
             # Update configuration if needed
             compute_resources = {}
-            if compute_environment_state and current_compute_environment['state'] != compute_environment_state:
-                compute_kwargs.update({'state': compute_environment_state})
+            if compute_environment_state and current_compute_environment["state"] != compute_environment_state:
+                compute_kwargs.update({"state": compute_environment_state})
                 updates = True
-            if service_role and current_compute_environment['serviceRole'] != service_role:
-                compute_kwargs.update({'serviceRole': service_role})
+            if service_role and current_compute_environment["serviceRole"] != service_role:
+                compute_kwargs.update({"serviceRole": service_role})
                 updates = True
-            if minv_cpus is not None and current_compute_environment['computeResources']['minvCpus'] != minv_cpus:
-                compute_resources['minvCpus'] = minv_cpus
-            if maxv_cpus is not None and current_compute_environment['computeResources']['maxvCpus'] != maxv_cpus:
-                compute_resources['maxvCpus'] = maxv_cpus
-            if desiredv_cpus is not None and current_compute_environment['computeResources']['desiredvCpus'] != desiredv_cpus:
-                compute_resources['desiredvCpus'] = desiredv_cpus
+            if minv_cpus is not None and current_compute_environment["computeResources"]["minvCpus"] != minv_cpus:
+                compute_resources["minvCpus"] = minv_cpus
+            if maxv_cpus is not None and current_compute_environment["computeResources"]["maxvCpus"] != maxv_cpus:
+                compute_resources["maxvCpus"] = maxv_cpus
+            if (
+                desiredv_cpus is not None
+                and current_compute_environment["computeResources"]["desiredvCpus"] != desiredv_cpus
+            ):
+                compute_resources["desiredvCpus"] = desiredv_cpus
             if len(compute_resources) > 0:
-                compute_kwargs['computeResources'] = compute_resources
+                compute_kwargs["computeResources"] = compute_resources
                 updates = True
             if updates:
                 try:
                     if not check_mode:
                         update_env_response = client.update_compute_environment(**compute_kwargs)
                     if not update_env_response:
-                        module.fail_json(msg='Unable to get compute environment information after creating')
+                        module.fail_json(msg="Unable to get compute environment information after creating")
                     changed = True
                     action_taken = "updated"
                 except (BotoCoreError, ClientError) as e:
@@ -421,15 +437,15 @@ def manage_state(module, client):
             # Create Batch Compute Environment
             changed = create_compute_environment(module, client)
             # Describe compute environment
-            action_taken = 'added'
+            action_taken = "added"
         response = get_current_compute_environment(module, client)
         if not response:
-            module.fail_json(msg='Unable to get compute environment information after creating')
+            module.fail_json(msg="Unable to get compute environment information after creating")
     else:
-        if current_state == 'present':
+        if current_state == "present":
             # remove the compute environment
             changed = remove_compute_environment(module, client)
-            action_taken = 'deleted'
+            action_taken = "deleted"
     return dict(changed=changed, batch_compute_environment_action=action_taken, response=response)
 
 
@@ -439,6 +455,7 @@ def manage_state(module, client):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def main():
     """
     Main entry point.
@@ -447,39 +464,36 @@ def main():
     """
 
     argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent']),
+        state=dict(default="present", choices=["present", "absent"]),
         compute_environment_name=dict(required=True),
-        type=dict(required=True, choices=['MANAGED', 'UNMANAGED']),
-        compute_environment_state=dict(required=False, default='ENABLED', choices=['ENABLED', 'DISABLED']),
+        type=dict(required=True, choices=["MANAGED", "UNMANAGED"]),
+        compute_environment_state=dict(required=False, default="ENABLED", choices=["ENABLED", "DISABLED"]),
         service_role=dict(required=True),
-        compute_resource_type=dict(required=True, choices=['EC2', 'SPOT']),
-        minv_cpus=dict(type='int', required=True),
-        maxv_cpus=dict(type='int', required=True),
-        desiredv_cpus=dict(type='int'),
-        instance_types=dict(type='list', required=True, elements='str'),
+        compute_resource_type=dict(required=True, choices=["EC2", "SPOT"]),
+        minv_cpus=dict(type="int", required=True),
+        maxv_cpus=dict(type="int", required=True),
+        desiredv_cpus=dict(type="int"),
+        instance_types=dict(type="list", required=True, elements="str"),
         image_id=dict(),
-        subnets=dict(type='list', required=True, elements='str'),
-        security_group_ids=dict(type='list', required=True, elements='str'),
+        subnets=dict(type="list", required=True, elements="str"),
+        security_group_ids=dict(type="list", required=True, elements="str"),
         ec2_key_pair=dict(no_log=False),
         instance_role=dict(required=True),
-        tags=dict(type='dict'),
-        bid_percentage=dict(type='int'),
+        tags=dict(type="dict"),
+        bid_percentage=dict(type="int"),
         spot_iam_fleet_role=dict(),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client('batch')
+    client = module.client("batch")
 
     validate_params(module)
 
     results = manage_state(module, client)
 
-    module.exit_json(**camel_dict_to_snake_dict(results, ignore_list=['Tags']))
+    module.exit_json(**camel_dict_to_snake_dict(results, ignore_list=["Tags"]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

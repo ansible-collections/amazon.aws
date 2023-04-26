@@ -67,12 +67,12 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def list_mfa_devices(connection, module):
-    user_name = module.params.get('user_name')
+    user_name = module.params.get("user_name")
     changed = False
 
     args = {}
     if user_name is not None:
-        args['UserName'] = user_name
+        args["UserName"] = user_name
     try:
         response = connection.list_mfa_devices(**args)
     except ClientError as e:
@@ -92,12 +92,12 @@ def main():
     )
 
     try:
-        connection = module.client('iam')
+        connection = module.client("iam")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     list_mfa_devices(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

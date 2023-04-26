@@ -220,6 +220,7 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 class Target(object):
     """Models a target in a target group"""
+
     def __init__(self, target_id, port, az, raw_target_health):
         self.target_port = port
         self.target_id = target_id
@@ -240,10 +241,7 @@ class TargetGroup(object):
         self.targets = []
 
     def add_target(self, target_id, target_port, target_az, raw_target_health):
-        self.targets.append(Target(target_id,
-                                   target_port,
-                                   target_az,
-                                   raw_target_health))
+        self.targets.append(Target(target_id, target_port, target_az, raw_target_health))
 
     def to_dict(self):
         object_dict = vars(self)
@@ -255,28 +253,17 @@ class TargetGroup(object):
 
 
 class TargetInfoGatherer(object):
-
     def __init__(self, module, instance_id, get_unused_target_groups):
         self.module = module
         try:
-            self.ec2 = self.module.client(
-                "ec2",
-                retry_decorator=AWSRetry.jittered_backoff(retries=10)
-            )
+            self.ec2 = self.module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
         except (ClientError, BotoCoreError) as e:
-            self.module.fail_json_aws(e,
-                                      msg="Couldn't connect to ec2"
-                                      )
+            self.module.fail_json_aws(e, msg="Couldn't connect to ec2")
 
         try:
-            self.elbv2 = self.module.client(
-                "elbv2",
-                retry_decorator=AWSRetry.jittered_backoff(retries=10)
-            )
+            self.elbv2 = self.module.client("elbv2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
         except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e,
-                                      msg="Could not connect to elbv2"
-                                      )
+            self.module.fail_json_aws(e, msg="Could not connect to elbv2")
 
         self.instance_id = instance_id
         self.get_unused_target_groups = get_unused_target_groups
@@ -284,25 +271,19 @@ class TargetInfoGatherer(object):
 
     def _get_instance_ips(self):
         """Fetch all IPs associated with this instance so that we can determine
-           whether or not an instance is in an IP-based target group"""
+        whether or not an instance is in an IP-based target group"""
         try:
             # get ahold of the instance in the API
-            reservations = self.ec2.describe_instances(
-                InstanceIds=[self.instance_id],
-                aws_retry=True
-            )["Reservations"]
+            reservations = self.ec2.describe_instances(InstanceIds=[self.instance_id], aws_retry=True)["Reservations"]
         except (BotoCoreError, ClientError) as e:
             # typically this will happen if the instance doesn't exist
-            self.module.fail_json_aws(e,
-                                      msg="Could not get instance info" +
-                                          " for instance '%s'" %
-                                          (self.instance_id)
-                                      )
+            self.module.fail_json_aws(
+                e,
+                msg="Could not get instance info for instance '%s'" % (self.instance_id),
+            )
 
         if len(reservations) < 1:
-            self.module.fail_json(
-                msg="Instance ID %s could not be found" % self.instance_id
-            )
+            self.module.fail_json(msg="Instance ID %s could not be found" % self.instance_id)
 
         instance = reservations[0]["Instances"][0]
 
@@ -319,38 +300,36 @@ class TargetInfoGatherer(object):
 
     def _get_target_group_objects(self):
         """helper function to build a list of TargetGroup objects based on
-           the AWS API"""
+        the AWS API"""
         try:
-            paginator = self.elbv2.get_paginator(
-                "describe_target_groups"
-            )
+            paginator = self.elbv2.get_paginator("describe_target_groups")
             tg_response = paginator.paginate().build_full_result()
         except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e,
-                                      msg="Could not describe target" +
-                                          " groups"
-                                      )
+            self.module.fail_json_aws(
+                e,
+                msg="Could not describe target groups",
+            )
 
         # build list of TargetGroup objects representing every target group in
         # the system
         target_groups = []
         for each_tg in tg_response["TargetGroups"]:
-            if not self.get_unused_target_groups and \
-                    len(each_tg["LoadBalancerArns"]) < 1:
+            if not self.get_unused_target_groups and len(each_tg["LoadBalancerArns"]) < 1:
                 # only collect target groups that actually are connected
                 # to LBs
                 continue
 
             target_groups.append(
-                TargetGroup(target_group_arn=each_tg["TargetGroupArn"],
-                            target_group_type=each_tg["TargetType"],
-                            )
+                TargetGroup(
+                    target_group_arn=each_tg["TargetGroupArn"],
+                    target_group_type=each_tg["TargetType"],
+                )
             )
         return target_groups
 
     def _get_target_descriptions(self, target_groups):
         """Helper function to build a list of all the target descriptions
-           for this target in a target group"""
+        for this target in a target group"""
         # Build a list of all the target groups pointing to this instance
         # based on the previous list
         tgs = set()
@@ -358,37 +337,25 @@ class TargetInfoGatherer(object):
         for tg in target_groups:
             try:
                 # Get the list of targets for that target group
-                response = self.elbv2.describe_target_health(
-                    TargetGroupArn=tg.target_group_arn,
-                    aws_retry=True
-                )
+                response = self.elbv2.describe_target_health(TargetGroupArn=tg.target_group_arn, aws_retry=True)
             except (BotoCoreError, ClientError) as e:
-                self.module.fail_json_aws(e,
-                                          msg="Could not describe target " +
-                                              "health for target group %s" %
-                                              tg.target_group_arn
-                                          )
+                self.module.fail_json_aws(
+                    e, msg="Could not describe target " + "health for target group %s" % tg.target_group_arn
+                )
 
             for t in response["TargetHealthDescriptions"]:
                 # If the target group has this instance as a target, add to
                 # list. This logic also accounts for the possibility of a
                 # target being in the target group multiple times with
                 # overridden ports
-                if t["Target"]["Id"] == self.instance_id or \
-                   t["Target"]["Id"] in self.instance_ips:
-
+                if t["Target"]["Id"] == self.instance_id or t["Target"]["Id"] in self.instance_ips:
                     # The 'AvailabilityZone' parameter is a weird one, see the
                     # API docs for more.  Basically it's only supposed to be
                     # there under very specific circumstances, so we need
                     # to account for that
-                    az = t["Target"]["AvailabilityZone"] \
-                        if "AvailabilityZone" in t["Target"] \
-                        else None
+                    az = t["Target"]["AvailabilityZone"] if "AvailabilityZone" in t["Target"] else None
 
-                    tg.add_target(t["Target"]["Id"],
-                                  t["Target"]["Port"],
-                                  az,
-                                  t["TargetHealth"])
+                    tg.add_target(t["Target"]["Id"], t["Target"]["Port"], az, t["TargetHealth"])
                     # since tgs is a set, each target group will be added only
                     # once, even though we call add on each successful match
                     tgs.add(tg)
@@ -406,8 +373,7 @@ class TargetInfoGatherer(object):
 def main():
     argument_spec = dict(
         instance_id={"required": True, "type": "str"},
-        get_unused_target_groups={"required": False,
-                                  "default": True, "type": "bool"}
+        get_unused_target_groups={"required": False, "default": True, "type": "bool"},
     )
 
     module = AnsibleAWSModule(
@@ -418,10 +384,7 @@ def main():
     instance_id = module.params["instance_id"]
     get_unused_target_groups = module.params["get_unused_target_groups"]
 
-    tg_gatherer = TargetInfoGatherer(module,
-                                     instance_id,
-                                     get_unused_target_groups
-                                     )
+    tg_gatherer = TargetInfoGatherer(module, instance_id, get_unused_target_groups)
 
     instance_target_groups = [each.to_dict() for each in tg_gatherer.tgs]
 

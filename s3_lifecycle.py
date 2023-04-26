@@ -262,10 +262,13 @@ def fetch_rules(client, module, name):
     # Get the bucket's current lifecycle rules
     try:
         current_lifecycle = client.get_bucket_lifecycle_configuration(aws_retry=True, Bucket=name)
-        current_lifecycle_rules = normalize_boto3_result(current_lifecycle['Rules'])
-    except is_boto3_error_code('NoSuchLifecycleConfiguration'):
+        current_lifecycle_rules = normalize_boto3_result(current_lifecycle["Rules"])
+    except is_boto3_error_code("NoSuchLifecycleConfiguration"):
         current_lifecycle_rules = []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
     return current_lifecycle_rules
 
@@ -292,58 +295,63 @@ def build_rule(client, module):
 
     rule = dict(Filter=dict(Prefix=prefix), Status=status.title())
     if rule_id is not None:
-        rule['ID'] = rule_id
+        rule["ID"] = rule_id
 
     if abort_incomplete_multipart_upload_days:
-        rule['AbortIncompleteMultipartUpload'] = {
-            'DaysAfterInitiation': abort_incomplete_multipart_upload_days
-        }
+        rule["AbortIncompleteMultipartUpload"] = {"DaysAfterInitiation": abort_incomplete_multipart_upload_days}
 
     # Create expiration
     if expiration_days is not None:
-        rule['Expiration'] = dict(Days=expiration_days)
+        rule["Expiration"] = dict(Days=expiration_days)
     elif expiration_date is not None:
-        rule['Expiration'] = dict(Date=expiration_date.isoformat())
+        rule["Expiration"] = dict(Date=expiration_date.isoformat())
     elif expire_object_delete_marker is not None:
-        rule['Expiration'] = dict(ExpiredObjectDeleteMarker=expire_object_delete_marker)
+        rule["Expiration"] = dict(ExpiredObjectDeleteMarker=expire_object_delete_marker)
     if noncurrent_version_expiration_days or noncurrent_version_keep_newer:
-        rule['NoncurrentVersionExpiration'] = dict()
+        rule["NoncurrentVersionExpiration"] = dict()
     if noncurrent_version_expiration_days is not None:
-        rule['NoncurrentVersionExpiration']['NoncurrentDays'] = noncurrent_version_expiration_days
+        rule["NoncurrentVersionExpiration"]["NoncurrentDays"] = noncurrent_version_expiration_days
     if noncurrent_version_keep_newer is not None:
-        rule['NoncurrentVersionExpiration']['NewerNoncurrentVersions'] = noncurrent_version_keep_newer
+        rule["NoncurrentVersionExpiration"]["NewerNoncurrentVersions"] = noncurrent_version_keep_newer
     if transition_days is not None:
-        rule['Transitions'] = [dict(Days=transition_days, StorageClass=storage_class.upper()), ]
+        rule["Transitions"] = [
+            dict(Days=transition_days, StorageClass=storage_class.upper()),
+        ]
 
     elif transition_date is not None:
-        rule['Transitions'] = [dict(Date=transition_date.isoformat(), StorageClass=storage_class.upper()), ]
+        rule["Transitions"] = [
+            dict(Date=transition_date.isoformat(), StorageClass=storage_class.upper()),
+        ]
 
     if transitions is not None:
-        if not rule.get('Transitions'):
-            rule['Transitions'] = []
+        if not rule.get("Transitions"):
+            rule["Transitions"] = []
         for transition in transitions:
             t_out = dict()
-            if transition.get('transition_date'):
-                t_out['Date'] = transition['transition_date']
-            elif transition.get('transition_days') is not None:
-                t_out['Days'] = transition['transition_days']
-            if transition.get('storage_class'):
-                t_out['StorageClass'] = transition['storage_class'].upper()
-                rule['Transitions'].append(t_out)
+            if transition.get("transition_date"):
+                t_out["Date"] = transition["transition_date"]
+            elif transition.get("transition_days") is not None:
+                t_out["Days"] = transition["transition_days"]
+            if transition.get("storage_class"):
+                t_out["StorageClass"] = transition["storage_class"].upper()
+                rule["Transitions"].append(t_out)
 
     if noncurrent_version_transition_days is not None:
-        rule['NoncurrentVersionTransitions'] = [dict(NoncurrentDays=noncurrent_version_transition_days,
-                                                     StorageClass=noncurrent_version_storage_class.upper()), ]
+        rule["NoncurrentVersionTransitions"] = [
+            dict(
+                NoncurrentDays=noncurrent_version_transition_days, StorageClass=noncurrent_version_storage_class.upper()
+            ),
+        ]
 
     if noncurrent_version_transitions is not None:
-        if not rule.get('NoncurrentVersionTransitions'):
-            rule['NoncurrentVersionTransitions'] = []
+        if not rule.get("NoncurrentVersionTransitions"):
+            rule["NoncurrentVersionTransitions"] = []
         for noncurrent_version_transition in noncurrent_version_transitions:
             t_out = dict()
-            t_out['NoncurrentDays'] = noncurrent_version_transition['transition_days']
-            if noncurrent_version_transition.get('storage_class'):
-                t_out['StorageClass'] = noncurrent_version_transition['storage_class'].upper()
-                rule['NoncurrentVersionTransitions'].append(t_out)
+            t_out["NoncurrentDays"] = noncurrent_version_transition["transition_days"]
+            if noncurrent_version_transition.get("storage_class"):
+                t_out["StorageClass"] = noncurrent_version_transition["storage_class"].upper()
+                rule["NoncurrentVersionTransitions"].append(t_out)
 
     return rule
 
@@ -360,23 +368,29 @@ def compare_and_update_configuration(client, module, current_lifecycle_rules, ru
     if current_lifecycle_rules:
         # If rule ID exists, use that for comparison otherwise compare based on prefix
         for existing_rule in current_lifecycle_rules:
-            if rule.get('ID') == existing_rule.get('ID') and rule['Filter'].get('Prefix', '') != existing_rule.get('Filter', {}).get('Prefix', ''):
-                existing_rule.pop('ID')
-            elif rule_id is None and rule['Filter'].get('Prefix', '') == existing_rule.get('Filter', {}).get('Prefix', ''):
-                existing_rule.pop('ID')
-            if rule.get('ID') == existing_rule.get('ID'):
-                changed_, appended_ = update_or_append_rule(rule, existing_rule, purge_transitions, lifecycle_configuration)
+            if rule.get("ID") == existing_rule.get("ID") and rule["Filter"].get("Prefix", "") != existing_rule.get(
+                "Filter", {}
+            ).get("Prefix", ""):
+                existing_rule.pop("ID")
+            elif rule_id is None and rule["Filter"].get("Prefix", "") == existing_rule.get("Filter", {}).get(
+                "Prefix", ""
+            ):
+                existing_rule.pop("ID")
+            if rule.get("ID") == existing_rule.get("ID"):
+                changed_, appended_ = update_or_append_rule(
+                    rule, existing_rule, purge_transitions, lifecycle_configuration
+                )
                 changed = changed_ or changed
                 appended = appended_ or appended
             else:
-                lifecycle_configuration['Rules'].append(existing_rule)
+                lifecycle_configuration["Rules"].append(existing_rule)
 
         # If nothing appended then append now as the rule must not exist
         if not appended:
-            lifecycle_configuration['Rules'].append(rule)
+            lifecycle_configuration["Rules"].append(rule)
             changed = True
     else:
-        lifecycle_configuration['Rules'].append(rule)
+        lifecycle_configuration["Rules"].append(rule)
         changed = True
 
     return changed, lifecycle_configuration
@@ -384,24 +398,24 @@ def compare_and_update_configuration(client, module, current_lifecycle_rules, ru
 
 def update_or_append_rule(new_rule, existing_rule, purge_transitions, lifecycle_obj):
     changed = False
-    if existing_rule['Status'] != new_rule['Status']:
-        if not new_rule.get('Transitions') and existing_rule.get('Transitions'):
-            new_rule['Transitions'] = existing_rule['Transitions']
-        if not new_rule.get('Expiration') and existing_rule.get('Expiration'):
-            new_rule['Expiration'] = existing_rule['Expiration']
-        if not new_rule.get('NoncurrentVersionExpiration') and existing_rule.get('NoncurrentVersionExpiration'):
-            new_rule['NoncurrentVersionExpiration'] = existing_rule['NoncurrentVersionExpiration']
-        lifecycle_obj['Rules'].append(new_rule)
+    if existing_rule["Status"] != new_rule["Status"]:
+        if not new_rule.get("Transitions") and existing_rule.get("Transitions"):
+            new_rule["Transitions"] = existing_rule["Transitions"]
+        if not new_rule.get("Expiration") and existing_rule.get("Expiration"):
+            new_rule["Expiration"] = existing_rule["Expiration"]
+        if not new_rule.get("NoncurrentVersionExpiration") and existing_rule.get("NoncurrentVersionExpiration"):
+            new_rule["NoncurrentVersionExpiration"] = existing_rule["NoncurrentVersionExpiration"]
+        lifecycle_obj["Rules"].append(new_rule)
         changed = True
         appended = True
     else:
         if not purge_transitions:
             merge_transitions(new_rule, existing_rule)
         if compare_rule(new_rule, existing_rule, purge_transitions):
-            lifecycle_obj['Rules'].append(new_rule)
+            lifecycle_obj["Rules"].append(new_rule)
             appended = True
         else:
-            lifecycle_obj['Rules'].append(new_rule)
+            lifecycle_obj["Rules"].append(new_rule)
             changed = True
             appended = True
     return changed, appended
@@ -415,24 +429,23 @@ def compare_and_remove_rule(current_lifecycle_rules, rule_id=None, prefix=None):
     # If an ID exists, use that otherwise compare based on prefix
     if rule_id is not None:
         for existing_rule in current_lifecycle_rules:
-            if rule_id == existing_rule['ID']:
+            if rule_id == existing_rule["ID"]:
                 # We're not keeping the rule (i.e. deleting) so mark as changed
                 changed = True
             else:
-                lifecycle_configuration['Rules'].append(existing_rule)
+                lifecycle_configuration["Rules"].append(existing_rule)
     else:
         for existing_rule in current_lifecycle_rules:
-            if prefix == existing_rule['Filter'].get('Prefix', ''):
+            if prefix == existing_rule["Filter"].get("Prefix", ""):
                 # We're not keeping the rule (i.e. deleting) so mark as changed
                 changed = True
             else:
-                lifecycle_configuration['Rules'].append(existing_rule)
+                lifecycle_configuration["Rules"].append(existing_rule)
 
     return changed, lifecycle_configuration
 
 
 def compare_rule(new_rule, old_rule, purge_transitions):
-
     # Copy objects
     rule1 = deepcopy(new_rule)
     rule2 = deepcopy(old_rule)
@@ -440,10 +453,10 @@ def compare_rule(new_rule, old_rule, purge_transitions):
     if purge_transitions:
         return rule1 == rule2
     else:
-        transitions1 = rule1.pop('Transitions', [])
-        transitions2 = rule2.pop('Transitions', [])
-        noncurrent_transtions1 = rule1.pop('NoncurrentVersionTransitions', [])
-        noncurrent_transtions2 = rule2.pop('NoncurrentVersionTransitions', [])
+        transitions1 = rule1.pop("Transitions", [])
+        transitions2 = rule2.pop("Transitions", [])
+        noncurrent_transtions1 = rule1.pop("NoncurrentVersionTransitions", [])
+        noncurrent_transtions2 = rule2.pop("NoncurrentVersionTransitions", [])
         if rule1 != rule2:
             return False
         for transition in transitions1:
@@ -461,38 +474,39 @@ def merge_transitions(updated_rule, updating_rule):
     # in updating_rule to updated_rule
     updated_transitions = {}
     updating_transitions = {}
-    for transition in updated_rule.get('Transitions', []):
-        updated_transitions[transition['StorageClass']] = transition
-    for transition in updating_rule.get('Transitions', []):
-        updating_transitions[transition['StorageClass']] = transition
+    for transition in updated_rule.get("Transitions", []):
+        updated_transitions[transition["StorageClass"]] = transition
+    for transition in updating_rule.get("Transitions", []):
+        updating_transitions[transition["StorageClass"]] = transition
     for storage_class, transition in updating_transitions.items():
         if updated_transitions.get(storage_class) is None:
-            updated_rule['Transitions'].append(transition)
+            updated_rule["Transitions"].append(transition)
 
 
 def create_lifecycle_rule(client, module):
-
     name = module.params.get("name")
     wait = module.params.get("wait")
     changed = False
 
     old_lifecycle_rules = fetch_rules(client, module, name)
     new_rule = build_rule(client, module)
-    (changed, lifecycle_configuration) = compare_and_update_configuration(client, module,
-                                                                          old_lifecycle_rules,
-                                                                          new_rule)
+    (changed, lifecycle_configuration) = compare_and_update_configuration(client, module, old_lifecycle_rules, new_rule)
     if changed:
         # Write lifecycle to bucket
         try:
             client.put_bucket_lifecycle_configuration(
-                aws_retry=True,
-                Bucket=name,
-                LifecycleConfiguration=lifecycle_configuration)
-        except is_boto3_error_message('At least one action needs to be specified in a rule'):
+                aws_retry=True, Bucket=name, LifecycleConfiguration=lifecycle_configuration
+            )
+        except is_boto3_error_message("At least one action needs to be specified in a rule"):
             # Amazon interpretted this as not changing anything
             changed = False
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, lifecycle_configuration=lifecycle_configuration, name=name, old_lifecycle_rules=old_lifecycle_rules)
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(
+                e, lifecycle_configuration=lifecycle_configuration, name=name, old_lifecycle_rules=old_lifecycle_rules
+            )
 
         _changed = changed
         _retries = 10
@@ -505,9 +519,7 @@ def create_lifecycle_rule(client, module):
             time.sleep(5)
             _retries -= 1
             new_rules = fetch_rules(client, module, name)
-            (_changed, lifecycle_configuration) = compare_and_update_configuration(client, module,
-                                                                                   new_rules,
-                                                                                   new_rule)
+            (_changed, lifecycle_configuration) = compare_and_update_configuration(client, module, new_rules, new_rule)
             if not _changed:
                 _not_changed_cnt -= 1
                 _changed = True
@@ -518,13 +530,17 @@ def create_lifecycle_rule(client, module):
 
     new_rules = fetch_rules(client, module, name)
 
-    module.exit_json(changed=changed, new_rule=new_rule, rules=new_rules,
-                     old_rules=old_lifecycle_rules, _retries=_retries,
-                     _config=lifecycle_configuration)
+    module.exit_json(
+        changed=changed,
+        new_rule=new_rule,
+        rules=new_rules,
+        old_rules=old_lifecycle_rules,
+        _retries=_retries,
+        _config=lifecycle_configuration,
+    )
 
 
 def destroy_lifecycle_rule(client, module):
-
     name = module.params.get("name")
     prefix = module.params.get("prefix")
     rule_id = module.params.get("rule_id")
@@ -540,11 +556,10 @@ def destroy_lifecycle_rule(client, module):
     if changed:
         # Write lifecycle to bucket or, if there no rules left, delete lifecycle configuration
         try:
-            if lifecycle_obj['Rules']:
+            if lifecycle_obj["Rules"]:
                 client.put_bucket_lifecycle_configuration(
-                    aws_retry=True,
-                    Bucket=name,
-                    LifecycleConfiguration=lifecycle_obj)
+                    aws_retry=True, Bucket=name, LifecycleConfiguration=lifecycle_obj
+                )
             elif current_lifecycle_rules:
                 changed = True
                 client.delete_bucket_lifecycle(aws_retry=True, Bucket=name)
@@ -573,33 +588,32 @@ def destroy_lifecycle_rule(client, module):
 
     new_rules = fetch_rules(client, module, name)
 
-    module.exit_json(changed=changed, rules=new_rules, old_rules=current_lifecycle_rules,
-                     _retries=_retries)
+    module.exit_json(changed=changed, rules=new_rules, old_rules=current_lifecycle_rules, _retries=_retries)
 
 
 def main():
-    s3_storage_class = ['glacier', 'onezone_ia', 'standard_ia', 'intelligent_tiering', 'deep_archive']
+    s3_storage_class = ["glacier", "onezone_ia", "standard_ia", "intelligent_tiering", "deep_archive"]
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        abort_incomplete_multipart_upload_days=dict(type='int'),
-        expiration_days=dict(type='int'),
+        name=dict(required=True, type="str"),
+        abort_incomplete_multipart_upload_days=dict(type="int"),
+        expiration_days=dict(type="int"),
         expiration_date=dict(),
-        expire_object_delete_marker=dict(type='bool'),
-        noncurrent_version_expiration_days=dict(type='int'),
-        noncurrent_version_keep_newer=dict(type='int'),
-        noncurrent_version_storage_class=dict(default='glacier', type='str', choices=s3_storage_class),
-        noncurrent_version_transition_days=dict(type='int'),
-        noncurrent_version_transitions=dict(type='list', elements='dict'),
+        expire_object_delete_marker=dict(type="bool"),
+        noncurrent_version_expiration_days=dict(type="int"),
+        noncurrent_version_keep_newer=dict(type="int"),
+        noncurrent_version_storage_class=dict(default="glacier", type="str", choices=s3_storage_class),
+        noncurrent_version_transition_days=dict(type="int"),
+        noncurrent_version_transitions=dict(type="list", elements="dict"),
         prefix=dict(),
         rule_id=dict(),
-        state=dict(default='present', choices=['present', 'absent']),
-        status=dict(default='enabled', choices=['enabled', 'disabled']),
-        storage_class=dict(default='glacier', type='str', choices=s3_storage_class),
-        transition_days=dict(type='int'),
+        state=dict(default="present", choices=["present", "absent"]),
+        status=dict(default="enabled", choices=["enabled", "disabled"]),
+        storage_class=dict(default="glacier", type="str", choices=s3_storage_class),
+        transition_days=dict(type="int"),
         transition_date=dict(),
-        transitions=dict(type='list', elements='dict'),
-        purge_transitions=dict(default=True, type='bool'),
-        wait=dict(type='bool', default=False)
+        transitions=dict(type="list", elements="dict"),
+        purge_transitions=dict(default=True, type="bool"),
+        wait=dict(type="bool", default=False),
     )
 
     module = AnsibleAWSModule(
@@ -618,7 +632,7 @@ def main():
         },
     )
 
-    client = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("s3", retry_decorator=AWSRetry.jittered_backoff())
 
     expiration_date = module.params.get("expiration_date")
     transition_date = module.params.get("transition_date")
@@ -626,43 +640,51 @@ def main():
 
     if module.params.get("noncurrent_version_keep_newer"):
         module.require_botocore_at_least(
-            "1.23.12",
-            reason="to set number of versions to keep with noncurrent_version_keep_newer"
+            "1.23.12", reason="to set number of versions to keep with noncurrent_version_keep_newer"
         )
 
-    if state == 'present' and module.params["status"] == "enabled":  # allow deleting/disabling a rule by id/prefix
-
-        required_when_present = ('abort_incomplete_multipart_upload_days',
-                                 'expiration_date', 'expiration_days', 'expire_object_delete_marker',
-                                 'transition_date', 'transition_days', 'transitions',
-                                 'noncurrent_version_expiration_days',
-                                 'noncurrent_version_keep_newer',
-                                 'noncurrent_version_transition_days',
-                                 'noncurrent_version_transitions')
+    if state == "present" and module.params["status"] == "enabled":  # allow deleting/disabling a rule by id/prefix
+        required_when_present = (
+            "abort_incomplete_multipart_upload_days",
+            "expiration_date",
+            "expiration_days",
+            "expire_object_delete_marker",
+            "transition_date",
+            "transition_days",
+            "transitions",
+            "noncurrent_version_expiration_days",
+            "noncurrent_version_keep_newer",
+            "noncurrent_version_transition_days",
+            "noncurrent_version_transitions",
+        )
         for param in required_when_present:
             if module.params.get(param) is None:
                 break
         else:
-            msg = "one of the following is required when 'state' is 'present': %s" % ', '.join(required_when_present)
+            msg = "one of the following is required when 'state' is 'present': %s" % ", ".join(required_when_present)
             module.fail_json(msg=msg)
 
     # If dates have been set, make sure they're in a valid format
     if expiration_date:
         expiration_date = parse_date(expiration_date)
         if expiration_date is None:
-            module.fail_json(msg="expiration_date is not a valid ISO-8601 format."
-                             "  The time must be midnight and a timezone of GMT must be included")
+            module.fail_json(
+                msg="expiration_date is not a valid ISO-8601 format."
+                "  The time must be midnight and a timezone of GMT must be included"
+            )
     if transition_date:
         transition_date = parse_date(transition_date)
         if transition_date is None:
-            module.fail_json(msg="transition_date is not a valid ISO-8601 format."
-                             "  The time must be midnight and a timezone of GMT must be included")
+            module.fail_json(
+                msg="transition_date is not a valid ISO-8601 format."
+                "  The time must be midnight and a timezone of GMT must be included"
+            )
 
-    if state == 'present':
+    if state == "present":
         create_lifecycle_rule(client, module)
-    elif state == 'absent':
+    elif state == "absent":
         destroy_lifecycle_rule(client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

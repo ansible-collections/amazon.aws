@@ -201,16 +201,15 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def find_instance_info(module, client, instance_name, fail_if_not_found=False):
-
     try:
         res = client.get_instance(instanceName=instance_name)
-    except is_boto3_error_code('NotFoundException') as e:
+    except is_boto3_error_code("NotFoundException") as e:
         if fail_if_not_found:
             module.fail_json_aws(e)
         return None
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
-    return res['instance']
+    return res["instance"]
 
 
 def wait_for_instance_state(module, client, instance_name, states):
@@ -218,19 +217,21 @@ def wait_for_instance_state(module, client, instance_name, states):
     `states` is a list of instance states that we are waiting for.
     """
 
-    wait_timeout = module.params.get('wait_timeout')
+    wait_timeout = module.params.get("wait_timeout")
     wait_max = time.time() + wait_timeout
     while wait_max > time.time():
         try:
             instance = find_instance_info(module, client, instance_name)
-            if instance['state']['name'] in states:
+            if instance["state"]["name"] in states:
                 break
             time.sleep(5)
         except botocore.exceptions.ClientError as e:
             module.fail_json_aws(e)
     else:
-        module.fail_json(msg='Timed out waiting for instance "{0}" to get to one of the following states -'
-                             ' {1}'.format(instance_name, states))
+        module.fail_json(
+            msg='Timed out waiting for instance "{0}" to get to one of the following states -'
+            " {1}".format(instance_name, states)
+        )
 
 
 def update_public_ports(module, client, instance_name):
@@ -244,7 +245,6 @@ def update_public_ports(module, client, instance_name):
 
 
 def create_or_update_instance(module, client, instance_name):
-
     inst = find_instance_info(module, client, instance_name)
 
     if not inst:
@@ -256,18 +256,18 @@ def create_or_update_instance(module, client, instance_name):
             "userData": module.params.get("user_data"),
         }
 
-        key_pair_name = module.params.get('key_pair_name')
+        key_pair_name = module.params.get("key_pair_name")
         if key_pair_name:
-            create_params['keyPairName'] = key_pair_name
+            create_params["keyPairName"] = key_pair_name
 
         try:
             client.create_instances(**create_params)
         except botocore.exceptions.ClientError as e:
             module.fail_json_aws(e)
 
-        wait = module.params.get('wait')
+        wait = module.params.get("wait")
         if wait:
-            desired_states = ['running']
+            desired_states = ["running"]
             wait_for_instance_state(module, client, instance_name, desired_states)
 
     if module.params.get("public_ports") is not None:
@@ -281,7 +281,6 @@ def create_or_update_instance(module, client, instance_name):
 
 
 def delete_instance(module, client, instance_name):
-
     changed = False
 
     inst = find_instance_info(module, client, instance_name)
@@ -289,7 +288,7 @@ def delete_instance(module, client, instance_name):
         module.exit_json(changed=changed, instance={})
 
     # Wait for instance to exit transition state before deleting
-    desired_states = ['running', 'stopped']
+    desired_states = ["running", "stopped"]
     wait_for_instance_state(module, client, instance_name, desired_states)
 
     try:
@@ -330,13 +329,13 @@ def start_or_stop_instance(module, client, instance_name, state):
     inst = find_instance_info(module, client, instance_name, fail_if_not_found=True)
 
     # Wait for instance to exit transition state before state change
-    desired_states = ['running', 'stopped']
+    desired_states = ["running", "stopped"]
     wait_for_instance_state(module, client, instance_name, desired_states)
 
     # Try state change
-    if inst and inst['state']['name'] != state:
+    if inst and inst["state"]["name"] != state:
         try:
-            if state == 'running':
+            if state == "running":
                 client.start_instance(instanceName=instance_name)
             else:
                 client.stop_instance(instanceName=instance_name)
@@ -346,7 +345,7 @@ def start_or_stop_instance(module, client, instance_name, state):
         # Grab current instance info
         inst = find_instance_info(module, client, instance_name)
 
-    wait = module.params.get('wait')
+    wait = module.params.get("wait")
     if wait:
         desired_states = [state]
         wait_for_instance_state(module, client, instance_name, desired_states)
@@ -356,7 +355,6 @@ def start_or_stop_instance(module, client, instance_name, state):
 
 
 def main():
-
     argument_spec = dict(
         name=dict(type="str", required=True),
         state=dict(
@@ -383,23 +381,24 @@ def main():
         ),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[['state', 'present', ('zone', 'blueprint_id', 'bundle_id')]])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec, required_if=[["state", "present", ("zone", "blueprint_id", "bundle_id")]]
+    )
 
-    client = module.client('lightsail')
+    client = module.client("lightsail")
 
-    name = module.params.get('name')
-    state = module.params.get('state')
+    name = module.params.get("name")
+    state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_or_update_instance(module, client, name)
-    elif state == 'absent':
+    elif state == "absent":
         delete_instance(module, client, name)
-    elif state in ('running', 'stopped'):
+    elif state in ("running", "stopped"):
         start_or_stop_instance(module, client, name, state)
-    elif state in ('restarted', 'rebooted'):
+    elif state in ("restarted", "rebooted"):
         restart_instance(module, client, name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

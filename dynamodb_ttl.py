@@ -71,48 +71,48 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def get_current_ttl_state(c, table_name):
-    '''Fetch the state dict for a table.'''
+    """Fetch the state dict for a table."""
     current_state = c.describe_time_to_live(TableName=table_name)
-    return current_state.get('TimeToLiveDescription')
+    return current_state.get("TimeToLiveDescription")
 
 
 def does_state_need_changing(attribute_name, desired_state, current_spec):
-    '''Run checks to see if the table needs to be modified. Basically a dirty check.'''
+    """Run checks to see if the table needs to be modified. Basically a dirty check."""
     if not current_spec:
         # we don't have an entry (or a table?)
         return True
 
-    if desired_state.lower() == 'enable' and current_spec.get('TimeToLiveStatus') not in ['ENABLING', 'ENABLED']:
+    if desired_state.lower() == "enable" and current_spec.get("TimeToLiveStatus") not in ["ENABLING", "ENABLED"]:
         return True
-    if desired_state.lower() == 'disable' and current_spec.get('TimeToLiveStatus') not in ['DISABLING', 'DISABLED']:
+    if desired_state.lower() == "disable" and current_spec.get("TimeToLiveStatus") not in ["DISABLING", "DISABLED"]:
         return True
-    if attribute_name != current_spec.get('AttributeName'):
+    if attribute_name != current_spec.get("AttributeName"):
         return True
 
     return False
 
 
 def set_ttl_state(c, table_name, state, attribute_name):
-    '''Set our specification. Returns the update_time_to_live specification dict,
-       which is different than the describe_* call.'''
+    """Set our specification. Returns the update_time_to_live specification dict,
+    which is different than the describe_* call."""
     is_enabled = False
-    if state.lower() == 'enable':
+    if state.lower() == "enable":
         is_enabled = True
 
     ret = c.update_time_to_live(
         TableName=table_name,
         TimeToLiveSpecification={
-            'Enabled': is_enabled,
-            'AttributeName': attribute_name
-        }
+            "Enabled": is_enabled,
+            "AttributeName": attribute_name,
+        },
     )
 
-    return ret.get('TimeToLiveSpecification')
+    return ret.get("TimeToLiveSpecification")
 
 
 def main():
     argument_spec = dict(
-        state=dict(choices=['enable', 'disable']),
+        state=dict(choices=["enable", "disable"]),
         table_name=dict(required=True),
         attribute_name=dict(required=True),
     )
@@ -121,26 +121,28 @@ def main():
     )
 
     try:
-        dbclient = module.client('dynamodb')
+        dbclient = module.client("dynamodb")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    result = {'changed': False}
-    state = module.params['state']
+    result = {"changed": False}
+    state = module.params["state"]
 
     # wrap all our calls to catch the standard exceptions. We don't pass `module` in to the
     # methods so it's easier to do here.
     try:
-        current_state = get_current_ttl_state(dbclient, module.params['table_name'])
+        current_state = get_current_ttl_state(dbclient, module.params["table_name"])
 
-        if does_state_need_changing(module.params['attribute_name'], module.params['state'], current_state):
+        if does_state_need_changing(module.params["attribute_name"], module.params["state"], current_state):
             # changes needed
-            new_state = set_ttl_state(dbclient, module.params['table_name'], module.params['state'], module.params['attribute_name'])
-            result['current_status'] = new_state
-            result['changed'] = True
+            new_state = set_ttl_state(
+                dbclient, module.params["table_name"], module.params["state"], module.params["attribute_name"]
+            )
+            result["current_status"] = new_state
+            result["changed"] = True
         else:
             # no changes needed
-            result['current_status'] = current_state
+            result["current_status"] = current_state
 
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e, msg="Failed to get or update ttl state")
@@ -152,5 +154,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

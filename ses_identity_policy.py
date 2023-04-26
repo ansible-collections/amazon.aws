@@ -101,17 +101,17 @@ def get_identity_policy(connection, module, identity, policy_name):
     try:
         response = connection.get_identity_policies(Identity=identity, PolicyNames=[policy_name], aws_retry=True)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to retrieve identity policy {policy}'.format(policy=policy_name))
-    policies = response['Policies']
+        module.fail_json_aws(e, msg="Failed to retrieve identity policy {policy}".format(policy=policy_name))
+    policies = response["Policies"]
     if policy_name in policies:
         return policies[policy_name]
     return None
 
 
 def create_or_update_identity_policy(connection, module):
-    identity = module.params.get('identity')
-    policy_name = module.params.get('policy_name')
-    required_policy = module.params.get('policy')
+    identity = module.params.get("identity")
+    policy_name = module.params.get("policy_name")
+    required_policy = module.params.get("policy")
     required_policy_dict = json.loads(required_policy)
 
     changed = False
@@ -121,9 +121,11 @@ def create_or_update_identity_policy(connection, module):
         changed = True
         try:
             if not module.check_mode:
-                connection.put_identity_policy(Identity=identity, PolicyName=policy_name, Policy=required_policy, aws_retry=True)
+                connection.put_identity_policy(
+                    Identity=identity, PolicyName=policy_name, Policy=required_policy, aws_retry=True
+                )
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg='Failed to put identity policy {policy}'.format(policy=policy_name))
+            module.fail_json_aws(e, msg="Failed to put identity policy {policy}".format(policy=policy_name))
 
     # Load the list of applied policies to include in the response.
     # In principle we should be able to just return the response, but given
@@ -134,9 +136,9 @@ def create_or_update_identity_policy(connection, module):
     #
     # As a nice side benefit this also means the return is correct in check mode
     try:
-        policies_present = connection.list_identity_policies(Identity=identity, aws_retry=True)['PolicyNames']
+        policies_present = connection.list_identity_policies(Identity=identity, aws_retry=True)["PolicyNames"]
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to list identity policies')
+        module.fail_json_aws(e, msg="Failed to list identity policies")
     if policy_name is not None and policy_name not in policies_present:
         policies_present = list(policies_present)
         policies_present.append(policy_name)
@@ -147,20 +149,20 @@ def create_or_update_identity_policy(connection, module):
 
 
 def delete_identity_policy(connection, module):
-    identity = module.params.get('identity')
-    policy_name = module.params.get('policy_name')
+    identity = module.params.get("identity")
+    policy_name = module.params.get("policy_name")
 
     changed = False
     try:
-        policies_present = connection.list_identity_policies(Identity=identity, aws_retry=True)['PolicyNames']
+        policies_present = connection.list_identity_policies(Identity=identity, aws_retry=True)["PolicyNames"]
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to list identity policies')
+        module.fail_json_aws(e, msg="Failed to list identity policies")
     if policy_name in policies_present:
         try:
             if not module.check_mode:
                 connection.delete_identity_policy(Identity=identity, PolicyName=policy_name, aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg='Failed to delete identity policy {policy}'.format(policy=policy_name))
+            module.fail_json_aws(e, msg="Failed to delete identity policy {policy}".format(policy=policy_name))
         changed = True
         policies_present = list(policies_present)
         policies_present.remove(policy_name)
@@ -174,12 +176,12 @@ def delete_identity_policy(connection, module):
 def main():
     module = AnsibleAWSModule(
         argument_spec={
-            'identity': dict(required=True, type='str'),
-            'state': dict(default='present', choices=['present', 'absent']),
-            'policy_name': dict(required=True, type='str'),
-            'policy': dict(type='json', default=None),
+            "identity": dict(required=True, type="str"),
+            "state": dict(default="present", choices=["present", "absent"]),
+            "policy_name": dict(required=True, type="str"),
+            "policy": dict(type="json", default=None),
         },
-        required_if=[['state', 'present', ['policy']]],
+        required_if=[["state", "present", ["policy"]]],
         supports_check_mode=True,
     )
 
@@ -187,15 +189,15 @@ def main():
     # Docs say 1 call per second. This shouldn't actually be a big problem for normal usage, but
     # the ansible build runs multiple instances of the test in parallel that's caused throttling
     # failures so apply a jittered backoff to call SES calls.
-    connection = module.client('ses', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ses", retry_decorator=AWSRetry.jittered_backoff())
 
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_or_update_identity_policy(connection, module)
     else:
         delete_identity_policy(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

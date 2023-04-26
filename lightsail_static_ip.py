@@ -76,25 +76,23 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def find_static_ip_info(module, client, static_ip_name, fail_if_not_found=False):
-
     try:
         res = client.get_static_ip(staticIpName=static_ip_name)
-    except is_boto3_error_code('NotFoundException') as e:
+    except is_boto3_error_code("NotFoundException") as e:
         if fail_if_not_found:
             module.fail_json_aws(e)
         return None
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
-    return res['staticIp']
+    return res["staticIp"]
 
 
 def create_static_ip(module, client, static_ip_name):
-
     inst = find_static_ip_info(module, client, static_ip_name)
     if inst:
         module.exit_json(changed=False, static_ip=camel_dict_to_snake_dict(inst))
     else:
-        create_params = {'staticIpName': static_ip_name}
+        create_params = {"staticIpName": static_ip_name}
 
         try:
             client.allocate_static_ip(**create_params)
@@ -107,7 +105,6 @@ def create_static_ip(module, client, static_ip_name):
 
 
 def delete_static_ip(module, client, static_ip_name):
-
     inst = find_static_ip_info(module, client, static_ip_name)
     if inst is None:
         module.exit_json(changed=False, static_ip={})
@@ -123,24 +120,23 @@ def delete_static_ip(module, client, static_ip_name):
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
+        name=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
-    client = module.client('lightsail')
+    client = module.client("lightsail")
 
-    name = module.params.get('name')
-    state = module.params.get('state')
+    name = module.params.get("name")
+    state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_static_ip(module, client, name)
-    elif state == 'absent':
+    elif state == "absent":
         delete_static_ip(module, client, name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

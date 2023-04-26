@@ -105,50 +105,53 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def resource_exists(client, module, params):
     try:
         aggregator = client.describe_configuration_aggregators(
-            ConfigurationAggregatorNames=[params['ConfigurationAggregatorName']]
+            ConfigurationAggregatorNames=[params["ConfigurationAggregatorName"]]
         )
-        return aggregator['ConfigurationAggregators'][0]
-    except is_boto3_error_code('NoSuchConfigurationAggregatorException'):
+        return aggregator["ConfigurationAggregators"][0]
+    except is_boto3_error_code("NoSuchConfigurationAggregatorException"):
         return
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
 def create_resource(client, module, params, result):
     try:
         client.put_configuration_aggregator(
-            ConfigurationAggregatorName=params['ConfigurationAggregatorName'],
-            AccountAggregationSources=params['AccountAggregationSources'],
-            OrganizationAggregationSource=params['OrganizationAggregationSource']
+            ConfigurationAggregatorName=params["ConfigurationAggregatorName"],
+            AccountAggregationSources=params["AccountAggregationSources"],
+            OrganizationAggregationSource=params["OrganizationAggregationSource"],
         )
-        result['changed'] = True
-        result['aggregator'] = camel_dict_to_snake_dict(resource_exists(client, module, params))
+        result["changed"] = True
+        result["aggregator"] = camel_dict_to_snake_dict(resource_exists(client, module, params))
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't create AWS Config configuration aggregator")
 
 
 def update_resource(client, module, params, result):
-    result['changed'] = False
+    result["changed"] = False
 
     current_params = client.describe_configuration_aggregators(
-        ConfigurationAggregatorNames=[params['ConfigurationAggregatorName']]
-    )['ConfigurationAggregators'][0]
+        ConfigurationAggregatorNames=[params["ConfigurationAggregatorName"]]
+    )["ConfigurationAggregators"][0]
 
-    if params['AccountAggregationSources'] != current_params.get('AccountAggregationSources', []):
-        result['changed'] = True
+    if params["AccountAggregationSources"] != current_params.get("AccountAggregationSources", []):
+        result["changed"] = True
 
-    if params['OrganizationAggregationSource'] != current_params.get('OrganizationAggregationSource', {}):
-        result['changed'] = True
+    if params["OrganizationAggregationSource"] != current_params.get("OrganizationAggregationSource", {}):
+        result["changed"] = True
 
-    if result['changed']:
+    if result["changed"]:
         try:
             client.put_configuration_aggregator(
-                ConfigurationAggregatorName=params['ConfigurationAggregatorName'],
-                AccountAggregationSources=params['AccountAggregationSources'],
-                OrganizationAggregationSource=params['OrganizationAggregationSource']
+                ConfigurationAggregatorName=params["ConfigurationAggregatorName"],
+                AccountAggregationSources=params["AccountAggregationSources"],
+                OrganizationAggregationSource=params["OrganizationAggregationSource"],
             )
-            result['aggregator'] = camel_dict_to_snake_dict(resource_exists(client, module, params))
+            result["aggregator"] = camel_dict_to_snake_dict(resource_exists(client, module, params))
             return result
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create AWS Config configuration aggregator")
@@ -156,10 +159,8 @@ def update_resource(client, module, params, result):
 
 def delete_resource(client, module, params, result):
     try:
-        client.delete_configuration_aggregator(
-            ConfigurationAggregatorName=params['ConfigurationAggregatorName']
-        )
-        result['changed'] = True
+        client.delete_configuration_aggregator(ConfigurationAggregatorName=params["ConfigurationAggregatorName"])
+        result["changed"] = True
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't delete AWS Config configuration aggregator")
@@ -168,66 +169,64 @@ def delete_resource(client, module, params, result):
 def main():
     module = AnsibleAWSModule(
         argument_spec={
-            'name': dict(type='str', required=True),
-            'state': dict(type='str', choices=['present', 'absent'], default='present'),
-            'account_sources': dict(type='list', required=True, elements='dict'),
-            'organization_source': dict(type='dict', required=True)
+            "name": dict(type="str", required=True),
+            "state": dict(type="str", choices=["present", "absent"], default="present"),
+            "account_sources": dict(type="list", required=True, elements="dict"),
+            "organization_source": dict(type="dict", required=True),
         },
         supports_check_mode=False,
     )
 
-    result = {
-        'changed': False
-    }
+    result = {"changed": False}
 
-    name = module.params.get('name')
-    state = module.params.get('state')
+    name = module.params.get("name")
+    state = module.params.get("state")
 
     params = {}
     if name:
-        params['ConfigurationAggregatorName'] = name
-    params['AccountAggregationSources'] = []
-    if module.params.get('account_sources'):
-        for i in module.params.get('account_sources'):
+        params["ConfigurationAggregatorName"] = name
+    params["AccountAggregationSources"] = []
+    if module.params.get("account_sources"):
+        for i in module.params.get("account_sources"):
             tmp_dict = {}
-            if i.get('account_ids'):
-                tmp_dict['AccountIds'] = i.get('account_ids')
-            if i.get('aws_regions'):
-                tmp_dict['AwsRegions'] = i.get('aws_regions')
-            if i.get('all_aws_regions') is not None:
-                tmp_dict['AllAwsRegions'] = i.get('all_aws_regions')
-            params['AccountAggregationSources'].append(tmp_dict)
-    if module.params.get('organization_source'):
-        params['OrganizationAggregationSource'] = {}
-        if module.params.get('organization_source').get('role_arn'):
-            params['OrganizationAggregationSource'].update({
-                'RoleArn': module.params.get('organization_source').get('role_arn')
-            })
-        if module.params.get('organization_source').get('aws_regions'):
-            params['OrganizationAggregationSource'].update({
-                'AwsRegions': module.params.get('organization_source').get('aws_regions')
-            })
-        if module.params.get('organization_source').get('all_aws_regions') is not None:
-            params['OrganizationAggregationSource'].update({
-                'AllAwsRegions': module.params.get('organization_source').get('all_aws_regions')
-            })
+            if i.get("account_ids"):
+                tmp_dict["AccountIds"] = i.get("account_ids")
+            if i.get("aws_regions"):
+                tmp_dict["AwsRegions"] = i.get("aws_regions")
+            if i.get("all_aws_regions") is not None:
+                tmp_dict["AllAwsRegions"] = i.get("all_aws_regions")
+            params["AccountAggregationSources"].append(tmp_dict)
+    if module.params.get("organization_source"):
+        params["OrganizationAggregationSource"] = {}
+        if module.params.get("organization_source").get("role_arn"):
+            params["OrganizationAggregationSource"].update(
+                {"RoleArn": module.params.get("organization_source").get("role_arn")}
+            )
+        if module.params.get("organization_source").get("aws_regions"):
+            params["OrganizationAggregationSource"].update(
+                {"AwsRegions": module.params.get("organization_source").get("aws_regions")}
+            )
+        if module.params.get("organization_source").get("all_aws_regions") is not None:
+            params["OrganizationAggregationSource"].update(
+                {"AllAwsRegions": module.params.get("organization_source").get("all_aws_regions")}
+            )
 
-    client = module.client('config', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("config", retry_decorator=AWSRetry.jittered_backoff())
 
     resource_status = resource_exists(client, module, params)
 
-    if state == 'present':
+    if state == "present":
         if not resource_status:
             create_resource(client, module, params, result)
         else:
             update_resource(client, module, params, result)
 
-    if state == 'absent':
+    if state == "absent":
         if resource_status:
             delete_resource(client, module, params, result)
 
-    module.exit_json(changed=result['changed'])
+    module.exit_json(changed=result["changed"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

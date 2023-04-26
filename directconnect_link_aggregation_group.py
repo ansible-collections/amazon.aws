@@ -185,8 +185,8 @@ def lag_status(client, lag_id):
 
 
 def lag_exists(client, lag_id=None, lag_name=None, verify=True):
-    """ If verify=True, returns the LAG ID or None
-        If verify=False, returns the LAG's data (or an empty dict)
+    """If verify=True, returns the LAG ID or None
+    If verify=False, returns the LAG's data (or an empty dict)
     """
     try:
         if lag_id:
@@ -200,26 +200,24 @@ def lag_exists(client, lag_id=None, lag_name=None, verify=True):
             return {}
         else:
             failed_op = "Failed to describe DirectConnect link aggregation groups."
-        raise DirectConnectError(msg=failed_op,
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(msg=failed_op, last_traceback=traceback.format_exc(), exception=e)
 
     match = []  # List of LAG IDs that are exact matches
     lag = []  # List of LAG data that are exact matches
 
     # look for matching connections
-    if len(response.get('lags', [])) == 1 and lag_id:
-        if response['lags'][0]['lagState'] != 'deleted':
-            match.append(response['lags'][0]['lagId'])
-            lag.append(response['lags'][0])
+    if len(response.get("lags", [])) == 1 and lag_id:
+        if response["lags"][0]["lagState"] != "deleted":
+            match.append(response["lags"][0]["lagId"])
+            lag.append(response["lags"][0])
     else:
-        for each in response.get('lags', []):
-            if each['lagState'] != 'deleted':
+        for each in response.get("lags", []):
+            if each["lagState"] != "deleted":
                 if not lag_id:
-                    if lag_name == each['lagName']:
-                        match.append(each['lagId'])
+                    if lag_name == each["lagName"]:
+                        match.append(each["lagId"])
                 else:
-                    match.append(each['lagId'])
+                    match.append(each["lagId"])
 
     # verifying if the connections exists; if true, return connection identifier, otherwise return False
     if verify and len(match) == 1:
@@ -237,36 +235,41 @@ def lag_exists(client, lag_id=None, lag_name=None, verify=True):
 
 def create_lag(client, num_connections, location, bandwidth, name, connection_id):
     if not name:
-        raise DirectConnectError(msg="Failed to create a Direct Connect link aggregation group: name required.",
-                                 last_traceback=None,
-                                 exception="")
+        raise DirectConnectError(
+            msg="Failed to create a Direct Connect link aggregation group: name required.",
+            last_traceback=None,
+            exception="",
+        )
 
-    parameters = dict(numberOfConnections=num_connections,
-                      location=location,
-                      connectionsBandwidth=bandwidth,
-                      lagName=name)
+    parameters = dict(
+        numberOfConnections=num_connections, location=location, connectionsBandwidth=bandwidth, lagName=name
+    )
     if connection_id:
         parameters.update(connectionId=connection_id)
     try:
         lag = client.create_lag(**parameters)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to create DirectConnect link aggregation group {0}".format(name),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to create DirectConnect link aggregation group {0}".format(name),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
-    return lag['lagId']
+    return lag["lagId"]
 
 
 def delete_lag(client, lag_id):
     try:
         client.delete_lag(lagId=lag_id)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to delete Direct Connect link aggregation group {0}.".format(lag_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to delete Direct Connect link aggregation group {0}.".format(lag_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
 
-@AWSRetry.jittered_backoff(retries=5, delay=2, backoff=2.0, catch_extra_error_codes=['DirectConnectClientException'])
+@AWSRetry.jittered_backoff(retries=5, delay=2, backoff=2.0, catch_extra_error_codes=["DirectConnectClientException"])
 def _update_lag(client, lag_id, lag_name, min_links):
     params = {}
     if min_links:
@@ -283,9 +286,9 @@ def update_lag(client, lag_id, lag_name, min_links, num_connections, wait, wait_
     if min_links and min_links > num_connections:
         raise DirectConnectError(
             msg="The number of connections {0} must be greater than the minimum number of links "
-                "{1} to update the LAG {2}".format(num_connections, min_links, lag_id),
+            "{1} to update the LAG {2}".format(num_connections, min_links, lag_id),
             last_traceback=None,
-            exception=None
+            exception=None,
         )
 
     while True:
@@ -295,26 +298,32 @@ def update_lag(client, lag_id, lag_name, min_links, num_connections, wait, wait_
             if wait and time.time() - start <= wait_timeout:
                 continue
             msg = "Failed to update Direct Connect link aggregation group {0}.".format(lag_id)
-            if "MinimumLinks cannot be set higher than the number of connections" in e.response['Error']['Message']:
-                msg += "Unable to set the min number of links to {0} while the LAG connections are being requested".format(min_links)
-            raise DirectConnectError(msg=msg,
-                                     last_traceback=traceback.format_exc(),
-                                     exception=e)
+            if "MinimumLinks cannot be set higher than the number of connections" in e.response["Error"]["Message"]:
+                msg += (
+                    "Unable to set the min number of links to {0} while the LAG connections are being requested".format(
+                        min_links
+                    )
+                )
+            raise DirectConnectError(msg=msg, last_traceback=traceback.format_exc(), exception=e)
         else:
             break
 
 
 def lag_changed(current_status, name, min_links):
-    """ Determines if a modifiable link aggregation group attribute has been modified. """
-    return (name and name != current_status['lagName']) or (min_links and min_links != current_status['minimumLinks'])
+    """Determines if a modifiable link aggregation group attribute has been modified."""
+    return (name and name != current_status["lagName"]) or (min_links and min_links != current_status["minimumLinks"])
 
 
-def ensure_present(client, num_connections, lag_id, lag_name, location, bandwidth, connection_id, min_links, wait, wait_timeout):
+def ensure_present(
+    client, num_connections, lag_id, lag_name, location, bandwidth, connection_id, min_links, wait, wait_timeout
+):
     exists = lag_exists(client, lag_id, lag_name)
     if not exists and lag_id:
-        raise DirectConnectError(msg="The Direct Connect link aggregation group {0} does not exist.".format(lag_id),
-                                 last_traceback=None,
-                                 exception="")
+        raise DirectConnectError(
+            msg="The Direct Connect link aggregation group {0} does not exist.".format(lag_id),
+            last_traceback=None,
+            exception="",
+        )
 
     # the connection is found; get the latest state and see if it needs to be updated
     if exists:
@@ -336,27 +345,31 @@ def describe_virtual_interfaces(client, lag_id):
     try:
         response = client.describe_virtual_interfaces(connectionId=lag_id)
     except botocore.exceptions.ClientError as e:
-        raise DirectConnectError(msg="Failed to describe any virtual interfaces associated with LAG: {0}".format(lag_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
-    return response.get('virtualInterfaces', [])
+        raise DirectConnectError(
+            msg="Failed to describe any virtual interfaces associated with LAG: {0}".format(lag_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
+    return response.get("virtualInterfaces", [])
 
 
 def get_connections_and_virtual_interfaces(client, lag_id):
     virtual_interfaces = describe_virtual_interfaces(client, lag_id)
-    connections = lag_status(client, lag_id=lag_id).get('connections', [])
+    connections = lag_status(client, lag_id=lag_id).get("connections", [])
     return virtual_interfaces, connections
 
 
 def disassociate_vis(client, lag_id, virtual_interfaces):
     for vi in virtual_interfaces:
-        delete_virtual_interface(client, vi['virtualInterfaceId'])
+        delete_virtual_interface(client, vi["virtualInterfaceId"])
         try:
-            response = client.delete_virtual_interface(virtualInterfaceId=vi['virtualInterfaceId'])
+            response = client.delete_virtual_interface(virtualInterfaceId=vi["virtualInterfaceId"])
         except botocore.exceptions.ClientError as e:
-            raise DirectConnectError(msg="Could not delete virtual interface {0} to delete link aggregation group {1}.".format(vi, lag_id),
-                                     last_traceback=traceback.format_exc(),
-                                     exception=e)
+            raise DirectConnectError(
+                msg="Could not delete virtual interface {0} to delete link aggregation group {1}.".format(vi, lag_id),
+                last_traceback=traceback.format_exc(),
+                exception=e,
+            )
 
 
 def ensure_absent(client, lag_id, lag_name, force_delete, delete_with_disassociation, wait, wait_timeout):
@@ -370,32 +383,38 @@ def ensure_absent(client, lag_id, lag_name, force_delete, delete_with_disassocia
     virtual_interfaces, connections = get_connections_and_virtual_interfaces(client, lag_id)
 
     # If min_links is not 0, there are associated connections, or if there are virtual interfaces, ask for force_delete
-    if any((latest_status['minimumLinks'], virtual_interfaces, connections)) and not force_delete:
-        raise DirectConnectError(msg="There are a minimum number of links, hosted connections, or associated virtual interfaces for LAG {0}. "
-                                     "To force deletion of the LAG use delete_force: True (if the LAG has virtual interfaces they will be deleted). "
-                                     "Optionally, to ensure hosted connections are deleted after disassociation use delete_with_disassociation: True "
-                                     "and wait: True (as Virtual Interfaces may take a few moments to delete)".format(lag_id),
-                                 last_traceback=None,
-                                 exception=None)
+    if any((latest_status["minimumLinks"], virtual_interfaces, connections)) and not force_delete:
+        raise DirectConnectError(
+            msg="There are a minimum number of links, hosted connections, or associated virtual interfaces for LAG {0}. "
+            "To force deletion of the LAG use delete_force: True (if the LAG has virtual interfaces they will be deleted). "
+            "Optionally, to ensure hosted connections are deleted after disassociation use delete_with_disassociation: True "
+            "and wait: True (as Virtual Interfaces may take a few moments to delete)".format(lag_id),
+            last_traceback=None,
+            exception=None,
+        )
 
     # update min_links to be 0 so we can remove the LAG
     update_lag(client, lag_id, None, 0, len(connections), wait, wait_timeout)
 
     # if virtual_interfaces and not delete_vi_with_disassociation: Raise failure; can't delete while vi attached
     for connection in connections:
-        disassociate_connection_and_lag(client, connection['connectionId'], lag_id)
+        disassociate_connection_and_lag(client, connection["connectionId"], lag_id)
         if delete_with_disassociation:
-            delete_connection(client, connection['connectionId'])
+            delete_connection(client, connection["connectionId"])
 
     for vi in virtual_interfaces:
-        delete_virtual_interface(client, vi['virtualInterfaceId'])
+        delete_virtual_interface(client, vi["virtualInterfaceId"])
 
     start_time = time.time()
     while True:
         try:
             delete_lag(client, lag_id)
         except DirectConnectError as e:
-            if ('until its Virtual Interfaces are deleted' in e.exception) and (time.time() - start_time < wait_timeout) and wait:
+            if (
+                ("until its Virtual Interfaces are deleted" in e.exception)
+                and (time.time() - start_time < wait_timeout)
+                and wait
+            ):
                 continue
         else:
             return True
@@ -403,54 +422,58 @@ def ensure_absent(client, lag_id, lag_name, force_delete, delete_with_disassocia
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
+        state=dict(required=True, choices=["present", "absent"]),
         name=dict(),
         link_aggregation_group_id=dict(),
-        num_connections=dict(type='int'),
-        min_links=dict(type='int'),
+        num_connections=dict(type="int"),
+        min_links=dict(type="int"),
         location=dict(),
         bandwidth=dict(),
         connection_id=dict(),
-        delete_with_disassociation=dict(type='bool', default=False),
-        force_delete=dict(type='bool', default=False),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=120),
+        delete_with_disassociation=dict(type="bool", default=False),
+        force_delete=dict(type="bool", default=False),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=120),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_one_of=[('link_aggregation_group_id', 'name')],
-        required_if=[('state', 'present', ('location', 'bandwidth'))],
+        required_one_of=[("link_aggregation_group_id", "name")],
+        required_if=[("state", "present", ("location", "bandwidth"))],
     )
 
     try:
-        connection = module.client('directconnect')
+        connection = module.client("directconnect")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    state = module.params.get('state')
+    state = module.params.get("state")
     response = {}
     try:
-        if state == 'present':
-            changed, lag_id = ensure_present(connection,
-                                             num_connections=module.params.get("num_connections"),
-                                             lag_id=module.params.get("link_aggregation_group_id"),
-                                             lag_name=module.params.get("name"),
-                                             location=module.params.get("location"),
-                                             bandwidth=module.params.get("bandwidth"),
-                                             connection_id=module.params.get("connection_id"),
-                                             min_links=module.params.get("min_links"),
-                                             wait=module.params.get("wait"),
-                                             wait_timeout=module.params.get("wait_timeout"))
+        if state == "present":
+            changed, lag_id = ensure_present(
+                connection,
+                num_connections=module.params.get("num_connections"),
+                lag_id=module.params.get("link_aggregation_group_id"),
+                lag_name=module.params.get("name"),
+                location=module.params.get("location"),
+                bandwidth=module.params.get("bandwidth"),
+                connection_id=module.params.get("connection_id"),
+                min_links=module.params.get("min_links"),
+                wait=module.params.get("wait"),
+                wait_timeout=module.params.get("wait_timeout"),
+            )
             response = lag_status(connection, lag_id)
         elif state == "absent":
-            changed = ensure_absent(connection,
-                                    lag_id=module.params.get("link_aggregation_group_id"),
-                                    lag_name=module.params.get("name"),
-                                    force_delete=module.params.get("force_delete"),
-                                    delete_with_disassociation=module.params.get("delete_with_disassociation"),
-                                    wait=module.params.get('wait'),
-                                    wait_timeout=module.params.get('wait_timeout'))
+            changed = ensure_absent(
+                connection,
+                lag_id=module.params.get("link_aggregation_group_id"),
+                lag_name=module.params.get("name"),
+                force_delete=module.params.get("force_delete"),
+                delete_with_disassociation=module.params.get("delete_with_disassociation"),
+                wait=module.params.get("wait"),
+                wait_timeout=module.params.get("wait_timeout"),
+            )
     except DirectConnectError as e:
         if e.last_traceback:
             module.fail_json(msg=e.msg, exception=e.last_traceback, **camel_dict_to_snake_dict(e.exception))
@@ -460,5 +483,5 @@ def main():
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -158,51 +158,51 @@ def find_asg_instance_refreshes(conn, module):
             ],
             'next_token': 'string'
         }
-        """
+    """
 
-    asg_name = module.params.get('name')
-    asg_ids = module.params.get('ids')
-    asg_next_token = module.params.get('next_token')
-    asg_max_records = module.params.get('max_records')
+    asg_name = module.params.get("name")
+    asg_ids = module.params.get("ids")
+    asg_next_token = module.params.get("next_token")
+    asg_max_records = module.params.get("max_records")
 
     args = {}
-    args['AutoScalingGroupName'] = asg_name
+    args["AutoScalingGroupName"] = asg_name
     if asg_ids:
-        args['InstanceRefreshIds'] = asg_ids
+        args["InstanceRefreshIds"] = asg_ids
     if asg_next_token:
-        args['NextToken'] = asg_next_token
+        args["NextToken"] = asg_next_token
     if asg_max_records:
-        args['MaxRecords'] = asg_max_records
+        args["MaxRecords"] = asg_max_records
 
     try:
         instance_refreshes_result = {}
         response = conn.describe_instance_refreshes(**args)
-        if 'InstanceRefreshes' in response:
+        if "InstanceRefreshes" in response:
             instance_refreshes_dict = dict(
-                instance_refreshes=response['InstanceRefreshes'], next_token=response.get('next_token', ''))
-            instance_refreshes_result = camel_dict_to_snake_dict(
-                instance_refreshes_dict)
+                instance_refreshes=response["InstanceRefreshes"], next_token=response.get("next_token", "")
+            )
+            instance_refreshes_result = camel_dict_to_snake_dict(instance_refreshes_dict)
 
-        while 'NextToken' in response:
-            args['NextToken'] = response['NextToken']
+        while "NextToken" in response:
+            args["NextToken"] = response["NextToken"]
             response = conn.describe_instance_refreshes(**args)
-            if 'InstanceRefreshes' in response:
-                instance_refreshes_dict = camel_dict_to_snake_dict(dict(
-                    instance_refreshes=response['InstanceRefreshes'], next_token=response.get('next_token', '')))
+            if "InstanceRefreshes" in response:
+                instance_refreshes_dict = camel_dict_to_snake_dict(
+                    dict(instance_refreshes=response["InstanceRefreshes"], next_token=response.get("next_token", ""))
+                )
                 instance_refreshes_result.update(instance_refreshes_dict)
 
         return module.exit_json(**instance_refreshes_result)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to describe InstanceRefreshes')
+        module.fail_json_aws(e, msg="Failed to describe InstanceRefreshes")
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        ids=dict(required=False, default=[], elements='str', type='list'),
-        next_token=dict(required=False, default=None, type='str', no_log=True),
-        max_records=dict(required=False, type='int'),
+        name=dict(required=True, type="str"),
+        ids=dict(required=False, default=[], elements="str", type="list"),
+        next_token=dict(required=False, default=None, type="str", no_log=True),
+        max_records=dict(required=False, type="int"),
     )
 
     module = AnsibleAWSModule(
@@ -210,12 +210,9 @@ def main():
         supports_check_mode=True,
     )
 
-    autoscaling = module.client(
-        'autoscaling',
-        retry_decorator=AWSRetry.jittered_backoff(retries=10)
-    )
+    autoscaling = module.client("autoscaling", retry_decorator=AWSRetry.jittered_backoff(retries=10))
     find_asg_instance_refreshes(autoscaling, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

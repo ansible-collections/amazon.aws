@@ -308,17 +308,15 @@ class CodeBuildAnsibleAWSError(AnsibleAWSError):
 
 
 def do_create_project(client, params, formatted_params):
-
     if params["source"] is None or params["artifacts"] is None:
         raise CodeBuildAnsibleAWSError(
             message="The source and artifacts parameters must be provided "
-            "when creating a new project.  No existing project was found.")
+            "when creating a new project.  No existing project was found."
+        )
 
     if params["tags"] is not None:
         formatted_params["tags"] = ansible_dict_to_boto3_tag_list(
-            params["tags"],
-            tag_name_key_name="key",
-            tag_value_key_name="value"
+            params["tags"], tag_name_key_name="key", tag_value_key_name="value"
         )
 
     permitted_create_params = get_boto3_client_method_parameters(client, "create_project")
@@ -357,7 +355,7 @@ def do_update_project(client, params, formatted_params, found_project):
     permitted_update_params = get_boto3_client_method_parameters(client, "update_project")
     formatted_update_params = dict((k, v) for k, v in formatted_params.items() if k in permitted_update_params)
 
-    found_tags = found_project.pop('tags', [])
+    found_tags = found_project.pop("tags", [])
     if params["tags"] is not None:
         formatted_update_params["tags"] = format_tags(
             merge_tags(found_tags, params["tags"], params["purge_tags"]),
@@ -373,7 +371,7 @@ def do_update_project(client, params, formatted_params, found_project):
     found_project["ResourceTags"] = boto3_tag_list_to_ansible_dict(found_tags)
     updated_project["ResourceTags"] = boto3_tag_list_to_ansible_dict(updated_tags)
 
-    changed = (updated_project != found_project)
+    changed = updated_project != found_project
 
     updated_project["tags"] = updated_tags
     return resp, changed
@@ -381,7 +379,7 @@ def do_update_project(client, params, formatted_params, found_project):
 
 def create_or_update_project(client, params):
     resp = {}
-    name = params['name']
+    name = params["name"]
     # clean up params
     formatted_params = snake_dict_to_camel_dict(dict((k, v) for k, v in params.items() if v is not None))
 
@@ -426,7 +424,7 @@ def delete_project(client, name):
 def describe_project(client, name):
     project = {}
     try:
-        projects = client.batch_get_projects(names=[name])['projects']
+        projects = client.batch_get_projects(names=[name])["projects"]
         if len(projects) > 0:
             project = projects[0]
         return project
@@ -439,11 +437,11 @@ def describe_project(client, name):
 
 def format_project_result(project_result):
     formated_result = camel_dict_to_snake_dict(project_result)
-    project = project_result.get('project', {})
+    project = project_result.get("project", {})
     if project:
-        tags = project.get('tags', [])
-        formated_result['project']['resource_tags'] = boto3_tag_list_to_ansible_dict(tags)
-    formated_result['ORIGINAL'] = project_result
+        tags = project.get("tags", [])
+        formated_result["project"]["resource_tags"] = boto3_tag_list_to_ansible_dict(tags)
+    formated_result["ORIGINAL"] = project_result
     return formated_result
 
 
@@ -451,35 +449,35 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         description=dict(),
-        source=dict(type='dict'),
-        artifacts=dict(type='dict'),
-        cache=dict(type='dict'),
-        environment=dict(type='dict'),
+        source=dict(type="dict"),
+        artifacts=dict(type="dict"),
+        cache=dict(type="dict"),
+        environment=dict(type="dict"),
         service_role=dict(),
-        timeout_in_minutes=dict(type='int', default=60),
+        timeout_in_minutes=dict(type="int", default=60),
         encryption_key=dict(no_log=False),
-        tags=dict(type='dict', aliases=["resource_tags"]),
-        purge_tags=dict(type='bool', default=True),
-        vpc_config=dict(type='dict'),
-        state=dict(choices=['present', 'absent'], default='present')
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        vpc_config=dict(type="dict"),
+        state=dict(choices=["present", "absent"], default="present"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
-    client_conn = module.client('codebuild')
+    client_conn = module.client("codebuild")
 
-    state = module.params.get('state')
+    state = module.params.get("state")
     changed = False
 
     try:
-        if state == 'present':
+        if state == "present":
             project_result, changed = create_or_update_project(
                 client=client_conn,
                 params=module.params,
             )
-        elif state == 'absent':
+        elif state == "absent":
             project_result, changed = delete_project(
                 client=client_conn,
-                name=module.params['name'],
+                name=module.params["name"],
             )
     except CodeBuildAnsibleAWSError as e:
         if e.exception:
@@ -490,5 +488,5 @@ def main():
     module.exit_json(changed=changed, **formatted_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

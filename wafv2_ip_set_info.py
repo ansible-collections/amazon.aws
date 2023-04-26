@@ -83,17 +83,16 @@ from ansible_collections.community.aws.plugins.module_utils.wafv2 import describ
 
 def list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=None):
     # there is currently no paginator for wafv2
-    req_obj = {
-        'Scope': scope,
-        'Limit': 100
-    }
+    req_obj = {"Scope": scope, "Limit": 100}
     if Nextmarker:
-        req_obj['NextMarker'] = Nextmarker
+        req_obj["NextMarker"] = Nextmarker
 
     try:
         response = wafv2.list_ip_sets(**req_obj)
-        if response.get('NextMarker'):
-            response['IPSets'] += list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('IPSets')
+        if response.get("NextMarker"):
+            response["IPSets"] += list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=response.get("NextMarker")).get(
+                "IPSets"
+            )
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to list wafv2 ip set")
     return response
@@ -101,21 +100,15 @@ def list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=None):
 
 def get_ip_set(wafv2, name, scope, id, fail_json_aws):
     try:
-        response = wafv2.get_ip_set(
-            Name=name,
-            Scope=scope,
-            Id=id
-        )
+        response = wafv2.get_ip_set(Name=name, Scope=scope, Id=id)
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to get wafv2 ip set")
     return response
 
 
 def main():
-
     arg_spec = dict(
-        name=dict(type='str', required=True),
-        scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL'])
+        name=dict(type="str", required=True), scope=dict(type="str", required=True, choices=["CLOUDFRONT", "REGIONAL"])
     )
 
     module = AnsibleAWSModule(
@@ -126,26 +119,26 @@ def main():
     name = module.params.get("name")
     scope = module.params.get("scope")
 
-    wafv2 = module.client('wafv2')
+    wafv2 = module.client("wafv2")
 
     # check if ip set exist
     response = list_ip_sets(wafv2, scope, module.fail_json_aws)
 
     id = None
 
-    for item in response.get('IPSets'):
-        if item.get('Name') == name:
-            id = item.get('Id')
-            arn = item.get('ARN')
+    for item in response.get("IPSets"):
+        if item.get("Name") == name:
+            id = item.get("Id")
+            arn = item.get("ARN")
 
     retval = {}
     existing_set = None
     if id:
         existing_set = get_ip_set(wafv2, name, scope, id, module.fail_json_aws)
-        retval = camel_dict_to_snake_dict(existing_set.get('IPSet'))
-        retval['tags'] = describe_wafv2_tags(wafv2, arn, module.fail_json_aws) or {}
+        retval = camel_dict_to_snake_dict(existing_set.get("IPSet"))
+        retval["tags"] = describe_wafv2_tags(wafv2, arn, module.fail_json_aws) or {}
     module.exit_json(**retval)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -211,11 +211,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-DP_ACTIVE_STATES = ['ACTIVE', 'SCHEDULED']
-DP_INACTIVE_STATES = ['INACTIVE', 'PENDING', 'FINISHED', 'DELETING']
-DP_ACTIVATING_STATE = 'ACTIVATING'
-DP_DEACTIVATING_STATE = 'DEACTIVATING'
-PIPELINE_DOESNT_EXIST = '^.*Pipeline with id: {0} does not exist$'
+DP_ACTIVE_STATES = ["ACTIVE", "SCHEDULED"]
+DP_INACTIVE_STATES = ["INACTIVE", "PENDING", "FINISHED", "DELETING"]
+DP_ACTIVATING_STATE = "ACTIVATING"
+DP_DEACTIVATING_STATE = "DEACTIVATING"
+PIPELINE_DOESNT_EXIST = "^.*Pipeline with id: {0} does not exist$"
 
 
 class DataPipelineNotFound(Exception):
@@ -236,9 +236,9 @@ def pipeline_id(client, name):
 
     """
     pipelines = client.list_pipelines()
-    for dp in pipelines['pipelineIdList']:
-        if dp['name'] == name:
-            return dp['id']
+    for dp in pipelines["pipelineIdList"]:
+        if dp["name"] == name:
+            return dp["id"]
     raise DataPipelineNotFound
 
 
@@ -252,7 +252,7 @@ def pipeline_description(client, dp_id):
     """
     try:
         return client.describe_pipelines(pipelineIds=[dp_id])
-    except is_boto3_error_code(['PipelineNotFoundException', 'PipelineDeletedException']):
+    except is_boto3_error_code(["PipelineNotFoundException", "PipelineDeletedException"]):
         raise DataPipelineNotFound
 
 
@@ -268,9 +268,9 @@ def pipeline_field(client, dp_id, field):
 
     """
     dp_description = pipeline_description(client, dp_id)
-    for field_key in dp_description['pipelineDescriptionList'][0]['fields']:
-        if field_key['key'] == field:
-            return field_key['stringValue']
+    for field_key in dp_description["pipelineDescriptionList"][0]["fields"]:
+        if field_key["key"] == field:
+            return field_key["stringValue"]
     raise KeyError("Field key {0} not found!".format(field))
 
 
@@ -343,70 +343,70 @@ def pipeline_exists_timeout(client, dp_id, timeout):
 
 
 def activate_pipeline(client, module):
-    """Activates pipeline
-
-    """
-    dp_name = module.params.get('name')
-    timeout = module.params.get('timeout')
+    """Activates pipeline"""
+    dp_name = module.params.get("name")
+    timeout = module.params.get("timeout")
 
     try:
         dp_id = pipeline_id(client, dp_name)
     except DataPipelineNotFound:
-        module.fail_json(msg='Data Pipeline {0} not found'.format(dp_name))
+        module.fail_json(msg="Data Pipeline {0} not found".format(dp_name))
 
     if pipeline_field(client, dp_id, field="@pipelineState") in DP_ACTIVE_STATES:
         changed = False
     else:
         try:
             client.activate_pipeline(pipelineId=dp_id)
-        except is_boto3_error_code('InvalidRequestException'):
+        except is_boto3_error_code("InvalidRequestException"):
             module.fail_json(msg="You need to populate your pipeline before activation.")
         try:
-            pipeline_status_timeout(client, dp_id, status=DP_ACTIVE_STATES,
-                                    timeout=timeout)
+            pipeline_status_timeout(client, dp_id, status=DP_ACTIVE_STATES, timeout=timeout)
         except TimeOutException:
             if pipeline_field(client, dp_id, field="@pipelineState") == "FINISHED":
                 # activated but completed more rapidly than it was checked
                 pass
             else:
-                module.fail_json(msg=('Data Pipeline {0} failed to activate '
-                                      'within timeout {1} seconds').format(dp_name, timeout))
+                module.fail_json(
+                    msg=f"Data Pipeline {dp_name} failed to activate within timeout {timeout} seconds",
+                )
         changed = True
 
     data_pipeline = get_result(client, dp_id)
-    result = {'data_pipeline': data_pipeline,
-              'msg': 'Data Pipeline {0} activated.'.format(dp_name)}
+    result = {
+        "data_pipeline": data_pipeline,
+        "msg": f"Data Pipeline {dp_name} activated.",
+    }
 
     return (changed, result)
 
 
 def deactivate_pipeline(client, module):
-    """Deactivates pipeline
-
-    """
-    dp_name = module.params.get('name')
-    timeout = module.params.get('timeout')
+    """Deactivates pipeline"""
+    dp_name = module.params.get("name")
+    timeout = module.params.get("timeout")
 
     try:
         dp_id = pipeline_id(client, dp_name)
     except DataPipelineNotFound:
-        module.fail_json(msg='Data Pipeline {0} not found'.format(dp_name))
+        module.fail_json(msg="Data Pipeline {0} not found".format(dp_name))
 
     if pipeline_field(client, dp_id, field="@pipelineState") in DP_INACTIVE_STATES:
         changed = False
     else:
         client.deactivate_pipeline(pipelineId=dp_id)
         try:
-            pipeline_status_timeout(client, dp_id, status=DP_INACTIVE_STATES,
-                                    timeout=timeout)
+            pipeline_status_timeout(client, dp_id, status=DP_INACTIVE_STATES, timeout=timeout)
         except TimeOutException:
-            module.fail_json(msg=('Data Pipeline {0} failed to deactivate'
-                                  'within timeout {1} seconds').format(dp_name, timeout))
+            module.fail_json(
+                msg=f"Data Pipeline {dp_name} failed to deactivate within timeout {timeout} seconds",
+            )
         changed = True
 
     data_pipeline = get_result(client, dp_id)
-    result = {'data_pipeline': data_pipeline,
-              'msg': 'Data Pipeline {0} deactivated.'.format(dp_name)}
+    result = {
+        "data_pipeline": data_pipeline,
+        "msg": f"Data Pipeline {dp_name} deactivated.",
+    }
 
     return (changed, result)
 
@@ -420,11 +420,9 @@ def _delete_dp_with_check(dp_id, client, timeout):
 
 
 def delete_pipeline(client, module):
-    """Deletes pipeline
-
-    """
-    dp_name = module.params.get('name')
-    timeout = module.params.get('timeout')
+    """Deletes pipeline"""
+    dp_name = module.params.get("name")
+    timeout = module.params.get("timeout")
 
     try:
         dp_id = pipeline_id(client, dp_name)
@@ -433,10 +431,13 @@ def delete_pipeline(client, module):
     except DataPipelineNotFound:
         changed = False
     except TimeOutException:
-        module.fail_json(msg=('Data Pipeline {0} failed to delete'
-                              'within timeout {1} seconds').format(dp_name, timeout))
-    result = {'data_pipeline': {},
-              'msg': 'Data Pipeline {0} deleted'.format(dp_name)}
+        module.fail_json(
+            msg=f"Data Pipeline {dp_name} failed to delete within timeout {timeout} seconds",
+        )
+    result = {
+        "data_pipeline": {},
+        "msg": f"Data Pipeline {dp_name} deleted",
+    }
 
     return (changed, result)
 
@@ -444,14 +445,14 @@ def delete_pipeline(client, module):
 def build_unique_id(module):
     data = dict(module.params)
     # removing objects from the unique id so we can update objects or populate the pipeline after creation without needing to make a new pipeline
-    [data.pop(each, None) for each in ('objects', 'timeout')]
+    [data.pop(each, None) for each in ("objects", "timeout")]
     json_data = json.dumps(data, sort_keys=True).encode("utf-8")
     hashed_data = hashlib.md5(json_data).hexdigest()
     return hashed_data
 
 
 def format_tags(tags):
-    """ Reformats tags
+    """Reformats tags
 
     :param dict tags: dict of data pipeline tags (e.g. {key1: val1, key2: val2, key3: val3})
     :returns: list of dicts (e.g. [{key: key1, value: val1}, {key: key2, value: val2}, {key: key3, value: val3}])
@@ -461,16 +462,16 @@ def format_tags(tags):
 
 
 def get_result(client, dp_id):
-    """ Get the current state of the data pipeline and reformat it to snake_case for exit_json
+    """Get the current state of the data pipeline and reformat it to snake_case for exit_json
 
     :param object client: boto3 datapipeline client
     :param string dp_id: pipeline id
     :returns: reformatted dict of pipeline description
 
-     """
+    """
     # pipeline_description returns a pipelineDescriptionList of length 1
     # dp is a dict with keys "description" (str), "fields" (list), "name" (str), "pipelineId" (str), "tags" (dict)
-    dp = pipeline_description(client, dp_id)['pipelineDescriptionList'][0]
+    dp = pipeline_description(client, dp_id)["pipelineDescriptionList"][0]
 
     # Get uniqueId and pipelineState in fields to add to the exit_json result
     dp["unique_id"] = pipeline_field(client, dp_id, field="uniqueId")
@@ -487,8 +488,7 @@ def get_result(client, dp_id):
 
 
 def diff_pipeline(client, module, objects, unique_id, dp_name):
-    """Check if there's another pipeline with the same unique_id and if so, checks if the object needs to be updated
-    """
+    """Check if there's another pipeline with the same unique_id and if so, checks if the object needs to be updated"""
     result = {}
     changed = False
     create_dp = False
@@ -504,16 +504,18 @@ def diff_pipeline(client, module, objects, unique_id, dp_name):
             create_dp = True
         # Unique ids are the same - check if pipeline needs modification
         else:
-            dp_objects = client.get_pipeline_definition(pipelineId=dp_id)['pipelineObjects']
+            dp_objects = client.get_pipeline_definition(pipelineId=dp_id)["pipelineObjects"]
             # Definition needs to be updated
             if dp_objects != objects:
                 changed, msg = define_pipeline(client, module, objects, dp_id)
             # No changes
             else:
-                msg = 'Data Pipeline {0} is present'.format(dp_name)
+                msg = f"Data Pipeline {dp_name} is present"
             data_pipeline = get_result(client, dp_id)
-            result = {'data_pipeline': data_pipeline,
-                      'msg': msg}
+            result = {
+                "data_pipeline": data_pipeline,
+                "msg": msg,
+            }
     except DataPipelineNotFound:
         create_dp = True
 
@@ -521,30 +523,30 @@ def diff_pipeline(client, module, objects, unique_id, dp_name):
 
 
 def define_pipeline(client, module, objects, dp_id):
-    """Puts pipeline definition
-
-    """
-    dp_name = module.params.get('name')
+    """Puts pipeline definition"""
+    dp_name = module.params.get("name")
 
     if pipeline_field(client, dp_id, field="@pipelineState") == "FINISHED":
-        msg = 'Data Pipeline {0} is unable to be updated while in state FINISHED.'.format(dp_name)
+        msg = "Data Pipeline {0} is unable to be updated while in state FINISHED.".format(dp_name)
         changed = False
 
     elif objects:
-        parameters = module.params.get('parameters')
-        values = module.params.get('values')
+        parameters = module.params.get("parameters")
+        values = module.params.get("values")
 
         try:
-            client.put_pipeline_definition(pipelineId=dp_id,
-                                           pipelineObjects=objects,
-                                           parameterObjects=parameters,
-                                           parameterValues=values)
-            msg = 'Data Pipeline {0} has been updated.'.format(dp_name)
+            client.put_pipeline_definition(
+                pipelineId=dp_id, pipelineObjects=objects, parameterObjects=parameters, parameterValues=values
+            )
+            msg = "Data Pipeline {0} has been updated.".format(dp_name)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to put the definition for pipeline {0}. Check that string/reference fields"
-                                 "are not empty and that the number of objects in the pipeline does not exceed maximum allowed"
-                                 "objects".format(dp_name))
+            module.fail_json_aws(
+                e,
+                msg=f"Failed to put the definition for pipeline {dp_name}. Check that string/reference fields"
+                "are not empty and that the number of objects in the pipeline does not exceed maximum allowed"
+                "objects",
+            )
     else:
         changed = False
         msg = ""
@@ -553,14 +555,12 @@ def define_pipeline(client, module, objects, dp_id):
 
 
 def create_pipeline(client, module):
-    """Creates datapipeline. Uses uniqueId to achieve idempotency.
-
-    """
-    dp_name = module.params.get('name')
-    objects = module.params.get('objects', None)
-    description = module.params.get('description', '')
-    tags = module.params.get('tags')
-    timeout = module.params.get('timeout')
+    """Creates datapipeline. Uses uniqueId to achieve idempotency."""
+    dp_name = module.params.get("name")
+    objects = module.params.get("objects", None)
+    description = module.params.get("description", "")
+    tags = module.params.get("tags")
+    timeout = module.params.get("timeout")
 
     unique_id = build_unique_id(module)
     create_dp, changed, result = diff_pipeline(client, module, objects, unique_id, dp_name)
@@ -574,24 +574,27 @@ def create_pipeline(client, module):
         # Make pipeline
         try:
             tags = format_tags(tags)
-            dp = client.create_pipeline(name=dp_name,
-                                        uniqueId=unique_id,
-                                        description=description,
-                                        tags=tags)
-            dp_id = dp['pipelineId']
+            dp = client.create_pipeline(name=dp_name, uniqueId=unique_id, description=description, tags=tags)
+            dp_id = dp["pipelineId"]
             pipeline_exists_timeout(client, dp_id, timeout)
         except TimeOutException:
-            module.fail_json(msg=('Data Pipeline {0} failed to create'
-                                  'within timeout {1} seconds').format(dp_name, timeout))
+            module.fail_json(
+                msg=f"Data Pipeline {dp_name} failed to create within timeout {timeout} seconds",
+            )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to create the data pipeline {0}.".format(dp_name))
+            module.fail_json_aws(
+                e,
+                msg=f"Failed to create the data pipeline {dp_name}.",
+            )
         # Put pipeline definition
         changed, msg = define_pipeline(client, module, objects, dp_id)
 
         changed = True
         data_pipeline = get_result(client, dp_id)
-        result = {'data_pipeline': data_pipeline,
-                  'msg': 'Data Pipeline {0} created.'.format(dp_name) + msg}
+        result = {
+            "data_pipeline": data_pipeline,
+            "msg": f"Data Pipeline {dp_name} created." + msg,
+        }
 
     return (changed, result)
 
@@ -599,34 +602,33 @@ def create_pipeline(client, module):
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        description=dict(required=False, default=''),
-        objects=dict(required=False, type='list', default=[], elements='dict'),
-        parameters=dict(required=False, type='list', default=[], elements='dict'),
-        timeout=dict(required=False, type='int', default=300),
-        state=dict(default='present', choices=['present', 'absent',
-                                               'active', 'inactive']),
-        tags=dict(required=False, type='dict', default={}, aliases=['resource_tags']),
-        values=dict(required=False, type='list', default=[], elements='dict'),
+        description=dict(required=False, default=""),
+        objects=dict(required=False, type="list", default=[], elements="dict"),
+        parameters=dict(required=False, type="list", default=[], elements="dict"),
+        timeout=dict(required=False, type="int", default=300),
+        state=dict(default="present", choices=["present", "absent", "active", "inactive"]),
+        tags=dict(required=False, type="dict", default={}, aliases=["resource_tags"]),
+        values=dict(required=False, type="list", default=[], elements="dict"),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
 
     try:
-        client = module.client('datapipeline')
+        client = module.client("datapipeline")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    state = module.params.get('state')
-    if state == 'present':
+    state = module.params.get("state")
+    if state == "present":
         changed, result = create_pipeline(client, module)
-    elif state == 'absent':
+    elif state == "absent":
         changed, result = delete_pipeline(client, module)
-    elif state == 'active':
+    elif state == "active":
         changed, result = activate_pipeline(client, module)
-    elif state == 'inactive':
+    elif state == "inactive":
         changed, result = deactivate_pipeline(client, module)
 
     module.exit_json(result=result, changed=changed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

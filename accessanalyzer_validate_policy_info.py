@@ -177,11 +177,10 @@ def filter_findings(findings, type_filter):
         return findings
 
     # Convert type_filter to the findingType strings returned by the API
-    filter_map = dict(error='ERROR', security='SECURITY_WARNING',
-                      suggestion='SUGGESTION', warning='WARNING')
+    filter_map = dict(error="ERROR", security="SECURITY_WARNING", suggestion="SUGGESTION", warning="WARNING")
     allowed_types = [filter_map[t] for t in type_filter]
 
-    filtered_results = [f for f in findings if f.get('findingType', None) in allowed_types]
+    filtered_results = [f for f in findings if f.get("findingType", None) in allowed_types]
     return filtered_results
 
 
@@ -190,47 +189,47 @@ def main():
     # values are likely to be expanded, let's avoid hard coding limits which might not hold true in
     # the long term...
     argument_spec = dict(
-        policy=dict(required=True, type='json', aliases=['policy_document']),
-        locale=dict(required=False, type='str', default='EN'),
-        policy_type=dict(required=False, type='str', default='identity',
-                         choices=['identity', 'resource', 'service_control']),
-        resource_type=dict(required=False, type='str'),
-        results_filter=dict(required=False, type='list', elements='str',
-                            choices=['error', 'security', 'suggestion', 'warning']),
+        policy=dict(required=True, type="json", aliases=["policy_document"]),
+        locale=dict(required=False, type="str", default="EN"),
+        policy_type=dict(
+            required=False, type="str", default="identity", choices=["identity", "resource", "service_control"]
+        ),
+        resource_type=dict(required=False, type="str"),
+        results_filter=dict(
+            required=False, type="list", elements="str", choices=["error", "security", "suggestion", "warning"]
+        ),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+
+    policy_type_map = dict(
+        identity="IDENTITY_POLICY", resource="RESOURCE_POLICY", service_control="SERVICE_CONTROL_POLICY"
     )
 
-    policy_type_map = dict(identity='IDENTITY_POLICY', resource='RESOURCE_POLICY',
-                           service_control='SERVICE_CONTROL_POLICY')
-
-    policy = module.params.get('policy')
-    policy_type = policy_type_map[module.params.get('policy_type')]
-    locale = module.params.get('locale').upper()
-    resource_type = module.params.get('resource_type')
-    results_filter = module.params.get('results_filter')
+    policy = module.params.get("policy")
+    policy_type = policy_type_map[module.params.get("policy_type")]
+    locale = module.params.get("locale").upper()
+    resource_type = module.params.get("resource_type")
+    results_filter = module.params.get("results_filter")
 
     try:
-        client = module.client('accessanalyzer', retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("accessanalyzer", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     params = dict(locale=locale, policyDocument=policy, policyType=policy_type)
-    if policy_type == 'RESOURCE_POLICY' and resource_type:
-        params['policyType'] = resource_type
+    if policy_type == "RESOURCE_POLICY" and resource_type:
+        params["policyType"] = resource_type
 
     results = client.validate_policy(aws_retry=True, **params)
 
-    findings = filter_findings(results.get('findings', []), results_filter)
-    results['findings'] = findings
+    findings = filter_findings(results.get("findings", []), results_filter)
+    results["findings"] = findings
 
     results = camel_dict_to_snake_dict(results)
 
     module.exit_json(changed=False, **results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

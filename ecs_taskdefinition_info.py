@@ -359,20 +359,20 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     argument_spec = dict(
-        task_definition=dict(required=True, type='str')
+        task_definition=dict(required=True, type="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    ecs = module.client('ecs')
+    ecs = module.client("ecs")
 
     try:
-        ecs_td = ecs.describe_task_definition(taskDefinition=module.params['task_definition'])['taskDefinition']
+        ecs_td = ecs.describe_task_definition(taskDefinition=module.params["task_definition"])["taskDefinition"]
     except botocore.exceptions.ClientError:
         ecs_td = {}
 
     module.exit_json(changed=False, **camel_dict_to_snake_dict(ecs_td))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

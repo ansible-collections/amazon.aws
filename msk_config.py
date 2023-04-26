@@ -143,19 +143,13 @@ def find_active_config(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="failed to obtain kafka configurations")
 
-    active_configs = list(
-        item
-        for item in all_configs
-        if item["Name"] == name and item["State"] == "ACTIVE"
-    )
+    active_configs = list(item for item in all_configs if item["Name"] == name and item["State"] == "ACTIVE")
 
     if active_configs:
         if len(active_configs) == 1:
             return active_configs[0]
         else:
-            module.fail_json_aws(
-                msg="found more than one active config with name '{0}'".format(name)
-            )
+            module.fail_json_aws(msg="found more than one active config with name '{0}'".format(name))
 
     return None
 
@@ -192,7 +186,6 @@ def create_config(client, module):
 
     # create new configuration
     if not config:
-
         if module.check_mode:
             return True, {}
 
@@ -202,7 +195,7 @@ def create_config(client, module):
                 Description=module.params.get("description"),
                 KafkaVersions=module.params.get("kafka_versions"),
                 ServerProperties=dict_to_prop(module.params.get("config")).encode(),
-                aws_retry=True
+                aws_retry=True,
             )
         except (
             botocore.exceptions.BotoCoreError,
@@ -213,7 +206,9 @@ def create_config(client, module):
     # update existing configuration (creates new revision)
     else:
         # it's required because 'config' doesn't contain 'ServerProperties'
-        response = get_configuration_revision(client, module, arn=config["Arn"], revision=config["LatestRevision"]["Revision"])
+        response = get_configuration_revision(
+            client, module, arn=config["Arn"], revision=config["LatestRevision"]["Revision"]
+        )
 
         if not is_configuration_changed(module, response):
             return False, response
@@ -226,7 +221,7 @@ def create_config(client, module):
                 Arn=config["Arn"],
                 Description=module.params.get("description"),
                 ServerProperties=dict_to_prop(module.params.get("config")).encode(),
-                aws_retry=True
+                aws_retry=True,
             )
         except (
             botocore.exceptions.BotoCoreError,
@@ -267,7 +262,6 @@ def delete_config(client, module):
 
 
 def main():
-
     module_args = dict(
         name=dict(type="str", required=True),
         description=dict(type="str", default=""),

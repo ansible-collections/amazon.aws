@@ -457,176 +457,214 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def create_block_device_meta(module, volume):
-    if 'snapshot' not in volume and 'ephemeral' not in volume and 'no_device' not in volume:
-        if 'volume_size' not in volume:
-            module.fail_json(msg='Size must be specified when creating a new volume or modifying the root volume')
-    if 'snapshot' in volume:
-        if volume.get('volume_type') == 'io1' and 'iops' not in volume:
-            module.fail_json(msg='io1 volumes must have an iops value set')
-    if 'ephemeral' in volume:
-        if 'snapshot' in volume:
-            module.fail_json(msg='Cannot set both ephemeral and snapshot')
+    if "snapshot" not in volume and "ephemeral" not in volume and "no_device" not in volume:
+        if "volume_size" not in volume:
+            module.fail_json(msg="Size must be specified when creating a new volume or modifying the root volume")
+    if "snapshot" in volume:
+        if volume.get("volume_type") == "io1" and "iops" not in volume:
+            module.fail_json(msg="io1 volumes must have an iops value set")
+    if "ephemeral" in volume:
+        if "snapshot" in volume:
+            module.fail_json(msg="Cannot set both ephemeral and snapshot")
 
     return_object = {}
 
-    if 'ephemeral' in volume:
-        return_object['VirtualName'] = volume.get('ephemeral')
+    if "ephemeral" in volume:
+        return_object["VirtualName"] = volume.get("ephemeral")
 
-    if 'device_name' in volume:
-        return_object['DeviceName'] = volume.get('device_name')
+    if "device_name" in volume:
+        return_object["DeviceName"] = volume.get("device_name")
 
-    if 'no_device' in volume:
-        return_object['NoDevice'] = volume.get('no_device')
+    if "no_device" in volume:
+        return_object["NoDevice"] = volume.get("no_device")
 
-    if any(key in volume for key in ['snapshot', 'volume_size', 'volume_type', 'delete_on_termination', 'iops', 'throughput', 'encrypted']):
-        return_object['Ebs'] = {}
+    if any(
+        key in volume
+        for key in [
+            "snapshot",
+            "volume_size",
+            "volume_type",
+            "delete_on_termination",
+            "iops",
+            "throughput",
+            "encrypted",
+        ]
+    ):
+        return_object["Ebs"] = {}
 
-    if 'snapshot' in volume:
-        return_object['Ebs']['SnapshotId'] = volume.get('snapshot')
+    if "snapshot" in volume:
+        return_object["Ebs"]["SnapshotId"] = volume.get("snapshot")
 
-    if 'volume_size' in volume:
-        return_object['Ebs']['VolumeSize'] = int(volume.get('volume_size', 0))
+    if "volume_size" in volume:
+        return_object["Ebs"]["VolumeSize"] = int(volume.get("volume_size", 0))
 
-    if 'volume_type' in volume:
-        return_object['Ebs']['VolumeType'] = volume.get('volume_type')
+    if "volume_type" in volume:
+        return_object["Ebs"]["VolumeType"] = volume.get("volume_type")
 
-    if 'delete_on_termination' in volume:
-        return_object['Ebs']['DeleteOnTermination'] = volume.get('delete_on_termination', False)
+    if "delete_on_termination" in volume:
+        return_object["Ebs"]["DeleteOnTermination"] = volume.get("delete_on_termination", False)
 
-    if 'iops' in volume:
-        return_object['Ebs']['Iops'] = volume.get('iops')
+    if "iops" in volume:
+        return_object["Ebs"]["Iops"] = volume.get("iops")
 
-    if 'throughput' in volume:
-        if volume.get('volume_type') != 'gp3':
-            module.fail_json(msg='The throughput parameter is supported only for GP3 volumes.')
-        return_object['Ebs']['Throughput'] = volume.get('throughput')
+    if "throughput" in volume:
+        if volume.get("volume_type") != "gp3":
+            module.fail_json(msg="The throughput parameter is supported only for GP3 volumes.")
+        return_object["Ebs"]["Throughput"] = volume.get("throughput")
 
-    if 'encrypted' in volume:
-        return_object['Ebs']['Encrypted'] = volume.get('encrypted')
+    if "encrypted" in volume:
+        return_object["Ebs"]["Encrypted"] = volume.get("encrypted")
 
     return return_object
 
 
 def create_launch_config(connection, module):
-    name = module.params.get('name')
-    vpc_id = module.params.get('vpc_id')
+    name = module.params.get("name")
+    vpc_id = module.params.get("vpc_id")
     try:
-        ec2_connection = module.client('ec2')
+        ec2_connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
     try:
-        security_groups = get_ec2_security_group_ids_from_names(module.params.get('security_groups'), ec2_connection, vpc_id=vpc_id, boto3=True)
+        security_groups = get_ec2_security_group_ids_from_names(
+            module.params.get("security_groups"), ec2_connection, vpc_id=vpc_id, boto3=True
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to get Security Group IDs')
+        module.fail_json_aws(e, msg="Failed to get Security Group IDs")
     except ValueError as e:
         module.fail_json(msg="Failed to get Security Group IDs", exception=traceback.format_exc())
-    user_data = module.params.get('user_data')
-    user_data_path = module.params.get('user_data_path')
-    volumes = module.params['volumes']
-    instance_monitoring = module.params.get('instance_monitoring')
-    assign_public_ip = module.params.get('assign_public_ip')
-    instance_profile_name = module.params.get('instance_profile_name')
-    ebs_optimized = module.params.get('ebs_optimized')
-    classic_link_vpc_id = module.params.get('classic_link_vpc_id')
-    classic_link_vpc_security_groups = module.params.get('classic_link_vpc_security_groups')
+    user_data = module.params.get("user_data")
+    user_data_path = module.params.get("user_data_path")
+    volumes = module.params["volumes"]
+    instance_monitoring = module.params.get("instance_monitoring")
+    assign_public_ip = module.params.get("assign_public_ip")
+    instance_profile_name = module.params.get("instance_profile_name")
+    ebs_optimized = module.params.get("ebs_optimized")
+    classic_link_vpc_id = module.params.get("classic_link_vpc_id")
+    classic_link_vpc_security_groups = module.params.get("classic_link_vpc_security_groups")
 
     block_device_mapping = []
 
-    convert_list = ['image_id', 'instance_type', 'instance_type', 'instance_id', 'placement_tenancy', 'key_name', 'kernel_id', 'ramdisk_id', 'spot_price']
+    convert_list = [
+        "image_id",
+        "instance_type",
+        "instance_type",
+        "instance_id",
+        "placement_tenancy",
+        "key_name",
+        "kernel_id",
+        "ramdisk_id",
+        "spot_price",
+    ]
 
-    launch_config = (snake_dict_to_camel_dict(dict((k.capitalize(), str(v)) for k, v in module.params.items() if v is not None and k in convert_list)))
+    launch_config = snake_dict_to_camel_dict(
+        dict((k.capitalize(), str(v)) for k, v in module.params.items() if v is not None and k in convert_list)
+    )
 
     if user_data_path:
         try:
-            with open(user_data_path, 'r') as user_data_file:
+            with open(user_data_path, "r") as user_data_file:
                 user_data = user_data_file.read()
         except IOError as e:
             module.fail_json(msg="Failed to open file for reading", exception=traceback.format_exc())
 
     if volumes:
         for volume in volumes:
-            if 'device_name' not in volume:
-                module.fail_json(msg='Device name must be set for volume')
+            if "device_name" not in volume:
+                module.fail_json(msg="Device name must be set for volume")
             # Minimum volume size is 1GiB. We'll use volume size explicitly set to 0 to be a signal not to create this volume
-            if 'volume_size' not in volume or int(volume['volume_size']) > 0:
+            if "volume_size" not in volume or int(volume["volume_size"]) > 0:
                 block_device_mapping.append(create_block_device_meta(module, volume))
 
     try:
-        launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get('LaunchConfigurations')
+        launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get(
+            "LaunchConfigurations"
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe launch configuration by name")
 
     changed = False
     result = {}
 
-    launch_config['LaunchConfigurationName'] = name
+    launch_config["LaunchConfigurationName"] = name
 
     if security_groups is not None:
-        launch_config['SecurityGroups'] = security_groups
+        launch_config["SecurityGroups"] = security_groups
 
     if classic_link_vpc_id is not None:
-        launch_config['ClassicLinkVPCId'] = classic_link_vpc_id
+        launch_config["ClassicLinkVPCId"] = classic_link_vpc_id
 
     if instance_monitoring is not None:
-        launch_config['InstanceMonitoring'] = {'Enabled': instance_monitoring}
+        launch_config["InstanceMonitoring"] = {"Enabled": instance_monitoring}
 
     if classic_link_vpc_security_groups is not None:
-        launch_config['ClassicLinkVPCSecurityGroups'] = classic_link_vpc_security_groups
+        launch_config["ClassicLinkVPCSecurityGroups"] = classic_link_vpc_security_groups
 
     if block_device_mapping:
-        launch_config['BlockDeviceMappings'] = block_device_mapping
+        launch_config["BlockDeviceMappings"] = block_device_mapping
 
     if instance_profile_name is not None:
-        launch_config['IamInstanceProfile'] = instance_profile_name
+        launch_config["IamInstanceProfile"] = instance_profile_name
 
     if assign_public_ip is not None:
-        launch_config['AssociatePublicIpAddress'] = assign_public_ip
+        launch_config["AssociatePublicIpAddress"] = assign_public_ip
 
     if user_data is not None:
-        launch_config['UserData'] = user_data
+        launch_config["UserData"] = user_data
 
     if ebs_optimized is not None:
-        launch_config['EbsOptimized'] = ebs_optimized
+        launch_config["EbsOptimized"] = ebs_optimized
 
     if len(launch_configs) == 0:
         try:
             connection.create_launch_configuration(**launch_config)
-            launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get('LaunchConfigurations')
+            launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get(
+                "LaunchConfigurations"
+            )
             changed = True
             if launch_configs:
                 launch_config = launch_configs[0]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to create launch configuration")
 
-    result = (dict((k, v) for k, v in launch_config.items()
-                   if k not in ['Connection', 'CreatedTime', 'InstanceMonitoring', 'BlockDeviceMappings']))
+    result = dict(
+        (k, v)
+        for k, v in launch_config.items()
+        if k not in ["Connection", "CreatedTime", "InstanceMonitoring", "BlockDeviceMappings"]
+    )
 
-    result['CreatedTime'] = to_text(launch_config.get('CreatedTime'))
+    result["CreatedTime"] = to_text(launch_config.get("CreatedTime"))
 
     try:
-        result['InstanceMonitoring'] = module.boolean(launch_config.get('InstanceMonitoring').get('Enabled'))
+        result["InstanceMonitoring"] = module.boolean(launch_config.get("InstanceMonitoring").get("Enabled"))
     except AttributeError:
-        result['InstanceMonitoring'] = False
+        result["InstanceMonitoring"] = False
 
-    result['BlockDeviceMappings'] = []
+    result["BlockDeviceMappings"] = []
 
-    for block_device_mapping in launch_config.get('BlockDeviceMappings', []):
-        result['BlockDeviceMappings'].append(dict(device_name=block_device_mapping.get('DeviceName'), virtual_name=block_device_mapping.get('VirtualName')))
-        if block_device_mapping.get('Ebs') is not None:
-            result['BlockDeviceMappings'][-1]['ebs'] = dict(
-                snapshot_id=block_device_mapping.get('Ebs').get('SnapshotId'), volume_size=block_device_mapping.get('Ebs').get('VolumeSize'))
+    for block_device_mapping in launch_config.get("BlockDeviceMappings", []):
+        result["BlockDeviceMappings"].append(
+            dict(
+                device_name=block_device_mapping.get("DeviceName"), virtual_name=block_device_mapping.get("VirtualName")
+            )
+        )
+        if block_device_mapping.get("Ebs") is not None:
+            result["BlockDeviceMappings"][-1]["ebs"] = dict(
+                snapshot_id=block_device_mapping.get("Ebs").get("SnapshotId"),
+                volume_size=block_device_mapping.get("Ebs").get("VolumeSize"),
+            )
 
     if user_data_path:
-        result['UserData'] = "hidden"  # Otherwise, we dump binary to the user's terminal
+        result["UserData"] = "hidden"  # Otherwise, we dump binary to the user's terminal
 
     return_object = {
-        'Name': result.get('LaunchConfigurationName'),
-        'CreatedTime': result.get('CreatedTime'),
-        'ImageId': result.get('ImageId'),
-        'Arn': result.get('LaunchConfigurationARN'),
-        'SecurityGroups': result.get('SecurityGroups'),
-        'InstanceType': result.get('InstanceType'),
-        'Result': result
+        "Name": result.get("LaunchConfigurationName"),
+        "CreatedTime": result.get("CreatedTime"),
+        "ImageId": result.get("ImageId"),
+        "Arn": result.get("LaunchConfigurationARN"),
+        "SecurityGroups": result.get("SecurityGroups"),
+        "InstanceType": result.get("InstanceType"),
+        "Result": result,
     }
 
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(return_object))
@@ -634,10 +672,14 @@ def create_launch_config(connection, module):
 
 def delete_launch_config(connection, module):
     try:
-        name = module.params.get('name')
-        launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get('LaunchConfigurations')
+        name = module.params.get("name")
+        launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get(
+            "LaunchConfigurations"
+        )
         if launch_configs:
-            connection.delete_launch_configuration(LaunchConfigurationName=launch_configs[0].get('LaunchConfigurationName'))
+            connection.delete_launch_configuration(
+                LaunchConfigurationName=launch_configs[0].get("LaunchConfigurationName")
+            )
             module.exit_json(changed=True)
         else:
             module.exit_json(changed=False)
@@ -651,42 +693,42 @@ def main():
         image_id=dict(),
         instance_id=dict(),
         key_name=dict(),
-        security_groups=dict(default=[], type='list', elements='str'),
+        security_groups=dict(default=[], type="list", elements="str"),
         user_data=dict(),
-        user_data_path=dict(type='path'),
+        user_data_path=dict(type="path"),
         kernel_id=dict(),
-        volumes=dict(type='list', elements='dict'),
+        volumes=dict(type="list", elements="dict"),
         instance_type=dict(),
-        state=dict(default='present', choices=['present', 'absent']),
-        spot_price=dict(type='float'),
+        state=dict(default="present", choices=["present", "absent"]),
+        spot_price=dict(type="float"),
         ramdisk_id=dict(),
         instance_profile_name=dict(),
-        ebs_optimized=dict(default=False, type='bool'),
-        instance_monitoring=dict(default=False, type='bool'),
-        assign_public_ip=dict(type='bool'),
-        classic_link_vpc_security_groups=dict(type='list', elements='str'),
+        ebs_optimized=dict(default=False, type="bool"),
+        instance_monitoring=dict(default=False, type="bool"),
+        assign_public_ip=dict(type="bool"),
+        classic_link_vpc_security_groups=dict(type="list", elements="str"),
         classic_link_vpc_id=dict(),
         vpc_id=dict(),
-        placement_tenancy=dict(choices=['default', 'dedicated'])
+        placement_tenancy=dict(choices=["default", "dedicated"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[['user_data', 'user_data_path']],
+        mutually_exclusive=[["user_data", "user_data_path"]],
     )
 
     try:
-        connection = module.client('autoscaling')
+        connection = module.client("autoscaling")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="unable to establish connection")
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_launch_config(connection, module)
-    elif state == 'absent':
+    elif state == "absent":
         delete_launch_config(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

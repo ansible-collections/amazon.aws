@@ -113,10 +113,13 @@ def get_subnet_group(name):
         groups = client.describe_cache_subnet_groups(
             aws_retry=True,
             CacheSubnetGroupName=name,
-        )['CacheSubnetGroups']
-    except is_boto3_error_code('CacheSubnetGroupNotFoundFault'):
+        )["CacheSubnetGroups"]
+    except is_boto3_error_code("CacheSubnetGroupNotFoundFault"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe subnet group")
 
     if not groups:
@@ -130,19 +133,18 @@ def get_subnet_group(name):
 
     subnet_group = camel_dict_to_snake_dict(groups[0])
 
-    subnet_group['name'] = subnet_group['cache_subnet_group_name']
-    subnet_group['description'] = subnet_group['cache_subnet_group_description']
+    subnet_group["name"] = subnet_group["cache_subnet_group_name"]
+    subnet_group["description"] = subnet_group["cache_subnet_group_description"]
 
-    subnet_ids = list(s['subnet_identifier'] for s in subnet_group['subnets'])
-    subnet_group['subnet_ids'] = subnet_ids
+    subnet_ids = list(s["subnet_identifier"] for s in subnet_group["subnets"])
+    subnet_group["subnet_ids"] = subnet_ids
 
     return subnet_group
 
 
 def create_subnet_group(name, description, subnets):
-
     if not subnets:
-        module.fail_json(msg='At least one subnet must be provided when creating a subnet group')
+        module.fail_json(msg="At least one subnet must be provided when creating a subnet group")
 
     if module.check_mode:
         return True
@@ -163,13 +165,13 @@ def create_subnet_group(name, description, subnets):
 
 def update_subnet_group(subnet_group, name, description, subnets):
     update_params = dict()
-    if description and subnet_group['description'] != description:
-        update_params['CacheSubnetGroupDescription'] = description
+    if description and subnet_group["description"] != description:
+        update_params["CacheSubnetGroupDescription"] = description
     if subnets:
-        old_subnets = set(subnet_group['subnet_ids'])
+        old_subnets = set(subnet_group["subnet_ids"])
         new_subnets = set(subnets)
         if old_subnets != new_subnets:
-            update_params['SubnetIds'] = list(subnets)
+            update_params["SubnetIds"] = list(subnets)
 
     if not update_params:
         return False
@@ -190,7 +192,6 @@ def update_subnet_group(subnet_group, name, description, subnets):
 
 
 def delete_subnet_group(name):
-
     if module.check_mode:
         return True
 
@@ -200,20 +201,23 @@ def delete_subnet_group(name):
             CacheSubnetGroupName=name,
         )
         return True
-    except is_boto3_error_code('CacheSubnetGroupNotFoundFault'):
+    except is_boto3_error_code("CacheSubnetGroupNotFoundFault"):
         # AWS is "eventually consistent", cope with the race conditions where
         # deletion hadn't completed when we ran describe
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete subnet group")
 
 
 def main():
     argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent']),
+        state=dict(default="present", choices=["present", "absent"]),
         name=dict(required=True),
         description=dict(required=False),
-        subnets=dict(required=False, type='list', elements='str'),
+        subnets=dict(required=False, type="list", elements="str"),
     )
 
     global module
@@ -224,17 +228,17 @@ def main():
         supports_check_mode=True,
     )
 
-    state = module.params.get('state')
-    name = module.params.get('name').lower()
-    description = module.params.get('description')
-    subnets = module.params.get('subnets')
+    state = module.params.get("state")
+    name = module.params.get("name").lower()
+    description = module.params.get("description")
+    subnets = module.params.get("subnets")
 
-    client = module.client('elasticache', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("elasticache", retry_decorator=AWSRetry.jittered_backoff())
 
     subnet_group = get_subnet_group(name)
     changed = False
 
-    if state == 'present':
+    if state == "present":
         if not subnet_group:
             result = create_subnet_group(name, description, subnets)
             changed |= result
@@ -251,5 +255,5 @@ def main():
     module.exit_json(changed=changed, cache_subnet_group=subnet_group)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

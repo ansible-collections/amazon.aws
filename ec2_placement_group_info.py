@@ -85,42 +85,45 @@ def get_placement_groups_details(connection, module):
     try:
         if len(names) > 0:
             response = connection.describe_placement_groups(
-                Filters=[{
-                    "Name": "group-name",
-                    "Values": names
-                }])
+                Filters=[
+                    {
+                        "Name": "group-name",
+                        "Values": names,
+                    }
+                ]
+            )
         else:
             response = connection.describe_placement_groups()
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(
-            e,
-            msg="Couldn't find placement groups named [%s]" % names)
+        module.fail_json_aws(e, msg="Couldn't find placement groups named [%s]" % names)
 
     results = []
-    for placement_group in response['PlacementGroups']:
-        results.append({
-            "name": placement_group['GroupName'],
-            "state": placement_group['State'],
-            "strategy": placement_group['Strategy'],
-        })
+    for placement_group in response["PlacementGroups"]:
+        results.append(
+            {
+                "name": placement_group["GroupName"],
+                "state": placement_group["State"],
+                "strategy": placement_group["Strategy"],
+            }
+        )
     return results
 
 
 def main():
     argument_spec = dict(
-        names=dict(type='list', default=[], elements='str')
+        names=dict(type="list", default=[], elements="str"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     placement_groups = get_placement_groups_details(connection, module)
     module.exit_json(changed=False, placement_groups=placement_groups)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

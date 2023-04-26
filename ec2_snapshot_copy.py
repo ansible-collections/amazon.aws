@@ -126,34 +126,33 @@ def copy_snapshot(module, ec2):
     """
 
     params = {
-        'SourceRegion': module.params.get('source_region'),
-        'SourceSnapshotId': module.params.get('source_snapshot_id'),
-        'Description': module.params.get('description')
+        "SourceRegion": module.params.get("source_region"),
+        "SourceSnapshotId": module.params.get("source_snapshot_id"),
+        "Description": module.params.get("description"),
     }
 
-    if module.params.get('encrypted'):
-        params['Encrypted'] = True
+    if module.params.get("encrypted"):
+        params["Encrypted"] = True
 
-    if module.params.get('kms_key_id'):
-        params['KmsKeyId'] = module.params.get('kms_key_id')
+    if module.params.get("kms_key_id"):
+        params["KmsKeyId"] = module.params.get("kms_key_id")
 
-    if module.params.get('tags'):
-        params['TagSpecifications'] = boto3_tag_specifications(module.params.get('tags'), types=['snapshot'])
+    if module.params.get("tags"):
+        params["TagSpecifications"] = boto3_tag_specifications(module.params.get("tags"), types=["snapshot"])
 
     try:
-        snapshot_id = ec2.copy_snapshot(**params)['SnapshotId']
-        if module.params.get('wait'):
+        snapshot_id = ec2.copy_snapshot(**params)["SnapshotId"]
+        if module.params.get("wait"):
             delay = 15
             # Add one to max_attempts as wait() increment
             # its counter before assessing it for time.sleep()
-            max_attempts = (module.params.get('wait_timeout') // delay) + 1
-            ec2.get_waiter('snapshot_completed').wait(
-                SnapshotIds=[snapshot_id],
-                WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts)
+            max_attempts = (module.params.get("wait_timeout") // delay) + 1
+            ec2.get_waiter("snapshot_completed").wait(
+                SnapshotIds=[snapshot_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts)
             )
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='An error occurred waiting for the snapshot to become available.')
+        module.fail_json_aws(e, msg="An error occurred waiting for the snapshot to become available.")
 
     module.exit_json(changed=True, snapshot_id=snapshot_id)
 
@@ -162,23 +161,23 @@ def main():
     argument_spec = dict(
         source_region=dict(required=True),
         source_snapshot_id=dict(required=True),
-        description=dict(default=''),
-        encrypted=dict(type='bool', default=False, required=False),
-        kms_key_id=dict(type='str', required=False),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=600),
-        tags=dict(type='dict', aliases=['resource_tags']),
+        description=dict(default=""),
+        encrypted=dict(type="bool", default=False, required=False),
+        kms_key_id=dict(type="str", required=False),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=600),
+        tags=dict(type="dict", aliases=["resource_tags"]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
     try:
-        client = module.client('ec2')
+        client = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     copy_snapshot(module, client)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

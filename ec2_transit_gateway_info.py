@@ -177,11 +177,10 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 class AnsibleEc2TgwInfo(object):
-
     def __init__(self, module, results):
         self._module = module
         self._results = results
-        self._connection = self._module.client('ec2')
+        self._connection = self._module.client("ec2")
         self._check_mode = self._module.check_mode
 
     @AWSRetry.exponential_backoff()
@@ -193,8 +192,8 @@ class AnsibleEc2TgwInfo(object):
         connection  : boto3 client connection object
         """
         # collect parameters
-        filters = ansible_dict_to_boto3_filter_list(self._module.params['filters'])
-        transit_gateway_ids = self._module.params['transit_gateway_ids']
+        filters = ansible_dict_to_boto3_filter_list(self._module.params["filters"])
+        transit_gateway_ids = self._module.params["transit_gateway_ids"]
 
         # init empty list for return vars
         transit_gateway_info = list()
@@ -202,17 +201,18 @@ class AnsibleEc2TgwInfo(object):
         # Get the basic transit gateway info
         try:
             response = self._connection.describe_transit_gateways(
-                TransitGatewayIds=transit_gateway_ids, Filters=filters)
-        except is_boto3_error_code('InvalidTransitGatewayID.NotFound'):
-            self._results['transit_gateways'] = []
+                TransitGatewayIds=transit_gateway_ids, Filters=filters
+            )
+        except is_boto3_error_code("InvalidTransitGatewayID.NotFound"):
+            self._results["transit_gateways"] = []
             return
 
-        for transit_gateway in response['TransitGateways']:
-            transit_gateway_info.append(camel_dict_to_snake_dict(transit_gateway, ignore_list=['Tags']))
+        for transit_gateway in response["TransitGateways"]:
+            transit_gateway_info.append(camel_dict_to_snake_dict(transit_gateway, ignore_list=["Tags"]))
             # convert tag list to ansible dict
-            transit_gateway_info[-1]['tags'] = boto3_tag_list_to_ansible_dict(transit_gateway.get('Tags', []))
+            transit_gateway_info[-1]["tags"] = boto3_tag_list_to_ansible_dict(transit_gateway.get("Tags", []))
 
-        self._results['transit_gateways'] = transit_gateway_info
+        self._results["transit_gateways"] = transit_gateway_info
         return
 
 
@@ -223,8 +223,8 @@ def setup_module_object():
     """
 
     argument_spec = dict(
-        transit_gateway_ids=dict(type='list', default=[], elements='str', aliases=['transit_gateway_id']),
-        filters=dict(type='dict', default={})
+        transit_gateway_ids=dict(type="list", default=[], elements="str", aliases=["transit_gateway_id"]),
+        filters=dict(type="dict", default={}),
     )
 
     module = AnsibleAWSModule(
@@ -236,12 +236,9 @@ def setup_module_object():
 
 
 def main():
-
     module = setup_module_object()
 
-    results = dict(
-        changed=False
-    )
+    results = dict(changed=False)
 
     tgwf_manager = AnsibleEc2TgwInfo(module=module, results=results)
     try:
@@ -252,5 +249,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

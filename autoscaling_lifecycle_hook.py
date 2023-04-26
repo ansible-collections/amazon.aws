@@ -141,56 +141,58 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def create_lifecycle_hook(connection, module):
-
-    lch_name = module.params.get('lifecycle_hook_name')
-    asg_name = module.params.get('autoscaling_group_name')
-    transition = module.params.get('transition')
-    role_arn = module.params.get('role_arn')
-    notification_target_arn = module.params.get('notification_target_arn')
-    notification_meta_data = module.params.get('notification_meta_data')
-    heartbeat_timeout = module.params.get('heartbeat_timeout')
-    default_result = module.params.get('default_result')
+    lch_name = module.params.get("lifecycle_hook_name")
+    asg_name = module.params.get("autoscaling_group_name")
+    transition = module.params.get("transition")
+    role_arn = module.params.get("role_arn")
+    notification_target_arn = module.params.get("notification_target_arn")
+    notification_meta_data = module.params.get("notification_meta_data")
+    heartbeat_timeout = module.params.get("heartbeat_timeout")
+    default_result = module.params.get("default_result")
 
     return_object = {}
-    return_object['changed'] = False
+    return_object["changed"] = False
 
     lch_params = {
-        'LifecycleHookName': lch_name,
-        'AutoScalingGroupName': asg_name,
-        'LifecycleTransition': transition
+        "LifecycleHookName": lch_name,
+        "AutoScalingGroupName": asg_name,
+        "LifecycleTransition": transition,
     }
 
     if role_arn:
-        lch_params['RoleARN'] = role_arn
+        lch_params["RoleARN"] = role_arn
 
     if notification_target_arn:
-        lch_params['NotificationTargetARN'] = notification_target_arn
+        lch_params["NotificationTargetARN"] = notification_target_arn
 
     if notification_meta_data:
-        lch_params['NotificationMetadata'] = notification_meta_data
+        lch_params["NotificationMetadata"] = notification_meta_data
 
     if heartbeat_timeout:
-        lch_params['HeartbeatTimeout'] = heartbeat_timeout
+        lch_params["HeartbeatTimeout"] = heartbeat_timeout
 
     if default_result:
-        lch_params['DefaultResult'] = default_result
+        lch_params["DefaultResult"] = default_result
 
     try:
         existing_hook = connection.describe_lifecycle_hooks(
             AutoScalingGroupName=asg_name,
-            LifecycleHookNames=[lch_name]
-        )['LifecycleHooks']
+            LifecycleHookNames=[lch_name],
+        )["LifecycleHooks"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get Lifecycle Hook")
 
     if not existing_hook:
         try:
             if module.check_mode:
-                module.exit_json(changed=True, msg="Would have created AutoScalingGroup Lifecycle Hook if not in check_mode.")
-            return_object['changed'] = True
+                module.exit_json(
+                    changed=True, msg="Would have created AutoScalingGroup Lifecycle Hook if not in check_mode."
+                )
+            return_object["changed"] = True
             connection.put_lifecycle_hook(**lch_params)
-            return_object['lifecycle_hook_info'] = connection.describe_lifecycle_hooks(
-                AutoScalingGroupName=asg_name, LifecycleHookNames=[lch_name])['LifecycleHooks']
+            return_object["lifecycle_hook_info"] = connection.describe_lifecycle_hooks(
+                AutoScalingGroupName=asg_name, LifecycleHookNames=[lch_name]
+            )["LifecycleHooks"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to create LifecycleHook")
 
@@ -199,11 +201,14 @@ def create_lifecycle_hook(connection, module):
         if modified:
             try:
                 if module.check_mode:
-                    module.exit_json(changed=True, msg="Would have modified AutoScalingGroup Lifecycle Hook if not in check_mode.")
-                return_object['changed'] = True
+                    module.exit_json(
+                        changed=True, msg="Would have modified AutoScalingGroup Lifecycle Hook if not in check_mode."
+                    )
+                return_object["changed"] = True
                 connection.put_lifecycle_hook(**lch_params)
-                return_object['lifecycle_hook_info'] = connection.describe_lifecycle_hooks(
-                    AutoScalingGroupName=asg_name, LifecycleHookNames=[lch_name])['LifecycleHooks']
+                return_object["lifecycle_hook_info"] = connection.describe_lifecycle_hooks(
+                    AutoScalingGroupName=asg_name, LifecycleHookNames=[lch_name]
+                )["LifecycleHooks"]
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to create LifecycleHook")
 
@@ -227,33 +232,37 @@ def dict_compare(d1, d2):
 
 
 def delete_lifecycle_hook(connection, module):
-
-    lch_name = module.params.get('lifecycle_hook_name')
-    asg_name = module.params.get('autoscaling_group_name')
+    lch_name = module.params.get("lifecycle_hook_name")
+    asg_name = module.params.get("autoscaling_group_name")
 
     return_object = {}
-    return_object['changed'] = False
+    return_object["changed"] = False
 
     try:
         all_hooks = connection.describe_lifecycle_hooks(
-            AutoScalingGroupName=asg_name
+            AutoScalingGroupName=asg_name,
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get Lifecycle Hooks")
 
-    for hook in all_hooks['LifecycleHooks']:
-        if hook['LifecycleHookName'] == lch_name:
+    for hook in all_hooks["LifecycleHooks"]:
+        if hook["LifecycleHookName"] == lch_name:
             lch_params = {
-                'LifecycleHookName': lch_name,
-                'AutoScalingGroupName': asg_name
+                "LifecycleHookName": lch_name,
+                "AutoScalingGroupName": asg_name,
             }
 
             try:
                 if module.check_mode:
-                    module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup Lifecycle Hook if not in check_mode.")
+                    module.exit_json(
+                        changed=True, msg="Would have deleted AutoScalingGroup Lifecycle Hook if not in check_mode."
+                    )
                 connection.delete_lifecycle_hook(**lch_params)
-                return_object['changed'] = True
-                return_object['lifecycle_hook_removed'] = {'LifecycleHookName': lch_name, 'AutoScalingGroupName': asg_name}
+                return_object["changed"] = True
+                return_object["lifecycle_hook_removed"] = {
+                    "LifecycleHookName": lch_name,
+                    "AutoScalingGroupName": asg_name,
+                }
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to delete LifecycleHook")
         else:
@@ -264,34 +273,36 @@ def delete_lifecycle_hook(connection, module):
 
 def main():
     argument_spec = dict(
-        autoscaling_group_name=dict(required=True, type='str'),
-        lifecycle_hook_name=dict(required=True, type='str'),
-        transition=dict(type='str', choices=['autoscaling:EC2_INSTANCE_TERMINATING', 'autoscaling:EC2_INSTANCE_LAUNCHING']),
-        role_arn=dict(type='str'),
-        notification_target_arn=dict(type='str'),
-        notification_meta_data=dict(type='str'),
-        heartbeat_timeout=dict(type='int'),
-        default_result=dict(default='ABANDON', choices=['ABANDON', 'CONTINUE']),
-        state=dict(default='present', choices=['present', 'absent'])
+        autoscaling_group_name=dict(required=True, type="str"),
+        lifecycle_hook_name=dict(required=True, type="str"),
+        transition=dict(
+            type="str", choices=["autoscaling:EC2_INSTANCE_TERMINATING", "autoscaling:EC2_INSTANCE_LAUNCHING"]
+        ),
+        role_arn=dict(type="str"),
+        notification_target_arn=dict(type="str"),
+        notification_meta_data=dict(type="str"),
+        heartbeat_timeout=dict(type="int"),
+        default_result=dict(default="ABANDON", choices=["ABANDON", "CONTINUE"]),
+        state=dict(default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_if=[['state', 'present', ['transition']]],
+        required_if=[["state", "present", ["transition"]]],
     )
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
-    connection = module.client('autoscaling')
+    connection = module.client("autoscaling")
 
     changed = False
 
-    if state == 'present':
+    if state == "present":
         create_lifecycle_hook(connection, module)
-    elif state == 'absent':
+    elif state == "absent":
         delete_lifecycle_hook(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

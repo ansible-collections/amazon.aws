@@ -287,31 +287,29 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def match_tags(tags_to_match, cluster):
     for key, value in tags_to_match.items():
-        for tag in cluster['Tags']:
-            if key == tag['Key'] and value == tag['Value']:
+        for tag in cluster["Tags"]:
+            if key == tag["Key"] and value == tag["Value"]:
                 return True
 
     return False
 
 
 def find_clusters(conn, module, identifier=None, tags=None):
-
     try:
-        cluster_paginator = conn.get_paginator('describe_clusters')
+        cluster_paginator = conn.get_paginator("describe_clusters")
         clusters = cluster_paginator.paginate().build_full_result()
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to fetch clusters.')
+        module.fail_json_aws(e, msg="Failed to fetch clusters.")
 
     matched_clusters = []
 
     if identifier is not None:
-        identifier_prog = re.compile('^' + identifier)
+        identifier_prog = re.compile("^" + identifier)
 
-    for cluster in clusters['Clusters']:
-
+    for cluster in clusters["Clusters"]:
         matched_identifier = True
         if identifier:
-            matched_identifier = identifier_prog.search(cluster['ClusterIdentifier'])
+            matched_identifier = identifier_prog.search(cluster["ClusterIdentifier"])
 
         matched_tags = True
         if tags:
@@ -324,24 +322,23 @@ def find_clusters(conn, module, identifier=None, tags=None):
 
 
 def main():
-
     argument_spec = dict(
-        cluster_identifier=dict(type='str', aliases=['identifier', 'name']),
-        tags=dict(type='dict')
+        cluster_identifier=dict(type="str", aliases=["identifier", "name"]),
+        tags=dict(type="dict"),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    cluster_identifier = module.params.get('cluster_identifier')
-    cluster_tags = module.params.get('tags')
+    cluster_identifier = module.params.get("cluster_identifier")
+    cluster_tags = module.params.get("tags")
 
-    redshift = module.client('redshift')
+    redshift = module.client("redshift")
 
     results = find_clusters(redshift, module, identifier=cluster_identifier, tags=cluster_tags)
     module.exit_json(results=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

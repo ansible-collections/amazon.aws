@@ -127,24 +127,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-@AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=['TargetGroupNotFound'])
+@AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=["TargetGroupNotFound"])
 def describe_target_groups_with_backoff(connection, tg_name):
     return connection.describe_target_groups(Names=[tg_name])
 
 
 def convert_tg_name_to_arn(connection, module, tg_name):
-
     try:
         response = describe_target_groups_with_backoff(connection, tg_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to describe target group {0}".format(tg_name))
 
-    tg_arn = response['TargetGroups'][0]['TargetGroupArn']
+    tg_arn = response["TargetGroups"][0]["TargetGroupArn"]
 
     return tg_arn
 
 
-@AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=['TargetGroupNotFound'])
+@AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=["TargetGroupNotFound"])
 def describe_targets_with_backoff(connection, tg_arn, target):
     if target is None:
         tg = []
@@ -155,7 +154,6 @@ def describe_targets_with_backoff(connection, tg_arn, target):
 
 
 def describe_targets(connection, module, tg_arn, target=None):
-
     """
     Describe targets in a target group
 
@@ -167,7 +165,7 @@ def describe_targets(connection, module, tg_arn, target=None):
     """
 
     try:
-        targets = describe_targets_with_backoff(connection, tg_arn, target)['TargetHealthDescriptions']
+        targets = describe_targets_with_backoff(connection, tg_arn, target)["TargetHealthDescriptions"]
         if not targets:
             return {}
         return targets[0]
@@ -181,7 +179,6 @@ def register_target_with_backoff(connection, target_group_arn, target):
 
 
 def register_target(connection, module):
-
     """
     Registers a target to a target group
 
@@ -203,26 +200,32 @@ def register_target(connection, module):
 
     target = dict(Id=target_id)
     if target_az:
-        target['AvailabilityZone'] = target_az
+        target["AvailabilityZone"] = target_az
     if target_port:
-        target['Port'] = target_port
+        target["Port"] = target_port
 
     target_description = describe_targets(connection, module, target_group_arn, target)
 
-    if 'Reason' in target_description['TargetHealth']:
-        if target_description['TargetHealth']['Reason'] == "Target.NotRegistered":
+    if "Reason" in target_description["TargetHealth"]:
+        if target_description["TargetHealth"]["Reason"] == "Target.NotRegistered":
             try:
                 register_target_with_backoff(connection, target_group_arn, target)
                 changed = True
                 if target_status:
-                    target_status_check(connection, module, target_group_arn, target, target_status, target_status_timeout)
+                    target_status_check(
+                        connection, module, target_group_arn, target, target_status, target_status_timeout
+                    )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Unable to deregister target {0}".format(target))
 
     # Get all targets for the target group
     target_descriptions = describe_targets(connection, module, target_group_arn)
 
-    module.exit_json(changed=changed, target_health_descriptions=camel_dict_to_snake_dict(target_descriptions), target_group_arn=target_group_arn)
+    module.exit_json(
+        changed=changed,
+        target_health_descriptions=camel_dict_to_snake_dict(target_descriptions),
+        target_group_arn=target_group_arn,
+    )
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10)
@@ -231,7 +234,6 @@ def deregister_target_with_backoff(connection, target_group_arn, target):
 
 
 def deregister_target(connection, module):
-
     """
     Deregisters a target to a target group
 
@@ -253,18 +255,18 @@ def deregister_target(connection, module):
 
     target = dict(Id=target_id)
     if target_port:
-        target['Port'] = target_port
+        target["Port"] = target_port
 
     target_description = describe_targets(connection, module, target_group_arn, target)
-    current_target_state = target_description['TargetHealth']['State']
-    current_target_reason = target_description['TargetHealth'].get('Reason')
+    current_target_state = target_description["TargetHealth"]["State"]
+    current_target_reason = target_description["TargetHealth"].get("Reason")
 
     needs_deregister = False
 
-    if deregister_unused and current_target_state == 'unused':
-        if current_target_reason != 'Target.NotRegistered':
+    if deregister_unused and current_target_state == "unused":
+        if current_target_reason != "Target.NotRegistered":
             needs_deregister = True
-    elif current_target_state not in ['unused', 'draining']:
+    elif current_target_state not in ["unused", "draining"]:
         needs_deregister = True
 
     if needs_deregister:
@@ -274,9 +276,11 @@ def deregister_target(connection, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json(msg="Unable to deregister target {0}".format(target))
     else:
-        if current_target_reason != 'Target.NotRegistered' and current_target_state != 'draining':
-            module.warn(warning="Your specified target has an 'unused' state but is still registered to the target group. " +
-                                "To force deregistration use the 'deregister_unused' option.")
+        if current_target_reason != "Target.NotRegistered" and current_target_state != "draining":
+            module.warn(
+                warning="Your specified target has an 'unused' state but is still registered to the target group. "
+                + "To force deregistration use the 'deregister_unused' option."
+            )
 
     if target_status:
         target_status_check(connection, module, target_group_arn, target, target_status, target_status_timeout)
@@ -284,53 +288,62 @@ def deregister_target(connection, module):
     # Get all targets for the target group
     target_descriptions = describe_targets(connection, module, target_group_arn)
 
-    module.exit_json(changed=changed, target_health_descriptions=camel_dict_to_snake_dict(target_descriptions), target_group_arn=target_group_arn)
+    module.exit_json(
+        changed=changed,
+        target_health_descriptions=camel_dict_to_snake_dict(target_descriptions),
+        target_group_arn=target_group_arn,
+    )
 
 
 def target_status_check(connection, module, target_group_arn, target, target_status, target_status_timeout):
     reached_state = False
     timeout = target_status_timeout + time()
     while time() < timeout:
-        health_state = describe_targets(connection, module, target_group_arn, target)['TargetHealth']['State']
+        health_state = describe_targets(connection, module, target_group_arn, target)["TargetHealth"]["State"]
         if health_state == target_status:
             reached_state = True
             break
         sleep(1)
     if not reached_state:
-        module.fail_json(msg='Status check timeout of {0} exceeded, last status was {1}: '.format(target_status_timeout, health_state))
+        module.fail_json(
+            msg="Status check timeout of {0} exceeded, last status was {1}: ".format(
+                target_status_timeout, health_state
+            )
+        )
 
 
 def main():
-
     argument_spec = dict(
-        deregister_unused=dict(type='bool', default=False),
-        target_az=dict(type='str'),
-        target_group_arn=dict(type='str'),
-        target_group_name=dict(type='str'),
-        target_id=dict(type='str', required=True),
-        target_port=dict(type='int'),
-        target_status=dict(choices=['initial', 'healthy', 'unhealthy', 'unused', 'draining', 'unavailable'], type='str'),
-        target_status_timeout=dict(type='int', default=60),
-        state=dict(required=True, choices=['present', 'absent'], type='str'),
+        deregister_unused=dict(type="bool", default=False),
+        target_az=dict(type="str"),
+        target_group_arn=dict(type="str"),
+        target_group_name=dict(type="str"),
+        target_id=dict(type="str", required=True),
+        target_port=dict(type="int"),
+        target_status=dict(
+            choices=["initial", "healthy", "unhealthy", "unused", "draining", "unavailable"], type="str"
+        ),
+        target_status_timeout=dict(type="int", default=60),
+        state=dict(required=True, choices=["present", "absent"], type="str"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[['target_group_arn', 'target_group_name']],
+        mutually_exclusive=[["target_group_arn", "target_group_name"]],
     )
 
     try:
-        connection = module.client('elbv2')
+        connection = module.client("elbv2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         register_target(connection, module)
     else:
         deregister_target(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

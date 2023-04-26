@@ -235,9 +235,19 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 class Secret(object):
     """An object representation of the Secret described by the self.module args"""
+
     def __init__(
-        self, name, secret_type, secret, resource_policy=None, description="", kms_key_id=None,
-        tags=None, lambda_arn=None, rotation_interval=None, replica_regions=None,
+        self,
+        name,
+        secret_type,
+        secret,
+        resource_policy=None,
+        description="",
+        kms_key_id=None,
+        tags=None,
+        lambda_arn=None,
+        rotation_interval=None,
+        replica_regions=None,
     ):
         self.name = name
         self.description = description
@@ -258,9 +268,7 @@ class Secret(object):
 
     @property
     def create_args(self):
-        args = {
-            "Name": self.name
-        }
+        args = {"Name": self.name}
         if self.description:
             args["Description"] = self.description
         if self.kms_key_id:
@@ -269,10 +277,9 @@ class Secret(object):
             add_replica_regions = []
             for replica in self.replica_regions:
                 if replica["kms_key_id"]:
-                    add_replica_regions.append({'Region': replica["region"],
-                                                'KmsKeyId': replica["kms_key_id"]})
+                    add_replica_regions.append({"Region": replica["region"], "KmsKeyId": replica["kms_key_id"]})
                 else:
-                    add_replica_regions.append({'Region': replica["region"]})
+                    add_replica_regions.append({"Region": replica["region"]})
             args["AddReplicaRegions"] = add_replica_regions
         if self.tags:
             args["Tags"] = ansible_dict_to_boto3_tag_list(self.tags)
@@ -281,9 +288,7 @@ class Secret(object):
 
     @property
     def update_args(self):
-        args = {
-            "SecretId": self.name
-        }
+        args = {"SecretId": self.name}
         if self.description:
             args["Description"] = self.description
         if self.kms_key_id:
@@ -293,9 +298,7 @@ class Secret(object):
 
     @property
     def secret_resource_policy_args(self):
-        args = {
-            "SecretId": self.name
-        }
+        args = {"SecretId": self.name}
         if self.resource_policy:
             args["ResourcePolicy"] = self.resource_policy
         return args
@@ -315,7 +318,7 @@ class SecretsManagerInterface(object):
 
     def __init__(self, module):
         self.module = module
-        self.client = self.module.client('secretsmanager')
+        self.client = self.module.client("secretsmanager")
 
     def get_secret(self, name):
         try:
@@ -376,9 +379,7 @@ class SecretsManagerInterface(object):
             self.module.exit_json(changed=True)
         try:
             replica_regions = []
-            response = self.client.remove_regions_from_replication(
-                SecretId=name,
-                RemoveReplicaRegions=regions)
+            response = self.client.remove_regions_from_replication(SecretId=name, RemoveReplicaRegions=regions)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to replicate secret")
         return response
@@ -390,12 +391,10 @@ class SecretsManagerInterface(object):
             replica_regions = []
             for replica in regions:
                 if replica["kms_key_id"]:
-                    replica_regions.append({'Region': replica["region"], 'KmsKeyId': replica["kms_key_id"]})
+                    replica_regions.append({"Region": replica["region"], "KmsKeyId": replica["kms_key_id"]})
                 else:
-                    replica_regions.append({'Region': replica["region"]})
-            response = self.client.replicate_secret_to_regions(
-                SecretId=name,
-                AddReplicaRegions=replica_regions)
+                    replica_regions.append({"Region": replica["region"]})
+            response = self.client.replicate_secret_to_regions(SecretId=name, AddReplicaRegions=replica_regions)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to replicate secret")
         return response
@@ -436,7 +435,8 @@ class SecretsManagerInterface(object):
                 response = self.client.rotate_secret(
                     SecretId=secret.name,
                     RotationLambdaARN=secret.rotation_lambda_arn,
-                    RotationRules=secret.rotation_rules)
+                    RotationRules=secret.rotation_rules,
+                )
             except (BotoCoreError, ClientError) as e:
                 self.module.fail_json_aws(e, msg="Failed to rotate secret secret")
         else:
@@ -476,7 +476,7 @@ class SecretsManagerInterface(object):
         if desired_secret.kms_key_id != current_secret.get("KmsKeyId"):
             return False
         current_secret_value = self.client.get_secret_value(SecretId=current_secret.get("Name"))
-        if desired_secret.secret_type == 'SecretBinary':
+        if desired_secret.secret_type == "SecretBinary":
             desired_value = to_bytes(desired_secret.secret)
         else:
             desired_value = desired_secret.secret
@@ -537,65 +537,69 @@ def compare_regions(desired_secret, current_secret):
 
 def main():
     replica_args = dict(
-        region=dict(type='str', required=True),
-        kms_key_id=dict(type='str', required=False),
+        region=dict(type="str", required=True),
+        kms_key_id=dict(type="str", required=False),
     )
 
     module = AnsibleAWSModule(
         argument_spec={
-            'name': dict(required=True),
-            'state': dict(choices=['present', 'absent'], default='present'),
-            'overwrite': dict(type='bool', default=True),
-            'description': dict(default=""),
-            'replica': dict(type='list', elements='dict', options=replica_args),
-            'kms_key_id': dict(),
-            'secret_type': dict(choices=['binary', 'string'], default="string"),
-            'secret': dict(default="", no_log=True),
-            'json_secret': dict(type='json', no_log=True),
-            'resource_policy': dict(type='json', default=None),
-            'tags': dict(type='dict', default=None, aliases=['resource_tags']),
-            'purge_tags': dict(type='bool', default=True),
-            'rotation_lambda': dict(),
-            'rotation_interval': dict(type='int', default=30),
-            'recovery_window': dict(type='int', default=30),
+            "name": dict(required=True),
+            "state": dict(choices=["present", "absent"], default="present"),
+            "overwrite": dict(type="bool", default=True),
+            "description": dict(default=""),
+            "replica": dict(type="list", elements="dict", options=replica_args),
+            "kms_key_id": dict(),
+            "secret_type": dict(choices=["binary", "string"], default="string"),
+            "secret": dict(default="", no_log=True),
+            "json_secret": dict(type="json", no_log=True),
+            "resource_policy": dict(type="json", default=None),
+            "tags": dict(type="dict", default=None, aliases=["resource_tags"]),
+            "purge_tags": dict(type="bool", default=True),
+            "rotation_lambda": dict(),
+            "rotation_interval": dict(type="int", default=30),
+            "recovery_window": dict(type="int", default=30),
         },
-        mutually_exclusive=[['secret', 'json_secret']],
+        mutually_exclusive=[["secret", "json_secret"]],
         supports_check_mode=True,
     )
 
     changed = False
-    state = module.params.get('state')
+    state = module.params.get("state")
     secrets_mgr = SecretsManagerInterface(module)
-    recovery_window = module.params.get('recovery_window')
+    recovery_window = module.params.get("recovery_window")
     secret = Secret(
-        module.params.get('name'),
-        module.params.get('secret_type'),
-        module.params.get('secret') or module.params.get('json_secret'),
-        description=module.params.get('description'),
-        replica_regions=module.params.get('replica'),
-        kms_key_id=module.params.get('kms_key_id'),
-        resource_policy=module.params.get('resource_policy'),
-        tags=module.params.get('tags'),
-        lambda_arn=module.params.get('rotation_lambda'),
-        rotation_interval=module.params.get('rotation_interval')
+        module.params.get("name"),
+        module.params.get("secret_type"),
+        module.params.get("secret") or module.params.get("json_secret"),
+        description=module.params.get("description"),
+        replica_regions=module.params.get("replica"),
+        kms_key_id=module.params.get("kms_key_id"),
+        resource_policy=module.params.get("resource_policy"),
+        tags=module.params.get("tags"),
+        lambda_arn=module.params.get("rotation_lambda"),
+        rotation_interval=module.params.get("rotation_interval"),
     )
-    purge_tags = module.params.get('purge_tags')
+    purge_tags = module.params.get("purge_tags")
 
     current_secret = secrets_mgr.get_secret(secret.name)
 
-    if state == 'absent':
+    if state == "absent":
         if current_secret:
             if not current_secret.get("DeletedDate"):
-                result = camel_dict_to_snake_dict(secrets_mgr.delete_secret(secret.name, recovery_window=recovery_window))
+                result = camel_dict_to_snake_dict(
+                    secrets_mgr.delete_secret(secret.name, recovery_window=recovery_window)
+                )
                 changed = True
             elif current_secret.get("DeletedDate") and recovery_window == 0:
-                result = camel_dict_to_snake_dict(secrets_mgr.delete_secret(secret.name, recovery_window=recovery_window))
+                result = camel_dict_to_snake_dict(
+                    secrets_mgr.delete_secret(secret.name, recovery_window=recovery_window)
+                )
                 changed = True
             else:
                 result = "secret already scheduled for deletion"
         else:
             result = "secret does not exist"
-    if state == 'present':
+    if state == "present":
         if current_secret is None:
             result = secrets_mgr.create_secret(secret)
             if secret.resource_policy and result.get("ARN"):
@@ -607,7 +611,7 @@ def main():
                 secrets_mgr.restore_secret(secret.name)
                 changed = True
             if not secrets_mgr.secrets_match(secret, current_secret):
-                overwrite = module.params.get('overwrite')
+                overwrite = module.params.get("overwrite")
                 if overwrite:
                     result = secrets_mgr.update_secret(secret)
                     changed = True
@@ -624,8 +628,8 @@ def main():
                     result = secrets_mgr.put_resource_policy(secret)
                 changed = True
 
-            if module.params.get('tags') is not None:
-                current_tags = boto3_tag_list_to_ansible_dict(current_secret.get('Tags', []))
+            if module.params.get("tags") is not None:
+                current_tags = boto3_tag_list_to_ansible_dict(current_secret.get("Tags", []))
                 tags_to_add, tags_to_remove = compare_aws_tags(current_tags, secret.tags, purge_tags)
                 if tags_to_add:
                     secrets_mgr.tag_secret(secret.name, ansible_dict_to_boto3_tag_list(tags_to_add))
@@ -643,12 +647,12 @@ def main():
                 changed = True
 
         result = camel_dict_to_snake_dict(secrets_mgr.get_secret(secret.name))
-        if result.get('tags', None) is not None:
-            result['tags_dict'] = boto3_tag_list_to_ansible_dict(result.get('tags', []))
+        if result.get("tags", None) is not None:
+            result["tags_dict"] = boto3_tag_list_to_ansible_dict(result.get("tags", []))
         result.pop("response_metadata")
 
     module.exit_json(changed=changed, secret=result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

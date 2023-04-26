@@ -250,10 +250,13 @@ def _get_glue_job(connection, module, glue_job_name):
     :return: boto3 Glue job dict or None if not found
     """
     try:
-        return connection.get_job(aws_retry=True, JobName=glue_job_name)['Job']
-    except is_boto3_error_code('EntityNotFoundException'):
+        return connection.get_job(aws_retry=True, JobName=glue_job_name)["Job"]
+    except is_boto3_error_code("EntityNotFoundException"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
@@ -268,39 +271,43 @@ def _compare_glue_job_params(user_params, current_params):
     # Weirdly, boto3 doesn't return some keys if the value is empty e.g. Description
     # To counter this, add the key if it's missing with a blank value
 
-    if 'Description' not in current_params:
-        current_params['Description'] = ""
-    if 'DefaultArguments' not in current_params:
-        current_params['DefaultArguments'] = dict()
+    if "Description" not in current_params:
+        current_params["Description"] = ""
+    if "DefaultArguments" not in current_params:
+        current_params["DefaultArguments"] = dict()
 
-    if 'AllocatedCapacity' in user_params and user_params['AllocatedCapacity'] != current_params['AllocatedCapacity']:
+    if "AllocatedCapacity" in user_params and user_params["AllocatedCapacity"] != current_params["AllocatedCapacity"]:
         return True
-    if 'Command' in user_params:
-        if user_params['Command']['ScriptLocation'] != current_params['Command']['ScriptLocation']:
+    if "Command" in user_params:
+        if user_params["Command"]["ScriptLocation"] != current_params["Command"]["ScriptLocation"]:
             return True
-        if user_params['Command']['PythonVersion'] != current_params['Command']['PythonVersion']:
+        if user_params["Command"]["PythonVersion"] != current_params["Command"]["PythonVersion"]:
             return True
-    if 'Connections' in user_params and user_params['Connections'] != current_params['Connections']:
+    if "Connections" in user_params and user_params["Connections"] != current_params["Connections"]:
         return True
-    if 'DefaultArguments' in user_params and user_params['DefaultArguments'] != current_params['DefaultArguments']:
+    if "DefaultArguments" in user_params and user_params["DefaultArguments"] != current_params["DefaultArguments"]:
         return True
-    if 'Description' in user_params and user_params['Description'] != current_params['Description']:
+    if "Description" in user_params and user_params["Description"] != current_params["Description"]:
         return True
-    if 'ExecutionProperty' in user_params and user_params['ExecutionProperty']['MaxConcurrentRuns'] != current_params['ExecutionProperty']['MaxConcurrentRuns']:
+    if (
+        "ExecutionProperty" in user_params
+        and user_params["ExecutionProperty"]["MaxConcurrentRuns"]
+        != current_params["ExecutionProperty"]["MaxConcurrentRuns"]
+    ):
         return True
-    if 'GlueVersion' in user_params and user_params['GlueVersion'] != current_params['GlueVersion']:
+    if "GlueVersion" in user_params and user_params["GlueVersion"] != current_params["GlueVersion"]:
         return True
-    if 'MaxRetries' in user_params and user_params['MaxRetries'] != current_params['MaxRetries']:
+    if "MaxRetries" in user_params and user_params["MaxRetries"] != current_params["MaxRetries"]:
         return True
-    if 'Role' in user_params and user_params['Role'] != current_params['Role']:
+    if "Role" in user_params and user_params["Role"] != current_params["Role"]:
         return True
-    if 'Timeout' in user_params and user_params['Timeout'] != current_params['Timeout']:
+    if "Timeout" in user_params and user_params["Timeout"] != current_params["Timeout"]:
         return True
-    if 'GlueVersion' in user_params and user_params['GlueVersion'] != current_params['GlueVersion']:
+    if "GlueVersion" in user_params and user_params["GlueVersion"] != current_params["GlueVersion"]:
         return True
-    if 'WorkerType' in user_params and user_params['WorkerType'] != current_params['WorkerType']:
+    if "WorkerType" in user_params and user_params["WorkerType"] != current_params["WorkerType"]:
         return True
-    if 'NumberOfWorkers' in user_params and user_params['NumberOfWorkers'] != current_params['NumberOfWorkers']:
+    if "NumberOfWorkers" in user_params and user_params["NumberOfWorkers"] != current_params["NumberOfWorkers"]:
         return True
 
     return False
@@ -309,21 +316,23 @@ def _compare_glue_job_params(user_params, current_params):
 def ensure_tags(connection, module, glue_job):
     changed = False
 
-    if module.params.get('tags') is None:
+    if module.params.get("tags") is None:
         return False
 
     account_id, partition = get_aws_account_info(module)
-    arn = 'arn:{0}:glue:{1}:{2}:job/{3}'.format(partition, module.region, account_id, module.params.get('name'))
+    arn = "arn:{0}:glue:{1}:{2}:job/{3}".format(partition, module.region, account_id, module.params.get("name"))
 
     try:
-        existing_tags = connection.get_tags(aws_retry=True, ResourceArn=arn).get('Tags', {})
+        existing_tags = connection.get_tags(aws_retry=True, ResourceArn=arn).get("Tags", {})
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         if module.check_mode:
             existing_tags = {}
         else:
-            module.fail_json_aws(e, msg='Unable to get tags for Glue job %s' % module.params.get('name'))
+            module.fail_json_aws(e, msg="Unable to get tags for Glue job %s" % module.params.get("name"))
 
-    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, module.params.get('tags'), module.params.get('purge_tags'))
+    tags_to_add, tags_to_remove = compare_aws_tags(
+        existing_tags, module.params.get("tags"), module.params.get("purge_tags")
+    )
 
     if tags_to_remove:
         changed = True
@@ -331,7 +340,7 @@ def ensure_tags(connection, module, glue_job):
             try:
                 connection.untag_resource(aws_retry=True, ResourceArn=arn, TagsToRemove=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Glue job %s' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Glue job %s" % module.params.get("name"))
 
     if tags_to_add:
         changed = True
@@ -339,7 +348,7 @@ def ensure_tags(connection, module, glue_job):
             try:
                 connection.tag_resource(aws_retry=True, ResourceArn=arn, TagsToAdd=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Glue job %s' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Glue job %s" % module.params.get("name"))
 
     return changed
 
@@ -356,42 +365,45 @@ def create_or_update_glue_job(connection, module, glue_job):
 
     changed = False
     params = dict()
-    params['Name'] = module.params.get("name")
-    params['Role'] = module.params.get("role")
+    params["Name"] = module.params.get("name")
+    params["Role"] = module.params.get("role")
     if module.params.get("allocated_capacity") is not None:
-        params['AllocatedCapacity'] = module.params.get("allocated_capacity")
+        params["AllocatedCapacity"] = module.params.get("allocated_capacity")
     if module.params.get("command_script_location") is not None:
-        params['Command'] = {'Name': module.params.get("command_name"), 'ScriptLocation': module.params.get("command_script_location")}
+        params["Command"] = {
+            "Name": module.params.get("command_name"),
+            "ScriptLocation": module.params.get("command_script_location"),
+        }
         if module.params.get("command_python_version") is not None:
-            params['Command']['PythonVersion'] = module.params.get("command_python_version")
+            params["Command"]["PythonVersion"] = module.params.get("command_python_version")
     if module.params.get("connections") is not None:
-        params['Connections'] = {'Connections': module.params.get("connections")}
+        params["Connections"] = {"Connections": module.params.get("connections")}
     if module.params.get("default_arguments") is not None:
-        params['DefaultArguments'] = module.params.get("default_arguments")
+        params["DefaultArguments"] = module.params.get("default_arguments")
     if module.params.get("description") is not None:
-        params['Description'] = module.params.get("description")
+        params["Description"] = module.params.get("description")
     if module.params.get("glue_version") is not None:
-        params['GlueVersion'] = module.params.get("glue_version")
+        params["GlueVersion"] = module.params.get("glue_version")
     if module.params.get("max_concurrent_runs") is not None:
-        params['ExecutionProperty'] = {'MaxConcurrentRuns': module.params.get("max_concurrent_runs")}
+        params["ExecutionProperty"] = {"MaxConcurrentRuns": module.params.get("max_concurrent_runs")}
     if module.params.get("max_retries") is not None:
-        params['MaxRetries'] = module.params.get("max_retries")
+        params["MaxRetries"] = module.params.get("max_retries")
     if module.params.get("timeout") is not None:
-        params['Timeout'] = module.params.get("timeout")
+        params["Timeout"] = module.params.get("timeout")
     if module.params.get("glue_version") is not None:
-        params['GlueVersion'] = module.params.get("glue_version")
+        params["GlueVersion"] = module.params.get("glue_version")
     if module.params.get("worker_type") is not None:
-        params['WorkerType'] = module.params.get("worker_type")
+        params["WorkerType"] = module.params.get("worker_type")
     if module.params.get("number_of_workers") is not None:
-        params['NumberOfWorkers'] = module.params.get("number_of_workers")
+        params["NumberOfWorkers"] = module.params.get("number_of_workers")
 
     # If glue_job is not None then check if it needs to be modified, else create it
     if glue_job:
         if _compare_glue_job_params(params, glue_job):
             try:
                 # Update job needs slightly modified params
-                update_params = {'JobName': params['Name'], 'JobUpdate': copy.deepcopy(params)}
-                del update_params['JobUpdate']['Name']
+                update_params = {"JobName": params["Name"], "JobUpdate": copy.deepcopy(params)}
+                del update_params["JobUpdate"]["Name"]
                 if not module.check_mode:
                     connection.update_job(aws_retry=True, **update_params)
                 changed = True
@@ -405,11 +417,11 @@ def create_or_update_glue_job(connection, module, glue_job):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
 
-    glue_job = _get_glue_job(connection, module, params['Name'])
+    glue_job = _get_glue_job(connection, module, params["Name"])
 
     changed |= ensure_tags(connection, module, glue_job)
 
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_job or {}, ignore_list=['DefaultArguments']))
+    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_job or {}, ignore_list=["DefaultArguments"]))
 
 
 def delete_glue_job(connection, module, glue_job):
@@ -426,7 +438,7 @@ def delete_glue_job(connection, module, glue_job):
     if glue_job:
         try:
             if not module.check_mode:
-                connection.delete_job(aws_retry=True, JobName=glue_job['Name'])
+                connection.delete_job(aws_retry=True, JobName=glue_job["Name"])
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
@@ -435,49 +447,45 @@ def delete_glue_job(connection, module, glue_job):
 
 
 def main():
-
-    argument_spec = (
-        dict(
-            allocated_capacity=dict(type='int'),
-            command_name=dict(type='str', default='glueetl'),
-            command_python_version=dict(type='str'),
-            command_script_location=dict(type='str'),
-            connections=dict(type='list', elements='str'),
-            default_arguments=dict(type='dict'),
-            description=dict(type='str'),
-            glue_version=dict(type='str'),
-            max_concurrent_runs=dict(type='int'),
-            max_retries=dict(type='int'),
-            name=dict(required=True, type='str'),
-            number_of_workers=dict(type='int'),
-            purge_tags=dict(type='bool', default=True),
-            role=dict(type='str'),
-            state=dict(required=True, choices=['present', 'absent'], type='str'),
-            tags=dict(type='dict', aliases=['resource_tags']),
-            timeout=dict(type='int'),
-            worker_type=dict(choices=['Standard', 'G.1X', 'G.2X'], type='str'),
-        )
+    argument_spec = dict(
+        allocated_capacity=dict(type="int"),
+        command_name=dict(type="str", default="glueetl"),
+        command_python_version=dict(type="str"),
+        command_script_location=dict(type="str"),
+        connections=dict(type="list", elements="str"),
+        default_arguments=dict(type="dict"),
+        description=dict(type="str"),
+        glue_version=dict(type="str"),
+        max_concurrent_runs=dict(type="int"),
+        max_retries=dict(type="int"),
+        name=dict(required=True, type="str"),
+        number_of_workers=dict(type="int"),
+        purge_tags=dict(type="bool", default=True),
+        role=dict(type="str"),
+        state=dict(required=True, choices=["present", "absent"], type="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        timeout=dict(type="int"),
+        worker_type=dict(choices=["Standard", "G.1X", "G.2X"], type="str"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[
-                                  ('state', 'present', ['role', 'command_script_location'])
-                              ],
-                              supports_check_mode=True
-                              )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[("state", "present", ["role", "command_script_location"])],
+        supports_check_mode=True,
+    )
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
-    connection = module.client('glue', retry_decorator=retry_decorator)
+    connection = module.client("glue", retry_decorator=retry_decorator)
 
     state = module.params.get("state")
 
     glue_job = _get_glue_job(connection, module, module.params.get("name"))
 
-    if state == 'present':
+    if state == "present":
         create_or_update_glue_job(connection, module, glue_job)
     else:
         delete_glue_job(connection, module, glue_job)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

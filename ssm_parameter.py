@@ -264,7 +264,7 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 class ParameterWaiterFactory(BaseWaiterFactory):
     def __init__(self, module):
-        client = module.client('ssm')
+        client = module.client("ssm")
         super(ParameterWaiterFactory, self).__init__(module, client)
 
     @property
@@ -272,22 +272,24 @@ class ParameterWaiterFactory(BaseWaiterFactory):
         data = super(ParameterWaiterFactory, self)._waiter_model_data
         ssm_data = dict(
             parameter_exists=dict(
-                operation='DescribeParameters',
-                delay=1, maxAttempts=20,
+                operation="DescribeParameters",
+                delay=1,
+                maxAttempts=20,
                 acceptors=[
-                    dict(state='retry', matcher='error', expected='ParameterNotFound'),
-                    dict(state='retry', matcher='path', expected=True, argument='length(Parameters[].Name) == `0`'),
-                    dict(state='success', matcher='path', expected=True, argument='length(Parameters[].Name) > `0`'),
-                ]
+                    dict(state="retry", matcher="error", expected="ParameterNotFound"),
+                    dict(state="retry", matcher="path", expected=True, argument="length(Parameters[].Name) == `0`"),
+                    dict(state="success", matcher="path", expected=True, argument="length(Parameters[].Name) > `0`"),
+                ],
             ),
             parameter_deleted=dict(
-                operation='DescribeParameters',
-                delay=1, maxAttempts=20,
+                operation="DescribeParameters",
+                delay=1,
+                maxAttempts=20,
                 acceptors=[
-                    dict(state='retry', matcher='path', expected=True, argument='length(Parameters[].Name) > `0`'),
-                    dict(state='success', matcher='path', expected=True, argument='length(Parameters[]) == `0`'),
-                    dict(state='success', matcher='error', expected='ParameterNotFound'),
-                ]
+                    dict(state="retry", matcher="path", expected=True, argument="length(Parameters[].Name) > `0`"),
+                    dict(state="success", matcher="path", expected=True, argument="length(Parameters[]) == `0`"),
+                    dict(state="success", matcher="error", expected="ParameterNotFound"),
+                ],
             ),
         )
         data.update(ssm_data)
@@ -298,10 +300,10 @@ def _wait_exists(client, module, name):
     if module.check_mode:
         return
     wf = ParameterWaiterFactory(module)
-    waiter = wf.get_waiter('parameter_exists')
+    waiter = wf.get_waiter("parameter_exists")
     try:
         waiter.wait(
-            ParameterFilters=[{'Key': 'Name', "Values": [name]}],
+            ParameterFilters=[{"Key": "Name", "Values": [name]}],
         )
     except botocore.exceptions.WaiterError:
         module.warn("Timeout waiting for parameter to exist")
@@ -316,7 +318,7 @@ def _wait_updated(client, module, name, version):
     for x in range(1, 10):
         try:
             parameter = describe_parameter(client, module, ParameterFilters=[{"Key": "Name", "Values": [name]}])
-            if parameter.get('Version', 0) > version:
+            if parameter.get("Version", 0) > version:
                 return
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to describe parameter while waiting for update")
@@ -327,10 +329,10 @@ def _wait_deleted(client, module, name):
     if module.check_mode:
         return
     wf = ParameterWaiterFactory(module)
-    waiter = wf.get_waiter('parameter_deleted')
+    waiter = wf.get_waiter("parameter_deleted")
     try:
         waiter.wait(
-            ParameterFilters=[{'Key': 'Name', "Values": [name]}],
+            ParameterFilters=[{"Key": "Name", "Values": [name]}],
         )
     except botocore.exceptions.WaiterError:
         module.warn("Timeout waiting for parameter to exist")
@@ -340,24 +342,27 @@ def _wait_deleted(client, module, name):
 
 def tag_parameter(client, module, parameter_name, tags):
     try:
-        return client.add_tags_to_resource(aws_retry=True, ResourceType='Parameter',
-                                           ResourceId=parameter_name, Tags=tags)
+        return client.add_tags_to_resource(
+            aws_retry=True, ResourceType="Parameter", ResourceId=parameter_name, Tags=tags
+        )
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Failed to add tag(s) to parameter")
 
 
 def untag_parameter(client, module, parameter_name, tag_keys):
     try:
-        return client.remove_tags_from_resource(aws_retry=True, ResourceType='Parameter',
-                                                ResourceId=parameter_name, TagKeys=tag_keys)
+        return client.remove_tags_from_resource(
+            aws_retry=True, ResourceType="Parameter", ResourceId=parameter_name, TagKeys=tag_keys
+        )
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Failed to remove tag(s) from parameter")
 
 
 def get_parameter_tags(client, module, parameter_name):
     try:
-        tags = client.list_tags_for_resource(aws_retry=True, ResourceType='Parameter',
-                                             ResourceId=parameter_name)['TagList']
+        tags = client.list_tags_for_resource(aws_retry=True, ResourceType="Parameter", ResourceId=parameter_name)[
+            "TagList"
+        ]
         tags_dict = boto3_tag_list_to_ansible_dict(tags)
         return tags_dict
     except (BotoCoreError, ClientError) as e:
@@ -372,14 +377,12 @@ def update_parameter_tags(client, module, parameter_name, supplied_tags):
         return False, response
 
     current_tags = get_parameter_tags(client, module, parameter_name)
-    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, supplied_tags,
-                                                   module.params.get('purge_tags'))
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, supplied_tags, module.params.get("purge_tags"))
 
     if tags_to_add:
         if module.check_mode:
             return True, response
-        response = tag_parameter(client, module, parameter_name,
-                                 ansible_dict_to_boto3_tag_list(tags_to_add))
+        response = tag_parameter(client, module, parameter_name, ansible_dict_to_boto3_tag_list(tags_to_add))
         changed = True
     if tags_to_remove:
         if module.check_mode:
@@ -407,16 +410,16 @@ def update_parameter(client, module, **args):
 
 @AWSRetry.jittered_backoff()
 def describe_parameter(client, module, **args):
-    paginator = client.get_paginator('describe_parameters')
+    paginator = client.get_paginator("describe_parameters")
     existing_parameter = paginator.paginate(**args).build_full_result()
 
-    if not existing_parameter['Parameters']:
+    if not existing_parameter["Parameters"]:
         return None
 
-    tags_dict = get_parameter_tags(client, module, module.params.get('name'))
-    existing_parameter['Parameters'][0]['tags'] = tags_dict
+    tags_dict = get_parameter_tags(client, module, module.params.get("name"))
+    existing_parameter["Parameters"][0]["tags"] = tags_dict
 
-    return existing_parameter['Parameters'][0]
+    return existing_parameter["Parameters"][0]
 
 
 def create_update_parameter(client, module):
@@ -424,82 +427,78 @@ def create_update_parameter(client, module):
     existing_parameter = None
     response = {}
 
-    args = dict(
-        Name=module.params.get('name'),
-        Type=module.params.get('string_type'),
-        Tier=module.params.get('tier')
-    )
+    args = dict(Name=module.params.get("name"), Type=module.params.get("string_type"), Tier=module.params.get("tier"))
 
-    if (module.params.get('overwrite_value') in ("always", "changed")):
+    if module.params.get("overwrite_value") in ("always", "changed"):
         args.update(Overwrite=True)
     else:
         args.update(Overwrite=False)
 
-    if module.params.get('value') is not None:
-        args.update(Value=module.params.get('value'))
+    if module.params.get("value") is not None:
+        args.update(Value=module.params.get("value"))
 
-    if module.params.get('description'):
-        args.update(Description=module.params.get('description'))
+    if module.params.get("description"):
+        args.update(Description=module.params.get("description"))
 
-    if module.params.get('string_type') == 'SecureString':
-        args.update(KeyId=module.params.get('key_id'))
+    if module.params.get("string_type") == "SecureString":
+        args.update(KeyId=module.params.get("key_id"))
 
     try:
-        existing_parameter = client.get_parameter(aws_retry=True, Name=args['Name'], WithDecryption=True)
+        existing_parameter = client.get_parameter(aws_retry=True, Name=args["Name"], WithDecryption=True)
     except botocore.exceptions.ClientError:
         pass
     except botocore.exceptions.BotoCoreError as e:
         module.fail_json_aws(e, msg="fetching parameter")
 
     if existing_parameter:
-        original_version = existing_parameter['Parameter']['Version']
-        if 'Value' not in args:
-            args['Value'] = existing_parameter['Parameter']['Value']
+        original_version = existing_parameter["Parameter"]["Version"]
+        if "Value" not in args:
+            args["Value"] = existing_parameter["Parameter"]["Value"]
 
-        if (module.params.get('overwrite_value') == 'always'):
+        if module.params.get("overwrite_value") == "always":
             (changed, response) = update_parameter(client, module, **args)
 
-        elif (module.params.get('overwrite_value') == 'changed'):
-            if existing_parameter['Parameter']['Type'] != args['Type']:
+        elif module.params.get("overwrite_value") == "changed":
+            if existing_parameter["Parameter"]["Type"] != args["Type"]:
                 (changed, response) = update_parameter(client, module, **args)
 
-            elif existing_parameter['Parameter']['Value'] != args['Value']:
+            elif existing_parameter["Parameter"]["Value"] != args["Value"]:
                 (changed, response) = update_parameter(client, module, **args)
 
-            elif args.get('Description'):
+            elif args.get("Description"):
                 # Description field not available from get_parameter function so get it from describe_parameters
                 try:
                     describe_existing_parameter = describe_parameter(
-                        client, module,
-                        ParameterFilters=[{"Key": "Name", "Values": [args['Name']]}])
+                        client, module, ParameterFilters=[{"Key": "Name", "Values": [args["Name"]]}]
+                    )
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="getting description value")
 
-                if describe_existing_parameter.get('Description') != args['Description']:
+                if describe_existing_parameter.get("Description") != args["Description"]:
                     (changed, response) = update_parameter(client, module, **args)
         if changed:
-            _wait_updated(client, module, module.params.get('name'), original_version)
+            _wait_updated(client, module, module.params.get("name"), original_version)
 
         # Handle tag updates for existing parameters
-        if module.params.get('overwrite_value') != 'never':
+        if module.params.get("overwrite_value") != "never":
             tags_changed, tags_response = update_parameter_tags(
-                client, module, existing_parameter['Parameter']['Name'],
-                module.params.get('tags'))
+                client, module, existing_parameter["Parameter"]["Name"], module.params.get("tags")
+            )
 
             changed = changed or tags_changed
 
             if tags_response:
-                response['tag_updates'] = tags_response
+                response["tag_updates"] = tags_response
 
     else:
         # Add tags in initial creation request
-        if module.params.get('tags'):
-            args.update(Tags=ansible_dict_to_boto3_tag_list(module.params.get('tags')))
+        if module.params.get("tags"):
+            args.update(Tags=ansible_dict_to_boto3_tag_list(module.params.get("tags")))
             # Overwrite=True conflicts with tags and is not needed for new param
             args.update(Overwrite=False)
 
         (changed, response) = update_parameter(client, module, **args)
-        _wait_exists(client, module, module.params.get('name'))
+        _wait_exists(client, module, module.params.get("name"))
 
     return changed, response
 
@@ -508,8 +507,8 @@ def delete_parameter(client, module):
     response = {}
 
     try:
-        existing_parameter = client.get_parameter(aws_retry=True, Name=module.params.get('name'), WithDecryption=True)
-    except is_boto3_error_code('ParameterNotFound'):
+        existing_parameter = client.get_parameter(aws_retry=True, Name=module.params.get("name"), WithDecryption=True)
+    except is_boto3_error_code("ParameterNotFound"):
         return False, {}
     except botocore.exceptions.ClientError:
         # If we can't describe the parameter we may still be able to delete it
@@ -523,23 +522,23 @@ def delete_parameter(client, module):
         return True, {}
 
     try:
-        response = client.delete_parameter(
-            aws_retry=True,
-            Name=module.params.get('name')
-        )
-    except is_boto3_error_code('ParameterNotFound'):
+        response = client.delete_parameter(aws_retry=True, Name=module.params.get("name"))
+    except is_boto3_error_code("ParameterNotFound"):
         return False, {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="deleting parameter")
 
-    _wait_deleted(client, module, module.params.get('name'))
+    _wait_deleted(client, module, module.params.get("name"))
 
     return True, response
 
 
 def setup_client(module):
     retry_decorator = AWSRetry.jittered_backoff()
-    connection = module.client('ssm', retry_decorator=retry_decorator)
+    connection = module.client("ssm", retry_decorator=retry_decorator)
     return connection
 
 
@@ -548,14 +547,14 @@ def setup_module_object():
         name=dict(required=True),
         description=dict(),
         value=dict(required=False, no_log=True),
-        state=dict(default='present', choices=['present', 'absent']),
-        string_type=dict(default='String', choices=['String', 'StringList', 'SecureString'], aliases=['type']),
-        decryption=dict(default=True, type='bool'),
+        state=dict(default="present", choices=["present", "absent"]),
+        string_type=dict(default="String", choices=["String", "StringList", "SecureString"], aliases=["type"]),
+        decryption=dict(default=True, type="bool"),
         key_id=dict(default="alias/aws/ssm"),
-        overwrite_value=dict(default='changed', choices=['never', 'changed', 'always']),
-        tier=dict(default='Standard', choices=['Standard', 'Advanced', 'Intelligent-Tiering']),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        overwrite_value=dict(default="changed", choices=["never", "changed", "always"]),
+        tier=dict(default="Standard", choices=["Standard", "Advanced", "Intelligent-Tiering"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
 
     return AnsibleAWSModule(
@@ -566,7 +565,7 @@ def setup_module_object():
 
 def main():
     module = setup_module_object()
-    state = module.params.get('state')
+    state = module.params.get("state")
     client = setup_client(module)
 
     invocations = {
@@ -579,18 +578,17 @@ def main():
 
     try:
         parameter_metadata = describe_parameter(
-            client, module,
-            ParameterFilters=[{"Key": "Name", "Values": [module.params.get('name')]}])
-    except is_boto3_error_code('ParameterNotFound'):
+            client, module, ParameterFilters=[{"Key": "Name", "Values": [module.params.get("name")]}]
+        )
+    except is_boto3_error_code("ParameterNotFound"):
         return False, {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="to describe parameter")
     if parameter_metadata:
-        result['parameter_metadata'] = camel_dict_to_snake_dict(parameter_metadata,
-                                                                ignore_list=['tags'])
+        result["parameter_metadata"] = camel_dict_to_snake_dict(parameter_metadata, ignore_list=["tags"])
 
     module.exit_json(changed=changed, **result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

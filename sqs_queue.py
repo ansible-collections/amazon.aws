@@ -277,18 +277,18 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def get_queue_name(module, is_fifo=False):
-    name = module.params.get('name')
-    if not is_fifo or name.endswith('.fifo'):
+    name = module.params.get("name")
+    if not is_fifo or name.endswith(".fifo"):
         return name
-    return name + '.fifo'
+    return name + ".fifo"
 
 
 # NonExistentQueue is explicitly expected when a queue doesn't exist
 @AWSRetry.jittered_backoff()
 def get_queue_url(client, name):
     try:
-        return client.get_queue_url(QueueName=name)['QueueUrl']
-    except is_boto3_error_code('AWS.SimpleQueueService.NonExistentQueue'):
+        return client.get_queue_url(QueueName=name)["QueueUrl"]
+    except is_boto3_error_code("AWS.SimpleQueueService.NonExistentQueue"):
         return None
 
 
@@ -296,13 +296,13 @@ def describe_queue(client, queue_url):
     """
     Description a queue in snake format
     """
-    attributes = client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['All'], aws_retry=True)['Attributes']
+    attributes = client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=["All"], aws_retry=True)["Attributes"]
     description = dict(attributes)
-    description.pop('Policy', None)
-    description.pop('RedrivePolicy', None)
+    description.pop("Policy", None)
+    description.pop("RedrivePolicy", None)
     description = camel_dict_to_snake_dict(description)
-    description['policy'] = attributes.get('Policy', None)
-    description['redrive_policy'] = attributes.get('RedrivePolicy', None)
+    description["policy"] = attributes.get("Policy", None)
+    description["redrive_policy"] = attributes.get("RedrivePolicy", None)
 
     # Boto3 returns everything as a string, convert them back to integers/dicts if
     # that's what we expected.
@@ -310,12 +310,12 @@ def describe_queue(client, queue_url):
         if value is None:
             continue
 
-        if key in ['policy', 'redrive_policy']:
+        if key in ["policy", "redrive_policy"]:
             policy = json.loads(value)
             description[key] = policy
             continue
 
-        if key == 'content_based_deduplication':
+        if key == "content_based_deduplication":
             try:
                 description[key] = bool(value)
             except (TypeError, ValueError):
@@ -331,49 +331,48 @@ def describe_queue(client, queue_url):
 
 
 def create_or_update_sqs_queue(client, module):
-    is_fifo = (module.params.get('queue_type') == 'fifo')
-    kms_master_key_id = module.params.get('kms_master_key_id')
+    is_fifo = module.params.get("queue_type") == "fifo"
+    kms_master_key_id = module.params.get("kms_master_key_id")
     queue_name = get_queue_name(module, is_fifo)
     result = dict(
         name=queue_name,
-        region=module.params.get('region'),
+        region=module.params.get("region"),
         changed=False,
     )
 
     queue_url = get_queue_url(client, queue_name)
-    result['queue_url'] = queue_url
+    result["queue_url"] = queue_url
 
     # Create a dict() to hold attributes that will be passed to boto3
     create_attributes = {}
 
     if not queue_url:
         if is_fifo:
-            create_attributes['FifoQueue'] = "True"
+            create_attributes["FifoQueue"] = "True"
         if kms_master_key_id:
-            create_attributes['KmsMasterKeyId'] = kms_master_key_id
-        result['changed'] = True
+            create_attributes["KmsMasterKeyId"] = kms_master_key_id
+        result["changed"] = True
         if module.check_mode:
             return result
-        queue_url = client.create_queue(QueueName=queue_name, Attributes=create_attributes, aws_retry=True)['QueueUrl']
+        queue_url = client.create_queue(QueueName=queue_name, Attributes=create_attributes, aws_retry=True)["QueueUrl"]
 
     changed, arn = update_sqs_queue(module, client, queue_url)
-    result['changed'] |= changed
-    result['queue_arn'] = arn
+    result["changed"] |= changed
+    result["queue_arn"] = arn
 
     changed, tags = update_tags(client, queue_url, module)
-    result['changed'] |= changed
-    result['tags'] = tags
+    result["changed"] |= changed
+    result["tags"] = tags
 
     result.update(describe_queue(client, queue_url))
 
     COMPATABILITY_KEYS = dict(
-        delay_seconds='delivery_delay',
-        receive_message_wait_time_seconds='receive_message_wait_time',
-        visibility_timeout='default_visibility_timeout',
-        kms_data_key_reuse_period_seconds='kms_data_key_reuse_period',
+        delay_seconds="delivery_delay",
+        receive_message_wait_time_seconds="receive_message_wait_time",
+        visibility_timeout="default_visibility_timeout",
+        kms_data_key_reuse_period_seconds="kms_data_key_reuse_period",
     )
     for key in list(result.keys()):
-
         # The return values changed between boto and boto3, add the old keys too
         # for backwards compatibility
         return_name = COMPATABILITY_KEYS.get(key)
@@ -386,30 +385,32 @@ def create_or_update_sqs_queue(client, module):
 def update_sqs_queue(module, client, queue_url):
     check_mode = module.check_mode
     changed = False
-    existing_attributes = client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['All'], aws_retry=True)['Attributes']
+    existing_attributes = client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=["All"], aws_retry=True)[
+        "Attributes"
+    ]
     new_attributes = snake_dict_to_camel_dict(module.params, capitalize_first=True)
     attributes_to_set = dict()
 
     # Boto3 SQS deals with policies as strings, we want to deal with them as
     # dicts
-    if module.params.get('policy') is not None:
-        policy = module.params.get('policy')
-        current_value = existing_attributes.get('Policy', '{}')
+    if module.params.get("policy") is not None:
+        policy = module.params.get("policy")
+        current_value = existing_attributes.get("Policy", "{}")
         current_policy = json.loads(current_value)
         if compare_policies(current_policy, policy):
-            attributes_to_set['Policy'] = json.dumps(policy)
+            attributes_to_set["Policy"] = json.dumps(policy)
             changed = True
-    if module.params.get('redrive_policy') is not None:
-        policy = module.params.get('redrive_policy')
-        current_value = existing_attributes.get('RedrivePolicy', '{}')
+    if module.params.get("redrive_policy") is not None:
+        policy = module.params.get("redrive_policy")
+        current_value = existing_attributes.get("RedrivePolicy", "{}")
         current_policy = json.loads(current_value)
         if compare_policies(current_policy, policy):
-            attributes_to_set['RedrivePolicy'] = json.dumps(policy)
+            attributes_to_set["RedrivePolicy"] = json.dumps(policy)
             changed = True
 
     for attribute, value in existing_attributes.items():
         # We handle these as a special case because they're IAM policies
-        if attribute in ['Policy', 'RedrivePolicy']:
+        if attribute in ["Policy", "RedrivePolicy"]:
             continue
 
         if attribute not in new_attributes.keys():
@@ -434,23 +435,19 @@ def update_sqs_queue(module, client, queue_url):
     if changed and not check_mode:
         client.set_queue_attributes(QueueUrl=queue_url, Attributes=attributes_to_set, aws_retry=True)
 
-    return changed, existing_attributes.get('queue_arn')
+    return changed, existing_attributes.get("queue_arn")
 
 
 def delete_sqs_queue(client, module):
-    is_fifo = (module.params.get('queue_type') == 'fifo')
+    is_fifo = module.params.get("queue_type") == "fifo"
     queue_name = get_queue_name(module, is_fifo)
-    result = dict(
-        name=queue_name,
-        region=module.params.get('region'),
-        changed=False
-    )
+    result = dict(name=queue_name, region=module.params.get("region"), changed=False)
 
     queue_url = get_queue_url(client, queue_name)
     if not queue_url:
         return result
 
-    result['changed'] = bool(queue_url)
+    result["changed"] = bool(queue_url)
     if not module.check_mode:
         AWSRetry.jittered_backoff()(client.delete_queue)(QueueUrl=queue_url)
 
@@ -458,13 +455,13 @@ def delete_sqs_queue(client, module):
 
 
 def update_tags(client, queue_url, module):
-    new_tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
+    new_tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
     if new_tags is None:
         return False, {}
 
     try:
-        existing_tags = client.list_queue_tags(QueueUrl=queue_url, aws_retry=True)['Tags']
+        existing_tags = client.list_queue_tags(QueueUrl=queue_url, aws_retry=True)["Tags"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, KeyError) as e:
         existing_tags = {}
 
@@ -475,7 +472,7 @@ def update_tags(client, queue_url, module):
             client.untag_queue(QueueUrl=queue_url, TagKeys=tags_to_remove, aws_retry=True)
         if tags_to_add:
             client.tag_queue(QueueUrl=queue_url, Tags=tags_to_add)
-        existing_tags = client.list_queue_tags(QueueUrl=queue_url, aws_retry=True).get('Tags', {})
+        existing_tags = client.list_queue_tags(QueueUrl=queue_url, aws_retry=True).get("Tags", {})
     else:
         existing_tags = new_tags
 
@@ -484,41 +481,40 @@ def update_tags(client, queue_url, module):
 
 
 def main():
-
     argument_spec = dict(
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        name=dict(type='str', required=True),
-        queue_type=dict(type='str', default='standard', choices=['standard', 'fifo']),
-        delay_seconds=dict(type='int', aliases=['delivery_delay']),
-        maximum_message_size=dict(type='int'),
-        message_retention_period=dict(type='int'),
-        policy=dict(type='dict'),
-        receive_message_wait_time_seconds=dict(type='int', aliases=['receive_message_wait_time']),
-        redrive_policy=dict(type='dict'),
-        visibility_timeout=dict(type='int', aliases=['default_visibility_timeout']),
-        kms_master_key_id=dict(type='str'),
-        fifo_throughput_limit=dict(type='str', choices=["perQueue", "perMessageGroupId"]),
-        deduplication_scope=dict(type='str', choices=['queue', 'messageGroup']),
-        kms_data_key_reuse_period_seconds=dict(type='int', aliases=['kms_data_key_reuse_period'], no_log=False),
-        content_based_deduplication=dict(type='bool'),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        queue_type=dict(type="str", default="standard", choices=["standard", "fifo"]),
+        delay_seconds=dict(type="int", aliases=["delivery_delay"]),
+        maximum_message_size=dict(type="int"),
+        message_retention_period=dict(type="int"),
+        policy=dict(type="dict"),
+        receive_message_wait_time_seconds=dict(type="int", aliases=["receive_message_wait_time"]),
+        redrive_policy=dict(type="dict"),
+        visibility_timeout=dict(type="int", aliases=["default_visibility_timeout"]),
+        kms_master_key_id=dict(type="str"),
+        fifo_throughput_limit=dict(type="str", choices=["perQueue", "perMessageGroupId"]),
+        deduplication_scope=dict(type="str", choices=["queue", "messageGroup"]),
+        kms_data_key_reuse_period_seconds=dict(type="int", aliases=["kms_data_key_reuse_period"], no_log=False),
+        content_based_deduplication=dict(type="bool"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    state = module.params.get('state')
-    retry_decorator = AWSRetry.jittered_backoff(catch_extra_error_codes=['AWS.SimpleQueueService.NonExistentQueue'])
+    state = module.params.get("state")
+    retry_decorator = AWSRetry.jittered_backoff(catch_extra_error_codes=["AWS.SimpleQueueService.NonExistentQueue"])
     try:
-        client = module.client('sqs', retry_decorator=retry_decorator)
-        if state == 'present':
+        client = module.client("sqs", retry_decorator=retry_decorator)
+        if state == "present":
             result = create_or_update_sqs_queue(client, module)
-        elif state == 'absent':
+        elif state == "absent":
             result = delete_sqs_queue(client, module)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to control sqs queue')
+        module.fail_json_aws(e, msg="Failed to control sqs queue")
     else:
         module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -261,25 +261,27 @@ def gather_files(fileroot, include=None, exclude=None):
     if os.path.isfile(fileroot):
         fullpath = fileroot
         fstat = os.stat(fullpath)
-        path_array = fileroot.split('/')
+        path_array = fileroot.split("/")
         chopped_path = path_array[-1]
         f_size = fstat[osstat.ST_SIZE]
         f_modified_epoch = fstat[osstat.ST_MTIME]
-        ret.append({
-            'fullpath': fullpath,
-            'chopped_path': chopped_path,
-            'modified_epoch': f_modified_epoch,
-            'bytes': f_size,
-        })
+        ret.append(
+            {
+                "fullpath": fullpath,
+                "chopped_path": chopped_path,
+                "modified_epoch": f_modified_epoch,
+                "bytes": f_size,
+            }
+        )
 
     else:
-        for (dirpath, dirnames, filenames) in os.walk(fileroot):
+        for dirpath, dirnames, filenames in os.walk(fileroot):
             for fn in filenames:
                 fullpath = os.path.join(dirpath, fn)
                 # include/exclude
                 if include:
                     found = False
-                    for x in include.split(','):
+                    for x in include.split(","):
                         if fnmatch.fnmatch(fn, x):
                             found = True
                     if not found:
@@ -288,7 +290,7 @@ def gather_files(fileroot, include=None, exclude=None):
 
                 if exclude:
                     found = False
-                    for x in exclude.split(','):
+                    for x in exclude.split(","):
                         if fnmatch.fnmatch(fn, x):
                             found = True
                     if found:
@@ -299,36 +301,38 @@ def gather_files(fileroot, include=None, exclude=None):
                 fstat = os.stat(fullpath)
                 f_size = fstat[osstat.ST_SIZE]
                 f_modified_epoch = fstat[osstat.ST_MTIME]
-                ret.append({
-                    'fullpath': fullpath,
-                    'chopped_path': chopped_path,
-                    'modified_epoch': f_modified_epoch,
-                    'bytes': f_size,
-                })
+                ret.append(
+                    {
+                        "fullpath": fullpath,
+                        "chopped_path": chopped_path,
+                        "modified_epoch": f_modified_epoch,
+                        "bytes": f_size,
+                    }
+                )
             # dirpath = path *to* the directory
             # dirnames = subdirs *in* our directory
             # filenames
     return ret
 
 
-def calculate_s3_path(filelist, key_prefix=''):
+def calculate_s3_path(filelist, key_prefix=""):
     ret = []
     for fileentry in filelist:
         # don't modify the input dict
         retentry = fileentry.copy()
-        retentry['s3_path'] = os.path.join(key_prefix, fileentry['chopped_path'])
+        retentry["s3_path"] = os.path.join(key_prefix, fileentry["chopped_path"])
         ret.append(retentry)
     return ret
 
 
-def calculate_local_etag(filelist, key_prefix=''):
-    '''Really, "calculate md5", but since AWS uses their own format, we'll just call
-       it a "local etag". TODO optimization: only calculate if remote key exists.'''
+def calculate_local_etag(filelist, key_prefix=""):
+    """Really, "calculate md5", but since AWS uses their own format, we'll just call
+    it a "local etag". TODO optimization: only calculate if remote key exists."""
     ret = []
     for fileentry in filelist:
         # don't modify the input dict
         retentry = fileentry.copy()
-        retentry['local_etag'] = calculate_multipart_etag(fileentry['fullpath'])
+        retentry["local_etag"] = calculate_multipart_etag(fileentry["fullpath"])
         ret.append(retentry)
     return ret
 
@@ -337,20 +341,20 @@ def determine_mimetypes(filelist, override_map):
     ret = []
     for fileentry in filelist:
         retentry = fileentry.copy()
-        localfile = fileentry['fullpath']
+        localfile = fileentry["fullpath"]
 
         # reminder: file extension is '.txt', not 'txt'.
         file_extension = os.path.splitext(localfile)[1]
         if override_map and override_map.get(file_extension):
             # override? use it.
-            retentry['mime_type'] = override_map[file_extension]
+            retentry["mime_type"] = override_map[file_extension]
         else:
             # else sniff it
-            retentry['mime_type'], retentry['encoding'] = mimetypes.guess_type(localfile, strict=False)
+            retentry["mime_type"], retentry["encoding"] = mimetypes.guess_type(localfile, strict=False)
 
         # might be None or '' from one of the above. Not a great type but better than nothing.
-        if not retentry['mime_type']:
-            retentry['mime_type'] = 'application/octet-stream'
+        if not retentry["mime_type"]:
+            retentry["mime_type"] = "application/octet-stream"
 
         ret.append(retentry)
 
@@ -362,10 +366,10 @@ def head_s3(s3, bucket, s3keys):
     for entry in s3keys:
         retentry = entry.copy()
         try:
-            retentry['s3_head'] = s3.head_object(Bucket=bucket, Key=entry['s3_path'])
+            retentry["s3_head"] = s3.head_object(Bucket=bucket, Key=entry["s3_path"])
         # 404 (Missing) - File doesn't exist, we'll need to upload
         # 403 (Denied) - Sometimes we can write but not read, assume we'll need to upload
-        except is_boto3_error_code(['404', '403']):
+        except is_boto3_error_code(["404", "403"]):
             pass
         retkeys.append(retentry)
     return retkeys
@@ -375,106 +379,127 @@ def filter_list(s3, bucket, s3filelist, strategy):
     keeplist = list(s3filelist)
 
     for e in keeplist:
-        e['_strategy'] = strategy
+        e["_strategy"] = strategy
 
     # init/fetch info from S3 if we're going to use it for comparisons
-    if not strategy == 'force':
+    if not strategy == "force":
         keeplist = head_s3(s3, bucket, s3filelist)
 
     # now actually run the strategies
-    if strategy == 'checksum':
+    if strategy == "checksum":
         for entry in keeplist:
-            if entry.get('s3_head'):
+            if entry.get("s3_head"):
                 # since we have a remote s3 object, compare the values.
-                if entry['s3_head']['ETag'] == entry['local_etag']:
+                if entry["s3_head"]["ETag"] == entry["local_etag"]:
                     # files match, so remove the entry
-                    entry['skip_flag'] = True
+                    entry["skip_flag"] = True
                 else:
                     # file etags don't match, keep the entry.
                     pass
             else:  # we don't have an etag, so we'll keep it.
                 pass
-    elif strategy == 'date_size':
+    elif strategy == "date_size":
         for entry in keeplist:
-            if entry.get('s3_head'):
+            if entry.get("s3_head"):
                 # fstat = entry['stat']
-                local_modified_epoch = entry['modified_epoch']
-                local_size = entry['bytes']
+                local_modified_epoch = entry["modified_epoch"]
+                local_size = entry["bytes"]
 
                 # py2's datetime doesn't have a timestamp() field, so we have to revert to something more awkward.
                 # remote_modified_epoch = entry['s3_head']['LastModified'].timestamp()
-                remote_modified_datetime = entry['s3_head']['LastModified']
-                delta = (remote_modified_datetime - datetime.datetime(1970, 1, 1, tzinfo=tz.tzutc()))
+                remote_modified_datetime = entry["s3_head"]["LastModified"]
+                delta = remote_modified_datetime - datetime.datetime(1970, 1, 1, tzinfo=tz.tzutc())
                 remote_modified_epoch = delta.seconds + (delta.days * 86400)
 
-                remote_size = entry['s3_head']['ContentLength']
+                remote_size = entry["s3_head"]["ContentLength"]
 
-                entry['whytime'] = '{0} / {1}'.format(local_modified_epoch, remote_modified_epoch)
-                entry['whysize'] = '{0} / {1}'.format(local_size, remote_size)
+                entry["whytime"] = "{0} / {1}".format(local_modified_epoch, remote_modified_epoch)
+                entry["whysize"] = "{0} / {1}".format(local_size, remote_size)
 
                 if local_modified_epoch <= remote_modified_epoch and local_size == remote_size:
-                    entry['skip_flag'] = True
+                    entry["skip_flag"] = True
             else:
-                entry['why'] = "no s3_head"
+                entry["why"] = "no s3_head"
     # else: probably 'force'. Basically we don't skip with any with other strategies.
     else:
         pass
 
     # prune 'please skip' entries, if any.
-    return [x for x in keeplist if not x.get('skip_flag')]
+    return [x for x in keeplist if not x.get("skip_flag")]
 
 
 def upload_files(s3, bucket, filelist, params):
     ret = []
     for entry in filelist:
-        args = {
-            'ContentType': entry['mime_type']
-        }
-        if params.get('permission'):
-            args['ACL'] = params['permission']
-        if params.get('cache_control'):
-            args['CacheControl'] = params['cache_control']
-        if params.get('storage_class'):
-            args['StorageClass'] = params['storage_class']
+        args = {"ContentType": entry["mime_type"]}
+        if params.get("permission"):
+            args["ACL"] = params["permission"]
+        if params.get("cache_control"):
+            args["CacheControl"] = params["cache_control"]
+        if params.get("storage_class"):
+            args["StorageClass"] = params["storage_class"]
         # if this fails exception is caught in main()
-        s3.upload_file(entry['fullpath'], bucket, entry['s3_path'], ExtraArgs=args, Callback=None, Config=None)
+        s3.upload_file(entry["fullpath"], bucket, entry["s3_path"], ExtraArgs=args, Callback=None, Config=None)
         ret.append(entry)
     return ret
 
 
 def remove_files(s3, sourcelist, params):
-    bucket = params.get('bucket')
-    key_prefix = params.get('key_prefix')
-    paginator = s3.get_paginator('list_objects_v2')
-    current_keys = set(x['Key'] for x in paginator.paginate(Bucket=bucket, Prefix=key_prefix).build_full_result().get('Contents', []))
-    keep_keys = set(to_text(source_file['s3_path']) for source_file in sourcelist)
+    bucket = params.get("bucket")
+    key_prefix = params.get("key_prefix")
+    paginator = s3.get_paginator("list_objects_v2")
+    current_keys = set(
+        x["Key"] for x in paginator.paginate(Bucket=bucket, Prefix=key_prefix).build_full_result().get("Contents", [])
+    )
+    keep_keys = set(to_text(source_file["s3_path"]) for source_file in sourcelist)
     delete_keys = list(current_keys - keep_keys)
 
     # can delete 1000 objects at a time
-    groups_of_keys = [delete_keys[i:i + 1000] for i in range(0, len(delete_keys), 1000)]
+    groups_of_keys = [delete_keys[i:i + 1000] for i in range(0, len(delete_keys), 1000)]  # fmt:skip
     for keys in groups_of_keys:
-        s3.delete_objects(Bucket=bucket, Delete={'Objects': [{'Key': key} for key in keys]})
+        s3.delete_objects(Bucket=bucket, Delete={"Objects": [{"Key": key} for key in keys]})
 
     return delete_keys
 
 
 def main():
     argument_spec = dict(
-        mode=dict(choices=['push'], default='push'),
-        file_change_strategy=dict(choices=['force', 'date_size', 'checksum'], default='date_size'),
+        mode=dict(choices=["push"], default="push"),
+        file_change_strategy=dict(choices=["force", "date_size", "checksum"], default="date_size"),
         bucket=dict(required=True),
-        key_prefix=dict(required=False, default='', no_log=False),
-        file_root=dict(required=True, type='path'),
-        permission=dict(required=False, choices=['private', 'public-read', 'public-read-write', 'authenticated-read',
-                                                 'aws-exec-read', 'bucket-owner-read', 'bucket-owner-full-control']),
-        mime_map=dict(required=False, type='dict'),
+        key_prefix=dict(required=False, default="", no_log=False),
+        file_root=dict(required=True, type="path"),
+        permission=dict(
+            required=False,
+            choices=[
+                "private",
+                "public-read",
+                "public-read-write",
+                "authenticated-read",
+                "aws-exec-read",
+                "bucket-owner-read",
+                "bucket-owner-full-control",
+            ],
+        ),
+        mime_map=dict(required=False, type="dict"),
         exclude=dict(required=False, default=".*"),
         include=dict(required=False, default="*"),
-        cache_control=dict(required=False, default=''),
-        delete=dict(required=False, type='bool', default=False),
-        storage_class=dict(required=False, default='STANDARD',
-                           choices=['STANDARD', 'REDUCED_REDUNDANCY', 'STANDARD_IA', 'ONEZONE_IA',
-                                    'INTELLIGENT_TIERING', 'GLACIER', 'DEEP_ARCHIVE', 'OUTPOSTS']),
+        cache_control=dict(required=False, default=""),
+        delete=dict(required=False, type="bool", default=False),
+        storage_class=dict(
+            required=False,
+            default="STANDARD",
+            choices=[
+                "STANDARD",
+                "REDUCED_REDUNDANCY",
+                "STANDARD_IA",
+                "ONEZONE_IA",
+                "INTELLIGENT_TIERING",
+                "GLACIER",
+                "DEEP_ARCHIVE",
+                "OUTPOSTS",
+            ],
+        ),
         # future options: encoding, metadata, retries
     )
 
@@ -483,36 +508,43 @@ def main():
     )
 
     if not HAS_DATEUTIL:
-        module.fail_json(msg='dateutil required for this module')
+        module.fail_json(msg="dateutil required for this module")
 
     result = {}
-    mode = module.params['mode']
+    mode = module.params["mode"]
 
     try:
-        s3 = module.client('s3')
+        s3 = module.client("s3")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    if mode == 'push':
+    if mode == "push":
         try:
-            result['filelist_initial'] = gather_files(module.params['file_root'], exclude=module.params['exclude'], include=module.params['include'])
-            result['filelist_typed'] = determine_mimetypes(result['filelist_initial'], module.params.get('mime_map'))
-            result['filelist_s3'] = calculate_s3_path(result['filelist_typed'], module.params['key_prefix'])
+            result["filelist_initial"] = gather_files(
+                module.params["file_root"], exclude=module.params["exclude"], include=module.params["include"]
+            )
+            result["filelist_typed"] = determine_mimetypes(result["filelist_initial"], module.params.get("mime_map"))
+            result["filelist_s3"] = calculate_s3_path(result["filelist_typed"], module.params["key_prefix"])
             try:
-                result['filelist_local_etag'] = calculate_local_etag(result['filelist_s3'])
+                result["filelist_local_etag"] = calculate_local_etag(result["filelist_s3"])
             except ValueError as e:
-                if module.params['file_change_strategy'] == 'checksum':
-                    module.fail_json_aws(e, 'Unable to calculate checksum.  If running in FIPS mode, you may need to use another file_change_strategy')
-                result['filelist_local_etag'] = result['filelist_s3'].copy()
-            result['filelist_actionable'] = filter_list(s3, module.params['bucket'], result['filelist_local_etag'], module.params['file_change_strategy'])
-            result['uploads'] = upload_files(s3, module.params['bucket'], result['filelist_actionable'], module.params)
+                if module.params["file_change_strategy"] == "checksum":
+                    module.fail_json_aws(
+                        e,
+                        "Unable to calculate checksum.  If running in FIPS mode, you may need to use another file_change_strategy",
+                    )
+                result["filelist_local_etag"] = result["filelist_s3"].copy()
+            result["filelist_actionable"] = filter_list(
+                s3, module.params["bucket"], result["filelist_local_etag"], module.params["file_change_strategy"]
+            )
+            result["uploads"] = upload_files(s3, module.params["bucket"], result["filelist_actionable"], module.params)
 
-            if module.params['delete']:
-                result['removed'] = remove_files(s3, result['filelist_local_etag'], module.params)
+            if module.params["delete"]:
+                result["removed"] = remove_files(s3, result["filelist_local_etag"], module.params)
 
             # mark changed if we actually upload something.
-            if result.get('uploads') or result.get('removed'):
-                result['changed'] = True
+            if result.get("uploads") or result.get("removed"):
+                result["changed"] = True
             # result.update(filelist=actionable_filelist)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to push file")
@@ -520,5 +552,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

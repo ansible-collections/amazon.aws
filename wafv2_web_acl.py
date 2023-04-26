@@ -339,26 +339,35 @@ class WebACL:
         self.fail_json_aws = fail_json_aws
         self.existing_acl, self.id, self.locktoken = self.get_web_acl()
 
-    def update(self, default_action, description, rules, sampled_requests, cloudwatch_metrics, metric_name, custom_response_bodies):
+    def update(
+        self,
+        default_action,
+        description,
+        rules,
+        sampled_requests,
+        cloudwatch_metrics,
+        metric_name,
+        custom_response_bodies,
+    ):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'Id': self.id,
-            'DefaultAction': default_action,
-            'Rules': rules,
-            'VisibilityConfig': {
-                'SampledRequestsEnabled': sampled_requests,
-                'CloudWatchMetricsEnabled': cloudwatch_metrics,
-                'MetricName': metric_name
+            "Name": self.name,
+            "Scope": self.scope,
+            "Id": self.id,
+            "DefaultAction": default_action,
+            "Rules": rules,
+            "VisibilityConfig": {
+                "SampledRequestsEnabled": sampled_requests,
+                "CloudWatchMetricsEnabled": cloudwatch_metrics,
+                "MetricName": metric_name,
             },
-            'LockToken': self.locktoken
+            "LockToken": self.locktoken,
         }
 
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
 
         if custom_response_bodies:
-            req_obj['CustomResponseBodies'] = custom_response_bodies
+            req_obj["CustomResponseBodies"] = custom_response_bodies
 
         try:
             response = self.wafv2.update_web_acl(**req_obj)
@@ -370,12 +379,7 @@ class WebACL:
 
     def remove(self):
         try:
-            response = self.wafv2.delete_web_acl(
-                Name=self.name,
-                Scope=self.scope,
-                Id=self.id,
-                LockToken=self.locktoken
-            )
+            response = self.wafv2.delete_web_acl(Name=self.name, Scope=self.scope, Id=self.id, LockToken=self.locktoken)
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to remove wafv2 web acl.")
         return response
@@ -392,47 +396,53 @@ class WebACL:
         existing_acl = None
         response = self.list()
 
-        for item in response.get('WebACLs'):
-            if item.get('Name') == self.name:
-                id = item.get('Id')
-                locktoken = item.get('LockToken')
-                arn = item.get('ARN')
+        for item in response.get("WebACLs"):
+            if item.get("Name") == self.name:
+                id = item.get("Id")
+                locktoken = item.get("LockToken")
+                arn = item.get("ARN")
 
         if id:
             try:
-                existing_acl = self.wafv2.get_web_acl(
-                    Name=self.name,
-                    Scope=self.scope,
-                    Id=id
-                )
+                existing_acl = self.wafv2.get_web_acl(Name=self.name, Scope=self.scope, Id=id)
             except (BotoCoreError, ClientError) as e:
                 self.fail_json_aws(e, msg="Failed to get wafv2 web acl.")
             tags = describe_wafv2_tags(self.wafv2, arn, self.fail_json_aws)
-            existing_acl['tags'] = tags
+            existing_acl["tags"] = tags
         return existing_acl, id, locktoken
 
     def list(self):
         return wafv2_list_web_acls(self.wafv2, self.scope, self.fail_json_aws)
 
-    def create(self, default_action, rules, sampled_requests, cloudwatch_metrics, metric_name, tags, description, custom_response_bodies):
+    def create(
+        self,
+        default_action,
+        rules,
+        sampled_requests,
+        cloudwatch_metrics,
+        metric_name,
+        tags,
+        description,
+        custom_response_bodies,
+    ):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'DefaultAction': default_action,
-            'Rules': rules,
-            'VisibilityConfig': {
-                'SampledRequestsEnabled': sampled_requests,
-                'CloudWatchMetricsEnabled': cloudwatch_metrics,
-                'MetricName': metric_name
-            }
+            "Name": self.name,
+            "Scope": self.scope,
+            "DefaultAction": default_action,
+            "Rules": rules,
+            "VisibilityConfig": {
+                "SampledRequestsEnabled": sampled_requests,
+                "CloudWatchMetricsEnabled": cloudwatch_metrics,
+                "MetricName": metric_name,
+            },
         }
 
         if custom_response_bodies:
-            req_obj['CustomResponseBodies'] = custom_response_bodies
+            req_obj["CustomResponseBodies"] = custom_response_bodies
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
         if tags:
-            req_obj['Tags'] = ansible_dict_to_boto3_tag_list(tags)
+            req_obj["Tags"] = ansible_dict_to_boto3_tag_list(tags)
 
         try:
             response = self.wafv2.create_web_acl(**req_obj)
@@ -444,7 +454,6 @@ class WebACL:
 
 
 def format_result(result):
-
     # We were returning details of the Web ACL inside a "web_acl"  parameter on
     # creation, keep returning it to avoid breaking existing playbooks, but also
     # return what the docs said we return (and returned when no change happened)
@@ -452,31 +461,30 @@ def format_result(result):
     if "WebACL" in retval:
         retval.update(retval["WebACL"])
 
-    return camel_dict_to_snake_dict(retval, ignore_list=['tags'])
+    return camel_dict_to_snake_dict(retval, ignore_list=["tags"])
 
 
 def main():
-
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        name=dict(type='str', required=True),
-        scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL']),
-        description=dict(type='str'),
-        default_action=dict(type='str', choices=['Block', 'Allow']),
-        rules=dict(type='list', elements='dict'),
-        sampled_requests=dict(type='bool', default=False),
-        cloudwatch_metrics=dict(type='bool', default=True),
-        metric_name=dict(type='str'),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(default=True, type='bool'),
-        custom_response_bodies=dict(type='dict'),
-        purge_rules=dict(default=True, type='bool'),
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        scope=dict(type="str", required=True, choices=["CLOUDFRONT", "REGIONAL"]),
+        description=dict(type="str"),
+        default_action=dict(type="str", choices=["Block", "Allow"]),
+        rules=dict(type="list", elements="dict"),
+        sampled_requests=dict(type="bool", default=False),
+        cloudwatch_metrics=dict(type="bool", default=True),
+        metric_name=dict(type="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(default=True, type="bool"),
+        custom_response_bodies=dict(type="dict"),
+        purge_rules=dict(default=True, type="bool"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         supports_check_mode=True,
-        required_if=[['state', 'present', ['default_action', 'rules']]]
+        required_if=[["state", "present", ["default_action", "rules"]]],
     )
 
     state = module.params.get("state")
@@ -495,16 +503,16 @@ def main():
 
     custom_response_bodies = module.params.get("custom_response_bodies")
     if custom_response_bodies:
-        module.require_botocore_at_least('1.20.40', reason='to set custom response bodies')
+        module.require_botocore_at_least("1.20.40", reason="to set custom response bodies")
         custom_response_bodies = {}
 
         for custom_name, body in module.params.get("custom_response_bodies").items():
             custom_response_bodies[custom_name] = snake_dict_to_camel_dict(body, capitalize_first=True)
 
-    if default_action == 'Block':
-        default_action = {'Block': {}}
-    elif default_action == 'Allow':
-        default_action = {'Allow': {}}
+    if default_action == "Block":
+        default_action = {"Block": {}}
+    elif default_action == "Allow":
+        default_action = {"Allow": {}}
 
     if rules:
         rules = []
@@ -514,17 +522,19 @@ def main():
     if not metric_name:
         metric_name = name
 
-    wafv2 = module.client('wafv2')
+    wafv2 = module.client("wafv2")
     web_acl = WebACL(wafv2, name, scope, module.fail_json_aws)
     change = False
     retval = {}
 
-    if state == 'present':
+    if state == "present":
         if web_acl.get():
-            tags_changed = ensure_wafv2_tags(wafv2, web_acl.get().get('WebACL').get('ARN'), tags, purge_tags, module.fail_json_aws, module.check_mode)
-            change, rules = compare_priority_rules(web_acl.get().get('WebACL').get('Rules'), rules, purge_rules, state)
-            change = change or (description and web_acl.get().get('WebACL').get('Description') != description)
-            change = change or (default_action and web_acl.get().get('WebACL').get('DefaultAction') != default_action)
+            tags_changed = ensure_wafv2_tags(
+                wafv2, web_acl.get().get("WebACL").get("ARN"), tags, purge_tags, module.fail_json_aws, module.check_mode
+            )
+            change, rules = compare_priority_rules(web_acl.get().get("WebACL").get("Rules"), rules, purge_rules, state)
+            change = change or (description and web_acl.get().get("WebACL").get("Description") != description)
+            change = change or (default_action and web_acl.get().get("WebACL").get("DefaultAction") != default_action)
 
             if change and not check_mode:
                 retval = web_acl.update(
@@ -534,7 +544,7 @@ def main():
                     sampled_requests,
                     cloudwatch_metrics,
                     metric_name,
-                    custom_response_bodies
+                    custom_response_bodies,
                 )
             elif tags_changed:
                 retval, id, locktoken = web_acl.get_web_acl()
@@ -554,14 +564,16 @@ def main():
                     metric_name,
                     tags,
                     description,
-                    custom_response_bodies
+                    custom_response_bodies,
                 )
 
-    elif state == 'absent':
+    elif state == "absent":
         if web_acl.get():
             if rules:
                 if len(rules) > 0:
-                    change, rules = compare_priority_rules(web_acl.get().get('WebACL').get('Rules'), rules, purge_rules, state)
+                    change, rules = compare_priority_rules(
+                        web_acl.get().get("WebACL").get("Rules"), rules, purge_rules, state
+                    )
                     if change and not check_mode:
                         retval = web_acl.update(
                             default_action,
@@ -570,7 +582,7 @@ def main():
                             sampled_requests,
                             cloudwatch_metrics,
                             metric_name,
-                            custom_response_bodies
+                            custom_response_bodies,
                         )
             else:
                 change = True
@@ -580,5 +592,5 @@ def main():
     module.exit_json(changed=change, **format_result(retval))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

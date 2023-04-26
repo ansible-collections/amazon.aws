@@ -143,16 +143,29 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-class ElastiCacheManager():
+class ElastiCacheManager:
 
     """Handles elasticache creation and destruction"""
 
-    EXIST_STATUSES = ['available', 'creating', 'rebooting', 'modifying']
+    EXIST_STATUSES = ["available", "creating", "rebooting", "modifying"]
 
-    def __init__(self, module, name, engine, cache_engine_version, node_type,
-                 num_nodes, cache_port, cache_parameter_group, cache_subnet_group,
-                 cache_security_groups, security_group_ids, zone, wait,
-                 hard_modify):
+    def __init__(
+        self,
+        module,
+        name,
+        engine,
+        cache_engine_version,
+        node_type,
+        num_nodes,
+        cache_port,
+        cache_parameter_group,
+        cache_subnet_group,
+        cache_security_groups,
+        security_group_ids,
+        zone,
+        wait,
+        hard_modify,
+    ):
         self.module = module
         self.name = name
         self.engine = engine.lower()
@@ -170,7 +183,7 @@ class ElastiCacheManager():
 
         self.changed = False
         self.data = None
-        self.status = 'gone'
+        self.status = "gone"
         self.conn = self._get_elasticache_connection()
         self._refresh_data()
 
@@ -195,32 +208,34 @@ class ElastiCacheManager():
 
     def create(self):
         """Create an ElastiCache cluster"""
-        if self.status == 'available':
+        if self.status == "available":
             return
-        if self.status in ['creating', 'rebooting', 'modifying']:
+        if self.status in ["creating", "rebooting", "modifying"]:
             if self.wait:
-                self._wait_for_status('available')
+                self._wait_for_status("available")
             return
-        if self.status == 'deleting':
+        if self.status == "deleting":
             if self.wait:
-                self._wait_for_status('gone')
+                self._wait_for_status("gone")
             else:
                 msg = "'%s' is currently deleting. Cannot create."
                 self.module.fail_json(msg=msg % self.name)
 
-        kwargs = dict(CacheClusterId=self.name,
-                      NumCacheNodes=self.num_nodes,
-                      CacheNodeType=self.node_type,
-                      Engine=self.engine,
-                      EngineVersion=self.cache_engine_version,
-                      CacheSecurityGroupNames=self.cache_security_groups,
-                      SecurityGroupIds=self.security_group_ids,
-                      CacheParameterGroupName=self.cache_parameter_group,
-                      CacheSubnetGroupName=self.cache_subnet_group)
+        kwargs = dict(
+            CacheClusterId=self.name,
+            NumCacheNodes=self.num_nodes,
+            CacheNodeType=self.node_type,
+            Engine=self.engine,
+            EngineVersion=self.cache_engine_version,
+            CacheSecurityGroupNames=self.cache_security_groups,
+            SecurityGroupIds=self.security_group_ids,
+            CacheParameterGroupName=self.cache_parameter_group,
+            CacheSubnetGroupName=self.cache_subnet_group,
+        )
         if self.cache_port is not None:
-            kwargs['Port'] = self.cache_port
+            kwargs["Port"] = self.cache_port
         if self.zone is not None:
-            kwargs['PreferredAvailabilityZone'] = self.zone
+            kwargs["PreferredAvailabilityZone"] = self.zone
 
         try:
             self.conn.create_cache_cluster(**kwargs)
@@ -232,20 +247,20 @@ class ElastiCacheManager():
 
         self.changed = True
         if self.wait:
-            self._wait_for_status('available')
+            self._wait_for_status("available")
         return True
 
     def delete(self):
         """Destroy an ElastiCache cluster"""
-        if self.status == 'gone':
+        if self.status == "gone":
             return
-        if self.status == 'deleting':
+        if self.status == "deleting":
             if self.wait:
-                self._wait_for_status('gone')
+                self._wait_for_status("gone")
             return
-        if self.status in ['creating', 'rebooting', 'modifying']:
+        if self.status in ["creating", "rebooting", "modifying"]:
             if self.wait:
-                self._wait_for_status('available')
+                self._wait_for_status("available")
             else:
                 msg = "'%s' is currently %s. Cannot delete."
                 self.module.fail_json(msg=msg % (self.name, self.status))
@@ -255,12 +270,12 @@ class ElastiCacheManager():
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Failed to delete cache cluster")
 
-        cache_cluster_data = response['CacheCluster']
+        cache_cluster_data = response["CacheCluster"]
         self._refresh_data(cache_cluster_data)
 
         self.changed = True
         if self.wait:
-            self._wait_for_status('gone')
+            self._wait_for_status("gone")
 
     def sync(self):
         """Sync settings to cluster if required"""
@@ -268,9 +283,9 @@ class ElastiCacheManager():
             msg = "'%s' is %s. Cannot sync."
             self.module.fail_json(msg=msg % (self.name, self.status))
 
-        if self.status in ['creating', 'rebooting', 'modifying']:
+        if self.status in ["creating", "rebooting", "modifying"]:
             if self.wait:
-                self._wait_for_status('available')
+                self._wait_for_status("available")
             else:
                 # Cluster can only be synced if available. If we can't wait
                 # for this, then just be done.
@@ -294,14 +309,16 @@ class ElastiCacheManager():
         """Modify the cache cluster. Note it's only possible to modify a few select options."""
         nodes_to_remove = self._get_nodes_to_remove()
         try:
-            self.conn.modify_cache_cluster(CacheClusterId=self.name,
-                                           NumCacheNodes=self.num_nodes,
-                                           CacheNodeIdsToRemove=nodes_to_remove,
-                                           CacheSecurityGroupNames=self.cache_security_groups,
-                                           CacheParameterGroupName=self.cache_parameter_group,
-                                           SecurityGroupIds=self.security_group_ids,
-                                           ApplyImmediately=True,
-                                           EngineVersion=self.cache_engine_version)
+            self.conn.modify_cache_cluster(
+                CacheClusterId=self.name,
+                NumCacheNodes=self.num_nodes,
+                CacheNodeIdsToRemove=nodes_to_remove,
+                CacheSecurityGroupNames=self.cache_security_groups,
+                CacheParameterGroupName=self.cache_parameter_group,
+                SecurityGroupIds=self.security_group_ids,
+                ApplyImmediately=True,
+                EngineVersion=self.cache_engine_version,
+            )
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Failed to modify cache cluster")
 
@@ -309,27 +326,26 @@ class ElastiCacheManager():
 
         self.changed = True
         if self.wait:
-            self._wait_for_status('available')
+            self._wait_for_status("available")
 
     def reboot(self):
         """Reboot the cache cluster"""
         if not self.exists():
             msg = "'%s' is %s. Cannot reboot."
             self.module.fail_json(msg=msg % (self.name, self.status))
-        if self.status == 'rebooting':
+        if self.status == "rebooting":
             return
-        if self.status in ['creating', 'modifying']:
+        if self.status in ["creating", "modifying"]:
             if self.wait:
-                self._wait_for_status('available')
+                self._wait_for_status("available")
             else:
                 msg = "'%s' is currently %s. Cannot reboot."
                 self.module.fail_json(msg=msg % (self.name, self.status))
 
         # Collect ALL nodes for reboot
-        cache_node_ids = [cn['CacheNodeId'] for cn in self.data['CacheNodes']]
+        cache_node_ids = [cn["CacheNodeId"] for cn in self.data["CacheNodes"]]
         try:
-            self.conn.reboot_cache_cluster(CacheClusterId=self.name,
-                                           CacheNodeIdsToReboot=cache_node_ids)
+            self.conn.reboot_cache_cluster(CacheClusterId=self.name, CacheNodeIdsToReboot=cache_node_ids)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Failed to reboot cache cluster")
 
@@ -337,26 +353,18 @@ class ElastiCacheManager():
 
         self.changed = True
         if self.wait:
-            self._wait_for_status('available')
+            self._wait_for_status("available")
 
     def get_info(self):
         """Return basic info about the cache cluster"""
-        info = {
-            'name': self.name,
-            'status': self.status
-        }
+        info = {"name": self.name, "status": self.status}
         if self.data:
-            info['data'] = self.data
+            info["data"] = self.data
         return info
 
     def _wait_for_status(self, awaited_status):
         """Wait for status to change from present status to awaited_status"""
-        status_map = {
-            'creating': 'available',
-            'rebooting': 'available',
-            'modifying': 'available',
-            'deleting': 'gone'
-        }
+        status_map = {"creating": "available", "rebooting": "available", "modifying": "available", "deleting": "gone"}
         if self.status == awaited_status:
             # No need to wait, we're already done
             return
@@ -377,27 +385,24 @@ class ElastiCacheManager():
     def _requires_modification(self):
         """Check if cluster requires (nondestructive) modification"""
         # Check modifiable data attributes
-        modifiable_data = {
-            'NumCacheNodes': self.num_nodes,
-            'EngineVersion': self.cache_engine_version
-        }
+        modifiable_data = {"NumCacheNodes": self.num_nodes, "EngineVersion": self.cache_engine_version}
         for key, value in modifiable_data.items():
             if value is not None and value and self.data[key] != value:
                 return True
 
         # Check cache security groups
         cache_security_groups = []
-        for sg in self.data['CacheSecurityGroups']:
-            cache_security_groups.append(sg['CacheSecurityGroupName'])
+        for sg in self.data["CacheSecurityGroups"]:
+            cache_security_groups.append(sg["CacheSecurityGroupName"])
         if set(cache_security_groups) != set(self.cache_security_groups):
             return True
 
         # check vpc security groups
         if self.security_group_ids:
             vpc_security_groups = []
-            security_groups = self.data.get('SecurityGroups', [])
+            security_groups = self.data.get("SecurityGroups", [])
             for sg in security_groups:
-                vpc_security_groups.append(sg['SecurityGroupId'])
+                vpc_security_groups.append(sg["SecurityGroupId"])
             if set(vpc_security_groups) != set(self.security_group_ids):
                 return True
 
@@ -408,13 +413,13 @@ class ElastiCacheManager():
         Check whether a destroy and create is required to synchronize cluster.
         """
         unmodifiable_data = {
-            'node_type': self.data['CacheNodeType'],
-            'engine': self.data['Engine'],
-            'cache_port': self._get_port()
+            "node_type": self.data["CacheNodeType"],
+            "engine": self.data["Engine"],
+            "cache_port": self._get_port(),
         }
         # Only check for modifications if zone is specified
         if self.zone is not None:
-            unmodifiable_data['zone'] = self.data['PreferredAvailabilityZone']
+            unmodifiable_data["zone"] = self.data["PreferredAvailabilityZone"]
         for key, value in unmodifiable_data.items():
             if getattr(self, key) is not None and getattr(self, key) != value:
                 return True
@@ -423,18 +428,18 @@ class ElastiCacheManager():
     def _get_elasticache_connection(self):
         """Get an elasticache connection"""
         try:
-            return self.module.client('elasticache')
+            return self.module.client("elasticache")
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg='Failed to connect to AWS')
+            self.module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     def _get_port(self):
         """Get the port. Where this information is retrieved from is engine dependent."""
-        if self.data['Engine'] == 'memcached':
-            return self.data['ConfigurationEndpoint']['Port']
-        elif self.data['Engine'] == 'redis':
+        if self.data["Engine"] == "memcached":
+            return self.data["ConfigurationEndpoint"]["Port"]
+        elif self.data["Engine"] == "redis":
             # Redis only supports a single node (presently) so just use
             # the first and only
-            return self.data['CacheNodes'][0]['Endpoint']['Port']
+            return self.data["CacheNodes"][0]["Endpoint"]["Port"]
 
     def _refresh_data(self, cache_cluster_data=None):
         """Refresh data about this cache cluster"""
@@ -442,25 +447,25 @@ class ElastiCacheManager():
         if cache_cluster_data is None:
             try:
                 response = self.conn.describe_cache_clusters(CacheClusterId=self.name, ShowCacheNodeInfo=True)
-            except is_boto3_error_code('CacheClusterNotFound'):
+            except is_boto3_error_code("CacheClusterNotFound"):
                 self.data = None
-                self.status = 'gone'
+                self.status = "gone"
                 return
             except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
                 self.module.fail_json_aws(e, msg="Failed to describe cache clusters")
-            cache_cluster_data = response['CacheClusters'][0]
+            cache_cluster_data = response["CacheClusters"][0]
         self.data = cache_cluster_data
-        self.status = self.data['CacheClusterStatus']
+        self.status = self.data["CacheClusterStatus"]
 
         # The documentation for elasticache lies -- status on rebooting is set
         # to 'rebooting cache cluster nodes' instead of 'rebooting'. Fix it
         # here to make status checks etc. more sane.
-        if self.status == 'rebooting cache cluster nodes':
-            self.status = 'rebooting'
+        if self.status == "rebooting cache cluster nodes":
+            self.status = "rebooting"
 
     def _get_nodes_to_remove(self):
         """If there are nodes to remove, it figures out which need to be removed"""
-        num_nodes_to_remove = self.data['NumCacheNodes'] - self.num_nodes
+        num_nodes_to_remove = self.data["NumCacheNodes"] - self.num_nodes
         if num_nodes_to_remove <= 0:
             return []
 
@@ -468,76 +473,83 @@ class ElastiCacheManager():
             msg = "'%s' requires removal of cache nodes. 'hard_modify' must be set to true to proceed."
             self.module.fail_json(msg=msg % self.name)
 
-        cache_node_ids = [cn['CacheNodeId'] for cn in self.data['CacheNodes']]
+        cache_node_ids = [cn["CacheNodeId"] for cn in self.data["CacheNodes"]]
         return cache_node_ids[-num_nodes_to_remove:]
 
 
 def main():
-    """ elasticache ansible module """
+    """elasticache ansible module"""
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent', 'rebooted']),
+        state=dict(required=True, choices=["present", "absent", "rebooted"]),
         name=dict(required=True),
-        engine=dict(default='memcached'),
+        engine=dict(default="memcached"),
         cache_engine_version=dict(default=""),
-        node_type=dict(default='cache.t2.small'),
-        num_nodes=dict(default=1, type='int'),
+        node_type=dict(default="cache.t2.small"),
+        num_nodes=dict(default=1, type="int"),
         # alias for compat with the original PR 1950
-        cache_parameter_group=dict(default="", aliases=['parameter_group']),
-        cache_port=dict(type='int'),
+        cache_parameter_group=dict(default="", aliases=["parameter_group"]),
+        cache_port=dict(type="int"),
         cache_subnet_group=dict(default=""),
-        cache_security_groups=dict(default=[], type='list', elements='str'),
-        security_group_ids=dict(default=[], type='list', elements='str'),
+        cache_security_groups=dict(default=[], type="list", elements="str"),
+        security_group_ids=dict(default=[], type="list", elements="str"),
         zone=dict(),
-        wait=dict(default=True, type='bool'),
-        hard_modify=dict(type='bool'),
+        wait=dict(default=True, type="bool"),
+        hard_modify=dict(type="bool"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
     )
 
-    name = module.params['name']
-    state = module.params['state']
-    engine = module.params['engine']
-    cache_engine_version = module.params['cache_engine_version']
-    node_type = module.params['node_type']
-    num_nodes = module.params['num_nodes']
-    cache_port = module.params['cache_port']
-    cache_subnet_group = module.params['cache_subnet_group']
-    cache_security_groups = module.params['cache_security_groups']
-    security_group_ids = module.params['security_group_ids']
-    zone = module.params['zone']
-    wait = module.params['wait']
-    hard_modify = module.params['hard_modify']
-    cache_parameter_group = module.params['cache_parameter_group']
+    name = module.params["name"]
+    state = module.params["state"]
+    engine = module.params["engine"]
+    cache_engine_version = module.params["cache_engine_version"]
+    node_type = module.params["node_type"]
+    num_nodes = module.params["num_nodes"]
+    cache_port = module.params["cache_port"]
+    cache_subnet_group = module.params["cache_subnet_group"]
+    cache_security_groups = module.params["cache_security_groups"]
+    security_group_ids = module.params["security_group_ids"]
+    zone = module.params["zone"]
+    wait = module.params["wait"]
+    hard_modify = module.params["hard_modify"]
+    cache_parameter_group = module.params["cache_parameter_group"]
 
     if cache_subnet_group and cache_security_groups:
         module.fail_json(msg="Can't specify both cache_subnet_group and cache_security_groups")
 
-    if state == 'present' and not num_nodes:
+    if state == "present" and not num_nodes:
         module.fail_json(msg="'num_nodes' is a required parameter. Please specify num_nodes > 0")
 
-    elasticache_manager = ElastiCacheManager(module, name, engine,
-                                             cache_engine_version, node_type,
-                                             num_nodes, cache_port,
-                                             cache_parameter_group,
-                                             cache_subnet_group,
-                                             cache_security_groups,
-                                             security_group_ids, zone, wait,
-                                             hard_modify)
+    elasticache_manager = ElastiCacheManager(
+        module,
+        name,
+        engine,
+        cache_engine_version,
+        node_type,
+        num_nodes,
+        cache_port,
+        cache_parameter_group,
+        cache_subnet_group,
+        cache_security_groups,
+        security_group_ids,
+        zone,
+        wait,
+        hard_modify,
+    )
 
-    if state == 'present':
+    if state == "present":
         elasticache_manager.ensure_present()
-    elif state == 'absent':
+    elif state == "absent":
         elasticache_manager.ensure_absent()
-    elif state == 'rebooted':
+    elif state == "rebooted":
         elasticache_manager.ensure_rebooted()
 
-    facts_result = dict(changed=elasticache_manager.changed,
-                        elasticache=elasticache_manager.get_info())
+    facts_result = dict(changed=elasticache_manager.changed, elasticache=elasticache_manager.get_info())
 
     module.exit_json(**facts_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

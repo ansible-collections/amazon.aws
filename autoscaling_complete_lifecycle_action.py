@@ -70,26 +70,26 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     argument_spec = dict(
-        asg_name=dict(required=True, type='str'),
-        lifecycle_hook_name=dict(required=True, type='str'),
-        lifecycle_action_result=dict(required=True, type='str', choices=['CONTINUE', 'ABANDON']),
-        instance_id=dict(required=True, type='str')
+        asg_name=dict(required=True, type="str"),
+        lifecycle_hook_name=dict(required=True, type="str"),
+        lifecycle_action_result=dict(required=True, type="str", choices=["CONTINUE", "ABANDON"]),
+        instance_id=dict(required=True, type="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
-    asg_name = module.params.get('asg_name')
-    lifecycle_hook_name = module.params.get('lifecycle_hook_name')
-    lifecycle_action_result = module.params.get('lifecycle_action_result')
-    instance_id = module.params.get('instance_id')
+    asg_name = module.params.get("asg_name")
+    lifecycle_hook_name = module.params.get("lifecycle_hook_name")
+    lifecycle_action_result = module.params.get("lifecycle_action_result")
+    instance_id = module.params.get("instance_id")
 
-    autoscaling = module.client('autoscaling')
+    autoscaling = module.client("autoscaling")
     try:
         results = autoscaling.complete_lifecycle_action(
             LifecycleHookName=lifecycle_hook_name,
             AutoScalingGroupName=asg_name,
             LifecycleActionResult=lifecycle_action_result,
-            InstanceId=instance_id
+            InstanceId=instance_id,
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to completes the lifecycle action")
@@ -97,5 +97,5 @@ def main():
     module.exit_json(results=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

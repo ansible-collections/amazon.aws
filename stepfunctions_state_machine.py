@@ -101,36 +101,36 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def manage_state_machine(state, sfn_client, module):
     state_machine_arn = get_state_machine_arn(sfn_client, module)
 
-    if state == 'present':
+    if state == "present":
         if state_machine_arn is None:
             create(sfn_client, module)
         else:
             update(state_machine_arn, sfn_client, module)
-    elif state == 'absent':
+    elif state == "absent":
         if state_machine_arn is not None:
             remove(state_machine_arn, sfn_client, module)
 
-    check_mode(module, msg='State is up-to-date.')
+    check_mode(module, msg="State is up-to-date.")
     module.exit_json(changed=False, state_machine_arn=state_machine_arn)
 
 
 def create(sfn_client, module):
-    check_mode(module, msg='State machine would be created.', changed=True)
+    check_mode(module, msg="State machine would be created.", changed=True)
 
-    tags = module.params.get('tags')
-    sfn_tags = ansible_dict_to_boto3_tag_list(tags, tag_name_key_name='key', tag_value_key_name='value') if tags else []
+    tags = module.params.get("tags")
+    sfn_tags = ansible_dict_to_boto3_tag_list(tags, tag_name_key_name="key", tag_value_key_name="value") if tags else []
 
     state_machine = sfn_client.create_state_machine(
-        name=module.params.get('name'),
-        definition=module.params.get('definition'),
-        roleArn=module.params.get('role_arn'),
-        tags=sfn_tags
+        name=module.params.get("name"),
+        definition=module.params.get("definition"),
+        roleArn=module.params.get("role_arn"),
+        tags=sfn_tags,
     )
-    module.exit_json(changed=True, state_machine_arn=state_machine.get('stateMachineArn'))
+    module.exit_json(changed=True, state_machine_arn=state_machine.get("stateMachineArn"))
 
 
 def remove(state_machine_arn, sfn_client, module):
-    check_mode(module, msg='State machine would be deleted: {0}'.format(state_machine_arn), changed=True)
+    check_mode(module, msg="State machine would be deleted: {0}".format(state_machine_arn), changed=True)
 
     sfn_client.delete_state_machine(stateMachineArn=state_machine_arn)
     module.exit_json(changed=True, state_machine_arn=state_machine_arn)
@@ -140,29 +140,28 @@ def update(state_machine_arn, sfn_client, module):
     tags_to_add, tags_to_remove = compare_tags(state_machine_arn, sfn_client, module)
 
     if params_changed(state_machine_arn, sfn_client, module) or tags_to_add or tags_to_remove:
-        check_mode(module, msg='State machine would be updated: {0}'.format(state_machine_arn), changed=True)
+        check_mode(module, msg="State machine would be updated: {0}".format(state_machine_arn), changed=True)
 
         sfn_client.update_state_machine(
             stateMachineArn=state_machine_arn,
-            definition=module.params.get('definition'),
-            roleArn=module.params.get('role_arn')
+            definition=module.params.get("definition"),
+            roleArn=module.params.get("role_arn"),
         )
-        sfn_client.untag_resource(
-            resourceArn=state_machine_arn,
-            tagKeys=tags_to_remove
-        )
+        sfn_client.untag_resource(resourceArn=state_machine_arn, tagKeys=tags_to_remove)
         sfn_client.tag_resource(
             resourceArn=state_machine_arn,
-            tags=ansible_dict_to_boto3_tag_list(tags_to_add, tag_name_key_name='key', tag_value_key_name='value')
+            tags=ansible_dict_to_boto3_tag_list(tags_to_add, tag_name_key_name="key", tag_value_key_name="value"),
         )
 
         module.exit_json(changed=True, state_machine_arn=state_machine_arn)
 
 
 def compare_tags(state_machine_arn, sfn_client, module):
-    new_tags = module.params.get('tags')
-    current_tags = sfn_client.list_tags_for_resource(resourceArn=state_machine_arn).get('tags')
-    return compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags), new_tags if new_tags else {}, module.params.get('purge_tags'))
+    new_tags = module.params.get("tags")
+    current_tags = sfn_client.list_tags_for_resource(resourceArn=state_machine_arn).get("tags")
+    return compare_aws_tags(
+        boto3_tag_list_to_ansible_dict(current_tags), new_tags if new_tags else {}, module.params.get("purge_tags")
+    )
 
 
 def params_changed(state_machine_arn, sfn_client, module):
@@ -171,7 +170,9 @@ def params_changed(state_machine_arn, sfn_client, module):
     from the existing state machine parameters.
     """
     current = sfn_client.describe_state_machine(stateMachineArn=state_machine_arn)
-    return current.get('definition') != module.params.get('definition') or current.get('roleArn') != module.params.get('role_arn')
+    return current.get("definition") != module.params.get("definition") or current.get("roleArn") != module.params.get(
+        "role_arn"
+    )
 
 
 def get_state_machine_arn(sfn_client, module):
@@ -179,42 +180,42 @@ def get_state_machine_arn(sfn_client, module):
     Finds the state machine ARN based on the name parameter. Returns None if
     there is no state machine with this name.
     """
-    target_name = module.params.get('name')
-    all_state_machines = sfn_client.list_state_machines(aws_retry=True).get('stateMachines')
+    target_name = module.params.get("name")
+    all_state_machines = sfn_client.list_state_machines(aws_retry=True).get("stateMachines")
 
     for state_machine in all_state_machines:
-        if state_machine.get('name') == target_name:
-            return state_machine.get('stateMachineArn')
+        if state_machine.get("name") == target_name:
+            return state_machine.get("stateMachineArn")
 
 
-def check_mode(module, msg='', changed=False):
+def check_mode(module, msg="", changed=False):
     if module.check_mode:
         module.exit_json(changed=changed, output=msg)
 
 
 def main():
     module_args = dict(
-        name=dict(type='str', required=True),
-        definition=dict(type='json'),
-        role_arn=dict(type='str'),
-        state=dict(choices=['present', 'absent'], default='present'),
-        tags=dict(default=None, type='dict', aliases=['resource_tags']),
-        purge_tags=dict(default=True, type='bool'),
+        name=dict(type="str", required=True),
+        definition=dict(type="json"),
+        role_arn=dict(type="str"),
+        state=dict(choices=["present", "absent"], default="present"),
+        tags=dict(default=None, type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(default=True, type="bool"),
     )
     module = AnsibleAWSModule(
         argument_spec=module_args,
-        required_if=[('state', 'present', ['role_arn']), ('state', 'present', ['definition'])],
-        supports_check_mode=True
+        required_if=[("state", "present", ["role_arn"]), ("state", "present", ["definition"])],
+        supports_check_mode=True,
     )
 
-    sfn_client = module.client('stepfunctions', retry_decorator=AWSRetry.jittered_backoff(retries=5))
-    state = module.params.get('state')
+    sfn_client = module.client("stepfunctions", retry_decorator=AWSRetry.jittered_backoff(retries=5))
+    state = module.params.get("state")
 
     try:
         manage_state_machine(state, sfn_client, module)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to manage state machine')
+        module.fail_json_aws(e, msg="Failed to manage state machine")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

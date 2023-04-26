@@ -697,13 +697,13 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 DEPLOYMENT_CONTROLLER_TYPE_MAP = {
-    'type': 'str',
+    "type": "str",
 }
 
 DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
-    'maximum_percent': 'int',
-    'minimum_healthy_percent': 'int',
-    'deployment_circuit_breaker': 'dict',
+    "maximum_percent": "int",
+    "minimum_healthy_percent": "int",
+    "deployment_circuit_breaker": "dict",
 }
 
 
@@ -712,32 +712,32 @@ class EcsServiceManager:
 
     def __init__(self, module):
         self.module = module
-        self.ecs = module.client('ecs')
-        self.ec2 = module.client('ec2')
+        self.ecs = module.client("ecs")
+        self.ec2 = module.client("ec2")
 
     def format_network_configuration(self, network_config):
         result = dict()
-        if network_config['subnets'] is not None:
-            result['subnets'] = network_config['subnets']
+        if network_config["subnets"] is not None:
+            result["subnets"] = network_config["subnets"]
         else:
             self.module.fail_json(msg="Network configuration must include subnets")
-        if network_config['security_groups'] is not None:
-            groups = network_config['security_groups']
-            if any(not sg.startswith('sg-') for sg in groups):
+        if network_config["security_groups"] is not None:
+            groups = network_config["security_groups"]
+            if any(not sg.startswith("sg-") for sg in groups):
                 try:
-                    vpc_id = self.ec2.describe_subnets(SubnetIds=[result['subnets'][0]])['Subnets'][0]['VpcId']
+                    vpc_id = self.ec2.describe_subnets(SubnetIds=[result["subnets"][0]])["Subnets"][0]["VpcId"]
                     groups = get_ec2_security_group_ids_from_names(groups, self.ec2, vpc_id)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg="Couldn't look up security groups")
-            result['securityGroups'] = groups
-        if network_config['assign_public_ip'] is not None:
-            if network_config['assign_public_ip'] is True:
-                result['assignPublicIp'] = "ENABLED"
+            result["securityGroups"] = groups
+        if network_config["assign_public_ip"] is not None:
+            if network_config["assign_public_ip"] is True:
+                result["assignPublicIp"] = "ENABLED"
             else:
-                result['assignPublicIp'] = "DISABLED"
+                result["assignPublicIp"] = "DISABLED"
         return dict(awsvpcConfiguration=result)
 
-    def find_in_array(self, array_of_services, service_name, field_name='serviceArn'):
+    def find_in_array(self, array_of_services, service_name, field_name="serviceArn"):
         for c in array_of_services:
             if c[field_name].endswith(service_name):
                 return c
@@ -747,18 +747,18 @@ class EcsServiceManager:
         response = self.ecs.describe_services(
             cluster=cluster_name,
             services=[service_name],
-            include=['TAGS'],
+            include=["TAGS"],
         )
-        msg = ''
+        msg = ""
 
-        if len(response['failures']) > 0:
-            c = self.find_in_array(response['failures'], service_name, 'arn')
-            msg += ", failure reason is " + c['reason']
-            if c and c['reason'] == 'MISSING':
+        if len(response["failures"]) > 0:
+            c = self.find_in_array(response["failures"], service_name, "arn")
+            msg += ", failure reason is " + c["reason"]
+            if c and c["reason"] == "MISSING":
                 return None
             # fall thru and look through found ones
-        if len(response['services']) > 0:
-            c = self.find_in_array(response['services'], service_name)
+        if len(response["services"]) > 0:
+            c = self.find_in_array(response["services"], service_name)
             if c:
                 return c
         raise Exception("Unknown problem describing service %s." % service_name)
@@ -768,21 +768,21 @@ class EcsServiceManager:
         #   arn:aws:ecs:eu-central-1:123456789:task-definition/ansible-fargate-nginx:3
         # but the user is just entering
         #   ansible-fargate-nginx:3
-        if expected['task_definition'] != existing['taskDefinition'].split('/')[-1]:
-            if existing.get('deploymentController', {}).get('type', None) != 'CODE_DEPLOY':
+        if expected["task_definition"] != existing["taskDefinition"].split("/")[-1]:
+            if existing.get("deploymentController", {}).get("type", None) != "CODE_DEPLOY":
                 return False
 
-        if expected.get('health_check_grace_period_seconds'):
-            if expected.get('health_check_grace_period_seconds') != existing.get('healthCheckGracePeriodSeconds'):
+        if expected.get("health_check_grace_period_seconds"):
+            if expected.get("health_check_grace_period_seconds") != existing.get("healthCheckGracePeriodSeconds"):
                 return False
 
-        if (expected['load_balancers'] or []) != existing['loadBalancers']:
+        if (expected["load_balancers"] or []) != existing["loadBalancers"]:
             return False
 
-        if (expected['propagate_tags'] or "NONE") != existing['propagateTags']:
+        if (expected["propagate_tags"] or "NONE") != existing["propagateTags"]:
             return False
 
-        if boto3_tag_list_to_ansible_dict(existing.get('tags', [])) != (expected['tags'] or {}):
+        if boto3_tag_list_to_ansible_dict(existing.get("tags", [])) != (expected["tags"] or {}):
             return False
 
         if (expected["enable_execute_command"] or False) != existing.get("enableExecuteCommand", False):
@@ -790,8 +790,8 @@ class EcsServiceManager:
 
         # expected is params. DAEMON scheduling strategy returns desired count equal to
         # number of instances running; don't check desired count if scheduling strat is daemon
-        if (expected['scheduling_strategy'] != 'DAEMON'):
-            if (expected['desired_count'] or 0) != existing['desiredCount']:
+        if expected["scheduling_strategy"] != "DAEMON":
+            if (expected["desired_count"] or 0) != existing["desiredCount"]:
                 return False
 
         return True
@@ -820,7 +820,6 @@ class EcsServiceManager:
         propagate_tags,
         enable_execute_command,
     ):
-
         params = dict(
             cluster=cluster_name,
             serviceName=service_name,
@@ -829,47 +828,49 @@ class EcsServiceManager:
             clientToken=client_token,
             role=role,
             deploymentConfiguration=deployment_configuration,
-            placementStrategy=placement_strategy
+            placementStrategy=placement_strategy,
         )
         if network_configuration:
-            params['networkConfiguration'] = network_configuration
+            params["networkConfiguration"] = network_configuration
         if deployment_controller:
-            params['deploymentController'] = deployment_controller
+            params["deploymentController"] = deployment_controller
         if launch_type:
-            params['launchType'] = launch_type
+            params["launchType"] = launch_type
         if platform_version:
-            params['platformVersion'] = platform_version
+            params["platformVersion"] = platform_version
         if self.health_check_setable(params) and health_check_grace_period_seconds is not None:
-            params['healthCheckGracePeriodSeconds'] = health_check_grace_period_seconds
+            params["healthCheckGracePeriodSeconds"] = health_check_grace_period_seconds
         if service_registries:
-            params['serviceRegistries'] = service_registries
+            params["serviceRegistries"] = service_registries
 
         # filter placement_constraint and left only those where value is not None
         # use-case: `distinctInstance` type should never contain `expression`, but None will fail `str` type validation
         if placement_constraints:
-            params['placementConstraints'] = [{key: value for key, value in constraint.items() if value is not None}
-                                              for constraint in placement_constraints]
+            params["placementConstraints"] = [
+                {key: value for key, value in constraint.items() if value is not None}
+                for constraint in placement_constraints
+            ]
 
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
-            params['desiredCount'] = desired_count
+            params["desiredCount"] = desired_count
         if capacity_provider_strategy:
-            params['capacityProviderStrategy'] = capacity_provider_strategy
+            params["capacityProviderStrategy"] = capacity_provider_strategy
         if propagate_tags:
-            params['propagateTags'] = propagate_tags
+            params["propagateTags"] = propagate_tags
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
-            params['desiredCount'] = desired_count
+            params["desiredCount"] = desired_count
         if tags:
-            params['tags'] = ansible_dict_to_boto3_tag_list(tags, 'key', 'value')
+            params["tags"] = ansible_dict_to_boto3_tag_list(tags, "key", "value")
 
         if scheduling_strategy:
-            params['schedulingStrategy'] = scheduling_strategy
+            params["schedulingStrategy"] = scheduling_strategy
         if enable_execute_command:
             params["enableExecuteCommand"] = enable_execute_command
 
         response = self.ecs.create_service(**params)
-        return self.jsonize(response['service'])
+        return self.jsonize(response["service"])
 
     def update_service(
         self,
@@ -893,242 +894,264 @@ class EcsServiceManager:
             cluster=cluster_name,
             service=service_name,
             taskDefinition=task_definition,
-            deploymentConfiguration=deployment_configuration)
+            deploymentConfiguration=deployment_configuration,
+        )
         # filter placement_constraint and left only those where value is not None
         # use-case: `distinctInstance` type should never contain `expression`, but None will fail `str` type validation
         if placement_constraints:
-            params['placementConstraints'] = [{key: value for key, value in constraint.items() if value is not None}
-                                              for constraint in placement_constraints]
+            params["placementConstraints"] = [
+                {key: value for key, value in constraint.items() if value is not None}
+                for constraint in placement_constraints
+            ]
 
         if purge_placement_constraints and not placement_constraints:
-            params['placementConstraints'] = []
+            params["placementConstraints"] = []
 
         if placement_strategy:
-            params['placementStrategy'] = placement_strategy
+            params["placementStrategy"] = placement_strategy
 
         if purge_placement_strategy and not placement_strategy:
-            params['placementStrategy'] = []
+            params["placementStrategy"] = []
 
         if network_configuration:
-            params['networkConfiguration'] = network_configuration
+            params["networkConfiguration"] = network_configuration
         if force_new_deployment:
-            params['forceNewDeployment'] = force_new_deployment
+            params["forceNewDeployment"] = force_new_deployment
         if capacity_provider_strategy:
-            params['capacityProviderStrategy'] = capacity_provider_strategy
+            params["capacityProviderStrategy"] = capacity_provider_strategy
         if health_check_grace_period_seconds is not None:
-            params['healthCheckGracePeriodSeconds'] = health_check_grace_period_seconds
+            params["healthCheckGracePeriodSeconds"] = health_check_grace_period_seconds
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
-            params['desiredCount'] = desired_count
+            params["desiredCount"] = desired_count
         if enable_execute_command is not None:
             params["enableExecuteCommand"] = enable_execute_command
 
         if load_balancers:
-            params['loadBalancers'] = load_balancers
+            params["loadBalancers"] = load_balancers
 
         response = self.ecs.update_service(**params)
 
-        return self.jsonize(response['service'])
+        return self.jsonize(response["service"])
 
     def jsonize(self, service):
         # some fields are datetime which is not JSON serializable
         # make them strings
-        if 'createdAt' in service:
-            service['createdAt'] = str(service['createdAt'])
-        if 'deployments' in service:
-            for d in service['deployments']:
-                if 'createdAt' in d:
-                    d['createdAt'] = str(d['createdAt'])
-                if 'updatedAt' in d:
-                    d['updatedAt'] = str(d['updatedAt'])
-        if 'events' in service:
-            for e in service['events']:
-                if 'createdAt' in e:
-                    e['createdAt'] = str(e['createdAt'])
+        if "createdAt" in service:
+            service["createdAt"] = str(service["createdAt"])
+        if "deployments" in service:
+            for d in service["deployments"]:
+                if "createdAt" in d:
+                    d["createdAt"] = str(d["createdAt"])
+                if "updatedAt" in d:
+                    d["updatedAt"] = str(d["updatedAt"])
+        if "events" in service:
+            for e in service["events"]:
+                if "createdAt" in e:
+                    e["createdAt"] = str(e["createdAt"])
         return service
 
     def delete_service(self, service, cluster=None, force=False):
         return self.ecs.delete_service(cluster=cluster, service=service, force=force)
 
     def health_check_setable(self, params):
-        load_balancers = params.get('loadBalancers', [])
+        load_balancers = params.get("loadBalancers", [])
         return len(load_balancers) > 0
 
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent', 'deleting']),
-        name=dict(required=True, type='str', aliases=['service']),
-        cluster=dict(required=False, type='str', default='default'),
-        task_definition=dict(required=False, type='str'),
-        load_balancers=dict(required=False, default=[], type='list', elements='dict'),
-        desired_count=dict(required=False, type='int'),
-        client_token=dict(required=False, default='', type='str', no_log=False),
-        role=dict(required=False, default='', type='str'),
-        delay=dict(required=False, type='int', default=10),
-        repeat=dict(required=False, type='int', default=10),
-        force_new_deployment=dict(required=False, default=False, type='bool'),
-        force_deletion=dict(required=False, default=False, type='bool'),
-        deployment_controller=dict(required=False, default={}, type='dict'),
-        deployment_configuration=dict(required=False, default={}, type='dict'),
-        wait=dict(required=False, default=False, type='bool'),
+        state=dict(required=True, choices=["present", "absent", "deleting"]),
+        name=dict(required=True, type="str", aliases=["service"]),
+        cluster=dict(required=False, type="str", default="default"),
+        task_definition=dict(required=False, type="str"),
+        load_balancers=dict(required=False, default=[], type="list", elements="dict"),
+        desired_count=dict(required=False, type="int"),
+        client_token=dict(required=False, default="", type="str", no_log=False),
+        role=dict(required=False, default="", type="str"),
+        delay=dict(required=False, type="int", default=10),
+        repeat=dict(required=False, type="int", default=10),
+        force_new_deployment=dict(required=False, default=False, type="bool"),
+        force_deletion=dict(required=False, default=False, type="bool"),
+        deployment_controller=dict(required=False, default={}, type="dict"),
+        deployment_configuration=dict(required=False, default={}, type="dict"),
+        wait=dict(required=False, default=False, type="bool"),
         placement_constraints=dict(
             required=False,
             default=[],
-            type='list',
-            elements='dict',
-            options=dict(
-                type=dict(type='str'),
-                expression=dict(required=False, type='str')
-            )
+            type="list",
+            elements="dict",
+            options=dict(type=dict(type="str"), expression=dict(required=False, type="str")),
         ),
-        purge_placement_constraints=dict(required=False, default=False, type='bool'),
+        purge_placement_constraints=dict(required=False, default=False, type="bool"),
         placement_strategy=dict(
             required=False,
             default=[],
-            type='list',
-            elements='dict',
+            type="list",
+            elements="dict",
             options=dict(
-                type=dict(type='str'),
-                field=dict(type='str'),
-            )
+                type=dict(type="str"),
+                field=dict(type="str"),
+            ),
         ),
-        purge_placement_strategy=dict(required=False, default=False, type='bool'),
-        health_check_grace_period_seconds=dict(required=False, type='int'),
-        network_configuration=dict(required=False, type='dict', options=dict(
-            subnets=dict(type='list', elements='str'),
-            security_groups=dict(type='list', elements='str'),
-            assign_public_ip=dict(type='bool')
-        )),
-        launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
-        platform_version=dict(required=False, type='str'),
-        service_registries=dict(required=False, type='list', default=[], elements='dict'),
-        scheduling_strategy=dict(required=False, choices=['DAEMON', 'REPLICA']),
+        purge_placement_strategy=dict(required=False, default=False, type="bool"),
+        health_check_grace_period_seconds=dict(required=False, type="int"),
+        network_configuration=dict(
+            required=False,
+            type="dict",
+            options=dict(
+                subnets=dict(type="list", elements="str"),
+                security_groups=dict(type="list", elements="str"),
+                assign_public_ip=dict(type="bool"),
+            ),
+        ),
+        launch_type=dict(required=False, choices=["EC2", "FARGATE"]),
+        platform_version=dict(required=False, type="str"),
+        service_registries=dict(required=False, type="list", default=[], elements="dict"),
+        scheduling_strategy=dict(required=False, choices=["DAEMON", "REPLICA"]),
         capacity_provider_strategy=dict(
             required=False,
-            type='list',
+            type="list",
             default=[],
-            elements='dict',
+            elements="dict",
             options=dict(
-                capacity_provider=dict(type='str'),
-                weight=dict(type='int'),
-                base=dict(type='int')
-            )
+                capacity_provider=dict(type="str"),
+                weight=dict(type="int"),
+                base=dict(type="int"),
+            ),
         ),
         propagate_tags=dict(required=False, choices=["TASK_DEFINITION", "SERVICE"]),
         tags=dict(required=False, type="dict"),
         enable_execute_command=dict(required=False, type="bool"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,
-                              required_if=[('launch_type', 'FARGATE', ['network_configuration'])],
-                              required_together=[['load_balancers', 'role']],
-                              mutually_exclusive=[['launch_type', 'capacity_provider_strategy']])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=[("launch_type", "FARGATE", ["network_configuration"])],
+        required_together=[["load_balancers", "role"]],
+        mutually_exclusive=[["launch_type", "capacity_provider_strategy"]],
+    )
 
-    if module.params['state'] == 'present':
-        if module.params['scheduling_strategy'] == 'REPLICA' and module.params['desired_count'] is None:
-            module.fail_json(msg='state is present, scheduling_strategy is REPLICA; missing desired_count')
-        if module.params['task_definition'] is None and not module.params['force_new_deployment']:
-            module.fail_json(msg='Either task_definition or force_new_deployment is required when status is present.')
+    if module.params["state"] == "present":
+        if module.params["scheduling_strategy"] == "REPLICA" and module.params["desired_count"] is None:
+            module.fail_json(msg="state is present, scheduling_strategy is REPLICA; missing desired_count")
+        if module.params["task_definition"] is None and not module.params["force_new_deployment"]:
+            module.fail_json(msg="Either task_definition or force_new_deployment is required when status is present.")
 
-    if len(module.params['capacity_provider_strategy']) > 6:
-        module.fail_json(msg='AWS allows a maximum of six capacity providers in the strategy.')
+    if len(module.params["capacity_provider_strategy"]) > 6:
+        module.fail_json(msg="AWS allows a maximum of six capacity providers in the strategy.")
 
     service_mgr = EcsServiceManager(module)
-    if module.params['network_configuration']:
-        network_configuration = service_mgr.format_network_configuration(module.params['network_configuration'])
+    if module.params["network_configuration"]:
+        network_configuration = service_mgr.format_network_configuration(module.params["network_configuration"])
     else:
         network_configuration = None
 
-    deployment_controller = map_complex_type(module.params['deployment_controller'],
-                                             DEPLOYMENT_CONTROLLER_TYPE_MAP)
+    deployment_controller = map_complex_type(module.params["deployment_controller"], DEPLOYMENT_CONTROLLER_TYPE_MAP)
 
     deploymentController = snake_dict_to_camel_dict(deployment_controller)
 
-    deployment_configuration = map_complex_type(module.params['deployment_configuration'],
-                                                DEPLOYMENT_CONFIGURATION_TYPE_MAP)
+    deployment_configuration = map_complex_type(
+        module.params["deployment_configuration"], DEPLOYMENT_CONFIGURATION_TYPE_MAP
+    )
 
     deploymentConfiguration = snake_dict_to_camel_dict(deployment_configuration)
-    serviceRegistries = list(map(snake_dict_to_camel_dict, module.params['service_registries']))
-    capacityProviders = list(map(snake_dict_to_camel_dict, module.params['capacity_provider_strategy']))
+    serviceRegistries = list(map(snake_dict_to_camel_dict, module.params["service_registries"]))
+    capacityProviders = list(map(snake_dict_to_camel_dict, module.params["capacity_provider_strategy"]))
 
     try:
-        existing = service_mgr.describe_service(module.params['cluster'], module.params['name'])
+        existing = service_mgr.describe_service(module.params["cluster"], module.params["name"])
     except Exception as e:
-        module.fail_json_aws(e,
-                             msg="Exception describing service '{0}' in cluster '{1}'"
-                             .format(module.params['name'], module.params['cluster']))
+        module.fail_json_aws(
+            e,
+            msg="Exception describing service '{0}' in cluster '{1}'".format(
+                module.params["name"], module.params["cluster"]
+            ),
+        )
 
     results = dict(changed=False)
 
-    if module.params['state'] == 'present':
-
+    if module.params["state"] == "present":
         matching = False
         update = False
 
-        if existing and 'status' in existing and existing['status'] == "ACTIVE":
-            if module.params['force_new_deployment']:
+        if existing and "status" in existing and existing["status"] == "ACTIVE":
+            if module.params["force_new_deployment"]:
                 update = True
             elif service_mgr.is_matching_service(module.params, existing):
                 matching = True
-                results['service'] = existing
+                results["service"] = existing
             else:
                 update = True
 
         if not matching:
             if not module.check_mode:
-
-                role = module.params['role']
-                clientToken = module.params['client_token']
+                role = module.params["role"]
+                clientToken = module.params["client_token"]
 
                 loadBalancers = []
-                for loadBalancer in module.params['load_balancers']:
-                    if 'containerPort' in loadBalancer:
-                        loadBalancer['containerPort'] = int(loadBalancer['containerPort'])
+                for loadBalancer in module.params["load_balancers"]:
+                    if "containerPort" in loadBalancer:
+                        loadBalancer["containerPort"] = int(loadBalancer["containerPort"])
                     loadBalancers.append(loadBalancer)
 
                 for loadBalancer in loadBalancers:
-                    if 'containerPort' in loadBalancer:
-                        loadBalancer['containerPort'] = int(loadBalancer['containerPort'])
+                    if "containerPort" in loadBalancer:
+                        loadBalancer["containerPort"] = int(loadBalancer["containerPort"])
 
                 if update:
                     # check various parameters and AWS SDK versions and give a helpful error if the SDK is not new enough for feature
 
-                    if module.params['scheduling_strategy']:
-                        if (existing['schedulingStrategy']) != module.params['scheduling_strategy']:
-                            module.fail_json(msg="It is not possible to update the scheduling strategy of an existing service")
+                    if module.params["scheduling_strategy"]:
+                        if (existing["schedulingStrategy"]) != module.params["scheduling_strategy"]:
+                            module.fail_json(
+                                msg="It is not possible to update the scheduling strategy of an existing service"
+                            )
 
-                    if module.params['service_registries']:
-                        if (existing['serviceRegistries'] or []) != serviceRegistries:
-                            module.fail_json(msg="It is not possible to update the service registries of an existing service")
-                    if module.params['capacity_provider_strategy']:
-                        if 'launchType' in existing.keys():
-                            module.fail_json(msg="It is not possible to change an existing service from launch_type to capacity_provider_strategy.")
-                    if module.params['launch_type']:
-                        if 'capacityProviderStrategy' in existing.keys():
-                            module.fail_json(msg="It is not possible to change an existing service from capacity_provider_strategy to launch_type.")
-                    if (existing['loadBalancers'] or []) != loadBalancers:
+                    if module.params["service_registries"]:
+                        if (existing["serviceRegistries"] or []) != serviceRegistries:
+                            module.fail_json(
+                                msg="It is not possible to update the service registries of an existing service"
+                            )
+                    if module.params["capacity_provider_strategy"]:
+                        if "launchType" in existing.keys():
+                            module.fail_json(
+                                msg="It is not possible to change an existing service from launch_type to capacity_provider_strategy."
+                            )
+                    if module.params["launch_type"]:
+                        if "capacityProviderStrategy" in existing.keys():
+                            module.fail_json(
+                                msg="It is not possible to change an existing service from capacity_provider_strategy to launch_type."
+                            )
+                    if (existing["loadBalancers"] or []) != loadBalancers:
                         # fails if deployment type is not CODE_DEPLOY or ECS
-                        if existing['deploymentController']['type'] not in ['CODE_DEPLOY', 'ECS']:
-                            module.fail_json(msg="It is not possible to update the load balancers of an existing service")
+                        if existing["deploymentController"]["type"] not in ["CODE_DEPLOY", "ECS"]:
+                            module.fail_json(
+                                msg="It is not possible to update the load balancers of an existing service"
+                            )
 
-                    if existing.get('deploymentController', {}).get('type', None) == 'CODE_DEPLOY':
-                        task_definition = ''
+                    if existing.get("deploymentController", {}).get("type", None) == "CODE_DEPLOY":
+                        task_definition = ""
                         network_configuration = []
                     else:
-                        task_definition = module.params['task_definition']
+                        task_definition = module.params["task_definition"]
 
-                    if module.params['propagate_tags'] and module.params['propagate_tags'] != existing['propagateTags']:
-                        module.fail_json(msg="It is not currently supported to enable propagation tags of an existing service")
+                    if module.params["propagate_tags"] and module.params["propagate_tags"] != existing["propagateTags"]:
+                        module.fail_json(
+                            msg="It is not currently supported to enable propagation tags of an existing service"
+                        )
 
-                    if module.params['tags'] and boto3_tag_list_to_ansible_dict(existing['tags']) != module.params['tags']:
+                    if (
+                        module.params["tags"]
+                        and boto3_tag_list_to_ansible_dict(existing["tags"]) != module.params["tags"]
+                    ):
                         module.fail_json(msg="It is not currently supported to change tags of an existing service")
 
-                    updatedLoadBalancers = loadBalancers if existing['deploymentController']['type'] == 'ECS' else []
+                    updatedLoadBalancers = loadBalancers if existing["deploymentController"]["type"] == "ECS" else []
 
-                    if task_definition is None and module.params['force_new_deployment']:
-                        task_definition = existing['taskDefinition']
+                    if task_definition is None and module.params["force_new_deployment"]:
+                        task_definition = existing["taskDefinition"]
 
                     try:
                         # update required
@@ -1180,76 +1203,73 @@ def main():
                     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                         module.fail_json_aws(e, msg="Couldn't create service")
 
-                if response.get('tags', None):
-                    response['tags'] = boto3_tag_list_to_ansible_dict(response['tags'])
-                results['service'] = response
+                if response.get("tags", None):
+                    response["tags"] = boto3_tag_list_to_ansible_dict(response["tags"])
+                results["service"] = response
 
-            results['changed'] = True
+            results["changed"] = True
 
-    elif module.params['state'] == 'absent':
+    elif module.params["state"] == "absent":
         if not existing:
             pass
         else:
             # it exists, so we should delete it and mark changed.
             # return info about the cluster deleted
-            del existing['deployments']
-            del existing['events']
-            results['ansible_facts'] = existing
-            if 'status' in existing and existing['status'] == "INACTIVE":
-                results['changed'] = False
+            del existing["deployments"]
+            del existing["events"]
+            results["ansible_facts"] = existing
+            if "status" in existing and existing["status"] == "INACTIVE":
+                results["changed"] = False
             else:
                 if not module.check_mode:
                     try:
                         service_mgr.delete_service(
-                            module.params['name'],
-                            module.params['cluster'],
-                            module.params['force_deletion'],
+                            module.params["name"],
+                            module.params["cluster"],
+                            module.params["force_deletion"],
                         )
 
                         # Wait for service to be INACTIVE prior to exiting
-                        if module.params['wait']:
-                            waiter = service_mgr.ecs.get_waiter('services_inactive')
+                        if module.params["wait"]:
+                            waiter = service_mgr.ecs.get_waiter("services_inactive")
                             try:
                                 waiter.wait(
-                                    services=[module.params['name']],
-                                    cluster=module.params['cluster'],
+                                    services=[module.params["name"]],
+                                    cluster=module.params["cluster"],
                                     WaiterConfig={
-                                        'Delay': module.params['delay'],
-                                        'MaxAttempts': module.params['repeat']
-                                    }
+                                        "Delay": module.params["delay"],
+                                        "MaxAttempts": module.params["repeat"],
+                                    },
                                 )
                             except botocore.exceptions.WaiterError as e:
-                                module.fail_json_aws(e, 'Timeout waiting for service removal')
+                                module.fail_json_aws(e, "Timeout waiting for service removal")
                     except botocore.exceptions.ClientError as e:
                         module.fail_json_aws(e, msg="Couldn't delete service")
 
-                results['changed'] = True
+                results["changed"] = True
 
-    elif module.params['state'] == 'deleting':
+    elif module.params["state"] == "deleting":
         if not existing:
-            module.fail_json(msg="Service '" + module.params['name'] + " not found.")
+            module.fail_json(msg="Service '" + module.params["name"] + " not found.")
             return
         # it exists, so we should delete it and mark changed.
         # return info about the cluster deleted
-        delay = module.params['delay']
-        repeat = module.params['repeat']
+        delay = module.params["delay"]
+        repeat = module.params["repeat"]
         time.sleep(delay)
         for i in range(repeat):
-            existing = service_mgr.describe_service(module.params['cluster'], module.params['name'])
-            status = existing['status']
+            existing = service_mgr.describe_service(module.params["cluster"], module.params["name"])
+            status = existing["status"]
             if status == "INACTIVE":
-                results['changed'] = True
+                results["changed"] = True
                 break
             time.sleep(delay)
         if i is repeat - 1:
-            module.fail_json(
-                msg="Service still not deleted after {0} tries of {1} seconds each."
-                .format(repeat, delay)
-            )
+            module.fail_json(msg="Service still not deleted after {0} tries of {1} seconds each.".format(repeat, delay))
             return
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

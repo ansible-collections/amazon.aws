@@ -84,31 +84,31 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def normalize_credentials(credentials):
-    access_key = credentials.get('AccessKeyId', None)
-    secret_key = credentials.get('SecretAccessKey', None)
-    session_token = credentials.get('SessionToken', None)
-    expiration = credentials.get('Expiration', None)
+    access_key = credentials.get("AccessKeyId", None)
+    secret_key = credentials.get("SecretAccessKey", None)
+    session_token = credentials.get("SessionToken", None)
+    expiration = credentials.get("Expiration", None)
     return {
-        'access_key': access_key,
-        'secret_key': secret_key,
-        'session_token': session_token,
-        'expiration': expiration
+        "access_key": access_key,
+        "secret_key": secret_key,
+        "session_token": session_token,
+        "expiration": expiration,
     }
 
 
 def get_session_token(connection, module):
-    duration_seconds = module.params.get('duration_seconds')
-    mfa_serial_number = module.params.get('mfa_serial_number')
-    mfa_token = module.params.get('mfa_token')
+    duration_seconds = module.params.get("duration_seconds")
+    mfa_serial_number = module.params.get("mfa_serial_number")
+    mfa_token = module.params.get("mfa_token")
     changed = False
 
     args = {}
     if duration_seconds is not None:
-        args['DurationSeconds'] = duration_seconds
+        args["DurationSeconds"] = duration_seconds
     if mfa_serial_number is not None:
-        args['SerialNumber'] = mfa_serial_number
+        args["SerialNumber"] = mfa_serial_number
     if mfa_token is not None:
-        args['TokenCode'] = mfa_token
+        args["TokenCode"] = mfa_token
 
     try:
         response = connection.get_session_token(**args)
@@ -116,13 +116,13 @@ def get_session_token(connection, module):
     except ClientError as e:
         module.fail_json(msg=e)
 
-    credentials = normalize_credentials(response.get('Credentials', {}))
+    credentials = normalize_credentials(response.get("Credentials", {}))
     module.exit_json(changed=changed, sts_creds=credentials)
 
 
 def main():
     argument_spec = dict(
-        duration_seconds=dict(required=False, default=None, type='int'),
+        duration_seconds=dict(required=False, default=None, type="int"),
         mfa_serial_number=dict(required=False, default=None),
         mfa_token=dict(required=False, default=None, no_log=True),
     )
@@ -130,12 +130,12 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
     try:
-        connection = module.client('sts')
+        connection = module.client("sts")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     get_session_token(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

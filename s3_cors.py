@@ -109,13 +109,12 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def create_or_update_bucket_cors(connection, module):
-
     name = module.params.get("name")
     rules = module.params.get("rules", [])
     changed = False
 
     try:
-        current_camel_rules = connection.get_bucket_cors(Bucket=name)['CORSRules']
+        current_camel_rules = connection.get_bucket_cors(Bucket=name)["CORSRules"]
     except ClientError:
         current_camel_rules = []
 
@@ -126,7 +125,7 @@ def create_or_update_bucket_cors(connection, module):
 
     if changed:
         try:
-            cors = connection.put_bucket_cors(Bucket=name, CORSConfiguration={'CORSRules': new_camel_rules})
+            cors = connection.put_bucket_cors(Bucket=name, CORSConfiguration={"CORSRules": new_camel_rules})
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Unable to update CORS for bucket {0}".format(name))
 
@@ -134,7 +133,6 @@ def create_or_update_bucket_cors(connection, module):
 
 
 def destroy_bucket_cors(connection, module):
-
     name = module.params.get("name")
     changed = False
 
@@ -148,24 +146,23 @@ def destroy_bucket_cors(connection, module):
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        rules=dict(type='list', elements='dict'),
-        state=dict(type='str', choices=['present', 'absent'], required=True)
+        name=dict(required=True, type="str"),
+        rules=dict(type="list", elements="dict"),
+        state=dict(type="str", choices=["present", "absent"], required=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
-    client = module.client('s3')
+    client = module.client("s3")
 
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         create_or_update_bucket_cors(client, module)
-    elif state == 'absent':
+    elif state == "absent":
         destroy_bucket_cors(client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

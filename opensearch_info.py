@@ -456,49 +456,52 @@ from ansible_collections.community.aws.plugins.module_utils.opensearch import ge
 
 
 def domain_info(client, module):
-    domain_name = module.params.get('domain_name')
-    filter_tags = module.params.get('tags')
+    domain_name = module.params.get("domain_name")
+    filter_tags = module.params.get("tags")
 
     domain_list = []
     if domain_name:
         domain_status = get_domain_status(client, module, domain_name)
         if domain_status:
-            domain_list.append({'DomainStatus': domain_status})
+            domain_list.append({"DomainStatus": domain_status})
     else:
-        domain_summary_list = client.list_domain_names()['DomainNames']
+        domain_summary_list = client.list_domain_names()["DomainNames"]
         for d in domain_summary_list:
-            domain_status = get_domain_status(client, module, d['DomainName'])
+            domain_status = get_domain_status(client, module, d["DomainName"])
             if domain_status:
-                domain_list.append({'DomainStatus': domain_status})
+                domain_list.append({"DomainStatus": domain_status})
 
     # Get the domain tags
     for domain in domain_list:
         current_domain_tags = None
-        domain_arn = domain['DomainStatus']['ARN']
+        domain_arn = domain["DomainStatus"]["ARN"]
         try:
             current_domain_tags = client.list_tags(ARN=domain_arn, aws_retry=True)["TagList"]
-            domain['Tags'] = boto3_tag_list_to_ansible_dict(current_domain_tags)
+            domain["Tags"] = boto3_tag_list_to_ansible_dict(current_domain_tags)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             # This could potentially happen if a domain is deleted between the time
             # its domain status was queried and the tags were queried.
-            domain['Tags'] = {}
+            domain["Tags"] = {}
 
     # Filter by tags
     if filter_tags:
         for tag_key in filter_tags:
             try:
-                domain_list = [c for c in domain_list if ('Tags' in c) and (tag_key in c['Tags']) and (c['Tags'][tag_key] == filter_tags[tag_key])]
+                domain_list = [
+                    c
+                    for c in domain_list
+                    if ("Tags" in c) and (tag_key in c["Tags"]) and (c["Tags"][tag_key] == filter_tags[tag_key])
+                ]
             except (TypeError, AttributeError) as e:
                 module.fail_json(msg="OpenSearch tag filtering error", exception=e)
 
     # Get the domain config
     for idx, domain in enumerate(domain_list):
-        domain_name = domain['DomainStatus']['DomainName']
+        domain_name = domain["DomainStatus"]["DomainName"]
         (domain_config, arn) = get_domain_config(client, module, domain_name)
         if domain_config:
-            domain['DomainConfig'] = domain_config
-        domain_list[idx] = camel_dict_to_snake_dict(domain,
-                                                    ignore_list=['AdvancedOptions', 'Endpoints', 'Tags'])
+            domain["DomainConfig"] = domain_config
+        domain_list[idx] = camel_dict_to_snake_dict(domain, ignore_list=["AdvancedOptions", "Endpoints", "Tags"])
 
     return dict(changed=False, domains=domain_list)
 
@@ -507,7 +510,7 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=dict(
             domain_name=dict(required=False),
-            tags=dict(type='dict', required=False),
+            tags=dict(type="dict", required=False),
         ),
         supports_check_mode=True,
     )
@@ -521,5 +524,5 @@ def main():
     module.exit_json(**domain_info(client, module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

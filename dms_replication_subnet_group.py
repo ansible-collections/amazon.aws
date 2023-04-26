@@ -73,16 +73,15 @@ backoff_params = dict(retries=5, delay=1, backoff=1.5)
 def describe_subnet_group(connection, subnet_group):
     """checks if instance exists"""
     try:
-        subnet_group_filter = dict(Name='replication-subnet-group-id',
-                                   Values=[subnet_group])
+        subnet_group_filter = dict(Name="replication-subnet-group-id", Values=[subnet_group])
         return connection.describe_replication_subnet_groups(Filters=[subnet_group_filter])
     except botocore.exceptions.ClientError:
-        return {'ReplicationSubnetGroups': []}
+        return {"ReplicationSubnetGroups": []}
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def replication_subnet_group_create(connection, **params):
-    """ creates the replication subnet group """
+    """creates the replication subnet group"""
     return connection.create_replication_subnet_group(**params)
 
 
@@ -93,17 +92,17 @@ def replication_subnet_group_modify(connection, **modify_params):
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def replication_subnet_group_delete(module, connection):
-    subnetid = module.params.get('identifier')
+    subnetid = module.params.get("identifier")
     delete_parameters = dict(ReplicationSubnetGroupIdentifier=subnetid)
     return connection.delete_replication_subnet_group(**delete_parameters)
 
 
 def replication_subnet_exists(subnet):
-    """ Returns boolean based on the existence of the endpoint
+    """Returns boolean based on the existence of the endpoint
     :param endpoint: dict containing the described endpoint
     :return: bool
     """
-    return bool(len(subnet['ReplicationSubnetGroups']))
+    return bool(len(subnet["ReplicationSubnetGroups"]))
 
 
 def create_module_params(module):
@@ -113,9 +112,9 @@ def create_module_params(module):
     """
     instance_parameters = dict(
         # ReplicationSubnetGroupIdentifier gets translated to lower case anyway by the API
-        ReplicationSubnetGroupIdentifier=module.params.get('identifier').lower(),
-        ReplicationSubnetGroupDescription=module.params.get('description'),
-        SubnetIds=module.params.get('subnet_ids'),
+        ReplicationSubnetGroupIdentifier=module.params.get("identifier").lower(),
+        ReplicationSubnetGroupDescription=module.params.get("description"),
+        SubnetIds=module.params.get("subnet_ids"),
     )
 
     return instance_parameters
@@ -132,19 +131,18 @@ def compare_params(module, param_described):
     modparams = create_module_params(module)
     changed = False
     # need to sanitize values that get returned from the API
-    if 'VpcId' in param_described.keys():
-        param_described.pop('VpcId')
-    if 'SubnetGroupStatus' in param_described.keys():
-        param_described.pop('SubnetGroupStatus')
+    if "VpcId" in param_described.keys():
+        param_described.pop("VpcId")
+    if "SubnetGroupStatus" in param_described.keys():
+        param_described.pop("SubnetGroupStatus")
     for paramname in modparams.keys():
-        if paramname in param_described.keys() and \
-                param_described.get(paramname) == modparams[paramname]:
+        if paramname in param_described.keys() and param_described.get(paramname) == modparams[paramname]:
             pass
-        elif paramname == 'SubnetIds':
+        elif paramname == "SubnetIds":
             subnets = []
-            for subnet in param_described.get('Subnets'):
-                subnets.append(subnet.get('SubnetIdentifier'))
-            for modulesubnet in modparams['SubnetIds']:
+            for subnet in param_described.get("Subnets"):
+                subnets.append(subnet.get("SubnetIdentifier"))
+            for modulesubnet in modparams["SubnetIds"]:
                 if modulesubnet in subnets:
                     pass
         else:
@@ -170,23 +168,19 @@ def modify_replication_subnet_group(module, connection):
 
 def main():
     argument_spec = dict(
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
-        identifier=dict(type='str', required=True),
-        description=dict(type='str', required=True),
-        subnet_ids=dict(type='list', elements='str', required=True),
+        state=dict(type="str", choices=["present", "absent"], default="present"),
+        identifier=dict(type="str", required=True),
+        description=dict(type="str", required=True),
+        subnet_ids=dict(type="list", elements="str", required=True),
     )
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     exit_message = None
     changed = False
 
-    state = module.params.get('state')
-    dmsclient = module.client('dms')
-    subnet_group = describe_subnet_group(dmsclient,
-                                         module.params.get('identifier'))
-    if state == 'present':
+    state = module.params.get("state")
+    dmsclient = module.client("dms")
+    subnet_group = describe_subnet_group(dmsclient, module.params.get("identifier"))
+    if state == "present":
         if replication_subnet_exists(subnet_group):
             if compare_params(module, subnet_group["ReplicationSubnetGroups"][0]):
                 if not module.check_mode:
@@ -203,7 +197,7 @@ def main():
             else:
                 exit_message = "Check mode enabled"
 
-    elif state == 'absent':
+    elif state == "absent":
         if replication_subnet_exists(subnet_group):
             if not module.check_mode:
                 replication_subnet_group_delete(module, dmsclient)
@@ -220,5 +214,5 @@ def main():
     module.exit_json(changed=changed, msg=exit_message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

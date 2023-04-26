@@ -216,41 +216,43 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def get_vpc_peers(client, module):
     params = dict()
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    if module.params.get('peer_connection_ids'):
-        params['VpcPeeringConnectionIds'] = module.params.get('peer_connection_ids')
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    if module.params.get("peer_connection_ids"):
+        params["VpcPeeringConnectionIds"] = module.params.get("peer_connection_ids")
     try:
         result = client.describe_vpc_peering_connections(aws_retry=True, **params)
         result = normalize_boto3_result(result)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe peering connections")
 
-    return result['VpcPeeringConnections']
+    return result["VpcPeeringConnections"]
 
 
 def main():
     argument_spec = dict(
-        filters=dict(default=dict(), type='dict'),
-        peer_connection_ids=dict(default=None, type='list', elements='str'),
+        filters=dict(default=dict(), type="dict"),
+        peer_connection_ids=dict(default=None, type="list", elements="str"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
 
     try:
-        ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+        ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # Turn the boto3 result in to ansible friendly_snaked_names
     results = [camel_dict_to_snake_dict(peer) for peer in get_vpc_peers(ec2, module)]
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for peer in results:
-        peer['tags'] = boto3_tag_list_to_ansible_dict(peer.get('tags', []))
+        peer["tags"] = boto3_tag_list_to_ansible_dict(peer.get("tags", []))
 
     module.exit_json(result=results, vpc_peering_connections=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -109,16 +109,23 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 class IAMConnection(object):
     def __init__(self, module):
         try:
-            self.connection = module.resource('iam')
+            self.connection = module.resource("iam")
             self.module = module
         except Exception as e:
             module.fail_json(msg="Failed to connect to AWS: %s" % str(e))
 
     def policy_to_dict(self, policy):
         policy_attributes = [
-            'allow_users_to_change_password', 'expire_passwords', 'hard_expiry',
-            'max_password_age', 'minimum_password_length', 'password_reuse_prevention',
-            'require_lowercase_characters', 'require_numbers', 'require_symbols', 'require_uppercase_characters'
+            "allow_users_to_change_password",
+            "expire_passwords",
+            "hard_expiry",
+            "max_password_age",
+            "minimum_password_length",
+            "password_reuse_prevention",
+            "require_lowercase_characters",
+            "require_numbers",
+            "require_symbols",
+            "require_uppercase_characters",
         ]
         ret = {}
         for attr in policy_attributes:
@@ -126,15 +133,15 @@ class IAMConnection(object):
         return ret
 
     def update_password_policy(self, module, policy):
-        min_pw_length = module.params.get('min_pw_length')
-        require_symbols = module.params.get('require_symbols')
-        require_numbers = module.params.get('require_numbers')
-        require_uppercase = module.params.get('require_uppercase')
-        require_lowercase = module.params.get('require_lowercase')
-        allow_pw_change = module.params.get('allow_pw_change')
-        pw_max_age = module.params.get('pw_max_age')
-        pw_reuse_prevent = module.params.get('pw_reuse_prevent')
-        pw_expire = module.params.get('pw_expire')
+        min_pw_length = module.params.get("min_pw_length")
+        require_symbols = module.params.get("require_symbols")
+        require_numbers = module.params.get("require_numbers")
+        require_uppercase = module.params.get("require_uppercase")
+        require_lowercase = module.params.get("require_lowercase")
+        allow_pw_change = module.params.get("allow_pw_change")
+        pw_max_age = module.params.get("pw_max_age")
+        pw_reuse_prevent = module.params.get("pw_reuse_prevent")
+        pw_expire = module.params.get("pw_expire")
 
         update_parameters = dict(
             MinimumPasswordLength=min_pw_length,
@@ -143,7 +150,7 @@ class IAMConnection(object):
             RequireUppercaseCharacters=require_uppercase,
             RequireLowercaseCharacters=require_lowercase,
             AllowUsersToChangePassword=allow_pw_change,
-            HardExpiry=pw_expire
+            HardExpiry=pw_expire,
         )
         if pw_reuse_prevent:
             update_parameters.update(PasswordReusePrevention=pw_reuse_prevent)
@@ -162,15 +169,18 @@ class IAMConnection(object):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Couldn't update IAM Password Policy")
 
-        changed = (original_policy != updated_policy)
+        changed = original_policy != updated_policy
         return (changed, updated_policy, camel_dict_to_snake_dict(results))
 
     def delete_password_policy(self, policy):
         try:
             results = policy.delete()
-        except is_boto3_error_code('NoSuchEntity'):
-            self.module.exit_json(changed=False, task_status={'IAM': "Couldn't find IAM Password Policy"})
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except is_boto3_error_code("NoSuchEntity"):
+            self.module.exit_json(changed=False, task_status={"IAM": "Couldn't find IAM Password Policy"})
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Couldn't delete IAM Password Policy")
         return camel_dict_to_snake_dict(results)
 
@@ -178,16 +188,16 @@ class IAMConnection(object):
 def main():
     module = AnsibleAWSModule(
         argument_spec={
-            'state': dict(choices=['present', 'absent'], required=True),
-            'min_pw_length': dict(type='int', aliases=['minimum_password_length'], default=6),
-            'require_symbols': dict(type='bool', default=False),
-            'require_numbers': dict(type='bool', default=False),
-            'require_uppercase': dict(type='bool', default=False),
-            'require_lowercase': dict(type='bool', default=False),
-            'allow_pw_change': dict(type='bool', aliases=['allow_password_change'], default=False),
-            'pw_max_age': dict(type='int', aliases=['password_max_age'], default=0),
-            'pw_reuse_prevent': dict(type='int', aliases=['password_reuse_prevent', 'prevent_reuse'], default=0),
-            'pw_expire': dict(type='bool', aliases=['password_expire', 'expire'], default=False),
+            "state": dict(choices=["present", "absent"], required=True),
+            "min_pw_length": dict(type="int", aliases=["minimum_password_length"], default=6),
+            "require_symbols": dict(type="bool", default=False),
+            "require_numbers": dict(type="bool", default=False),
+            "require_uppercase": dict(type="bool", default=False),
+            "require_lowercase": dict(type="bool", default=False),
+            "allow_pw_change": dict(type="bool", aliases=["allow_password_change"], default=False),
+            "pw_max_age": dict(type="int", aliases=["password_max_age"], default=0),
+            "pw_reuse_prevent": dict(type="int", aliases=["password_reuse_prevent", "prevent_reuse"], default=0),
+            "pw_expire": dict(type="bool", aliases=["password_expire", "expire"], default=False),
         },
         supports_check_mode=True,
     )
@@ -195,16 +205,16 @@ def main():
     resource = IAMConnection(module)
     policy = resource.connection.AccountPasswordPolicy()
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         (changed, new_policy, update_result) = resource.update_password_policy(module, policy)
-        module.exit_json(changed=changed, task_status={'IAM': update_result}, policy=new_policy)
+        module.exit_json(changed=changed, task_status={"IAM": update_result}, policy=new_policy)
 
-    if state == 'absent':
+    if state == "absent":
         delete_result = resource.delete_password_policy(policy)
-        module.exit_json(changed=True, task_status={'IAM': delete_result})
+        module.exit_json(changed=True, task_status={"IAM": delete_result})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

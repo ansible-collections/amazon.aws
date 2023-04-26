@@ -218,22 +218,21 @@ from ansible_collections.community.aws.plugins.module_utils.networkfirewall impo
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str', required=False),
-        arn=dict(type='str', required=False),
+        name=dict(type="str", required=False),
+        arn=dict(type="str", required=False),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ('arn', 'name',),
+            ["arn", "name"],
         ],
     )
 
-    arn = module.params.get('arn')
-    name = module.params.get('name')
+    arn = module.params.get("arn")
+    name = module.params.get("name")
 
     manager = NetworkFirewallPolicyManager(module)
 
@@ -242,17 +241,17 @@ def main():
     if name or arn:
         policy = manager.get_policy(name=name, arn=arn)
         if policy:
-            results['policies'] = [policy]
+            results["policies"] = [policy]
         else:
-            results['policies'] = []
+            results["policies"] = []
     else:
         policy_list = manager.list()
-        results['policy_list'] = policy_list
+        results["policy_list"] = policy_list
         policies = [manager.get_policy(arn=p) for p in policy_list]
-        results['policies'] = policies
+        results["policies"] = policies
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

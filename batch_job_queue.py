@@ -138,50 +138,49 @@ def validate_params(module):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def get_current_job_queue(module, client):
     try:
-        environments = client.describe_job_queues(
-            jobQueues=[module.params['job_queue_name']]
-        )
-        return environments['jobQueues'][0] if len(environments['jobQueues']) > 0 else None
+        environments = client.describe_job_queues(jobQueues=[module.params["job_queue_name"]])
+        return environments["jobQueues"][0] if len(environments["jobQueues"]) > 0 else None
     except ClientError:
         return None
 
 
 def create_job_queue(module, client):
     """
-        Adds a Batch job queue
+    Adds a Batch job queue
 
-        :param module:
-        :param client:
-        :return:
-        """
+    :param module:
+    :param client:
+    :return:
+    """
 
     changed = False
 
     # set API parameters
-    params = ('job_queue_name', 'priority')
+    params = ("job_queue_name", "priority")
     api_params = set_api_params(module, params)
 
-    if module.params['job_queue_state'] is not None:
-        api_params['state'] = module.params['job_queue_state']
+    if module.params["job_queue_state"] is not None:
+        api_params["state"] = module.params["job_queue_state"]
 
-    api_params['computeEnvironmentOrder'] = get_compute_environment_order_list(module)
+    api_params["computeEnvironmentOrder"] = get_compute_environment_order_list(module)
 
     try:
         if not module.check_mode:
             client.create_job_queue(**api_params)
         changed = True
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Error creating compute environment')
+        module.fail_json_aws(e, msg="Error creating compute environment")
 
     return changed
 
 
 def get_compute_environment_order_list(module):
     compute_environment_order_list = []
-    for ceo in module.params['compute_environment_order']:
-        compute_environment_order_list.append(dict(order=ceo['order'], computeEnvironment=ceo['compute_environment']))
+    for ceo in module.params["compute_environment_order"]:
+        compute_environment_order_list.append(dict(order=ceo["order"], computeEnvironment=ceo["compute_environment"]))
     return compute_environment_order_list
 
 
@@ -197,25 +196,25 @@ def remove_job_queue(module, client):
     changed = False
 
     # set API parameters
-    api_params = {'jobQueue': module.params['job_queue_name']}
+    api_params = {"jobQueue": module.params["job_queue_name"]}
 
     try:
         if not module.check_mode:
             client.delete_job_queue(**api_params)
         changed = True
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Error removing job queue')
+        module.fail_json_aws(e, msg="Error removing job queue")
     return changed
 
 
 def manage_state(module, client):
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
-    job_queue_state = module.params['job_queue_state']
-    job_queue_name = module.params['job_queue_name']
-    priority = module.params['priority']
-    action_taken = 'none'
+    current_state = "absent"
+    state = module.params["state"]
+    job_queue_state = module.params["job_queue_state"]
+    job_queue_name = module.params["job_queue_name"]
+    priority = module.params["priority"]
+    action_taken = "none"
     response = None
 
     check_mode = module.check_mode
@@ -223,25 +222,25 @@ def manage_state(module, client):
     # check if the job queue exists
     current_job_queue = get_current_job_queue(module, client)
     if current_job_queue:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present':
+    if state == "present":
+        if current_state == "present":
             updates = False
             # Update Batch Job Queue configuration
-            job_kwargs = {'jobQueue': job_queue_name}
+            job_kwargs = {"jobQueue": job_queue_name}
 
             # Update configuration if needed
-            if job_queue_state and current_job_queue['state'] != job_queue_state:
-                job_kwargs.update({'state': job_queue_state})
+            if job_queue_state and current_job_queue["state"] != job_queue_state:
+                job_kwargs.update({"state": job_queue_state})
                 updates = True
-            if priority is not None and current_job_queue['priority'] != priority:
-                job_kwargs.update({'priority': priority})
+            if priority is not None and current_job_queue["priority"] != priority:
+                job_kwargs.update({"priority": priority})
                 updates = True
 
             new_compute_environment_order_list = get_compute_environment_order_list(module)
-            if new_compute_environment_order_list != current_job_queue['computeEnvironmentOrder']:
-                job_kwargs['computeEnvironmentOrder'] = new_compute_environment_order_list
+            if new_compute_environment_order_list != current_job_queue["computeEnvironmentOrder"]:
+                job_kwargs["computeEnvironmentOrder"] = new_compute_environment_order_list
                 updates = True
 
             if updates:
@@ -256,17 +255,17 @@ def manage_state(module, client):
         else:
             # Create Job Queue
             changed = create_job_queue(module, client)
-            action_taken = 'added'
+            action_taken = "added"
 
         # Describe job queue
         response = get_current_job_queue(module, client)
         if not response:
-            module.fail_json(msg='Unable to get job queue information after creating/updating')
+            module.fail_json(msg="Unable to get job queue information after creating/updating")
     else:
-        if current_state == 'present':
+        if current_state == "present":
             # remove the Job Queue
             changed = remove_job_queue(module, client)
-            action_taken = 'deleted'
+            action_taken = "deleted"
     return dict(changed=changed, batch_job_queue_action=action_taken, response=response)
 
 
@@ -276,6 +275,7 @@ def manage_state(module, client):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def main():
     """
     Main entry point.
@@ -284,19 +284,16 @@ def main():
     """
 
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
         job_queue_name=dict(required=True),
-        job_queue_state=dict(required=False, default='ENABLED', choices=['ENABLED', 'DISABLED']),
-        priority=dict(type='int', required=True),
-        compute_environment_order=dict(type='list', required=True, elements='dict'),
+        job_queue_state=dict(required=False, default="ENABLED", choices=["ENABLED", "DISABLED"]),
+        priority=dict(type="int", required=True),
+        compute_environment_order=dict(type="list", required=True, elements="dict"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client('batch')
+    client = module.client("batch")
 
     validate_params(module)
 
@@ -305,5 +302,5 @@ def main():
     module.exit_json(**camel_dict_to_snake_dict(results))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

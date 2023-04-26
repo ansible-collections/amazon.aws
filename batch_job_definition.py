@@ -265,15 +265,15 @@ def validate_params(module, batch_client):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def get_current_job_definition(module, batch_client):
     try:
-        environments = batch_client.describe_job_definitions(
-            jobDefinitionName=module.params['job_definition_name']
-        )
-        if len(environments['jobDefinitions']) > 0:
-            latest_revision = max(map(lambda d: d['revision'], environments['jobDefinitions']))
-            latest_definition = next((x for x in environments['jobDefinitions'] if x['revision'] == latest_revision),
-                                     None)
+        environments = batch_client.describe_job_definitions(jobDefinitionName=module.params["job_definition_name"])
+        if len(environments["jobDefinitions"]) > 0:
+            latest_revision = max(map(lambda d: d["revision"], environments["jobDefinitions"]))
+            latest_definition = next(
+                (x for x in environments["jobDefinitions"] if x["revision"] == latest_revision), None
+            )
             return latest_definition
         return None
     except ClientError:
@@ -282,12 +282,12 @@ def get_current_job_definition(module, batch_client):
 
 def create_job_definition(module, batch_client):
     """
-        Adds a Batch job definition
+    Adds a Batch job definition
 
-        :param module:
-        :param batch_client:
-        :return:
-        """
+    :param module:
+    :param batch_client:
+    :return:
+    """
 
     changed = False
 
@@ -296,36 +296,48 @@ def create_job_definition(module, batch_client):
     container_properties_params = set_api_params(module, get_container_property_params())
     retry_strategy_params = set_api_params(module, get_retry_strategy_params())
 
-    api_params['retryStrategy'] = retry_strategy_params
-    api_params['containerProperties'] = container_properties_params
+    api_params["retryStrategy"] = retry_strategy_params
+    api_params["containerProperties"] = container_properties_params
 
     try:
         if not module.check_mode:
             batch_client.register_job_definition(**api_params)
         changed = True
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Error registering job definition')
+        module.fail_json_aws(e, msg="Error registering job definition")
 
     return changed
 
 
 def get_retry_strategy_params():
-    return ('attempts',)
+    return ("attempts",)
 
 
 def get_container_property_params():
-    return ('image', 'vcpus', 'memory', 'command', 'job_role_arn', 'volumes', 'environment', 'mount_points',
-            'readonly_root_filesystem', 'privileged', 'ulimits', 'user')
+    return (
+        "image",
+        "vcpus",
+        "memory",
+        "command",
+        "job_role_arn",
+        "volumes",
+        "environment",
+        "mount_points",
+        "readonly_root_filesystem",
+        "privileged",
+        "ulimits",
+        "user",
+    )
 
 
 def get_base_params():
-    return 'job_definition_name', 'type', 'parameters'
+    return "job_definition_name", "type", "parameters"
 
 
 def get_compute_environment_order_list(module):
     compute_environment_order_list = []
-    for ceo in module.params['compute_environment_order']:
-        compute_environment_order_list.append(dict(order=ceo['order'], computeEnvironment=ceo['compute_environment']))
+    for ceo in module.params["compute_environment_order"]:
+        compute_environment_order_list.append(dict(order=ceo["order"], computeEnvironment=ceo["compute_environment"]))
     return compute_environment_order_list
 
 
@@ -342,10 +354,10 @@ def remove_job_definition(module, batch_client):
 
     try:
         if not module.check_mode:
-            batch_client.deregister_job_definition(jobDefinition=module.params['job_definition_arn'])
+            batch_client.deregister_job_definition(jobDefinition=module.params["job_definition_arn"])
         changed = True
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Error removing job definition')
+        module.fail_json_aws(e, msg="Error removing job definition")
     return changed
 
 
@@ -358,12 +370,12 @@ def job_definition_equal(module, current_definition):
             break
 
     for param in get_container_property_params():
-        if module.params.get(param) != current_definition.get('containerProperties').get(cc(param)):
+        if module.params.get(param) != current_definition.get("containerProperties").get(cc(param)):
             equal = False
             break
 
     for param in get_retry_strategy_params():
-        if module.params.get(param) != current_definition.get('retryStrategy').get(cc(param)):
+        if module.params.get(param) != current_definition.get("retryStrategy").get(cc(param)):
             equal = False
             break
 
@@ -372,10 +384,10 @@ def job_definition_equal(module, current_definition):
 
 def manage_state(module, batch_client):
     changed = False
-    current_state = 'absent'
-    state = module.params['state']
-    job_definition_name = module.params['job_definition_name']
-    action_taken = 'none'
+    current_state = "absent"
+    state = module.params["state"]
+    job_definition_name = module.params["job_definition_name"]
+    action_taken = "none"
     response = None
 
     check_mode = module.check_mode
@@ -383,28 +395,28 @@ def manage_state(module, batch_client):
     # check if the job definition exists
     current_job_definition = get_current_job_definition(module, batch_client)
     if current_job_definition:
-        current_state = 'present'
+        current_state = "present"
 
-    if state == 'present':
-        if current_state == 'present':
+    if state == "present":
+        if current_state == "present":
             # check if definition has changed and register a new version if necessary
             if not job_definition_equal(module, current_job_definition):
                 create_job_definition(module, batch_client)
-                action_taken = 'updated with new version'
+                action_taken = "updated with new version"
                 changed = True
         else:
             # Create Job definition
             changed = create_job_definition(module, batch_client)
-            action_taken = 'added'
+            action_taken = "added"
 
         response = get_current_job_definition(module, batch_client)
         if not response:
-            module.fail_json(msg='Unable to get job definition information after creating/updating')
+            module.fail_json(msg="Unable to get job definition information after creating/updating")
     else:
-        if current_state == 'present':
+        if current_state == "present":
             # remove the Job definition
             changed = remove_job_definition(module, batch_client)
-            action_taken = 'deregistered'
+            action_taken = "deregistered"
     return dict(changed=changed, batch_job_definition_action=action_taken, response=response)
 
 
@@ -414,6 +426,7 @@ def manage_state(module, batch_client):
 #
 # ---------------------------------------------------------------------------------------------------
 
+
 def main():
     """
     Main entry point.
@@ -422,32 +435,29 @@ def main():
     """
 
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
         job_definition_name=dict(required=True),
         job_definition_arn=dict(),
         type=dict(required=True),
-        parameters=dict(type='dict'),
+        parameters=dict(type="dict"),
         image=dict(required=True),
-        vcpus=dict(type='int', required=True),
-        memory=dict(type='int', required=True),
-        command=dict(type='list', default=[], elements='str'),
+        vcpus=dict(type="int", required=True),
+        memory=dict(type="int", required=True),
+        command=dict(type="list", default=[], elements="str"),
         job_role_arn=dict(),
-        volumes=dict(type='list', default=[], elements='dict'),
-        environment=dict(type='list', default=[], elements='dict'),
-        mount_points=dict(type='list', default=[], elements='dict'),
+        volumes=dict(type="list", default=[], elements="dict"),
+        environment=dict(type="list", default=[], elements="dict"),
+        mount_points=dict(type="list", default=[], elements="dict"),
         readonly_root_filesystem=dict(),
         privileged=dict(),
-        ulimits=dict(type='list', default=[], elements='dict'),
+        ulimits=dict(type="list", default=[], elements="dict"),
         user=dict(),
-        attempts=dict(type='int')
+        attempts=dict(type="int"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    batch_client = module.client('batch')
+    batch_client = module.client("batch")
 
     validate_params(module, batch_client)
 
@@ -456,5 +466,5 @@ def main():
     module.exit_json(**camel_dict_to_snake_dict(results))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

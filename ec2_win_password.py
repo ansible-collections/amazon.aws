@@ -123,40 +123,40 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def setup_module_object():
     argument_spec = dict(
         instance_id=dict(required=True),
-        key_file=dict(required=False, default=None, type='path'),
+        key_file=dict(required=False, default=None, type="path"),
         key_passphrase=dict(no_log=True, default=None, required=False),
         key_data=dict(no_log=True, default=None, required=False),
-        wait=dict(type='bool', default=False, required=False),
-        wait_timeout=dict(default=120, required=False, type='int'),
+        wait=dict(type="bool", default=False, required=False),
+        wait_timeout=dict(default=120, required=False, type="int"),
     )
-    mutually_exclusive = [['key_file', 'key_data']]
+    mutually_exclusive = [["key_file", "key_data"]]
     module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
     return module
 
 
 def _get_password(module, client, instance_id):
     try:
-        data = client.get_password_data(aws_retry=True, InstanceId=instance_id)['PasswordData']
+        data = client.get_password_data(aws_retry=True, InstanceId=instance_id)["PasswordData"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to get password data')
+        module.fail_json_aws(e, msg="Failed to get password data")
     return data
 
 
 def ec2_win_password(module):
-    instance_id = module.params.get('instance_id')
-    key_file = module.params.get('key_file')
-    if module.params.get('key_passphrase') is None:
+    instance_id = module.params.get("instance_id")
+    key_file = module.params.get("key_file")
+    if module.params.get("key_passphrase") is None:
         b_key_passphrase = None
     else:
-        b_key_passphrase = to_bytes(module.params.get('key_passphrase'), errors='surrogate_or_strict')
-    if module.params.get('key_data') is None:
+        b_key_passphrase = to_bytes(module.params.get("key_passphrase"), errors="surrogate_or_strict")
+    if module.params.get("key_data") is None:
         b_key_data = None
     else:
-        b_key_data = to_bytes(module.params.get('key_data'), errors='surrogate_or_strict')
-    wait = module.params.get('wait')
-    wait_timeout = module.params.get('wait_timeout')
+        b_key_data = to_bytes(module.params.get("key_data"), errors="surrogate_or_strict")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
 
-    client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     if wait:
         start = datetime.datetime.now()
@@ -178,7 +178,7 @@ def ec2_win_password(module):
 
     if key_file is not None and b_key_data is None:
         try:
-            with open(key_file, 'rb') as f:
+            with open(key_file, "rb") as f:
                 key = load_pem_private_key(f.read(), b_key_passphrase, default_backend())
         except IOError as e:
             # Handle bad files
@@ -198,7 +198,7 @@ def ec2_win_password(module):
         decrypted = None
 
     if decrypted is None:
-        module.fail_json(msg="unable to decrypt password", win_password='', changed=False)
+        module.fail_json(msg="unable to decrypt password", win_password="", changed=False)
     else:
         if wait:
             elapsed = datetime.datetime.now() - start
@@ -211,10 +211,10 @@ def main():
     module = setup_module_object()
 
     if not HAS_CRYPTOGRAPHY:
-        module.fail_json(msg='cryptography package required for this module.')
+        module.fail_json(msg="cryptography package required for this module.")
 
     ec2_win_password(module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

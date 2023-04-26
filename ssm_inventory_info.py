@@ -80,15 +80,9 @@ def get_ssm_inventory(connection, filters):
 
 
 def execute_module(module, connection):
-
     instance_id = module.params.get("instance_id")
     try:
-        filters = [
-            {
-                "Key": "AWS:InstanceInformation.InstanceId",
-                "Values": [instance_id]
-            }
-        ]
+        filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [instance_id]}]
 
         response = get_ssm_inventory(connection, filters)
         entities = response.get("Entities", [])

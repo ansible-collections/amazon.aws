@@ -146,18 +146,17 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     argument_spec = dict(
-        topic_arn=dict(type='str', required=False),
+        topic_arn=dict(type="str", required=False),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    topic_arn = module.params.get('topic_arn')
+    topic_arn = module.params.get("topic_arn")
 
     try:
-        connection = module.client('sns', retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("sns", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS.')
+        module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if topic_arn:
         results = dict(sns_arn=topic_arn, sns_topic=get_info(connection, module, topic_arn))
@@ -167,5 +166,5 @@ def main():
     module.exit_json(result=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

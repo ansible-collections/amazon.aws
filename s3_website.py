@@ -172,40 +172,37 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def _create_redirect_dict(url):
-
     redirect_dict = {}
-    url_split = url.split(':')
+    url_split = url.split(":")
 
     # Did we split anything?
     if len(url_split) == 2:
-        redirect_dict[u'Protocol'] = url_split[0]
-        redirect_dict[u'HostName'] = url_split[1].replace('//', '')
+        redirect_dict["Protocol"] = url_split[0]
+        redirect_dict["HostName"] = url_split[1].replace("//", "")
     elif len(url_split) == 1:
-        redirect_dict[u'HostName'] = url_split[0]
+        redirect_dict["HostName"] = url_split[0]
     else:
-        raise ValueError('Redirect URL appears invalid')
+        raise ValueError("Redirect URL appears invalid")
 
     return redirect_dict
 
 
 def _create_website_configuration(suffix, error_key, redirect_all_requests):
-
     website_configuration = {}
 
     if error_key is not None:
-        website_configuration['ErrorDocument'] = {'Key': error_key}
+        website_configuration["ErrorDocument"] = {"Key": error_key}
 
     if suffix is not None:
-        website_configuration['IndexDocument'] = {'Suffix': suffix}
+        website_configuration["IndexDocument"] = {"Suffix": suffix}
 
     if redirect_all_requests is not None:
-        website_configuration['RedirectAllRequestsTo'] = _create_redirect_dict(redirect_all_requests)
+        website_configuration["RedirectAllRequestsTo"] = _create_redirect_dict(redirect_all_requests)
 
     return website_configuration
 
 
 def enable_or_update_bucket_as_website(client_connection, resource_connection, module):
-
     bucket_name = module.params.get("name")
     redirect_all_requests = module.params.get("redirect_all_requests")
     # If redirect_all_requests is set then don't use the default suffix that has been set
@@ -223,14 +220,19 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
 
     try:
         website_config = client_connection.get_bucket_website(Bucket=bucket_name)
-    except is_boto3_error_code('NoSuchWebsiteConfiguration'):
+    except is_boto3_error_code("NoSuchWebsiteConfiguration"):
         website_config = None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get website configuration")
 
     if website_config is None:
         try:
-            bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
+            bucket_website.put(
+                WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests)
+            )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to set bucket website configuration")
@@ -238,18 +240,26 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
             module.fail_json(msg=str(e))
     else:
         try:
-            if (suffix is not None and website_config['IndexDocument']['Suffix'] != suffix) or \
-                    (error_key is not None and website_config['ErrorDocument']['Key'] != error_key) or \
-                    (redirect_all_requests is not None and website_config['RedirectAllRequestsTo'] != _create_redirect_dict(redirect_all_requests)):
-
+            if (
+                (suffix is not None and website_config["IndexDocument"]["Suffix"] != suffix)
+                or (error_key is not None and website_config["ErrorDocument"]["Key"] != error_key)
+                or (
+                    redirect_all_requests is not None
+                    and website_config["RedirectAllRequestsTo"] != _create_redirect_dict(redirect_all_requests)
+                )
+            ):
                 try:
-                    bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
+                    bucket_website.put(
+                        WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests)
+                    )
                     changed = True
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Failed to update bucket website configuration")
         except KeyError as e:
             try:
-                bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
+                bucket_website.put(
+                    WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests)
+                )
                 changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to update bucket website configuration")
@@ -264,15 +274,17 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
 
 
 def disable_bucket_as_website(client_connection, module):
-
     changed = False
     bucket_name = module.params.get("name")
 
     try:
         client_connection.get_bucket_website(Bucket=bucket_name)
-    except is_boto3_error_code('NoSuchWebsiteConfiguration'):
+    except is_boto3_error_code("NoSuchWebsiteConfiguration"):
         module.exit_json(changed=changed)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket website")
 
     try:
@@ -285,36 +297,35 @@ def disable_bucket_as_website(client_connection, module):
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        suffix=dict(type='str', required=False, default='index.html'),
-        error_key=dict(type='str', required=False, no_log=False),
-        redirect_all_requests=dict(type='str', required=False),
+        name=dict(type="str", required=True),
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        suffix=dict(type="str", required=False, default="index.html"),
+        error_key=dict(type="str", required=False, no_log=False),
+        redirect_all_requests=dict(type="str", required=False),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
-            ['redirect_all_requests', 'suffix'],
-            ['redirect_all_requests', 'error_key']
+            ["redirect_all_requests", "suffix"],
+            ["redirect_all_requests", "error_key"],
         ],
     )
 
     try:
-        client_connection = module.client('s3')
-        resource_connection = module.resource('s3')
+        client_connection = module.client("s3")
+        resource_connection = module.resource("s3")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         enable_or_update_bucket_as_website(client_connection, resource_connection, module)
-    elif state == 'absent':
+    elif state == "absent":
         disable_bucket_as_website(client_connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

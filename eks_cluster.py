@@ -177,28 +177,28 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def ensure_present(client, module):
-    name = module.params.get('name')
-    subnets = module.params['subnets']
-    groups = module.params['security_groups']
-    wait = module.params.get('wait')
+    name = module.params.get("name")
+    subnets = module.params["subnets"]
+    groups = module.params["security_groups"]
+    wait = module.params.get("wait")
     cluster = get_cluster(client, module)
     try:
-        ec2 = module.client('ec2')
-        vpc_id = ec2.describe_subnets(SubnetIds=[subnets[0]])['Subnets'][0]['VpcId']
+        ec2 = module.client("ec2")
+        vpc_id = ec2.describe_subnets(SubnetIds=[subnets[0]])["Subnets"][0]["VpcId"]
         groups = get_ec2_security_group_ids_from_names(groups, ec2, vpc_id)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't lookup security groups")
 
     if cluster:
-        if set(cluster['resourcesVpcConfig']['subnetIds']) != set(subnets):
+        if set(cluster["resourcesVpcConfig"]["subnetIds"]) != set(subnets):
             module.fail_json(msg="Cannot modify subnets of existing cluster")
-        if set(cluster['resourcesVpcConfig']['securityGroupIds']) != set(groups):
+        if set(cluster["resourcesVpcConfig"]["securityGroupIds"]) != set(groups):
             module.fail_json(msg="Cannot modify security groups of existing cluster")
-        if module.params.get('version') and module.params.get('version') != cluster['version']:
+        if module.params.get("version") and module.params.get("version") != cluster["version"]:
             module.fail_json(msg="Cannot modify version of existing cluster")
 
         if wait:
-            wait_until(client, module, 'cluster_active')
+            wait_until(client, module, "cluster_active")
             # Ensure that fields that are only available for active clusters are
             # included in the returned value
             cluster = get_cluster(client, module)
@@ -208,24 +208,23 @@ def ensure_present(client, module):
     if module.check_mode:
         module.exit_json(changed=True)
     try:
-        params = dict(name=name,
-                      roleArn=module.params['role_arn'],
-                      resourcesVpcConfig=dict(
-                          subnetIds=subnets,
-                          securityGroupIds=groups),
-                      )
-        if module.params['version']:
-            params['version'] = module.params['version']
-        if module.params['tags']:
-            params['tags'] = module.params['tags']
-        cluster = client.create_cluster(**params)['cluster']
+        params = dict(
+            name=name,
+            roleArn=module.params["role_arn"],
+            resourcesVpcConfig=dict(subnetIds=subnets, securityGroupIds=groups),
+        )
+        if module.params["version"]:
+            params["version"] = module.params["version"]
+        if module.params["tags"]:
+            params["tags"] = module.params["tags"]
+        cluster = client.create_cluster(**params)["cluster"]
     except botocore.exceptions.EndpointConnectionError as e:
         module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't create cluster %s" % name)
 
     if wait:
-        wait_until(client, module, 'cluster_active')
+        wait_until(client, module, "cluster_active")
         # Ensure that fields that are only available for active clusters are
         # included in the returned value
         cluster = get_cluster(client, module)
@@ -234,44 +233,47 @@ def ensure_present(client, module):
 
 
 def ensure_absent(client, module):
-    name = module.params.get('name')
+    name = module.params.get("name")
     existing = get_cluster(client, module)
-    wait = module.params.get('wait')
+    wait = module.params.get("wait")
     if not existing:
         module.exit_json(changed=False)
     if not module.check_mode:
         try:
-            client.delete_cluster(name=module.params['name'])
+            client.delete_cluster(name=module.params["name"])
         except botocore.exceptions.EndpointConnectionError as e:
             module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Couldn't delete cluster %s" % name)
 
     if wait:
-        wait_until(client, module, 'cluster_deleted')
+        wait_until(client, module, "cluster_deleted")
 
     module.exit_json(changed=True)
 
 
 def get_cluster(client, module):
-    name = module.params.get('name')
+    name = module.params.get("name")
     try:
-        return client.describe_cluster(name=name)['cluster']
-    except is_boto3_error_code('ResourceNotFoundException'):
+        return client.describe_cluster(name=name)["cluster"]
+    except is_boto3_error_code("ResourceNotFoundException"):
         return None
     except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
         module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't get cluster %s" % name)
 
 
-def wait_until(client, module, waiter_name='cluster_active'):
-    name = module.params.get('name')
-    wait_timeout = module.params.get('wait_timeout')
+def wait_until(client, module, waiter_name="cluster_active"):
+    name = module.params.get("name")
+    wait_timeout = module.params.get("wait_timeout")
 
     waiter = get_waiter(client, waiter_name)
     attempts = 1 + int(wait_timeout / waiter.config.delay)
-    waiter.wait(name=name, WaiterConfig={'MaxAttempts': attempts})
+    waiter.wait(name=name, WaiterConfig={"MaxAttempts": attempts})
 
 
 def main():
@@ -279,27 +281,27 @@ def main():
         name=dict(required=True),
         version=dict(),
         role_arn=dict(),
-        subnets=dict(type='list', elements='str'),
-        security_groups=dict(type='list', elements='str'),
-        state=dict(choices=['absent', 'present'], default='present'),
-        tags=dict(type='dict', required=False),
-        wait=dict(default=False, type='bool'),
-        wait_timeout=dict(default=1200, type='int')
+        subnets=dict(type="list", elements="str"),
+        security_groups=dict(type="list", elements="str"),
+        state=dict(choices=["absent", "present"], default="present"),
+        tags=dict(type="dict", required=False),
+        wait=dict(default=False, type="bool"),
+        wait_timeout=dict(default=1200, type="int"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_if=[['state', 'present', ['role_arn', 'subnets', 'security_groups']]],
+        required_if=[["state", "present", ["role_arn", "subnets", "security_groups"]]],
         supports_check_mode=True,
     )
 
-    client = module.client('eks')
+    client = module.client("eks")
 
-    if module.params.get('state') == 'present':
+    if module.params.get("state") == "present":
         ensure_present(client, module)
     else:
         ensure_absent(client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

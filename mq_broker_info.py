@@ -84,7 +84,10 @@ def get_broker_info(conn, module, broker_id):
 def main():
     argument_spec = dict(broker_id=dict(type="str"), broker_name=dict(type="str"))
     required_one_of = (
-        ("broker_name", "broker_id",),
+        (
+            "broker_name",
+            "broker_id",
+        ),
     )
 
     module = AnsibleAWSModule(

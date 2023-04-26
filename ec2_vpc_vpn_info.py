@@ -175,14 +175,14 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    return obj.isoformat() if hasattr(obj, "isoformat") else obj
 
 
 def list_vpn_connections(connection, module):
     params = dict()
 
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    params['VpnConnectionIds'] = module.params.get('vpn_connection_ids')
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    params["VpnConnectionIds"] = module.params.get("vpn_connection_ids")
 
     try:
         result = json.loads(json.dumps(connection.describe_vpn_connections(**params), default=date_handler))
@@ -190,28 +190,29 @@ def list_vpn_connections(connection, module):
         module.fail_json_aws(e, msg="Cannot validate JSON data")
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Could not describe customer gateways")
-    snaked_vpn_connections = [camel_dict_to_snake_dict(vpn_connection) for vpn_connection in result['VpnConnections']]
+    snaked_vpn_connections = [camel_dict_to_snake_dict(vpn_connection) for vpn_connection in result["VpnConnections"]]
     if snaked_vpn_connections:
         for vpn_connection in snaked_vpn_connections:
-            vpn_connection['tags'] = boto3_tag_list_to_ansible_dict(vpn_connection.get('tags', []))
+            vpn_connection["tags"] = boto3_tag_list_to_ansible_dict(vpn_connection.get("tags", []))
     module.exit_json(changed=False, vpn_connections=snaked_vpn_connections)
 
 
 def main():
-
     argument_spec = dict(
-        vpn_connection_ids=dict(default=[], type='list', elements='str'),
-        filters=dict(default={}, type='dict')
+        vpn_connection_ids=dict(default=[], type="list", elements="str"),
+        filters=dict(default={}, type="dict"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              mutually_exclusive=[['vpn_connection_ids', 'filters']],
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["vpn_connection_ids", "filters"]],
+        supports_check_mode=True,
+    )
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     list_vpn_connections(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

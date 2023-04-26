@@ -245,45 +245,46 @@ def build_kwargs(registry_id):
 
 class EcsEcr:
     def __init__(self, module):
-        self.ecr = module.client('ecr')
-        self.sts = module.client('sts')
+        self.ecr = module.client("ecr")
+        self.sts = module.client("sts")
         self.check_mode = module.check_mode
         self.changed = False
         self.skipped = False
 
     def get_repository(self, registry_id, name):
         try:
-            res = self.ecr.describe_repositories(
-                repositoryNames=[name], **build_kwargs(registry_id))
-            repos = res.get('repositories')
+            res = self.ecr.describe_repositories(repositoryNames=[name], **build_kwargs(registry_id))
+            repos = res.get("repositories")
             return repos and repos[0]
-        except is_boto3_error_code('RepositoryNotFoundException'):
+        except is_boto3_error_code("RepositoryNotFoundException"):
             return None
 
     def get_repository_policy(self, registry_id, name):
         try:
-            res = self.ecr.get_repository_policy(
-                repositoryName=name, **build_kwargs(registry_id))
-            text = res.get('policyText')
+            res = self.ecr.get_repository_policy(repositoryName=name, **build_kwargs(registry_id))
+            text = res.get("policyText")
             return text and json.loads(text)
-        except is_boto3_error_code(['RepositoryNotFoundException', 'RepositoryPolicyNotFoundException']):
+        except is_boto3_error_code(["RepositoryNotFoundException", "RepositoryPolicyNotFoundException"]):
             return None
 
     def create_repository(self, registry_id, name, image_tag_mutability, encryption_configuration):
         if registry_id:
-            default_registry_id = self.sts.get_caller_identity().get('Account')
+            default_registry_id = self.sts.get_caller_identity().get("Account")
             if registry_id != default_registry_id:
-                raise Exception('Cannot create repository in registry {0}.'
-                                'Would be created in {1} instead.'.format(registry_id, default_registry_id))
+                raise Exception(
+                    "Cannot create repository in registry {0}."
+                    "Would be created in {1} instead.".format(registry_id, default_registry_id)
+                )
 
         if encryption_configuration is None:
-            encryption_configuration = dict(encryptionType='AES256')
+            encryption_configuration = dict(encryptionType="AES256")
 
         if not self.check_mode:
             repo = self.ecr.create_repository(
                 repositoryName=name,
                 imageTagMutability=image_tag_mutability,
-                encryptionConfiguration=encryption_configuration).get('repository')
+                encryptionConfiguration=encryption_configuration,
+            ).get("repository")
             self.changed = True
             return repo
         else:
@@ -293,10 +294,8 @@ class EcsEcr:
     def set_repository_policy(self, registry_id, name, policy_text, force):
         if not self.check_mode:
             policy = self.ecr.set_repository_policy(
-                repositoryName=name,
-                policyText=policy_text,
-                force=force,
-                **build_kwargs(registry_id))
+                repositoryName=name, policyText=policy_text, force=force, **build_kwargs(registry_id)
+            )
             self.changed = True
             return policy
         else:
@@ -304,15 +303,13 @@ class EcsEcr:
             if self.get_repository(registry_id, name) is None:
                 printable = name
                 if registry_id:
-                    printable = '{0}:{1}'.format(registry_id, name)
-                raise Exception(
-                    'could not find repository {0}'.format(printable))
+                    printable = "{0}:{1}".format(registry_id, name)
+                raise Exception("could not find repository {0}".format(printable))
             return
 
     def delete_repository(self, registry_id, name, force):
         if not self.check_mode:
-            repo = self.ecr.delete_repository(
-                repositoryName=name, force=force, **build_kwargs(registry_id))
+            repo = self.ecr.delete_repository(repositoryName=name, force=force, **build_kwargs(registry_id))
             self.changed = True
             return repo
         else:
@@ -324,8 +321,7 @@ class EcsEcr:
 
     def delete_repository_policy(self, registry_id, name):
         if not self.check_mode:
-            policy = self.ecr.delete_repository_policy(
-                repositoryName=name, **build_kwargs(registry_id))
+            policy = self.ecr.delete_repository_policy(repositoryName=name, **build_kwargs(registry_id))
             self.changed = True
             return policy
         else:
@@ -337,36 +333,33 @@ class EcsEcr:
 
     def put_image_tag_mutability(self, registry_id, name, new_mutability_configuration):
         repo = self.get_repository(registry_id, name)
-        current_mutability_configuration = repo.get('imageTagMutability')
+        current_mutability_configuration = repo.get("imageTagMutability")
 
         if current_mutability_configuration != new_mutability_configuration:
             if not self.check_mode:
                 self.ecr.put_image_tag_mutability(
-                    repositoryName=name,
-                    imageTagMutability=new_mutability_configuration,
-                    **build_kwargs(registry_id))
+                    repositoryName=name, imageTagMutability=new_mutability_configuration, **build_kwargs(registry_id)
+                )
             else:
                 self.skipped = True
             self.changed = True
 
-        repo['imageTagMutability'] = new_mutability_configuration
+        repo["imageTagMutability"] = new_mutability_configuration
         return repo
 
     def get_lifecycle_policy(self, registry_id, name):
         try:
-            res = self.ecr.get_lifecycle_policy(
-                repositoryName=name, **build_kwargs(registry_id))
-            text = res.get('lifecyclePolicyText')
+            res = self.ecr.get_lifecycle_policy(repositoryName=name, **build_kwargs(registry_id))
+            text = res.get("lifecyclePolicyText")
             return text and json.loads(text)
-        except is_boto3_error_code(['LifecyclePolicyNotFoundException', 'RepositoryNotFoundException']):
+        except is_boto3_error_code(["LifecyclePolicyNotFoundException", "RepositoryNotFoundException"]):
             return None
 
     def put_lifecycle_policy(self, registry_id, name, policy_text):
         if not self.check_mode:
             policy = self.ecr.put_lifecycle_policy(
-                repositoryName=name,
-                lifecyclePolicyText=policy_text,
-                **build_kwargs(registry_id))
+                repositoryName=name, lifecyclePolicyText=policy_text, **build_kwargs(registry_id)
+            )
             self.changed = True
             return policy
         else:
@@ -374,15 +367,13 @@ class EcsEcr:
             if self.get_repository(registry_id, name) is None:
                 printable = name
                 if registry_id:
-                    printable = '{0}:{1}'.format(registry_id, name)
-                raise Exception(
-                    'could not find repository {0}'.format(printable))
+                    printable = "{0}:{1}".format(registry_id, name)
+                raise Exception("could not find repository {0}".format(printable))
             return
 
     def purge_lifecycle_policy(self, registry_id, name):
         if not self.check_mode:
-            policy = self.ecr.delete_lifecycle_policy(
-                repositoryName=name, **build_kwargs(registry_id))
+            policy = self.ecr.delete_lifecycle_policy(repositoryName=name, **build_kwargs(registry_id))
             self.changed = True
             return policy
         else:
@@ -396,14 +387,11 @@ class EcsEcr:
         if not self.check_mode:
             if registry_id:
                 scan = self.ecr.put_image_scanning_configuration(
-                    registryId=registry_id,
-                    repositoryName=name,
-                    imageScanningConfiguration={'scanOnPush': scan_on_push}
+                    registryId=registry_id, repositoryName=name, imageScanningConfiguration={"scanOnPush": scan_on_push}
                 )
             else:
                 scan = self.ecr.put_image_scanning_configuration(
-                    repositoryName=name,
-                    imageScanningConfiguration={'scanOnPush': scan_on_push}
+                    repositoryName=name, imageScanningConfiguration={"scanOnPush": scan_on_push}
                 )
             self.changed = True
             return scan
@@ -413,11 +401,11 @@ class EcsEcr:
 
 
 def sort_lists_of_strings(policy):
-    for statement_index in range(0, len(policy.get('Statement', []))):
-        for key in policy['Statement'][statement_index]:
-            value = policy['Statement'][statement_index][key]
+    for statement_index in range(0, len(policy.get("Statement", []))):
+        for key in policy["Statement"][statement_index]:
+            value = policy["Statement"][statement_index][key]
             if isinstance(value, list) and all(isinstance(item, string_types) for item in value):
-                policy['Statement'][statement_index][key] = sorted(value)
+                policy["Statement"][statement_index][key] = sorted(value)
     return policy
 
 
@@ -425,145 +413,138 @@ def run(ecr, params):
     # type: (EcsEcr, dict, int) -> Tuple[bool, dict]
     result = {}
     try:
-        name = params['name']
-        state = params['state']
-        policy_text = params['policy']
-        purge_policy = params['purge_policy']
-        force_absent = params['force_absent']
-        registry_id = params['registry_id']
-        force_set_policy = params['force_set_policy']
-        image_tag_mutability = params['image_tag_mutability'].upper()
-        lifecycle_policy_text = params['lifecycle_policy']
-        purge_lifecycle_policy = params['purge_lifecycle_policy']
-        scan_on_push = params['scan_on_push']
-        encryption_configuration = snake_dict_to_camel_dict(params['encryption_configuration'])
+        name = params["name"]
+        state = params["state"]
+        policy_text = params["policy"]
+        purge_policy = params["purge_policy"]
+        force_absent = params["force_absent"]
+        registry_id = params["registry_id"]
+        force_set_policy = params["force_set_policy"]
+        image_tag_mutability = params["image_tag_mutability"].upper()
+        lifecycle_policy_text = params["lifecycle_policy"]
+        purge_lifecycle_policy = params["purge_lifecycle_policy"]
+        scan_on_push = params["scan_on_push"]
+        encryption_configuration = snake_dict_to_camel_dict(params["encryption_configuration"])
 
         # Parse policies, if they are given
         try:
             policy = policy_text and json.loads(policy_text)
         except ValueError:
-            result['policy'] = policy_text
-            result['msg'] = 'Could not parse policy'
+            result["policy"] = policy_text
+            result["msg"] = "Could not parse policy"
             return False, result
 
         try:
-            lifecycle_policy = \
-                lifecycle_policy_text and json.loads(lifecycle_policy_text)
+            lifecycle_policy = lifecycle_policy_text and json.loads(lifecycle_policy_text)
         except ValueError:
-            result['lifecycle_policy'] = lifecycle_policy_text
-            result['msg'] = 'Could not parse lifecycle_policy'
+            result["lifecycle_policy"] = lifecycle_policy_text
+            result["msg"] = "Could not parse lifecycle_policy"
             return False, result
 
-        result['state'] = state
-        result['created'] = False
+        result["state"] = state
+        result["created"] = False
 
         repo = ecr.get_repository(registry_id, name)
 
-        if state == 'present':
-            result['created'] = False
+        if state == "present":
+            result["created"] = False
 
             if not repo:
-                repo = ecr.create_repository(
-                    registry_id, name, image_tag_mutability, encryption_configuration)
-                result['changed'] = True
-                result['created'] = True
+                repo = ecr.create_repository(registry_id, name, image_tag_mutability, encryption_configuration)
+                result["changed"] = True
+                result["created"] = True
             else:
                 if encryption_configuration is not None:
-                    if repo.get('encryptionConfiguration') != encryption_configuration:
-                        result['msg'] = 'Cannot modify repository encryption type'
+                    if repo.get("encryptionConfiguration") != encryption_configuration:
+                        result["msg"] = "Cannot modify repository encryption type"
                         return False, result
 
                 repo = ecr.put_image_tag_mutability(registry_id, name, image_tag_mutability)
-            result['repository'] = repo
+            result["repository"] = repo
 
             if purge_lifecycle_policy:
-                original_lifecycle_policy = \
-                    ecr.get_lifecycle_policy(registry_id, name)
+                original_lifecycle_policy = ecr.get_lifecycle_policy(registry_id, name)
 
-                result['lifecycle_policy'] = None
+                result["lifecycle_policy"] = None
 
                 if original_lifecycle_policy:
                     ecr.purge_lifecycle_policy(registry_id, name)
-                    result['changed'] = True
+                    result["changed"] = True
 
             elif lifecycle_policy_text is not None:
                 try:
-                    result['lifecycle_policy'] = lifecycle_policy
-                    original_lifecycle_policy = ecr.get_lifecycle_policy(
-                        registry_id, name)
+                    result["lifecycle_policy"] = lifecycle_policy
+                    original_lifecycle_policy = ecr.get_lifecycle_policy(registry_id, name)
 
                     if compare_policies(original_lifecycle_policy, lifecycle_policy):
-                        ecr.put_lifecycle_policy(registry_id, name,
-                                                 lifecycle_policy_text)
-                        result['changed'] = True
+                        ecr.put_lifecycle_policy(registry_id, name, lifecycle_policy_text)
+                        result["changed"] = True
                 except Exception:
                     # Some failure w/ the policy. It's helpful to know what the
                     # policy is.
-                    result['lifecycle_policy'] = lifecycle_policy_text
+                    result["lifecycle_policy"] = lifecycle_policy_text
                     raise
 
             if purge_policy:
                 original_policy = ecr.get_repository_policy(registry_id, name)
 
-                result['policy'] = None
+                result["policy"] = None
 
                 if original_policy:
                     ecr.delete_repository_policy(registry_id, name)
-                    result['changed'] = True
+                    result["changed"] = True
 
             elif policy_text is not None:
                 try:
                     # Sort any lists containing only string types
                     policy = sort_lists_of_strings(policy)
 
-                    result['policy'] = policy
+                    result["policy"] = policy
 
-                    original_policy = ecr.get_repository_policy(
-                        registry_id, name)
+                    original_policy = ecr.get_repository_policy(registry_id, name)
                     if original_policy:
                         original_policy = sort_lists_of_strings(original_policy)
 
                     if compare_policies(original_policy, policy):
-                        ecr.set_repository_policy(
-                            registry_id, name, policy_text, force_set_policy)
-                        result['changed'] = True
+                        ecr.set_repository_policy(registry_id, name, policy_text, force_set_policy)
+                        result["changed"] = True
                 except Exception:
                     # Some failure w/ the policy. It's helpful to know what the
                     # policy is.
-                    result['policy'] = policy_text
+                    result["policy"] = policy_text
                     raise
 
             else:
                 original_policy = ecr.get_repository_policy(registry_id, name)
                 if original_policy:
-                    result['policy'] = original_policy
+                    result["policy"] = original_policy
 
             original_scan_on_push = ecr.get_repository(registry_id, name)
             if original_scan_on_push is not None:
-                if scan_on_push != original_scan_on_push['imageScanningConfiguration']['scanOnPush']:
-                    result['changed'] = True
-                    result['repository']['imageScanningConfiguration']['scanOnPush'] = scan_on_push
+                if scan_on_push != original_scan_on_push["imageScanningConfiguration"]["scanOnPush"]:
+                    result["changed"] = True
+                    result["repository"]["imageScanningConfiguration"]["scanOnPush"] = scan_on_push
                     response = ecr.put_image_scanning_configuration(registry_id, name, scan_on_push)
 
-        elif state == 'absent':
-            result['name'] = name
+        elif state == "absent":
+            result["name"] = name
             if repo:
                 ecr.delete_repository(registry_id, name, force_absent)
-                result['changed'] = True
+                result["changed"] = True
 
     except Exception as err:
         msg = str(err)
         if isinstance(err, botocore.exceptions.ClientError):
             msg = boto_exception(err)
-        result['msg'] = msg
-        result['exception'] = traceback.format_exc()
+        result["msg"] = msg
+        result["exception"] = traceback.format_exc()
         return False, result
 
     if ecr.skipped:
-        result['skipped'] = True
+        result["skipped"] = True
 
     if ecr.changed:
-        result['changed'] = True
+        result["changed"] = True
 
     return True, result
 
@@ -572,34 +553,37 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         registry_id=dict(required=False),
-        state=dict(required=False, choices=['present', 'absent'],
-                   default='present'),
-        force_absent=dict(required=False, type='bool', default=False),
-        force_set_policy=dict(required=False, type='bool', default=False),
-        policy=dict(required=False, type='json'),
-        image_tag_mutability=dict(required=False, choices=['mutable', 'immutable'],
-                                  default='mutable'),
-        purge_policy=dict(required=False, type='bool'),
-        lifecycle_policy=dict(required=False, type='json'),
-        purge_lifecycle_policy=dict(required=False, type='bool'),
-        scan_on_push=(dict(required=False, type='bool', default=False)),
+        state=dict(required=False, choices=["present", "absent"], default="present"),
+        force_absent=dict(required=False, type="bool", default=False),
+        force_set_policy=dict(required=False, type="bool", default=False),
+        policy=dict(required=False, type="json"),
+        image_tag_mutability=dict(required=False, choices=["mutable", "immutable"], default="mutable"),
+        purge_policy=dict(required=False, type="bool"),
+        lifecycle_policy=dict(required=False, type="json"),
+        purge_lifecycle_policy=dict(required=False, type="bool"),
+        scan_on_push=(dict(required=False, type="bool", default=False)),
         encryption_configuration=dict(
             required=False,
-            type='dict',
+            type="dict",
             options=dict(
-                encryption_type=dict(required=False, type='str', default='AES256', choices=['AES256', 'KMS']),
-                kms_key=dict(required=False, type='str', no_log=False),
+                encryption_type=dict(required=False, type="str", default="AES256", choices=["AES256", "KMS"]),
+                kms_key=dict(required=False, type="str", no_log=False),
             ),
             required_if=[
-                ['encryption_type', 'KMS', ['kms_key']],
+                ["encryption_type", "KMS", ["kms_key"]],
             ],
         ),
     )
     mutually_exclusive = [
-        ['policy', 'purge_policy'],
-        ['lifecycle_policy', 'purge_lifecycle_policy']]
+        ["policy", "purge_policy"],
+        ["lifecycle_policy", "purge_lifecycle_policy"],
+    ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, mutually_exclusive=mutually_exclusive)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     ecr = EcsEcr(module)
     passed, result = run(ecr, module.params)
@@ -610,5 +594,5 @@ def main():
         module.fail_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

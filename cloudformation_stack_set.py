@@ -321,9 +321,9 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def create_stack_set(module, stack_params, cfn):
     try:
         cfn.create_stack_set(aws_retry=True, **stack_params)
-        return await_stack_set_exists(cfn, stack_params['StackSetName'])
+        return await_stack_set_exists(cfn, stack_params["StackSetName"])
     except (ClientError, BotoCoreError) as err:
-        module.fail_json_aws(err, msg="Failed to create stack set {0}.".format(stack_params.get('StackSetName')))
+        module.fail_json_aws(err, msg="Failed to create stack set {0}.".format(stack_params.get("StackSetName")))
 
 
 def update_stack_set(module, stack_params, cfn):
@@ -332,22 +332,29 @@ def update_stack_set(module, stack_params, cfn):
     # don't need to be updated.
     try:
         cfn.update_stack_set(**stack_params)
-    except is_boto3_error_code('StackSetNotFound') as err:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("StackSetNotFound") as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="Failed to find stack set. Check the name & region.")
-    except is_boto3_error_code('StackInstanceNotFound') as err:  # pylint: disable=duplicate-except
-        module.fail_json_aws(err, msg="One or more stack instances were not found for this stack set. Double check "
-                             "the `accounts` and `regions` parameters.")
-    except is_boto3_error_code('OperationInProgressException') as err:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("StackInstanceNotFound") as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(
-            err, msg="Another operation is already in progress on this stack set - please try again later. When making "
-            "multiple cloudformation_stack_set calls, it's best to enable `wait: true` to avoid unfinished op errors.")
+            err,
+            msg="One or more stack instances were not found for this stack set. Double check "
+            "the `accounts` and `regions` parameters.",
+        )
+    except is_boto3_error_code("OperationInProgressException") as err:  # pylint: disable=duplicate-except
+        module.fail_json_aws(
+            err,
+            msg="Another operation is already in progress on this stack set - please try again later. When making "
+            "multiple cloudformation_stack_set calls, it's best to enable `wait: true` to avoid unfinished op errors.",
+        )
     except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="Could not update stack set.")
-    if module.params.get('wait'):
+    if module.params.get("wait"):
         await_stack_set_operation(
-            module, cfn, operation_id=stack_params['OperationId'],
-            stack_set_name=stack_params['StackSetName'],
-            max_wait=module.params.get('wait_timeout'),
+            module,
+            cfn,
+            operation_id=stack_params["OperationId"],
+            stack_set_name=stack_params["StackSetName"],
+            max_wait=module.params.get("wait_timeout"),
         )
 
     return True
@@ -357,20 +364,24 @@ def compare_stack_instances(cfn, stack_set_name, accounts, regions):
     instance_list = cfn.list_stack_instances(
         aws_retry=True,
         StackSetName=stack_set_name,
-    )['Summaries']
+    )["Summaries"]
     desired_stack_instances = set(itertools.product(accounts, regions))
-    existing_stack_instances = set((i['Account'], i['Region']) for i in instance_list)
+    existing_stack_instances = set((i["Account"], i["Region"]) for i in instance_list)
     # new stacks, existing stacks, unspecified stacks
-    return (desired_stack_instances - existing_stack_instances), existing_stack_instances, (existing_stack_instances - desired_stack_instances)
+    return (
+        (desired_stack_instances - existing_stack_instances),
+        existing_stack_instances,
+        (existing_stack_instances - desired_stack_instances),
+    )
 
 
 @AWSRetry.jittered_backoff(retries=3, delay=4)
 def stack_set_facts(cfn, stack_set_name):
     try:
-        ss = cfn.describe_stack_set(StackSetName=stack_set_name)['StackSet']
-        ss['Tags'] = boto3_tag_list_to_ansible_dict(ss['Tags'])
+        ss = cfn.describe_stack_set(StackSetName=stack_set_name)["StackSet"]
+        ss["Tags"] = boto3_tag_list_to_ansible_dict(ss["Tags"])
         return ss
-    except cfn.exceptions.from_code('StackSetNotFound'):
+    except cfn.exceptions.from_code("StackSetNotFound"):
         # Return None if the stack doesn't exist
         return
 
@@ -381,23 +392,24 @@ def await_stack_set_operation(module, cfn, stack_set_name, operation_id, max_wai
     for i in range(max_wait // 15):
         try:
             operation = cfn.describe_stack_set_operation(StackSetName=stack_set_name, OperationId=operation_id)
-            if operation['StackSetOperation']['Status'] not in ('RUNNING', 'STOPPING'):
+            if operation["StackSetOperation"]["Status"] not in ("RUNNING", "STOPPING"):
                 # Stack set has completed operation
                 break
-        except is_boto3_error_code('StackSetNotFound'):  # pylint: disable=duplicate-except
+        except is_boto3_error_code("StackSetNotFound"):  # pylint: disable=duplicate-except
             pass
-        except is_boto3_error_code('OperationNotFound'):  # pylint: disable=duplicate-except
+        except is_boto3_error_code("OperationNotFound"):  # pylint: disable=duplicate-except
             pass
         time.sleep(15)
 
-    if operation and operation['StackSetOperation']['Status'] not in ('FAILED', 'STOPPED'):
+    if operation and operation["StackSetOperation"]["Status"] not in ("FAILED", "STOPPED"):
         await_stack_instance_completion(
-            module, cfn,
+            module,
+            cfn,
             stack_set_name=stack_set_name,
             # subtract however long we waited already
             max_wait=int(max_wait - (datetime.datetime.now() - wait_start).total_seconds()),
         )
-    elif operation and operation['StackSetOperation']['Status'] in ('FAILED', 'STOPPED'):
+    elif operation and operation["StackSetOperation"]["Status"] in ("FAILED", "STOPPED"):
         pass
     else:
         module.warn(
@@ -412,84 +424,84 @@ def await_stack_instance_completion(module, cfn, stack_set_name, max_wait):
     for i in range(max_wait // 15):
         try:
             stack_instances = cfn.list_stack_instances(StackSetName=stack_set_name)
-            to_await = [inst for inst in stack_instances['Summaries']
-                        if inst['Status'] != 'CURRENT']
+            to_await = [inst for inst in stack_instances["Summaries"] if inst["Status"] != "CURRENT"]
             if not to_await:
-                return stack_instances['Summaries']
-        except is_boto3_error_code('StackSetNotFound'):  # pylint: disable=duplicate-except
+                return stack_instances["Summaries"]
+        except is_boto3_error_code("StackSetNotFound"):  # pylint: disable=duplicate-except
             # this means the deletion beat us, or the stack set is not yet propagated
             pass
         time.sleep(15)
 
     module.warn(
         "Timed out waiting for stack set {0} instances {1} to complete after {2} seconds. Returning unfinished operation".format(
-            stack_set_name, ', '.join(s['StackId'] for s in to_await), max_wait
+            stack_set_name, ", ".join(s["StackId"] for s in to_await), max_wait
         )
     )
 
 
 def await_stack_set_exists(cfn, stack_set_name):
     # AWSRetry will retry on `StackSetNotFound` errors for us
-    ss = cfn.describe_stack_set(StackSetName=stack_set_name, aws_retry=True)['StackSet']
-    ss['Tags'] = boto3_tag_list_to_ansible_dict(ss['Tags'])
-    return camel_dict_to_snake_dict(ss, ignore_list=('Tags',))
+    ss = cfn.describe_stack_set(StackSetName=stack_set_name, aws_retry=True)["StackSet"]
+    ss["Tags"] = boto3_tag_list_to_ansible_dict(ss["Tags"])
+    return camel_dict_to_snake_dict(ss, ignore_list=("Tags",))
 
 
 def describe_stack_tree(module, stack_set_name, operation_ids=None):
-    jittered_backoff_decorator = AWSRetry.jittered_backoff(retries=5, delay=3, max_delay=5, catch_extra_error_codes=['StackSetNotFound'])
-    cfn = module.client('cloudformation', retry_decorator=jittered_backoff_decorator)
+    jittered_backoff_decorator = AWSRetry.jittered_backoff(
+        retries=5, delay=3, max_delay=5, catch_extra_error_codes=["StackSetNotFound"]
+    )
+    cfn = module.client("cloudformation", retry_decorator=jittered_backoff_decorator)
     result = dict()
-    result['stack_set'] = camel_dict_to_snake_dict(
+    result["stack_set"] = camel_dict_to_snake_dict(
         cfn.describe_stack_set(
             StackSetName=stack_set_name,
             aws_retry=True,
-        )['StackSet']
+        )["StackSet"]
     )
-    result['stack_set']['tags'] = boto3_tag_list_to_ansible_dict(result['stack_set']['tags'])
-    result['operations_log'] = sorted(
+    result["stack_set"]["tags"] = boto3_tag_list_to_ansible_dict(result["stack_set"]["tags"])
+    result["operations_log"] = sorted(
         camel_dict_to_snake_dict(
             cfn.list_stack_set_operations(
                 StackSetName=stack_set_name,
                 aws_retry=True,
             )
-        )['summaries'],
-        key=lambda x: x['creation_timestamp']
+        )["summaries"],
+        key=lambda x: x["creation_timestamp"],
     )
-    result['stack_instances'] = sorted(
-        [
-            camel_dict_to_snake_dict(i) for i in
-            cfn.list_stack_instances(StackSetName=stack_set_name)['Summaries']
-        ],
-        key=lambda i: i['region'] + i['account']
+    result["stack_instances"] = sorted(
+        [camel_dict_to_snake_dict(i) for i in cfn.list_stack_instances(StackSetName=stack_set_name)["Summaries"]],
+        key=lambda i: i["region"] + i["account"],
     )
 
     if operation_ids:
-        result['operations'] = []
+        result["operations"] = []
         for op_id in operation_ids:
             try:
-                result['operations'].append(camel_dict_to_snake_dict(
-                    cfn.describe_stack_set_operation(
-                        StackSetName=stack_set_name,
-                        OperationId=op_id,
-                    )['StackSetOperation']
-                ))
-            except is_boto3_error_code('OperationNotFoundException'):  # pylint: disable=duplicate-except
+                result["operations"].append(
+                    camel_dict_to_snake_dict(
+                        cfn.describe_stack_set_operation(
+                            StackSetName=stack_set_name,
+                            OperationId=op_id,
+                        )["StackSetOperation"]
+                    )
+                )
+            except is_boto3_error_code("OperationNotFoundException"):  # pylint: disable=duplicate-except
                 pass
     return result
 
 
 def get_operation_preferences(module):
     params = dict()
-    if module.params.get('regions'):
-        params['RegionOrder'] = list(module.params['regions'])
+    if module.params.get("regions"):
+        params["RegionOrder"] = list(module.params["regions"])
     for param, api_name in {
-        'fail_count': 'FailureToleranceCount',
-        'fail_percentage': 'FailureTolerancePercentage',
-        'parallel_percentage': 'MaxConcurrentPercentage',
-        'parallel_count': 'MaxConcurrentCount',
+        "fail_count": "FailureToleranceCount",
+        "fail_percentage": "FailureTolerancePercentage",
+        "parallel_percentage": "MaxConcurrentPercentage",
+        "parallel_count": "MaxConcurrentCount",
     }.items():
-        if module.params.get('failure_tolerance', {}).get(param):
-            params[api_name] = module.params.get('failure_tolerance', {}).get(param)
+        if module.params.get("failure_tolerance", {}).get(param):
+            params[api_name] = module.params.get("failure_tolerance", {}).get(param)
     return params
 
 
@@ -497,171 +509,173 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         description=dict(),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=900),
-        state=dict(default='present', choices=['present', 'absent']),
-        purge_stacks=dict(type='bool', default=True),
-        parameters=dict(type='dict', default={}),
-        template=dict(type='path'),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=900),
+        state=dict(default="present", choices=["present", "absent"]),
+        purge_stacks=dict(type="bool", default=True),
+        parameters=dict(type="dict", default={}),
+        template=dict(type="path"),
         template_url=dict(),
         template_body=dict(),
-        capabilities=dict(type='list', elements='str', choices=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']),
-        regions=dict(type='list', elements='str'),
-        accounts=dict(type='list', elements='str'),
+        capabilities=dict(type="list", elements="str", choices=["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]),
+        regions=dict(type="list", elements="str"),
+        accounts=dict(type="list", elements="str"),
         failure_tolerance=dict(
-            type='dict',
+            type="dict",
             default={},
             options=dict(
-                fail_count=dict(type='int'),
-                fail_percentage=dict(type='int'),
-                parallel_percentage=dict(type='int'),
-                parallel_count=dict(type='int'),
+                fail_count=dict(type="int"),
+                fail_percentage=dict(type="int"),
+                parallel_percentage=dict(type="int"),
+                parallel_count=dict(type="int"),
             ),
             mutually_exclusive=[
-                ['fail_count', 'fail_percentage'],
-                ['parallel_count', 'parallel_percentage'],
+                ["fail_count", "fail_percentage"],
+                ["parallel_count", "parallel_percentage"],
             ],
         ),
-        administration_role_arn=dict(aliases=['admin_role_arn', 'administration_role', 'admin_role']),
-        execution_role_name=dict(aliases=['execution_role', 'exec_role', 'exec_role_name']),
-        tags=dict(type='dict'),
+        administration_role_arn=dict(aliases=["admin_role_arn", "administration_role", "admin_role"]),
+        execution_role_name=dict(aliases=["execution_role", "exec_role", "exec_role_name"]),
+        tags=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[['template_url', 'template', 'template_body']],
-        supports_check_mode=True
+        mutually_exclusive=[["template_url", "template", "template_body"]],
+        supports_check_mode=True,
     )
 
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes
-    jittered_backoff_decorator = AWSRetry.jittered_backoff(retries=10, delay=3, max_delay=30, catch_extra_error_codes=['StackSetNotFound'])
-    cfn = module.client('cloudformation', retry_decorator=jittered_backoff_decorator)
-    existing_stack_set = stack_set_facts(cfn, module.params['name'])
+    jittered_backoff_decorator = AWSRetry.jittered_backoff(
+        retries=10, delay=3, max_delay=30, catch_extra_error_codes=["StackSetNotFound"]
+    )
+    cfn = module.client("cloudformation", retry_decorator=jittered_backoff_decorator)
+    existing_stack_set = stack_set_facts(cfn, module.params["name"])
 
     operation_uuid = to_native(uuid.uuid4())
     operation_ids = []
     # collect the parameters that are passed to boto3. Keeps us from having so many scalars floating around.
     stack_params = {}
-    state = module.params['state']
-    if state == 'present' and not module.params['accounts']:
+    state = module.params["state"]
+    if state == "present" and not module.params["accounts"]:
         module.fail_json(
             msg="Can't create a stack set without choosing at least one account. "
-                "To get the ID of the current account, use the aws_caller_info module."
+            "To get the ID of the current account, use the aws_caller_info module."
         )
 
-    module.params['accounts'] = [to_native(a) for a in module.params['accounts']]
+    module.params["accounts"] = [to_native(a) for a in module.params["accounts"]]
 
-    stack_params['StackSetName'] = module.params['name']
-    if module.params.get('description'):
-        stack_params['Description'] = module.params['description']
+    stack_params["StackSetName"] = module.params["name"]
+    if module.params.get("description"):
+        stack_params["Description"] = module.params["description"]
 
-    if module.params.get('capabilities'):
-        stack_params['Capabilities'] = module.params['capabilities']
+    if module.params.get("capabilities"):
+        stack_params["Capabilities"] = module.params["capabilities"]
 
-    if module.params['template'] is not None:
-        with open(module.params['template'], 'r') as tpl:
-            stack_params['TemplateBody'] = tpl.read()
-    elif module.params['template_body'] is not None:
-        stack_params['TemplateBody'] = module.params['template_body']
-    elif module.params['template_url'] is not None:
-        stack_params['TemplateURL'] = module.params['template_url']
+    if module.params["template"] is not None:
+        with open(module.params["template"], "r") as tpl:
+            stack_params["TemplateBody"] = tpl.read()
+    elif module.params["template_body"] is not None:
+        stack_params["TemplateBody"] = module.params["template_body"]
+    elif module.params["template_url"] is not None:
+        stack_params["TemplateURL"] = module.params["template_url"]
     else:
         # no template is provided, but if the stack set exists already, we can use the existing one.
         if existing_stack_set:
-            stack_params['UsePreviousTemplate'] = True
+            stack_params["UsePreviousTemplate"] = True
         else:
             module.fail_json(
                 msg="The Stack Set {0} does not exist, and no template was provided. Provide one of `template`, "
-                    "`template_body`, or `template_url`".format(module.params['name'])
+                "`template_body`, or `template_url`".format(module.params["name"])
             )
 
-    stack_params['Parameters'] = []
-    for k, v in module.params['parameters'].items():
+    stack_params["Parameters"] = []
+    for k, v in module.params["parameters"].items():
         if isinstance(v, dict):
             # set parameter based on a dict to allow additional CFN Parameter Attributes
             param = dict(ParameterKey=k)
 
-            if 'value' in v:
-                param['ParameterValue'] = to_native(v['value'])
+            if "value" in v:
+                param["ParameterValue"] = to_native(v["value"])
 
-            if 'use_previous_value' in v and bool(v['use_previous_value']):
-                param['UsePreviousValue'] = True
-                param.pop('ParameterValue', None)
+            if "use_previous_value" in v and bool(v["use_previous_value"]):
+                param["UsePreviousValue"] = True
+                param.pop("ParameterValue", None)
 
-            stack_params['Parameters'].append(param)
+            stack_params["Parameters"].append(param)
         else:
             # allow default k/v configuration to set a template parameter
-            stack_params['Parameters'].append({'ParameterKey': k, 'ParameterValue': str(v)})
+            stack_params["Parameters"].append({"ParameterKey": k, "ParameterValue": str(v)})
 
-    if module.params.get('tags') and isinstance(module.params.get('tags'), dict):
-        stack_params['Tags'] = ansible_dict_to_boto3_tag_list(module.params['tags'])
+    if module.params.get("tags") and isinstance(module.params.get("tags"), dict):
+        stack_params["Tags"] = ansible_dict_to_boto3_tag_list(module.params["tags"])
 
-    if module.params.get('administration_role_arn'):
+    if module.params.get("administration_role_arn"):
         # TODO loosen the semantics here to autodetect the account ID and build the ARN
-        stack_params['AdministrationRoleARN'] = module.params['administration_role_arn']
-    if module.params.get('execution_role_name'):
-        stack_params['ExecutionRoleName'] = module.params['execution_role_name']
+        stack_params["AdministrationRoleARN"] = module.params["administration_role_arn"]
+    if module.params.get("execution_role_name"):
+        stack_params["ExecutionRoleName"] = module.params["execution_role_name"]
 
     result = {}
 
     if module.check_mode:
-        if state == 'absent' and existing_stack_set:
-            module.exit_json(changed=True, msg='Stack set would be deleted', meta=[])
-        elif state == 'absent' and not existing_stack_set:
-            module.exit_json(changed=False, msg='Stack set doesn\'t exist', meta=[])
-        elif state == 'present' and not existing_stack_set:
-            module.exit_json(changed=True, msg='New stack set would be created', meta=[])
-        elif state == 'present' and existing_stack_set:
+        if state == "absent" and existing_stack_set:
+            module.exit_json(changed=True, msg="Stack set would be deleted", meta=[])
+        elif state == "absent" and not existing_stack_set:
+            module.exit_json(changed=False, msg="Stack set doesn't exist", meta=[])
+        elif state == "present" and not existing_stack_set:
+            module.exit_json(changed=True, msg="New stack set would be created", meta=[])
+        elif state == "present" and existing_stack_set:
             new_stacks, existing_stacks, unspecified_stacks = compare_stack_instances(
                 cfn,
-                module.params['name'],
-                module.params['accounts'],
-                module.params['regions'],
+                module.params["name"],
+                module.params["accounts"],
+                module.params["regions"],
             )
             if new_stacks:
-                module.exit_json(changed=True, msg='New stack instance(s) would be created', meta=[])
-            elif unspecified_stacks and module.params.get('purge_stack_instances'):
-                module.exit_json(changed=True, msg='Old stack instance(s) would be deleted', meta=[])
+                module.exit_json(changed=True, msg="New stack instance(s) would be created", meta=[])
+            elif unspecified_stacks and module.params.get("purge_stack_instances"):
+                module.exit_json(changed=True, msg="Old stack instance(s) would be deleted", meta=[])
         else:
             # TODO: need to check the template and other settings for correct check mode
-            module.exit_json(changed=False, msg='No changes detected', meta=[])
+            module.exit_json(changed=False, msg="No changes detected", meta=[])
 
     changed = False
-    if state == 'present':
+    if state == "present":
         if not existing_stack_set:
             # on create this parameter has a different name, and cannot be referenced later in the job log
-            stack_params['ClientRequestToken'] = 'Ansible-StackSet-Create-{0}'.format(operation_uuid)
+            stack_params["ClientRequestToken"] = "Ansible-StackSet-Create-{0}".format(operation_uuid)
             changed = True
             create_stack_set(module, stack_params, cfn)
         else:
-            stack_params['OperationId'] = 'Ansible-StackSet-Update-{0}'.format(operation_uuid)
-            operation_ids.append(stack_params['OperationId'])
-            if module.params.get('regions'):
-                stack_params['OperationPreferences'] = get_operation_preferences(module)
+            stack_params["OperationId"] = "Ansible-StackSet-Update-{0}".format(operation_uuid)
+            operation_ids.append(stack_params["OperationId"])
+            if module.params.get("regions"):
+                stack_params["OperationPreferences"] = get_operation_preferences(module)
             changed |= update_stack_set(module, stack_params, cfn)
 
         # now create/update any appropriate stack instances
         new_stack_instances, existing_stack_instances, unspecified_stack_instances = compare_stack_instances(
             cfn,
-            module.params['name'],
-            module.params['accounts'],
-            module.params['regions'],
+            module.params["name"],
+            module.params["accounts"],
+            module.params["regions"],
         )
         if new_stack_instances:
-            operation_ids.append('Ansible-StackInstance-Create-{0}'.format(operation_uuid))
+            operation_ids.append("Ansible-StackInstance-Create-{0}".format(operation_uuid))
             changed = True
             cfn.create_stack_instances(
-                StackSetName=module.params['name'],
+                StackSetName=module.params["name"],
                 Accounts=list(set(acct for acct, region in new_stack_instances)),
                 Regions=list(set(region for acct, region in new_stack_instances)),
                 OperationPreferences=get_operation_preferences(module),
                 OperationId=operation_ids[-1],
             )
         else:
-            operation_ids.append('Ansible-StackInstance-Update-{0}'.format(operation_uuid))
+            operation_ids.append("Ansible-StackInstance-Update-{0}".format(operation_uuid))
             cfn.update_stack_instances(
-                StackSetName=module.params['name'],
+                StackSetName=module.params["name"],
                 Accounts=list(set(acct for acct, region in existing_stack_instances)),
                 Regions=list(set(region for acct, region in existing_stack_instances)),
                 OperationPreferences=get_operation_preferences(module),
@@ -669,55 +683,67 @@ def main():
             )
         for op in operation_ids:
             await_stack_set_operation(
-                module, cfn, operation_id=op,
-                stack_set_name=module.params['name'],
-                max_wait=module.params.get('wait_timeout'),
+                module,
+                cfn,
+                operation_id=op,
+                stack_set_name=module.params["name"],
+                max_wait=module.params.get("wait_timeout"),
             )
 
-    elif state == 'absent':
+    elif state == "absent":
         if not existing_stack_set:
-            module.exit_json(msg='Stack set {0} does not exist'.format(module.params['name']))
-        if module.params.get('purge_stack_instances') is False:
+            module.exit_json(msg="Stack set {0} does not exist".format(module.params["name"]))
+        if module.params.get("purge_stack_instances") is False:
             pass
         try:
             cfn.delete_stack_set(
-                StackSetName=module.params['name'],
+                StackSetName=module.params["name"],
             )
-            module.exit_json(msg='Stack set {0} deleted'.format(module.params['name']))
-        except is_boto3_error_code('OperationInProgressException') as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg='Cannot delete stack {0} while there is an operation in progress'.format(module.params['name']))
-        except is_boto3_error_code('StackSetNotEmptyException'):  # pylint: disable=duplicate-except
-            delete_instances_op = 'Ansible-StackInstance-Delete-{0}'.format(operation_uuid)
+            module.exit_json(msg="Stack set {0} deleted".format(module.params["name"]))
+        except is_boto3_error_code("OperationInProgressException") as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(
+                e, msg="Cannot delete stack {0} while there is an operation in progress".format(module.params["name"])
+            )
+        except is_boto3_error_code("StackSetNotEmptyException"):  # pylint: disable=duplicate-except
+            delete_instances_op = "Ansible-StackInstance-Delete-{0}".format(operation_uuid)
             cfn.delete_stack_instances(
-                StackSetName=module.params['name'],
-                Accounts=module.params['accounts'],
-                Regions=module.params['regions'],
-                RetainStacks=(not module.params.get('purge_stacks')),
-                OperationId=delete_instances_op
+                StackSetName=module.params["name"],
+                Accounts=module.params["accounts"],
+                Regions=module.params["regions"],
+                RetainStacks=(not module.params.get("purge_stacks")),
+                OperationId=delete_instances_op,
             )
             await_stack_set_operation(
-                module, cfn, operation_id=delete_instances_op,
-                stack_set_name=stack_params['StackSetName'],
-                max_wait=module.params.get('wait_timeout'),
+                module,
+                cfn,
+                operation_id=delete_instances_op,
+                stack_set_name=stack_params["StackSetName"],
+                max_wait=module.params.get("wait_timeout"),
             )
             try:
                 cfn.delete_stack_set(
-                    StackSetName=module.params['name'],
+                    StackSetName=module.params["name"],
                 )
-            except is_boto3_error_code('StackSetNotEmptyException') as exc:  # pylint: disable=duplicate-except
+            except is_boto3_error_code("StackSetNotEmptyException") as exc:  # pylint: disable=duplicate-except
                 # this time, it is likely that either the delete failed or there are more stacks.
                 instances = cfn.list_stack_instances(
-                    StackSetName=module.params['name'],
+                    StackSetName=module.params["name"],
                 )
-                stack_states = ', '.join('(account={Account}, region={Region}, state={Status})'.format(**i) for i in instances['Summaries'])
-                module.fail_json_aws(exc, msg='Could not purge all stacks, or not all accounts/regions were chosen for deletion: ' + stack_states)
-            module.exit_json(changed=True, msg='Stack set {0} deleted'.format(module.params['name']))
+                stack_states = ", ".join(
+                    "(account={Account}, region={Region}, state={Status})".format(**i) for i in instances["Summaries"]
+                )
+                module.fail_json_aws(
+                    exc,
+                    msg="Could not purge all stacks, or not all accounts/regions were chosen for deletion: "
+                    + stack_states,
+                )
+            module.exit_json(changed=True, msg="Stack set {0} deleted".format(module.params["name"]))
 
-    result.update(**describe_stack_tree(module, stack_params['StackSetName'], operation_ids=operation_ids))
-    if any(o['status'] == 'FAILED' for o in result['operations']):
+    result.update(**describe_stack_tree(module, stack_params["StackSetName"], operation_ids=operation_ids))
+    if any(o["status"] == "FAILED" for o in result["operations"]):
         module.fail_json(msg="One or more operations failed to execute", **result)
     module.exit_json(changed=changed, **result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

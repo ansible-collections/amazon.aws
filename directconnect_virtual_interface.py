@@ -264,61 +264,66 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def try_except_ClientError(failure_msg):
-    '''
-        Wrapper for boto3 calls that uses AWSRetry and handles exceptions
-    '''
+    """
+    Wrapper for boto3 calls that uses AWSRetry and handles exceptions
+    """
+
     def wrapper(f):
         def run_func(*args, **kwargs):
             try:
-                result = AWSRetry.jittered_backoff(retries=8, delay=5, catch_extra_error_codes=['DirectConnectClientException'])(f)(*args, **kwargs)
+                result = AWSRetry.jittered_backoff(
+                    retries=8, delay=5, catch_extra_error_codes=["DirectConnectClientException"]
+                )(f)(*args, **kwargs)
             except (ClientError, BotoCoreError) as e:
                 raise DirectConnectError(failure_msg, traceback.format_exc(), e)
             return result
+
         return run_func
+
     return wrapper
 
 
 def find_unique_vi(client, connection_id, virtual_interface_id, name):
-    '''
-        Determines if the virtual interface exists. Returns the virtual interface ID if an exact match is found.
-        If multiple matches are found False is returned. If no matches are found None is returned.
-    '''
+    """
+    Determines if the virtual interface exists. Returns the virtual interface ID if an exact match is found.
+    If multiple matches are found False is returned. If no matches are found None is returned.
+    """
 
     # Get the virtual interfaces, filtering by the ID if provided.
     vi_params = {}
     if virtual_interface_id:
-        vi_params = {'virtualInterfaceId': virtual_interface_id}
+        vi_params = {"virtualInterfaceId": virtual_interface_id}
 
-    virtual_interfaces = try_except_ClientError(
-        failure_msg="Failed to describe virtual interface")(
-        client.describe_virtual_interfaces)(**vi_params).get('virtualInterfaces')
+    virtual_interfaces = try_except_ClientError(failure_msg="Failed to describe virtual interface")(
+        client.describe_virtual_interfaces
+    )(**vi_params).get("virtualInterfaces")
 
     # Remove deleting/deleted matches from the results.
-    virtual_interfaces = [vi for vi in virtual_interfaces if vi['virtualInterfaceState'] not in ('deleting', 'deleted')]
+    virtual_interfaces = [vi for vi in virtual_interfaces if vi["virtualInterfaceState"] not in ("deleting", "deleted")]
 
     matching_virtual_interfaces = filter_virtual_interfaces(virtual_interfaces, name, connection_id)
     return exact_match(matching_virtual_interfaces)
 
 
 def exact_match(virtual_interfaces):
-    '''
-        Returns the virtual interface ID if one was found,
-        None if the virtual interface ID needs to be created,
-        False if an exact match was not found
-    '''
+    """
+    Returns the virtual interface ID if one was found,
+    None if the virtual interface ID needs to be created,
+    False if an exact match was not found
+    """
 
     if not virtual_interfaces:
         return None
     if len(virtual_interfaces) == 1:
-        return virtual_interfaces[0]['virtualInterfaceId']
+        return virtual_interfaces[0]["virtualInterfaceId"]
     else:
         return False
 
 
 def filter_virtual_interfaces(virtual_interfaces, name, connection_id):
-    '''
-        Filters the available virtual interfaces to try to find a unique match
-    '''
+    """
+    Filters the available virtual interfaces to try to find a unique match
+    """
     # Filter by name if provided.
     if name:
         matching_by_name = find_virtual_interface_by_name(virtual_interfaces, name)
@@ -339,52 +344,56 @@ def filter_virtual_interfaces(virtual_interfaces, name, connection_id):
 
 
 def find_virtual_interface_by_connection_id(virtual_interfaces, connection_id):
-    '''
-        Return virtual interfaces that have the connection_id associated
-    '''
-    return [vi for vi in virtual_interfaces if vi['connectionId'] == connection_id]
+    """
+    Return virtual interfaces that have the connection_id associated
+    """
+    return [vi for vi in virtual_interfaces if vi["connectionId"] == connection_id]
 
 
 def find_virtual_interface_by_name(virtual_interfaces, name):
-    '''
-        Return virtual interfaces that match the provided name
-    '''
-    return [vi for vi in virtual_interfaces if vi['virtualInterfaceName'] == name]
+    """
+    Return virtual interfaces that match the provided name
+    """
+    return [vi for vi in virtual_interfaces if vi["virtualInterfaceName"] == name]
 
 
 def vi_state(client, virtual_interface_id):
-    '''
-        Returns the state of the virtual interface.
-    '''
+    """
+    Returns the state of the virtual interface.
+    """
     err_msg = "Failed to describe virtual interface: {0}".format(virtual_interface_id)
-    vi = try_except_ClientError(failure_msg=err_msg)(client.describe_virtual_interfaces)(virtualInterfaceId=virtual_interface_id)
-    return vi['virtualInterfaces'][0]
+    vi = try_except_ClientError(failure_msg=err_msg)(client.describe_virtual_interfaces)(
+        virtualInterfaceId=virtual_interface_id
+    )
+    return vi["virtualInterfaces"][0]
 
 
 def assemble_params_for_creating_vi(params):
-    '''
-        Returns kwargs to use in the call to create the virtual interface
+    """
+    Returns kwargs to use in the call to create the virtual interface
 
-        Params for public virtual interfaces:
-        virtualInterfaceName, vlan, asn, authKey, amazonAddress, customerAddress, addressFamily, cidr
-        Params for private virtual interfaces:
-        virtualInterfaceName, vlan, asn, authKey, amazonAddress, customerAddress, addressFamily, virtualGatewayId
-    '''
+    Params for public virtual interfaces:
+    virtualInterfaceName, vlan, asn, authKey, amazonAddress, customerAddress, addressFamily, cidr
+    Params for private virtual interfaces:
+    virtualInterfaceName, vlan, asn, authKey, amazonAddress, customerAddress, addressFamily, virtualGatewayId
+    """
 
-    public = params['public']
-    name = params['name']
-    vlan = params['vlan']
-    bgp_asn = params['bgp_asn']
-    auth_key = params['authentication_key']
-    amazon_addr = params['amazon_address']
-    customer_addr = params['customer_address']
-    family_addr = params['address_type']
-    cidr = params['cidr']
-    virtual_gateway_id = params['virtual_gateway_id']
-    direct_connect_gateway_id = params['direct_connect_gateway_id']
+    public = params["public"]
+    name = params["name"]
+    vlan = params["vlan"]
+    bgp_asn = params["bgp_asn"]
+    auth_key = params["authentication_key"]
+    amazon_addr = params["amazon_address"]
+    customer_addr = params["customer_address"]
+    family_addr = params["address_type"]
+    cidr = params["cidr"]
+    virtual_gateway_id = params["virtual_gateway_id"]
+    direct_connect_gateway_id = params["direct_connect_gateway_id"]
 
     parameters = dict(virtualInterfaceName=name, vlan=vlan, asn=bgp_asn)
-    opt_params = dict(authKey=auth_key, amazonAddress=amazon_addr, customerAddress=customer_addr, addressFamily=family_addr)
+    opt_params = dict(
+        authKey=auth_key, amazonAddress=amazon_addr, customerAddress=customer_addr, addressFamily=family_addr
+    )
 
     for name, value in opt_params.items():
         if value:
@@ -392,68 +401,74 @@ def assemble_params_for_creating_vi(params):
 
     # virtual interface type specific parameters
     if public and cidr:
-        parameters['routeFilterPrefixes'] = [{'cidr': c} for c in cidr]
+        parameters["routeFilterPrefixes"] = [{"cidr": c} for c in cidr]
     if not public:
         if virtual_gateway_id:
-            parameters['virtualGatewayId'] = virtual_gateway_id
+            parameters["virtualGatewayId"] = virtual_gateway_id
         elif direct_connect_gateway_id:
-            parameters['directConnectGatewayId'] = direct_connect_gateway_id
+            parameters["directConnectGatewayId"] = direct_connect_gateway_id
 
     return parameters
 
 
 def create_vi(client, public, associated_id, creation_params):
-    '''
-        :param public: a boolean
-        :param associated_id: a link aggregation group ID or connection ID to associate
-                              with the virtual interface.
-        :param creation_params: a dict of parameters to use in the AWS SDK call
-        :return The ID of the created virtual interface
-    '''
+    """
+    :param public: a boolean
+    :param associated_id: a link aggregation group ID or connection ID to associate
+                          with the virtual interface.
+    :param creation_params: a dict of parameters to use in the AWS SDK call
+    :return The ID of the created virtual interface
+    """
     err_msg = "Failed to create virtual interface"
     if public:
-        vi = try_except_ClientError(failure_msg=err_msg)(client.create_public_virtual_interface)(connectionId=associated_id,
-                                                                                                 newPublicVirtualInterface=creation_params)
+        vi = try_except_ClientError(failure_msg=err_msg)(client.create_public_virtual_interface)(
+            connectionId=associated_id, newPublicVirtualInterface=creation_params
+        )
     else:
-        vi = try_except_ClientError(failure_msg=err_msg)(client.create_private_virtual_interface)(connectionId=associated_id,
-                                                                                                  newPrivateVirtualInterface=creation_params)
-    return vi['virtualInterfaceId']
+        vi = try_except_ClientError(failure_msg=err_msg)(client.create_private_virtual_interface)(
+            connectionId=associated_id, newPrivateVirtualInterface=creation_params
+        )
+    return vi["virtualInterfaceId"]
 
 
 def modify_vi(client, virtual_interface_id, connection_id):
-    '''
-        Associate a new connection ID
-    '''
+    """
+    Associate a new connection ID
+    """
     err_msg = "Unable to associate {0} with virtual interface {1}".format(connection_id, virtual_interface_id)
-    try_except_ClientError(failure_msg=err_msg)(client.associate_virtual_interface)(virtualInterfaceId=virtual_interface_id,
-                                                                                    connectionId=connection_id)
+    try_except_ClientError(failure_msg=err_msg)(client.associate_virtual_interface)(
+        virtualInterfaceId=virtual_interface_id, connectionId=connection_id
+    )
 
 
 def needs_modification(client, virtual_interface_id, connection_id):
-    '''
-        Determine if the associated connection ID needs to be updated
-    '''
-    return vi_state(client, virtual_interface_id).get('connectionId') != connection_id
+    """
+    Determine if the associated connection ID needs to be updated
+    """
+    return vi_state(client, virtual_interface_id).get("connectionId") != connection_id
 
 
 def ensure_state(connection, module):
     changed = False
 
-    state = module.params['state']
-    connection_id = module.params['id_to_associate']
-    public = module.params['public']
-    name = module.params['name']
+    state = module.params["state"]
+    connection_id = module.params["id_to_associate"]
+    public = module.params["public"]
+    name = module.params["name"]
 
-    virtual_interface_id = find_unique_vi(connection, connection_id, module.params.get('virtual_interface_id'), name)
+    virtual_interface_id = find_unique_vi(connection, connection_id, module.params.get("virtual_interface_id"), name)
 
     if virtual_interface_id is False:
-        module.fail_json(msg="Multiple virtual interfaces were found. Use the virtual_interface_id, name, "
-                         "and connection_id options if applicable to find a unique match.")
+        module.fail_json(
+            msg="Multiple virtual interfaces were found. Use the virtual_interface_id, name, "
+            "and connection_id options if applicable to find a unique match."
+        )
 
-    if state == 'present':
-
-        if not virtual_interface_id and module.params['virtual_interface_id']:
-            module.fail_json(msg="The virtual interface {0} does not exist.".format(module.params['virtual_interface_id']))
+    if state == "present":
+        if not virtual_interface_id and module.params["virtual_interface_id"]:
+            module.fail_json(
+                msg="The virtual interface {0} does not exist.".format(module.params["virtual_interface_id"])
+            )
 
         elif not virtual_interface_id:
             assembled_params = assemble_params_for_creating_vi(module.params)
@@ -478,31 +493,35 @@ def ensure_state(connection, module):
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
-        id_to_associate=dict(required=True, aliases=['link_aggregation_group_id', 'connection_id']),
-        public=dict(type='bool'),
+        state=dict(required=True, choices=["present", "absent"]),
+        id_to_associate=dict(required=True, aliases=["link_aggregation_group_id", "connection_id"]),
+        public=dict(type="bool"),
         name=dict(),
-        vlan=dict(type='int', default=100),
-        bgp_asn=dict(type='int', default=65000),
+        vlan=dict(type="int", default=100),
+        bgp_asn=dict(type="int", default=65000),
         authentication_key=dict(no_log=True),
         amazon_address=dict(),
         customer_address=dict(),
         address_type=dict(),
-        cidr=dict(type='list', elements='str'),
+        cidr=dict(type="list", elements="str"),
         virtual_gateway_id=dict(),
         direct_connect_gateway_id=dict(),
-        virtual_interface_id=dict()
+        virtual_interface_id=dict(),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_one_of=[['virtual_interface_id', 'name']],
-                              required_if=[['state', 'present', ['public']],
-                                           ['public', True, ['amazon_address']],
-                                           ['public', True, ['customer_address']],
-                                           ['public', True, ['cidr']]],
-                              mutually_exclusive=[['virtual_gateway_id', 'direct_connect_gateway_id']])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_one_of=[["virtual_interface_id", "name"]],
+        required_if=[
+            ["state", "present", ["public"]],
+            ["public", True, ["amazon_address"]],
+            ["public", True, ["customer_address"]],
+            ["public", True, ["cidr"]],
+        ],
+        mutually_exclusive=[["virtual_gateway_id", "direct_connect_gateway_id"]],
+    )
 
-    connection = module.client('directconnect')
+    connection = module.client("directconnect")
 
     try:
         changed, latest_state = ensure_state(connection, module)
@@ -515,5 +534,5 @@ def main():
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(latest_state))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

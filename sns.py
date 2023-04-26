@@ -158,7 +158,7 @@ try:
     from botocore.exceptions import BotoCoreError
     from botocore.exceptions import ClientError
 except ImportError:
-    pass    # Handled by AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.community.aws.plugins.module_utils.sns import topic_arn_lookup
 
@@ -167,22 +167,22 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     protocols = [
-        'http',
-        'https',
-        'email',
-        'email_json',
-        'sms',
-        'sqs',
-        'application',
-        'lambda',
+        "http",
+        "https",
+        "email",
+        "email_json",
+        "sms",
+        "sqs",
+        "application",
+        "lambda",
     ]
 
     argument_spec = dict(
-        msg=dict(required=True, aliases=['default']),
+        msg=dict(required=True, aliases=["default"]),
         subject=dict(),
         topic=dict(required=True),
-        message_attributes=dict(type='dict'),
-        message_structure=dict(choices=['json', 'string'], default='json'),
+        message_attributes=dict(type="dict"),
+        message_structure=dict(choices=["json", "string"], default="json"),
         message_group_id=dict(),
         message_deduplication_id=dict(),
     )
@@ -193,50 +193,48 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
     sns_kwargs = dict(
-        Message=module.params['msg'],
-        Subject=module.params['subject'],
-        MessageStructure=module.params['message_structure'],
+        Message=module.params["msg"],
+        Subject=module.params["subject"],
+        MessageStructure=module.params["message_structure"],
     )
 
-    if module.params['message_attributes']:
-        if module.params['message_structure'] != 'string':
+    if module.params["message_attributes"]:
+        if module.params["message_structure"] != "string":
             module.fail_json(msg='message_attributes is only supported when the message_structure is "string".')
-        sns_kwargs['MessageAttributes'] = module.params['message_attributes']
+        sns_kwargs["MessageAttributes"] = module.params["message_attributes"]
 
     if module.params["message_group_id"]:
         sns_kwargs["MessageGroupId"] = module.params["message_group_id"]
         if module.params["message_deduplication_id"]:
             sns_kwargs["MessageDeduplicationId"] = module.params["message_deduplication_id"]
 
-    dict_msg = {
-        'default': sns_kwargs['Message']
-    }
+    dict_msg = {"default": sns_kwargs["Message"]}
 
     for p in protocols:
         if module.params[p]:
-            if sns_kwargs['MessageStructure'] != 'json':
+            if sns_kwargs["MessageStructure"] != "json":
                 module.fail_json(msg='Protocol-specific messages are only supported when message_structure is "json".')
-            dict_msg[p.replace('_', '-')] = module.params[p]
+            dict_msg[p.replace("_", "-")] = module.params[p]
 
-    client = module.client('sns')
+    client = module.client("sns")
 
-    topic = module.params['topic']
-    if ':' in topic:
+    topic = module.params["topic"]
+    if ":" in topic:
         # Short names can't contain ':' so we'll assume this is the full ARN
-        sns_kwargs['TopicArn'] = topic
+        sns_kwargs["TopicArn"] = topic
     else:
-        sns_kwargs['TopicArn'] = topic_arn_lookup(client, module, topic)
+        sns_kwargs["TopicArn"] = topic_arn_lookup(client, module, topic)
 
-    if not sns_kwargs['TopicArn']:
-        module.fail_json(msg='Could not find topic: {0}'.format(topic))
+    if not sns_kwargs["TopicArn"]:
+        module.fail_json(msg="Could not find topic: {0}".format(topic))
 
-    if sns_kwargs['MessageStructure'] == 'json':
-        sns_kwargs['Message'] = json.dumps(dict_msg)
+    if sns_kwargs["MessageStructure"] == "json":
+        sns_kwargs["Message"] = json.dumps(dict_msg)
 
     try:
         result = client.publish(**sns_kwargs)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to publish message')
+        module.fail_json_aws(e, msg="Failed to publish message")
 
     sns_result = dict(msg="OK", message_id=result["MessageId"])
 
@@ -246,5 +244,5 @@ def main():
     module.exit_json(**sns_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

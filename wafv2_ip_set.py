@@ -138,41 +138,36 @@ class IpSet:
         self.existing_set, self.id, self.locktoken, self.arn = self.get_set()
 
     def description(self):
-        return self.existing_set.get('Description')
+        return self.existing_set.get("Description")
 
     def _format_set(self, ip_set):
         if ip_set is None:
             return None
-        return camel_dict_to_snake_dict(self.existing_set, ignore_list=['tags'])
+        return camel_dict_to_snake_dict(self.existing_set, ignore_list=["tags"])
 
     def get(self):
         return self._format_set(self.existing_set)
 
     def remove(self):
         try:
-            response = self.wafv2.delete_ip_set(
-                Name=self.name,
-                Scope=self.scope,
-                Id=self.id,
-                LockToken=self.locktoken
-            )
+            response = self.wafv2.delete_ip_set(Name=self.name, Scope=self.scope, Id=self.id, LockToken=self.locktoken)
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to remove wafv2 ip set.")
         return {}
 
     def create(self, description, ip_address_version, addresses, tags):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'IPAddressVersion': ip_address_version,
-            'Addresses': addresses,
+            "Name": self.name,
+            "Scope": self.scope,
+            "IPAddressVersion": ip_address_version,
+            "Addresses": addresses,
         }
 
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
 
         if tags:
-            req_obj['Tags'] = ansible_dict_to_boto3_tag_list(tags)
+            req_obj["Tags"] = ansible_dict_to_boto3_tag_list(tags)
 
         try:
             response = self.wafv2.create_ip_set(**req_obj)
@@ -184,15 +179,15 @@ class IpSet:
 
     def update(self, description, addresses):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'Id': self.id,
-            'Addresses': addresses,
-            'LockToken': self.locktoken
+            "Name": self.name,
+            "Scope": self.scope,
+            "Id": self.id,
+            "Addresses": addresses,
+            "LockToken": self.locktoken,
         }
 
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
 
         try:
             response = self.wafv2.update_ip_set(**req_obj)
@@ -208,38 +203,31 @@ class IpSet:
         id = None
         arn = None
         locktoken = None
-        for item in response.get('IPSets'):
-            if item.get('Name') == self.name:
-                id = item.get('Id')
-                locktoken = item.get('LockToken')
-                arn = item.get('ARN')
+        for item in response.get("IPSets"):
+            if item.get("Name") == self.name:
+                id = item.get("Id")
+                locktoken = item.get("LockToken")
+                arn = item.get("ARN")
         if id:
             try:
-                existing_set = self.wafv2.get_ip_set(
-                    Name=self.name,
-                    Scope=self.scope,
-                    Id=id
-                ).get('IPSet')
+                existing_set = self.wafv2.get_ip_set(Name=self.name, Scope=self.scope, Id=id).get("IPSet")
             except (BotoCoreError, ClientError) as e:
                 self.fail_json_aws(e, msg="Failed to get wafv2 ip set.")
             tags = describe_wafv2_tags(self.wafv2, arn, self.fail_json_aws)
-            existing_set['tags'] = tags
+            existing_set["tags"] = tags
 
         return existing_set, id, locktoken, arn
 
     def list(self, Nextmarker=None):
         # there is currently no paginator for wafv2
-        req_obj = {
-            'Scope': self.scope,
-            'Limit': 100
-        }
+        req_obj = {"Scope": self.scope, "Limit": 100}
         if Nextmarker:
-            req_obj['NextMarker'] = Nextmarker
+            req_obj["NextMarker"] = Nextmarker
 
         try:
             response = self.wafv2.list_ip_sets(**req_obj)
-            if response.get('NextMarker'):
-                response['IPSets'] += self.list(Nextmarker=response.get('NextMarker')).get('IPSets')
+            if response.get("NextMarker"):
+                response["IPSets"] += self.list(Nextmarker=response.get("NextMarker")).get("IPSets")
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to list wafv2 ip set.")
 
@@ -249,11 +237,11 @@ class IpSet:
 def compare(existing_set, addresses, purge_addresses, state):
     diff = False
     new_rules = []
-    existing_rules = existing_set.get('addresses')
-    if state == 'present':
+    existing_rules = existing_set.get("addresses")
+    if state == "present":
         if purge_addresses:
             new_rules = addresses
-            if sorted(addresses) != sorted(existing_set.get('addresses')):
+            if sorted(addresses) != sorted(existing_set.get("addresses")):
                 diff = True
 
         else:
@@ -275,23 +263,22 @@ def compare(existing_set, addresses, purge_addresses, state):
 
 
 def main():
-
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        name=dict(type='str', required=True),
-        scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL']),
-        description=dict(type='str'),
-        ip_address_version=dict(type='str', choices=['IPV4', 'IPV6']),
-        addresses=dict(type='list', elements='str'),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        purge_addresses=dict(type='bool', default=True),
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        scope=dict(type="str", required=True, choices=["CLOUDFRONT", "REGIONAL"]),
+        description=dict(type="str"),
+        ip_address_version=dict(type="str", choices=["IPV4", "IPV6"]),
+        addresses=dict(type="list", elements="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        purge_addresses=dict(type="bool", default=True),
     )
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         supports_check_mode=True,
-        required_if=[['state', 'present', ['ip_address_version', 'addresses']]]
+        required_if=[["state", "present", ["ip_address_version", "addresses"]]],
     )
 
     state = module.params.get("state")
@@ -305,17 +292,18 @@ def main():
     purge_addresses = module.params.get("purge_addresses")
     check_mode = module.check_mode
 
-    wafv2 = module.client('wafv2')
+    wafv2 = module.client("wafv2")
 
     change = False
     retval = {}
 
     ip_set = IpSet(wafv2, name, scope, module.fail_json_aws)
 
-    if state == 'present':
-
+    if state == "present":
         if ip_set.get():
-            tags_updated = ensure_wafv2_tags(wafv2, ip_set.arn, tags, purge_tags, module.fail_json_aws, module.check_mode)
+            tags_updated = ensure_wafv2_tags(
+                wafv2, ip_set.arn, tags, purge_tags, module.fail_json_aws, module.check_mode
+            )
             ips_updated, addresses = compare(ip_set.get(), addresses, purge_addresses, state)
             description_updated = bool(description) and ip_set.description() != description
             change = ips_updated or description_updated or tags_updated
@@ -323,32 +311,23 @@ def main():
             if module.check_mode:
                 pass
             elif ips_updated or description_updated:
-                retval = ip_set.update(
-                    description=description,
-                    addresses=addresses
-                )
+                retval = ip_set.update(description=description, addresses=addresses)
             elif tags_updated:
                 retval, id, locktoken, arn = ip_set.get_set()
         else:
             if not check_mode:
                 retval = ip_set.create(
-                    description=description,
-                    ip_address_version=ip_address_version,
-                    addresses=addresses,
-                    tags=tags
+                    description=description, ip_address_version=ip_address_version, addresses=addresses, tags=tags
                 )
             change = True
 
-    if state == 'absent':
+    if state == "absent":
         if ip_set.get():
             if addresses:
                 if len(addresses) > 0:
                     change, addresses = compare(ip_set.get(), addresses, purge_addresses, state)
                     if change and not check_mode:
-                        retval = ip_set.update(
-                            description=description,
-                            addresses=addresses
-                        )
+                        retval = ip_set.update(description=description, addresses=addresses)
             else:
                 if not check_mode:
                     retval = ip_set.remove()
@@ -357,5 +336,5 @@ def main():
     module.exit_json(changed=change, **retval)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

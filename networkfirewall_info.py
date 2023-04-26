@@ -190,24 +190,23 @@ from ansible_collections.community.aws.plugins.module_utils.networkfirewall impo
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str', required=False),
-        arn=dict(type='str', required=False),
-        vpc_ids=dict(type='list', required=False, elements='str', aliases=['vpcs', 'vpc_id']),
+        name=dict(type="str", required=False),
+        arn=dict(type="str", required=False),
+        vpc_ids=dict(type="list", required=False, elements="str", aliases=["vpcs", "vpc_id"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ('arn', 'name', 'vpc_ids',),
+            ["arn", "name", "vpc_ids"],
         ],
     )
 
-    arn = module.params.get('arn')
-    name = module.params.get('name')
-    vpcs = module.params.get('vpc_ids')
+    arn = module.params.get("arn")
+    name = module.params.get("name")
+    vpcs = module.params.get("vpc_ids")
 
     manager = NetworkFirewallManager(module)
 
@@ -216,20 +215,20 @@ def main():
     if name or arn:
         firewall = manager.get_firewall(name=name, arn=arn)
         if firewall:
-            results['firewalls'] = [firewall]
+            results["firewalls"] = [firewall]
         else:
-            results['firewalls'] = []
+            results["firewalls"] = []
     else:
         if vpcs:
             firewall_list = manager.list(vpc_ids=vpcs)
         else:
             firewall_list = manager.list()
-        results['firewall_list'] = firewall_list
+        results["firewall_list"] = firewall_list
         firewalls = [manager.get_firewall(arn=f) for f in firewall_list]
-        results['firewalls'] = firewalls
+        results["firewalls"] = firewalls
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

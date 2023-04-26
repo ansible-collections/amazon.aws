@@ -121,21 +121,17 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 class Ec2CustomerGatewayManager:
-
     def __init__(self, module):
         self.module = module
 
         try:
-            self.ec2 = module.client('ec2')
+            self.ec2 = module.client("ec2")
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
+            module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    @AWSRetry.jittered_backoff(delay=2, max_delay=30, retries=6, catch_extra_error_codes=['IncorrectState'])
+    @AWSRetry.jittered_backoff(delay=2, max_delay=30, retries=6, catch_extra_error_codes=["IncorrectState"])
     def ensure_cgw_absent(self, gw_id):
-        response = self.ec2.delete_customer_gateway(
-            DryRun=False,
-            CustomerGatewayId=gw_id
-        )
+        response = self.ec2.delete_customer_gateway(DryRun=False, CustomerGatewayId=gw_id)
         return response
 
     def ensure_cgw_present(self, bgp_asn, ip_address):
@@ -143,7 +139,7 @@ class Ec2CustomerGatewayManager:
             bgp_asn = 65000
         response = self.ec2.create_customer_gateway(
             DryRun=False,
-            Type='ipsec.1',
+            Type="ipsec.1",
             PublicIp=ip_address,
             BgpAsn=bgp_asn,
         )
@@ -156,11 +152,8 @@ class Ec2CustomerGatewayManager:
                 gw_id,
             ],
             Tags=[
-                {
-                    'Key': 'Name',
-                    'Value': name
-                },
-            ]
+                {"Key": "Name", "Value": name},
+            ],
         )
         return response
 
@@ -169,86 +162,84 @@ class Ec2CustomerGatewayManager:
             DryRun=False,
             Filters=[
                 {
-                    'Name': 'state',
-                    'Values': [
-                        'available',
-                    ]
+                    "Name": "state",
+                    "Values": [
+                        "available",
+                    ],
                 },
                 {
-                    'Name': 'ip-address',
-                    'Values': [
+                    "Name": "ip-address",
+                    "Values": [
                         ip_address,
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         )
         return response
 
 
 def main():
     argument_spec = dict(
-        bgp_asn=dict(required=False, type='int'),
+        bgp_asn=dict(required=False, type="int"),
         ip_address=dict(required=True),
         name=dict(required=True),
-        routing=dict(default='dynamic', choices=['dynamic', 'static']),
-        state=dict(default='present', choices=['present', 'absent']),
+        routing=dict(default="dynamic", choices=["dynamic", "static"]),
+        state=dict(default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_if=[
-            ('routing', 'dynamic', ['bgp_asn'])
-        ]
+            ("routing", "dynamic", ["bgp_asn"]),
+        ],
     )
 
     gw_mgr = Ec2CustomerGatewayManager(module)
 
-    name = module.params.get('name')
+    name = module.params.get("name")
 
-    existing = gw_mgr.describe_gateways(module.params['ip_address'])
+    existing = gw_mgr.describe_gateways(module.params["ip_address"])
 
     results = dict(changed=False)
-    if module.params['state'] == 'present':
-        if existing['CustomerGateways']:
-            existing['CustomerGateway'] = existing['CustomerGateways'][0]
-            results['gateway'] = existing
-            if existing['CustomerGateway']['Tags']:
-                tag_array = existing['CustomerGateway']['Tags']
+    if module.params["state"] == "present":
+        if existing["CustomerGateways"]:
+            existing["CustomerGateway"] = existing["CustomerGateways"][0]
+            results["gateway"] = existing
+            if existing["CustomerGateway"]["Tags"]:
+                tag_array = existing["CustomerGateway"]["Tags"]
                 for key, value in enumerate(tag_array):
-                    if value['Key'] == 'Name':
-                        current_name = value['Value']
+                    if value["Key"] == "Name":
+                        current_name = value["Value"]
                         if current_name != name:
-                            results['name'] = gw_mgr.tag_cgw_name(
-                                results['gateway']['CustomerGateway']['CustomerGatewayId'],
-                                module.params['name'],
+                            results["name"] = gw_mgr.tag_cgw_name(
+                                results["gateway"]["CustomerGateway"]["CustomerGatewayId"],
+                                module.params["name"],
                             )
-                            results['changed'] = True
+                            results["changed"] = True
         else:
             if not module.check_mode:
-                results['gateway'] = gw_mgr.ensure_cgw_present(
-                    module.params['bgp_asn'],
-                    module.params['ip_address'],
+                results["gateway"] = gw_mgr.ensure_cgw_present(
+                    module.params["bgp_asn"],
+                    module.params["ip_address"],
                 )
-                results['name'] = gw_mgr.tag_cgw_name(
-                    results['gateway']['CustomerGateway']['CustomerGatewayId'],
-                    module.params['name'],
+                results["name"] = gw_mgr.tag_cgw_name(
+                    results["gateway"]["CustomerGateway"]["CustomerGatewayId"],
+                    module.params["name"],
                 )
-            results['changed'] = True
+            results["changed"] = True
 
-    elif module.params['state'] == 'absent':
-        if existing['CustomerGateways']:
-            existing['CustomerGateway'] = existing['CustomerGateways'][0]
-            results['gateway'] = existing
+    elif module.params["state"] == "absent":
+        if existing["CustomerGateways"]:
+            existing["CustomerGateway"] = existing["CustomerGateways"][0]
+            results["gateway"] = existing
             if not module.check_mode:
-                results['gateway'] = gw_mgr.ensure_cgw_absent(
-                    existing['CustomerGateway']['CustomerGatewayId']
-                )
-            results['changed'] = True
+                results["gateway"] = gw_mgr.ensure_cgw_absent(existing["CustomerGateway"]["CustomerGatewayId"])
+            results["changed"] = True
 
     pretty_results = camel_dict_to_snake_dict(results)
     module.exit_json(**pretty_results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

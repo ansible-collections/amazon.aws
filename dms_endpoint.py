@@ -346,8 +346,8 @@ backoff_params = dict(retries=5, delay=1, backoff=1.5)
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def dms_describe_tags(connection, **params):
-    """ checks if the endpoint exists """
-    tags = connection.list_tags_for_resource(**params).get('TagList', [])
+    """checks if the endpoint exists"""
+    tags = connection.list_tags_for_resource(**params).get("TagList", [])
     return boto3_tag_list_to_ansible_dict(tags)
 
 
@@ -355,15 +355,14 @@ def dms_describe_tags(connection, **params):
 def dms_describe_endpoints(connection, **params):
     try:
         endpoints = connection.describe_endpoints(**params)
-    except is_boto3_error_code('ResourceNotFoundFault'):
+    except is_boto3_error_code("ResourceNotFoundFault"):
         return None
-    return endpoints.get('Endpoints', None)
+    return endpoints.get("Endpoints", None)
 
 
 def describe_endpoint(connection, endpoint_identifier):
-    """ checks if the endpoint exists """
-    endpoint_filter = dict(Name='endpoint-id',
-                           Values=[endpoint_identifier])
+    """checks if the endpoint exists"""
+    endpoint_filter = dict(Name="endpoint-id", Values=[endpoint_identifier])
     try:
         endpoints = dms_describe_endpoints(connection, Filters=[endpoint_filter])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -374,8 +373,8 @@ def describe_endpoint(connection, endpoint_identifier):
 
     endpoint = endpoints[0]
     try:
-        tags = dms_describe_tags(connection, ResourceArn=endpoint['EndpointArn'])
-        endpoint['tags'] = tags
+        tags = dms_describe_tags(connection, ResourceArn=endpoint["EndpointArn"])
+        endpoint["tags"] = tags
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe the DMS endpoint tags")
     return endpoint
@@ -384,7 +383,7 @@ def describe_endpoint(connection, endpoint_identifier):
 @AWSRetry.jittered_backoff(**backoff_params)
 def dms_delete_endpoint(client, **params):
     """deletes the DMS endpoint based on the EndpointArn"""
-    if module.params.get('wait'):
+    if module.params.get("wait"):
         return delete_dms_endpoint(client)
     else:
         return client.delete_endpoint(**params)
@@ -392,19 +391,19 @@ def dms_delete_endpoint(client, **params):
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def dms_create_endpoint(client, **params):
-    """ creates the DMS endpoint"""
+    """creates the DMS endpoint"""
     return client.create_endpoint(**params)
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def dms_modify_endpoint(client, **params):
-    """ updates the endpoint"""
+    """updates the endpoint"""
     return client.modify_endpoint(**params)
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
 def get_endpoint_deleted_waiter(client):
-    return client.get_waiter('endpoint_deleted')
+    return client.get_waiter("endpoint_deleted")
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
@@ -418,32 +417,22 @@ def dms_add_tags(client, **params):
 
 
 def endpoint_exists(endpoint):
-    """ Returns boolean based on the existence of the endpoint
+    """Returns boolean based on the existence of the endpoint
     :param endpoint: dict containing the described endpoint
     :return: bool
     """
-    return bool(len(endpoint['Endpoints']))
+    return bool(len(endpoint["Endpoints"]))
 
 
 def delete_dms_endpoint(connection, endpoint_arn):
     try:
-        delete_arn = dict(
-            EndpointArn=endpoint_arn
-        )
-        if module.params.get('wait'):
-
+        delete_arn = dict(EndpointArn=endpoint_arn)
+        if module.params.get("wait"):
             delete_output = connection.delete_endpoint(**delete_arn)
             delete_waiter = get_endpoint_deleted_waiter(connection)
             delete_waiter.wait(
-                Filters=[{
-                    'Name': 'endpoint-arn',
-                    'Values': [endpoint_arn]
-
-                }],
-                WaiterConfig={
-                    'Delay': module.params.get('timeout'),
-                    'MaxAttempts': module.params.get('retries')
-                }
+                Filters=[{"Name": "endpoint-arn", "Values": [endpoint_arn]}],
+                WaiterConfig={"Delay": module.params.get("timeout"), "MaxAttempts": module.params.get("retries")},
             )
             return delete_output
         else:
@@ -458,71 +447,62 @@ def create_module_params():
     :return: dict
     """
     endpoint_parameters = dict(
-        EndpointIdentifier=module.params.get('endpointidentifier'),
-        EndpointType=module.params.get('endpointtype'),
-        EngineName=module.params.get('enginename'),
-        Username=module.params.get('username'),
-        Password=module.params.get('password'),
-        ServerName=module.params.get('servername'),
-        Port=module.params.get('port'),
-        DatabaseName=module.params.get('databasename'),
-        SslMode=module.params.get('sslmode')
+        EndpointIdentifier=module.params.get("endpointidentifier"),
+        EndpointType=module.params.get("endpointtype"),
+        EngineName=module.params.get("enginename"),
+        Username=module.params.get("username"),
+        Password=module.params.get("password"),
+        ServerName=module.params.get("servername"),
+        Port=module.params.get("port"),
+        DatabaseName=module.params.get("databasename"),
+        SslMode=module.params.get("sslmode"),
     )
-    if module.params.get('EndpointArn'):
-        endpoint_parameters['EndpointArn'] = module.params.get('EndpointArn')
-    if module.params.get('certificatearn'):
-        endpoint_parameters['CertificateArn'] = \
-            module.params.get('certificatearn')
+    if module.params.get("EndpointArn"):
+        endpoint_parameters["EndpointArn"] = module.params.get("EndpointArn")
+    if module.params.get("certificatearn"):
+        endpoint_parameters["CertificateArn"] = module.params.get("certificatearn")
 
-    if module.params.get('dmstransfersettings'):
-        endpoint_parameters['DmsTransferSettings'] = \
-            module.params.get('dmstransfersettings')
+    if module.params.get("dmstransfersettings"):
+        endpoint_parameters["DmsTransferSettings"] = module.params.get("dmstransfersettings")
 
-    if module.params.get('extraconnectionattributes'):
-        endpoint_parameters['ExtraConnectionAttributes'] =\
-            module.params.get('extraconnectionattributes')
+    if module.params.get("extraconnectionattributes"):
+        endpoint_parameters["ExtraConnectionAttributes"] = module.params.get("extraconnectionattributes")
 
-    if module.params.get('kmskeyid'):
-        endpoint_parameters['KmsKeyId'] = module.params.get('kmskeyid')
+    if module.params.get("kmskeyid"):
+        endpoint_parameters["KmsKeyId"] = module.params.get("kmskeyid")
 
-    if module.params.get('tags'):
-        endpoint_parameters['Tags'] = module.params.get('tags')
+    if module.params.get("tags"):
+        endpoint_parameters["Tags"] = module.params.get("tags")
 
-    if module.params.get('serviceaccessrolearn'):
-        endpoint_parameters['ServiceAccessRoleArn'] = \
-            module.params.get('serviceaccessrolearn')
+    if module.params.get("serviceaccessrolearn"):
+        endpoint_parameters["ServiceAccessRoleArn"] = module.params.get("serviceaccessrolearn")
 
-    if module.params.get('externaltabledefinition'):
-        endpoint_parameters['ExternalTableDefinition'] = \
-            module.params.get('externaltabledefinition')
+    if module.params.get("externaltabledefinition"):
+        endpoint_parameters["ExternalTableDefinition"] = module.params.get("externaltabledefinition")
 
-    if module.params.get('dynamodbsettings'):
-        endpoint_parameters['DynamoDbSettings'] = \
-            module.params.get('dynamodbsettings')
+    if module.params.get("dynamodbsettings"):
+        endpoint_parameters["DynamoDbSettings"] = module.params.get("dynamodbsettings")
 
-    if module.params.get('s3settings'):
-        endpoint_parameters['S3Settings'] = module.params.get('s3settings')
+    if module.params.get("s3settings"):
+        endpoint_parameters["S3Settings"] = module.params.get("s3settings")
 
-    if module.params.get('mongodbsettings'):
-        endpoint_parameters['MongoDbSettings'] = \
-            module.params.get('mongodbsettings')
+    if module.params.get("mongodbsettings"):
+        endpoint_parameters["MongoDbSettings"] = module.params.get("mongodbsettings")
 
-    if module.params.get('kinesissettings'):
-        endpoint_parameters['KinesisSettings'] = \
-            module.params.get('kinesissettings')
+    if module.params.get("kinesissettings"):
+        endpoint_parameters["KinesisSettings"] = module.params.get("kinesissettings")
 
-    if module.params.get('elasticsearchsettings'):
-        endpoint_parameters['ElasticsearchSettings'] = \
-            module.params.get('elasticsearchsettings')
+    if module.params.get("elasticsearchsettings"):
+        endpoint_parameters["ElasticsearchSettings"] = module.params.get("elasticsearchsettings")
 
-    if module.params.get('wait'):
-        endpoint_parameters['wait'] = module.boolean(module.params.get('wait'))
+    if module.params.get("wait"):
+        endpoint_parameters["wait"] = module.boolean(module.params.get("wait"))
 
-    if module.params.get('timeout'):
-        endpoint_parameters['timeout'] = module.params.get('timeout')
+    if module.params.get("timeout"):
+        endpoint_parameters["timeout"] = module.params.get("timeout")
 
-    if module.params.get('retries'):
-        endpoint_parameters['retries'] = module.params.get('retries')
+    if module.params.get("retries"):
+        endpoint_parameters["retries"] = module.params.get("retries")
 
     return endpoint_parameters
 
@@ -538,14 +518,16 @@ def compare_params(param_described):
     param_described = dict(param_described)
     modparams = create_module_params()
     # modify can't update tags
-    param_described.pop('Tags', None)
-    modparams.pop('Tags', None)
+    param_described.pop("Tags", None)
+    modparams.pop("Tags", None)
     changed = False
     for paramname in modparams:
-        if paramname == 'Password' or paramname in param_described \
-                and param_described[paramname] == modparams[paramname] or \
-                str(param_described[paramname]).lower() \
-                == modparams[paramname]:
+        if (
+            paramname == "Password"
+            or paramname in param_described
+            and param_described[paramname] == modparams[paramname]
+            or str(param_described[paramname]).lower() == modparams[paramname]
+        ):
             pass
         else:
             changed = True
@@ -553,25 +535,24 @@ def compare_params(param_described):
 
 
 def modify_dms_endpoint(connection, endpoint):
-    arn = endpoint['EndpointArn']
+    arn = endpoint["EndpointArn"]
     try:
         params = create_module_params()
         # modify can't update tags
-        params.pop('Tags', None)
+        params.pop("Tags", None)
         return dms_modify_endpoint(connection, EndpointArn=arn, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to update DMS endpoint.", params=params)
 
 
 def ensure_tags(connection, endpoint):
-    desired_tags = module.params.get('tags', None)
+    desired_tags = module.params.get("tags", None)
     if desired_tags is None:
         return False
 
-    current_tags = endpoint.get('tags', {})
+    current_tags = endpoint.get("tags", {})
 
-    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, desired_tags,
-                                                   module.params.get('purge_tags'))
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, desired_tags, module.params.get("purge_tags"))
 
     if not tags_to_remove and not tags_to_add:
         return False
@@ -579,7 +560,7 @@ def ensure_tags(connection, endpoint):
     if module.check_mode:
         return True
 
-    arn = endpoint.get('EndpointArn')
+    arn = endpoint.get("EndpointArn")
 
     try:
         if tags_to_remove:
@@ -609,36 +590,49 @@ def create_dms_endpoint(connection):
 
 def main():
     argument_spec = dict(
-        state=dict(choices=['present', 'absent'], default='present'),
+        state=dict(choices=["present", "absent"], default="present"),
         endpointidentifier=dict(required=True),
-        endpointtype=dict(choices=['source', 'target']),
-        enginename=dict(choices=['mysql', 'oracle', 'postgres', 'mariadb',
-                                 'aurora', 'redshift', 's3', 'db2', 'azuredb',
-                                 'sybase', 'dynamodb', 'mongodb', 'sqlserver'],
-                        required=False),
+        endpointtype=dict(choices=["source", "target"]),
+        enginename=dict(
+            choices=[
+                "mysql",
+                "oracle",
+                "postgres",
+                "mariadb",
+                "aurora",
+                "redshift",
+                "s3",
+                "db2",
+                "azuredb",
+                "sybase",
+                "dynamodb",
+                "mongodb",
+                "sqlserver",
+            ],
+            required=False,
+        ),
         username=dict(),
         password=dict(no_log=True),
         servername=dict(),
-        port=dict(type='int'),
+        port=dict(type="int"),
         databasename=dict(),
         extraconnectionattributes=dict(),
         kmskeyid=dict(no_log=False),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
         certificatearn=dict(),
-        sslmode=dict(choices=['none', 'require', 'verify-ca', 'verify-full'],
-                     default='none'),
+        sslmode=dict(choices=["none", "require", "verify-ca", "verify-full"], default="none"),
         serviceaccessrolearn=dict(),
         externaltabledefinition=dict(),
-        dynamodbsettings=dict(type='dict'),
-        s3settings=dict(type='dict'),
-        dmstransfersettings=dict(type='dict'),
-        mongodbsettings=dict(type='dict'),
-        kinesissettings=dict(type='dict'),
-        elasticsearchsettings=dict(type='dict'),
-        wait=dict(type='bool', default=False),
-        timeout=dict(type='int'),
-        retries=dict(type='int')
+        dynamodbsettings=dict(type="dict"),
+        s3settings=dict(type="dict"),
+        dmstransfersettings=dict(type="dict"),
+        mongodbsettings=dict(type="dict"),
+        kinesissettings=dict(type="dict"),
+        elasticsearchsettings=dict(type="dict"),
+        wait=dict(type="bool", default=False),
+        timeout=dict(type="int"),
+        retries=dict(type="int"),
     )
     global module
     module = AnsibleAWSModule(
@@ -650,49 +644,48 @@ def main():
             ["wait", "True", ["timeout"]],
             ["wait", "True", ["retries"]],
         ],
-        supports_check_mode=False
+        supports_check_mode=False,
     )
     exit_message = None
     changed = False
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
-    dmsclient = module.client('dms')
-    endpoint = describe_endpoint(dmsclient,
-                                 module.params.get('endpointidentifier'))
-    if state == 'present':
+    dmsclient = module.client("dms")
+    endpoint = describe_endpoint(dmsclient, module.params.get("endpointidentifier"))
+    if state == "present":
         if endpoint:
             changed |= ensure_tags(dmsclient, endpoint)
             params_changed = compare_params(endpoint)
             if params_changed:
                 updated_dms = modify_dms_endpoint(dmsclient, endpoint)
                 exit_message = updated_dms
-                endpoint = exit_message.get('Endpoint')
+                endpoint = exit_message.get("Endpoint")
                 changed = True
             else:
                 exit_message = "Endpoint Already Exists"
         else:
             exit_message = create_dms_endpoint(dmsclient)
-            endpoint = exit_message.get('Endpoint')
+            endpoint = exit_message.get("Endpoint")
             changed = True
 
         if changed:
             # modify and create don't return tags
-            tags = dms_describe_tags(dmsclient, ResourceArn=endpoint['EndpointArn'])
-            endpoint['tags'] = tags
-    elif state == 'absent':
+            tags = dms_describe_tags(dmsclient, ResourceArn=endpoint["EndpointArn"])
+            endpoint["tags"] = tags
+    elif state == "absent":
         if endpoint:
-            delete_results = delete_dms_endpoint(dmsclient, endpoint['EndpointArn'])
+            delete_results = delete_dms_endpoint(dmsclient, endpoint["EndpointArn"])
             exit_message = delete_results
             endpoint = None
             changed = True
         else:
             changed = False
-            exit_message = 'DMS Endpoint does not exist'
+            exit_message = "DMS Endpoint does not exist"
 
-    endpoint = camel_dict_to_snake_dict(endpoint or {}, ignore_list=['tags'])
+    endpoint = camel_dict_to_snake_dict(endpoint or {}, ignore_list=["tags"])
     module.exit_json(changed=changed, endpoint=endpoint, msg=exit_message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -116,11 +116,11 @@ def list_rule_sets(client, module):
         response = client.list_receipt_rule_sets(aws_retry=True)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't list rule sets.")
-    return response['RuleSets']
+    return response["RuleSets"]
 
 
 def rule_set_in(name, rule_sets):
-    return any(s for s in rule_sets if s['Name'] == name)
+    return any(s for s in rule_sets if s["Name"] == name)
 
 
 def ruleset_active(client, module, name):
@@ -128,8 +128,8 @@ def ruleset_active(client, module, name):
         active_rule_set = client.describe_active_receipt_rule_set(aws_retry=True)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't get the active rule set.")
-    if active_rule_set is not None and 'Metadata' in active_rule_set:
-        return name == active_rule_set['Metadata']['Name']
+    if active_rule_set is not None and "Metadata" in active_rule_set:
+        return name == active_rule_set["Metadata"]["Name"]
     else:
         # Metadata was not set meaning there is no active rule set
         return False
@@ -167,7 +167,7 @@ def update_active_rule_set(client, module, name, desired_active):
 
 
 def create_or_update_rule_set(client, module):
-    name = module.params.get('name')
+    name = module.params.get("name")
     check_mode = module.check_mode
     changed = False
 
@@ -180,11 +180,13 @@ def create_or_update_rule_set(client, module):
                 module.fail_json_aws(e, msg="Couldn't create rule set {0}.".format(name))
         changed = True
         rule_sets = list(rule_sets)
-        rule_sets.append({
-            'Name': name,
-        })
+        rule_sets.append(
+            {
+                "Name": name,
+            }
+        )
 
-    (active_changed, active) = update_active_rule_set(client, module, name, module.params.get('active'))
+    (active_changed, active) = update_active_rule_set(client, module, name, module.params.get("active"))
     changed |= active_changed
 
     module.exit_json(
@@ -195,30 +197,32 @@ def create_or_update_rule_set(client, module):
 
 
 def remove_rule_set(client, module):
-    name = module.params.get('name')
+    name = module.params.get("name")
     check_mode = module.check_mode
     changed = False
 
     rule_sets = list_rule_sets(client, module)
     if rule_set_in(name, rule_sets):
         active = ruleset_active(client, module, name)
-        if active and not module.params.get('force'):
+        if active and not module.params.get("force"):
             module.fail_json(
-                msg="Couldn't delete rule set {0} because it is currently active. Set force=true to delete an active ruleset.".format(name),
+                msg="Couldn't delete rule set {0} because it is currently active. Set force=true to delete an active ruleset.".format(
+                    name
+                ),
                 error={
                     "code": "CannotDelete",
                     "message": "Cannot delete active rule set: {0}".format(name),
-                }
+                },
             )
         if not check_mode:
-            if active and module.params.get('force'):
+            if active and module.params.get("force"):
                 deactivate_rule_set(client, module)
             try:
                 client.delete_receipt_rule_set(RuleSetName=name, aws_retry=True)
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Couldn't delete rule set {0}.".format(name))
         changed = True
-        rule_sets = [x for x in rule_sets if x['Name'] != name]
+        rule_sets = [x for x in rule_sets if x["Name"] != name]
 
     module.exit_json(
         changed=changed,
@@ -228,27 +232,27 @@ def remove_rule_set(client, module):
 
 def main():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        active=dict(type='bool'),
-        force=dict(type='bool', default=False),
+        name=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        active=dict(type="bool"),
+        force=dict(type="bool", default=False),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
     # SES APIs seem to have a much lower throttling threshold than most of the rest of the AWS APIs.
     # Docs say 1 call per second. This shouldn't actually be a big problem for normal usage, but
     # the ansible build runs multiple instances of the test in parallel that's caused throttling
     # failures so apply a jittered backoff to call SES calls.
-    client = module.client('ses', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("ses", retry_decorator=AWSRetry.jittered_backoff())
 
-    if state == 'absent':
+    if state == "absent":
         remove_rule_set(client, module)
     else:
         create_or_update_rule_set(client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

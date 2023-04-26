@@ -82,7 +82,7 @@ def describe_connections(client, params):
 def find_connection_id(client, connection_id=None, connection_name=None):
     params = {}
     if connection_id:
-        params['connectionId'] = connection_id
+        params["connectionId"] = connection_id
     try:
         response = describe_connections(client, params)
     except (BotoCoreError, ClientError) as e:
@@ -90,18 +90,20 @@ def find_connection_id(client, connection_id=None, connection_name=None):
             msg = "Failed to describe DirectConnect ID {0}".format(connection_id)
         else:
             msg = "Failed to describe DirectConnect connections"
-        raise DirectConnectError(msg=msg,
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg=msg,
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
     match = []
-    if len(response.get('connections', [])) == 1 and connection_id:
-        if response['connections'][0]['connectionState'] != 'deleted':
-            match.append(response['connections'][0]['connectionId'])
+    if len(response.get("connections", [])) == 1 and connection_id:
+        if response["connections"][0]["connectionState"] != "deleted":
+            match.append(response["connections"][0]["connectionId"])
 
-    for conn in response.get('connections', []):
-        if connection_name == conn['connectionName'] and conn['connectionState'] != 'deleted':
-            match.append(conn['connectionId'])
+    for conn in response.get("connections", []):
+        if connection_name == conn["connectionName"] and conn["connectionState"] != "deleted":
+            match.append(conn["connectionId"])
 
     if len(match) == 1:
         return match[0]
@@ -112,34 +114,33 @@ def find_connection_id(client, connection_id=None, connection_name=None):
 def get_connection_state(client, connection_id):
     try:
         response = describe_connections(client, dict(connectionId=connection_id))
-        return response['connections'][0]['connectionState']
+        return response["connections"][0]["connectionState"]
     except (BotoCoreError, ClientError, IndexError) as e:
-        raise DirectConnectError(msg="Failed to describe DirectConnect connection {0} state".format(connection_id),
-                                 last_traceback=traceback.format_exc(),
-                                 exception=e)
+        raise DirectConnectError(
+            msg="Failed to describe DirectConnect connection {0} state".format(connection_id),
+            last_traceback=traceback.format_exc(),
+            exception=e,
+        )
 
 
 def main():
-    argument_spec = dict(
-        connection_id=dict(),
-        name=dict()
+    argument_spec = dict(connection_id=dict(), name=dict())
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["connection_id", "name"]],
+        required_one_of=[["connection_id", "name"]],
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              mutually_exclusive=[['connection_id', 'name']],
-                              required_one_of=[['connection_id', 'name']])
-    client = module.client('directconnect')
+    client = module.client("directconnect")
 
-    connection_id = module.params['connection_id']
-    connection_name = module.params['name']
+    connection_id = module.params["connection_id"]
+    connection_name = module.params["name"]
 
     changed = False
     connection_state = None
     try:
-        connection_id = find_connection_id(client,
-                                           connection_id,
-                                           connection_name)
+        connection_id = find_connection_id(client, connection_id, connection_name)
         connection_state = get_connection_state(client, connection_id)
-        if connection_state == 'ordering':
+        if connection_state == "ordering":
             client.confirm_connection(connectionId=connection_id)
             changed = True
             connection_state = get_connection_state(client, connection_id)
@@ -152,5 +153,5 @@ def main():
     module.exit_json(changed=changed, connection_state=connection_state)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

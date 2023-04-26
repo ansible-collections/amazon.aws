@@ -73,16 +73,15 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def compare_bucket_logging(bucket_logging, target_bucket, target_prefix):
-
-    if not bucket_logging.get('LoggingEnabled', False):
+    if not bucket_logging.get("LoggingEnabled", False):
         if target_bucket:
             return True
         return False
 
-    logging = bucket_logging['LoggingEnabled']
-    if logging['TargetBucket'] != target_bucket:
+    logging = bucket_logging["LoggingEnabled"]
+    if logging["TargetBucket"] != target_bucket:
         return True
-    if logging['TargetPrefix'] != target_prefix:
+    if logging["TargetPrefix"] != target_prefix:
         return True
     return False
 
@@ -90,18 +89,18 @@ def compare_bucket_logging(bucket_logging, target_bucket, target_prefix):
 def verify_acls(connection, module, target_bucket):
     try:
         current_acl = connection.get_bucket_acl(aws_retry=True, Bucket=target_bucket)
-        current_grants = current_acl['Grants']
-    except is_boto3_error_code('NoSuchBucket'):
+        current_grants = current_acl["Grants"]
+    except is_boto3_error_code("NoSuchBucket"):
         module.fail_json(msg="Target Bucket '{0}' not found".format(target_bucket))
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to fetch target bucket ACL")
 
     required_grant = {
-        'Grantee': {
-            'URI': "http://acs.amazonaws.com/groups/s3/LogDelivery",
-            'Type': 'Group'
-        },
-        'Permission': 'FULL_CONTROL'
+        "Grantee": {"URI": "http://acs.amazonaws.com/groups/s3/LogDelivery", "Type": "Group"},
+        "Permission": "FULL_CONTROL",
     }
 
     for grant in current_grants:
@@ -114,8 +113,8 @@ def verify_acls(connection, module, target_bucket):
     updated_acl = dict(current_acl)
     updated_grants = list(current_grants)
     updated_grants.append(required_grant)
-    updated_acl['Grants'] = updated_grants
-    del updated_acl['ResponseMetadata']
+    updated_acl["Grants"] = updated_grants
+    del updated_acl["ResponseMetadata"]
     try:
         connection.put_bucket_acl(aws_retry=True, Bucket=target_bucket, AccessControlPolicy=updated_acl)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -125,7 +124,6 @@ def verify_acls(connection, module, target_bucket):
 
 
 def enable_bucket_logging(connection, module):
-
     bucket_name = module.params.get("name")
     target_bucket = module.params.get("target_bucket")
     target_prefix = module.params.get("target_prefix")
@@ -133,9 +131,12 @@ def enable_bucket_logging(connection, module):
 
     try:
         bucket_logging = connection.get_bucket_logging(aws_retry=True, Bucket=bucket_name)
-    except is_boto3_error_code('NoSuchBucket'):
+    except is_boto3_error_code("NoSuchBucket"):
         module.fail_json(msg="Bucket '{0}' not found".format(bucket_name))
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to fetch current logging status")
 
     try:
@@ -152,11 +153,12 @@ def enable_bucket_logging(connection, module):
             aws_retry=True,
             Bucket=bucket_name,
             BucketLoggingStatus={
-                'LoggingEnabled': {
-                    'TargetBucket': target_bucket,
-                    'TargetPrefix': target_prefix,
+                "LoggingEnabled": {
+                    "TargetBucket": target_bucket,
+                    "TargetPrefix": target_prefix,
                 }
-            })
+            },
+        )
 
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to enable bucket logging")
@@ -166,7 +168,6 @@ def enable_bucket_logging(connection, module):
 
 
 def disable_bucket_logging(connection, module):
-
     bucket_name = module.params.get("name")
     changed = False
 
@@ -182,11 +183,9 @@ def disable_bucket_logging(connection, module):
         module.exit_json(changed=True)
 
     try:
-        response = AWSRetry.jittered_backoff(
-            catch_extra_error_codes=['InvalidTargetBucketForLogging']
-        )(connection.put_bucket_logging)(
-            Bucket=bucket_name, BucketLoggingStatus={}
-        )
+        response = AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidTargetBucketForLogging"])(
+            connection.put_bucket_logging
+        )(Bucket=bucket_name, BucketLoggingStatus={})
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to disable bucket logging")
 
@@ -194,24 +193,23 @@ def disable_bucket_logging(connection, module):
 
 
 def main():
-
     argument_spec = dict(
         name=dict(required=True),
         target_bucket=dict(required=False, default=None),
         target_prefix=dict(required=False, default=""),
-        state=dict(required=False, default='present', choices=['present', 'absent']),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("s3", retry_decorator=AWSRetry.jittered_backoff())
     state = module.params.get("state")
 
-    if state == 'present':
+    if state == "present":
         enable_bucket_logging(connection, module)
-    elif state == 'absent':
+    elif state == "absent":
         disable_bucket_logging(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

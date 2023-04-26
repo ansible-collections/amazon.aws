@@ -73,11 +73,7 @@ from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_l
 
 def get_web_acl(wafv2, name, scope, id, fail_json_aws):
     try:
-        response = wafv2.get_web_acl(
-            Name=name,
-            Scope=scope,
-            Id=id
-        )
+        response = wafv2.get_web_acl(Name=name, Scope=scope, Id=id)
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to get wafv2 web acl.")
     return response
@@ -85,9 +81,7 @@ def get_web_acl(wafv2, name, scope, id, fail_json_aws):
 
 def list_wafv2_resources(wafv2, arn, fail_json_aws):
     try:
-        response = wafv2.list_resources_for_web_acl(
-            WebACLArn=arn
-        )
+        response = wafv2.list_resources_for_web_acl(WebACLArn=arn)
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to list wafv2 web acl.")
     return response
@@ -95,10 +89,7 @@ def list_wafv2_resources(wafv2, arn, fail_json_aws):
 
 def add_wafv2_resources(wafv2, waf_arn, arn, fail_json_aws):
     try:
-        response = wafv2.associate_web_acl(
-            WebACLArn=waf_arn,
-            ResourceArn=arn
-        )
+        response = wafv2.associate_web_acl(WebACLArn=waf_arn, ResourceArn=arn)
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to add wafv2 web acl.")
     return response
@@ -106,27 +97,24 @@ def add_wafv2_resources(wafv2, waf_arn, arn, fail_json_aws):
 
 def remove_resources(wafv2, arn, fail_json_aws):
     try:
-        response = wafv2.disassociate_web_acl(
-            ResourceArn=arn
-        )
+        response = wafv2.disassociate_web_acl(ResourceArn=arn)
     except (BotoCoreError, ClientError) as e:
         fail_json_aws(e, msg="Failed to remove wafv2 web acl.")
     return response
 
 
 def main():
-
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        name=dict(type='str'),
-        scope=dict(type='str', choices=['CLOUDFRONT', 'REGIONAL']),
-        arn=dict(type='str', required=True)
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        name=dict(type="str"),
+        scope=dict(type="str", choices=["CLOUDFRONT", "REGIONAL"]),
+        arn=dict(type="str", required=True),
     )
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         supports_check_mode=True,
-        required_if=[['state', 'present', ['name', 'scope']]]
+        required_if=[["state", "present", ["name", "scope"]]],
     )
 
     state = module.params.get("state")
@@ -135,7 +123,7 @@ def main():
     arn = module.params.get("arn")
     check_mode = module.check_mode
 
-    wafv2 = module.client('wafv2')
+    wafv2 = module.client("wafv2")
 
     # check if web acl exists
 
@@ -145,26 +133,26 @@ def main():
     retval = {}
     change = False
 
-    for item in response.get('WebACLs'):
-        if item.get('Name') == name:
-            id = item.get('Id')
+    for item in response.get("WebACLs"):
+        if item.get("Name") == name:
+            id = item.get("Id")
 
     if id:
         existing_acl = get_web_acl(wafv2, name, scope, id, module.fail_json_aws)
-        waf_arn = existing_acl.get('WebACL').get('ARN')
+        waf_arn = existing_acl.get("WebACL").get("ARN")
 
         retval = list_wafv2_resources(wafv2, waf_arn, module.fail_json_aws)
 
-    if state == 'present':
+    if state == "present":
         if retval:
-            if arn not in retval.get('ResourceArns'):
+            if arn not in retval.get("ResourceArns"):
                 change = True
                 if not check_mode:
                     retval = add_wafv2_resources(wafv2, waf_arn, arn, module.fail_json_aws)
 
-    elif state == 'absent':
+    elif state == "absent":
         if retval:
-            if arn in retval.get('ResourceArns'):
+            if arn in retval.get("ResourceArns"):
                 change = True
                 if not check_mode:
                     retval = remove_resources(wafv2, arn, module.fail_json_aws)
@@ -172,5 +160,5 @@ def main():
     module.exit_json(changed=change, **camel_dict_to_snake_dict(retval))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -106,7 +106,7 @@ class SAMLProviderManager:
         self.module = module
 
         try:
-            self.conn = module.client('iam')
+            self.conn = module.client("iam")
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Unknown AWS SDK error")
 
@@ -133,10 +133,10 @@ class SAMLProviderManager:
 
     def _get_provider_arn(self, name):
         providers = self._list_saml_providers()
-        for p in providers['SAMLProviderList']:
-            provider_name = p['Arn'].split('/', 1)[1]
+        for p in providers["SAMLProviderList"]:
+            provider_name = p["Arn"].split("/", 1)[1]
             if name == provider_name:
-                return p['Arn']
+                return p["Arn"]
 
         return None
 
@@ -144,7 +144,7 @@ class SAMLProviderManager:
         if not metadata:
             self.module.fail_json(msg="saml_metadata_document must be defined for present state")
 
-        res = {'changed': False}
+        res = {"changed": False}
         try:
             arn = self._get_provider_arn(name)
         except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as e:
@@ -156,38 +156,38 @@ class SAMLProviderManager:
             except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as e:
                 self.module.fail_json_aws(e, msg="Could not retrieve the identity provider '{0}'".format(name))
 
-            if metadata.strip() != resp['SAMLMetadataDocument'].strip():
+            if metadata.strip() != resp["SAMLMetadataDocument"].strip():
                 # provider needs updating
-                res['changed'] = True
+                res["changed"] = True
                 if not self.module.check_mode:
                     try:
                         resp = self._update_saml_provider(arn, metadata)
-                        res['saml_provider'] = self._build_res(resp['SAMLProviderArn'])
+                        res["saml_provider"] = self._build_res(resp["SAMLProviderArn"])
                     except botocore.exceptions.ClientError as e:
                         self.module.fail_json_aws(e, msg="Could not update the identity provider '{0}'".format(name))
             else:
-                res['saml_provider'] = self._build_res(arn)
+                res["saml_provider"] = self._build_res(arn)
 
         else:  # create
-            res['changed'] = True
+            res["changed"] = True
             if not self.module.check_mode:
                 try:
                     resp = self._create_saml_provider(metadata, name)
-                    res['saml_provider'] = self._build_res(resp['SAMLProviderArn'])
+                    res["saml_provider"] = self._build_res(resp["SAMLProviderArn"])
                 except botocore.exceptions.ClientError as e:
                     self.module.fail_json_aws(e, msg="Could not create the identity provider '{0}'".format(name))
 
         self.module.exit_json(**res)
 
     def delete_saml_provider(self, name):
-        res = {'changed': False}
+        res = {"changed": False}
         try:
             arn = self._get_provider_arn(name)
         except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Could not get the ARN of the identity provider '{0}'".format(name))
 
         if arn:  # delete
-            res['changed'] = True
+            res["changed"] = True
             if not self.module.check_mode:
                 try:
                     self._delete_saml_provider(arn)
@@ -202,7 +202,7 @@ class SAMLProviderManager:
             "arn": arn,
             "metadata_document": saml_provider["SAMLMetadataDocument"],
             "create_date": saml_provider["CreateDate"].isoformat(),
-            "expire_date": saml_provider["ValidUntil"].isoformat()
+            "expire_date": saml_provider["ValidUntil"].isoformat(),
         }
 
 
@@ -210,26 +210,26 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         saml_metadata_document=dict(default=None, required=False),
-        state=dict(default='present', required=False, choices=['present', 'absent']),
+        state=dict(default="present", required=False, choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_if=[('state', 'present', ['saml_metadata_document'])]
+        required_if=[("state", "present", ["saml_metadata_document"])],
     )
 
-    name = module.params['name']
-    state = module.params.get('state')
-    saml_metadata_document = module.params.get('saml_metadata_document')
+    name = module.params["name"]
+    state = module.params.get("state")
+    saml_metadata_document = module.params.get("saml_metadata_document")
 
     sp_man = SAMLProviderManager(module)
 
-    if state == 'present':
+    if state == "present":
         sp_man.create_or_update_saml_provider(name, saml_metadata_document)
-    elif state == 'absent':
+    elif state == "absent":
         sp_man.delete_saml_provider(name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -276,10 +276,10 @@ def _ensure_tags(redshift, identifier, existing_tags, module):
     """Compares and update resource tags"""
 
     account_id = get_aws_account_id(module)
-    region = module.params.get('region')
-    resource_arn = "arn:aws:redshift:{0}:{1}:cluster:{2}" .format(region, account_id, identifier)
-    tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
+    region = module.params.get("region")
+    resource_arn = "arn:aws:redshift:{0}:{1}:cluster:{2}".format(region, account_id, identifier)
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
 
     tags_to_add, tags_to_remove = compare_aws_tags(boto3_tag_list_to_ansible_dict(existing_tags), tags, purge_tags)
 
@@ -302,78 +302,77 @@ def _ensure_tags(redshift, identifier, existing_tags, module):
 def _collect_facts(resource):
     """Transform cluster information to dict."""
     facts = {
-        'identifier': resource['ClusterIdentifier'],
-        'status': resource['ClusterStatus'],
-        'username': resource['MasterUsername'],
-        'db_name': resource['DBName'],
-        'maintenance_window': resource['PreferredMaintenanceWindow'],
-        'enhanced_vpc_routing': resource['EnhancedVpcRouting']
-
+        "identifier": resource["ClusterIdentifier"],
+        "status": resource["ClusterStatus"],
+        "username": resource["MasterUsername"],
+        "db_name": resource["DBName"],
+        "maintenance_window": resource["PreferredMaintenanceWindow"],
+        "enhanced_vpc_routing": resource["EnhancedVpcRouting"],
     }
 
-    for node in resource['ClusterNodes']:
-        if node['NodeRole'] in ('SHARED', 'LEADER'):
-            facts['private_ip_address'] = node['PrivateIPAddress']
-            if facts['enhanced_vpc_routing'] is False:
-                facts['public_ip_address'] = node['PublicIPAddress']
+    for node in resource["ClusterNodes"]:
+        if node["NodeRole"] in ("SHARED", "LEADER"):
+            facts["private_ip_address"] = node["PrivateIPAddress"]
+            if facts["enhanced_vpc_routing"] is False:
+                facts["public_ip_address"] = node["PublicIPAddress"]
             else:
-                facts['public_ip_address'] = None
+                facts["public_ip_address"] = None
             break
 
     # Some parameters are not ready instantly if you don't wait for available
     # cluster status
-    facts['create_time'] = None
-    facts['url'] = None
-    facts['port'] = None
-    facts['availability_zone'] = None
-    facts['tags'] = {}
+    facts["create_time"] = None
+    facts["url"] = None
+    facts["port"] = None
+    facts["availability_zone"] = None
+    facts["tags"] = {}
 
-    if resource['ClusterStatus'] != "creating":
-        facts['create_time'] = resource['ClusterCreateTime']
-        facts['url'] = resource['Endpoint']['Address']
-        facts['port'] = resource['Endpoint']['Port']
-        facts['availability_zone'] = resource['AvailabilityZone']
-        facts['tags'] = boto3_tag_list_to_ansible_dict(resource['Tags'])
+    if resource["ClusterStatus"] != "creating":
+        facts["create_time"] = resource["ClusterCreateTime"]
+        facts["url"] = resource["Endpoint"]["Address"]
+        facts["port"] = resource["Endpoint"]["Port"]
+        facts["availability_zone"] = resource["AvailabilityZone"]
+        facts["tags"] = boto3_tag_list_to_ansible_dict(resource["Tags"])
 
     return facts
 
 
 @AWSRetry.jittered_backoff()
 def _describe_cluster(redshift, identifier):
-    '''
+    """
     Basic wrapper around describe_clusters with a retry applied
-    '''
-    return redshift.describe_clusters(ClusterIdentifier=identifier)['Clusters'][0]
+    """
+    return redshift.describe_clusters(ClusterIdentifier=identifier)["Clusters"][0]
 
 
 @AWSRetry.jittered_backoff()
 def _create_cluster(redshift, **kwargs):
-    '''
+    """
     Basic wrapper around create_cluster with a retry applied
-    '''
+    """
     return redshift.create_cluster(**kwargs)
 
 
 # Simple wrapper around delete, try to avoid throwing an error if some other
 # operation is in progress
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidClusterState'])
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidClusterState"])
 def _delete_cluster(redshift, **kwargs):
-    '''
+    """
     Basic wrapper around delete_cluster with a retry applied.
     Explicitly catches 'InvalidClusterState' (~ Operation in progress) so that
     we can still delete a cluster if some kind of change operation was in
     progress.
-    '''
+    """
     return redshift.delete_cluster(**kwargs)
 
 
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidClusterState'])
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidClusterState"])
 def _modify_cluster(redshift, **kwargs):
-    '''
+    """
     Basic wrapper around modify_cluster with a retry applied.
     Explicitly catches 'InvalidClusterState' (~ Operation in progress) for cases
     where another modification is still in progress
-    '''
+    """
     return redshift.modify_cluster(**kwargs)
 
 
@@ -387,59 +386,71 @@ def create_cluster(module, redshift):
     Returns:
     """
 
-    identifier = module.params.get('identifier')
-    node_type = module.params.get('node_type')
-    username = module.params.get('username')
-    password = module.params.get('password')
-    d_b_name = module.params.get('db_name')
-    wait = module.params.get('wait')
-    wait_timeout = module.params.get('wait_timeout')
-    tags = module.params.get('tags')
+    identifier = module.params.get("identifier")
+    node_type = module.params.get("node_type")
+    username = module.params.get("username")
+    password = module.params.get("password")
+    d_b_name = module.params.get("db_name")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
+    tags = module.params.get("tags")
 
     changed = True
     # Package up the optional parameters
     params = {}
-    for p in ('cluster_type', 'cluster_security_groups',
-              'vpc_security_group_ids', 'cluster_subnet_group_name',
-              'availability_zone', 'preferred_maintenance_window',
-              'cluster_parameter_group_name',
-              'automated_snapshot_retention_period', 'port',
-              'cluster_version', 'allow_version_upgrade',
-              'number_of_nodes', 'publicly_accessible', 'encrypted',
-              'elastic_ip', 'enhanced_vpc_routing'):
+    for p in (
+        "cluster_type",
+        "cluster_security_groups",
+        "vpc_security_group_ids",
+        "cluster_subnet_group_name",
+        "availability_zone",
+        "preferred_maintenance_window",
+        "cluster_parameter_group_name",
+        "automated_snapshot_retention_period",
+        "port",
+        "cluster_version",
+        "allow_version_upgrade",
+        "number_of_nodes",
+        "publicly_accessible",
+        "encrypted",
+        "elastic_ip",
+        "enhanced_vpc_routing",
+    ):
         # https://github.com/boto/boto3/issues/400
         if module.params.get(p) is not None:
             params[p] = module.params.get(p)
 
     if d_b_name:
-        params['d_b_name'] = d_b_name
+        params["d_b_name"] = d_b_name
     if tags:
         tags = ansible_dict_to_boto3_tag_list(tags)
-        params['tags'] = tags
+        params["tags"] = tags
 
     try:
         _describe_cluster(redshift, identifier)
         changed = False
-    except is_boto3_error_code('ClusterNotFound'):
+    except is_boto3_error_code("ClusterNotFound"):
         try:
-            _create_cluster(redshift,
-                            ClusterIdentifier=identifier,
-                            NodeType=node_type,
-                            MasterUsername=username,
-                            MasterUserPassword=password,
-                            **snake_dict_to_camel_dict(params, capitalize_first=True))
+            _create_cluster(
+                redshift,
+                ClusterIdentifier=identifier,
+                NodeType=node_type,
+                MasterUsername=username,
+                MasterUserPassword=password,
+                **snake_dict_to_camel_dict(params, capitalize_first=True),
+            )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create cluster")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe cluster")
     if wait:
         attempts = wait_timeout // 60
-        waiter = redshift.get_waiter('cluster_available')
+        waiter = redshift.get_waiter("cluster_available")
         try:
-            waiter.wait(
-                ClusterIdentifier=identifier,
-                WaiterConfig=dict(MaxAttempts=attempts)
-            )
+            waiter.wait(ClusterIdentifier=identifier, WaiterConfig=dict(MaxAttempts=attempts))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Timeout waiting for the cluster creation")
     try:
@@ -448,7 +459,7 @@ def create_cluster(module, redshift):
         module.fail_json_aws(e, msg="Failed to describe cluster")
 
     if tags:
-        if _ensure_tags(redshift, identifier, resource['Tags'], module):
+        if _ensure_tags(redshift, identifier, resource["Tags"], module):
             changed = True
             resource = _describe_cluster(redshift, identifier)
 
@@ -462,7 +473,7 @@ def describe_cluster(module, redshift):
     module: Ansible module object
     redshift: authenticated redshift connection object
     """
-    identifier = module.params.get('identifier')
+    identifier = module.params.get("identifier")
 
     try:
         resource = _describe_cluster(redshift, identifier)
@@ -480,13 +491,12 @@ def delete_cluster(module, redshift):
     redshift: authenticated redshift connection object
     """
 
-    identifier = module.params.get('identifier')
-    wait = module.params.get('wait')
-    wait_timeout = module.params.get('wait_timeout')
+    identifier = module.params.get("identifier")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
 
     params = {}
-    for p in ('skip_final_cluster_snapshot',
-              'final_cluster_snapshot_identifier'):
+    for p in ("skip_final_cluster_snapshot", "final_cluster_snapshot_identifier"):
         if p in module.params:
             # https://github.com/boto/boto3/issues/400
             if module.params.get(p) is not None:
@@ -494,22 +504,21 @@ def delete_cluster(module, redshift):
 
     try:
         _delete_cluster(
-            redshift,
-            ClusterIdentifier=identifier,
-            **snake_dict_to_camel_dict(params, capitalize_first=True))
-    except is_boto3_error_code('ClusterNotFound'):
+            redshift, ClusterIdentifier=identifier, **snake_dict_to_camel_dict(params, capitalize_first=True)
+        )
+    except is_boto3_error_code("ClusterNotFound"):
         return False, {}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete cluster")
 
     if wait:
         attempts = wait_timeout // 60
-        waiter = redshift.get_waiter('cluster_deleted')
+        waiter = redshift.get_waiter("cluster_deleted")
         try:
-            waiter.wait(
-                ClusterIdentifier=identifier,
-                WaiterConfig=dict(MaxAttempts=attempts)
-            )
+            waiter.wait(ClusterIdentifier=identifier, WaiterConfig=dict(MaxAttempts=attempts))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Timeout deleting the cluster")
 
@@ -524,62 +533,63 @@ def modify_cluster(module, redshift):
     redshift: authenticated redshift connection object
     """
 
-    identifier = module.params.get('identifier')
-    wait = module.params.get('wait')
-    wait_timeout = module.params.get('wait_timeout')
+    identifier = module.params.get("identifier")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
 
     # Package up the optional parameters
     params = {}
-    for p in ('cluster_type', 'cluster_security_groups',
-              'vpc_security_group_ids', 'cluster_subnet_group_name',
-              'availability_zone', 'preferred_maintenance_window',
-              'cluster_parameter_group_name',
-              'automated_snapshot_retention_period', 'port', 'cluster_version',
-              'allow_version_upgrade', 'number_of_nodes', 'new_cluster_identifier'):
+    for p in (
+        "cluster_type",
+        "cluster_security_groups",
+        "vpc_security_group_ids",
+        "cluster_subnet_group_name",
+        "availability_zone",
+        "preferred_maintenance_window",
+        "cluster_parameter_group_name",
+        "automated_snapshot_retention_period",
+        "port",
+        "cluster_version",
+        "allow_version_upgrade",
+        "number_of_nodes",
+        "new_cluster_identifier",
+    ):
         # https://github.com/boto/boto3/issues/400
         if module.params.get(p) is not None:
             params[p] = module.params.get(p)
 
     # enhanced_vpc_routing parameter change needs an exclusive request
-    if module.params.get('enhanced_vpc_routing') is not None:
+    if module.params.get("enhanced_vpc_routing") is not None:
         try:
             _modify_cluster(
-                redshift,
-                ClusterIdentifier=identifier,
-                EnhancedVpcRouting=module.params.get('enhanced_vpc_routing'))
+                redshift, ClusterIdentifier=identifier, EnhancedVpcRouting=module.params.get("enhanced_vpc_routing")
+            )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
     if wait:
         attempts = wait_timeout // 60
-        waiter = redshift.get_waiter('cluster_available')
+        waiter = redshift.get_waiter("cluster_available")
         try:
-            waiter.wait(
-                ClusterIdentifier=identifier,
-                WaiterConfig=dict(MaxAttempts=attempts))
+            waiter.wait(ClusterIdentifier=identifier, WaiterConfig=dict(MaxAttempts=attempts))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e,
-                                 msg="Timeout waiting for cluster enhanced vpc routing modification")
+            module.fail_json_aws(e, msg="Timeout waiting for cluster enhanced vpc routing modification")
 
     # change the rest
     try:
         _modify_cluster(
-            redshift,
-            ClusterIdentifier=identifier,
-            **snake_dict_to_camel_dict(params, capitalize_first=True))
+            redshift, ClusterIdentifier=identifier, **snake_dict_to_camel_dict(params, capitalize_first=True)
+        )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
 
-    if module.params.get('new_cluster_identifier'):
-        identifier = module.params.get('new_cluster_identifier')
+    if module.params.get("new_cluster_identifier"):
+        identifier = module.params.get("new_cluster_identifier")
 
     if wait:
         attempts = wait_timeout // 60
-        waiter2 = redshift.get_waiter('cluster_available')
+        waiter2 = redshift.get_waiter("cluster_available")
         try:
-            waiter2.wait(
-                ClusterIdentifier=identifier,
-                WaiterConfig=dict(MaxAttempts=attempts)
-            )
+            waiter2.wait(ClusterIdentifier=identifier, WaiterConfig=dict(MaxAttempts=attempts))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Timeout waiting for cluster modification")
     try:
@@ -587,85 +597,96 @@ def modify_cluster(module, redshift):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
 
-    if _ensure_tags(redshift, identifier, resource['Tags'], module):
-        resource = redshift.describe_clusters(ClusterIdentifier=identifier)['Clusters'][0]
+    if _ensure_tags(redshift, identifier, resource["Tags"], module):
+        resource = redshift.describe_clusters(ClusterIdentifier=identifier)["Clusters"][0]
 
     return True, _collect_facts(resource)
 
 
 def main():
     argument_spec = dict(
-        command=dict(choices=['create', 'facts', 'delete', 'modify'], required=True),
+        command=dict(choices=["create", "facts", "delete", "modify"], required=True),
         identifier=dict(required=True),
-        node_type=dict(choices=['ds1.xlarge', 'ds1.8xlarge', 'ds2.xlarge',
-                                'ds2.8xlarge', 'dc1.large', 'dc2.large',
-                                'dc1.8xlarge', 'dw1.xlarge', 'dw1.8xlarge',
-                                'dw2.large', 'dw2.8xlarge'], required=False),
+        node_type=dict(
+            choices=[
+                "ds1.xlarge",
+                "ds1.8xlarge",
+                "ds2.xlarge",
+                "ds2.8xlarge",
+                "dc1.large",
+                "dc2.large",
+                "dc1.8xlarge",
+                "dw1.xlarge",
+                "dw1.8xlarge",
+                "dw2.large",
+                "dw2.8xlarge",
+            ],
+            required=False,
+        ),
         username=dict(required=False),
         password=dict(no_log=True, required=False),
         db_name=dict(required=False),
-        cluster_type=dict(choices=['multi-node', 'single-node'], default='single-node'),
-        cluster_security_groups=dict(aliases=['security_groups'], type='list', elements='str'),
-        vpc_security_group_ids=dict(aliases=['vpc_security_groups'], type='list', elements='str'),
-        skip_final_cluster_snapshot=dict(aliases=['skip_final_snapshot'],
-                                         type='bool', default=False),
-        final_cluster_snapshot_identifier=dict(aliases=['final_snapshot_id'], required=False),
-        cluster_subnet_group_name=dict(aliases=['subnet']),
-        availability_zone=dict(aliases=['aws_zone', 'zone']),
-        preferred_maintenance_window=dict(aliases=['maintance_window', 'maint_window']),
-        cluster_parameter_group_name=dict(aliases=['param_group_name']),
-        automated_snapshot_retention_period=dict(aliases=['retention_period'], type='int'),
-        port=dict(type='int'),
-        cluster_version=dict(aliases=['version'], choices=['1.0']),
-        allow_version_upgrade=dict(aliases=['version_upgrade'], type='bool', default=True),
-        number_of_nodes=dict(type='int'),
-        publicly_accessible=dict(type='bool', default=False),
-        encrypted=dict(type='bool', default=False),
+        cluster_type=dict(choices=["multi-node", "single-node"], default="single-node"),
+        cluster_security_groups=dict(aliases=["security_groups"], type="list", elements="str"),
+        vpc_security_group_ids=dict(aliases=["vpc_security_groups"], type="list", elements="str"),
+        skip_final_cluster_snapshot=dict(aliases=["skip_final_snapshot"], type="bool", default=False),
+        final_cluster_snapshot_identifier=dict(aliases=["final_snapshot_id"], required=False),
+        cluster_subnet_group_name=dict(aliases=["subnet"]),
+        availability_zone=dict(aliases=["aws_zone", "zone"]),
+        preferred_maintenance_window=dict(aliases=["maintance_window", "maint_window"]),
+        cluster_parameter_group_name=dict(aliases=["param_group_name"]),
+        automated_snapshot_retention_period=dict(aliases=["retention_period"], type="int"),
+        port=dict(type="int"),
+        cluster_version=dict(aliases=["version"], choices=["1.0"]),
+        allow_version_upgrade=dict(aliases=["version_upgrade"], type="bool", default=True),
+        number_of_nodes=dict(type="int"),
+        publicly_accessible=dict(type="bool", default=False),
+        encrypted=dict(type="bool", default=False),
         elastic_ip=dict(required=False),
-        new_cluster_identifier=dict(aliases=['new_identifier']),
-        enhanced_vpc_routing=dict(type='bool', default=False),
-        wait=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', default=300),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True)
+        new_cluster_identifier=dict(aliases=["new_identifier"]),
+        enhanced_vpc_routing=dict(type="bool", default=False),
+        wait=dict(type="bool", default=False),
+        wait_timeout=dict(type="int", default=300),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
 
     required_if = [
-        ('command', 'delete', ['skip_final_cluster_snapshot']),
-        ('command', 'create', ['node_type',
-                               'username',
-                               'password'])
+        ("command", "delete", ["skip_final_cluster_snapshot"]),
+        ("command", "create", ["node_type", "username", "password"]),
     ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_if=required_if
+        required_if=required_if,
     )
 
-    command = module.params.get('command')
-    skip_final_cluster_snapshot = module.params.get('skip_final_cluster_snapshot')
-    final_cluster_snapshot_identifier = module.params.get('final_cluster_snapshot_identifier')
+    command = module.params.get("command")
+    skip_final_cluster_snapshot = module.params.get("skip_final_cluster_snapshot")
+    final_cluster_snapshot_identifier = module.params.get("final_cluster_snapshot_identifier")
     # can't use module basic required_if check for this case
-    if command == 'delete' and skip_final_cluster_snapshot is False and final_cluster_snapshot_identifier is None:
-        module.fail_json(msg="Need to specify final_cluster_snapshot_identifier if skip_final_cluster_snapshot is False")
+    if command == "delete" and skip_final_cluster_snapshot is False and final_cluster_snapshot_identifier is None:
+        module.fail_json(
+            msg="Need to specify final_cluster_snapshot_identifier if skip_final_cluster_snapshot is False"
+        )
 
-    conn = module.client('redshift')
+    conn = module.client("redshift")
 
     changed = True
-    if command == 'create':
+    if command == "create":
         (changed, cluster) = create_cluster(module, conn)
 
-    elif command == 'facts':
+    elif command == "facts":
         (changed, cluster) = describe_cluster(module, conn)
 
-    elif command == 'delete':
+    elif command == "delete":
         (changed, cluster) = delete_cluster(module, conn)
 
-    elif command == 'modify':
+    elif command == "modify":
         (changed, cluster) = modify_cluster(module, conn)
 
     module.exit_json(changed=changed, cluster=cluster)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -418,40 +418,40 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 @AWSRetry.exponential_backoff()
 def describe_cache_clusters_with_backoff(client, cluster_id=None):
-    paginator = client.get_paginator('describe_cache_clusters')
+    paginator = client.get_paginator("describe_cache_clusters")
     params = dict(ShowCacheNodeInfo=True)
     if cluster_id:
-        params['CacheClusterId'] = cluster_id
+        params["CacheClusterId"] = cluster_id
     try:
         response = paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code('CacheClusterNotFound'):
+    except is_boto3_error_code("CacheClusterNotFound"):
         return []
-    return response['CacheClusters']
+    return response["CacheClusters"]
 
 
 @AWSRetry.exponential_backoff()
 def describe_replication_group_with_backoff(client, replication_group_id):
     try:
         response = client.describe_replication_groups(ReplicationGroupId=replication_group_id)
-    except is_boto3_error_code('ReplicationGroupNotFoundFault'):
+    except is_boto3_error_code("ReplicationGroupNotFoundFault"):
         return None
 
-    return response['ReplicationGroups'][0]
+    return response["ReplicationGroups"][0]
 
 
 @AWSRetry.exponential_backoff()
 def get_elasticache_tags_with_backoff(client, cluster_id):
-    return client.list_tags_for_resource(ResourceName=cluster_id)['TagList']
+    return client.list_tags_for_resource(ResourceName=cluster_id)["TagList"]
 
 
 def get_aws_account_id(module):
     try:
-        client = module.client('sts')
+        client = module.client("sts")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Can't authorize connection")
 
     try:
-        return client.get_caller_identity()['Account']
+        return client.get_caller_identity()["Account"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't obtain AWS account id")
 
@@ -459,16 +459,15 @@ def get_aws_account_id(module):
 def get_elasticache_clusters(client, module):
     region = module.region
     try:
-        clusters = describe_cache_clusters_with_backoff(client, cluster_id=module.params.get('name'))
+        clusters = describe_cache_clusters_with_backoff(client, cluster_id=module.params.get("name"))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't obtain cache cluster info")
 
     account_id = get_aws_account_id(module)
     results = []
     for cluster in clusters:
-
         cluster = camel_dict_to_snake_dict(cluster)
-        arn = "arn:aws:elasticache:%s:%s:cluster:%s" % (region, account_id, cluster['cache_cluster_id'])
+        arn = "arn:aws:elasticache:%s:%s:cluster:%s" % (region, account_id, cluster["cache_cluster_id"])
         try:
             tags = get_elasticache_tags_with_backoff(client, arn)
         except is_boto3_error_code("CacheClusterNotFound"):
@@ -477,17 +476,17 @@ def get_elasticache_clusters(client, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't get tags for cluster %s")
 
-        cluster['tags'] = boto3_tag_list_to_ansible_dict(tags)
+        cluster["tags"] = boto3_tag_list_to_ansible_dict(tags)
 
-        if cluster.get('replication_group_id', None):
+        if cluster.get("replication_group_id", None):
             try:
-                replication_group = describe_replication_group_with_backoff(client, cluster['replication_group_id'])
+                replication_group = describe_replication_group_with_backoff(client, cluster["replication_group_id"])
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't obtain replication group info")
 
             if replication_group is not None:
                 replication_group = camel_dict_to_snake_dict(replication_group)
-                cluster['replication_group'] = replication_group
+                cluster["replication_group"] = replication_group
 
         results.append(cluster)
     return results
@@ -499,10 +498,10 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client('elasticache')
+    client = module.client("elasticache")
 
     module.exit_json(elasticache_clusters=get_elasticache_clusters(client, module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

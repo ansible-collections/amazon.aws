@@ -110,10 +110,13 @@ def get_subnet_group(name):
         groups = client.describe_cluster_subnet_groups(
             aws_retry=True,
             ClusterSubnetGroupName=name,
-        )['ClusterSubnetGroups']
-    except is_boto3_error_code('ClusterSubnetGroupNotFoundFault'):
+        )["ClusterSubnetGroups"]
+    except is_boto3_error_code("ClusterSubnetGroupNotFoundFault"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe subnet group")
 
     if not groups:
@@ -127,23 +130,22 @@ def get_subnet_group(name):
 
     # No support for managing tags yet, but make sure that we don't need to
     # change the return value structure after it's been available in a release.
-    tags = boto3_tag_list_to_ansible_dict(groups[0]['Tags'])
+    tags = boto3_tag_list_to_ansible_dict(groups[0]["Tags"])
 
     subnet_group = camel_dict_to_snake_dict(groups[0])
 
-    subnet_group['tags'] = tags
-    subnet_group['name'] = subnet_group['cluster_subnet_group_name']
+    subnet_group["tags"] = tags
+    subnet_group["name"] = subnet_group["cluster_subnet_group_name"]
 
-    subnet_ids = list(s['subnet_identifier'] for s in subnet_group['subnets'])
-    subnet_group['subnet_ids'] = subnet_ids
+    subnet_ids = list(s["subnet_identifier"] for s in subnet_group["subnets"])
+    subnet_group["subnet_ids"] = subnet_ids
 
     return subnet_group
 
 
 def create_subnet_group(name, description, subnets):
-
     if not subnets:
-        module.fail_json(msg='At least one subnet must be provided when creating a subnet group')
+        module.fail_json(msg="At least one subnet must be provided when creating a subnet group")
 
     if module.check_mode:
         return True
@@ -164,13 +166,13 @@ def create_subnet_group(name, description, subnets):
 
 def update_subnet_group(subnet_group, name, description, subnets):
     update_params = dict()
-    if description and subnet_group['description'] != description:
-        update_params['Description'] = description
+    if description and subnet_group["description"] != description:
+        update_params["Description"] = description
     if subnets:
-        old_subnets = set(subnet_group['subnet_ids'])
+        old_subnets = set(subnet_group["subnet_ids"])
         new_subnets = set(subnets)
         if old_subnets != new_subnets:
-            update_params['SubnetIds'] = list(subnets)
+            update_params["SubnetIds"] = list(subnets)
 
     if not update_params:
         return False
@@ -179,8 +181,8 @@ def update_subnet_group(subnet_group, name, description, subnets):
         return True
 
     # Description is optional, SubnetIds is not
-    if 'SubnetIds' not in update_params:
-        update_params['SubnetIds'] = subnet_group['subnet_ids']
+    if "SubnetIds" not in update_params:
+        update_params["SubnetIds"] = subnet_group["subnet_ids"]
 
     try:
         client.modify_cluster_subnet_group(
@@ -195,7 +197,6 @@ def update_subnet_group(subnet_group, name, description, subnets):
 
 
 def delete_subnet_group(name):
-
     if module.check_mode:
         return True
 
@@ -205,20 +206,23 @@ def delete_subnet_group(name):
             ClusterSubnetGroupName=name,
         )
         return True
-    except is_boto3_error_code('ClusterSubnetGroupNotFoundFault'):
+    except is_boto3_error_code("ClusterSubnetGroupNotFoundFault"):
         # AWS is "eventually consistent", cope with the race conditions where
         # deletion hadn't completed when we ran describe
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete subnet group")
 
 
 def main():
     argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent']),
-        name=dict(required=True, aliases=['group_name']),
-        description=dict(required=False, aliases=['group_description']),
-        subnets=dict(required=False, aliases=['group_subnets'], type='list', elements='str'),
+        state=dict(default="present", choices=["present", "absent"]),
+        name=dict(required=True, aliases=["group_name"]),
+        description=dict(required=False, aliases=["group_description"]),
+        subnets=dict(required=False, aliases=["group_subnets"], type="list", elements="str"),
     )
 
     global module
@@ -229,17 +233,17 @@ def main():
         supports_check_mode=True,
     )
 
-    state = module.params.get('state')
-    name = module.params.get('name')
-    description = module.params.get('description')
-    subnets = module.params.get('subnets')
+    state = module.params.get("state")
+    name = module.params.get("name")
+    description = module.params.get("description")
+    subnets = module.params.get("subnets")
 
-    client = module.client('redshift', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("redshift", retry_decorator=AWSRetry.jittered_backoff())
 
     subnet_group = get_subnet_group(name)
     changed = False
 
-    if state == 'present':
+    if state == "present":
         if not subnet_group:
             result = create_subnet_group(name, description, subnets)
             changed |= result
@@ -255,9 +259,9 @@ def main():
 
     compat_results = dict()
     if subnet_group:
-        compat_results['group'] = dict(
-            name=subnet_group['name'],
-            vpc_id=subnet_group['vpc_id'],
+        compat_results["group"] = dict(
+            name=subnet_group["name"],
+            vpc_id=subnet_group["vpc_id"],
         )
 
     module.exit_json(
@@ -267,5 +271,5 @@ def main():
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

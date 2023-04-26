@@ -121,33 +121,32 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def get_tags(ecs, module, resource):
     try:
-        return boto3_tag_list_to_ansible_dict(ecs.list_tags_for_resource(resourceArn=resource)['tags'])
+        return boto3_tag_list_to_ansible_dict(ecs.list_tags_for_resource(resourceArn=resource)["tags"])
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to fetch tags for resource {0}'.format(resource))
+        module.fail_json_aws(e, msg="Failed to fetch tags for resource {0}".format(resource))
 
 
 def get_arn(ecs, module, cluster_name, resource_type, resource):
-
     try:
-        if resource_type == 'cluster':
+        if resource_type == "cluster":
             description = ecs.describe_clusters(clusters=[resource])
-            resource_arn = description['clusters'][0]['clusterArn']
-        elif resource_type == 'task':
+            resource_arn = description["clusters"][0]["clusterArn"]
+        elif resource_type == "task":
             description = ecs.describe_tasks(cluster=cluster_name, tasks=[resource])
-            resource_arn = description['tasks'][0]['taskArn']
-        elif resource_type == 'service':
+            resource_arn = description["tasks"][0]["taskArn"]
+        elif resource_type == "service":
             description = ecs.describe_services(cluster=cluster_name, services=[resource])
-            resource_arn = description['services'][0]['serviceArn']
-        elif resource_type == 'task_definition':
+            resource_arn = description["services"][0]["serviceArn"]
+        elif resource_type == "task_definition":
             description = ecs.describe_task_definition(taskDefinition=resource)
-            resource_arn = description['taskDefinition']['taskDefinitionArn']
-        elif resource_type == 'container':
+            resource_arn = description["taskDefinition"]["taskDefinitionArn"]
+        elif resource_type == "container":
             description = ecs.describe_container_instances(clusters=[resource])
-            resource_arn = description['containerInstances'][0]['containerInstanceArn']
+            resource_arn = description["containerInstances"][0]["containerInstanceArn"]
     except (IndexError, KeyError):
-        module.fail_json(msg='Failed to find {0} {1}'.format(resource_type, resource))
+        module.fail_json(msg="Failed to find {0} {1}".format(resource_type, resource))
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to find {0} {1}'.format(resource_type, resource))
+        module.fail_json_aws(e, msg="Failed to find {0} {1}".format(resource_type, resource))
 
     return resource_arn
 
@@ -156,28 +155,28 @@ def main():
     argument_spec = dict(
         cluster_name=dict(required=True),
         resource=dict(required=False),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=False),
-        state=dict(default='present', choices=['present', 'absent']),
-        resource_type=dict(default='cluster', choices=['cluster', 'task', 'service', 'task_definition', 'container'])
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=False),
+        state=dict(default="present", choices=["present", "absent"]),
+        resource_type=dict(default="cluster", choices=["cluster", "task", "service", "task_definition", "container"]),
     )
-    required_if = [('state', 'present', ['tags']), ('state', 'absent', ['tags'])]
+    required_if = [("state", "present", ["tags"]), ("state", "absent", ["tags"])]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if, supports_check_mode=True)
 
-    resource_type = module.params['resource_type']
-    cluster_name = module.params['cluster_name']
-    if resource_type == 'cluster':
+    resource_type = module.params["resource_type"]
+    cluster_name = module.params["cluster_name"]
+    if resource_type == "cluster":
         resource = cluster_name
     else:
-        resource = module.params['resource']
-    tags = module.params['tags']
-    state = module.params['state']
-    purge_tags = module.params['purge_tags']
+        resource = module.params["resource"]
+    tags = module.params["tags"]
+    state = module.params["state"]
+    purge_tags = module.params["purge_tags"]
 
-    result = {'changed': False}
+    result = {"changed": False}
 
-    ecs = module.client('ecs')
+    ecs = module.client("ecs")
 
     resource_arn = get_arn(ecs, module, cluster_name, resource_type, resource)
 
@@ -186,7 +185,7 @@ def main():
     add_tags, remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
 
     remove_tags = {}
-    if state == 'absent':
+    if state == "absent":
         for key in tags:
             if key in current_tags and (tags[key] is None or current_tags[key] == tags[key]):
                 remove_tags[key] = current_tags[key]
@@ -195,28 +194,28 @@ def main():
         remove_tags[key] = current_tags[key]
 
     if remove_tags:
-        result['changed'] = True
-        result['removed_tags'] = remove_tags
+        result["changed"] = True
+        result["removed_tags"] = remove_tags
         if not module.check_mode:
             try:
                 ecs.untag_resource(resourceArn=resource_arn, tagKeys=list(remove_tags.keys()))
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg='Failed to remove tags {0} from resource {1}'.format(remove_tags, resource))
+                module.fail_json_aws(e, msg="Failed to remove tags {0} from resource {1}".format(remove_tags, resource))
 
-    if state == 'present' and add_tags:
-        result['changed'] = True
-        result['added_tags'] = add_tags
+    if state == "present" and add_tags:
+        result["changed"] = True
+        result["added_tags"] = add_tags
         current_tags.update(add_tags)
         if not module.check_mode:
             try:
-                tags = ansible_dict_to_boto3_tag_list(add_tags, tag_name_key_name='key', tag_value_key_name='value')
+                tags = ansible_dict_to_boto3_tag_list(add_tags, tag_name_key_name="key", tag_value_key_name="value")
                 ecs.tag_resource(resourceArn=resource_arn, tags=tags)
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg='Failed to set tags {0} on resource {1}'.format(add_tags, resource))
+                module.fail_json_aws(e, msg="Failed to set tags {0} on resource {1}".format(add_tags, resource))
 
-    result['tags'] = get_tags(ecs, module, resource_arn)
+    result["tags"] = get_tags(ecs, module, resource_arn)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

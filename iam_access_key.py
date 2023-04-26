@@ -149,14 +149,15 @@ def delete_access_key(access_keys, user, access_key_id):
             UserName=user,
             AccessKeyId=access_key_id,
         )
-    except is_boto3_error_code('NoSuchEntityException'):
+    except is_boto3_error_code("NoSuchEntityException"):
         # Generally occurs when race conditions have happened and someone
         # deleted the key while we were checking to see if it existed.
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(
-            e, msg='Failed to delete access key "{0}" for user "{1}"'.format(access_key_id, user)
-        )
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to delete access key "{0}" for user "{1}"'.format(access_key_id, user))
 
     return True
 
@@ -171,9 +172,9 @@ def update_access_key(access_keys, user, access_key_id, enabled):
     access_key = access_keys.get(access_key_id)
 
     if enabled is not None:
-        desired_status = 'Active' if enabled else 'Inactive'
-        if access_key.get('status') != desired_status:
-            changes['Status'] = desired_status
+        desired_status = "Active" if enabled else "Inactive"
+        if access_key.get("status") != desired_status:
+            changes["Status"] = desired_status
 
     if not changes:
         return False
@@ -182,15 +183,11 @@ def update_access_key(access_keys, user, access_key_id, enabled):
         return True
 
     try:
-        client.update_access_key(
-            aws_retry=True,
-            UserName=user,
-            AccessKeyId=access_key_id,
-            **changes
-        )
+        client.update_access_key(aws_retry=True, UserName=user, AccessKeyId=access_key_id, **changes)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(
-            e, changes=changes,
+            e,
+            changes=changes,
             msg='Failed to update access key "{0}" for user "{1}"'.format(access_key_id, user),
         )
     return True
@@ -201,7 +198,7 @@ def create_access_key(access_keys, user, rotate_keys, enabled):
     oldest_key = False
 
     if len(access_keys) > 1 and rotate_keys:
-        sorted_keys = sorted(list(access_keys), key=lambda k: access_keys[k].get('create_date', None))
+        sorted_keys = sorted(list(access_keys), key=lambda k: access_keys[k].get("create_date", None))
         oldest_key = sorted_keys[0]
         changed |= delete_access_key(access_keys, user, oldest_key)
 
@@ -215,18 +212,18 @@ def create_access_key(access_keys, user, rotate_keys, enabled):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to create access key for user "{0}"'.format(user))
     results = camel_dict_to_snake_dict(results)
-    access_key = results.get('access_key')
+    access_key = results.get("access_key")
     access_key = normalize_boto3_result(access_key)
 
     # Update settings which can't be managed on creation
     if enabled is False:
-        access_key_id = access_key['access_key_id']
+        access_key_id = access_key["access_key_id"]
         access_keys = {access_key_id: access_key}
         update_access_key(access_keys, user, access_key_id, enabled)
-        access_key['status'] = 'Inactive'
+        access_key["status"] = "Inactive"
 
     if oldest_key:
-        access_key['deleted_access_key'] = oldest_key
+        access_key["deleted_access_key"] = oldest_key
 
     return access_key
 
@@ -235,67 +232,64 @@ def get_access_keys(user):
     try:
         results = client.list_access_keys(aws_retry=True, UserName=user)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(
-            e, msg='Failed to get access keys for user "{0}"'.format(user)
-        )
+        module.fail_json_aws(e, msg='Failed to get access keys for user "{0}"'.format(user))
     if not results:
         return None
 
     results = camel_dict_to_snake_dict(results)
-    access_keys = results.get('access_key_metadata', [])
+    access_keys = results.get("access_key_metadata", [])
     if not access_keys:
         return []
 
     access_keys = normalize_boto3_result(access_keys)
-    access_keys = {k['access_key_id']: k for k in access_keys}
+    access_keys = {k["access_key_id"]: k for k in access_keys}
     return access_keys
 
 
 def main():
-
     global module
     global client
 
     argument_spec = dict(
-        user_name=dict(required=True, type='str', aliases=['username']),
-        id=dict(required=False, type='str'),
-        state=dict(required=False, choices=['present', 'absent'], default='present'),
-        active=dict(required=False, type='bool', aliases=['enabled']),
-        rotate_keys=dict(required=False, type='bool', default=False),
+        user_name=dict(required=True, type="str", aliases=["username"]),
+        id=dict(required=False, type="str"),
+        state=dict(required=False, choices=["present", "absent"], default="present"),
+        active=dict(required=False, type="bool", aliases=["enabled"]),
+        rotate_keys=dict(required=False, type="bool", default=False),
     )
 
     required_if = [
-        ['state', 'absent', ('id')],
+        ["state", "absent", ("id")],
     ]
     mutually_exclusive = [
-        ['rotate_keys', 'id'],
+        ["rotate_keys", "id"],
     ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
     changed = False
-    state = module.params.get('state')
-    user = module.params.get('user_name')
-    access_key_id = module.params.get('id')
-    rotate_keys = module.params.get('rotate_keys')
-    enabled = module.params.get('active')
+    state = module.params.get("state")
+    user = module.params.get("user_name")
+    access_key_id = module.params.get("id")
+    rotate_keys = module.params.get("rotate_keys")
+    enabled = module.params.get("active")
 
     access_keys = get_access_keys(user)
     results = dict()
 
-    if state == 'absent':
+    if state == "absent":
         changed |= delete_access_key(access_keys, user, access_key_id)
     else:
         # If we have an ID then we should try to update it
         if access_key_id:
             changed |= update_access_key(access_keys, user, access_key_id, enabled)
             access_keys = get_access_keys(user)
-            results['access_key'] = access_keys.get(access_key_id, None)
+            results["access_key"] = access_keys.get(access_key_id, None)
         # Otherwise we try to create a new one
         else:
             secret_key = create_access_key(access_keys, user, rotate_keys, enabled)
@@ -303,15 +297,15 @@ def main():
                 changed |= secret_key
             else:
                 changed = True
-                results['access_key_id'] = secret_key.get('access_key_id', None)
-                results['secret_access_key'] = secret_key.pop('secret_access_key', None)
-                results['deleted_access_key_id'] = secret_key.pop('deleted_access_key', None)
+                results["access_key_id"] = secret_key.get("access_key_id", None)
+                results["secret_access_key"] = secret_key.pop("secret_access_key", None)
+                results["deleted_access_key_id"] = secret_key.pop("deleted_access_key", None)
                 if secret_key:
-                    results['access_key'] = secret_key
+                    results["access_key"] = secret_key
                 results = scrub_none_parameters(results)
 
     module.exit_json(changed=changed, **results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

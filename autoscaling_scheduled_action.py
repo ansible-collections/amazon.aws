@@ -171,29 +171,29 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def format_request():
     params = dict(
-        AutoScalingGroupName=module.params.get('autoscaling_group_name'),
-        ScheduledActionName=module.params.get('scheduled_action_name'),
-        Recurrence=module.params.get('recurrence')
+        AutoScalingGroupName=module.params.get("autoscaling_group_name"),
+        ScheduledActionName=module.params.get("scheduled_action_name"),
+        Recurrence=module.params.get("recurrence"),
     )
 
     # Some of these params are optional
-    if module.params.get('desired_capacity') is not None:
-        params['DesiredCapacity'] = module.params.get('desired_capacity')
+    if module.params.get("desired_capacity") is not None:
+        params["DesiredCapacity"] = module.params.get("desired_capacity")
 
-    if module.params.get('min_size') is not None:
-        params['MinSize'] = module.params.get('min_size')
+    if module.params.get("min_size") is not None:
+        params["MinSize"] = module.params.get("min_size")
 
-    if module.params.get('max_size') is not None:
-        params['MaxSize'] = module.params.get('max_size')
+    if module.params.get("max_size") is not None:
+        params["MaxSize"] = module.params.get("max_size")
 
-    if module.params.get('time_zone') is not None:
-        params['TimeZone'] = module.params.get('time_zone')
+    if module.params.get("time_zone") is not None:
+        params["TimeZone"] = module.params.get("time_zone")
 
-    if module.params.get('start_time') is not None:
-        params['StartTime'] = module.params.get('start_time')
+    if module.params.get("start_time") is not None:
+        params["StartTime"] = module.params.get("start_time")
 
-    if module.params.get('end_time') is not None:
-        params['EndTime'] = module.params.get('end_time')
+    if module.params.get("end_time") is not None:
+        params["EndTime"] = module.params.get("end_time")
 
     return params
 
@@ -206,8 +206,8 @@ def delete_scheduled_action(current_actions):
         return True
 
     params = dict(
-        AutoScalingGroupName=module.params.get('autoscaling_group_name'),
-        ScheduledActionName=module.params.get('scheduled_action_name')
+        AutoScalingGroupName=module.params.get("autoscaling_group_name"),
+        ScheduledActionName=module.params.get("scheduled_action_name"),
     )
 
     try:
@@ -220,8 +220,8 @@ def delete_scheduled_action(current_actions):
 
 def get_scheduled_actions():
     params = dict(
-        AutoScalingGroupName=module.params.get('autoscaling_group_name'),
-        ScheduledActionNames=[module.params.get('scheduled_action_name')]
+        AutoScalingGroupName=module.params.get("autoscaling_group_name"),
+        ScheduledActionNames=[module.params.get("scheduled_action_name")],
     )
 
     try:
@@ -271,55 +271,53 @@ def main():
     global client
 
     argument_spec = dict(
-        autoscaling_group_name=dict(required=True, type='str'),
-        scheduled_action_name=dict(required=True, type='str'),
-        start_time=dict(default=None, type='str'),
-        end_time=dict(default=None, type='str'),
-        time_zone=dict(default=None, type='str'),
-        recurrence=dict(type='str'),
-        min_size=dict(default=None, type='int'),
-        max_size=dict(default=None, type='int'),
-        desired_capacity=dict(default=None, type='int'),
-        state=dict(default='present', choices=['present', 'absent'])
+        autoscaling_group_name=dict(required=True, type="str"),
+        scheduled_action_name=dict(required=True, type="str"),
+        start_time=dict(default=None, type="str"),
+        end_time=dict(default=None, type="str"),
+        time_zone=dict(default=None, type="str"),
+        recurrence=dict(type="str"),
+        min_size=dict(default=None, type="int"),
+        max_size=dict(default=None, type="int"),
+        desired_capacity=dict(default=None, type="int"),
+        state=dict(default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        required_if=[['state', 'present', ['recurrence']]],
-        supports_check_mode=True
+        argument_spec=argument_spec, required_if=[["state", "present", ["recurrence"]]], supports_check_mode=True
     )
 
     if not HAS_DATEUTIL:
-        module.fail_json(msg='dateutil is required for this module')
+        module.fail_json(msg="dateutil is required for this module")
 
     if not module.botocore_at_least("1.20.24"):
-        module.fail_json(msg='botocore version >= 1.20.24 is required for this module')
+        module.fail_json(msg="botocore version >= 1.20.24 is required for this module")
 
-    client = module.client('autoscaling', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("autoscaling", retry_decorator=AWSRetry.jittered_backoff())
     current_actions = get_scheduled_actions()
-    state = module.params.get('state')
+    state = module.params.get("state")
     results = dict()
 
-    if state == 'present':
+    if state == "present":
         changed = put_scheduled_update_group_action(current_actions)
         if not module.check_mode:
             updated_action = get_scheduled_actions()[0]
             results = dict(
-                scheduled_action_name=updated_action.get('ScheduledActionName'),
-                start_time=updated_action.get('StartTime'),
-                end_time=updated_action.get('EndTime'),
-                time_zone=updated_action.get('TimeZone'),
-                recurrence=updated_action.get('Recurrence'),
-                min_size=updated_action.get('MinSize'),
-                max_size=updated_action.get('MaxSize'),
-                desired_capacity=updated_action.get('DesiredCapacity')
+                scheduled_action_name=updated_action.get("ScheduledActionName"),
+                start_time=updated_action.get("StartTime"),
+                end_time=updated_action.get("EndTime"),
+                time_zone=updated_action.get("TimeZone"),
+                recurrence=updated_action.get("Recurrence"),
+                min_size=updated_action.get("MinSize"),
+                max_size=updated_action.get("MaxSize"),
+                desired_capacity=updated_action.get("DesiredCapacity"),
             )
     else:
         changed = delete_scheduled_action(current_actions)
 
-    results['changed'] = changed
+    results["changed"] = changed
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

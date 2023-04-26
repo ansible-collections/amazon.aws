@@ -81,16 +81,20 @@ def delete_eigw(module, connection, eigw_id):
 
     try:
         response = connection.delete_egress_only_internet_gateway(
-            aws_retry=True,
-            DryRun=module.check_mode,
-            EgressOnlyInternetGatewayId=eigw_id)
-    except is_boto3_error_code('DryRunOperation'):
+            aws_retry=True, DryRun=module.check_mode, EgressOnlyInternetGatewayId=eigw_id
+        )
+    except is_boto3_error_code("DryRunOperation"):
         changed = True
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Could not delete Egress-Only Internet Gateway {0} from VPC {1}".format(eigw_id, module.vpc_id))
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(
+            e, msg="Could not delete Egress-Only Internet Gateway {0} from VPC {1}".format(eigw_id, module.vpc_id)
+        )
 
     if not module.check_mode:
-        changed = response.get('ReturnCode', False)
+        changed = response.get("ReturnCode", False)
 
     return changed
 
@@ -108,29 +112,35 @@ def create_eigw(module, connection, vpc_id):
 
     try:
         response = connection.create_egress_only_internet_gateway(
-            aws_retry=True,
-            DryRun=module.check_mode,
-            VpcId=vpc_id)
-    except is_boto3_error_code('DryRunOperation'):
+            aws_retry=True, DryRun=module.check_mode, VpcId=vpc_id
+        )
+    except is_boto3_error_code("DryRunOperation"):
         # When boto3 method is run with DryRun=True it returns an error on success
         # We need to catch the error and return something valid
         changed = True
-    except is_boto3_error_code('InvalidVpcID.NotFound') as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("InvalidVpcID.NotFound") as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="invalid vpc ID '{0}' provided".format(vpc_id))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not create Egress-Only Internet Gateway for vpc ID {0}".format(vpc_id))
 
     if not module.check_mode:
-        gateway = response.get('EgressOnlyInternetGateway', {})
-        state = gateway.get('Attachments', [{}])[0].get('State')
-        gateway_id = gateway.get('EgressOnlyInternetGatewayId')
+        gateway = response.get("EgressOnlyInternetGateway", {})
+        state = gateway.get("Attachments", [{}])[0].get("State")
+        gateway_id = gateway.get("EgressOnlyInternetGatewayId")
 
-        if gateway_id and state in ('attached', 'attaching'):
+        if gateway_id and state in ("attached", "attaching"):
             changed = True
         else:
             # EIGW gave back a bad attachment state or an invalid response so we error out
-            module.fail_json(msg='Unable to create and attach Egress Only Internet Gateway to VPCId: {0}. Bad or no state in response'.format(vpc_id),
-                             **camel_dict_to_snake_dict(response))
+            module.fail_json(
+                msg="Unable to create and attach Egress Only Internet Gateway to VPCId: {0}. Bad or no state in response".format(
+                    vpc_id
+                ),
+                **camel_dict_to_snake_dict(response),
+            )
 
     return changed, gateway_id
 
@@ -146,45 +156,41 @@ def describe_eigws(module, connection, vpc_id):
     gateway_id = None
 
     try:
-        response = connection.describe_egress_only_internet_gateways(
-            aws_retry=True)
+        response = connection.describe_egress_only_internet_gateways(aws_retry=True)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Could not get list of existing Egress-Only Internet Gateways")
 
-    for eigw in response.get('EgressOnlyInternetGateways', []):
-        for attachment in eigw.get('Attachments', []):
-            if attachment.get('VpcId') == vpc_id and attachment.get('State') in ('attached', 'attaching'):
-                gateway_id = eigw.get('EgressOnlyInternetGatewayId')
+    for eigw in response.get("EgressOnlyInternetGateways", []):
+        for attachment in eigw.get("Attachments", []):
+            if attachment.get("VpcId") == vpc_id and attachment.get("State") in ("attached", "attaching"):
+                gateway_id = eigw.get("EgressOnlyInternetGatewayId")
 
     return gateway_id
 
 
 def main():
-    argument_spec = dict(
-        vpc_id=dict(required=True),
-        state=dict(default='present', choices=['present', 'absent'])
-    )
+    argument_spec = dict(vpc_id=dict(required=True), state=dict(default="present", choices=["present", "absent"]))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
-    connection = module.client('ec2', retry_decorator=retry_decorator)
+    connection = module.client("ec2", retry_decorator=retry_decorator)
 
-    vpc_id = module.params.get('vpc_id')
-    state = module.params.get('state')
+    vpc_id = module.params.get("vpc_id")
+    state = module.params.get("state")
 
     eigw_id = describe_eigws(module, connection, vpc_id)
 
     result = dict(gateway_id=eigw_id, vpc_id=vpc_id)
     changed = False
 
-    if state == 'present' and not eigw_id:
-        changed, result['gateway_id'] = create_eigw(module, connection, vpc_id)
-    elif state == 'absent' and eigw_id:
+    if state == "present" and not eigw_id:
+        changed, result["gateway_id"] = create_eigw(module, connection, vpc_id)
+    elif state == "absent" and eigw_id:
         changed = delete_eigw(module, connection, eigw_id)
 
     module.exit_json(changed=changed, **result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

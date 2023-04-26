@@ -112,24 +112,24 @@ def list_apps(ebs, app_name, module):
 
 
 def check_app(ebs, app, module):
-    app_name = module.params['app_name']
-    description = module.params['description']
-    state = module.params['state']
-    terminate_by_force = module.params['terminate_by_force']
+    app_name = module.params["app_name"]
+    description = module.params["description"]
+    state = module.params["state"]
+    terminate_by_force = module.params["terminate_by_force"]
 
     result = {}
 
-    if state == 'present' and app is None:
+    if state == "present" and app is None:
         result = dict(changed=True, output="App would be created")
-    elif state == 'present' and app.get("Description", None) != description:
+    elif state == "present" and app.get("Description", None) != description:
         result = dict(changed=True, output="App would be updated", app=app)
-    elif state == 'present' and app.get("Description", None) == description:
+    elif state == "present" and app.get("Description", None) == description:
         result = dict(changed=False, output="App is up-to-date", app=app)
-    elif state == 'absent' and app is None:
+    elif state == "absent" and app is None:
         result = dict(changed=False, output="App does not exist", app={})
-    elif state == 'absent' and app is not None:
+    elif state == "absent" and app is not None:
         result = dict(changed=True, output="App will be deleted", app=app)
-    elif state == 'absent' and app is not None and terminate_by_force is True:
+    elif state == "absent" and app is not None and terminate_by_force is True:
         result = dict(changed=True, output="Running environments terminated before the App will be deleted", app=app)
 
     module.exit_json(**result)
@@ -145,37 +145,36 @@ def filter_empty(**kwargs):
 
 def main():
     argument_spec = dict(
-        app_name=dict(aliases=['name'], type='str', required=False),
+        app_name=dict(aliases=["name"], type="str", required=False),
         description=dict(),
-        state=dict(choices=['present', 'absent'], default='present'),
-        terminate_by_force=dict(type='bool', default=False, required=False)
+        state=dict(choices=["present", "absent"], default="present"),
+        terminate_by_force=dict(type="bool", default=False, required=False),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    app_name = module.params['app_name']
-    description = module.params['description']
-    state = module.params['state']
-    terminate_by_force = module.params['terminate_by_force']
+    app_name = module.params["app_name"]
+    description = module.params["description"]
+    state = module.params["state"]
+    terminate_by_force = module.params["terminate_by_force"]
 
     if app_name is None:
         module.fail_json(msg='Module parameter "app_name" is required')
 
     result = {}
 
-    ebs = module.client('elasticbeanstalk')
+    ebs = module.client("elasticbeanstalk")
 
     app = describe_app(ebs, app_name, module)
 
     if module.check_mode:
         check_app(ebs, app, module)
-        module.fail_json(msg='ASSERTION FAILURE: check_app() should not return control.')
+        module.fail_json(msg="ASSERTION FAILURE: check_app() should not return control.")
 
-    if state == 'present':
+    if state == "present":
         if app is None:
             try:
-                create_app = ebs.create_application(**filter_empty(ApplicationName=app_name,
-                                                    Description=description))
+                create_app = ebs.create_application(**filter_empty(ApplicationName=app_name, Description=description))
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Could not create application")
 
@@ -200,7 +199,7 @@ def main():
 
     else:
         if app is None:
-            result = dict(changed=False, output='Application not found', app={})
+            result = dict(changed=False, output="Application not found", app={})
         else:
             try:
                 if terminate_by_force:
@@ -209,9 +208,12 @@ def main():
                 else:
                     ebs.delete_application(ApplicationName=app_name)
                 changed = True
-            except is_boto3_error_message('It is currently pending deletion'):
+            except is_boto3_error_message("It is currently pending deletion"):
                 changed = False
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            except (
+                botocore.exceptions.ClientError,
+                botocore.exceptions.BotoCoreError,
+            ) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Cannot terminate app")
 
             result = dict(changed=changed, app=app)
@@ -219,5 +221,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -258,29 +258,29 @@ class EcsExecManager:
 
     def __init__(self, module):
         self.module = module
-        self.ecs = module.client('ecs')
-        self.ec2 = module.client('ec2')
+        self.ecs = module.client("ecs")
+        self.ec2 = module.client("ec2")
 
     def format_network_configuration(self, network_config):
         result = dict()
-        if 'subnets' in network_config:
-            result['subnets'] = network_config['subnets']
+        if "subnets" in network_config:
+            result["subnets"] = network_config["subnets"]
         else:
             self.module.fail_json(msg="Network configuration must include subnets")
-        if 'security_groups' in network_config:
-            groups = network_config['security_groups']
-            if any(not sg.startswith('sg-') for sg in groups):
+        if "security_groups" in network_config:
+            groups = network_config["security_groups"]
+            if any(not sg.startswith("sg-") for sg in groups):
                 try:
-                    vpc_id = self.ec2.describe_subnets(SubnetIds=[result['subnets'][0]])['Subnets'][0]['VpcId']
+                    vpc_id = self.ec2.describe_subnets(SubnetIds=[result["subnets"][0]])["Subnets"][0]["VpcId"]
                     groups = get_ec2_security_group_ids_from_names(groups, self.ec2, vpc_id)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg="Couldn't look up security groups")
-            result['securityGroups'] = groups
-        if 'assign_public_ip' in network_config:
-            if network_config['assign_public_ip'] is True:
-                result['assignPublicIp'] = "ENABLED"
+            result["securityGroups"] = groups
+        if "assign_public_ip" in network_config:
+            if network_config["assign_public_ip"] is True:
+                result["assignPublicIp"] = "ENABLED"
             else:
-                result['assignPublicIp'] = "DISABLED"
+                result["assignPublicIp"] = "DISABLED"
 
         return dict(awsvpcConfiguration=result)
 
@@ -288,10 +288,10 @@ class EcsExecManager:
         response = self.ecs.list_tasks(
             cluster=cluster_name,
             family=service_name,
-            desiredStatus=status
+            desiredStatus=status,
         )
-        if len(response['taskArns']) > 0:
-            for c in response['taskArns']:
+        if len(response["taskArns"]) > 0:
+            for c in response["taskArns"]:
                 if c.endswith(service_name):
                     return c
         return None
@@ -299,14 +299,17 @@ class EcsExecManager:
     def run_task(self, cluster, task_definition, overrides, count, startedBy, launch_type, tags):
         if overrides is None:
             overrides = dict()
-        params = dict(cluster=cluster, taskDefinition=task_definition,
-                      overrides=overrides, count=count, startedBy=startedBy)
-        if self.module.params['network_configuration']:
-            params['networkConfiguration'] = self.format_network_configuration(self.module.params['network_configuration'])
+        params = dict(
+            cluster=cluster, taskDefinition=task_definition, overrides=overrides, count=count, startedBy=startedBy
+        )
+        if self.module.params["network_configuration"]:
+            params["networkConfiguration"] = self.format_network_configuration(
+                self.module.params["network_configuration"]
+            )
         if launch_type:
-            params['launchType'] = launch_type
+            params["launchType"] = launch_type
         if tags:
-            params['tags'] = ansible_dict_to_boto3_tag_list(tags, 'key', 'value')
+            params["tags"] = ansible_dict_to_boto3_tag_list(tags, "key", "value")
 
             # TODO: need to check if long arn format enabled.
         try:
@@ -314,168 +317,164 @@ class EcsExecManager:
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Couldn't run task")
         # include tasks and failures
-        return response['tasks']
+        return response["tasks"]
 
     def start_task(self, cluster, task_definition, overrides, container_instances, startedBy, tags):
         args = dict()
         if cluster:
-            args['cluster'] = cluster
+            args["cluster"] = cluster
         if task_definition:
-            args['taskDefinition'] = task_definition
+            args["taskDefinition"] = task_definition
         if overrides:
-            args['overrides'] = overrides
+            args["overrides"] = overrides
         if container_instances:
-            args['containerInstances'] = container_instances
+            args["containerInstances"] = container_instances
         if startedBy:
-            args['startedBy'] = startedBy
-        if self.module.params['network_configuration']:
-            args['networkConfiguration'] = self.format_network_configuration(self.module.params['network_configuration'])
+            args["startedBy"] = startedBy
+        if self.module.params["network_configuration"]:
+            args["networkConfiguration"] = self.format_network_configuration(
+                self.module.params["network_configuration"]
+            )
         if tags:
-            args['tags'] = ansible_dict_to_boto3_tag_list(tags, 'key', 'value')
+            args["tags"] = ansible_dict_to_boto3_tag_list(tags, "key", "value")
         try:
             response = self.ecs.start_task(**args)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Couldn't start task")
         # include tasks and failures
-        return response['tasks']
+        return response["tasks"]
 
     def stop_task(self, cluster, task):
         response = self.ecs.stop_task(cluster=cluster, task=task)
-        return response['task']
+        return response["task"]
 
     def ecs_task_long_format_enabled(self):
-        account_support = self.ecs.list_account_settings(name='taskLongArnFormat', effectiveSettings=True)
-        return account_support['settings'][0]['value'] == 'enabled'
+        account_support = self.ecs.list_account_settings(name="taskLongArnFormat", effectiveSettings=True)
+        return account_support["settings"][0]["value"] == "enabled"
 
 
 def main():
     argument_spec = dict(
-        operation=dict(required=True, choices=['run', 'start', 'stop']),
-        cluster=dict(required=False, type='str', default='default'),  # R S P
-        task_definition=dict(required=False, type='str'),  # R* S*
-        overrides=dict(required=False, type='dict'),  # R S
-        count=dict(required=False, type='int'),  # R
-        task=dict(required=False, type='str'),  # P*
-        container_instances=dict(required=False, type='list', elements='str'),  # S*
-        started_by=dict(required=False, type='str'),  # R S
-        network_configuration=dict(required=False, type='dict'),
-        launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
-        tags=dict(required=False, type='dict', aliases=['resource_tags']),
-        wait=dict(required=False, default=False, type='bool'),
+        operation=dict(required=True, choices=["run", "start", "stop"]),
+        cluster=dict(required=False, type="str", default="default"),  # R S P
+        task_definition=dict(required=False, type="str"),  # R* S*
+        overrides=dict(required=False, type="dict"),  # R S
+        count=dict(required=False, type="int"),  # R
+        task=dict(required=False, type="str"),  # P*
+        container_instances=dict(required=False, type="list", elements="str"),  # S*
+        started_by=dict(required=False, type="str"),  # R S
+        network_configuration=dict(required=False, type="dict"),
+        launch_type=dict(required=False, choices=["EC2", "FARGATE"]),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
+        wait=dict(required=False, default=False, type="bool"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True,
-                              required_if=[
-                                  ('launch_type', 'FARGATE', ['network_configuration']),
-                                  ('operation', 'run', ['task_definition']),
-                                  ('operation', 'start', [
-                                      'task_definition',
-                                      'container_instances'
-                                  ]),
-                                  ('operation', 'stop', ['task_definition', 'task']),
-                              ])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=[
+            ("launch_type", "FARGATE", ["network_configuration"]),
+            ("operation", "run", ["task_definition"]),
+            ("operation", "start", ["task_definition", "container_instances"]),
+            ("operation", "stop", ["task_definition", "task"]),
+        ],
+    )
 
     # Validate Inputs
-    if module.params['operation'] == 'run':
-        task_to_list = module.params['task_definition']
+    if module.params["operation"] == "run":
+        task_to_list = module.params["task_definition"]
         status_type = "RUNNING"
 
-    if module.params['operation'] == 'start':
-        task_to_list = module.params['task']
+    if module.params["operation"] == "start":
+        task_to_list = module.params["task"]
         status_type = "RUNNING"
 
-    if module.params['operation'] == 'stop':
-        task_to_list = module.params['task_definition']
+    if module.params["operation"] == "stop":
+        task_to_list = module.params["task_definition"]
         status_type = "STOPPED"
 
     service_mgr = EcsExecManager(module)
 
-    if module.params['tags']:
+    if module.params["tags"]:
         if not service_mgr.ecs_task_long_format_enabled():
             module.fail_json(msg="Cannot set task tags: long format task arns are required to set tags")
 
-    existing = service_mgr.list_tasks(module.params['cluster'], task_to_list, status_type)
+    existing = service_mgr.list_tasks(module.params["cluster"], task_to_list, status_type)
 
     results = dict(changed=False)
-    if module.params['operation'] == 'run':
+    if module.params["operation"] == "run":
         if existing:
             # TBD - validate the rest of the details
-            results['task'] = existing
+            results["task"] = existing
         else:
             if not module.check_mode:
-
                 # run_task returns a list of tasks created
                 tasks = service_mgr.run_task(
-                    module.params['cluster'],
-                    module.params['task_definition'],
-                    module.params['overrides'],
-                    module.params['count'],
-                    module.params['started_by'],
-                    module.params['launch_type'],
-                    module.params['tags'],
+                    module.params["cluster"],
+                    module.params["task_definition"],
+                    module.params["overrides"],
+                    module.params["count"],
+                    module.params["started_by"],
+                    module.params["launch_type"],
+                    module.params["tags"],
                 )
 
                 # Wait for task(s) to be running prior to exiting
-                if module.params['wait']:
-
-                    waiter = service_mgr.ecs.get_waiter('tasks_running')
+                if module.params["wait"]:
+                    waiter = service_mgr.ecs.get_waiter("tasks_running")
                     try:
                         waiter.wait(
-                            tasks=[task['taskArn'] for task in tasks],
-                            cluster=module.params['cluster'],
+                            tasks=[task["taskArn"] for task in tasks],
+                            cluster=module.params["cluster"],
                         )
                     except botocore.exceptions.WaiterError as e:
-                        module.fail_json_aws(e, 'Timeout waiting for tasks to run')
+                        module.fail_json_aws(e, "Timeout waiting for tasks to run")
 
-                results['task'] = tasks
+                results["task"] = tasks
 
-            results['changed'] = True
+            results["changed"] = True
 
-    elif module.params['operation'] == 'start':
+    elif module.params["operation"] == "start":
         if existing:
             # TBD - validate the rest of the details
-            results['task'] = existing
+            results["task"] = existing
         else:
             if not module.check_mode:
-                results['task'] = service_mgr.start_task(
-                    module.params['cluster'],
-                    module.params['task_definition'],
-                    module.params['overrides'],
-                    module.params['container_instances'],
-                    module.params['started_by'],
-                    module.params['tags'],
+                results["task"] = service_mgr.start_task(
+                    module.params["cluster"],
+                    module.params["task_definition"],
+                    module.params["overrides"],
+                    module.params["container_instances"],
+                    module.params["started_by"],
+                    module.params["tags"],
                 )
 
-            results['changed'] = True
+            results["changed"] = True
 
-    elif module.params['operation'] == 'stop':
+    elif module.params["operation"] == "stop":
         if existing:
-            results['task'] = existing
+            results["task"] = existing
         else:
             if not module.check_mode:
                 # it exists, so we should delete it and mark changed.
                 # return info about the cluster deleted
-                results['task'] = service_mgr.stop_task(
-                    module.params['cluster'],
-                    module.params['task']
-                )
+                results["task"] = service_mgr.stop_task(module.params["cluster"], module.params["task"])
 
                 # Wait for task to be stopped prior to exiting
-                if module.params['wait']:
-
-                    waiter = service_mgr.ecs.get_waiter('tasks_stopped')
+                if module.params["wait"]:
+                    waiter = service_mgr.ecs.get_waiter("tasks_stopped")
                     try:
                         waiter.wait(
-                            tasks=[module.params['task']],
-                            cluster=module.params['cluster'],
+                            tasks=[module.params["task"]],
+                            cluster=module.params["cluster"],
                         )
                     except botocore.exceptions.WaiterError as e:
-                        module.fail_json_aws(e, 'Timeout waiting for task to stop')
+                        module.fail_json_aws(e, "Timeout waiting for task to stop")
 
-            results['changed'] = True
+            results["changed"] = True
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

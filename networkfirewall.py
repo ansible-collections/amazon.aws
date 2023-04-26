@@ -274,29 +274,28 @@ from ansible_collections.community.aws.plugins.module_utils.networkfirewall impo
 
 
 def main():
-
     argument_spec = dict(
-        name=dict(type='str', required=False, aliases=['firewall_name']),
-        arn=dict(type='str', required=False, aliases=['firewall_arn']),
-        state=dict(type='str', required=False, default='present', choices=['present', 'absent']),
-        description=dict(type='str', required=False),
-        tags=dict(type='dict', required=False, aliases=['resource_tags']),
-        purge_tags=dict(type='bool', required=False, default=True),
-        wait=dict(type='bool', required=False, default=True),
-        wait_timeout=dict(type='int', required=False),
-        subnet_change_protection=dict(type='bool', required=False),
-        policy_change_protection=dict(type='bool', required=False, aliases=['firewall_policy_change_protection']),
-        delete_protection=dict(type='bool', required=False),
-        subnets=dict(type='list', elements='str', required=False),
-        purge_subnets=dict(type='bool', required=False, default=True),
-        policy=dict(type='str', required=False, aliases=['firewall_policy_arn']),
+        name=dict(type="str", required=False, aliases=["firewall_name"]),
+        arn=dict(type="str", required=False, aliases=["firewall_arn"]),
+        state=dict(type="str", required=False, default="present", choices=["present", "absent"]),
+        description=dict(type="str", required=False),
+        tags=dict(type="dict", required=False, aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", required=False, default=True),
+        wait=dict(type="bool", required=False, default=True),
+        wait_timeout=dict(type="int", required=False),
+        subnet_change_protection=dict(type="bool", required=False),
+        policy_change_protection=dict(type="bool", required=False, aliases=["firewall_policy_change_protection"]),
+        delete_protection=dict(type="bool", required=False),
+        subnets=dict(type="list", elements="str", required=False),
+        purge_subnets=dict(type="bool", required=False, default=True),
+        policy=dict(type="str", required=False, aliases=["firewall_policy_arn"]),
     )
 
     mutually_exclusive = [
-        ('arn', 'name',)
+        ["arn", "name"],
     ]
     required_one_of = [
-        ('arn', 'name',)
+        ["arn", "name"],
     ]
 
     module = AnsibleAWSModule(
@@ -306,30 +305,30 @@ def main():
         required_one_of=required_one_of,
     )
 
-    arn = module.params.get('arn')
-    name = module.params.get('name')
-    state = module.params.get('state')
+    arn = module.params.get("arn")
+    name = module.params.get("name")
+    state = module.params.get("state")
 
     manager = NetworkFirewallManager(module, name=name, arn=arn)
-    manager.set_wait(module.params.get('wait', None))
-    manager.set_wait_timeout(module.params.get('wait_timeout', None))
+    manager.set_wait(module.params.get("wait", None))
+    manager.set_wait_timeout(module.params.get("wait_timeout", None))
 
-    if state == 'absent':
-        manager.set_delete_protection(module.params.get('delete_protection', None))
+    if state == "absent":
+        manager.set_delete_protection(module.params.get("delete_protection", None))
         manager.delete()
     else:
         if not manager.original_resource:
-            if not module.params.get('subnets', None):
-                module.fail_json('The subnets parameter must be provided on creation.')
-            if not module.params.get('policy', None):
-                module.fail_json('The policy parameter must be provided on creation.')
-        manager.set_description(module.params.get('description', None))
-        manager.set_tags(module.params.get('tags', None), module.params.get('purge_tags', None))
-        manager.set_subnet_change_protection(module.params.get('subnet_change_protection', None))
-        manager.set_policy_change_protection(module.params.get('policy_change_protection', None))
-        manager.set_delete_protection(module.params.get('delete_protection', None))
-        manager.set_subnets(module.params.get('subnets', None), module.params.get('purge_subnets', None))
-        manager.set_policy(module.params.get('policy', None))
+            if not module.params.get("subnets", None):
+                module.fail_json("The subnets parameter must be provided on creation.")
+            if not module.params.get("policy", None):
+                module.fail_json("The policy parameter must be provided on creation.")
+        manager.set_description(module.params.get("description", None))
+        manager.set_tags(module.params.get("tags", None), module.params.get("purge_tags", None))
+        manager.set_subnet_change_protection(module.params.get("subnet_change_protection", None))
+        manager.set_policy_change_protection(module.params.get("policy_change_protection", None))
+        manager.set_delete_protection(module.params.get("delete_protection", None))
+        manager.set_subnets(module.params.get("subnets", None), module.params.get("purge_subnets", None))
+        manager.set_policy(module.params.get("policy", None))
         manager.flush_changes()
 
     results = dict(
@@ -341,9 +340,9 @@ def main():
             before=manager.original_resource,
             after=manager.updated_resource,
         )
-        results['diff'] = diff
+        results["diff"] = diff
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

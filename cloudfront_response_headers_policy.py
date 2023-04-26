@@ -155,21 +155,20 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 class CloudfrontResponseHeadersPolicyService(object):
-
     def __init__(self, module):
         self.module = module
-        self.client = module.client('cloudfront')
+        self.client = module.client("cloudfront")
         self.check_mode = module.check_mode
 
     def find_response_headers_policy(self, name):
         try:
-            policies = self.client.list_response_headers_policies()['ResponseHeadersPolicyList']['Items']
+            policies = self.client.list_response_headers_policies()["ResponseHeadersPolicyList"]["Items"]
 
             for policy in policies:
-                if policy['ResponseHeadersPolicy']['ResponseHeadersPolicyConfig']['Name'] == name:
-                    policy_id = policy['ResponseHeadersPolicy']['Id']
+                if policy["ResponseHeadersPolicy"]["ResponseHeadersPolicyConfig"]["Name"] == name:
+                    policy_id = policy["ResponseHeadersPolicy"]["Id"]
                     # as the list_ request does not contain the Etag (which we need), we need to do another get_ request here
-                    matching_policy = self.client.get_response_headers_policy(Id=policy['ResponseHeadersPolicy']['Id'])
+                    matching_policy = self.client.get_response_headers_policy(Id=policy["ResponseHeadersPolicy"]["Id"])
                     break
                 else:
                     matching_policy = None
@@ -183,17 +182,17 @@ class CloudfrontResponseHeadersPolicyService(object):
         security_headers_config = snake_dict_to_camel_dict(security_headers_config, capitalize_first=True)
 
         # Little helper for turning xss_protection into XSSProtection and not into XssProtection
-        if 'XssProtection' in security_headers_config:
-            security_headers_config['XSSProtection'] = security_headers_config.pop('XssProtection')
+        if "XssProtection" in security_headers_config:
+            security_headers_config["XSSProtection"] = security_headers_config.pop("XssProtection")
 
         custom_headers_config = snake_dict_to_camel_dict(custom_headers_config, capitalize_first=True)
 
         config = {
-            'Name': name,
-            'Comment': comment,
-            'CorsConfig': self.insert_quantities(cors_config),
-            'SecurityHeadersConfig': security_headers_config,
-            'CustomHeadersConfig': self.insert_quantities(custom_headers_config)
+            "Name": name,
+            "Comment": comment,
+            "CorsConfig": self.insert_quantities(cors_config),
+            "SecurityHeadersConfig": security_headers_config,
+            "CustomHeadersConfig": self.insert_quantities(custom_headers_config),
         }
 
         config = {k: v for k, v in config.items() if v}
@@ -212,14 +211,16 @@ class CloudfrontResponseHeadersPolicyService(object):
             except (ClientError, BotoCoreError) as e:
                 self.module.fail_json_aws(e, msg="Error creating policy")
         else:
-            policy_id = matching_policy['ResponseHeadersPolicy']['Id']
-            etag = matching_policy['ETag']
+            policy_id = matching_policy["ResponseHeadersPolicy"]["Id"]
+            etag = matching_policy["ETag"]
             try:
-                result = self.client.update_response_headers_policy(Id=policy_id, IfMatch=etag, ResponseHeadersPolicyConfig=config)
+                result = self.client.update_response_headers_policy(
+                    Id=policy_id, IfMatch=etag, ResponseHeadersPolicyConfig=config
+                )
 
-                changed_time = result['ResponseHeadersPolicy']['LastModifiedTime']
+                changed_time = result["ResponseHeadersPolicy"]["LastModifiedTime"]
                 seconds = 3  # threshhold for returned timestamp age
-                seconds_ago = (datetime.datetime.now(changed_time.tzinfo) - datetime.timedelta(0, seconds))
+                seconds_ago = datetime.datetime.now(changed_time.tzinfo) - datetime.timedelta(0, seconds)
 
                 # consider change made by this execution of the module if returned timestamp was very recent
                 if changed_time > seconds_ago:
@@ -235,8 +236,8 @@ class CloudfrontResponseHeadersPolicyService(object):
         if matching_policy is None:
             self.module.exit_json(msg="Didn't find a matching policy by that name, not deleting")
         else:
-            policy_id = matching_policy['ResponseHeadersPolicy']['Id']
-            etag = matching_policy['ETag']
+            policy_id = matching_policy["ResponseHeadersPolicy"]["Id"]
+            etag = matching_policy["ETag"]
             if self.check_mode:
                 result = {}
             else:
@@ -251,43 +252,45 @@ class CloudfrontResponseHeadersPolicyService(object):
     @staticmethod
     def insert_quantities(dict_with_items):
         # Items on top level case
-        if 'Items' in dict_with_items and isinstance(dict_with_items['Items'], list):
-            dict_with_items['Quantity'] = len(dict_with_items['Items'])
+        if "Items" in dict_with_items and isinstance(dict_with_items["Items"], list):
+            dict_with_items["Quantity"] = len(dict_with_items["Items"])
 
         # Items on second level case
         for k, v in dict_with_items.items():
-            if isinstance(v, dict) and 'Items' in v:
-                v['Quantity'] = len(v['Items'])
+            if isinstance(v, dict) and "Items" in v:
+                v["Quantity"] = len(v["Items"])
 
         return dict_with_items
 
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        comment=dict(type='str'),
-        cors_config=dict(type='dict', default=dict()),
-        security_headers_config=dict(type='dict', default=dict()),
-        custom_headers_config=dict(type='dict', default=dict()),
-        state=dict(choices=['present', 'absent'], type='str', default='present'),
+        name=dict(required=True, type="str"),
+        comment=dict(type="str"),
+        cors_config=dict(type="dict", default=dict()),
+        security_headers_config=dict(type="dict", default=dict()),
+        custom_headers_config=dict(type="dict", default=dict()),
+        state=dict(choices=["present", "absent"], type="str", default="present"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    name = module.params.get('name')
-    comment = module.params.get('comment', '')
-    cors_config = module.params.get('cors_config')
-    security_headers_config = module.params.get('security_headers_config')
-    custom_headers_config = module.params.get('custom_headers_config')
-    state = module.params.get('state')
+    name = module.params.get("name")
+    comment = module.params.get("comment", "")
+    cors_config = module.params.get("cors_config")
+    security_headers_config = module.params.get("security_headers_config")
+    custom_headers_config = module.params.get("custom_headers_config")
+    state = module.params.get("state")
 
     service = CloudfrontResponseHeadersPolicyService(module)
 
-    if state == 'absent':
+    if state == "absent":
         service.delete_response_header_policy(name)
     else:
-        service.create_response_header_policy(name, comment, cors_config, security_headers_config, custom_headers_config)
+        service.create_response_header_policy(
+            name, comment, cors_config, security_headers_config, custom_headers_config
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

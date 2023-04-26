@@ -129,12 +129,12 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def get_domain(module, client):
-    domain_name = module.params.get('domain_name')
+    domain_name = module.params.get("domain_name")
     result = {}
     try:
-        result['domain'] = get_domain_name(client, domain_name)
-        result['path_mappings'] = get_domain_mappings(client, domain_name)
-    except is_boto3_error_code('NotFoundException'):
+        result["domain"] = get_domain_name(client, domain_name)
+        result["path_mappings"] = get_domain_mappings(client, domain_name)
+    except is_boto3_error_code("NotFoundException"):
         return None
     except (ClientError, BotoCoreError, EndpointConnectionError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="getting API GW domain")
@@ -142,28 +142,28 @@ def get_domain(module, client):
 
 
 def create_domain(module, client):
-    path_mappings = module.params.get('domain_mappings', [])
-    domain_name = module.params.get('domain_name')
-    result = {'domain': {}, 'path_mappings': []}
+    path_mappings = module.params.get("domain_mappings", [])
+    domain_name = module.params.get("domain_name")
+    result = {"domain": {}, "path_mappings": []}
 
     try:
-        result['domain'] = create_domain_name(
+        result["domain"] = create_domain_name(
             module,
             client,
             domain_name,
-            module.params.get('certificate_arn'),
-            module.params.get('endpoint_type'),
-            module.params.get('security_policy')
+            module.params.get("certificate_arn"),
+            module.params.get("endpoint_type"),
+            module.params.get("security_policy"),
         )
 
         for mapping in path_mappings:
-            base_path = mapping.get('base_path', '')
-            rest_api_id = mapping.get('rest_api_id')
-            stage = mapping.get('stage')
+            base_path = mapping.get("base_path", "")
+            rest_api_id = mapping.get("rest_api_id")
+            stage = mapping.get("stage")
             if rest_api_id is None or stage is None:
-                module.fail_json('Every domain mapping needs a rest_api_id and stage name')
+                module.fail_json("Every domain mapping needs a rest_api_id and stage name")
 
-            result['path_mappings'].append(add_domain_mapping(client, domain_name, base_path, rest_api_id, stage))
+            result["path_mappings"].append(add_domain_mapping(client, domain_name, base_path, rest_api_id, stage))
 
     except (ClientError, BotoCoreError, EndpointConnectionError) as e:
         module.fail_json_aws(e, msg="creating API GW domain")
@@ -171,54 +171,56 @@ def create_domain(module, client):
 
 
 def update_domain(module, client, existing_domain):
-    domain_name = module.params.get('domain_name')
+    domain_name = module.params.get("domain_name")
     result = existing_domain
-    result['updated'] = False
+    result["updated"] = False
 
-    domain = existing_domain.get('domain')
+    domain = existing_domain.get("domain")
     # Compare only relevant set of domain arguments.
     # As get_domain_name gathers all kind of state information that can't be set anyways.
     # Also this module doesn't support custom TLS cert setup params as they are kind of deprecated already and would increase complexity.
     existing_domain_settings = {
-        'certificate_arn': domain.get('certificate_arn'),
-        'security_policy': domain.get('security_policy'),
-        'endpoint_type': domain.get('endpoint_configuration').get('types')[0]
+        "certificate_arn": domain.get("certificate_arn"),
+        "security_policy": domain.get("security_policy"),
+        "endpoint_type": domain.get("endpoint_configuration").get("types")[0],
     }
     specified_domain_settings = {
-        'certificate_arn': module.params.get('certificate_arn'),
-        'security_policy': module.params.get('security_policy'),
-        'endpoint_type': module.params.get('endpoint_type')
+        "certificate_arn": module.params.get("certificate_arn"),
+        "security_policy": module.params.get("security_policy"),
+        "endpoint_type": module.params.get("endpoint_type"),
     }
 
     if specified_domain_settings != existing_domain_settings:
         try:
-            result['domain'] = update_domain_name(client, domain_name, **snake_dict_to_camel_dict(specified_domain_settings))
-            result['updated'] = True
+            result["domain"] = update_domain_name(
+                client, domain_name, **snake_dict_to_camel_dict(specified_domain_settings)
+            )
+            result["updated"] = True
         except (ClientError, BotoCoreError, EndpointConnectionError) as e:
             module.fail_json_aws(e, msg="updating API GW domain")
 
-    existing_mappings = copy.deepcopy(existing_domain.get('path_mappings', []))
+    existing_mappings = copy.deepcopy(existing_domain.get("path_mappings", []))
     # Cleanout `base_path: "(none)"` elements from dicts as those won't match with specified mappings
     for mapping in existing_mappings:
-        if mapping.get('base_path', 'missing') == '(none)':
-            mapping.pop('base_path')
+        if mapping.get("base_path", "missing") == "(none)":
+            mapping.pop("base_path")
 
-    specified_mappings = copy.deepcopy(module.params.get('domain_mappings', []))
+    specified_mappings = copy.deepcopy(module.params.get("domain_mappings", []))
     # Cleanout `base_path: ""` elements from dicts as those won't match with existing mappings
     for mapping in specified_mappings:
-        if mapping.get('base_path', 'missing') == '':
-            mapping.pop('base_path')
+        if mapping.get("base_path", "missing") == "":
+            mapping.pop("base_path")
 
     if specified_mappings != existing_mappings:
         try:
             # When lists missmatch delete all existing mappings before adding new ones as specified
-            for mapping in existing_domain.get('path_mappings', []):
-                delete_domain_mapping(client, domain_name, mapping['base_path'])
-            for mapping in module.params.get('domain_mappings', []):
-                result['path_mappings'] = add_domain_mapping(
-                    client, domain_name, mapping.get('base_path', ''), mapping.get('rest_api_id'), mapping.get('stage')
+            for mapping in existing_domain.get("path_mappings", []):
+                delete_domain_mapping(client, domain_name, mapping["base_path"])
+            for mapping in module.params.get("domain_mappings", []):
+                result["path_mappings"] = add_domain_mapping(
+                    client, domain_name, mapping.get("base_path", ""), mapping.get("rest_api_id"), mapping.get("stage")
                 )
-                result['updated'] = True
+                result["updated"] = True
         except (ClientError, BotoCoreError, EndpointConnectionError) as e:
             module.fail_json_aws(e, msg="updating API GW domain mapping")
 
@@ -226,7 +228,7 @@ def update_domain(module, client, existing_domain):
 
 
 def delete_domain(module, client):
-    domain_name = module.params.get('domain_name')
+    domain_name = module.params.get("domain_name")
     try:
         result = delete_domain_name(client, domain_name)
     except (ClientError, BotoCoreError, EndpointConnectionError) as e:
@@ -244,19 +246,19 @@ def get_domain_name(client, domain_name):
 
 @AWSRetry.jittered_backoff(**retry_params)
 def get_domain_mappings(client, domain_name):
-    return client.get_base_path_mappings(domainName=domain_name, limit=200).get('items', [])
+    return client.get_base_path_mappings(domainName=domain_name, limit=200).get("items", [])
 
 
 @AWSRetry.jittered_backoff(**retry_params)
 def create_domain_name(module, client, domain_name, certificate_arn, endpoint_type, security_policy):
-    endpoint_configuration = {'types': [endpoint_type]}
+    endpoint_configuration = {"types": [endpoint_type]}
 
-    if endpoint_type == 'EDGE':
+    if endpoint_type == "EDGE":
         return client.create_domain_name(
             domainName=domain_name,
             certificateArn=certificate_arn,
             endpointConfiguration=endpoint_configuration,
-            securityPolicy=security_policy
+            securityPolicy=security_policy,
         )
     else:
         # Use regionalCertificateArn for regional domain deploys
@@ -264,13 +266,15 @@ def create_domain_name(module, client, domain_name, certificate_arn, endpoint_ty
             domainName=domain_name,
             regionalCertificateArn=certificate_arn,
             endpointConfiguration=endpoint_configuration,
-            securityPolicy=security_policy
+            securityPolicy=security_policy,
         )
 
 
 @AWSRetry.jittered_backoff(**retry_params)
 def add_domain_mapping(client, domain_name, base_path, rest_api_id, stage):
-    return client.create_base_path_mapping(domainName=domain_name, basePath=base_path, restApiId=rest_api_id, stage=stage)
+    return client.create_base_path_mapping(
+        domainName=domain_name, basePath=base_path, restApiId=rest_api_id, stage=stage
+    )
 
 
 @AWSRetry.jittered_backoff(**retry_params)
@@ -298,29 +302,29 @@ def delete_domain_mapping(client, domain_name, base_path):
 
 def main():
     argument_spec = dict(
-        domain_name=dict(type='str', required=True),
-        certificate_arn=dict(type='str', required=True),
-        security_policy=dict(type='str', default='TLS_1_2', choices=['TLS_1_0', 'TLS_1_2']),
-        endpoint_type=dict(type='str', default='EDGE', choices=['EDGE', 'REGIONAL', 'PRIVATE']),
-        domain_mappings=dict(type='list', required=True, elements='dict'),
-        state=dict(type='str', default='present', choices=['present', 'absent'])
+        domain_name=dict(type="str", required=True),
+        certificate_arn=dict(type="str", required=True),
+        security_policy=dict(type="str", default="TLS_1_2", choices=["TLS_1_0", "TLS_1_2"]),
+        endpoint_type=dict(type="str", default="EDGE", choices=["EDGE", "REGIONAL", "PRIVATE"]),
+        domain_mappings=dict(type="list", required=True, elements="dict"),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=False
+        supports_check_mode=False,
     )
 
-    client = module.client('apigateway')
+    client = module.client("apigateway")
 
-    state = module.params.get('state')
+    state = module.params.get("state")
     changed = False
 
     if state == "present":
         existing_domain = get_domain(module, client)
         if existing_domain is not None:
             result = update_domain(module, client, existing_domain)
-            changed = result['updated']
+            changed = result["updated"]
         else:
             result = create_domain(module, client)
             changed = True
@@ -331,10 +335,10 @@ def main():
     exit_args = {"changed": changed}
 
     if result is not None:
-        exit_args['response'] = result
+        exit_args["response"] = result
 
     module.exit_json(**exit_args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

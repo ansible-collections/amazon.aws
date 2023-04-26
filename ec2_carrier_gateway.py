@@ -159,9 +159,7 @@ class AnsibleEc2Cagw:
 
         cagw = None
         if len(cagws) > 1:
-            self._module.fail_json(
-                msg=f"EC2 returned more than one Carrier Gateway for VPC {vpc_id}, aborting"
-            )
+            self._module.fail_json(msg=f"EC2 returned more than one Carrier Gateway for VPC {vpc_id}, aborting")
         elif cagws:
             cagw = camel_dict_to_snake_dict(cagws[0])
 

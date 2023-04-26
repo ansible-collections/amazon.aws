@@ -267,35 +267,34 @@ def _index_by_key(key, items):
 
 
 class EFSConnection(object):
-
     DEFAULT_WAIT_TIMEOUT_SECONDS = 0
 
-    STATE_CREATING = 'creating'
-    STATE_AVAILABLE = 'available'
-    STATE_DELETING = 'deleting'
-    STATE_DELETED = 'deleted'
+    STATE_CREATING = "creating"
+    STATE_AVAILABLE = "available"
+    STATE_DELETING = "deleting"
+    STATE_DELETED = "deleted"
 
     def __init__(self, module):
-        self.connection = module.client('efs')
+        self.connection = module.client("efs")
         region = module.region
 
         self.module = module
         self.region = region
-        self.wait = module.params.get('wait')
-        self.wait_timeout = module.params.get('wait_timeout')
+        self.wait = module.params.get("wait")
+        self.wait_timeout = module.params.get("wait_timeout")
 
     def get_file_systems(self, **kwargs):
         """
-         Returns generator of file systems including all attributes of FS
+        Returns generator of file systems including all attributes of FS
         """
         items = iterate_all(
-            'FileSystems',
+            "FileSystems",
             self.connection.describe_file_systems,
-            **kwargs
+            **kwargs,
         )
         for item in items:
-            item['Name'] = item['CreationToken']
-            item['CreationTime'] = str(item['CreationTime'])
+            item["Name"] = item["CreationToken"]
+            item["CreationTime"] = str(item["CreationTime"])
             """
             In the time when MountPoint was introduced there was a need to add a suffix of network path before one could use it
             AWS updated it and now there is no need to add a suffix. MountPoint is left for back-compatibility purpose
@@ -303,90 +302,92 @@ class EFSConnection(object):
             AWS documentation is available here:
             https://docs.aws.amazon.com/efs/latest/ug/gs-step-three-connect-to-ec2-instance.html
             """
-            item['MountPoint'] = '.%s.efs.%s.amazonaws.com:/' % (item['FileSystemId'], self.region)
-            item['FilesystemAddress'] = '%s.efs.%s.amazonaws.com:/' % (item['FileSystemId'], self.region)
-            if 'Timestamp' in item['SizeInBytes']:
-                item['SizeInBytes']['Timestamp'] = str(item['SizeInBytes']['Timestamp'])
-            if item['LifeCycleState'] == self.STATE_AVAILABLE:
-                item['Tags'] = self.get_tags(FileSystemId=item['FileSystemId'])
-                item['MountTargets'] = list(self.get_mount_targets(FileSystemId=item['FileSystemId']))
+            item["MountPoint"] = ".%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
+            item["FilesystemAddress"] = "%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
+            if "Timestamp" in item["SizeInBytes"]:
+                item["SizeInBytes"]["Timestamp"] = str(item["SizeInBytes"]["Timestamp"])
+            if item["LifeCycleState"] == self.STATE_AVAILABLE:
+                item["Tags"] = self.get_tags(FileSystemId=item["FileSystemId"])
+                item["MountTargets"] = list(self.get_mount_targets(FileSystemId=item["FileSystemId"]))
             else:
-                item['Tags'] = {}
-                item['MountTargets'] = []
+                item["Tags"] = {}
+                item["MountTargets"] = []
             yield item
 
     def get_tags(self, **kwargs):
         """
-         Returns tag list for selected instance of EFS
+        Returns tag list for selected instance of EFS
         """
-        tags = self.connection.describe_tags(**kwargs)['Tags']
+        tags = self.connection.describe_tags(**kwargs)["Tags"]
         return tags
 
     def get_mount_targets(self, **kwargs):
         """
-         Returns mount targets for selected instance of EFS
+        Returns mount targets for selected instance of EFS
         """
         targets = iterate_all(
-            'MountTargets',
+            "MountTargets",
             self.connection.describe_mount_targets,
-            **kwargs
+            **kwargs,
         )
         for target in targets:
-            if target['LifeCycleState'] == self.STATE_AVAILABLE:
-                target['SecurityGroups'] = list(self.get_security_groups(
-                    MountTargetId=target['MountTargetId']
-                ))
+            if target["LifeCycleState"] == self.STATE_AVAILABLE:
+                target["SecurityGroups"] = list(self.get_security_groups(MountTargetId=target["MountTargetId"]))
             else:
-                target['SecurityGroups'] = []
+                target["SecurityGroups"] = []
             yield target
 
     def get_security_groups(self, **kwargs):
         """
-         Returns security groups for selected instance of EFS
+        Returns security groups for selected instance of EFS
         """
         return iterate_all(
-            'SecurityGroups',
+            "SecurityGroups",
             self.connection.describe_mount_target_security_groups,
-            **kwargs
+            **kwargs,
         )
 
     def get_file_system_id(self, name):
         """
-         Returns ID of instance by instance name
+        Returns ID of instance by instance name
         """
-        info = first_or_default(iterate_all(
-            'FileSystems',
-            self.connection.describe_file_systems,
-            CreationToken=name
-        ))
-        return info and info['FileSystemId'] or None
+        info = first_or_default(
+            iterate_all(
+                "FileSystems",
+                self.connection.describe_file_systems,
+                CreationToken=name,
+            )
+        )
+        return info and info["FileSystemId"] or None
 
     def get_file_system_state(self, name, file_system_id=None):
         """
-         Returns state of filesystem by EFS id/name
+        Returns state of filesystem by EFS id/name
         """
-        info = first_or_default(iterate_all(
-            'FileSystems',
-            self.connection.describe_file_systems,
-            CreationToken=name,
-            FileSystemId=file_system_id
-        ))
-        return info and info['LifeCycleState'] or self.STATE_DELETED
+        info = first_or_default(
+            iterate_all(
+                "FileSystems",
+                self.connection.describe_file_systems,
+                CreationToken=name,
+                FileSystemId=file_system_id,
+            )
+        )
+        return info and info["LifeCycleState"] or self.STATE_DELETED
 
     def get_mount_targets_in_state(self, file_system_id, states=None):
         """
-         Returns states of mount targets of selected EFS with selected state(s) (optional)
+        Returns states of mount targets of selected EFS with selected state(s) (optional)
         """
         targets = iterate_all(
-            'MountTargets',
+            "MountTargets",
             self.connection.describe_mount_targets,
-            FileSystemId=file_system_id
+            FileSystemId=file_system_id,
         )
 
         if states:
             if not isinstance(states, list):
                 states = [states]
-            targets = filter(lambda target: target['LifeCycleState'] in states, targets)
+            targets = filter(lambda target: target["LifeCycleState"] in states, targets)
 
         return list(targets)
 
@@ -394,47 +395,53 @@ class EFSConnection(object):
         """
         Returns throughput mode for selected EFS instance
         """
-        info = first_or_default(iterate_all(
-            'FileSystems',
-            self.connection.describe_file_systems,
-            **kwargs
-        ))
+        info = first_or_default(
+            iterate_all(
+                "FileSystems",
+                self.connection.describe_file_systems,
+                **kwargs,
+            )
+        )
 
-        return info and info['ThroughputMode'] or None
+        return info and info["ThroughputMode"] or None
 
     def get_provisioned_throughput_in_mibps(self, **kwargs):
         """
         Returns throughput mode for selected EFS instance
         """
-        info = first_or_default(iterate_all(
-            'FileSystems',
-            self.connection.describe_file_systems,
-            **kwargs
-        ))
-        return info.get('ProvisionedThroughputInMibps', None)
+        info = first_or_default(
+            iterate_all(
+                "FileSystems",
+                self.connection.describe_file_systems,
+                **kwargs,
+            )
+        )
+        return info.get("ProvisionedThroughputInMibps", None)
 
-    def create_file_system(self, name, performance_mode, encrypt, kms_key_id, throughput_mode, provisioned_throughput_in_mibps):
+    def create_file_system(
+        self, name, performance_mode, encrypt, kms_key_id, throughput_mode, provisioned_throughput_in_mibps
+    ):
         """
-         Creates new filesystem with selected name
+        Creates new filesystem with selected name
         """
         changed = False
         state = self.get_file_system_state(name)
         params = {}
-        params['CreationToken'] = name
-        params['PerformanceMode'] = performance_mode
+        params["CreationToken"] = name
+        params["PerformanceMode"] = performance_mode
         if encrypt:
-            params['Encrypted'] = encrypt
+            params["Encrypted"] = encrypt
         if kms_key_id is not None:
-            params['KmsKeyId'] = kms_key_id
+            params["KmsKeyId"] = kms_key_id
         if throughput_mode:
-            params['ThroughputMode'] = throughput_mode
+            params["ThroughputMode"] = throughput_mode
         if provisioned_throughput_in_mibps:
-            params['ProvisionedThroughputInMibps'] = provisioned_throughput_in_mibps
+            params["ProvisionedThroughputInMibps"] = provisioned_throughput_in_mibps
 
         if state in [self.STATE_DELETING, self.STATE_DELETED]:
             wait_for(
                 lambda: self.get_file_system_state(name),
-                self.STATE_DELETED
+                self.STATE_DELETED,
             )
             try:
                 self.connection.create_file_system(**params)
@@ -448,7 +455,7 @@ class EFSConnection(object):
         wait_for(
             lambda: self.get_file_system_state(name),
             self.STATE_AVAILABLE,
-            self.wait_timeout
+            self.wait_timeout,
         )
 
         return changed
@@ -465,14 +472,14 @@ class EFSConnection(object):
             current_throughput = self.get_provisioned_throughput_in_mibps(FileSystemId=fs_id)
             params = dict()
             if throughput_mode and throughput_mode != current_mode:
-                params['ThroughputMode'] = throughput_mode
+                params["ThroughputMode"] = throughput_mode
             if provisioned_throughput_in_mibps and provisioned_throughput_in_mibps != current_throughput:
-                params['ProvisionedThroughputInMibps'] = provisioned_throughput_in_mibps
+                params["ProvisionedThroughputInMibps"] = provisioned_throughput_in_mibps
             if len(params) > 0:
                 wait_for(
                     lambda: self.get_file_system_state(name),
                     self.STATE_AVAILABLE,
-                    self.wait_timeout
+                    self.wait_timeout,
                 )
                 try:
                     self.connection.update_file_system(FileSystemId=fs_id, **params)
@@ -490,11 +497,11 @@ class EFSConnection(object):
         if state in [self.STATE_AVAILABLE, self.STATE_CREATING]:
             fs_id = self.get_file_system_id(name)
             current_policies = self.connection.describe_lifecycle_configuration(FileSystemId=fs_id)
-            if transition_to_ia == 'None':
+            if transition_to_ia == "None":
                 LifecyclePolicies = []
             else:
-                LifecyclePolicies = [{'TransitionToIA': 'AFTER_' + transition_to_ia + '_DAYS'}]
-            if current_policies.get('LifecyclePolicies') != LifecyclePolicies:
+                LifecyclePolicies = [{"TransitionToIA": "AFTER_" + transition_to_ia + "_DAYS"}]
+            if current_policies.get("LifecyclePolicies") != LifecyclePolicies:
                 response = self.connection.put_lifecycle_configuration(
                     FileSystemId=fs_id,
                     LifecyclePolicies=LifecyclePolicies,
@@ -504,20 +511,19 @@ class EFSConnection(object):
 
     def converge_file_system(self, name, tags, purge_tags, targets, throughput_mode, provisioned_throughput_in_mibps):
         """
-         Change attributes (mount targets and tags) of filesystem by name
+        Change attributes (mount targets and tags) of filesystem by name
         """
         result = False
         fs_id = self.get_file_system_id(name)
 
         if tags is not None:
-            tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(self.get_tags(FileSystemId=fs_id)), tags, purge_tags)
+            tags_need_modify, tags_to_delete = compare_aws_tags(
+                boto3_tag_list_to_ansible_dict(self.get_tags(FileSystemId=fs_id)), tags, purge_tags
+            )
 
             if tags_to_delete:
                 try:
-                    self.connection.delete_tags(
-                        FileSystemId=fs_id,
-                        TagKeys=tags_to_delete
-                    )
+                    self.connection.delete_tags(FileSystemId=fs_id, TagKeys=tags_to_delete)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg="Unable to delete tags.")
 
@@ -526,8 +532,7 @@ class EFSConnection(object):
             if tags_need_modify:
                 try:
                     self.connection.create_tags(
-                        FileSystemId=fs_id,
-                        Tags=ansible_dict_to_boto3_tag_list(tags_need_modify)
+                        FileSystemId=fs_id, Tags=ansible_dict_to_boto3_tag_list(tags_need_modify)
                     )
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg="Unable to create tags.")
@@ -538,54 +543,56 @@ class EFSConnection(object):
             incomplete_states = [self.STATE_CREATING, self.STATE_DELETING]
             wait_for(
                 lambda: len(self.get_mount_targets_in_state(fs_id, incomplete_states)),
-                0
+                0,
             )
-            current_targets = _index_by_key('SubnetId', self.get_mount_targets(FileSystemId=fs_id))
-            targets = _index_by_key('SubnetId', targets)
+            current_targets = _index_by_key("SubnetId", self.get_mount_targets(FileSystemId=fs_id))
+            targets = _index_by_key("SubnetId", targets)
 
-            targets_to_create, intersection, targets_to_delete = dict_diff(current_targets,
-                                                                           targets, True)
+            targets_to_create, intersection, targets_to_delete = dict_diff(current_targets, targets, True)
 
             # To modify mount target it should be deleted and created again
-            changed = [sid for sid in intersection if not targets_equal(['SubnetId', 'IpAddress', 'NetworkInterfaceId'],
-                                                                        current_targets[sid], targets[sid])]
+            changed = [
+                sid
+                for sid in intersection
+                if not targets_equal(
+                    ["SubnetId", "IpAddress", "NetworkInterfaceId"], current_targets[sid], targets[sid]
+                )
+            ]
             targets_to_delete = list(targets_to_delete) + changed
             targets_to_create = list(targets_to_create) + changed
 
             if targets_to_delete:
                 for sid in targets_to_delete:
-                    self.connection.delete_mount_target(
-                        MountTargetId=current_targets[sid]['MountTargetId']
-                    )
+                    self.connection.delete_mount_target(MountTargetId=current_targets[sid]["MountTargetId"])
                 wait_for(
                     lambda: len(self.get_mount_targets_in_state(fs_id, incomplete_states)),
-                    0
+                    0,
                 )
                 result = True
 
             if targets_to_create:
                 for sid in targets_to_create:
-                    self.connection.create_mount_target(
-                        FileSystemId=fs_id,
-                        **targets[sid]
-                    )
+                    self.connection.create_mount_target(FileSystemId=fs_id, **targets[sid])
                 wait_for(
                     lambda: len(self.get_mount_targets_in_state(fs_id, incomplete_states)),
                     0,
-                    self.wait_timeout
+                    self.wait_timeout,
                 )
                 result = True
 
             # If no security groups were passed into the module, then do not change it.
-            security_groups_to_update = [sid for sid in intersection if
-                                         'SecurityGroups' in targets[sid] and
-                                         current_targets[sid]['SecurityGroups'] != targets[sid]['SecurityGroups']]
+            security_groups_to_update = [
+                sid
+                for sid in intersection
+                if "SecurityGroups" in targets[sid]
+                and current_targets[sid]["SecurityGroups"] != targets[sid]["SecurityGroups"]
+            ]
 
             if security_groups_to_update:
                 for sid in security_groups_to_update:
                     self.connection.modify_mount_target_security_groups(
-                        MountTargetId=current_targets[sid]['MountTargetId'],
-                        SecurityGroups=targets[sid].get('SecurityGroups', None)
+                        MountTargetId=current_targets[sid]["MountTargetId"],
+                        SecurityGroups=targets[sid].get("SecurityGroups", None),
                     )
                 result = True
 
@@ -593,14 +600,14 @@ class EFSConnection(object):
 
     def delete_file_system(self, name, file_system_id=None):
         """
-         Removes EFS instance by id/name
+        Removes EFS instance by id/name
         """
         result = False
         state = self.get_file_system_state(name, file_system_id)
         if state in [self.STATE_CREATING, self.STATE_AVAILABLE]:
             wait_for(
                 lambda: self.get_file_system_state(name),
-                self.STATE_AVAILABLE
+                self.STATE_AVAILABLE,
             )
             if not file_system_id:
                 file_system_id = self.get_file_system_id(name)
@@ -612,27 +619,27 @@ class EFSConnection(object):
             wait_for(
                 lambda: self.get_file_system_state(name),
                 self.STATE_DELETED,
-                self.wait_timeout
+                self.wait_timeout,
             )
 
         return result
 
     def delete_mount_targets(self, file_system_id):
         """
-         Removes mount targets by EFS id
+        Removes mount targets by EFS id
         """
         wait_for(
             lambda: len(self.get_mount_targets_in_state(file_system_id, self.STATE_CREATING)),
-            0
+            0,
         )
 
         targets = self.get_mount_targets_in_state(file_system_id, self.STATE_AVAILABLE)
         for target in targets:
-            self.connection.delete_mount_target(MountTargetId=target['MountTargetId'])
+            self.connection.delete_mount_target(MountTargetId=target["MountTargetId"])
 
         wait_for(
             lambda: len(self.get_mount_targets_in_state(file_system_id, self.STATE_DELETING)),
-            0
+            0,
         )
 
         return len(targets) > 0
@@ -640,7 +647,7 @@ class EFSConnection(object):
 
 def iterate_all(attr, map_method, **kwargs):
     """
-     Method creates iterator from result set
+    Method creates iterator from result set
     """
     args = dict((key, value) for (key, value) in kwargs.items() if value is not None)
     wait = 1
@@ -649,11 +656,11 @@ def iterate_all(attr, map_method, **kwargs):
             data = map_method(**args)
             for elm in data[attr]:
                 yield elm
-            if 'NextMarker' in data:
-                args['Marker'] = data['Nextmarker']
+            if "NextMarker" in data:
+                args["Marker"] = data["Nextmarker"]
                 continue
             break
-        except is_boto3_error_code('ThrottlingException'):
+        except is_boto3_error_code("ThrottlingException"):
             if wait < 600:
                 sleep(wait)
                 wait = wait * 2
@@ -664,7 +671,7 @@ def iterate_all(attr, map_method, **kwargs):
 
 def targets_equal(keys, a, b):
     """
-     Method compare two mount targets by specified attributes
+    Method compare two mount targets by specified attributes
     """
     for key in keys:
         if key in b and a[key] != b[key]:
@@ -675,7 +682,7 @@ def targets_equal(keys, a, b):
 
 def dict_diff(dict1, dict2, by_key=False):
     """
-     Helper method to calculate difference of two dictionaries
+    Helper method to calculate difference of two dictionaries
     """
     keys1 = set(dict1.keys() if by_key else dict1.items())
     keys2 = set(dict2.keys() if by_key else dict2.items())
@@ -687,7 +694,7 @@ def dict_diff(dict1, dict2, by_key=False):
 
 def first_or_default(items, default=None):
     """
-     Helper method to fetch first element of list (if exists)
+    Helper method to fetch first element of list (if exists)
     """
     for item in items:
         return item
@@ -696,13 +703,13 @@ def first_or_default(items, default=None):
 
 def wait_for(callback, value, timeout=EFSConnection.DEFAULT_WAIT_TIMEOUT_SECONDS):
     """
-     Helper method to wait for desired value returned by callback method
+    Helper method to wait for desired value returned by callback method
     """
     wait_start = timestamp()
     while True:
         if callback() != value:
             if timeout != 0 and (timestamp() - wait_start > timeout):
-                raise RuntimeError('Wait timeout exceeded (' + str(timeout) + ' sec)')
+                raise RuntimeError("Wait timeout exceeded (" + str(timeout) + " sec)")
             else:
                 sleep(5)
             continue
@@ -711,67 +718,82 @@ def wait_for(callback, value, timeout=EFSConnection.DEFAULT_WAIT_TIMEOUT_SECONDS
 
 def main():
     """
-     Module action handler
+    Module action handler
     """
     argument_spec = dict(
         encrypt=dict(required=False, type="bool", default=False),
-        state=dict(required=False, type='str', choices=["present", "absent"], default="present"),
-        kms_key_id=dict(required=False, type='str', default=None),
-        purge_tags=dict(default=True, type='bool'),
-        id=dict(required=False, type='str', default=None),
-        name=dict(required=False, type='str', default=None),
-        tags=dict(required=False, type="dict", aliases=['resource_tags']),
-        targets=dict(required=False, type="list", default=[], elements='dict'),
-        performance_mode=dict(required=False, type='str', choices=["general_purpose", "max_io"], default="general_purpose"),
-        transition_to_ia=dict(required=False, type='str', choices=["None", "7", "14", "30", "60", "90"], default=None),
-        throughput_mode=dict(required=False, type='str', choices=["bursting", "provisioned"], default=None),
-        provisioned_throughput_in_mibps=dict(required=False, type='float'),
+        state=dict(required=False, type="str", choices=["present", "absent"], default="present"),
+        kms_key_id=dict(required=False, type="str", default=None),
+        purge_tags=dict(default=True, type="bool"),
+        id=dict(required=False, type="str", default=None),
+        name=dict(required=False, type="str", default=None),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
+        targets=dict(required=False, type="list", default=[], elements="dict"),
+        performance_mode=dict(
+            required=False, type="str", choices=["general_purpose", "max_io"], default="general_purpose"
+        ),
+        transition_to_ia=dict(required=False, type="str", choices=["None", "7", "14", "30", "60", "90"], default=None),
+        throughput_mode=dict(required=False, type="str", choices=["bursting", "provisioned"], default=None),
+        provisioned_throughput_in_mibps=dict(required=False, type="float"),
         wait=dict(required=False, type="bool", default=False),
-        wait_timeout=dict(required=False, type="int", default=0)
+        wait_timeout=dict(required=False, type="int", default=0),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
     connection = EFSConnection(module)
 
-    name = module.params.get('name')
-    fs_id = module.params.get('id')
-    tags = module.params.get('tags')
+    name = module.params.get("name")
+    fs_id = module.params.get("id")
+    tags = module.params.get("tags")
     target_translations = {
-        'ip_address': 'IpAddress',
-        'security_groups': 'SecurityGroups',
-        'subnet_id': 'SubnetId'
+        "ip_address": "IpAddress",
+        "security_groups": "SecurityGroups",
+        "subnet_id": "SubnetId",
     }
-    targets = [dict((target_translations[key], value) for (key, value) in x.items()) for x in module.params.get('targets')]
+    targets = [
+        dict((target_translations[key], value) for (key, value) in x.items()) for x in module.params.get("targets")
+    ]
     performance_mode_translations = {
-        'general_purpose': 'generalPurpose',
-        'max_io': 'maxIO'
+        "general_purpose": "generalPurpose",
+        "max_io": "maxIO",
     }
-    encrypt = module.params.get('encrypt')
-    kms_key_id = module.params.get('kms_key_id')
-    performance_mode = performance_mode_translations[module.params.get('performance_mode')]
-    purge_tags = module.params.get('purge_tags')
-    transition_to_ia = module.params.get('transition_to_ia')
-    throughput_mode = module.params.get('throughput_mode')
-    provisioned_throughput_in_mibps = module.params.get('provisioned_throughput_in_mibps')
-    state = str(module.params.get('state')).lower()
+    encrypt = module.params.get("encrypt")
+    kms_key_id = module.params.get("kms_key_id")
+    performance_mode = performance_mode_translations[module.params.get("performance_mode")]
+    purge_tags = module.params.get("purge_tags")
+    transition_to_ia = module.params.get("transition_to_ia")
+    throughput_mode = module.params.get("throughput_mode")
+    provisioned_throughput_in_mibps = module.params.get("provisioned_throughput_in_mibps")
+    state = str(module.params.get("state")).lower()
     changed = False
 
-    if state == 'present':
+    if state == "present":
         if not name:
-            module.fail_json(msg='Name parameter is required for create')
+            module.fail_json(msg="Name parameter is required for create")
 
-        changed = connection.create_file_system(name, performance_mode, encrypt, kms_key_id, throughput_mode, provisioned_throughput_in_mibps)
+        changed = connection.create_file_system(
+            name, performance_mode, encrypt, kms_key_id, throughput_mode, provisioned_throughput_in_mibps
+        )
         changed = connection.update_file_system(name, throughput_mode, provisioned_throughput_in_mibps) or changed
-        changed = connection.converge_file_system(name=name, tags=tags, purge_tags=purge_tags, targets=targets,
-                                                  throughput_mode=throughput_mode, provisioned_throughput_in_mibps=provisioned_throughput_in_mibps) or changed
+        changed = (
+            connection.converge_file_system(
+                name=name,
+                tags=tags,
+                purge_tags=purge_tags,
+                targets=targets,
+                throughput_mode=throughput_mode,
+                provisioned_throughput_in_mibps=provisioned_throughput_in_mibps,
+            )
+            or changed
+        )
         if transition_to_ia:
             changed |= connection.update_lifecycle_policy(name, transition_to_ia)
         result = first_or_default(connection.get_file_systems(CreationToken=name))
 
-    elif state == 'absent':
+    elif state == "absent":
         if not name and not fs_id:
-            module.fail_json(msg='Either name or id parameter is required for delete')
+            module.fail_json(msg="Either name or id parameter is required for delete")
 
         changed = connection.delete_file_system(name, fs_id)
         result = None
@@ -780,5 +802,5 @@ def main():
     module.exit_json(changed=changed, efs=result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

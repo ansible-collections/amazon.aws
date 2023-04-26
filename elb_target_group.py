@@ -459,45 +459,52 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def get_tg_attributes(connection, module, tg_arn):
     try:
         _attributes = connection.describe_target_group_attributes(TargetGroupArn=tg_arn, aws_retry=True)
-        tg_attributes = boto3_tag_list_to_ansible_dict(_attributes['Attributes'])
+        tg_attributes = boto3_tag_list_to_ansible_dict(_attributes["Attributes"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get target group attributes")
 
     # Replace '.' with '_' in attribute key names to make it more Ansible friendly
-    return dict((k.replace('.', '_'), v) for k, v in tg_attributes.items())
+    return dict((k.replace(".", "_"), v) for k, v in tg_attributes.items())
 
 
 def get_target_group_tags(connection, module, target_group_arn):
     try:
         _tags = connection.describe_tags(ResourceArns=[target_group_arn], aws_retry=True)
-        return _tags['TagDescriptions'][0]['Tags']
+        return _tags["TagDescriptions"][0]["Tags"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get target group tags")
 
 
 def get_target_group(connection, module, retry_missing=False):
-    extra_codes = ['TargetGroupNotFound'] if retry_missing else []
+    extra_codes = ["TargetGroupNotFound"] if retry_missing else []
     try:
-        target_group_paginator = connection.get_paginator('describe_target_groups').paginate(Names=[module.params.get("name")])
+        target_group_paginator = connection.get_paginator("describe_target_groups").paginate(
+            Names=[module.params.get("name")]
+        )
         jittered_retry = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=extra_codes)
         result = jittered_retry(target_group_paginator.build_full_result)()
-    except is_boto3_error_code('TargetGroupNotFound'):
+    except is_boto3_error_code("TargetGroupNotFound"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't get target group")
 
-    return result['TargetGroups'][0]
+    return result["TargetGroups"][0]
 
 
 def wait_for_status(connection, module, target_group_arn, targets, status):
     polling_increment_secs = 5
-    max_retries = (module.params.get('wait_timeout') // polling_increment_secs)
+    max_retries = module.params.get("wait_timeout") // polling_increment_secs
     status_achieved = False
 
     for x in range(0, max_retries):
         try:
-            response = connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=targets, aws_retry=True)
-            if response['TargetHealthDescriptions'][0]['TargetHealth']['State'] == status:
+            response = connection.describe_target_health(
+                TargetGroupArn=target_group_arn, Targets=targets, aws_retry=True
+            )
+            if response["TargetHealthDescriptions"][0]["TargetHealth"]["State"] == status:
                 status_achieved = True
                 break
             else:
@@ -527,172 +534,204 @@ def create_or_update_attributes(connection, module, target_group, new_target_gro
     update_attributes = []
 
     # Get current attributes
-    current_tg_attributes = get_tg_attributes(connection, module, target_group['TargetGroupArn'])
+    current_tg_attributes = get_tg_attributes(connection, module, target_group["TargetGroupArn"])
 
     if deregistration_delay_timeout is not None:
-        if str(deregistration_delay_timeout) != current_tg_attributes['deregistration_delay_timeout_seconds']:
-            update_attributes.append({'Key': 'deregistration_delay.timeout_seconds', 'Value': str(deregistration_delay_timeout)})
+        if str(deregistration_delay_timeout) != current_tg_attributes["deregistration_delay_timeout_seconds"]:
+            update_attributes.append(
+                {"Key": "deregistration_delay.timeout_seconds", "Value": str(deregistration_delay_timeout)}
+            )
     if deregistration_connection_termination is not None:
-        if deregistration_connection_termination and current_tg_attributes.get('deregistration_delay_connection_termination_enabled') != "true":
-            update_attributes.append({'Key': 'deregistration_delay.connection_termination.enabled', 'Value': 'true'})
+        if (
+            deregistration_connection_termination
+            and current_tg_attributes.get("deregistration_delay_connection_termination_enabled") != "true"
+        ):
+            update_attributes.append({"Key": "deregistration_delay.connection_termination.enabled", "Value": "true"})
     if stickiness_enabled is not None:
-        if stickiness_enabled and current_tg_attributes['stickiness_enabled'] != "true":
-            update_attributes.append({'Key': 'stickiness.enabled', 'Value': 'true'})
+        if stickiness_enabled and current_tg_attributes["stickiness_enabled"] != "true":
+            update_attributes.append({"Key": "stickiness.enabled", "Value": "true"})
     if stickiness_lb_cookie_duration is not None:
-        if str(stickiness_lb_cookie_duration) != current_tg_attributes['stickiness_lb_cookie_duration_seconds']:
-            update_attributes.append({'Key': 'stickiness.lb_cookie.duration_seconds', 'Value': str(stickiness_lb_cookie_duration)})
+        if str(stickiness_lb_cookie_duration) != current_tg_attributes["stickiness_lb_cookie_duration_seconds"]:
+            update_attributes.append(
+                {"Key": "stickiness.lb_cookie.duration_seconds", "Value": str(stickiness_lb_cookie_duration)}
+            )
     if stickiness_type is not None:
-        if stickiness_type != current_tg_attributes.get('stickiness_type'):
-            update_attributes.append({'Key': 'stickiness.type', 'Value': stickiness_type})
+        if stickiness_type != current_tg_attributes.get("stickiness_type"):
+            update_attributes.append({"Key": "stickiness.type", "Value": stickiness_type})
     if stickiness_app_cookie_name is not None:
-        if stickiness_app_cookie_name != current_tg_attributes.get('stickiness_app_cookie_name'):
-            update_attributes.append({'Key': 'stickiness.app_cookie.cookie_name', 'Value': str(stickiness_app_cookie_name)})
+        if stickiness_app_cookie_name != current_tg_attributes.get("stickiness_app_cookie_name"):
+            update_attributes.append(
+                {"Key": "stickiness.app_cookie.cookie_name", "Value": str(stickiness_app_cookie_name)}
+            )
     if stickiness_app_cookie_duration is not None:
-        if str(stickiness_app_cookie_duration) != current_tg_attributes['stickiness_app_cookie_duration_seconds']:
-            update_attributes.append({'Key': 'stickiness.app_cookie.duration_seconds', 'Value': str(stickiness_app_cookie_duration)})
+        if str(stickiness_app_cookie_duration) != current_tg_attributes["stickiness_app_cookie_duration_seconds"]:
+            update_attributes.append(
+                {"Key": "stickiness.app_cookie.duration_seconds", "Value": str(stickiness_app_cookie_duration)}
+            )
     if preserve_client_ip_enabled is not None:
-        if target_type not in ('udp', 'tcp_udp'):
-            if str(preserve_client_ip_enabled).lower() != current_tg_attributes.get('preserve_client_ip_enabled'):
-                update_attributes.append({'Key': 'preserve_client_ip.enabled', 'Value': str(preserve_client_ip_enabled).lower()})
+        if target_type not in ("udp", "tcp_udp"):
+            if str(preserve_client_ip_enabled).lower() != current_tg_attributes.get("preserve_client_ip_enabled"):
+                update_attributes.append(
+                    {"Key": "preserve_client_ip.enabled", "Value": str(preserve_client_ip_enabled).lower()}
+                )
     if proxy_protocol_v2_enabled is not None:
-        if str(proxy_protocol_v2_enabled).lower() != current_tg_attributes.get('proxy_protocol_v2_enabled'):
-            update_attributes.append({'Key': 'proxy_protocol_v2.enabled', 'Value': str(proxy_protocol_v2_enabled).lower()})
+        if str(proxy_protocol_v2_enabled).lower() != current_tg_attributes.get("proxy_protocol_v2_enabled"):
+            update_attributes.append(
+                {"Key": "proxy_protocol_v2.enabled", "Value": str(proxy_protocol_v2_enabled).lower()}
+            )
     if load_balancing_algorithm_type is not None:
-        if str(load_balancing_algorithm_type) != current_tg_attributes['load_balancing_algorithm_type']:
-            update_attributes.append({'Key': 'load_balancing.algorithm.type', 'Value': str(load_balancing_algorithm_type)})
+        if str(load_balancing_algorithm_type) != current_tg_attributes["load_balancing_algorithm_type"]:
+            update_attributes.append(
+                {"Key": "load_balancing.algorithm.type", "Value": str(load_balancing_algorithm_type)}
+            )
 
     if update_attributes:
         try:
-            connection.modify_target_group_attributes(TargetGroupArn=target_group['TargetGroupArn'], Attributes=update_attributes, aws_retry=True)
+            connection.modify_target_group_attributes(
+                TargetGroupArn=target_group["TargetGroupArn"], Attributes=update_attributes, aws_retry=True
+            )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             # Something went wrong setting attributes. If this target group was created during this task, delete it to leave a consistent state
             if new_target_group:
-                connection.delete_target_group(TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True)
+                connection.delete_target_group(TargetGroupArn=target_group["TargetGroupArn"], aws_retry=True)
             module.fail_json_aws(e, msg="Couldn't delete target group")
 
     return changed
 
 
 def create_or_update_target_group(connection, module):
-
     changed = False
     new_target_group = False
     params = dict()
     target_type = module.params.get("target_type")
-    params['Name'] = module.params.get("name")
-    params['TargetType'] = target_type
+    params["Name"] = module.params.get("name")
+    params["TargetType"] = target_type
     if target_type != "lambda":
-        params['Protocol'] = module.params.get("protocol").upper()
-        if module.params.get('protocol_version') is not None:
-            params['ProtocolVersion'] = module.params.get('protocol_version')
-        params['Port'] = module.params.get("port")
-        params['VpcId'] = module.params.get("vpc_id")
+        params["Protocol"] = module.params.get("protocol").upper()
+        if module.params.get("protocol_version") is not None:
+            params["ProtocolVersion"] = module.params.get("protocol_version")
+        params["Port"] = module.params.get("port")
+        params["VpcId"] = module.params.get("vpc_id")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
 
     health_option_keys = [
-        "health_check_path", "health_check_protocol", "health_check_interval", "health_check_timeout",
-        "healthy_threshold_count", "unhealthy_threshold_count", "successful_response_codes"
+        "health_check_path",
+        "health_check_protocol",
+        "health_check_interval",
+        "health_check_timeout",
+        "healthy_threshold_count",
+        "unhealthy_threshold_count",
+        "successful_response_codes",
     ]
     health_options = any(module.params[health_option_key] is not None for health_option_key in health_option_keys)
 
     # Set health check if anything set
     if health_options:
-
         if module.params.get("health_check_protocol") is not None:
-            params['HealthCheckProtocol'] = module.params.get("health_check_protocol").upper()
+            params["HealthCheckProtocol"] = module.params.get("health_check_protocol").upper()
 
         if module.params.get("health_check_port") is not None:
-            params['HealthCheckPort'] = module.params.get("health_check_port")
+            params["HealthCheckPort"] = module.params.get("health_check_port")
 
         if module.params.get("health_check_interval") is not None:
-            params['HealthCheckIntervalSeconds'] = module.params.get("health_check_interval")
+            params["HealthCheckIntervalSeconds"] = module.params.get("health_check_interval")
 
         if module.params.get("health_check_timeout") is not None:
-            params['HealthCheckTimeoutSeconds'] = module.params.get("health_check_timeout")
+            params["HealthCheckTimeoutSeconds"] = module.params.get("health_check_timeout")
 
         if module.params.get("healthy_threshold_count") is not None:
-            params['HealthyThresholdCount'] = module.params.get("healthy_threshold_count")
+            params["HealthyThresholdCount"] = module.params.get("healthy_threshold_count")
 
         if module.params.get("unhealthy_threshold_count") is not None:
-            params['UnhealthyThresholdCount'] = module.params.get("unhealthy_threshold_count")
+            params["UnhealthyThresholdCount"] = module.params.get("unhealthy_threshold_count")
 
         # Only need to check response code and path for http(s) health checks
         protocol = module.params.get("health_check_protocol")
-        if protocol is not None and protocol.upper() in ['HTTP', 'HTTPS']:
-
+        if protocol is not None and protocol.upper() in ["HTTP", "HTTPS"]:
             if module.params.get("health_check_path") is not None:
-                params['HealthCheckPath'] = module.params.get("health_check_path")
+                params["HealthCheckPath"] = module.params.get("health_check_path")
 
             if module.params.get("successful_response_codes") is not None:
-                params['Matcher'] = {}
-                code_key = 'HttpCode'
-                protocol_version = module.params.get('protocol_version')
+                params["Matcher"] = {}
+                code_key = "HttpCode"
+                protocol_version = module.params.get("protocol_version")
                 if protocol_version is not None and protocol_version.upper() == "GRPC":
-                    code_key = 'GrpcCode'
-                params['Matcher'][code_key] = module.params.get("successful_response_codes")
+                    code_key = "GrpcCode"
+                params["Matcher"][code_key] = module.params.get("successful_response_codes")
 
     # Get target group
     target_group = get_target_group(connection, module)
 
     if target_group:
-        diffs = [param for param in ('Port', 'Protocol', 'VpcId')
-                 if target_group.get(param) != params.get(param)]
+        diffs = [param for param in ("Port", "Protocol", "VpcId") if target_group.get(param) != params.get(param)]
         if diffs:
-            module.fail_json(msg="Cannot modify %s parameter(s) for a target group" %
-                             ", ".join(diffs))
+            module.fail_json(msg="Cannot modify %s parameter(s) for a target group" % ", ".join(diffs))
         # Target group exists so check health check parameters match what has been passed
         health_check_params = dict()
 
         # Modify health check if anything set
         if health_options:
-
             # Health check protocol
-            if 'HealthCheckProtocol' in params and target_group['HealthCheckProtocol'] != params['HealthCheckProtocol']:
-                health_check_params['HealthCheckProtocol'] = params['HealthCheckProtocol']
+            if "HealthCheckProtocol" in params and target_group["HealthCheckProtocol"] != params["HealthCheckProtocol"]:
+                health_check_params["HealthCheckProtocol"] = params["HealthCheckProtocol"]
 
             # Health check port
-            if 'HealthCheckPort' in params and target_group['HealthCheckPort'] != params['HealthCheckPort']:
-                health_check_params['HealthCheckPort'] = params['HealthCheckPort']
+            if "HealthCheckPort" in params and target_group["HealthCheckPort"] != params["HealthCheckPort"]:
+                health_check_params["HealthCheckPort"] = params["HealthCheckPort"]
 
             # Health check interval
-            if 'HealthCheckIntervalSeconds' in params and target_group['HealthCheckIntervalSeconds'] != params['HealthCheckIntervalSeconds']:
-                health_check_params['HealthCheckIntervalSeconds'] = params['HealthCheckIntervalSeconds']
+            if (
+                "HealthCheckIntervalSeconds" in params
+                and target_group["HealthCheckIntervalSeconds"] != params["HealthCheckIntervalSeconds"]
+            ):
+                health_check_params["HealthCheckIntervalSeconds"] = params["HealthCheckIntervalSeconds"]
 
             # Health check timeout
-            if 'HealthCheckTimeoutSeconds' in params and target_group['HealthCheckTimeoutSeconds'] != params['HealthCheckTimeoutSeconds']:
-                health_check_params['HealthCheckTimeoutSeconds'] = params['HealthCheckTimeoutSeconds']
+            if (
+                "HealthCheckTimeoutSeconds" in params
+                and target_group["HealthCheckTimeoutSeconds"] != params["HealthCheckTimeoutSeconds"]
+            ):
+                health_check_params["HealthCheckTimeoutSeconds"] = params["HealthCheckTimeoutSeconds"]
 
             # Healthy threshold
-            if 'HealthyThresholdCount' in params and target_group['HealthyThresholdCount'] != params['HealthyThresholdCount']:
-                health_check_params['HealthyThresholdCount'] = params['HealthyThresholdCount']
+            if (
+                "HealthyThresholdCount" in params
+                and target_group["HealthyThresholdCount"] != params["HealthyThresholdCount"]
+            ):
+                health_check_params["HealthyThresholdCount"] = params["HealthyThresholdCount"]
 
             # Unhealthy threshold
-            if 'UnhealthyThresholdCount' in params and target_group['UnhealthyThresholdCount'] != params['UnhealthyThresholdCount']:
-                health_check_params['UnhealthyThresholdCount'] = params['UnhealthyThresholdCount']
+            if (
+                "UnhealthyThresholdCount" in params
+                and target_group["UnhealthyThresholdCount"] != params["UnhealthyThresholdCount"]
+            ):
+                health_check_params["UnhealthyThresholdCount"] = params["UnhealthyThresholdCount"]
 
             # Only need to check response code and path for http(s) health checks
-            if target_group['HealthCheckProtocol'] in ['HTTP', 'HTTPS']:
+            if target_group["HealthCheckProtocol"] in ["HTTP", "HTTPS"]:
                 # Health check path
-                if 'HealthCheckPath' in params and target_group['HealthCheckPath'] != params['HealthCheckPath']:
-                    health_check_params['HealthCheckPath'] = params['HealthCheckPath']
+                if "HealthCheckPath" in params and target_group["HealthCheckPath"] != params["HealthCheckPath"]:
+                    health_check_params["HealthCheckPath"] = params["HealthCheckPath"]
 
                 # Matcher (successful response codes)
                 # TODO: required and here?
-                if 'Matcher' in params:
-                    code_key = 'HttpCode'
-                    if target_group['ProtocolVersion'] == 'GRPC':
-                        code_key = 'GrpcCode'
-                    current_matcher_list = target_group['Matcher'][code_key].split(',')
-                    requested_matcher_list = params['Matcher'][code_key].split(',')
+                if "Matcher" in params:
+                    code_key = "HttpCode"
+                    if target_group["ProtocolVersion"] == "GRPC":
+                        code_key = "GrpcCode"
+                    current_matcher_list = target_group["Matcher"][code_key].split(",")
+                    requested_matcher_list = params["Matcher"][code_key].split(",")
                     if set(current_matcher_list) != set(requested_matcher_list):
-                        health_check_params['Matcher'] = {}
-                        health_check_params['Matcher'][code_key] = ','.join(requested_matcher_list)
+                        health_check_params["Matcher"] = {}
+                        health_check_params["Matcher"][code_key] = ",".join(requested_matcher_list)
 
             try:
                 if health_check_params:
-                    connection.modify_target_group(TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True, **health_check_params)
+                    connection.modify_target_group(
+                        TargetGroupArn=target_group["TargetGroupArn"], aws_retry=True, **health_check_params
+                    )
                     changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't update target group")
@@ -703,27 +742,27 @@ def create_or_update_target_group(connection, module):
             # describe_target_health seems to be the only way to get them
             try:
                 current_targets = connection.describe_target_health(
-                    TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True)
+                    TargetGroupArn=target_group["TargetGroupArn"], aws_retry=True
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't get target group health")
 
             if module.params.get("targets"):
-
                 if target_type != "lambda":
-                    params['Targets'] = module.params.get("targets")
+                    params["Targets"] = module.params.get("targets")
 
                     # Correct type of target ports
-                    for target in params['Targets']:
-                        target['Port'] = int(target.get('Port', module.params.get('port')))
+                    for target in params["Targets"]:
+                        target["Port"] = int(target.get("Port", module.params.get("port")))
 
                     current_instance_ids = []
 
-                    for instance in current_targets['TargetHealthDescriptions']:
-                        current_instance_ids.append(instance['Target']['Id'])
+                    for instance in current_targets["TargetHealthDescriptions"]:
+                        current_instance_ids.append(instance["Target"]["Id"])
 
                     new_instance_ids = []
-                    for instance in params['Targets']:
-                        new_instance_ids.append(instance['Id'])
+                    for instance in params["Targets"]:
+                        new_instance_ids.append(instance["Id"])
 
                     add_instances = set(new_instance_ids) - set(current_instance_ids)
 
@@ -738,37 +777,49 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.register_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_add, aws_retry=True)
+                            connection.register_targets(
+                                TargetGroupArn=target_group["TargetGroupArn"], Targets=instances_to_add, aws_retry=True
+                            )
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't register targets")
 
                         if module.params.get("wait"):
                             status_achieved, registered_instances = wait_for_status(
-                                connection, module, target_group['TargetGroupArn'], instances_to_add, 'healthy')
+                                connection, module, target_group["TargetGroupArn"], instances_to_add, "healthy"
+                            )
                             if not status_achieved:
                                 module.fail_json(
-                                    msg='Error waiting for target registration to be healthy - please check the AWS console')
+                                    msg="Error waiting for target registration to be healthy - please check the AWS console"
+                                )
 
                     remove_instances = set(current_instance_ids) - set(new_instance_ids)
 
                     if remove_instances:
                         instances_to_remove = []
-                        for target in current_targets['TargetHealthDescriptions']:
-                            if target['Target']['Id'] in remove_instances:
-                                instances_to_remove.append({'Id': target['Target']['Id'], 'Port': target['Target']['Port']})
+                        for target in current_targets["TargetHealthDescriptions"]:
+                            if target["Target"]["Id"] in remove_instances:
+                                instances_to_remove.append(
+                                    {"Id": target["Target"]["Id"], "Port": target["Target"]["Port"]}
+                                )
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
+                            connection.deregister_targets(
+                                TargetGroupArn=target_group["TargetGroupArn"],
+                                Targets=instances_to_remove,
+                                aws_retry=True,
+                            )
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
                         if module.params.get("wait"):
                             status_achieved, registered_instances = wait_for_status(
-                                connection, module, target_group['TargetGroupArn'], instances_to_remove, 'unused')
+                                connection, module, target_group["TargetGroupArn"], instances_to_remove, "unused"
+                            )
                             if not status_achieved:
                                 module.fail_json(
-                                    msg='Error waiting for target deregistration - please check the AWS console')
+                                    msg="Error waiting for target deregistration - please check the AWS console"
+                                )
 
                 # register lambda target
                 else:
@@ -786,40 +837,40 @@ def create_or_update_target_group(connection, module):
                         if changed:
                             if target.get("Id"):
                                 response = connection.register_targets(
-                                    TargetGroupArn=target_group['TargetGroupArn'],
-                                    Targets=[
-                                        {
-                                            "Id": target['Id']
-                                        }
-                                    ],
-                                    aws_retry=True
+                                    TargetGroupArn=target_group["TargetGroupArn"],
+                                    Targets=[{"Id": target["Id"]}],
+                                    aws_retry=True,
                                 )
 
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(
-                            e, msg="Couldn't register targets")
+                        module.fail_json_aws(e, msg="Couldn't register targets")
             else:
                 if target_type != "lambda":
-
-                    current_instances = current_targets['TargetHealthDescriptions']
+                    current_instances = current_targets["TargetHealthDescriptions"]
 
                     if current_instances:
                         instances_to_remove = []
-                        for target in current_targets['TargetHealthDescriptions']:
-                            instances_to_remove.append({'Id': target['Target']['Id'], 'Port': target['Target']['Port']})
+                        for target in current_targets["TargetHealthDescriptions"]:
+                            instances_to_remove.append({"Id": target["Target"]["Id"], "Port": target["Target"]["Port"]})
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
+                            connection.deregister_targets(
+                                TargetGroupArn=target_group["TargetGroupArn"],
+                                Targets=instances_to_remove,
+                                aws_retry=True,
+                            )
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
                         if module.params.get("wait"):
                             status_achieved, registered_instances = wait_for_status(
-                                connection, module, target_group['TargetGroupArn'], instances_to_remove, 'unused')
+                                connection, module, target_group["TargetGroupArn"], instances_to_remove, "unused"
+                            )
                             if not status_achieved:
                                 module.fail_json(
-                                    msg='Error waiting for target deregistration - please check the AWS console')
+                                    msg="Error waiting for target deregistration - please check the AWS console"
+                                )
 
                 # remove lambda targets
                 else:
@@ -830,7 +881,10 @@ def create_or_update_target_group(connection, module):
                         target_to_remove = current_targets["TargetHealthDescriptions"][0]["Target"]["Id"]
                     if changed:
                         connection.deregister_targets(
-                            TargetGroupArn=target_group['TargetGroupArn'], Targets=[{"Id": target_to_remove}], aws_retry=True)
+                            TargetGroupArn=target_group["TargetGroupArn"],
+                            Targets=[{"Id": target_to_remove}],
+                            aws_retry=True,
+                        )
     else:
         try:
             connection.create_target_group(aws_retry=True, **params)
@@ -843,33 +897,32 @@ def create_or_update_target_group(connection, module):
 
         if module.params.get("targets"):
             if target_type != "lambda":
-                params['Targets'] = module.params.get("targets")
+                params["Targets"] = module.params.get("targets")
                 try:
-                    connection.register_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=params['Targets'], aws_retry=True)
+                    connection.register_targets(
+                        TargetGroupArn=target_group["TargetGroupArn"], Targets=params["Targets"], aws_retry=True
+                    )
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't register targets")
 
                 if module.params.get("wait"):
-                    status_achieved, registered_instances = wait_for_status(connection, module, target_group['TargetGroupArn'], params['Targets'], 'healthy')
+                    status_achieved, registered_instances = wait_for_status(
+                        connection, module, target_group["TargetGroupArn"], params["Targets"], "healthy"
+                    )
                     if not status_achieved:
-                        module.fail_json(msg='Error waiting for target registration to be healthy - please check the AWS console')
+                        module.fail_json(
+                            msg="Error waiting for target registration to be healthy - please check the AWS console"
+                        )
 
             else:
                 try:
                     target = module.params.get("targets")[0]
                     response = connection.register_targets(
-                        TargetGroupArn=target_group['TargetGroupArn'],
-                        Targets=[
-                            {
-                                "Id": target["Id"]
-                            }
-                        ],
-                        aws_retry=True
+                        TargetGroupArn=target_group["TargetGroupArn"], Targets=[{"Id": target["Id"]}], aws_retry=True
                     )
                     changed = True
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(
-                        e, msg="Couldn't register targets")
+                    module.fail_json_aws(e, msg="Couldn't register targets")
 
     attributes_update = create_or_update_attributes(connection, module, target_group, new_target_group)
 
@@ -879,13 +932,17 @@ def create_or_update_target_group(connection, module):
     # Tags - only need to play with tags if tags parameter has been set to something
     if tags is not None:
         # Get tags
-        current_tags = get_target_group_tags(connection, module, target_group['TargetGroupArn'])
+        current_tags = get_target_group_tags(connection, module, target_group["TargetGroupArn"])
 
         # Delete necessary tags
-        tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags), tags, purge_tags)
+        tags_need_modify, tags_to_delete = compare_aws_tags(
+            boto3_tag_list_to_ansible_dict(current_tags), tags, purge_tags
+        )
         if tags_to_delete:
             try:
-                connection.remove_tags(ResourceArns=[target_group['TargetGroupArn']], TagKeys=tags_to_delete, aws_retry=True)
+                connection.remove_tags(
+                    ResourceArns=[target_group["TargetGroupArn"]], TagKeys=tags_to_delete, aws_retry=True
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't delete tags from target group")
             changed = True
@@ -893,7 +950,11 @@ def create_or_update_target_group(connection, module):
         # Add/update tags
         if tags_need_modify:
             try:
-                connection.add_tags(ResourceArns=[target_group['TargetGroupArn']], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify), aws_retry=True)
+                connection.add_tags(
+                    ResourceArns=[target_group["TargetGroupArn"]],
+                    Tags=ansible_dict_to_boto3_tag_list(tags_need_modify),
+                    aws_retry=True,
+                )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't add tags to target group")
             changed = True
@@ -902,12 +963,14 @@ def create_or_update_target_group(connection, module):
     target_group = get_target_group(connection, module)
 
     # Get the target group attributes again
-    target_group.update(get_tg_attributes(connection, module, target_group['TargetGroupArn']))
+    target_group.update(get_tg_attributes(connection, module, target_group["TargetGroupArn"]))
 
     # Convert target_group to snake_case
     snaked_tg = camel_dict_to_snake_dict(target_group)
 
-    snaked_tg['tags'] = boto3_tag_list_to_ansible_dict(get_target_group_tags(connection, module, target_group['TargetGroupArn']))
+    snaked_tg["tags"] = boto3_tag_list_to_ansible_dict(
+        get_target_group_tags(connection, module, target_group["TargetGroupArn"])
+    )
 
     module.exit_json(changed=changed, **snaked_tg)
 
@@ -918,7 +981,7 @@ def delete_target_group(connection, module):
 
     if tg:
         try:
-            connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
+            connection.delete_target_group(TargetGroupArn=tg["TargetGroupArn"], aws_retry=True)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't delete target group")
@@ -927,66 +990,69 @@ def delete_target_group(connection, module):
 
 
 def main():
-    protocols_list = ['http', 'https', 'tcp', 'tls', 'udp', 'tcp_udp', 'HTTP',
-                      'HTTPS', 'TCP', 'TLS', 'UDP', 'TCP_UDP']
+    protocols_list = ["http", "https", "tcp", "tls", "udp", "tcp_udp", "HTTP", "HTTPS", "TCP", "TLS", "UDP", "TCP_UDP"]
     argument_spec = dict(
-        deregistration_delay_timeout=dict(type='int'),
-        deregistration_connection_termination=dict(type='bool', default=False),
+        deregistration_delay_timeout=dict(type="int"),
+        deregistration_connection_termination=dict(type="bool", default=False),
         health_check_protocol=dict(choices=protocols_list),
         health_check_port=dict(),
         health_check_path=dict(),
-        health_check_interval=dict(type='int'),
-        health_check_timeout=dict(type='int'),
-        healthy_threshold_count=dict(type='int'),
-        modify_targets=dict(default=True, type='bool'),
+        health_check_interval=dict(type="int"),
+        health_check_timeout=dict(type="int"),
+        healthy_threshold_count=dict(type="int"),
+        modify_targets=dict(default=True, type="bool"),
         name=dict(required=True),
-        port=dict(type='int'),
+        port=dict(type="int"),
         protocol=dict(choices=protocols_list),
-        protocol_version=dict(type='str', choices=['GRPC', 'HTTP1', 'HTTP2']),
-        purge_tags=dict(default=True, type='bool'),
-        stickiness_enabled=dict(type='bool'),
+        protocol_version=dict(type="str", choices=["GRPC", "HTTP1", "HTTP2"]),
+        purge_tags=dict(default=True, type="bool"),
+        stickiness_enabled=dict(type="bool"),
         stickiness_type=dict(),
-        stickiness_lb_cookie_duration=dict(type='int'),
-        stickiness_app_cookie_duration=dict(type='int'),
+        stickiness_lb_cookie_duration=dict(type="int"),
+        stickiness_app_cookie_duration=dict(type="int"),
         stickiness_app_cookie_name=dict(),
-        load_balancing_algorithm_type=dict(type='str', choices=['round_robin', 'least_outstanding_requests']),
-        state=dict(required=True, choices=['present', 'absent']),
+        load_balancing_algorithm_type=dict(type="str", choices=["round_robin", "least_outstanding_requests"]),
+        state=dict(required=True, choices=["present", "absent"]),
         successful_response_codes=dict(),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        target_type=dict(choices=['instance', 'ip', 'lambda', 'alb']),
-        targets=dict(type='list', elements='dict'),
-        unhealthy_threshold_count=dict(type='int'),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        target_type=dict(choices=["instance", "ip", "lambda", "alb"]),
+        targets=dict(type="list", elements="dict"),
+        unhealthy_threshold_count=dict(type="int"),
         vpc_id=dict(),
-        preserve_client_ip_enabled=dict(type='bool'),
-        proxy_protocol_v2_enabled=dict(type='bool'),
-        wait_timeout=dict(type='int', default=200),
-        wait=dict(type='bool', default=False)
+        preserve_client_ip_enabled=dict(type="bool"),
+        proxy_protocol_v2_enabled=dict(type="bool"),
+        wait_timeout=dict(type="int", default=200),
+        wait=dict(type="bool", default=False),
     )
     required_by = dict(
-        health_check_path=['health_check_protocol'],
-        successful_response_codes=['health_check_protocol'],
+        health_check_path=["health_check_protocol"],
+        successful_response_codes=["health_check_protocol"],
     )
     required_if = [
-        ['target_type', 'instance', ['protocol', 'port', 'vpc_id']],
-        ['target_type', 'ip', ['protocol', 'port', 'vpc_id']],
-        ['target_type', 'alb', ['protocol', 'port', 'vpc_id']],
+        ["target_type", "instance", ["protocol", "port", "vpc_id"]],
+        ["target_type", "ip", ["protocol", "port", "vpc_id"]],
+        ["target_type", "alb", ["protocol", "port", "vpc_id"]],
     ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, required_by=required_by, required_if=required_if)
 
-    if module.params.get('target_type') is None:
-        module.params['target_type'] = 'instance'
+    if module.params.get("target_type") is None:
+        module.params["target_type"] = "instance"
 
-    connection = module.client('elbv2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("elbv2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
-    if module.params.get('state') == 'present':
-        if module.params.get('protocol') in ['http', 'https', 'HTTP', 'HTTPS'] and module.params.get('deregistration_connection_termination', None):
-            module.fail_json(msg="A target group with HTTP/S protocol does not support setting deregistration_connection_termination")
+    if module.params.get("state") == "present":
+        if module.params.get("protocol") in ["http", "https", "HTTP", "HTTPS"] and module.params.get(
+            "deregistration_connection_termination", None
+        ):
+            module.fail_json(
+                msg="A target group with HTTP/S protocol does not support setting deregistration_connection_termination"
+            )
 
         create_or_update_target_group(connection, module)
     else:
         delete_target_group(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

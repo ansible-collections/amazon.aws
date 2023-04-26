@@ -362,29 +362,29 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def validate_tags(client, module, nodegroup):
     changed = False
 
-    desired_tags = module.params.get('tags')
+    desired_tags = module.params.get("tags")
     if desired_tags is None:
         return False
 
     try:
-        existing_tags = client.list_tags_for_resource(resourceArn=nodegroup['nodegroupArn'])['tags']
-        tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get('purge_tags'))
+        existing_tags = client.list_tags_for_resource(resourceArn=nodegroup["nodegroupArn"])["tags"]
+        tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get("purge_tags"))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Unable to list or compare tags for Nodegroup %s.' % module.params.get('name'))
+        module.fail_json_aws(e, msg="Unable to list or compare tags for Nodegroup %s." % module.params.get("name"))
     if tags_to_remove:
         if not module.check_mode:
             changed = True
             try:
-                client.untag_resource(aws_retry=True, ResourceArn=nodegroup['nodegroupArn'], tagKeys=tags_to_remove)
+                client.untag_resource(aws_retry=True, ResourceArn=nodegroup["nodegroupArn"], tagKeys=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Nodegroup %s.' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Nodegroup %s." % module.params.get("name"))
     if tags_to_add:
         if not module.check_mode:
             changed = True
             try:
-                client.tag_resource(aws_retry=True, ResourceArn=nodegroup['nodegroupArn'], tags=tags_to_add)
+                client.tag_resource(aws_retry=True, ResourceArn=nodegroup["nodegroupArn"], tags=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Nodegroup %s.' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Nodegroup %s." % module.params.get("name"))
 
     return changed
 
@@ -405,24 +405,24 @@ def compare_taints(nodegroup_taints, param_taints):
 def validate_taints(client, module, nodegroup, param_taints):
     changed = False
     params = dict()
-    params['clusterName'] = nodegroup['clusterName']
-    params['nodegroupName'] = nodegroup['nodegroupName']
-    params['taints'] = []
-    if 'taints' not in nodegroup:
-        nodegroup['taints'] = []
-    taints_to_add_or_update, taints_to_unset = compare_taints(nodegroup['taints'], param_taints)
+    params["clusterName"] = nodegroup["clusterName"]
+    params["nodegroupName"] = nodegroup["nodegroupName"]
+    params["taints"] = []
+    if "taints" not in nodegroup:
+        nodegroup["taints"] = []
+    taints_to_add_or_update, taints_to_unset = compare_taints(nodegroup["taints"], param_taints)
 
     if taints_to_add_or_update:
-        params['taints']['addOrUpdateTaints'] = taints_to_add_or_update
+        params["taints"]["addOrUpdateTaints"] = taints_to_add_or_update
     if taints_to_unset:
-        params['taints']['removeTaints'] = taints_to_unset
-    if params['taints']:
+        params["taints"]["removeTaints"] = taints_to_unset
+    if params["taints"]:
         if not module.check_mode:
             changed = True
             try:
                 client.update_nodegroup_config(**params)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set taints for Nodegroup %s.' % params['nodegroupName'])
+                module.fail_json_aws(e, msg="Unable to set taints for Nodegroup %s." % params["nodegroupName"])
 
     return changed
 
@@ -443,109 +443,114 @@ def compare_labels(nodegroup_labels, param_labels):
 def validate_labels(client, module, nodegroup, param_labels):
     changed = False
     params = dict()
-    params['clusterName'] = nodegroup['clusterName']
-    params['nodegroupName'] = nodegroup['nodegroupName']
-    params['labels'] = {}
-    labels_to_add_or_update, labels_to_unset = compare_labels(nodegroup['labels'], param_labels)
+    params["clusterName"] = nodegroup["clusterName"]
+    params["nodegroupName"] = nodegroup["nodegroupName"]
+    params["labels"] = {}
+    labels_to_add_or_update, labels_to_unset = compare_labels(nodegroup["labels"], param_labels)
 
     if labels_to_add_or_update:
-        params['labels']['addOrUpdateLabels'] = labels_to_add_or_update
+        params["labels"]["addOrUpdateLabels"] = labels_to_add_or_update
     if labels_to_unset:
-        params['labels']['removeLabels'] = labels_to_unset
-    if params['labels']:
+        params["labels"]["removeLabels"] = labels_to_unset
+    if params["labels"]:
         if not module.check_mode:
             changed = True
             try:
                 client.update_nodegroup_config(**params)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set labels for Nodegroup %s.' % params['nodegroupName'])
+                module.fail_json_aws(e, msg="Unable to set labels for Nodegroup %s." % params["nodegroupName"])
 
     return changed
 
 
 def compare_params(module, params, nodegroup):
-    for param in ['nodeRole', 'subnets', 'diskSize', 'instanceTypes', 'amiTypes', 'remoteAccess', 'capacityType']:
+    for param in ["nodeRole", "subnets", "diskSize", "instanceTypes", "amiTypes", "remoteAccess", "capacityType"]:
         if (param in nodegroup) and (param in params):
-            if (nodegroup[param] != params[param]):
+            if nodegroup[param] != params[param]:
                 module.fail_json(msg="Cannot modify parameter %s." % param)
-    if ('launchTemplate' not in nodegroup) and ('launchTemplate' in params):
+    if ("launchTemplate" not in nodegroup) and ("launchTemplate" in params):
         module.fail_json(msg="Cannot add Launch Template in this Nodegroup.")
-    if nodegroup['updateConfig'] != params['updateConfig']:
+    if nodegroup["updateConfig"] != params["updateConfig"]:
         return True
-    if nodegroup['scalingConfig'] != params['scalingConfig']:
+    if nodegroup["scalingConfig"] != params["scalingConfig"]:
         return True
     return False
 
 
 def compare_params_launch_template(module, params, nodegroup):
-    if 'launchTemplate' not in params:
+    if "launchTemplate" not in params:
         module.fail_json(msg="Cannot exclude Launch Template in this Nodegroup.")
     else:
-        for key in ['name', 'id']:
-            if (key in params['launchTemplate']) and (params['launchTemplate'][key] != nodegroup['launchTemplate'][key]):
+        for key in ["name", "id"]:
+            if (key in params["launchTemplate"]) and (
+                params["launchTemplate"][key] != nodegroup["launchTemplate"][key]
+            ):
                 module.fail_json(msg="Cannot modify Launch Template %s." % key)
-        if ('version' in params['launchTemplate']) and (params['launchTemplate']['version'] != nodegroup['launchTemplate']['version']):
+        if ("version" in params["launchTemplate"]) and (
+            params["launchTemplate"]["version"] != nodegroup["launchTemplate"]["version"]
+        ):
             return True
     return False
 
 
 def create_or_update_nodegroups(client, module):
-
     changed = False
     params = dict()
-    params['nodegroupName'] = module.params['name']
-    params['clusterName'] = module.params['cluster_name']
-    params['nodeRole'] = module.params['node_role']
-    params['subnets'] = module.params['subnets']
-    params['tags'] = module.params['tags'] or {}
-    if module.params['ami_type'] is not None:
-        params['amiType'] = module.params['ami_type']
-    if module.params['disk_size'] is not None:
-        params['diskSize'] = module.params['disk_size']
-    if module.params['instance_types'] is not None:
-        params['instanceTypes'] = module.params['instance_types']
-    if module.params['launch_template'] is not None:
-        params['launchTemplate'] = dict()
-        if module.params['launch_template']['id'] is not None:
-            params['launchTemplate']['id'] = module.params['launch_template']['id']
-        if module.params['launch_template']['version'] is not None:
-            params['launchTemplate']['version'] = module.params['launch_template']['version']
-        if module.params['launch_template']['name'] is not None:
-            params['launchTemplate']['name'] = module.params['launch_template']['name']
-    if module.params['release_version'] is not None:
-        params['releaseVersion'] = module.params['release_version']
-    if module.params['remote_access'] is not None:
-        params['remoteAccess'] = dict()
-        if module.params['remote_access']['ec2_ssh_key'] is not None:
-            params['remoteAccess']['ec2SshKey'] = module.params['remote_access']['ec2_ssh_key']
-        if module.params['remote_access']['source_sg'] is not None:
-            params['remoteAccess']['sourceSecurityGroups'] = module.params['remote_access']['source_sg']
-    if module.params['capacity_type'] is not None:
-        params['capacityType'] = module.params['capacity_type'].upper()
-    if module.params['labels'] is not None:
-        params['labels'] = module.params['labels']
-    if module.params['taints'] is not None:
-        params['taints'] = module.params['taints']
-    if module.params['update_config'] is not None:
-        params['updateConfig'] = dict()
-        if module.params['update_config']['max_unavailable'] is not None:
-            params['updateConfig']['maxUnavailable'] = module.params['update_config']['max_unavailable']
-        if module.params['update_config']['max_unavailable_percentage'] is not None:
-            params['updateConfig']['maxUnavailablePercentage'] = module.params['update_config']['max_unavailable_percentage']
-    if module.params['scaling_config'] is not None:
-        params['scalingConfig'] = snake_dict_to_camel_dict(module.params['scaling_config'])
+    params["nodegroupName"] = module.params["name"]
+    params["clusterName"] = module.params["cluster_name"]
+    params["nodeRole"] = module.params["node_role"]
+    params["subnets"] = module.params["subnets"]
+    params["tags"] = module.params["tags"] or {}
+    if module.params["ami_type"] is not None:
+        params["amiType"] = module.params["ami_type"]
+    if module.params["disk_size"] is not None:
+        params["diskSize"] = module.params["disk_size"]
+    if module.params["instance_types"] is not None:
+        params["instanceTypes"] = module.params["instance_types"]
+    if module.params["launch_template"] is not None:
+        params["launchTemplate"] = dict()
+        if module.params["launch_template"]["id"] is not None:
+            params["launchTemplate"]["id"] = module.params["launch_template"]["id"]
+        if module.params["launch_template"]["version"] is not None:
+            params["launchTemplate"]["version"] = module.params["launch_template"]["version"]
+        if module.params["launch_template"]["name"] is not None:
+            params["launchTemplate"]["name"] = module.params["launch_template"]["name"]
+    if module.params["release_version"] is not None:
+        params["releaseVersion"] = module.params["release_version"]
+    if module.params["remote_access"] is not None:
+        params["remoteAccess"] = dict()
+        if module.params["remote_access"]["ec2_ssh_key"] is not None:
+            params["remoteAccess"]["ec2SshKey"] = module.params["remote_access"]["ec2_ssh_key"]
+        if module.params["remote_access"]["source_sg"] is not None:
+            params["remoteAccess"]["sourceSecurityGroups"] = module.params["remote_access"]["source_sg"]
+    if module.params["capacity_type"] is not None:
+        params["capacityType"] = module.params["capacity_type"].upper()
+    if module.params["labels"] is not None:
+        params["labels"] = module.params["labels"]
+    if module.params["taints"] is not None:
+        params["taints"] = module.params["taints"]
+    if module.params["update_config"] is not None:
+        params["updateConfig"] = dict()
+        if module.params["update_config"]["max_unavailable"] is not None:
+            params["updateConfig"]["maxUnavailable"] = module.params["update_config"]["max_unavailable"]
+        if module.params["update_config"]["max_unavailable_percentage"] is not None:
+            params["updateConfig"]["maxUnavailablePercentage"] = module.params["update_config"][
+                "max_unavailable_percentage"
+            ]
+    if module.params["scaling_config"] is not None:
+        params["scalingConfig"] = snake_dict_to_camel_dict(module.params["scaling_config"])
 
-    wait = module.params.get('wait')
-    nodegroup = get_nodegroup(client, module, params['nodegroupName'], params['clusterName'])
+    wait = module.params.get("wait")
+    nodegroup = get_nodegroup(client, module, params["nodegroupName"], params["clusterName"])
 
     if nodegroup:
         update_params = dict()
-        update_params['clusterName'] = params['clusterName']
-        update_params['nodegroupName'] = params['nodegroupName']
+        update_params["clusterName"] = params["clusterName"]
+        update_params["nodegroupName"] = params["nodegroupName"]
 
-        if 'launchTemplate' in nodegroup:
+        if "launchTemplate" in nodegroup:
             if compare_params_launch_template(module, params, nodegroup):
-                update_params['launchTemplate'] = params['launchTemplate']
+                update_params["launchTemplate"] = params["launchTemplate"]
                 if not module.check_mode:
                     try:
                         client.update_nodegroup_version(**update_params)
@@ -555,10 +560,10 @@ def create_or_update_nodegroups(client, module):
 
         if compare_params(module, params, nodegroup):
             try:
-                if 'launchTemplate' in update_params:
-                    update_params.pop('launchTemplate')
-                update_params['scalingConfig'] = params['scalingConfig']
-                update_params['updateConfig'] = params['updateConfig']
+                if "launchTemplate" in update_params:
+                    update_params.pop("launchTemplate")
+                update_params["scalingConfig"] = params["scalingConfig"]
+                update_params["updateConfig"] = params["updateConfig"]
 
                 if not module.check_mode:
                     client.update_nodegroup_config(**update_params)
@@ -570,15 +575,15 @@ def create_or_update_nodegroups(client, module):
 
         changed |= validate_tags(client, module, nodegroup)
 
-        changed |= validate_labels(client, module, nodegroup, params['labels'])
+        changed |= validate_labels(client, module, nodegroup, params["labels"])
 
-        if 'taints' in nodegroup:
-            changed |= validate_taints(client, module, nodegroup, params['taints'])
+        if "taints" in nodegroup:
+            changed |= validate_taints(client, module, nodegroup, params["taints"])
 
         if wait:
-            wait_until(client, module, 'nodegroup_active', params['nodegroupName'], params['clusterName'])
+            wait_until(client, module, "nodegroup_active", params["nodegroupName"], params["clusterName"])
 
-        nodegroup = get_nodegroup(client, module, params['nodegroupName'], params['clusterName'])
+        nodegroup = get_nodegroup(client, module, params["nodegroupName"], params["clusterName"])
 
         module.exit_json(changed=changed, **camel_dict_to_snake_dict(nodegroup))
 
@@ -588,22 +593,22 @@ def create_or_update_nodegroups(client, module):
     try:
         nodegroup = client.create_nodegroup(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't create Nodegroup %s." % params['nodegroupName'])
+        module.fail_json_aws(e, msg="Couldn't create Nodegroup %s." % params["nodegroupName"])
 
     if wait:
-        wait_until(client, module, 'nodegroup_active', params['nodegroupName'], params['clusterName'])
-        nodegroup = get_nodegroup(client, module, params['nodegroupName'], params['clusterName'])
+        wait_until(client, module, "nodegroup_active", params["nodegroupName"], params["clusterName"])
+        nodegroup = get_nodegroup(client, module, params["nodegroupName"], params["clusterName"])
 
     module.exit_json(changed=True, **camel_dict_to_snake_dict(nodegroup))
 
 
 def delete_nodegroups(client, module):
-    name = module.params.get('name')
-    clusterName = module.params['cluster_name']
+    name = module.params.get("name")
+    clusterName = module.params["cluster_name"]
     existing = get_nodegroup(client, module, name, clusterName)
-    wait = module.params.get('wait')
-    if not existing or existing['status'] == 'DELETING':
-        module.exit_json(changed=False, msg='Nodegroup not exists or in DELETING status.')
+    wait = module.params.get("wait")
+    if not existing or existing["status"] == "DELETING":
+        module.exit_json(changed=False, msg="Nodegroup not exists or in DELETING status.")
     if not module.check_mode:
         try:
             client.delete_nodegroup(clusterName=clusterName, nodegroupName=name)
@@ -611,104 +616,138 @@ def delete_nodegroups(client, module):
             module.fail_json_aws(e, msg="Couldn't delete Nodegroup %s." % name)
 
         if wait:
-            wait_until(client, module, 'nodegroup_deleted', name, clusterName)
+            wait_until(client, module, "nodegroup_deleted", name, clusterName)
 
     module.exit_json(changed=True)
 
 
 def get_nodegroup(client, module, nodegroup_name, cluster_name):
     try:
-        return client.describe_nodegroup(clusterName=cluster_name, nodegroupName=nodegroup_name)['nodegroup']
-    except is_boto3_error_code('ResourceNotFoundException'):
+        return client.describe_nodegroup(clusterName=cluster_name, nodegroupName=nodegroup_name)["nodegroup"]
+    except is_boto3_error_code("ResourceNotFoundException"):
         return None
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't get Nodegroup %s." % nodegroup_name)
 
 
 def wait_until(client, module, waiter_name, nodegroup_name, cluster_name):
-    wait_timeout = module.params.get('wait_timeout')
+    wait_timeout = module.params.get("wait_timeout")
     waiter = get_waiter(client, waiter_name)
     attempts = 1 + int(wait_timeout / waiter.config.delay)
     try:
-        waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name, WaiterConfig={'MaxAttempts': attempts})
+        waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name, WaiterConfig={"MaxAttempts": attempts})
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(e, msg="An error occurred waiting")
 
 
 def main():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        cluster_name=dict(type='str', required=True),
+        name=dict(type="str", required=True),
+        cluster_name=dict(type="str", required=True),
         node_role=dict(),
-        subnets=dict(type='list', elements='str'),
-        scaling_config=dict(type='dict', default={'min_size': 1, 'max_size': 2, 'desired_size': 1}, options=dict(
-            min_size=dict(type='int'),
-            max_size=dict(type='int'),
-            desired_size=dict(type='int')
-        )),
-        disk_size=dict(type='int'),
-        instance_types=dict(type='list', elements='str'),
-        ami_type=dict(choices=['AL2_x86_64', 'AL2_x86_64_GPU', 'AL2_ARM_64', 'CUSTOM', 'BOTTLEROCKET_ARM_64', 'BOTTLEROCKET_x86_64']),
-        remote_access=dict(type='dict', options=dict(
-            ec2_ssh_key=dict(no_log=True),
-            source_sg=dict(type='list', elements='str')
-        )),
-        update_config=dict(type='dict', default={'max_unavailable': 1}, options=dict(
-            max_unavailable=dict(type='int'),
-            max_unavailable_percentage=dict(type='int')
-        )),
-        labels=dict(type='dict', default={}),
-        taints=dict(type='list', elements='dict', default=[], options=dict(
-            key=dict(type='str', no_log=False,),
-            value=dict(type='str'),
-            effect=dict(type='str', choices=['NO_SCHEDULE', 'NO_EXECUTE', 'PREFER_NO_SCHEDULE'])
-        )),
-        launch_template=dict(type='dict', options=dict(
-            name=dict(type='str'),
-            version=dict(type='str'),
-            id=dict(type='str')
-        )),
-        capacity_type=dict(choices=['ON_DEMAND', 'SPOT'], default='ON_DEMAND'),
+        subnets=dict(type="list", elements="str"),
+        scaling_config=dict(
+            type="dict",
+            default={"min_size": 1, "max_size": 2, "desired_size": 1},
+            options=dict(
+                min_size=dict(type="int"),
+                max_size=dict(type="int"),
+                desired_size=dict(type="int"),
+            ),
+        ),
+        disk_size=dict(type="int"),
+        instance_types=dict(type="list", elements="str"),
+        ami_type=dict(
+            choices=[
+                "AL2_x86_64",
+                "AL2_x86_64_GPU",
+                "AL2_ARM_64",
+                "CUSTOM",
+                "BOTTLEROCKET_ARM_64",
+                "BOTTLEROCKET_x86_64",
+            ]
+        ),
+        remote_access=dict(
+            type="dict",
+            options=dict(
+                ec2_ssh_key=dict(no_log=True),
+                source_sg=dict(type="list", elements="str"),
+            ),
+        ),
+        update_config=dict(
+            type="dict",
+            default={"max_unavailable": 1},
+            options=dict(
+                max_unavailable=dict(type="int"),
+                max_unavailable_percentage=dict(type="int"),
+            ),
+        ),
+        labels=dict(type="dict", default={}),
+        taints=dict(
+            type="list",
+            elements="dict",
+            default=[],
+            options=dict(
+                key=dict(
+                    type="str",
+                    no_log=False,
+                ),
+                value=dict(type="str"),
+                effect=dict(type="str", choices=["NO_SCHEDULE", "NO_EXECUTE", "PREFER_NO_SCHEDULE"]),
+            ),
+        ),
+        launch_template=dict(
+            type="dict",
+            options=dict(
+                name=dict(type="str"),
+                version=dict(type="str"),
+                id=dict(type="str"),
+            ),
+        ),
+        capacity_type=dict(choices=["ON_DEMAND", "SPOT"], default="ON_DEMAND"),
         release_version=dict(),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=True),
-        state=dict(choices=['absent', 'present'], default='present'),
-        wait=dict(default=False, type='bool'),
-        wait_timeout=dict(default=1200, type='int')
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
+        state=dict(choices=["absent", "present"], default="present"),
+        wait=dict(default=False, type="bool"),
+        wait_timeout=dict(default=1200, type="int"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_if=[['state', 'present', ['node_role', 'subnets']]],
+        required_if=[["state", "present", ["node_role", "subnets"]]],
         mutually_exclusive=[
-            ('launch_template', 'instance_types'),
-            ('launch_template', 'disk_size'),
-            ('launch_template', 'remote_access'),
-            ('launch_template', 'ami_type')
+            ("launch_template", "instance_types"),
+            ("launch_template", "disk_size"),
+            ("launch_template", "remote_access"),
+            ("launch_template", "ami_type"),
         ],
         supports_check_mode=True,
     )
 
-    if module.params['launch_template'] is None:
-        if module.params['disk_size'] is None:
-            module.params['disk_size'] = 20
-        if module.params['ami_type'] is None:
-            module.params['ami_type'] = "AL2_x86_64"
-        if module.params['instance_types'] is None:
-            module.params['instance_types'] = ["t3.medium"]
+    if module.params["launch_template"] is None:
+        if module.params["disk_size"] is None:
+            module.params["disk_size"] = 20
+        if module.params["ami_type"] is None:
+            module.params["ami_type"] = "AL2_x86_64"
+        if module.params["instance_types"] is None:
+            module.params["instance_types"] = ["t3.medium"]
     else:
-        if (module.params['launch_template']['id'] is None) and (module.params['launch_template']['name'] is None):
-            module.exit_json(changed=False, msg='To use launch_template, it is necessary to inform the id or name.')
+        if (module.params["launch_template"]["id"] is None) and (module.params["launch_template"]["name"] is None):
+            module.exit_json(changed=False, msg="To use launch_template, it is necessary to inform the id or name.")
     try:
-        client = module.client('eks')
+        client = module.client("eks")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't connect to AWS.")
 
-    if module.params.get('state') == 'present':
+    if module.params.get("state") == "present":
         create_or_update_nodegroups(client, module)
     else:
         delete_nodegroups(client, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

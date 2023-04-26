@@ -145,39 +145,39 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 class CodeCommit(object):
     def __init__(self, module=None):
         self._module = module
-        self._client = self._module.client('codecommit')
+        self._client = self._module.client("codecommit")
         self._check_mode = self._module.check_mode
 
     def process(self):
         result = dict(changed=False)
 
-        if self._module.params['state'] == 'present':
+        if self._module.params["state"] == "present":
             if not self._repository_exists():
                 if not self._check_mode:
                     result = self._create_repository()
-                result['changed'] = True
+                result["changed"] = True
             else:
-                metadata = self._get_repository()['repositoryMetadata']
-                if not metadata.get('repositoryDescription'):
-                    metadata['repositoryDescription'] = ''
-                if metadata['repositoryDescription'] != self._module.params['description']:
+                metadata = self._get_repository()["repositoryMetadata"]
+                if not metadata.get("repositoryDescription"):
+                    metadata["repositoryDescription"] = ""
+                if metadata["repositoryDescription"] != self._module.params["description"]:
                     if not self._check_mode:
                         self._update_repository()
-                    result['changed'] = True
+                    result["changed"] = True
                 result.update(self._get_repository())
-        if self._module.params['state'] == 'absent' and self._repository_exists():
+        if self._module.params["state"] == "absent" and self._repository_exists():
             if not self._check_mode:
                 result = self._delete_repository()
-            result['changed'] = True
+            result["changed"] = True
         return result
 
     def _repository_exists(self):
         try:
-            paginator = self._client.get_paginator('list_repositories')
+            paginator = self._client.get_paginator("list_repositories")
             for page in paginator.paginate():
-                repositories = page['repositories']
+                repositories = page["repositories"]
                 for item in repositories:
-                    if self._module.params['name'] in item.values():
+                    if self._module.params["name"] in item.values():
                         return True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="couldn't get repository")
@@ -186,7 +186,7 @@ class CodeCommit(object):
     def _get_repository(self):
         try:
             result = self._client.get_repository(
-                repositoryName=self._module.params['name']
+                repositoryName=self._module.params["name"],
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="couldn't get repository")
@@ -195,8 +195,8 @@ class CodeCommit(object):
     def _update_repository(self):
         try:
             result = self._client.update_repository_description(
-                repositoryName=self._module.params['name'],
-                repositoryDescription=self._module.params['description']
+                repositoryName=self._module.params["name"],
+                repositoryDescription=self._module.params["description"],
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="couldn't create repository")
@@ -205,8 +205,8 @@ class CodeCommit(object):
     def _create_repository(self):
         try:
             result = self._client.create_repository(
-                repositoryName=self._module.params['name'],
-                repositoryDescription=self._module.params['description']
+                repositoryName=self._module.params["name"],
+                repositoryDescription=self._module.params["description"],
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="couldn't create repository")
@@ -215,7 +215,7 @@ class CodeCommit(object):
     def _delete_repository(self):
         try:
             result = self._client.delete_repository(
-                repositoryName=self._module.params['name']
+                repositoryName=self._module.params["name"],
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="couldn't delete repository")
@@ -225,13 +225,13 @@ class CodeCommit(object):
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        state=dict(choices=['present', 'absent'], required=True),
-        description=dict(default='', aliases=['comment'])
+        state=dict(choices=["present", "absent"], required=True),
+        description=dict(default="", aliases=["comment"]),
     )
 
     ansible_aws_module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     aws_codecommit = CodeCommit(module=ansible_aws_module)
@@ -239,5 +239,5 @@ def main():
     ansible_aws_module.exit_json(**camel_dict_to_snake_dict(result))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

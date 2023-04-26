@@ -152,24 +152,33 @@ class CloudFrontInvalidationServiceManager(object):
 
     def __init__(self, module, cloudfront_facts_mgr):
         self.module = module
-        self.client = module.client('cloudfront')
+        self.client = module.client("cloudfront")
         self.__cloudfront_facts_mgr = cloudfront_facts_mgr
 
     def create_invalidation(self, distribution_id, invalidation_batch):
-        current_invalidation_response = self.get_invalidation(distribution_id, invalidation_batch['CallerReference'])
+        current_invalidation_response = self.get_invalidation(distribution_id, invalidation_batch["CallerReference"])
         try:
-            response = self.client.create_invalidation(DistributionId=distribution_id, InvalidationBatch=invalidation_batch)
-            response.pop('ResponseMetadata', None)
+            response = self.client.create_invalidation(
+                DistributionId=distribution_id, InvalidationBatch=invalidation_batch
+            )
+            response.pop("ResponseMetadata", None)
             if current_invalidation_response:
                 return response, False
             else:
                 return response, True
-        except is_boto3_error_message('Your request contains a caller reference that was used for a previous invalidation '
-                                      'batch for the same distribution.'):
-            self.module.warn("InvalidationBatch target paths are not modifiable. "
-                             "To make a new invalidation please update caller_reference.")
+        except is_boto3_error_message(
+            "Your request contains a caller reference that was used for a previous invalidation "
+            "batch for the same distribution."
+        ):
+            self.module.warn(
+                "InvalidationBatch target paths are not modifiable. "
+                "To make a new invalidation please update caller_reference."
+            )
             return current_invalidation_response, False
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        except (
+            botocore.exceptions.ClientError,
+            botocore.exceptions.BotoCoreError,
+        ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Error creating CloudFront invalidations.")
 
     def get_invalidation(self, distribution_id, caller_reference):
@@ -178,9 +187,11 @@ class CloudFrontInvalidationServiceManager(object):
 
         # check if there is an invalidation with the same caller reference
         for invalidation in invalidations:
-            invalidation_info = self.__cloudfront_facts_mgr.get_invalidation(distribution_id=distribution_id, id=invalidation['Id'])
-            if invalidation_info.get('InvalidationBatch', {}).get('CallerReference') == caller_reference:
-                invalidation_info.pop('ResponseMetadata', None)
+            invalidation_info = self.__cloudfront_facts_mgr.get_invalidation(
+                distribution_id=distribution_id, id=invalidation["Id"]
+            )
+            if invalidation_info.get("InvalidationBatch", {}).get("CallerReference") == caller_reference:
+                invalidation_info.pop("ResponseMetadata", None)
                 return invalidation_info
         return {}
 
@@ -217,8 +228,8 @@ class CloudFrontInvalidationValidationManager(object):
             else:
                 valid_caller_reference = datetime.datetime.now().isoformat()
             valid_invalidation_batch = {
-                'paths': self.create_aws_list(invalidation_batch),
-                'caller_reference': valid_caller_reference
+                "paths": self.create_aws_list(invalidation_batch),
+                "caller_reference": valid_caller_reference,
             }
             return valid_invalidation_batch
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -230,19 +241,21 @@ def main():
         caller_reference=dict(),
         distribution_id=dict(),
         alias=dict(),
-        target_paths=dict(required=True, type='list', elements='str')
+        target_paths=dict(required=True, type="list", elements="str"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False, mutually_exclusive=[['distribution_id', 'alias']])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec, supports_check_mode=False, mutually_exclusive=[["distribution_id", "alias"]]
+    )
 
     cloudfront_facts_mgr = CloudFrontFactsServiceManager(module)
     validation_mgr = CloudFrontInvalidationValidationManager(module, cloudfront_facts_mgr)
     service_mgr = CloudFrontInvalidationServiceManager(module, cloudfront_facts_mgr)
 
-    caller_reference = module.params.get('caller_reference')
-    distribution_id = module.params.get('distribution_id')
-    alias = module.params.get('alias')
-    target_paths = module.params.get('target_paths')
+    caller_reference = module.params.get("caller_reference")
+    distribution_id = module.params.get("distribution_id")
+    alias = module.params.get("alias")
+    target_paths = module.params.get("target_paths")
 
     result = {}
 
@@ -254,5 +267,5 @@ def main():
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(result))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

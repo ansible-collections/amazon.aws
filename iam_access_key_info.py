@@ -85,44 +85,38 @@ def get_access_keys(user):
     try:
         results = client.list_access_keys(aws_retry=True, UserName=user)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(
-            e, msg='Failed to get access keys for user "{0}"'.format(user)
-        )
+        module.fail_json_aws(e, msg='Failed to get access keys for user "{0}"'.format(user))
     if not results:
         return None
 
     results = camel_dict_to_snake_dict(results)
-    access_keys = results.get('access_key_metadata', [])
+    access_keys = results.get("access_key_metadata", [])
     if not access_keys:
         return []
 
     access_keys = normalize_boto3_result(access_keys)
-    access_keys = sorted(access_keys, key=lambda d: d.get('create_date', None))
+    access_keys = sorted(access_keys, key=lambda d: d.get("create_date", None))
     return access_keys
 
 
 def main():
-
     global module
     global client
 
     argument_spec = dict(
-        user_name=dict(required=True, type='str', aliases=['username']),
+        user_name=dict(required=True, type="str", aliases=["username"]),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-    )
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
     changed = False
-    user = module.params.get('user_name')
+    user = module.params.get("user_name")
     access_keys = get_access_keys(user)
 
     module.exit_json(changed=changed, access_keys=access_keys)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

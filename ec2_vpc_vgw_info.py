@@ -135,13 +135,13 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def get_virtual_gateway_info(virtual_gateway):
-    tags = virtual_gateway.get('Tags', [])
+    tags = virtual_gateway.get("Tags", [])
     resource_tags = boto3_tag_list_to_ansible_dict(tags)
     virtual_gateway_info = dict(
-        VpnGatewayId=virtual_gateway['VpnGatewayId'],
-        State=virtual_gateway['State'],
-        Type=virtual_gateway['Type'],
-        VpcAttachments=virtual_gateway['VpcAttachments'],
+        VpnGatewayId=virtual_gateway["VpnGatewayId"],
+        State=virtual_gateway["State"],
+        Type=virtual_gateway["Type"],
+        VpcAttachments=virtual_gateway["VpcAttachments"],
         Tags=tags,
         ResourceTags=resource_tags,
     )
@@ -151,32 +151,34 @@ def get_virtual_gateway_info(virtual_gateway):
 def list_virtual_gateways(client, module):
     params = dict()
 
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     if module.params.get("vpn_gateway_ids"):
-        params['VpnGatewayIds'] = module.params.get("vpn_gateway_ids")
+        params["VpnGatewayIds"] = module.params.get("vpn_gateway_ids")
 
     try:
         all_virtual_gateways = client.describe_vpn_gateways(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list gateways")
 
-    return [camel_dict_to_snake_dict(get_virtual_gateway_info(vgw), ignore_list=['ResourceTags'])
-            for vgw in all_virtual_gateways['VpnGateways']]
+    return [
+        camel_dict_to_snake_dict(get_virtual_gateway_info(vgw), ignore_list=["ResourceTags"])
+        for vgw in all_virtual_gateways["VpnGateways"]
+    ]
 
 
 def main():
     argument_spec = dict(
-        filters=dict(type='dict', default=dict()),
-        vpn_gateway_ids=dict(type='list', default=None, elements='str'),
+        filters=dict(type="dict", default=dict()),
+        vpn_gateway_ids=dict(type="list", default=None, elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        connection = module.client('ec2')
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # call your function here
     results = list_virtual_gateways(connection, module)
@@ -184,5 +186,5 @@ def main():
     module.exit_json(virtual_gateways=results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

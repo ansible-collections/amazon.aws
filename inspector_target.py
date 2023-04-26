@@ -116,11 +116,11 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        state=dict(choices=['absent', 'present'], default='present'),
-        tags=dict(type='dict'),
+        state=dict(choices=["absent", "present"], default="present"),
+        tags=dict(type="dict"),
     )
 
-    required_if = [['state', 'present', ['tags']]]
+    required_if = [["state", "present", ["tags"]]]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -128,29 +128,37 @@ def main():
         required_if=required_if,
     )
 
-    name = module.params.get('name')
-    state = module.params.get('state').lower()
-    tags = module.params.get('tags')
+    name = module.params.get("name")
+    state = module.params.get("state").lower()
+    tags = module.params.get("tags")
     if tags:
-        tags = ansible_dict_to_boto3_tag_list(tags, 'key', 'value')
+        tags = ansible_dict_to_boto3_tag_list(tags, "key", "value")
 
-    client = module.client('inspector')
+    client = module.client("inspector")
 
     try:
         existing_target_arn = client.list_assessment_targets(
-            filter={'assessmentTargetNamePattern': name},
-        ).get('assessmentTargetArns')[0]
+            filter={"assessmentTargetNamePattern": name},
+        ).get(
+            "assessmentTargetArns"
+        )[0]
 
         existing_target = camel_dict_to_snake_dict(
             client.describe_assessment_targets(
                 assessmentTargetArns=[existing_target_arn],
-            ).get('assessmentTargets')[0]
+            ).get(
+                "assessmentTargets"
+            )[0]
         )
 
-        existing_resource_group_arn = existing_target.get('resource_group_arn')
-        existing_resource_group_tags = client.describe_resource_groups(
-            resourceGroupArns=[existing_resource_group_arn],
-        ).get('resourceGroups')[0].get('tags')
+        existing_resource_group_arn = existing_target.get("resource_group_arn")
+        existing_resource_group_tags = (
+            client.describe_resource_groups(
+                resourceGroupArns=[existing_resource_group_arn],
+            )
+            .get("resourceGroups")[0]
+            .get("tags")
+        )
 
         target_exists = True
     except (
@@ -161,23 +169,18 @@ def main():
     except IndexError:
         target_exists = False
 
-    if state == 'present' and target_exists:
+    if state == "present" and target_exists:
         ansible_dict_tags = boto3_tag_list_to_ansible_dict(tags)
-        ansible_dict_existing_tags = boto3_tag_list_to_ansible_dict(
-            existing_resource_group_tags
-        )
-        tags_to_add, tags_to_remove = compare_aws_tags(
-            ansible_dict_tags,
-            ansible_dict_existing_tags
-        )
+        ansible_dict_existing_tags = boto3_tag_list_to_ansible_dict(existing_resource_group_tags)
+        tags_to_add, tags_to_remove = compare_aws_tags(ansible_dict_tags, ansible_dict_existing_tags)
         if not (tags_to_add or tags_to_remove):
-            existing_target.update({'tags': ansible_dict_existing_tags})
+            existing_target.update({"tags": ansible_dict_existing_tags})
             module.exit_json(changed=False, **existing_target)
         else:
             try:
                 updated_resource_group_arn = client.create_resource_group(
                     resourceGroupTags=tags,
-                ).get('resourceGroupArn')
+                ).get("resourceGroupArn")
 
                 client.update_assessment_target(
                     assessmentTargetArn=existing_target_arn,
@@ -188,10 +191,12 @@ def main():
                 updated_target = camel_dict_to_snake_dict(
                     client.describe_assessment_targets(
                         assessmentTargetArns=[existing_target_arn],
-                    ).get('assessmentTargets')[0]
+                    ).get(
+                        "assessmentTargets"
+                    )[0]
                 )
 
-                updated_target.update({'tags': ansible_dict_tags})
+                updated_target.update({"tags": ansible_dict_tags})
                 module.exit_json(changed=True, **updated_target)
             except (
                 botocore.exceptions.BotoCoreError,
@@ -199,24 +204,26 @@ def main():
             ) as e:
                 module.fail_json_aws(e, msg="trying to update target")
 
-    elif state == 'present' and not target_exists:
+    elif state == "present" and not target_exists:
         try:
             new_resource_group_arn = client.create_resource_group(
                 resourceGroupTags=tags,
-            ).get('resourceGroupArn')
+            ).get("resourceGroupArn")
 
             new_target_arn = client.create_assessment_target(
                 assessmentTargetName=name,
                 resourceGroupArn=new_resource_group_arn,
-            ).get('assessmentTargetArn')
+            ).get("assessmentTargetArn")
 
             new_target = camel_dict_to_snake_dict(
                 client.describe_assessment_targets(
                     assessmentTargetArns=[new_target_arn],
-                ).get('assessmentTargets')[0]
+                ).get(
+                    "assessmentTargets"
+                )[0]
             )
 
-            new_target.update({'tags': boto3_tag_list_to_ansible_dict(tags)})
+            new_target.update({"tags": boto3_tag_list_to_ansible_dict(tags)})
             module.exit_json(changed=True, **new_target)
         except (
             botocore.exceptions.BotoCoreError,
@@ -224,7 +231,7 @@ def main():
         ) as e:
             module.fail_json_aws(e, msg="trying to create target")
 
-    elif state == 'absent' and target_exists:
+    elif state == "absent" and target_exists:
         try:
             client.delete_assessment_target(
                 assessmentTargetArn=existing_target_arn,
@@ -236,9 +243,9 @@ def main():
         ) as e:
             module.fail_json_aws(e, msg="trying to delete target")
 
-    elif state == 'absent' and not target_exists:
+    elif state == "absent" and not target_exists:
         module.exit_json(changed=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

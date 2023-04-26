@@ -209,14 +209,14 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def create_pipeline(client, name, role_arn, artifact_store, stages, version, module):
-    pipeline_dict = {'name': name, 'roleArn': role_arn, 'artifactStore': artifact_store, 'stages': stages}
+    pipeline_dict = {"name": name, "roleArn": role_arn, "artifactStore": artifact_store, "stages": stages}
     if version:
-        pipeline_dict['version'] = version
+        pipeline_dict["version"] = version
     try:
         resp = client.create_pipeline(pipeline=pipeline_dict)
         return resp
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable create pipeline {0}".format(pipeline_dict['name']))
+        module.fail_json_aws(e, msg="Unable create pipeline {0}".format(pipeline_dict["name"]))
 
 
 def update_pipeline(client, pipeline_dict, module):
@@ -224,7 +224,7 @@ def update_pipeline(client, pipeline_dict, module):
         resp = client.update_pipeline(pipeline=pipeline_dict)
         return resp
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable update pipeline {0}".format(pipeline_dict['name']))
+        module.fail_json_aws(e, msg="Unable update pipeline {0}".format(pipeline_dict["name"]))
 
 
 def delete_pipeline(client, name, module):
@@ -244,63 +244,69 @@ def describe_pipeline(client, name, version, module):
         else:
             pipeline = client.get_pipeline(name=name)
             return pipeline
-    except is_boto3_error_code('PipelineNotFoundException'):
+    except is_boto3_error_code("PipelineNotFoundException"):
         return pipeline
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type='str'),
-        role_arn=dict(required=True, type='str'),
-        artifact_store=dict(required=True, type='dict'),
-        stages=dict(required=True, type='list', elements='dict'),
-        version=dict(type='int'),
-        state=dict(choices=['present', 'absent'], default='present')
+        name=dict(required=True, type="str"),
+        role_arn=dict(required=True, type="str"),
+        artifact_store=dict(required=True, type="dict"),
+        stages=dict(required=True, type="list", elements="dict"),
+        version=dict(type="int"),
+        state=dict(choices=["present", "absent"], default="present"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
-    client_conn = module.client('codepipeline')
+    client_conn = module.client("codepipeline")
 
-    state = module.params.get('state')
+    state = module.params.get("state")
     changed = False
 
     # Determine if the CodePipeline exists
-    found_code_pipeline = describe_pipeline(client=client_conn, name=module.params['name'], version=module.params['version'], module=module)
+    found_code_pipeline = describe_pipeline(
+        client=client_conn, name=module.params["name"], version=module.params["version"], module=module
+    )
     pipeline_result = {}
 
-    if state == 'present':
-        if 'pipeline' in found_code_pipeline:
-            pipeline_dict = copy.deepcopy(found_code_pipeline['pipeline'])
+    if state == "present":
+        if "pipeline" in found_code_pipeline:
+            pipeline_dict = copy.deepcopy(found_code_pipeline["pipeline"])
             # Update dictionary with provided module params:
-            pipeline_dict['roleArn'] = module.params['role_arn']
-            pipeline_dict['artifactStore'] = module.params['artifact_store']
-            pipeline_dict['stages'] = module.params['stages']
-            if module.params['version'] is not None:
-                pipeline_dict['version'] = module.params['version']
+            pipeline_dict["roleArn"] = module.params["role_arn"]
+            pipeline_dict["artifactStore"] = module.params["artifact_store"]
+            pipeline_dict["stages"] = module.params["stages"]
+            if module.params["version"] is not None:
+                pipeline_dict["version"] = module.params["version"]
 
             pipeline_result = update_pipeline(client=client_conn, pipeline_dict=pipeline_dict, module=module)
 
-            if compare_policies(found_code_pipeline['pipeline'], pipeline_result['pipeline']):
+            if compare_policies(found_code_pipeline["pipeline"], pipeline_result["pipeline"]):
                 changed = True
         else:
             pipeline_result = create_pipeline(
                 client=client_conn,
-                name=module.params['name'],
-                role_arn=module.params['role_arn'],
-                artifact_store=module.params['artifact_store'],
-                stages=module.params['stages'],
-                version=module.params['version'],
-                module=module)
+                name=module.params["name"],
+                role_arn=module.params["role_arn"],
+                artifact_store=module.params["artifact_store"],
+                stages=module.params["stages"],
+                version=module.params["version"],
+                module=module,
+            )
             changed = True
-    elif state == 'absent':
+    elif state == "absent":
         if found_code_pipeline:
-            pipeline_result = delete_pipeline(client=client_conn, name=module.params['name'], module=module)
+            pipeline_result = delete_pipeline(client=client_conn, name=module.params["name"], module=module)
             changed = True
 
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(pipeline_result))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

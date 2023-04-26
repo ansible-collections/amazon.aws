@@ -227,20 +227,20 @@ class RuleGroup:
 
     def update(self, description, rules, sampled_requests, cloudwatch_metrics, metric_name):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'Id': self.id,
-            'Rules': rules,
-            'LockToken': self.locktoken,
-            'VisibilityConfig': {
-                'SampledRequestsEnabled': sampled_requests,
-                'CloudWatchMetricsEnabled': cloudwatch_metrics,
-                'MetricName': metric_name
-            }
+            "Name": self.name,
+            "Scope": self.scope,
+            "Id": self.id,
+            "Rules": rules,
+            "LockToken": self.locktoken,
+            "VisibilityConfig": {
+                "SampledRequestsEnabled": sampled_requests,
+                "CloudWatchMetricsEnabled": cloudwatch_metrics,
+                "MetricName": metric_name,
+            },
         }
 
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
 
         try:
             response = self.wafv2.update_rule_group(**req_obj)
@@ -252,11 +252,11 @@ class RuleGroup:
         if self.id is None:
             response = self.list()
 
-            for item in response.get('RuleGroups'):
-                if item.get('Name') == self.name:
-                    self.id = item.get('Id')
-                    self.locktoken = item.get('LockToken')
-                    self.arn = item.get('ARN')
+            for item in response.get("RuleGroups"):
+                if item.get("Name") == self.name:
+                    self.id = item.get("Id")
+                    self.locktoken = item.get("LockToken")
+                    self.arn = item.get("ARN")
 
         return self.refresh_group()
 
@@ -264,18 +264,14 @@ class RuleGroup:
         existing_group = None
         if self.id:
             try:
-                response = self.wafv2.get_rule_group(
-                    Name=self.name,
-                    Scope=self.scope,
-                    Id=self.id
-                )
-                existing_group = response.get('RuleGroup')
-                self.locktoken = response.get('LockToken')
+                response = self.wafv2.get_rule_group(Name=self.name, Scope=self.scope, Id=self.id)
+                existing_group = response.get("RuleGroup")
+                self.locktoken = response.get("LockToken")
             except (BotoCoreError, ClientError) as e:
                 self.fail_json_aws(e, msg="Failed to get wafv2 rule group.")
 
             tags = describe_wafv2_tags(self.wafv2, self.arn, self.fail_json_aws)
-            existing_group['tags'] = tags or {}
+            existing_group["tags"] = tags or {}
 
         return existing_group
 
@@ -290,10 +286,7 @@ class RuleGroup:
     def remove(self):
         try:
             response = self.wafv2.delete_rule_group(
-                Name=self.name,
-                Scope=self.scope,
-                Id=self.id,
-                LockToken=self.locktoken
+                Name=self.name, Scope=self.scope, Id=self.id, LockToken=self.locktoken
             )
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to delete wafv2 rule group.")
@@ -301,22 +294,22 @@ class RuleGroup:
 
     def create(self, capacity, description, rules, sampled_requests, cloudwatch_metrics, metric_name, tags):
         req_obj = {
-            'Name': self.name,
-            'Scope': self.scope,
-            'Capacity': capacity,
-            'Rules': rules,
-            'VisibilityConfig': {
-                'SampledRequestsEnabled': sampled_requests,
-                'CloudWatchMetricsEnabled': cloudwatch_metrics,
-                'MetricName': metric_name
-            }
+            "Name": self.name,
+            "Scope": self.scope,
+            "Capacity": capacity,
+            "Rules": rules,
+            "VisibilityConfig": {
+                "SampledRequestsEnabled": sampled_requests,
+                "CloudWatchMetricsEnabled": cloudwatch_metrics,
+                "MetricName": metric_name,
+            },
         }
 
         if description:
-            req_obj['Description'] = description
+            req_obj["Description"] = description
 
         if tags:
-            req_obj['Tags'] = ansible_dict_to_boto3_tag_list(tags)
+            req_obj["Tags"] = ansible_dict_to_boto3_tag_list(tags)
 
         try:
             response = self.wafv2.create_rule_group(**req_obj)
@@ -329,26 +322,25 @@ class RuleGroup:
 
 
 def main():
-
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        name=dict(type='str', required=True),
-        scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL']),
-        capacity=dict(type='int'),
-        description=dict(type='str'),
-        rules=dict(type='list', elements='dict'),
-        sampled_requests=dict(type='bool', default=False),
-        cloudwatch_metrics=dict(type='bool', default=True),
-        metric_name=dict(type='str'),
-        tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(default=True, type='bool'),
-        purge_rules=dict(default=True, type='bool'),
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        scope=dict(type="str", required=True, choices=["CLOUDFRONT", "REGIONAL"]),
+        capacity=dict(type="int"),
+        description=dict(type="str"),
+        rules=dict(type="list", elements="dict"),
+        sampled_requests=dict(type="bool", default=False),
+        cloudwatch_metrics=dict(type="bool", default=True),
+        metric_name=dict(type="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(default=True, type="bool"),
+        purge_rules=dict(default=True, type="bool"),
     )
 
     module = AnsibleAWSModule(
         argument_spec=arg_spec,
         supports_check_mode=True,
-        required_if=[['state', 'present', ['capacity', 'rules']]]
+        required_if=[["state", "present", ["capacity", "rules"]]],
     )
 
     state = module.params.get("state")
@@ -373,31 +365,26 @@ def main():
     if not metric_name:
         metric_name = name
 
-    wafv2 = module.client('wafv2')
+    wafv2 = module.client("wafv2")
     rule_group = RuleGroup(wafv2, name, scope, module.fail_json_aws)
 
     change = False
     retval = {}
 
-    if state == 'present':
+    if state == "present":
         if rule_group.get():
-            tagging_change = ensure_wafv2_tags(wafv2, rule_group.arn, tags, purge_tags,
-                                               module.fail_json_aws, module.check_mode)
-            rules_change, rules = compare_priority_rules(rule_group.get().get('Rules'), rules, purge_rules, state)
-            description_change = bool(description) and (rule_group.get().get('Description') != description)
+            tagging_change = ensure_wafv2_tags(
+                wafv2, rule_group.arn, tags, purge_tags, module.fail_json_aws, module.check_mode
+            )
+            rules_change, rules = compare_priority_rules(rule_group.get().get("Rules"), rules, purge_rules, state)
+            description_change = bool(description) and (rule_group.get().get("Description") != description)
             change = tagging_change or rules_change or description_change
             retval = rule_group.get()
             if module.check_mode:
                 # In check mode nothing changes...
                 pass
             elif rules_change or description_change:
-                retval = rule_group.update(
-                    description,
-                    rules,
-                    sampled_requests,
-                    cloudwatch_metrics,
-                    metric_name
-                )
+                retval = rule_group.update(description, rules, sampled_requests, cloudwatch_metrics, metric_name)
             elif tagging_change:
                 retval = rule_group.refresh_group()
 
@@ -405,35 +392,25 @@ def main():
             change = True
             if not check_mode:
                 retval = rule_group.create(
-                    capacity,
-                    description,
-                    rules,
-                    sampled_requests,
-                    cloudwatch_metrics,
-                    metric_name,
-                    tags
+                    capacity, description, rules, sampled_requests, cloudwatch_metrics, metric_name, tags
                 )
 
-    elif state == 'absent':
+    elif state == "absent":
         if rule_group.get():
             if rules:
                 if len(rules) > 0:
-                    change, rules = compare_priority_rules(rule_group.get().get('Rules'), rules, purge_rules, state)
+                    change, rules = compare_priority_rules(rule_group.get().get("Rules"), rules, purge_rules, state)
                     if change and not check_mode:
                         retval = rule_group.update(
-                            description,
-                            rules,
-                            sampled_requests,
-                            cloudwatch_metrics,
-                            metric_name
+                            description, rules, sampled_requests, cloudwatch_metrics, metric_name
                         )
             else:
                 change = True
                 if not check_mode:
                     retval = rule_group.remove()
 
-    module.exit_json(changed=change, **camel_dict_to_snake_dict(retval, ignore_list=['tags']))
+    module.exit_json(changed=change, **camel_dict_to_snake_dict(retval, ignore_list=["tags"]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

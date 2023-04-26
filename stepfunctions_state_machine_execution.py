@@ -100,95 +100,90 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def start_execution(module, sfn_client):
-    '''
+    """
     start_execution uses execution name to determine if a previous execution already exists.
     If an execution by the provided name exists, call client.start_execution will not be called.
-    '''
+    """
 
-    state_machine_arn = module.params.get('state_machine_arn')
-    name = module.params.get('name')
-    execution_input = module.params.get('execution_input')
+    state_machine_arn = module.params.get("state_machine_arn")
+    name = module.params.get("name")
+    execution_input = module.params.get("execution_input")
 
     try:
         # list_executions is eventually consistent
-        page_iterators = sfn_client.get_paginator('list_executions').paginate(stateMachineArn=state_machine_arn)
+        page_iterators = sfn_client.get_paginator("list_executions").paginate(stateMachineArn=state_machine_arn)
 
-        for execution in page_iterators.build_full_result()['executions']:
-            if name == execution['name']:
-                check_mode(module, msg='State machine execution already exists.', changed=False)
+        for execution in page_iterators.build_full_result()["executions"]:
+            if name == execution["name"]:
+                check_mode(module, msg="State machine execution already exists.", changed=False)
                 module.exit_json(changed=False)
 
-        check_mode(module, msg='State machine execution would be started.', changed=True)
-        res_execution = sfn_client.start_execution(
-            stateMachineArn=state_machine_arn,
-            name=name,
-            input=execution_input
-        )
-    except is_boto3_error_code('ExecutionAlreadyExists'):
+        check_mode(module, msg="State machine execution would be started.", changed=True)
+        res_execution = sfn_client.start_execution(stateMachineArn=state_machine_arn, name=name, input=execution_input)
+    except is_boto3_error_code("ExecutionAlreadyExists"):
         # this will never be executed anymore
         module.exit_json(changed=False)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to start execution.")
 
     module.exit_json(changed=True, **camel_dict_to_snake_dict(res_execution))
 
 
 def stop_execution(module, sfn_client):
-
-    cause = module.params.get('cause')
-    error = module.params.get('error')
-    execution_arn = module.params.get('execution_arn')
+    cause = module.params.get("cause")
+    error = module.params.get("error")
+    execution_arn = module.params.get("execution_arn")
 
     try:
         # describe_execution is eventually consistent
-        execution_status = sfn_client.describe_execution(executionArn=execution_arn)['status']
-        if execution_status != 'RUNNING':
-            check_mode(module, msg='State machine execution is not running.', changed=False)
+        execution_status = sfn_client.describe_execution(executionArn=execution_arn)["status"]
+        if execution_status != "RUNNING":
+            check_mode(module, msg="State machine execution is not running.", changed=False)
             module.exit_json(changed=False)
 
-        check_mode(module, msg='State machine execution would be stopped.', changed=True)
-        res = sfn_client.stop_execution(
-            executionArn=execution_arn,
-            cause=cause,
-            error=error
-        )
+        check_mode(module, msg="State machine execution would be stopped.", changed=True)
+        res = sfn_client.stop_execution(executionArn=execution_arn, cause=cause, error=error)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to stop execution.")
 
     module.exit_json(changed=True, **camel_dict_to_snake_dict(res))
 
 
-def check_mode(module, msg='', changed=False):
+def check_mode(module, msg="", changed=False):
     if module.check_mode:
         module.exit_json(changed=changed, output=msg)
 
 
 def main():
     module_args = dict(
-        action=dict(choices=['start', 'stop'], default='start'),
-        name=dict(type='str'),
-        execution_input=dict(type='json', default={}),
-        state_machine_arn=dict(type='str'),
-        cause=dict(type='str', default=''),
-        error=dict(type='str', default=''),
-        execution_arn=dict(type='str')
+        action=dict(choices=["start", "stop"], default="start"),
+        name=dict(type="str"),
+        execution_input=dict(type="json", default={}),
+        state_machine_arn=dict(type="str"),
+        cause=dict(type="str", default=""),
+        error=dict(type="str", default=""),
+        execution_arn=dict(type="str"),
     )
     module = AnsibleAWSModule(
         argument_spec=module_args,
-        required_if=[('action', 'start', ['name', 'state_machine_arn']),
-                     ('action', 'stop', ['execution_arn']),
-                     ],
-        supports_check_mode=True
+        required_if=[
+            ("action", "start", ["name", "state_machine_arn"]),
+            ("action", "stop", ["execution_arn"]),
+        ],
+        supports_check_mode=True,
     )
 
-    sfn_client = module.client('stepfunctions')
+    sfn_client = module.client("stepfunctions")
 
-    action = module.params.get('action')
+    action = module.params.get("action")
     if action == "start":
         start_execution(module, sfn_client)
     else:
         stop_execution(module, sfn_client)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

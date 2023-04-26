@@ -514,16 +514,17 @@ def ensure_domain_absent(client, module):
 
     domain = get_domain_status(client, module, domain_name)
     if module.check_mode:
-        module.exit_json(
-            changed=True, msg="Would have deleted domain if not in check mode"
-        )
+        module.exit_json(changed=True, msg="Would have deleted domain if not in check mode")
     try:
         client.delete_domain(DomainName=domain_name)
         changed = True
     except is_boto3_error_code("ResourceNotFoundException"):
         # The resource does not exist, or it has already been deleted
         return dict(changed=False)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="trying to delete domain")
 
     # If we're not waiting for a delete to complete then we're all done
@@ -535,7 +536,10 @@ def ensure_domain_absent(client, module):
         return dict(changed=changed)
     except is_boto3_error_code("ResourceNotFoundException"):
         return dict(changed=changed)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "awaiting domain deletion")
 
 
@@ -560,8 +564,11 @@ def upgrade_domain(client, module, source_version, target_engine_version):
             # It's not possible to upgrade directly to the target version.
             # Check the module parameters to determine if this is allowed or not.
             if not module.params.get("allow_intermediate_upgrades"):
-                module.fail_json(msg="Cannot upgrade from {0} to version {1}. The highest compatible version is {2}".format(
-                    source_version, target_engine_version, next_version))
+                module.fail_json(
+                    msg="Cannot upgrade from {0} to version {1}. The highest compatible version is {2}".format(
+                        source_version, target_engine_version, next_version
+                    )
+                )
 
         parameters = {
             "DomainName": domain_name,
@@ -584,9 +591,7 @@ def upgrade_domain(client, module, source_version, target_engine_version):
             # raised if it's not possible to upgrade to the target version.
             module.fail_json_aws(
                 e,
-                msg="Couldn't upgrade domain {0} from {1} to {2}".format(
-                    domain_name, current_version, next_version
-                ),
+                msg="Couldn't upgrade domain {0} from {1} to {2}".format(domain_name, current_version, next_version),
             )
 
         if module.check_mode:
@@ -602,9 +607,7 @@ def upgrade_domain(client, module, source_version, target_engine_version):
         wait_for_domain_status(client, module, domain_name, "domain_available")
 
 
-def set_cluster_config(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_cluster_config(module, current_domain_config, desired_domain_config, change_set):
     changed = False
 
     cluster_config = desired_domain_config["ClusterConfig"]
@@ -619,24 +622,16 @@ def set_cluster_config(
         if cluster_config["ZoneAwarenessEnabled"]:
             if cluster_opts.get("availability_zone_count") is not None:
                 cluster_config["ZoneAwarenessConfig"] = {
-                    "AvailabilityZoneCount": cluster_opts.get(
-                        "availability_zone_count"
-                    ),
+                    "AvailabilityZoneCount": cluster_opts.get("availability_zone_count"),
                 }
 
         if cluster_opts.get("dedicated_master") is not None:
-            cluster_config["DedicatedMasterEnabled"] = cluster_opts.get(
-                "dedicated_master"
-            )
+            cluster_config["DedicatedMasterEnabled"] = cluster_opts.get("dedicated_master")
         if cluster_config["DedicatedMasterEnabled"]:
             if cluster_opts.get("dedicated_master_instance_type") is not None:
-                cluster_config["DedicatedMasterType"] = cluster_opts.get(
-                    "dedicated_master_instance_type"
-                )
+                cluster_config["DedicatedMasterType"] = cluster_opts.get("dedicated_master_instance_type")
             if cluster_opts.get("dedicated_master_instance_count") is not None:
-                cluster_config["DedicatedMasterCount"] = cluster_opts.get(
-                    "dedicated_master_instance_count"
-                )
+                cluster_config["DedicatedMasterCount"] = cluster_opts.get("dedicated_master_instance_count")
 
         if cluster_opts.get("warm_enabled") is not None:
             cluster_config["WarmEnabled"] = cluster_opts.get("warm_enabled")
@@ -657,31 +652,20 @@ def set_cluster_config(
         if cold_storage_opts is not None and cold_storage_opts.get("enabled"):
             module.fail_json(msg="Cold Storage is not supported")
         cluster_config.pop("ColdStorageOptions", None)
-        if (
-            current_domain_config is not None
-            and "ClusterConfig" in current_domain_config
-        ):
+        if current_domain_config is not None and "ClusterConfig" in current_domain_config:
             # Remove 'ColdStorageOptions' from the current domain config, otherwise the actual vs desired diff
             # will indicate a change must be done.
             current_domain_config["ClusterConfig"].pop("ColdStorageOptions", None)
     else:
         # Elasticsearch 7.9 and above support ColdStorageOptions.
-        if (
-            cold_storage_opts is not None
-            and cold_storage_opts.get("enabled") is not None
-        ):
+        if cold_storage_opts is not None and cold_storage_opts.get("enabled") is not None:
             cluster_config["ColdStorageOptions"] = {
                 "Enabled": cold_storage_opts.get("enabled"),
             }
 
-    if (
-        current_domain_config is not None
-        and current_domain_config["ClusterConfig"] != cluster_config
-    ):
+    if current_domain_config is not None and current_domain_config["ClusterConfig"] != cluster_config:
         change_set.append(
-            "ClusterConfig changed from {0} to {1}".format(
-                current_domain_config["ClusterConfig"], cluster_config
-            )
+            "ClusterConfig changed from {0} to {1}".format(current_domain_config["ClusterConfig"], cluster_config)
         )
         changed = True
     return changed
@@ -708,22 +692,13 @@ def set_ebs_options(module, current_domain_config, desired_domain_config, change
         if ebs_opts.get("iops") is not None:
             ebs_config["Iops"] = ebs_opts.get("iops")
 
-    if (
-        current_domain_config is not None
-        and current_domain_config["EBSOptions"] != ebs_config
-    ):
-        change_set.append(
-            "EBSOptions changed from {0} to {1}".format(
-                current_domain_config["EBSOptions"], ebs_config
-            )
-        )
+    if current_domain_config is not None and current_domain_config["EBSOptions"] != ebs_config:
+        change_set.append("EBSOptions changed from {0} to {1}".format(current_domain_config["EBSOptions"], ebs_config))
         changed = True
     return changed
 
 
-def set_encryption_at_rest_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_encryption_at_rest_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     encryption_at_rest_config = desired_domain_config["EncryptionAtRestOptions"]
     encryption_at_rest_opts = module.params.get("encryption_at_rest_options")
@@ -737,14 +712,11 @@ def set_encryption_at_rest_options(
         }
     else:
         if encryption_at_rest_opts.get("kms_key_id") is not None:
-            encryption_at_rest_config["KmsKeyId"] = encryption_at_rest_opts.get(
-                "kms_key_id"
-            )
+            encryption_at_rest_config["KmsKeyId"] = encryption_at_rest_opts.get("kms_key_id")
 
     if (
         current_domain_config is not None
-        and current_domain_config["EncryptionAtRestOptions"]
-        != encryption_at_rest_config
+        and current_domain_config["EncryptionAtRestOptions"] != encryption_at_rest_config
     ):
         change_set.append(
             "EncryptionAtRestOptions changed from {0} to {1}".format(
@@ -756,25 +728,18 @@ def set_encryption_at_rest_options(
     return changed
 
 
-def set_node_to_node_encryption_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_node_to_node_encryption_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
-    node_to_node_encryption_config = desired_domain_config[
-        "NodeToNodeEncryptionOptions"
-    ]
+    node_to_node_encryption_config = desired_domain_config["NodeToNodeEncryptionOptions"]
     node_to_node_encryption_opts = module.params.get("node_to_node_encryption_options")
     if node_to_node_encryption_opts is None:
         return changed
     if node_to_node_encryption_opts.get("enabled") is not None:
-        node_to_node_encryption_config["Enabled"] = node_to_node_encryption_opts.get(
-            "enabled"
-        )
+        node_to_node_encryption_config["Enabled"] = node_to_node_encryption_opts.get("enabled")
 
     if (
         current_domain_config is not None
-        and current_domain_config["NodeToNodeEncryptionOptions"]
-        != node_to_node_encryption_config
+        and current_domain_config["NodeToNodeEncryptionOptions"] != node_to_node_encryption_config
     ):
         change_set.append(
             "NodeToNodeEncryptionOptions changed from {0} to {1}".format(
@@ -838,9 +803,7 @@ def set_vpc_options(module, current_domain_config, desired_domain_config, change
             pass
         else:
             # Note the subnets may be the same but be listed in a different order.
-            if set(current_domain_config["VPCOptions"]["SubnetIds"]) != set(
-                vpc_config["SubnetIds"]
-            ):
+            if set(current_domain_config["VPCOptions"]["SubnetIds"]) != set(vpc_config["SubnetIds"]):
                 change_set.append(
                     "SubnetIds changed from {0} to {1}".format(
                         current_domain_config["VPCOptions"]["SubnetIds"],
@@ -848,9 +811,7 @@ def set_vpc_options(module, current_domain_config, desired_domain_config, change
                     )
                 )
                 changed = True
-            if set(current_domain_config["VPCOptions"]["SecurityGroupIds"]) != set(
-                vpc_config["SecurityGroupIds"]
-            ):
+            if set(current_domain_config["VPCOptions"]["SecurityGroupIds"]) != set(vpc_config["SecurityGroupIds"]):
                 change_set.append(
                     "SecurityGroup changed from {0} to {1}".format(
                         current_domain_config["VPCOptions"]["SecurityGroupIds"],
@@ -861,30 +822,21 @@ def set_vpc_options(module, current_domain_config, desired_domain_config, change
     return changed
 
 
-def set_snapshot_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_snapshot_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     snapshot_config = desired_domain_config["SnapshotOptions"]
     snapshot_opts = module.params.get("snapshot_options")
     if snapshot_opts is None:
         return changed
     if snapshot_opts.get("automated_snapshot_start_hour") is not None:
-        snapshot_config["AutomatedSnapshotStartHour"] = snapshot_opts.get(
-            "automated_snapshot_start_hour"
-        )
-    if (
-        current_domain_config is not None
-        and current_domain_config["SnapshotOptions"] != snapshot_config
-    ):
+        snapshot_config["AutomatedSnapshotStartHour"] = snapshot_opts.get("automated_snapshot_start_hour")
+    if current_domain_config is not None and current_domain_config["SnapshotOptions"] != snapshot_config:
         change_set.append("SnapshotOptions changed")
         changed = True
     return changed
 
 
-def set_cognito_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_cognito_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     cognito_config = desired_domain_config["CognitoOptions"]
     cognito_opts = module.params.get("cognito_options")
@@ -900,28 +852,19 @@ def set_cognito_options(
         if cognito_opts.get("cognito_user_pool_id") is not None:
             cognito_config["UserPoolId"] = cognito_opts.get("cognito_user_pool_id")
         if cognito_opts.get("cognito_identity_pool_id") is not None:
-            cognito_config["IdentityPoolId"] = cognito_opts.get(
-                "cognito_identity_pool_id"
-            )
+            cognito_config["IdentityPoolId"] = cognito_opts.get("cognito_identity_pool_id")
         if cognito_opts.get("cognito_role_arn") is not None:
             cognito_config["RoleArn"] = cognito_opts.get("cognito_role_arn")
 
-    if (
-        current_domain_config is not None
-        and current_domain_config["CognitoOptions"] != cognito_config
-    ):
+    if current_domain_config is not None and current_domain_config["CognitoOptions"] != cognito_config:
         change_set.append(
-            "CognitoOptions changed from {0} to {1}".format(
-                current_domain_config["CognitoOptions"], cognito_config
-            )
+            "CognitoOptions changed from {0} to {1}".format(current_domain_config["CognitoOptions"], cognito_config)
         )
         changed = True
     return changed
 
 
-def set_advanced_security_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_advanced_security_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     advanced_security_config = desired_domain_config["AdvancedSecurityOptions"]
     advanced_security_opts = module.params.get("advanced_security_options")
@@ -935,60 +878,44 @@ def set_advanced_security_options(
         }
     else:
         if advanced_security_opts.get("internal_user_database_enabled") is not None:
-            advanced_security_config[
-                "InternalUserDatabaseEnabled"
-            ] = advanced_security_opts.get("internal_user_database_enabled")
+            advanced_security_config["InternalUserDatabaseEnabled"] = advanced_security_opts.get(
+                "internal_user_database_enabled"
+            )
         master_user_opts = advanced_security_opts.get("master_user_options")
         if master_user_opts is not None:
             advanced_security_config.setdefault("MasterUserOptions", {})
             if master_user_opts.get("master_user_arn") is not None:
-                advanced_security_config["MasterUserOptions"][
-                    "MasterUserARN"
-                ] = master_user_opts.get("master_user_arn")
+                advanced_security_config["MasterUserOptions"]["MasterUserARN"] = master_user_opts.get("master_user_arn")
             if master_user_opts.get("master_user_name") is not None:
-                advanced_security_config["MasterUserOptions"][
-                    "MasterUserName"
-                ] = master_user_opts.get("master_user_name")
+                advanced_security_config["MasterUserOptions"]["MasterUserName"] = master_user_opts.get(
+                    "master_user_name"
+                )
             if master_user_opts.get("master_user_password") is not None:
-                advanced_security_config["MasterUserOptions"][
-                    "MasterUserPassword"
-                ] = master_user_opts.get("master_user_password")
+                advanced_security_config["MasterUserOptions"]["MasterUserPassword"] = master_user_opts.get(
+                    "master_user_password"
+                )
         saml_opts = advanced_security_opts.get("saml_options")
         if saml_opts is not None:
             if saml_opts.get("enabled") is not None:
-                advanced_security_config["SamlOptions"]["Enabled"] = saml_opts.get(
-                    "enabled"
-                )
+                advanced_security_config["SamlOptions"]["Enabled"] = saml_opts.get("enabled")
             idp_opts = saml_opts.get("idp")
             if idp_opts is not None:
                 if idp_opts.get("metadata_content") is not None:
-                    advanced_security_config["SamlOptions"]["Idp"][
-                        "MetadataContent"
-                    ] = idp_opts.get("metadata_content")
+                    advanced_security_config["SamlOptions"]["Idp"]["MetadataContent"] = idp_opts.get("metadata_content")
                 if idp_opts.get("entity_id") is not None:
-                    advanced_security_config["SamlOptions"]["Idp"][
-                        "EntityId"
-                    ] = idp_opts.get("entity_id")
+                    advanced_security_config["SamlOptions"]["Idp"]["EntityId"] = idp_opts.get("entity_id")
             if saml_opts.get("master_user_name") is not None:
-                advanced_security_config["SamlOptions"][
-                    "MasterUserName"
-                ] = saml_opts.get("master_user_name")
+                advanced_security_config["SamlOptions"]["MasterUserName"] = saml_opts.get("master_user_name")
             if saml_opts.get("master_backend_role") is not None:
-                advanced_security_config["SamlOptions"][
-                    "MasterBackendRole"
-                ] = saml_opts.get("master_backend_role")
+                advanced_security_config["SamlOptions"]["MasterBackendRole"] = saml_opts.get("master_backend_role")
             if saml_opts.get("subject_key") is not None:
-                advanced_security_config["SamlOptions"]["SubjectKey"] = saml_opts.get(
-                    "subject_key"
-                )
+                advanced_security_config["SamlOptions"]["SubjectKey"] = saml_opts.get("subject_key")
             if saml_opts.get("roles_key") is not None:
-                advanced_security_config["SamlOptions"]["RolesKey"] = saml_opts.get(
-                    "roles_key"
-                )
+                advanced_security_config["SamlOptions"]["RolesKey"] = saml_opts.get("roles_key")
             if saml_opts.get("session_timeout_minutes") is not None:
-                advanced_security_config["SamlOptions"][
-                    "SessionTimeoutMinutes"
-                ] = saml_opts.get("session_timeout_minutes")
+                advanced_security_config["SamlOptions"]["SessionTimeoutMinutes"] = saml_opts.get(
+                    "session_timeout_minutes"
+                )
 
     if (
         current_domain_config is not None
@@ -1004,40 +931,27 @@ def set_advanced_security_options(
     return changed
 
 
-def set_domain_endpoint_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_domain_endpoint_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     domain_endpoint_config = desired_domain_config["DomainEndpointOptions"]
     domain_endpoint_opts = module.params.get("domain_endpoint_options")
     if domain_endpoint_opts is None:
         return changed
     if domain_endpoint_opts.get("enforce_https") is not None:
-        domain_endpoint_config["EnforceHTTPS"] = domain_endpoint_opts.get(
-            "enforce_https"
-        )
+        domain_endpoint_config["EnforceHTTPS"] = domain_endpoint_opts.get("enforce_https")
     if domain_endpoint_opts.get("tls_security_policy") is not None:
-        domain_endpoint_config["TLSSecurityPolicy"] = domain_endpoint_opts.get(
-            "tls_security_policy"
-        )
+        domain_endpoint_config["TLSSecurityPolicy"] = domain_endpoint_opts.get("tls_security_policy")
     if domain_endpoint_opts.get("custom_endpoint_enabled") is not None:
-        domain_endpoint_config["CustomEndpointEnabled"] = domain_endpoint_opts.get(
-            "custom_endpoint_enabled"
-        )
+        domain_endpoint_config["CustomEndpointEnabled"] = domain_endpoint_opts.get("custom_endpoint_enabled")
     if domain_endpoint_config["CustomEndpointEnabled"]:
         if domain_endpoint_opts.get("custom_endpoint") is not None:
-            domain_endpoint_config["CustomEndpoint"] = domain_endpoint_opts.get(
-                "custom_endpoint"
-            )
+            domain_endpoint_config["CustomEndpoint"] = domain_endpoint_opts.get("custom_endpoint")
         if domain_endpoint_opts.get("custom_endpoint_certificate_arn") is not None:
-            domain_endpoint_config[
-                "CustomEndpointCertificateArn"
-            ] = domain_endpoint_opts.get("custom_endpoint_certificate_arn")
+            domain_endpoint_config["CustomEndpointCertificateArn"] = domain_endpoint_opts.get(
+                "custom_endpoint_certificate_arn"
+            )
 
-    if (
-        current_domain_config is not None
-        and current_domain_config["DomainEndpointOptions"] != domain_endpoint_config
-    ):
+    if current_domain_config is not None and current_domain_config["DomainEndpointOptions"] != domain_endpoint_config:
         change_set.append(
             "DomainEndpointOptions changed from {0} to {1}".format(
                 current_domain_config["DomainEndpointOptions"], domain_endpoint_config
@@ -1047,9 +961,7 @@ def set_domain_endpoint_options(
     return changed
 
 
-def set_auto_tune_options(
-    module, current_domain_config, desired_domain_config, change_set
-):
+def set_auto_tune_options(module, current_domain_config, desired_domain_config, change_set):
     changed = False
     auto_tune_config = desired_domain_config["AutoTuneOptions"]
     auto_tune_opts = module.params.get("auto_tune_options")
@@ -1080,15 +992,10 @@ def set_auto_tune_options(
                 if duration_opt.get("unit") is not None:
                     schedule_entry["Duration"]["Unit"] = duration_opt.get("unit")
             if s.get("cron_expression_for_recurrence") is not None:
-                schedule_entry["CronExpressionForRecurrence"] = s.get(
-                    "cron_expression_for_recurrence"
-                )
+                schedule_entry["CronExpressionForRecurrence"] = s.get("cron_expression_for_recurrence")
             auto_tune_config["MaintenanceSchedules"].append(schedule_entry)
     if current_domain_config is not None:
-        if (
-            current_domain_config["AutoTuneOptions"]["DesiredState"]
-            != auto_tune_config["DesiredState"]
-        ):
+        if current_domain_config["AutoTuneOptions"]["DesiredState"] != auto_tune_config["DesiredState"]:
             change_set.append(
                 "AutoTuneOptions.DesiredState changed from {0} to {1}".format(
                     current_domain_config["AutoTuneOptions"]["DesiredState"],
@@ -1096,10 +1003,7 @@ def set_auto_tune_options(
                 )
             )
             changed = True
-        if (
-            auto_tune_config["MaintenanceSchedules"]
-            != current_domain_config["AutoTuneOptions"]["MaintenanceSchedules"]
-        ):
+        if auto_tune_config["MaintenanceSchedules"] != current_domain_config["AutoTuneOptions"]["MaintenanceSchedules"]:
             change_set.append(
                 "AutoTuneOptions.MaintenanceSchedules changed from {0} to {1}".format(
                     current_domain_config["AutoTuneOptions"]["MaintenanceSchedules"],
@@ -1119,18 +1023,12 @@ def set_access_policy(module, current_domain_config, desired_domain_config, chan
     try:
         access_policy_config = json.dumps(access_policy_opt)
     except Exception as e:
-        module.fail_json(
-            msg="Failed to convert the policy into valid JSON: %s" % str(e)
-        )
+        module.fail_json(msg="Failed to convert the policy into valid JSON: %s" % str(e))
     if current_domain_config is not None:
         # Updating existing domain
         current_access_policy = json.loads(current_domain_config["AccessPolicies"])
         if not compare_policies(current_access_policy, access_policy_opt):
-            change_set.append(
-                "AccessPolicy changed from {0} to {1}".format(
-                    current_access_policy, access_policy_opt
-                )
-            )
+            change_set.append("AccessPolicy changed from {0} to {1}".format(current_access_policy, access_policy_opt))
             changed = True
             desired_domain_config["AccessPolicies"] = access_policy_config
     else:
@@ -1193,53 +1091,26 @@ def ensure_domain_present(client, module):
         # Validate the engine_version
         v = parse_version(module.params.get("engine_version"))
         if v is None:
-            module.fail_json(
-                "Invalid engine_version. Must be Elasticsearch_X.Y or OpenSearch_X.Y"
-            )
+            module.fail_json("Invalid engine_version. Must be Elasticsearch_X.Y or OpenSearch_X.Y")
         desired_domain_config["EngineVersion"] = module.params.get("engine_version")
 
     changed = False
     change_set = []  # For check mode purpose
 
-    changed |= set_cluster_config(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_ebs_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_encryption_at_rest_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_node_to_node_encryption_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_vpc_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_snapshot_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_cognito_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_advanced_security_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_domain_endpoint_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_auto_tune_options(
-        module, current_domain_config, desired_domain_config, change_set
-    )
-    changed |= set_access_policy(
-        module, current_domain_config, desired_domain_config, change_set
-    )
+    changed |= set_cluster_config(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_ebs_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_encryption_at_rest_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_node_to_node_encryption_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_vpc_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_snapshot_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_cognito_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_advanced_security_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_domain_endpoint_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_auto_tune_options(module, current_domain_config, desired_domain_config, change_set)
+    changed |= set_access_policy(module, current_domain_config, desired_domain_config, change_set)
 
     if current_domain_config is not None:
-        if (
-            desired_domain_config["EngineVersion"]
-            != current_domain_config["EngineVersion"]
-        ):
+        if desired_domain_config["EngineVersion"] != current_domain_config["EngineVersion"]:
             changed = True
             change_set.append("EngineVersion changed")
             upgrade_domain(
@@ -1263,22 +1134,16 @@ def ensure_domain_present(client, module):
                 botocore.exceptions.BotoCoreError,
                 botocore.exceptions.ClientError,
             ) as e:
-                module.fail_json_aws(
-                    e, msg="Couldn't update domain {0}".format(domain_name)
-                )
+                module.fail_json_aws(e, msg="Couldn't update domain {0}".format(domain_name))
 
     else:
         # Create new OpenSearch cluster
         if module.params.get("access_policies") is None:
-            module.fail_json(
-                "state is present but the following is missing: access_policies"
-            )
+            module.fail_json("state is present but the following is missing: access_policies")
 
         changed = True
         if module.check_mode:
-            module.exit_json(
-                changed=True, msg="Would have created a domain if not in check mode"
-            )
+            module.exit_json(changed=True, msg="Would have created a domain if not in check mode")
         try:
             response = client.create_domain(**desired_domain_config)
             domain = response["DomainStatus"]
@@ -1287,22 +1152,16 @@ def ensure_domain_present(client, module):
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:
-            module.fail_json_aws(
-                e, msg="Couldn't update domain {0}".format(domain_name)
-            )
+            module.fail_json_aws(e, msg="Couldn't update domain {0}".format(domain_name))
 
     try:
-        existing_tags = boto3_tag_list_to_ansible_dict(
-            client.list_tags(ARN=domain_arn, aws_retry=True)["TagList"]
-        )
+        existing_tags = boto3_tag_list_to_ansible_dict(client.list_tags(ARN=domain_arn, aws_retry=True)["TagList"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Couldn't get tags for domain %s" % domain_name)
 
     desired_tags = module.params["tags"]
     purge_tags = module.params["purge_tags"]
-    changed |= ensure_tags(
-        client, module, domain_arn, existing_tags, desired_tags, purge_tags
-    )
+    changed |= ensure_tags(client, module, domain_arn, existing_tags, desired_tags, purge_tags)
 
     if module.params.get("wait") and not module.check_mode:
         wait_for_domain_status(client, module, domain_name, "domain_available")
@@ -1313,7 +1172,6 @@ def ensure_domain_present(client, module):
 
 
 def main():
-
     module = AnsibleAWSModule(
         argument_spec=dict(
             state=dict(choices=["present", "absent"], default="present"),

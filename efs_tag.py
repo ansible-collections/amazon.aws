@@ -112,35 +112,35 @@ WAIT_RETRY = 5  # how many seconds to wait between propagation status polls
 
 
 def get_tags(efs, module, resource):
-    '''
+    """
     Get resource tags
-    '''
+    """
     try:
-        return boto3_tag_list_to_ansible_dict(efs.list_tags_for_resource(aws_retry=True, ResourceId=resource)['Tags'])
+        return boto3_tag_list_to_ansible_dict(efs.list_tags_for_resource(aws_retry=True, ResourceId=resource)["Tags"])
     except (BotoCoreError, ClientError) as get_tags_error:
-        module.fail_json_aws(get_tags_error, msg='Failed to fetch tags for resource {0}'.format(resource))
+        module.fail_json_aws(get_tags_error, msg="Failed to fetch tags for resource {0}".format(resource))
 
 
 def main():
-    '''
+    """
     MAIN
-    '''
+    """
     argument_spec = dict(
         resource=dict(required=True),
-        tags=dict(type='dict', required=True, aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=False),
-        state=dict(default='present', choices=['present', 'absent'])
+        tags=dict(type="dict", required=True, aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=False),
+        state=dict(default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    resource = module.params['resource']
-    tags = module.params['tags']
-    state = module.params['state']
-    purge_tags = module.params['purge_tags']
+    resource = module.params["resource"]
+    tags = module.params["tags"]
+    state = module.params["state"]
+    purge_tags = module.params["purge_tags"]
 
-    result = {'changed': False}
+    result = {"changed": False}
 
-    efs = module.client('efs', retry_decorator=AWSRetry.jittered_backoff())
+    efs = module.client("efs", retry_decorator=AWSRetry.jittered_backoff())
 
     current_tags = get_tags(efs, module, resource)
 
@@ -148,7 +148,7 @@ def main():
 
     remove_tags = {}
 
-    if state == 'absent':
+    if state == "absent":
         for key in tags:
             if key in current_tags and (tags[key] is None or current_tags[key] == tags[key]):
                 remove_tags[key] = current_tags[key]
@@ -157,28 +157,32 @@ def main():
         remove_tags[key] = current_tags[key]
 
     if remove_tags:
-        result['changed'] = True
-        result['removed_tags'] = remove_tags
+        result["changed"] = True
+        result["removed_tags"] = remove_tags
         if not module.check_mode:
             try:
                 efs.untag_resource(aws_retry=True, ResourceId=resource, TagKeys=list(remove_tags.keys()))
             except (BotoCoreError, ClientError) as remove_tag_error:
-                module.fail_json_aws(remove_tag_error, msg='Failed to remove tags {0} from resource {1}'.format(remove_tags, resource))
+                module.fail_json_aws(
+                    remove_tag_error, msg="Failed to remove tags {0} from resource {1}".format(remove_tags, resource)
+                )
 
-    if state == 'present' and add_tags:
-        result['changed'] = True
-        result['added_tags'] = add_tags
+    if state == "present" and add_tags:
+        result["changed"] = True
+        result["added_tags"] = add_tags
         current_tags.update(add_tags)
         if not module.check_mode:
             try:
                 tags = ansible_dict_to_boto3_tag_list(add_tags)
                 efs.tag_resource(aws_retry=True, ResourceId=resource, Tags=tags)
             except (BotoCoreError, ClientError) as set_tag_error:
-                module.fail_json_aws(set_tag_error, msg='Failed to set tags {0} on resource {1}'.format(add_tags, resource))
+                module.fail_json_aws(
+                    set_tag_error, msg="Failed to set tags {0} on resource {1}".format(add_tags, resource)
+                )
 
-    result['tags'] = get_tags(efs, module, resource)
+    result["tags"] = get_tags(efs, module, resource)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -792,49 +792,62 @@ class EcsTaskManager:
     def __init__(self, module):
         self.module = module
 
-        self.ecs = module.client('ecs', AWSRetry.jittered_backoff())
+        self.ecs = module.client("ecs", AWSRetry.jittered_backoff())
 
     def describe_task(self, task_name):
         try:
             response = self.ecs.describe_task_definition(aws_retry=True, taskDefinition=task_name)
-            return response['taskDefinition']
+            return response["taskDefinition"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             return None
 
-    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions,
-                      volumes, launch_type, cpu, memory, placement_constraints):
+    def register_task(
+        self,
+        family,
+        task_role_arn,
+        execution_role_arn,
+        network_mode,
+        container_definitions,
+        volumes,
+        launch_type,
+        cpu,
+        memory,
+        placement_constraints,
+    ):
         validated_containers = []
 
         # Ensures the number parameters are int as required by the AWS SDK
         for container in container_definitions:
-            for param in ('memory', 'cpu', 'memoryReservation', 'startTimeout', 'stopTimeout'):
+            for param in ("memory", "cpu", "memoryReservation", "startTimeout", "stopTimeout"):
                 if param in container:
                     container[param] = int(container[param])
 
-            if 'portMappings' in container:
-                for port_mapping in container['portMappings']:
-                    for port in ('hostPort', 'containerPort'):
+            if "portMappings" in container:
+                for port_mapping in container["portMappings"]:
+                    for port in ("hostPort", "containerPort"):
                         if port in port_mapping:
                             port_mapping[port] = int(port_mapping[port])
-                    if network_mode == 'awsvpc' and 'hostPort' in port_mapping:
-                        if port_mapping['hostPort'] != port_mapping.get('containerPort'):
-                            self.module.fail_json(msg="In awsvpc network mode, host port must be set to the same as "
-                                                  "container port or not be set")
+                    if network_mode == "awsvpc" and "hostPort" in port_mapping:
+                        if port_mapping["hostPort"] != port_mapping.get("containerPort"):
+                            self.module.fail_json(
+                                msg="In awsvpc network mode, host port must be set to the same as "
+                                "container port or not be set"
+                            )
 
-            if 'linuxParameters' in container:
-                for linux_param in container.get('linuxParameters'):
-                    if linux_param == 'tmpfs':
-                        for tmpfs_param in container['linuxParameters']['tmpfs']:
-                            if 'size' in tmpfs_param:
-                                tmpfs_param['size'] = int(tmpfs_param['size'])
+            if "linuxParameters" in container:
+                for linux_param in container.get("linuxParameters"):
+                    if linux_param == "tmpfs":
+                        for tmpfs_param in container["linuxParameters"]["tmpfs"]:
+                            if "size" in tmpfs_param:
+                                tmpfs_param["size"] = int(tmpfs_param["size"])
 
-                    for param in ('maxSwap', 'swappiness', 'sharedMemorySize'):
+                    for param in ("maxSwap", "swappiness", "sharedMemorySize"):
                         if param in linux_param:
-                            container['linuxParameters'][param] = int(container['linuxParameters'][param])
+                            container["linuxParameters"][param] = int(container["linuxParameters"][param])
 
-            if 'ulimits' in container:
-                for limits_mapping in container['ulimits']:
-                    for limit in ('softLimit', 'hardLimit'):
+            if "ulimits" in container:
+                for limits_mapping in container["ulimits"]:
+                    for limit in ("softLimit", "hardLimit"):
                         if limit in limits_mapping:
                             limits_mapping[limit] = int(limits_mapping[limit])
 
@@ -844,47 +857,42 @@ class EcsTaskManager:
             family=family,
             taskRoleArn=task_role_arn,
             containerDefinitions=container_definitions,
-            volumes=volumes
+            volumes=volumes,
         )
-        if network_mode != 'default':
-            params['networkMode'] = network_mode
+        if network_mode != "default":
+            params["networkMode"] = network_mode
         if cpu:
-            params['cpu'] = cpu
+            params["cpu"] = cpu
         if memory:
-            params['memory'] = memory
+            params["memory"] = memory
         if launch_type:
-            params['requiresCompatibilities'] = [launch_type]
+            params["requiresCompatibilities"] = [launch_type]
         if execution_role_arn:
-            params['executionRoleArn'] = execution_role_arn
+            params["executionRoleArn"] = execution_role_arn
         if placement_constraints:
-            params['placementConstraints'] = placement_constraints
+            params["placementConstraints"] = placement_constraints
 
         try:
             response = self.ecs.register_task_definition(aws_retry=True, **params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Failed to register task")
 
-        return response['taskDefinition']
+        return response["taskDefinition"]
 
     def describe_task_definitions(self, family):
-        data = {
-            "taskDefinitionArns": [],
-            "nextToken": None
-        }
+        data = {"taskDefinitionArns": [], "nextToken": None}
 
         def fetch():
             # Boto3 is weird about params passed, so only pass nextToken if we have a value
-            params = {
-                'familyPrefix': family
-            }
+            params = {"familyPrefix": family}
 
-            if data['nextToken']:
-                params['nextToken'] = data['nextToken']
+            if data["nextToken"]:
+                params["nextToken"] = data["nextToken"]
 
             result = self.ecs.list_task_definitions(**params)
-            data['taskDefinitionArns'] += result['taskDefinitionArns']
-            data['nextToken'] = result.get('nextToken', None)
-            return data['nextToken'] is not None
+            data["taskDefinitionArns"] += result["taskDefinitionArns"]
+            data["nextToken"] = result.get("nextToken", None)
+            return data["nextToken"] is not None
 
         # Fetch all the arns, possibly across multiple pages
         while fetch():
@@ -893,118 +901,134 @@ class EcsTaskManager:
         # Return the full descriptions of the task definitions, sorted ascending by revision
         return list(
             sorted(
-                [self.ecs.describe_task_definition(taskDefinition=arn)['taskDefinition'] for arn in data['taskDefinitionArns']],
-                key=lambda td: td['revision']
+                [
+                    self.ecs.describe_task_definition(taskDefinition=arn)["taskDefinition"]
+                    for arn in data["taskDefinitionArns"]
+                ],
+                key=lambda td: td["revision"],
             )
         )
 
     def deregister_task(self, taskArn):
         response = self.ecs.deregister_task_definition(taskDefinition=taskArn)
-        return response['taskDefinition']
+        return response["taskDefinition"]
 
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
-        arn=dict(required=False, type='str'),
-        family=dict(required=False, type='str'),
-        revision=dict(required=False, type='int'),
-        force_create=dict(required=False, default=False, type='bool'),
-        containers=dict(required=True, type='list', elements='dict'),
-        network_mode=dict(required=False, default='bridge', choices=['default', 'bridge', 'host', 'none', 'awsvpc'], type='str'),
-        task_role_arn=dict(required=False, default='', type='str'),
-        execution_role_arn=dict(required=False, default='', type='str'),
-        volumes=dict(required=False, type='list', elements='dict'),
-        launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
+        state=dict(required=True, choices=["present", "absent"]),
+        arn=dict(required=False, type="str"),
+        family=dict(required=False, type="str"),
+        revision=dict(required=False, type="int"),
+        force_create=dict(required=False, default=False, type="bool"),
+        containers=dict(required=True, type="list", elements="dict"),
+        network_mode=dict(
+            required=False, default="bridge", choices=["default", "bridge", "host", "none", "awsvpc"], type="str"
+        ),
+        task_role_arn=dict(required=False, default="", type="str"),
+        execution_role_arn=dict(required=False, default="", type="str"),
+        volumes=dict(required=False, type="list", elements="dict"),
+        launch_type=dict(required=False, choices=["EC2", "FARGATE"]),
         cpu=dict(),
-        memory=dict(required=False, type='str'),
-        placement_constraints=dict(required=False, type='list', elements='dict',
-                                   options=dict(type=dict(type='str'), expression=dict(type='str'))),
+        memory=dict(required=False, type="str"),
+        placement_constraints=dict(
+            required=False,
+            type="list",
+            elements="dict",
+            options=dict(type=dict(type="str"), expression=dict(type="str")),
+        ),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              supports_check_mode=True,
-                              required_if=[('launch_type', 'FARGATE', ['cpu', 'memory'])]
-                              )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=[("launch_type", "FARGATE", ["cpu", "memory"])],
+    )
 
     task_to_describe = None
     task_mgr = EcsTaskManager(module)
     results = dict(changed=False)
 
-    if module.params['state'] == 'present':
-        if 'containers' not in module.params or not module.params['containers']:
+    if module.params["state"] == "present":
+        if "containers" not in module.params or not module.params["containers"]:
             module.fail_json(msg="To use task definitions, a list of containers must be specified")
 
-        if 'family' not in module.params or not module.params['family']:
+        if "family" not in module.params or not module.params["family"]:
             module.fail_json(msg="To use task definitions, a family must be specified")
 
-        network_mode = module.params['network_mode']
-        launch_type = module.params['launch_type']
-        placement_constraints = module.params['placement_constraints']
-        if launch_type == 'FARGATE':
-            if network_mode != 'awsvpc':
+        network_mode = module.params["network_mode"]
+        launch_type = module.params["launch_type"]
+        placement_constraints = module.params["placement_constraints"]
+        if launch_type == "FARGATE":
+            if network_mode != "awsvpc":
                 module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
             if placement_constraints:
                 module.fail_json(msg="Task placement constraints are not supported for tasks run on Fargate")
 
-        for container in module.params['containers']:
-            if container.get('links') and network_mode == 'awsvpc':
-                module.fail_json(msg='links parameter is not supported if network mode is awsvpc.')
+        for container in module.params["containers"]:
+            if container.get("links") and network_mode == "awsvpc":
+                module.fail_json(msg="links parameter is not supported if network mode is awsvpc.")
 
-            for environment in container.get('environment', []):
-                environment['value'] = environment['value']
+            for environment in container.get("environment", []):
+                environment["value"] = environment["value"]
 
-            for environment_file in container.get('environmentFiles', []):
-                if environment_file['type'] != 's3':
-                    module.fail_json(msg='The only supported value for environmentFiles is s3.')
+            for environment_file in container.get("environmentFiles", []):
+                if environment_file["type"] != "s3":
+                    module.fail_json(msg="The only supported value for environmentFiles is s3.")
 
-            for linux_param in container.get('linuxParameters', {}):
-                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
-                    module.fail_json(msg='devices parameter is not supported with the FARGATE launch type.')
+            for linux_param in container.get("linuxParameters", {}):
+                if linux_param == "maxSwap" and launch_type == "FARGATE":
+                    module.fail_json(msg="devices parameter is not supported with the FARGATE launch type.")
 
-                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
-                    module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
-                elif linux_param == 'maxSwap' and int(container['linuxParameters']['maxSwap']) < 0:
-                    module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
+                if linux_param == "maxSwap" and launch_type == "FARGATE":
+                    module.fail_json(msg="maxSwap parameter is not supported with the FARGATE launch type.")
+                elif linux_param == "maxSwap" and int(container["linuxParameters"]["maxSwap"]) < 0:
+                    module.fail_json(msg="Accepted values for maxSwap are 0 or any positive integer.")
 
-                if (
-                    linux_param == 'swappiness' and
-                    (int(container['linuxParameters']['swappiness']) < 0 or int(container['linuxParameters']['swappiness']) > 100)
+                if linux_param == "swappiness" and (
+                    int(container["linuxParameters"]["swappiness"]) < 0
+                    or int(container["linuxParameters"]["swappiness"]) > 100
                 ):
-                    module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
+                    module.fail_json(msg="Accepted values for swappiness are whole numbers between 0 and 100.")
 
-                if linux_param == 'sharedMemorySize' and launch_type == 'FARGATE':
-                    module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
+                if linux_param == "sharedMemorySize" and launch_type == "FARGATE":
+                    module.fail_json(msg="sharedMemorySize parameter is not supported with the FARGATE launch type.")
 
-                if linux_param == 'tmpfs' and launch_type == 'FARGATE':
-                    module.fail_json(msg='tmpfs parameter is not supported with the FARGATE launch type.')
+                if linux_param == "tmpfs" and launch_type == "FARGATE":
+                    module.fail_json(msg="tmpfs parameter is not supported with the FARGATE launch type.")
 
-            if container.get('hostname') and network_mode == 'awsvpc':
-                module.fail_json(msg='hostname parameter is not supported when the awsvpc network mode is used.')
+            if container.get("hostname") and network_mode == "awsvpc":
+                module.fail_json(msg="hostname parameter is not supported when the awsvpc network mode is used.")
 
-            if container.get('extraHosts') and network_mode == 'awsvpc':
-                module.fail_json(msg='extraHosts parameter is not supported when the awsvpc network mode is used.')
+            if container.get("extraHosts") and network_mode == "awsvpc":
+                module.fail_json(msg="extraHosts parameter is not supported when the awsvpc network mode is used.")
 
-        family = module.params['family']
-        existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
+        family = module.params["family"]
+        existing_definitions_in_family = task_mgr.describe_task_definitions(module.params["family"])
 
-        if 'revision' in module.params and module.params['revision']:
+        if "revision" in module.params and module.params["revision"]:
             # The definition specifies revision. We must guarantee that an active revision of that number will result from this.
-            revision = int(module.params['revision'])
+            revision = int(module.params["revision"])
 
             # A revision has been explicitly specified. Attempt to locate a matching revision
-            tasks_defs_for_revision = [td for td in existing_definitions_in_family if td['revision'] == revision]
+            tasks_defs_for_revision = [td for td in existing_definitions_in_family if td["revision"] == revision]
             existing = tasks_defs_for_revision[0] if len(tasks_defs_for_revision) > 0 else None
 
-            if existing and existing['status'] != "ACTIVE":
+            if existing and existing["status"] != "ACTIVE":
                 # We cannot reactivate an inactive revision
-                module.fail_json(msg="A task in family '%s' already exists for revision %d, but it is inactive" % (family, revision))
+                module.fail_json(
+                    msg="A task in family '%s' already exists for revision %d, but it is inactive" % (family, revision)
+                )
             elif not existing:
                 if not existing_definitions_in_family and revision != 1:
-                    module.fail_json(msg="You have specified a revision of %d but a created revision would be 1" % revision)
-                elif existing_definitions_in_family and existing_definitions_in_family[-1]['revision'] + 1 != revision:
-                    module.fail_json(msg="You have specified a revision of %d but a created revision would be %d" %
-                                         (revision, existing_definitions_in_family[-1]['revision'] + 1))
+                    module.fail_json(
+                        msg="You have specified a revision of %d but a created revision would be 1" % revision
+                    )
+                elif existing_definitions_in_family and existing_definitions_in_family[-1]["revision"] + 1 != revision:
+                    module.fail_json(
+                        msg="You have specified a revision of %d but a created revision would be %d"
+                        % (revision, existing_definitions_in_family[-1]["revision"] + 1)
+                    )
         else:
             existing = None
 
@@ -1024,9 +1048,9 @@ def main():
                                 if list_val not in right_list:
                                     # if list_val is the port mapping, the key 'protocol' may be absent (but defaults to 'tcp')
                                     # fill in that default if absent and see if it is in right_list then
-                                    if isinstance(list_val, dict) and not list_val.get('protocol'):
+                                    if isinstance(list_val, dict) and not list_val.get("protocol"):
                                         modified_list_val = dict(list_val)
-                                        modified_list_val.update(protocol='tcp')
+                                        modified_list_val.update(protocol="tcp")
                                         if modified_list_val in right_list:
                                             continue
                         else:
@@ -1036,24 +1060,32 @@ def main():
                 for k, v in right.items():
                     if v and k not in left:
                         # 'essential' defaults to True when not specified
-                        if k == 'essential' and v is True:
+                        if k == "essential" and v is True:
                             pass
                         else:
                             return False
 
                 return True
 
-            def _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, requested_launch_type, existing_task_definition):
-                if td['status'] != "ACTIVE":
+            def _task_definition_matches(
+                requested_volumes,
+                requested_containers,
+                requested_task_role_arn,
+                requested_launch_type,
+                existing_task_definition,
+            ):
+                if td["status"] != "ACTIVE":
                     return None
 
-                if requested_task_role_arn != td.get('taskRoleArn', ""):
+                if requested_task_role_arn != td.get("taskRoleArn", ""):
                     return None
 
-                if requested_launch_type is not None and requested_launch_type not in td.get('requiresCompatibilities', []):
+                if requested_launch_type is not None and requested_launch_type not in td.get(
+                    "requiresCompatibilities", []
+                ):
                     return None
 
-                existing_volumes = td.get('volumes', []) or []
+                existing_volumes = td.get("volumes", []) or []
 
                 if len(requested_volumes) != len(existing_volumes):
                     # Nope.
@@ -1071,7 +1103,7 @@ def main():
                         if not found:
                             return None
 
-                existing_containers = td.get('containerDefinitions', []) or []
+                existing_containers = td.get("containerDefinitions", []) or []
 
                 if len(requested_containers) != len(existing_containers):
                     # Nope.
@@ -1092,42 +1124,50 @@ def main():
 
             # No revision explicitly specified. Attempt to find an active, matching revision that has all the properties requested
             for td in existing_definitions_in_family:
-                requested_volumes = module.params['volumes'] or []
-                requested_containers = module.params['containers'] or []
-                requested_task_role_arn = module.params['task_role_arn']
-                requested_launch_type = module.params['launch_type']
-                existing = _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, requested_launch_type, td)
+                requested_volumes = module.params["volumes"] or []
+                requested_containers = module.params["containers"] or []
+                requested_task_role_arn = module.params["task_role_arn"]
+                requested_launch_type = module.params["launch_type"]
+                existing = _task_definition_matches(
+                    requested_volumes, requested_containers, requested_task_role_arn, requested_launch_type, td
+                )
 
                 if existing:
                     break
 
-        if existing and not module.params.get('force_create'):
+        if existing and not module.params.get("force_create"):
             # Awesome. Have an existing one. Nothing to do.
-            results['taskdefinition'] = existing
+            results["taskdefinition"] = existing
         else:
             if not module.check_mode:
                 # Doesn't exist. create it.
-                volumes = module.params.get('volumes', []) or []
-                results['taskdefinition'] = task_mgr.register_task(module.params['family'],
-                                                                   module.params['task_role_arn'],
-                                                                   module.params['execution_role_arn'],
-                                                                   module.params['network_mode'],
-                                                                   module.params['containers'],
-                                                                   volumes,
-                                                                   module.params['launch_type'],
-                                                                   module.params['cpu'],
-                                                                   module.params['memory'],
-                                                                   module.params['placement_constraints'],)
-            results['changed'] = True
+                volumes = module.params.get("volumes", []) or []
+                results["taskdefinition"] = task_mgr.register_task(
+                    module.params["family"],
+                    module.params["task_role_arn"],
+                    module.params["execution_role_arn"],
+                    module.params["network_mode"],
+                    module.params["containers"],
+                    volumes,
+                    module.params["launch_type"],
+                    module.params["cpu"],
+                    module.params["memory"],
+                    module.params["placement_constraints"],
+                )
+            results["changed"] = True
 
-    elif module.params['state'] == 'absent':
+    elif module.params["state"] == "absent":
         # When de-registering a task definition, we can specify the ARN OR the family and revision.
-        if module.params['state'] == 'absent':
-            if 'arn' in module.params and module.params['arn'] is not None:
-                task_to_describe = module.params['arn']
-            elif 'family' in module.params and module.params['family'] is not None and 'revision' in module.params and \
-                    module.params['revision'] is not None:
-                task_to_describe = module.params['family'] + ":" + str(module.params['revision'])
+        if module.params["state"] == "absent":
+            if "arn" in module.params and module.params["arn"] is not None:
+                task_to_describe = module.params["arn"]
+            elif (
+                "family" in module.params
+                and module.params["family"] is not None
+                and "revision" in module.params
+                and module.params["revision"] is not None
+            ):
+                task_to_describe = module.params["family"] + ":" + str(module.params["revision"])
             else:
                 module.fail_json(msg="To use task definitions, an arn or family and revision must be specified")
 
@@ -1137,16 +1177,16 @@ def main():
             pass
         else:
             # It exists, so we should delete it and mark changed. Return info about the task definition deleted
-            results['taskdefinition'] = existing
-            if 'status' in existing and existing['status'] == "INACTIVE":
-                results['changed'] = False
+            results["taskdefinition"] = existing
+            if "status" in existing and existing["status"] == "INACTIVE":
+                results["changed"] = False
             else:
                 if not module.check_mode:
                     task_mgr.deregister_task(task_to_describe)
-                results['changed'] = True
+                results["changed"] = True
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

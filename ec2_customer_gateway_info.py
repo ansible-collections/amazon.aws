@@ -95,44 +95,46 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    return obj.isoformat() if hasattr(obj, "isoformat") else obj
 
 
 def list_customer_gateways(connection, module):
     params = dict()
 
-    params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    params['CustomerGatewayIds'] = module.params.get('customer_gateway_ids')
+    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    params["CustomerGatewayIds"] = module.params.get("customer_gateway_ids")
 
     try:
         result = json.loads(json.dumps(connection.describe_customer_gateways(**params), default=date_handler))
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Could not describe customer gateways")
-    snaked_customer_gateways = [camel_dict_to_snake_dict(gateway) for gateway in result['CustomerGateways']]
+    snaked_customer_gateways = [camel_dict_to_snake_dict(gateway) for gateway in result["CustomerGateways"]]
     if snaked_customer_gateways:
         for customer_gateway in snaked_customer_gateways:
-            customer_gateway['tags'] = boto3_tag_list_to_ansible_dict(customer_gateway.get('tags', []))
-            customer_gateway_name = customer_gateway['tags'].get('Name')
+            customer_gateway["tags"] = boto3_tag_list_to_ansible_dict(customer_gateway.get("tags", []))
+            customer_gateway_name = customer_gateway["tags"].get("Name")
             if customer_gateway_name:
-                customer_gateway['customer_gateway_name'] = customer_gateway_name
+                customer_gateway["customer_gateway_name"] = customer_gateway_name
     module.exit_json(changed=False, customer_gateways=snaked_customer_gateways)
 
 
 def main():
-
     argument_spec = dict(
-        customer_gateway_ids=dict(default=[], type='list', elements='str'),
-        filters=dict(default={}, type='dict')
+        customer_gateway_ids=dict(default=[], type="list", elements="str"), filters=dict(default={}, type="dict")
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              mutually_exclusive=[['customer_gateway_ids', 'filters']],
-                              supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[
+            ["customer_gateway_ids", "filters"],
+        ],
+        supports_check_mode=True,
+    )
 
-    connection = module.client('ec2')
+    connection = module.client("ec2")
 
     list_customer_gateways(connection, module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

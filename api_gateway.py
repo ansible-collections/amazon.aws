@@ -182,22 +182,22 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def main():
     argument_spec = dict(
-        api_id=dict(type='str', required=False),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        swagger_file=dict(type='path', default=None, aliases=['src', 'api_file']),
-        swagger_dict=dict(type='json', default=None),
-        swagger_text=dict(type='str', default=None),
-        stage=dict(type='str', default=None),
-        deploy_desc=dict(type='str', default="Automatic deployment by Ansible."),
-        cache_enabled=dict(type='bool', default=False),
-        cache_size=dict(type='str', default='0.5', choices=['0.5', '1.6', '6.1', '13.5', '28.4', '58.2', '118', '237']),
-        stage_variables=dict(type='dict', default={}),
-        stage_canary_settings=dict(type='dict', default={}),
-        tracing_enabled=dict(type='bool', default=False),
-        endpoint_type=dict(type='str', default='EDGE', choices=['EDGE', 'REGIONAL', 'PRIVATE'])
+        api_id=dict(type="str", required=False),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        swagger_file=dict(type="path", default=None, aliases=["src", "api_file"]),
+        swagger_dict=dict(type="json", default=None),
+        swagger_text=dict(type="str", default=None),
+        stage=dict(type="str", default=None),
+        deploy_desc=dict(type="str", default="Automatic deployment by Ansible."),
+        cache_enabled=dict(type="bool", default=False),
+        cache_size=dict(type="str", default="0.5", choices=["0.5", "1.6", "6.1", "13.5", "28.4", "58.2", "118", "237"]),
+        stage_variables=dict(type="dict", default={}),
+        stage_canary_settings=dict(type="dict", default={}),
+        tracing_enabled=dict(type="bool", default=False),
+        endpoint_type=dict(type="str", default="EDGE", choices=["EDGE", "REGIONAL", "PRIVATE"]),
     )
 
-    mutually_exclusive = [['swagger_file', 'swagger_dict', 'swagger_text']]  # noqa: F841
+    mutually_exclusive = [["swagger_file", "swagger_dict", "swagger_text"]]  # noqa: F841
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -205,16 +205,16 @@ def main():
         mutually_exclusive=mutually_exclusive,
     )
 
-    api_id = module.params.get('api_id')
-    state = module.params.get('state')   # noqa: F841
-    swagger_file = module.params.get('swagger_file')
-    swagger_dict = module.params.get('swagger_dict')
-    swagger_text = module.params.get('swagger_text')
-    endpoint_type = module.params.get('endpoint_type')
+    api_id = module.params.get("api_id")
+    state = module.params.get("state")  # noqa: F841
+    swagger_file = module.params.get("swagger_file")
+    swagger_dict = module.params.get("swagger_dict")
+    swagger_text = module.params.get("swagger_text")
+    endpoint_type = module.params.get("endpoint_type")
 
-    client = module.client('apigateway')
+    client = module.client("apigateway")
 
-    changed = True   # for now it will stay that way until we can sometimes avoid change
+    changed = True  # for now it will stay that way until we can sometimes avoid change
     conf_res = None
     dep_res = None
     del_res = None
@@ -222,8 +222,9 @@ def main():
     if state == "present":
         if api_id is None:
             api_id = create_empty_api(module, client, endpoint_type)
-        api_data = get_api_definitions(module, swagger_file=swagger_file,
-                                       swagger_dict=swagger_dict, swagger_text=swagger_text)
+        api_data = get_api_definitions(
+            module, swagger_file=swagger_file, swagger_dict=swagger_dict, swagger_text=swagger_text
+        )
         conf_res, dep_res = ensure_api_in_correct_state(module, client, api_id, api_data)
     if state == "absent":
         del_res = delete_rest_api(module, client, api_id)
@@ -231,11 +232,11 @@ def main():
     exit_args = {"changed": changed, "api_id": api_id}
 
     if conf_res is not None:
-        exit_args['configure_response'] = camel_dict_to_snake_dict(conf_res)
+        exit_args["configure_response"] = camel_dict_to_snake_dict(conf_res)
     if dep_res is not None:
-        exit_args['deploy_response'] = camel_dict_to_snake_dict(dep_res)
+        exit_args["deploy_response"] = camel_dict_to_snake_dict(dep_res)
     if del_res is not None:
-        exit_args['delete_response'] = camel_dict_to_snake_dict(del_res)
+        exit_args["delete_response"] = camel_dict_to_snake_dict(del_res)
 
     module.exit_json(**exit_args)
 
@@ -255,7 +256,7 @@ def get_api_definitions(module, swagger_file=None, swagger_dict=None, swagger_te
         apidata = swagger_text
 
     if apidata is None:
-        module.fail_json(msg='module error - no swagger info provided')
+        module.fail_json(msg="module error - no swagger info provided")
     return apidata
 
 
@@ -302,7 +303,7 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
 
     deploy_response = None
 
-    stage = module.params.get('stage')
+    stage = module.params.get("stage")
     if stage:
         try:
             deploy_response = create_deployment(client, api_id, **module.params)
@@ -313,12 +314,14 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
     return configure_response, deploy_response
 
 
-retry_params = {"retries": 10, "delay": 10, "catch_extra_error_codes": ['TooManyRequestsException']}
+retry_params = {"retries": 10, "delay": 10, "catch_extra_error_codes": ["TooManyRequestsException"]}
 
 
 @AWSRetry.jittered_backoff(**retry_params)
 def create_api(client, name=None, description=None, endpoint_type=None):
-    return client.create_rest_api(name="ansible-temp-api", description=description, endpointConfiguration={'types': [endpoint_type]})
+    return client.create_rest_api(
+        name="ansible-temp-api", description=description, endpointConfiguration={"types": [endpoint_type]}
+    )
 
 
 @AWSRetry.jittered_backoff(**retry_params)
@@ -333,32 +336,32 @@ def configure_api(client, api_id, api_data=None, mode="overwrite"):
 
 @AWSRetry.jittered_backoff(**retry_params)
 def create_deployment(client, rest_api_id, **params):
-    canary_settings = params.get('stage_canary_settings')
+    canary_settings = params.get("stage_canary_settings")
 
     if canary_settings and len(canary_settings) > 0:
         result = client.create_deployment(
             restApiId=rest_api_id,
-            stageName=params.get('stage'),
-            description=params.get('deploy_desc'),
-            cacheClusterEnabled=params.get('cache_enabled'),
-            cacheClusterSize=params.get('cache_size'),
-            variables=params.get('stage_variables'),
+            stageName=params.get("stage"),
+            description=params.get("deploy_desc"),
+            cacheClusterEnabled=params.get("cache_enabled"),
+            cacheClusterSize=params.get("cache_size"),
+            variables=params.get("stage_variables"),
             canarySettings=canary_settings,
-            tracingEnabled=params.get('tracing_enabled')
+            tracingEnabled=params.get("tracing_enabled"),
         )
     else:
         result = client.create_deployment(
             restApiId=rest_api_id,
-            stageName=params.get('stage'),
-            description=params.get('deploy_desc'),
-            cacheClusterEnabled=params.get('cache_enabled'),
-            cacheClusterSize=params.get('cache_size'),
-            variables=params.get('stage_variables'),
-            tracingEnabled=params.get('tracing_enabled')
+            stageName=params.get("stage"),
+            description=params.get("deploy_desc"),
+            cacheClusterEnabled=params.get("cache_enabled"),
+            cacheClusterSize=params.get("cache_size"),
+            variables=params.get("stage_variables"),
+            tracingEnabled=params.get("tracing_enabled"),
         )
 
     return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

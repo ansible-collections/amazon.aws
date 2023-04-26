@@ -122,22 +122,23 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def rule_exists(client, module, params):
     try:
         rule = client.describe_config_rules(
-            ConfigRuleNames=[params['ConfigRuleName']],
+            ConfigRuleNames=[params["ConfigRuleName"]],
             aws_retry=True,
         )
-        return rule['ConfigRules'][0]
-    except is_boto3_error_code('NoSuchConfigRuleException'):
+        return rule["ConfigRules"][0]
+    except is_boto3_error_code("NoSuchConfigRuleException"):
         return
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
 def create_resource(client, module, params, result):
     try:
-        client.put_config_rule(
-            ConfigRule=params
-        )
-        result['changed'] = True
+        client.put_config_rule(ConfigRule=params)
+        result["changed"] = True
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't create AWS Config rule")
@@ -145,21 +146,19 @@ def create_resource(client, module, params, result):
 
 def update_resource(client, module, params, result):
     current_params = client.describe_config_rules(
-        ConfigRuleNames=[params['ConfigRuleName']],
+        ConfigRuleNames=[params["ConfigRuleName"]],
         aws_retry=True,
     )
 
-    del current_params['ConfigRules'][0]['ConfigRuleArn']
-    del current_params['ConfigRules'][0]['ConfigRuleId']
-    del current_params['ConfigRules'][0]['EvaluationModes']
+    del current_params["ConfigRules"][0]["ConfigRuleArn"]
+    del current_params["ConfigRules"][0]["ConfigRuleId"]
+    del current_params["ConfigRules"][0]["EvaluationModes"]
 
-    if params != current_params['ConfigRules'][0]:
+    if params != current_params["ConfigRules"][0]:
         try:
-            client.put_config_rule(
-                ConfigRule=params
-            )
-            result['changed'] = True
-            result['rule'] = camel_dict_to_snake_dict(rule_exists(client, module, params))
+            client.put_config_rule(ConfigRule=params)
+            result["changed"] = True
+            result["rule"] = camel_dict_to_snake_dict(rule_exists(client, module, params))
             return result
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create AWS Config rule")
@@ -168,11 +167,11 @@ def update_resource(client, module, params, result):
 def delete_resource(client, module, params, result):
     try:
         response = client.delete_config_rule(
-            ConfigRuleName=params['ConfigRuleName'],
+            ConfigRuleName=params["ConfigRuleName"],
             aws_retry=True,
         )
-        result['changed'] = True
-        result['rule'] = {}
+        result["changed"] = True
+        result["rule"] = {}
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't delete AWS Config rule")
@@ -181,93 +180,105 @@ def delete_resource(client, module, params, result):
 def main():
     module = AnsibleAWSModule(
         argument_spec={
-            'name': dict(type='str', required=True),
-            'state': dict(type='str', choices=['present', 'absent'], default='present'),
-            'description': dict(type='str'),
-            'scope': dict(type='dict'),
-            'source': dict(type='dict', required=True),
-            'input_parameters': dict(type='str'),
-            'execution_frequency': dict(
-                type='str',
+            "name": dict(type="str", required=True),
+            "state": dict(type="str", choices=["present", "absent"], default="present"),
+            "description": dict(type="str"),
+            "scope": dict(type="dict"),
+            "source": dict(type="dict", required=True),
+            "input_parameters": dict(type="str"),
+            "execution_frequency": dict(
+                type="str",
                 choices=[
-                    'One_Hour',
-                    'Three_Hours',
-                    'Six_Hours',
-                    'Twelve_Hours',
-                    'TwentyFour_Hours'
-                ]
+                    "One_Hour",
+                    "Three_Hours",
+                    "Six_Hours",
+                    "Twelve_Hours",
+                    "TwentyFour_Hours",
+                ],
             ),
         },
         supports_check_mode=False,
     )
 
-    result = {
-        'changed': False
-    }
+    result = {"changed": False}
 
-    name = module.params.get('name')
-    resource_type = module.params.get('resource_type')
-    state = module.params.get('state')
+    name = module.params.get("name")
+    resource_type = module.params.get("resource_type")
+    state = module.params.get("state")
 
     params = {}
     if name:
-        params['ConfigRuleName'] = name
-    if module.params.get('description'):
-        params['Description'] = module.params.get('description')
-    if module.params.get('scope'):
-        params['Scope'] = {}
-        if module.params.get('scope').get('compliance_types'):
-            params['Scope'].update({
-                'ComplianceResourceTypes': module.params.get('scope').get('compliance_types')
-            })
-        if module.params.get('scope').get('tag_key'):
-            params['Scope'].update({
-                'TagKey': module.params.get('scope').get('tag_key')
-            })
-        if module.params.get('scope').get('tag_value'):
-            params['Scope'].update({
-                'TagValue': module.params.get('scope').get('tag_value')
-            })
-        if module.params.get('scope').get('compliance_id'):
-            params['Scope'].update({
-                'ComplianceResourceId': module.params.get('scope').get('compliance_id')
-            })
-    if module.params.get('source'):
-        params['Source'] = {}
-        if module.params.get('source').get('owner'):
-            params['Source'].update({
-                'Owner': module.params.get('source').get('owner')
-            })
-        if module.params.get('source').get('identifier'):
-            params['Source'].update({
-                'SourceIdentifier': module.params.get('source').get('identifier')
-            })
-        if module.params.get('source').get('details'):
-            params['Source'].update({
-                'SourceDetails': module.params.get('source').get('details')
-            })
-    if module.params.get('input_parameters'):
-        params['InputParameters'] = module.params.get('input_parameters')
-    if module.params.get('execution_frequency'):
-        params['MaximumExecutionFrequency'] = module.params.get('execution_frequency')
-    params['ConfigRuleState'] = 'ACTIVE'
+        params["ConfigRuleName"] = name
+    if module.params.get("description"):
+        params["Description"] = module.params.get("description")
+    if module.params.get("scope"):
+        params["Scope"] = {}
+        if module.params.get("scope").get("compliance_types"):
+            params["Scope"].update(
+                {
+                    "ComplianceResourceTypes": module.params.get("scope").get("compliance_types"),
+                }
+            )
+        if module.params.get("scope").get("tag_key"):
+            params["Scope"].update(
+                {
+                    "TagKey": module.params.get("scope").get("tag_key"),
+                }
+            )
+        if module.params.get("scope").get("tag_value"):
+            params["Scope"].update(
+                {
+                    "TagValue": module.params.get("scope").get("tag_value"),
+                }
+            )
+        if module.params.get("scope").get("compliance_id"):
+            params["Scope"].update(
+                {
+                    "ComplianceResourceId": module.params.get("scope").get("compliance_id"),
+                }
+            )
+    if module.params.get("source"):
+        params["Source"] = {}
+        if module.params.get("source").get("owner"):
+            params["Source"].update(
+                {
+                    "Owner": module.params.get("source").get("owner"),
+                }
+            )
+        if module.params.get("source").get("identifier"):
+            params["Source"].update(
+                {
+                    "SourceIdentifier": module.params.get("source").get("identifier"),
+                }
+            )
+        if module.params.get("source").get("details"):
+            params["Source"].update(
+                {
+                    "SourceDetails": module.params.get("source").get("details"),
+                }
+            )
+    if module.params.get("input_parameters"):
+        params["InputParameters"] = module.params.get("input_parameters")
+    if module.params.get("execution_frequency"):
+        params["MaximumExecutionFrequency"] = module.params.get("execution_frequency")
+    params["ConfigRuleState"] = "ACTIVE"
 
-    client = module.client('config', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("config", retry_decorator=AWSRetry.jittered_backoff())
 
     existing_rule = rule_exists(client, module, params)
 
-    if state == 'present':
+    if state == "present":
         if not existing_rule:
             create_resource(client, module, params, result)
         else:
             update_resource(client, module, params, result)
 
-    if state == 'absent':
+    if state == "absent":
         if existing_rule:
             delete_resource(client, module, params, result)
 
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

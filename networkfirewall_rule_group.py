@@ -712,101 +712,102 @@ from ansible_collections.community.aws.plugins.module_utils.networkfirewall impo
 
 
 def main():
-
     domain_list_spec = dict(
-        domain_names=dict(type='list', elements='str', required=True),
-        filter_http=dict(type='bool', required=False, default=False),
-        filter_https=dict(type='bool', required=False, default=False),
-        action=dict(type='str', required=True, choices=['allow', 'deny']),
-        source_ips=dict(type='list', elements='str', required=False),
+        domain_names=dict(type="list", elements="str", required=True),
+        filter_http=dict(type="bool", required=False, default=False),
+        filter_https=dict(type="bool", required=False, default=False),
+        action=dict(type="str", required=True, choices=["allow", "deny"]),
+        source_ips=dict(type="list", elements="str", required=False),
     )
 
     rule_list_spec = dict(
-        action=dict(type='str', required=True, choices=['pass', 'drop', 'alert']),
-        protocol=dict(type='str', required=True),
-        source=dict(type='str', required=True),
-        source_port=dict(type='str', required=True),
-        direction=dict(type='str', required=False, default='forward', choices=['forward', 'any']),
-        destination=dict(type='str', required=True),
-        destination_port=dict(type='str', required=True),
-        sid=dict(type='int', required=True),
-        rule_options=dict(type='dict', required=False),
+        action=dict(type="str", required=True, choices=["pass", "drop", "alert"]),
+        protocol=dict(type="str", required=True),
+        source=dict(type="str", required=True),
+        source_port=dict(type="str", required=True),
+        direction=dict(type="str", required=False, default="forward", choices=["forward", "any"]),
+        destination=dict(type="str", required=True),
+        destination_port=dict(type="str", required=True),
+        sid=dict(type="int", required=True),
+        rule_options=dict(type="dict", required=False),
     )
 
     argument_spec = dict(
-        arn=dict(type='str', required=False),
-        name=dict(type='str', required=False),
-        rule_type=dict(type='str', required=False, aliases=['type'], choices=['stateful']),
+        arn=dict(type="str", required=False),
+        name=dict(type="str", required=False),
+        rule_type=dict(type="str", required=False, aliases=["type"], choices=["stateful"]),
         # rule_type=dict(type='str', required=True, aliases=['type'], choices=['stateless', 'stateful']),
-        state=dict(type='str', required=False, choices=['present', 'absent'], default='present'),
-        capacity=dict(type='int', required=False),
-        rule_order=dict(type='str', required=False, aliases=['stateful_rule_order'], choices=['default', 'strict']),
-        description=dict(type='str', required=False),
-        ip_variables=dict(type='dict', required=False, aliases=['ip_set_variables']),
-        purge_ip_variables=dict(type='bool', required=False, aliases=['purge_ip_set_variables'], default=True),
-        port_variables=dict(type='dict', required=False, aliases=['port_set_variables']),
-        purge_port_variables=dict(type='bool', required=False, aliases=['purge_port_set_variables'], default=True),
-        rule_strings=dict(type='list', elements='str', required=False),
-        domain_list=dict(type='dict', options=domain_list_spec, required=False),
-        rule_list=dict(type='list', elements='dict', aliases=['stateful_rule_list'], options=rule_list_spec, required=False),
-        tags=dict(type='dict', required=False, aliases=['resource_tags']),
-        purge_tags=dict(type='bool', required=False, default=True),
-        wait=dict(type='bool', required=False, default=True),
-        wait_timeout=dict(type='int', required=False),
+        state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
+        capacity=dict(type="int", required=False),
+        rule_order=dict(type="str", required=False, aliases=["stateful_rule_order"], choices=["default", "strict"]),
+        description=dict(type="str", required=False),
+        ip_variables=dict(type="dict", required=False, aliases=["ip_set_variables"]),
+        purge_ip_variables=dict(type="bool", required=False, aliases=["purge_ip_set_variables"], default=True),
+        port_variables=dict(type="dict", required=False, aliases=["port_set_variables"]),
+        purge_port_variables=dict(type="bool", required=False, aliases=["purge_port_set_variables"], default=True),
+        rule_strings=dict(type="list", elements="str", required=False),
+        domain_list=dict(type="dict", options=domain_list_spec, required=False),
+        rule_list=dict(
+            type="list", elements="dict", aliases=["stateful_rule_list"], options=rule_list_spec, required=False
+        ),
+        tags=dict(type="dict", required=False, aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", required=False, default=True),
+        wait=dict(type="bool", required=False, default=True),
+        wait_timeout=dict(type="int", required=False),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ('name', 'arn'),
-            ('rule_strings', 'domain_list', 'rule_list'),
-            ('domain_list', 'ip_variables'),
+            ["name", "arn"],
+            ["rule_strings", "domain_list", "rule_list"],
+            ["domain_list", "ip_variables"],
         ],
         required_together=[
-            ('name', 'rule_type'),
+            ["name", "rule_type"],
         ],
         required_one_of=[
-            ('name', 'arn'),
+            ["name", "arn"],
         ],
     )
 
-    module.require_botocore_at_least('1.19.20')
+    module.require_botocore_at_least("1.19.20")
 
-    state = module.params.get('state')
-    name = module.params.get('name')
-    arn = module.params.get('arn')
-    rule_type = module.params.get('rule_type')
+    state = module.params.get("state")
+    name = module.params.get("name")
+    arn = module.params.get("arn")
+    rule_type = module.params.get("rule_type")
 
-    if rule_type == 'stateless':
-        if module.params.get('rule_order'):
-            module.fail_json('rule_order can not be set for stateless rule groups')
-        if module.params.get('rule_strings'):
-            module.fail_json('rule_strings can only be used for stateful rule groups')
-        if module.params.get('rule_list'):
-            module.fail_json('rule_list can only be used for stateful rule groups')
-        if module.params.get('domain_list'):
-            module.fail_json('domain_list can only be used for stateful rule groups')
+    if rule_type == "stateless":
+        if module.params.get("rule_order"):
+            module.fail_json("rule_order can not be set for stateless rule groups")
+        if module.params.get("rule_strings"):
+            module.fail_json("rule_strings can only be used for stateful rule groups")
+        if module.params.get("rule_list"):
+            module.fail_json("rule_list can only be used for stateful rule groups")
+        if module.params.get("domain_list"):
+            module.fail_json("domain_list can only be used for stateful rule groups")
 
-    if module.params.get('rule_order'):
-        module.require_botocore_at_least('1.23.23', reason='to set the rule order')
+    if module.params.get("rule_order"):
+        module.require_botocore_at_least("1.23.23", reason="to set the rule order")
 
     manager = NetworkFirewallRuleManager(module, arn=arn, name=name, rule_type=rule_type)
-    manager.set_wait(module.params.get('wait', None))
-    manager.set_wait_timeout(module.params.get('wait_timeout', None))
+    manager.set_wait(module.params.get("wait", None))
+    manager.set_wait_timeout(module.params.get("wait_timeout", None))
 
-    if state == 'absent':
+    if state == "absent":
         manager.delete()
     else:
-        manager.set_description(module.params.get('description'))
-        manager.set_capacity(module.params.get('capacity'))
-        manager.set_rule_order(module.params.get('rule_order'))
-        manager.set_ip_variables(module.params.get('ip_variables'), module.params.get('purge_ip_variables'))
-        manager.set_port_variables(module.params.get('port_variables'), module.params.get('purge_port_variables'))
-        manager.set_rule_string(module.params.get('rule_strings'))
-        manager.set_domain_list(module.params.get('domain_list'))
-        manager.set_rule_list(module.params.get('rule_list'))
-        manager.set_tags(module.params.get('tags'), module.params.get('purge_tags'))
+        manager.set_description(module.params.get("description"))
+        manager.set_capacity(module.params.get("capacity"))
+        manager.set_rule_order(module.params.get("rule_order"))
+        manager.set_ip_variables(module.params.get("ip_variables"), module.params.get("purge_ip_variables"))
+        manager.set_port_variables(module.params.get("port_variables"), module.params.get("purge_port_variables"))
+        manager.set_rule_string(module.params.get("rule_strings"))
+        manager.set_domain_list(module.params.get("domain_list"))
+        manager.set_rule_list(module.params.get("rule_list"))
+        manager.set_tags(module.params.get("tags"), module.params.get("purge_tags"))
 
         manager.flush_changes()
 
@@ -819,9 +820,9 @@ def main():
             before=manager.original_resource,
             after=manager.updated_resource,
         )
-        results['diff'] = diff
+        results["diff"] = diff
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

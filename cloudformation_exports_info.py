@@ -48,29 +48,26 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 @AWSRetry.exponential_backoff()
 def list_exports(cloudformation_client):
-    '''Get Exports Names and Values and return in dictionary '''
-    list_exports_paginator = cloudformation_client.get_paginator('list_exports')
-    exports = list_exports_paginator.paginate().build_full_result()['Exports']
+    """Get Exports Names and Values and return in dictionary"""
+    list_exports_paginator = cloudformation_client.get_paginator("list_exports")
+    exports = list_exports_paginator.paginate().build_full_result()["Exports"]
     export_items = dict()
 
     for item in exports:
-        export_items[item['Name']] = item['Value']
+        export_items[item["Name"]] = item["Value"]
 
     return export_items
 
 
 def main():
     argument_spec = dict()
-    result = dict(
-        changed=False,
-        original_message=''
-    )
+    result = dict(changed=False, original_message="")
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    cloudformation_client = module.client('cloudformation')
+    cloudformation_client = module.client("cloudformation")
 
     try:
-        result['export_items'] = list_exports(cloudformation_client)
+        result["export_items"] = list_exports(cloudformation_client)
 
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e)
@@ -79,5 +76,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

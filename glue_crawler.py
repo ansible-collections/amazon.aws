@@ -215,14 +215,17 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def _get_glue_crawler(connection, module, glue_crawler_name):
-    '''
+    """
     Get an AWS Glue crawler based on name. If not found, return None.
-    '''
+    """
     try:
-        return connection.get_crawler(aws_retry=True, Name=glue_crawler_name)['Crawler']
-    except is_boto3_error_code('EntityNotFoundException'):
+        return connection.get_crawler(aws_retry=True, Name=glue_crawler_name)["Crawler"]
+    except is_boto3_error_code("EntityNotFoundException"):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
 
@@ -238,39 +241,58 @@ def _trim_target(target):
     if not target:
         return None
     retval = target.copy()
-    if not retval.get('Exclusions', None):
-        retval.pop('Exclusions', None)
+    if not retval.get("Exclusions", None):
+        retval.pop("Exclusions", None)
     return retval
 
 
 def _compare_glue_crawler_params(user_params, current_params):
-    '''
+    """
     Compare Glue crawler params. If there is a difference, return True immediately else return False
-    '''
-    if 'DatabaseName' in user_params and user_params['DatabaseName'] != current_params['DatabaseName']:
+    """
+    if "DatabaseName" in user_params and user_params["DatabaseName"] != current_params["DatabaseName"]:
         return True
-    if 'Description' in user_params and user_params['Description'] != current_params['Description']:
+    if "Description" in user_params and user_params["Description"] != current_params["Description"]:
         return True
-    if 'RecrawlPolicy' in user_params and user_params['RecrawlPolicy'] != current_params['RecrawlPolicy']:
+    if "RecrawlPolicy" in user_params and user_params["RecrawlPolicy"] != current_params["RecrawlPolicy"]:
         return True
-    if 'Role' in user_params and user_params['Role'] != current_params['Role']:
+    if "Role" in user_params and user_params["Role"] != current_params["Role"]:
         return True
-    if 'SchemaChangePolicy' in user_params and user_params['SchemaChangePolicy'] != current_params['SchemaChangePolicy']:
+    if (
+        "SchemaChangePolicy" in user_params
+        and user_params["SchemaChangePolicy"] != current_params["SchemaChangePolicy"]
+    ):
         return True
-    if 'TablePrefix' in user_params and user_params['TablePrefix'] != current_params['TablePrefix']:
+    if "TablePrefix" in user_params and user_params["TablePrefix"] != current_params["TablePrefix"]:
         return True
-    if 'Targets' in user_params:
-        if 'S3Targets' in user_params['Targets']:
-            if _trim_targets(user_params['Targets']['S3Targets']) != _trim_targets(current_params['Targets']['S3Targets']):
+    if "Targets" in user_params:
+        if "S3Targets" in user_params["Targets"]:
+            if _trim_targets(user_params["Targets"]["S3Targets"]) != _trim_targets(
+                current_params["Targets"]["S3Targets"]
+            ):
                 return True
-        if 'JdbcTargets' in user_params['Targets'] and user_params['Targets']['JdbcTargets'] != current_params['Targets']['JdbcTargets']:
-            if _trim_targets(user_params['Targets']['JdbcTargets']) != _trim_targets(current_params['Targets']['JdbcTargets']):
+        if (
+            "JdbcTargets" in user_params["Targets"]
+            and user_params["Targets"]["JdbcTargets"] != current_params["Targets"]["JdbcTargets"]
+        ):
+            if _trim_targets(user_params["Targets"]["JdbcTargets"]) != _trim_targets(
+                current_params["Targets"]["JdbcTargets"]
+            ):
                 return True
-        if 'MongoDBTargets' in user_params['Targets'] and user_params['Targets']['MongoDBTargets'] != current_params['Targets']['MongoDBTargets']:
+        if (
+            "MongoDBTargets" in user_params["Targets"]
+            and user_params["Targets"]["MongoDBTargets"] != current_params["Targets"]["MongoDBTargets"]
+        ):
             return True
-        if 'DynamoDBTargets' in user_params['Targets'] and user_params['Targets']['DynamoDBTargets'] != current_params['Targets']['DynamoDBTargets']:
+        if (
+            "DynamoDBTargets" in user_params["Targets"]
+            and user_params["Targets"]["DynamoDBTargets"] != current_params["Targets"]["DynamoDBTargets"]
+        ):
             return True
-        if 'CatalogTargets' in user_params['Targets'] and user_params['Targets']['CatalogTargets'] != current_params['Targets']['CatalogTargets']:
+        if (
+            "CatalogTargets" in user_params["Targets"]
+            and user_params["Targets"]["CatalogTargets"] != current_params["Targets"]["CatalogTargets"]
+        ):
             return True
 
     return False
@@ -279,21 +301,23 @@ def _compare_glue_crawler_params(user_params, current_params):
 def ensure_tags(connection, module, glue_crawler):
     changed = False
 
-    if module.params.get('tags') is None:
+    if module.params.get("tags") is None:
         return False
 
     account_id, partition = get_aws_account_info(module)
-    arn = 'arn:{0}:glue:{1}:{2}:crawler/{3}'.format(partition, module.region, account_id, module.params.get('name'))
+    arn = "arn:{0}:glue:{1}:{2}:crawler/{3}".format(partition, module.region, account_id, module.params.get("name"))
 
     try:
-        existing_tags = connection.get_tags(aws_retry=True, ResourceArn=arn).get('Tags', {})
+        existing_tags = connection.get_tags(aws_retry=True, ResourceArn=arn).get("Tags", {})
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         if module.check_mode:
             existing_tags = {}
         else:
-            module.fail_json_aws(e, msg='Unable to get tags for Glue crawler %s' % module.params.get('name'))
+            module.fail_json_aws(e, msg="Unable to get tags for Glue crawler %s" % module.params.get("name"))
 
-    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, module.params.get('tags'), module.params.get('purge_tags'))
+    tags_to_add, tags_to_remove = compare_aws_tags(
+        existing_tags, module.params.get("tags"), module.params.get("purge_tags")
+    )
 
     if tags_to_remove:
         changed = True
@@ -301,7 +325,7 @@ def ensure_tags(connection, module, glue_crawler):
             try:
                 connection.untag_resource(aws_retry=True, ResourceArn=arn, TagsToRemove=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Glue crawler %s' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Glue crawler %s" % module.params.get("name"))
 
     if tags_to_add:
         changed = True
@@ -309,35 +333,37 @@ def ensure_tags(connection, module, glue_crawler):
             try:
                 connection.tag_resource(aws_retry=True, ResourceArn=arn, TagsToAdd=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg='Unable to set tags for Glue crawler %s' % module.params.get('name'))
+                module.fail_json_aws(e, msg="Unable to set tags for Glue crawler %s" % module.params.get("name"))
 
     return changed
 
 
 def create_or_update_glue_crawler(connection, module, glue_crawler):
-    '''
+    """
     Create or update an AWS Glue crawler
-    '''
+    """
 
     changed = False
     params = dict()
-    params['Name'] = module.params.get('name')
-    params['Role'] = module.params.get('role')
-    params['Targets'] = module.params.get('targets')
-    if module.params.get('database_name') is not None:
-        params['DatabaseName'] = module.params.get('database_name')
-    if module.params.get('description') is not None:
-        params['Description'] = module.params.get('description')
-    if module.params.get('recrawl_policy') is not None:
-        params['RecrawlPolicy'] = snake_dict_to_camel_dict(module.params.get('recrawl_policy'), capitalize_first=True)
-    if module.params.get('role') is not None:
-        params['Role'] = module.params.get('role')
-    if module.params.get('schema_change_policy') is not None:
-        params['SchemaChangePolicy'] = snake_dict_to_camel_dict(module.params.get('schema_change_policy'), capitalize_first=True)
-    if module.params.get('table_prefix') is not None:
-        params['TablePrefix'] = module.params.get('table_prefix')
-    if module.params.get('targets') is not None:
-        params['Targets'] = module.params.get('targets')
+    params["Name"] = module.params.get("name")
+    params["Role"] = module.params.get("role")
+    params["Targets"] = module.params.get("targets")
+    if module.params.get("database_name") is not None:
+        params["DatabaseName"] = module.params.get("database_name")
+    if module.params.get("description") is not None:
+        params["Description"] = module.params.get("description")
+    if module.params.get("recrawl_policy") is not None:
+        params["RecrawlPolicy"] = snake_dict_to_camel_dict(module.params.get("recrawl_policy"), capitalize_first=True)
+    if module.params.get("role") is not None:
+        params["Role"] = module.params.get("role")
+    if module.params.get("schema_change_policy") is not None:
+        params["SchemaChangePolicy"] = snake_dict_to_camel_dict(
+            module.params.get("schema_change_policy"), capitalize_first=True
+        )
+    if module.params.get("table_prefix") is not None:
+        params["TablePrefix"] = module.params.get("table_prefix")
+    if module.params.get("targets") is not None:
+        params["Targets"] = module.params.get("targets")
 
     if glue_crawler:
         if _compare_glue_crawler_params(params, glue_crawler):
@@ -355,23 +381,26 @@ def create_or_update_glue_crawler(connection, module, glue_crawler):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
 
-    glue_crawler = _get_glue_crawler(connection, module, params['Name'])
+    glue_crawler = _get_glue_crawler(connection, module, params["Name"])
 
     changed |= ensure_tags(connection, module, glue_crawler)
 
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_crawler or {}, ignore_list=['SchemaChangePolicy', 'RecrawlPolicy', 'Targets']))
+    module.exit_json(
+        changed=changed,
+        **camel_dict_to_snake_dict(glue_crawler or {}, ignore_list=["SchemaChangePolicy", "RecrawlPolicy", "Targets"]),
+    )
 
 
 def delete_glue_crawler(connection, module, glue_crawler):
-    '''
+    """
     Delete an AWS Glue crawler
-    '''
+    """
     changed = False
 
     if glue_crawler:
         try:
             if not module.check_mode:
-                connection.delete_crawler(aws_retry=True, Name=glue_crawler['Name'])
+                connection.delete_crawler(aws_retry=True, Name=glue_crawler["Name"])
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
@@ -380,46 +409,39 @@ def delete_glue_crawler(connection, module, glue_crawler):
 
 
 def main():
-
-    argument_spec = (
-        dict(
-            database_name=dict(type='str'),
-            description=dict(type='str'),
-            name=dict(required=True, type='str'),
-            purge_tags=dict(type='bool', default=True),
-            recrawl_policy=dict(type='dict', options=dict(
-                recrawl_behavior=dict(type='str')
-            )),
-            role=dict(type='str'),
-            schema_change_policy=dict(type='dict', options=dict(
-                delete_behavior=dict(type='str'),
-                update_behavior=dict(type='str')
-            )),
-            state=dict(required=True, choices=['present', 'absent'], type='str'),
-            table_prefix=dict(type='str'),
-            tags=dict(type='dict', aliases=['resource_tags']),
-            targets=dict(type='dict')
-        )
+    argument_spec = dict(
+        database_name=dict(type="str"),
+        description=dict(type="str"),
+        name=dict(required=True, type="str"),
+        purge_tags=dict(type="bool", default=True),
+        recrawl_policy=dict(type="dict", options=dict(recrawl_behavior=dict(type="str"))),
+        role=dict(type="str"),
+        schema_change_policy=dict(
+            type="dict", options=dict(delete_behavior=dict(type="str"), update_behavior=dict(type="str"))
+        ),
+        state=dict(required=True, choices=["present", "absent"], type="str"),
+        table_prefix=dict(type="str"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        targets=dict(type="dict"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[
-                                  ('state', 'present', ['role', 'targets'])
-                              ],
-                              supports_check_mode=True
-                              )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[("state", "present", ["role", "targets"])],
+        supports_check_mode=True,
+    )
 
-    connection = module.client('glue', retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("glue", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
-    state = module.params.get('state')
+    state = module.params.get("state")
 
-    glue_crawler = _get_glue_crawler(connection, module, module.params.get('name'))
+    glue_crawler = _get_glue_crawler(connection, module, module.params.get("name"))
 
-    if state == 'present':
+    if state == "present":
         create_or_update_glue_crawler(connection, module, glue_crawler)
     else:
         delete_glue_crawler(connection, module, glue_crawler)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

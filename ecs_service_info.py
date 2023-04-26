@@ -147,14 +147,14 @@ class EcsServiceManager:
 
     def __init__(self, module):
         self.module = module
-        self.ecs = module.client('ecs')
+        self.ecs = module.client("ecs")
 
     @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
     def list_services_with_backoff(self, **kwargs):
-        paginator = self.ecs.get_paginator('list_services')
+        paginator = self.ecs.get_paginator("list_services")
         try:
             return paginator.paginate(**kwargs).build_full_result()
-        except is_boto3_error_code('ClusterNotFoundException') as e:
+        except is_boto3_error_code("ClusterNotFoundException") as e:
             self.module.fail_json_aws(e, "Could not find cluster to list services")
 
     @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
@@ -164,43 +164,43 @@ class EcsServiceManager:
     def list_services(self, cluster):
         fn_args = dict()
         if cluster and cluster is not None:
-            fn_args['cluster'] = cluster
+            fn_args["cluster"] = cluster
         try:
             response = self.list_services_with_backoff(**fn_args)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Couldn't list ECS services")
-        relevant_response = dict(services=response['serviceArns'])
+        relevant_response = dict(services=response["serviceArns"])
         return relevant_response
 
     def describe_services(self, cluster, services):
         fn_args = dict()
         if cluster and cluster is not None:
-            fn_args['cluster'] = cluster
-        fn_args['services'] = services
+            fn_args["cluster"] = cluster
+        fn_args["services"] = services
         try:
             response = self.describe_services_with_backoff(**fn_args)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Couldn't describe ECS services")
-        running_services = [self.extract_service_from(service) for service in response.get('services', [])]
-        services_not_running = response.get('failures', [])
+        running_services = [self.extract_service_from(service) for service in response.get("services", [])]
+        services_not_running = response.get("failures", [])
         return running_services, services_not_running
 
     def extract_service_from(self, service):
         # some fields are datetime which is not JSON serializable
         # make them strings
-        if 'deployments' in service:
-            for d in service['deployments']:
-                if 'createdAt' in d:
-                    d['createdAt'] = str(d['createdAt'])
-                if 'updatedAt' in d:
-                    d['updatedAt'] = str(d['updatedAt'])
-        if 'events' in service:
-            if not self.module.params['events']:
-                del service['events']
+        if "deployments" in service:
+            for d in service["deployments"]:
+                if "createdAt" in d:
+                    d["createdAt"] = str(d["createdAt"])
+                if "updatedAt" in d:
+                    d["updatedAt"] = str(d["updatedAt"])
+        if "events" in service:
+            if not self.module.params["events"]:
+                del service["events"]
             else:
-                for e in service['events']:
-                    if 'createdAt' in e:
-                        e['createdAt'] = str(e['createdAt'])
+                for e in service["events"]:
+                    if "createdAt" in e:
+                        e["createdAt"] = str(e["createdAt"])
         return service
 
 
@@ -208,38 +208,37 @@ def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     """ https://stackoverflow.com/a/312464 """
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i:i + n]  # fmt: skip
 
 
 def main():
-
     argument_spec = dict(
-        details=dict(type='bool', default=False),
-        events=dict(type='bool', default=True),
+        details=dict(type="bool", default=False),
+        events=dict(type="bool", default=True),
         cluster=dict(),
-        service=dict(type='list', elements='str', aliases=['name'])
+        service=dict(type="list", elements="str", aliases=["name"]),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    show_details = module.params.get('details')
+    show_details = module.params.get("details")
 
     task_mgr = EcsServiceManager(module)
     if show_details:
-        if module.params['service']:
-            services = module.params['service']
+        if module.params["service"]:
+            services = module.params["service"]
         else:
-            services = task_mgr.list_services(module.params['cluster'])['services']
+            services = task_mgr.list_services(module.params["cluster"])["services"]
         ecs_info = dict(services=[], services_not_running=[])
         for chunk in chunks(services, 10):
-            running_services, services_not_running = task_mgr.describe_services(module.params['cluster'], chunk)
-            ecs_info['services'].extend(running_services)
-            ecs_info['services_not_running'].extend(services_not_running)
+            running_services, services_not_running = task_mgr.describe_services(module.params["cluster"], chunk)
+            ecs_info["services"].extend(running_services)
+            ecs_info["services_not_running"].extend(services_not_running)
     else:
-        ecs_info = task_mgr.list_services(module.params['cluster'])
+        ecs_info = task_mgr.list_services(module.params["cluster"])
 
     module.exit_json(changed=False, **ecs_info)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -179,7 +179,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.waf import run_func_wit
 
 
 def get_web_acl_by_name(client, module, name):
-    acls = [d['WebACLId'] for d in list_web_acls(client, module) if d['Name'] == name]
+    acls = [d["WebACLId"] for d in list_web_acls(client, module) if d["Name"] == name]
     if acls:
         return acls[0]
     else:
@@ -187,91 +187,93 @@ def get_web_acl_by_name(client, module, name):
 
 
 def create_rule_lookup(client, module):
-    if client.__class__.__name__ == 'WAF':
+    if client.__class__.__name__ == "WAF":
         try:
             rules = list_rules_with_backoff(client)
-            return dict((rule['Name'], rule) for rule in rules)
+            return dict((rule["Name"], rule) for rule in rules)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not list rules')
-    elif client.__class__.__name__ == 'WAFRegional':
+            module.fail_json_aws(e, msg="Could not list rules")
+    elif client.__class__.__name__ == "WAFRegional":
         try:
             rules = list_regional_rules_with_backoff(client)
-            return dict((rule['Name'], rule) for rule in rules)
+            return dict((rule["Name"], rule) for rule in rules)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not list regional rules')
+            module.fail_json_aws(e, msg="Could not list regional rules")
 
 
 def get_web_acl(client, module, web_acl_id):
     try:
-        return client.get_web_acl(WebACLId=web_acl_id)['WebACL']
+        return client.get_web_acl(WebACLId=web_acl_id)["WebACL"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Could not get Web ACL with id %s' % web_acl_id)
+        module.fail_json_aws(e, msg="Could not get Web ACL with id %s" % web_acl_id)
 
 
-def list_web_acls(client, module,):
-    if client.__class__.__name__ == 'WAF':
+def list_web_acls(
+    client,
+    module,
+):
+    if client.__class__.__name__ == "WAF":
         try:
             return list_web_acls_with_backoff(client)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not get Web ACLs')
-    elif client.__class__.__name__ == 'WAFRegional':
+            module.fail_json_aws(e, msg="Could not get Web ACLs")
+    elif client.__class__.__name__ == "WAFRegional":
         try:
             return list_regional_web_acls_with_backoff(client)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not get Web ACLs')
+            module.fail_json_aws(e, msg="Could not get Web ACLs")
 
 
 def find_and_update_web_acl(client, module, web_acl_id):
     acl = get_web_acl(client, module, web_acl_id)
     rule_lookup = create_rule_lookup(client, module)
-    existing_rules = acl['Rules']
-    desired_rules = [{'RuleId': rule_lookup[rule['name']]['RuleId'],
-                      'Priority': rule['priority'],
-                      'Action': {'Type': rule['action'].upper()},
-                      'Type': rule.get('type', 'regular').upper()}
-                     for rule in module.params['rules']]
+    existing_rules = acl["Rules"]
+    desired_rules = [
+        {
+            "RuleId": rule_lookup[rule["name"]]["RuleId"],
+            "Priority": rule["priority"],
+            "Action": {"Type": rule["action"].upper()},
+            "Type": rule.get("type", "regular").upper(),
+        }
+        for rule in module.params["rules"]
+    ]
     missing = [rule for rule in desired_rules if rule not in existing_rules]
     extras = []
-    if module.params['purge_rules']:
+    if module.params["purge_rules"]:
         extras = [rule for rule in existing_rules if rule not in desired_rules]
 
-    insertions = [format_for_update(rule, 'INSERT') for rule in missing]
-    deletions = [format_for_update(rule, 'DELETE') for rule in extras]
+    insertions = [format_for_update(rule, "INSERT") for rule in missing]
+    deletions = [format_for_update(rule, "DELETE") for rule in extras]
     changed = bool(insertions + deletions)
 
     # Purge rules before adding new ones in case a deletion shares the same
     # priority as an insertion.
-    params = {
-        'WebACLId': acl['WebACLId'],
-        'DefaultAction': acl['DefaultAction']
-    }
+    params = {"WebACLId": acl["WebACLId"], "DefaultAction": acl["DefaultAction"]}
     change_tokens = []
     if deletions:
         try:
-            params['Updates'] = deletions
+            params["Updates"] = deletions
             result = run_func_with_change_token_backoff(client, module, params, client.update_web_acl)
-            change_tokens.append(result['ChangeToken'])
+            change_tokens.append(result["ChangeToken"])
             get_waiter(
-                client, 'change_token_in_sync',
-            ).wait(
-                ChangeToken=result['ChangeToken']
-            )
+                client,
+                "change_token_in_sync",
+            ).wait(ChangeToken=result["ChangeToken"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not update Web ACL')
+            module.fail_json_aws(e, msg="Could not update Web ACL")
     if insertions:
         try:
-            params['Updates'] = insertions
+            params["Updates"] = insertions
             result = run_func_with_change_token_backoff(client, module, params, client.update_web_acl)
-            change_tokens.append(result['ChangeToken'])
+            change_tokens.append(result["ChangeToken"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not update Web ACL')
+            module.fail_json_aws(e, msg="Could not update Web ACL")
     if change_tokens:
         for token in change_tokens:
             get_waiter(
-                client, 'change_token_in_sync',
-            ).wait(
-                ChangeToken=token
-            )
+                client,
+                "change_token_in_sync",
+            ).wait(ChangeToken=token)
     if changed:
         acl = get_web_acl(client, module, web_acl_id)
     return changed, acl
@@ -281,77 +283,79 @@ def format_for_update(rule, action):
     return dict(
         Action=action,
         ActivatedRule=dict(
-            Priority=rule['Priority'],
-            RuleId=rule['RuleId'],
-            Action=dict(
-                Type=rule['Action']['Type']
-            )
-        )
+            Priority=rule["Priority"],
+            RuleId=rule["RuleId"],
+            Action=dict(Type=rule["Action"]["Type"]),
+        ),
     )
 
 
 def remove_rules_from_web_acl(client, module, web_acl_id):
     acl = get_web_acl(client, module, web_acl_id)
-    deletions = [format_for_update(rule, 'DELETE') for rule in acl['Rules']]
+    deletions = [format_for_update(rule, "DELETE") for rule in acl["Rules"]]
     try:
-        params = {'WebACLId': acl['WebACLId'], 'DefaultAction': acl['DefaultAction'], 'Updates': deletions}
+        params = {"WebACLId": acl["WebACLId"], "DefaultAction": acl["DefaultAction"], "Updates": deletions}
         run_func_with_change_token_backoff(client, module, params, client.update_web_acl)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Could not remove rule')
+        module.fail_json_aws(e, msg="Could not remove rule")
 
 
 def ensure_web_acl_present(client, module):
     changed = False
     result = None
-    name = module.params['name']
+    name = module.params["name"]
     web_acl_id = get_web_acl_by_name(client, module, name)
     if web_acl_id:
         (changed, result) = find_and_update_web_acl(client, module, web_acl_id)
     else:
-        metric_name = module.params['metric_name']
+        metric_name = module.params["metric_name"]
         if not metric_name:
-            metric_name = re.sub(r'[^A-Za-z0-9]', '', module.params['name'])
-        default_action = module.params['default_action'].upper()
+            metric_name = re.sub(r"[^A-Za-z0-9]", "", module.params["name"])
+        default_action = module.params["default_action"].upper()
         try:
-            params = {'Name': name, 'MetricName': metric_name, 'DefaultAction': {'Type': default_action}}
+            params = {"Name": name, "MetricName": metric_name, "DefaultAction": {"Type": default_action}}
             new_web_acl = run_func_with_change_token_backoff(client, module, params, client.create_web_acl)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not create Web ACL')
-        (changed, result) = find_and_update_web_acl(client, module, new_web_acl['WebACL']['WebACLId'])
+            module.fail_json_aws(e, msg="Could not create Web ACL")
+        (changed, result) = find_and_update_web_acl(client, module, new_web_acl["WebACL"]["WebACLId"])
     return changed, result
 
 
 def ensure_web_acl_absent(client, module):
-    web_acl_id = get_web_acl_by_name(client, module, module.params['name'])
+    web_acl_id = get_web_acl_by_name(client, module, module.params["name"])
     if web_acl_id:
         web_acl = get_web_acl(client, module, web_acl_id)
-        if web_acl['Rules']:
+        if web_acl["Rules"]:
             remove_rules_from_web_acl(client, module, web_acl_id)
         try:
-            run_func_with_change_token_backoff(client, module, {'WebACLId': web_acl_id}, client.delete_web_acl, wait=True)
+            run_func_with_change_token_backoff(
+                client, module, {"WebACLId": web_acl_id}, client.delete_web_acl, wait=True
+            )
             return True, {}
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Could not delete Web ACL')
+            module.fail_json_aws(e, msg="Could not delete Web ACL")
     return False, {}
 
 
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        default_action=dict(choices=['block', 'allow', 'count']),
+        default_action=dict(choices=["block", "allow", "count"]),
         metric_name=dict(),
-        state=dict(default='present', choices=['present', 'absent']),
-        rules=dict(type='list', elements='dict'),
-        purge_rules=dict(type='bool', default=False),
-        waf_regional=dict(type='bool', default=False)
+        state=dict(default="present", choices=["present", "absent"]),
+        rules=dict(type="list", elements="dict"),
+        purge_rules=dict(type="bool", default=False),
+        waf_regional=dict(type="bool", default=False),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[['state', 'present', ['default_action', 'rules']]])
-    state = module.params.get('state')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[["state", "present", ["default_action", "rules"]]],
+    )
+    state = module.params.get("state")
 
-    resource = 'waf' if not module.params['waf_regional'] else 'waf-regional'
+    resource = "waf" if not module.params["waf_regional"] else "waf-regional"
     client = module.client(resource)
-    if state == 'present':
+    if state == "present":
         (changed, results) = ensure_web_acl_present(client, module)
     else:
         (changed, results) = ensure_web_acl_absent(client, module)
@@ -359,5 +363,5 @@ def main():
     module.exit_json(changed=changed, web_acl=camel_dict_to_snake_dict(results))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

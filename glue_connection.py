@@ -186,13 +186,13 @@ def _get_glue_connection(connection, module):
     connection_name = module.params.get("name")
     connection_catalog_id = module.params.get("catalog_id")
 
-    params = {'Name': connection_name}
+    params = {"Name": connection_name}
     if connection_catalog_id is not None:
-        params['CatalogId'] = connection_catalog_id
+        params["CatalogId"] = connection_catalog_id
 
     try:
-        return connection.get_connection(aws_retry=True, **params)['Connection']
-    except is_boto3_error_code('EntityNotFoundException'):
+        return connection.get_connection(aws_retry=True, **params)["Connection"]
+    except is_boto3_error_code("EntityNotFoundException"):
         return None
 
 
@@ -208,37 +208,50 @@ def _compare_glue_connection_params(user_params, current_params):
     # Weirdly, boto3 doesn't return some keys if the value is empty e.g. Description
     # To counter this, add the key if it's missing with a blank value
 
-    if 'Description' not in current_params:
-        current_params['Description'] = ""
-    if 'MatchCriteria' not in current_params:
-        current_params['MatchCriteria'] = list()
-    if 'PhysicalConnectionRequirements' not in current_params:
-        current_params['PhysicalConnectionRequirements'] = dict()
-        current_params['PhysicalConnectionRequirements']['SecurityGroupIdList'] = []
-        current_params['PhysicalConnectionRequirements']['SubnetId'] = ""
+    if "Description" not in current_params:
+        current_params["Description"] = ""
+    if "MatchCriteria" not in current_params:
+        current_params["MatchCriteria"] = list()
+    if "PhysicalConnectionRequirements" not in current_params:
+        current_params["PhysicalConnectionRequirements"] = dict()
+        current_params["PhysicalConnectionRequirements"]["SecurityGroupIdList"] = []
+        current_params["PhysicalConnectionRequirements"]["SubnetId"] = ""
 
-    if 'ConnectionProperties' in user_params['ConnectionInput'] and user_params['ConnectionInput']['ConnectionProperties'] \
-            != current_params['ConnectionProperties']:
+    if (
+        "ConnectionProperties" in user_params["ConnectionInput"]
+        and user_params["ConnectionInput"]["ConnectionProperties"] != current_params["ConnectionProperties"]
+    ):
         return True
-    if 'ConnectionType' in user_params['ConnectionInput'] and user_params['ConnectionInput']['ConnectionType'] \
-            != current_params['ConnectionType']:
+    if (
+        "ConnectionType" in user_params["ConnectionInput"]
+        and user_params["ConnectionInput"]["ConnectionType"] != current_params["ConnectionType"]
+    ):
         return True
-    if 'Description' in user_params['ConnectionInput'] and user_params['ConnectionInput']['Description'] != current_params['Description']:
+    if (
+        "Description" in user_params["ConnectionInput"]
+        and user_params["ConnectionInput"]["Description"] != current_params["Description"]
+    ):
         return True
-    if 'MatchCriteria' in user_params['ConnectionInput'] and set(user_params['ConnectionInput']['MatchCriteria']) != set(current_params['MatchCriteria']):
+    if "MatchCriteria" in user_params["ConnectionInput"] and set(
+        user_params["ConnectionInput"]["MatchCriteria"]
+    ) != set(current_params["MatchCriteria"]):
         return True
-    if 'PhysicalConnectionRequirements' in user_params['ConnectionInput']:
-        if 'SecurityGroupIdList' in user_params['ConnectionInput']['PhysicalConnectionRequirements'] and \
-                set(user_params['ConnectionInput']['PhysicalConnectionRequirements']['SecurityGroupIdList']) \
-                != set(current_params['PhysicalConnectionRequirements']['SecurityGroupIdList']):
+    if "PhysicalConnectionRequirements" in user_params["ConnectionInput"]:
+        if "SecurityGroupIdList" in user_params["ConnectionInput"]["PhysicalConnectionRequirements"] and set(
+            user_params["ConnectionInput"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+        ) != set(current_params["PhysicalConnectionRequirements"]["SecurityGroupIdList"]):
             return True
-        if 'SubnetId' in user_params['ConnectionInput']['PhysicalConnectionRequirements'] and \
-                user_params['ConnectionInput']['PhysicalConnectionRequirements']['SubnetId'] \
-                != current_params['PhysicalConnectionRequirements']['SubnetId']:
+        if (
+            "SubnetId" in user_params["ConnectionInput"]["PhysicalConnectionRequirements"]
+            and user_params["ConnectionInput"]["PhysicalConnectionRequirements"]["SubnetId"]
+            != current_params["PhysicalConnectionRequirements"]["SubnetId"]
+        ):
             return True
-        if 'AvailabilityZone' in user_params['ConnectionInput']['PhysicalConnectionRequirements'] and \
-                user_params['ConnectionInput']['PhysicalConnectionRequirements']['AvailabilityZone'] \
-                != current_params['PhysicalConnectionRequirements']['AvailabilityZone']:
+        if (
+            "AvailabilityZone" in user_params["ConnectionInput"]["PhysicalConnectionRequirements"]
+            and user_params["ConnectionInput"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+            != current_params["PhysicalConnectionRequirements"]["AvailabilityZone"]
+        ):
             return True
 
     return False
@@ -252,11 +265,11 @@ def _await_glue_connection(connection, module):
 
     while wait_timeout > time.time():
         glue_connection = _get_glue_connection(connection, module)
-        if glue_connection and glue_connection.get('Name'):
+        if glue_connection and glue_connection.get("Name"):
             return glue_connection
         time.sleep(check_interval)
 
-    module.fail_json(msg='Timeout waiting for Glue connection %s' % module.params.get('name'))
+    module.fail_json(msg="Timeout waiting for Glue connection %s" % module.params.get("name"))
 
 
 def create_or_update_glue_connection(connection, connection_ec2, module, glue_connection):
@@ -271,26 +284,30 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
     changed = False
 
     params = dict()
-    params['ConnectionInput'] = dict()
-    params['ConnectionInput']['Name'] = module.params.get("name")
-    params['ConnectionInput']['ConnectionType'] = module.params.get("connection_type")
-    params['ConnectionInput']['ConnectionProperties'] = module.params.get("connection_properties")
+    params["ConnectionInput"] = dict()
+    params["ConnectionInput"]["Name"] = module.params.get("name")
+    params["ConnectionInput"]["ConnectionType"] = module.params.get("connection_type")
+    params["ConnectionInput"]["ConnectionProperties"] = module.params.get("connection_properties")
     if module.params.get("catalog_id") is not None:
-        params['CatalogId'] = module.params.get("catalog_id")
+        params["CatalogId"] = module.params.get("catalog_id")
     if module.params.get("description") is not None:
-        params['ConnectionInput']['Description'] = module.params.get("description")
+        params["ConnectionInput"]["Description"] = module.params.get("description")
     if module.params.get("match_criteria") is not None:
-        params['ConnectionInput']['MatchCriteria'] = module.params.get("match_criteria")
+        params["ConnectionInput"]["MatchCriteria"] = module.params.get("match_criteria")
     if module.params.get("security_groups") is not None or module.params.get("subnet_id") is not None:
-        params['ConnectionInput']['PhysicalConnectionRequirements'] = dict()
+        params["ConnectionInput"]["PhysicalConnectionRequirements"] = dict()
     if module.params.get("security_groups") is not None:
         # Get security group IDs from names
-        security_group_ids = get_ec2_security_group_ids_from_names(module.params.get('security_groups'), connection_ec2, boto3=True)
-        params['ConnectionInput']['PhysicalConnectionRequirements']['SecurityGroupIdList'] = security_group_ids
+        security_group_ids = get_ec2_security_group_ids_from_names(
+            module.params.get("security_groups"), connection_ec2, boto3=True
+        )
+        params["ConnectionInput"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"] = security_group_ids
     if module.params.get("subnet_id") is not None:
-        params['ConnectionInput']['PhysicalConnectionRequirements']['SubnetId'] = module.params.get("subnet_id")
+        params["ConnectionInput"]["PhysicalConnectionRequirements"]["SubnetId"] = module.params.get("subnet_id")
     if module.params.get("availability_zone") is not None:
-        params['ConnectionInput']['PhysicalConnectionRequirements']['AvailabilityZone'] = module.params.get("availability_zone")
+        params["ConnectionInput"]["PhysicalConnectionRequirements"]["AvailabilityZone"] = module.params.get(
+            "availability_zone"
+        )
 
     # If glue_connection is not None then check if it needs to be modified, else create it
     if glue_connection:
@@ -298,7 +315,7 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
             try:
                 # We need to slightly modify the params for an update
                 update_params = copy.deepcopy(params)
-                update_params['Name'] = update_params['ConnectionInput']['Name']
+                update_params["Name"] = update_params["ConnectionInput"]["Name"]
                 if not module.check_mode:
                     connection.update_connection(aws_retry=True, **update_params)
                 changed = True
@@ -317,12 +334,17 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
         glue_connection = _await_glue_connection(connection, module)
 
     if glue_connection:
-        module.deprecate("The 'connection_properties' return key is deprecated and will be replaced"
-                         " by 'raw_connection_properties'. Both values are returned for now.",
-                         date='2024-06-01', collection_name='community.aws')
-        glue_connection['RawConnectionProperties'] = glue_connection['ConnectionProperties']
+        module.deprecate(
+            "The 'connection_properties' return key is deprecated and will be replaced"
+            " by 'raw_connection_properties'. Both values are returned for now.",
+            date="2024-06-01",
+            collection_name="community.aws",
+        )
+        glue_connection["RawConnectionProperties"] = glue_connection["ConnectionProperties"]
 
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_connection or {}, ignore_list=['RawConnectionProperties']))
+    module.exit_json(
+        changed=changed, **camel_dict_to_snake_dict(glue_connection or {}, ignore_list=["RawConnectionProperties"])
+    )
 
 
 def delete_glue_connection(connection, module, glue_connection):
@@ -336,9 +358,9 @@ def delete_glue_connection(connection, module, glue_connection):
     """
     changed = False
 
-    params = {'ConnectionName': module.params.get("name")}
+    params = {"ConnectionName": module.params.get("name")}
     if module.params.get("catalog_id") is not None:
-        params['CatalogId'] = module.params.get("catalog_id")
+        params["CatalogId"] = module.params.get("catalog_id")
 
     if glue_connection:
         try:
@@ -352,41 +374,41 @@ def delete_glue_connection(connection, module, glue_connection):
 
 
 def main():
-
-    argument_spec = (
-        dict(
-            availability_zone=dict(type='str'),
-            catalog_id=dict(type='str'),
-            connection_properties=dict(type='dict'),
-            connection_type=dict(type='str', default='JDBC', choices=['CUSTOM', 'JDBC', 'KAFKA', 'MARKETPLACE', 'MONGODB', 'NETWORK']),
-            description=dict(type='str'),
-            match_criteria=dict(type='list', elements='str'),
-            name=dict(required=True, type='str'),
-            security_groups=dict(type='list', elements='str'),
-            state=dict(required=True, choices=['present', 'absent'], type='str'),
-            subnet_id=dict(type='str')
-        )
+    argument_spec = dict(
+        availability_zone=dict(type="str"),
+        catalog_id=dict(type="str"),
+        connection_properties=dict(type="dict"),
+        connection_type=dict(
+            type="str", default="JDBC", choices=["CUSTOM", "JDBC", "KAFKA", "MARKETPLACE", "MONGODB", "NETWORK"]
+        ),
+        description=dict(type="str"),
+        match_criteria=dict(type="list", elements="str"),
+        name=dict(required=True, type="str"),
+        security_groups=dict(type="list", elements="str"),
+        state=dict(required=True, choices=["present", "absent"], type="str"),
+        subnet_id=dict(type="str"),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[
-                                  ('state', 'present', ['connection_properties']),
-                                  ('connection_type', 'NETWORK', ['availability_zone', 'security_groups', 'subnet_id'])
-                              ],
-                              supports_check_mode=True
-                              )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[
+            ("state", "present", ["connection_properties"]),
+            ("connection_type", "NETWORK", ["availability_zone", "security_groups", "subnet_id"]),
+        ],
+        supports_check_mode=True,
+    )
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
-    connection_glue = module.client('glue', retry_decorator=retry_decorator)
-    connection_ec2 = module.client('ec2', retry_decorator=retry_decorator)
+    connection_glue = module.client("glue", retry_decorator=retry_decorator)
+    connection_ec2 = module.client("ec2", retry_decorator=retry_decorator)
 
     glue_connection = _get_glue_connection(connection_glue, module)
 
-    if module.params.get("state") == 'present':
+    if module.params.get("state") == "present":
         create_or_update_glue_connection(connection_glue, connection_ec2, module, glue_connection)
     else:
         delete_glue_connection(connection_glue, module, glue_connection)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

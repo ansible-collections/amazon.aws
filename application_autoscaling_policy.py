@@ -297,13 +297,13 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 # Merge the results of the scalable target creation and policy deletion/creation
 # There's no risk in overriding values since mutual keys have the same values in our case
 def merge_results(scalable_target_result, policy_result):
-    if scalable_target_result['changed'] or policy_result['changed']:
+    if scalable_target_result["changed"] or policy_result["changed"]:
         changed = True
     else:
         changed = False
 
-    merged_response = scalable_target_result['response'].copy()
-    merged_response.update(policy_result['response'])
+    merged_response = scalable_target_result["response"].copy()
+    merged_response.update(policy_result["response"])
 
     return {"changed": changed, "response": merged_response}
 
@@ -312,22 +312,22 @@ def delete_scaling_policy(connection, module):
     changed = False
     try:
         scaling_policy = connection.describe_scaling_policies(
-            ServiceNamespace=module.params.get('service_namespace'),
-            ResourceId=module.params.get('resource_id'),
-            ScalableDimension=module.params.get('scalable_dimension'),
-            PolicyNames=[module.params.get('policy_name')],
-            MaxResults=1
+            ServiceNamespace=module.params.get("service_namespace"),
+            ResourceId=module.params.get("resource_id"),
+            ScalableDimension=module.params.get("scalable_dimension"),
+            PolicyNames=[module.params.get("policy_name")],
+            MaxResults=1,
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe scaling policies")
 
-    if scaling_policy['ScalingPolicies']:
+    if scaling_policy["ScalingPolicies"]:
         try:
             connection.delete_scaling_policy(
-                ServiceNamespace=module.params.get('service_namespace'),
-                ResourceId=module.params.get('resource_id'),
-                ScalableDimension=module.params.get('scalable_dimension'),
-                PolicyName=module.params.get('policy_name'),
+                ServiceNamespace=module.params.get("service_namespace"),
+                ResourceId=module.params.get("resource_id"),
+                ScalableDimension=module.params.get("scalable_dimension"),
+                PolicyName=module.params.get("policy_name"),
             )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -341,11 +341,11 @@ def create_scalable_target(connection, module):
 
     try:
         scalable_targets = connection.describe_scalable_targets(
-            ServiceNamespace=module.params.get('service_namespace'),
+            ServiceNamespace=module.params.get("service_namespace"),
             ResourceIds=[
-                module.params.get('resource_id'),
+                module.params.get("resource_id"),
             ],
-            ScalableDimension=module.params.get('scalable_dimension')
+            ScalableDimension=module.params.get("scalable_dimension"),
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe scalable targets")
@@ -353,41 +353,38 @@ def create_scalable_target(connection, module):
     # Scalable target registration will occur if:
     # 1. There is no scalable target registered for this service
     # 2. A scalable target exists, different min/max values are defined and override is set to "yes"
-    if (
-        not scalable_targets['ScalableTargets']
-        or (
-            module.params.get('override_task_capacity')
-            and (
-                scalable_targets['ScalableTargets'][0]['MinCapacity'] != module.params.get('minimum_tasks')
-                or scalable_targets['ScalableTargets'][0]['MaxCapacity'] != module.params.get('maximum_tasks')
-            )
+    if not scalable_targets["ScalableTargets"] or (
+        module.params.get("override_task_capacity")
+        and (
+            scalable_targets["ScalableTargets"][0]["MinCapacity"] != module.params.get("minimum_tasks")
+            or scalable_targets["ScalableTargets"][0]["MaxCapacity"] != module.params.get("maximum_tasks")
         )
     ):
         changed = True
         try:
             connection.register_scalable_target(
-                ServiceNamespace=module.params.get('service_namespace'),
-                ResourceId=module.params.get('resource_id'),
-                ScalableDimension=module.params.get('scalable_dimension'),
-                MinCapacity=module.params.get('minimum_tasks'),
-                MaxCapacity=module.params.get('maximum_tasks')
+                ServiceNamespace=module.params.get("service_namespace"),
+                ResourceId=module.params.get("resource_id"),
+                ScalableDimension=module.params.get("scalable_dimension"),
+                MinCapacity=module.params.get("minimum_tasks"),
+                MaxCapacity=module.params.get("maximum_tasks"),
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to register scalable target")
 
     try:
         response = connection.describe_scalable_targets(
-            ServiceNamespace=module.params.get('service_namespace'),
+            ServiceNamespace=module.params.get("service_namespace"),
             ResourceIds=[
-                module.params.get('resource_id'),
+                module.params.get("resource_id"),
             ],
-            ScalableDimension=module.params.get('scalable_dimension')
+            ScalableDimension=module.params.get("scalable_dimension"),
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe scalable targets")
 
-    if (response['ScalableTargets']):
-        snaked_response = camel_dict_to_snake_dict(response['ScalableTargets'][0])
+    if response["ScalableTargets"]:
+        snaked_response = camel_dict_to_snake_dict(response["ScalableTargets"][0])
     else:
         snaked_response = {}
 
@@ -397,78 +394,82 @@ def create_scalable_target(connection, module):
 def create_scaling_policy(connection, module):
     try:
         scaling_policy = connection.describe_scaling_policies(
-            ServiceNamespace=module.params.get('service_namespace'),
-            ResourceId=module.params.get('resource_id'),
-            ScalableDimension=module.params.get('scalable_dimension'),
-            PolicyNames=[module.params.get('policy_name')],
-            MaxResults=1
+            ServiceNamespace=module.params.get("service_namespace"),
+            ResourceId=module.params.get("resource_id"),
+            ScalableDimension=module.params.get("scalable_dimension"),
+            PolicyNames=[module.params.get("policy_name")],
+            MaxResults=1,
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe scaling policies")
 
     changed = False
 
-    if scaling_policy['ScalingPolicies']:
-        scaling_policy = scaling_policy['ScalingPolicies'][0]
+    if scaling_policy["ScalingPolicies"]:
+        scaling_policy = scaling_policy["ScalingPolicies"][0]
         # check if the input parameters are equal to what's already configured
-        for attr in ('PolicyName',
-                     'ServiceNamespace',
-                     'ResourceId',
-                     'ScalableDimension',
-                     'PolicyType',
-                     'StepScalingPolicyConfiguration',
-                     'TargetTrackingScalingPolicyConfiguration'):
+        for attr in (
+            "PolicyName",
+            "ServiceNamespace",
+            "ResourceId",
+            "ScalableDimension",
+            "PolicyType",
+            "StepScalingPolicyConfiguration",
+            "TargetTrackingScalingPolicyConfiguration",
+        ):
             if attr in scaling_policy and scaling_policy[attr] != module.params.get(_camel_to_snake(attr)):
                 changed = True
                 scaling_policy[attr] = module.params.get(_camel_to_snake(attr))
     else:
         changed = True
         scaling_policy = {
-            'PolicyName': module.params.get('policy_name'),
-            'ServiceNamespace': module.params.get('service_namespace'),
-            'ResourceId': module.params.get('resource_id'),
-            'ScalableDimension': module.params.get('scalable_dimension'),
-            'PolicyType': module.params.get('policy_type'),
-            'StepScalingPolicyConfiguration': module.params.get('step_scaling_policy_configuration'),
-            'TargetTrackingScalingPolicyConfiguration': module.params.get('target_tracking_scaling_policy_configuration')
+            "PolicyName": module.params.get("policy_name"),
+            "ServiceNamespace": module.params.get("service_namespace"),
+            "ResourceId": module.params.get("resource_id"),
+            "ScalableDimension": module.params.get("scalable_dimension"),
+            "PolicyType": module.params.get("policy_type"),
+            "StepScalingPolicyConfiguration": module.params.get("step_scaling_policy_configuration"),
+            "TargetTrackingScalingPolicyConfiguration": module.params.get(
+                "target_tracking_scaling_policy_configuration"
+            ),
         }
 
     if changed:
         try:
-            if (module.params.get('step_scaling_policy_configuration')):
+            if module.params.get("step_scaling_policy_configuration"):
                 connection.put_scaling_policy(
-                    PolicyName=scaling_policy['PolicyName'],
-                    ServiceNamespace=scaling_policy['ServiceNamespace'],
-                    ResourceId=scaling_policy['ResourceId'],
-                    ScalableDimension=scaling_policy['ScalableDimension'],
-                    PolicyType=scaling_policy['PolicyType'],
-                    StepScalingPolicyConfiguration=scaling_policy['StepScalingPolicyConfiguration']
+                    PolicyName=scaling_policy["PolicyName"],
+                    ServiceNamespace=scaling_policy["ServiceNamespace"],
+                    ResourceId=scaling_policy["ResourceId"],
+                    ScalableDimension=scaling_policy["ScalableDimension"],
+                    PolicyType=scaling_policy["PolicyType"],
+                    StepScalingPolicyConfiguration=scaling_policy["StepScalingPolicyConfiguration"],
                 )
-            elif (module.params.get('target_tracking_scaling_policy_configuration')):
+            elif module.params.get("target_tracking_scaling_policy_configuration"):
                 connection.put_scaling_policy(
-                    PolicyName=scaling_policy['PolicyName'],
-                    ServiceNamespace=scaling_policy['ServiceNamespace'],
-                    ResourceId=scaling_policy['ResourceId'],
-                    ScalableDimension=scaling_policy['ScalableDimension'],
-                    PolicyType=scaling_policy['PolicyType'],
-                    TargetTrackingScalingPolicyConfiguration=scaling_policy['TargetTrackingScalingPolicyConfiguration']
+                    PolicyName=scaling_policy["PolicyName"],
+                    ServiceNamespace=scaling_policy["ServiceNamespace"],
+                    ResourceId=scaling_policy["ResourceId"],
+                    ScalableDimension=scaling_policy["ScalableDimension"],
+                    PolicyType=scaling_policy["PolicyType"],
+                    TargetTrackingScalingPolicyConfiguration=scaling_policy["TargetTrackingScalingPolicyConfiguration"],
                 )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to create scaling policy")
 
     try:
         response = connection.describe_scaling_policies(
-            ServiceNamespace=module.params.get('service_namespace'),
-            ResourceId=module.params.get('resource_id'),
-            ScalableDimension=module.params.get('scalable_dimension'),
-            PolicyNames=[module.params.get('policy_name')],
-            MaxResults=1
+            ServiceNamespace=module.params.get("service_namespace"),
+            ResourceId=module.params.get("resource_id"),
+            ScalableDimension=module.params.get("scalable_dimension"),
+            PolicyNames=[module.params.get("policy_name")],
+            MaxResults=1,
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe scaling policies")
 
-    if (response['ScalingPolicies']):
-        snaked_response = camel_dict_to_snake_dict(response['ScalingPolicies'][0])
+    if response["ScalingPolicies"]:
+        snaked_response = camel_dict_to_snake_dict(response["ScalingPolicies"][0])
     else:
         snaked_response = {}
 
@@ -477,52 +478,63 @@ def create_scaling_policy(connection, module):
 
 def main():
     argument_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
-        policy_name=dict(type='str', required=True),
-        service_namespace=dict(type='str', required=True, choices=['appstream', 'dynamodb', 'ec2', 'ecs', 'elasticmapreduce']),
-        resource_id=dict(type='str', required=True),
-        scalable_dimension=dict(type='str',
-                                required=True,
-                                choices=['ecs:service:DesiredCount',
-                                         'ec2:spot-fleet-request:TargetCapacity',
-                                         'elasticmapreduce:instancegroup:InstanceCount',
-                                         'appstream:fleet:DesiredCapacity',
-                                         'dynamodb:table:ReadCapacityUnits',
-                                         'dynamodb:table:WriteCapacityUnits',
-                                         'dynamodb:index:ReadCapacityUnits',
-                                         'dynamodb:index:WriteCapacityUnits']),
-        policy_type=dict(type='str', required=True, choices=['StepScaling', 'TargetTrackingScaling']),
-        step_scaling_policy_configuration=dict(type='dict'),
-        target_tracking_scaling_policy_configuration=dict(
-            type='dict',
-            options=dict(
-                CustomizedMetricSpecification=dict(type='dict'),
-                DisableScaleIn=dict(type='bool'),
-                PredefinedMetricSpecification=dict(type='dict'),
-                ScaleInCooldown=dict(type='int'),
-                ScaleOutCooldown=dict(type='int'),
-                TargetValue=dict(type='float'),
-            )
+        state=dict(type="str", required=True, choices=["present", "absent"]),
+        policy_name=dict(type="str", required=True),
+        service_namespace=dict(
+            type="str", required=True, choices=["appstream", "dynamodb", "ec2", "ecs", "elasticmapreduce"]
         ),
-        minimum_tasks=dict(type='int'),
-        maximum_tasks=dict(type='int'),
-        override_task_capacity=dict(type='bool'),
+        resource_id=dict(type="str", required=True),
+        scalable_dimension=dict(
+            type="str",
+            required=True,
+            choices=[
+                "ecs:service:DesiredCount",
+                "ec2:spot-fleet-request:TargetCapacity",
+                "elasticmapreduce:instancegroup:InstanceCount",
+                "appstream:fleet:DesiredCapacity",
+                "dynamodb:table:ReadCapacityUnits",
+                "dynamodb:table:WriteCapacityUnits",
+                "dynamodb:index:ReadCapacityUnits",
+                "dynamodb:index:WriteCapacityUnits",
+            ],
+        ),
+        policy_type=dict(type="str", required=True, choices=["StepScaling", "TargetTrackingScaling"]),
+        step_scaling_policy_configuration=dict(type="dict"),
+        target_tracking_scaling_policy_configuration=dict(
+            type="dict",
+            options=dict(
+                CustomizedMetricSpecification=dict(type="dict"),
+                DisableScaleIn=dict(type="bool"),
+                PredefinedMetricSpecification=dict(type="dict"),
+                ScaleInCooldown=dict(type="int"),
+                ScaleOutCooldown=dict(type="int"),
+                TargetValue=dict(type="float"),
+            ),
+        ),
+        minimum_tasks=dict(type="int"),
+        maximum_tasks=dict(type="int"),
+        override_task_capacity=dict(type="bool"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client('application-autoscaling')
+    connection = module.client("application-autoscaling")
 
     # Remove any target_tracking_scaling_policy_configuration suboptions that are None
     policy_config_options = [
-        'CustomizedMetricSpecification', 'DisableScaleIn', 'PredefinedMetricSpecification', 'ScaleInCooldown', 'ScaleOutCooldown', 'TargetValue'
+        "CustomizedMetricSpecification",
+        "DisableScaleIn",
+        "PredefinedMetricSpecification",
+        "ScaleInCooldown",
+        "ScaleOutCooldown",
+        "TargetValue",
     ]
-    if isinstance(module.params['target_tracking_scaling_policy_configuration'], dict):
+    if isinstance(module.params["target_tracking_scaling_policy_configuration"], dict):
         for option in policy_config_options:
-            if module.params['target_tracking_scaling_policy_configuration'][option] is None:
-                module.params['target_tracking_scaling_policy_configuration'].pop(option)
+            if module.params["target_tracking_scaling_policy_configuration"][option] is None:
+                module.params["target_tracking_scaling_policy_configuration"].pop(option)
 
-    if module.params.get("state") == 'present':
+    if module.params.get("state") == "present":
         # A scalable target must be registered prior to creating a scaling policy
         scalable_target_result = create_scalable_target(connection, module)
         policy_result = create_scaling_policy(connection, module)
@@ -535,5 +547,5 @@ def main():
         module.exit_json(**policy_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

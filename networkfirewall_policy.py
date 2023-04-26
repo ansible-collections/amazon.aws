@@ -340,40 +340,46 @@ from ansible_collections.community.aws.plugins.module_utils.networkfirewall impo
 
 
 def main():
-
     custom_action_options = dict(
-        name=dict(type='str', required=True),
+        name=dict(type="str", required=True),
         # Poorly documented, but "publishMetricAction.dimensions ... must have length less than or equal to 1"
-        publish_metric_dimension_value=dict(type='str', required=False, aliases=['publish_metric_dimension_values']),
+        publish_metric_dimension_value=dict(type="str", required=False, aliases=["publish_metric_dimension_values"]),
         # NetworkFirewallPolicyManager can cope with a list for future-proofing
         # publish_metric_dimension_values=dict(type='list', elements='str', required=False, aliases=['publish_metric_dimension_value']),
     )
 
     argument_spec = dict(
-        name=dict(type='str', required=False),
-        arn=dict(type='str', required=False),
-        state=dict(type='str', required=False, default='present', choices=['present', 'absent']),
-        description=dict(type='str', required=False),
-        tags=dict(type='dict', required=False, aliases=['resource_tags']),
-        purge_tags=dict(type='bool', required=False, default=True),
-        stateful_rule_groups=dict(type='list', elements='str', required=False, aliases=['stateful_groups']),
-        stateless_rule_groups=dict(type='list', elements='str', required=False, aliases=['stateless_groups']),
-        stateful_default_actions=dict(type='list', elements='str', required=False),
-        stateless_default_actions=dict(type='list', elements='str', required=False),
-        stateless_fragment_default_actions=dict(type='list', elements='str', required=False),
-        stateful_rule_order=dict(type='str', required=False, choices=['strict', 'default'], aliases=['rule_order']),
-        stateless_custom_actions=dict(type='list', elements='dict', required=False,
-                                      options=custom_action_options, aliases=['custom_stateless_actions']),
-        purge_stateless_custom_actions=dict(type='bool', required=False, default=True, aliases=['purge_custom_stateless_actions']),
-        wait=dict(type='bool', required=False, default=True),
-        wait_timeout=dict(type='int', required=False),
+        name=dict(type="str", required=False),
+        arn=dict(type="str", required=False),
+        state=dict(type="str", required=False, default="present", choices=["present", "absent"]),
+        description=dict(type="str", required=False),
+        tags=dict(type="dict", required=False, aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", required=False, default=True),
+        stateful_rule_groups=dict(type="list", elements="str", required=False, aliases=["stateful_groups"]),
+        stateless_rule_groups=dict(type="list", elements="str", required=False, aliases=["stateless_groups"]),
+        stateful_default_actions=dict(type="list", elements="str", required=False),
+        stateless_default_actions=dict(type="list", elements="str", required=False),
+        stateless_fragment_default_actions=dict(type="list", elements="str", required=False),
+        stateful_rule_order=dict(type="str", required=False, choices=["strict", "default"], aliases=["rule_order"]),
+        stateless_custom_actions=dict(
+            type="list",
+            elements="dict",
+            required=False,
+            options=custom_action_options,
+            aliases=["custom_stateless_actions"],
+        ),
+        purge_stateless_custom_actions=dict(
+            type="bool", required=False, default=True, aliases=["purge_custom_stateless_actions"]
+        ),
+        wait=dict(type="bool", required=False, default=True),
+        wait_timeout=dict(type="int", required=False),
     )
 
     mutually_exclusive = [
-        ('arn', 'name',)
+        ["arn", "name"],
     ]
     required_one_of = [
-        ('arn', 'name',)
+        ["arn", "name"],
     ]
 
     module = AnsibleAWSModule(
@@ -383,36 +389,36 @@ def main():
         required_one_of=required_one_of,
     )
 
-    arn = module.params.get('arn')
-    name = module.params.get('name')
-    state = module.params.get('state')
+    arn = module.params.get("arn")
+    name = module.params.get("name")
+    state = module.params.get("state")
 
     manager = NetworkFirewallPolicyManager(module, name=name, arn=arn)
-    manager.set_wait(module.params.get('wait', None))
-    manager.set_wait_timeout(module.params.get('wait_timeout', None))
+    manager.set_wait(module.params.get("wait", None))
+    manager.set_wait_timeout(module.params.get("wait_timeout", None))
 
-    rule_order = module.params.get('stateful_rule_order')
+    rule_order = module.params.get("stateful_rule_order")
     if rule_order and rule_order != "default":
-        module.require_botocore_at_least('1.21.52', reason='to set the rule order')
-    if module.params.get('stateful_default_actions'):
-        module.require_botocore_at_least(
-            '1.21.52', reason='to set the default actions for stateful flows')
+        module.require_botocore_at_least("1.21.52", reason="to set the rule order")
+    if module.params.get("stateful_default_actions"):
+        module.require_botocore_at_least("1.21.52", reason="to set the default actions for stateful flows")
 
-    if state == 'absent':
+    if state == "absent":
         manager.delete()
     else:
-        manager.set_description(module.params.get('description', None))
-        manager.set_tags(module.params.get('tags', None), module.params.get('purge_tags', None))
+        manager.set_description(module.params.get("description", None))
+        manager.set_tags(module.params.get("tags", None), module.params.get("purge_tags", None))
         # Actions need to be defined before potentially consuming them
         manager.set_custom_stateless_actions(
-            module.params.get('stateless_custom_actions', None),
-            module.params.get('purge_stateless_custom_actions', True)),
-        manager.set_stateful_rule_order(module.params.get('stateful_rule_order', None))
-        manager.set_stateful_rule_groups(module.params.get('stateful_rule_groups', None))
-        manager.set_stateless_rule_groups(module.params.get('stateless_rule_groups', None))
-        manager.set_stateful_default_actions(module.params.get('stateful_default_actions', None))
-        manager.set_stateless_default_actions(module.params.get('stateless_default_actions', None))
-        manager.set_stateless_fragment_default_actions(module.params.get('stateless_fragment_default_actions', None))
+            module.params.get("stateless_custom_actions", None),
+            module.params.get("purge_stateless_custom_actions", True),
+        ),
+        manager.set_stateful_rule_order(module.params.get("stateful_rule_order", None))
+        manager.set_stateful_rule_groups(module.params.get("stateful_rule_groups", None))
+        manager.set_stateless_rule_groups(module.params.get("stateless_rule_groups", None))
+        manager.set_stateful_default_actions(module.params.get("stateful_default_actions", None))
+        manager.set_stateless_default_actions(module.params.get("stateless_default_actions", None))
+        manager.set_stateless_fragment_default_actions(module.params.get("stateless_fragment_default_actions", None))
 
         manager.flush_changes()
 
@@ -425,9 +431,9 @@ def main():
             before=manager.original_resource,
             after=manager.updated_resource,
         )
-        results['diff'] = diff
+        results["diff"] = diff
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

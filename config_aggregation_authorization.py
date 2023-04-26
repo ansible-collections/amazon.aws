@@ -62,10 +62,10 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 def resource_exists(client, module, params):
     try:
-        current_authorizations = client.describe_aggregation_authorizations()['AggregationAuthorizations']
+        current_authorizations = client.describe_aggregation_authorizations()["AggregationAuthorizations"]
         authorization_exists = next(
-            (item for item in current_authorizations if item["AuthorizedAccountId"] == params['AuthorizedAccountId']),
-            None
+            (item for item in current_authorizations if item["AuthorizedAccountId"] == params["AuthorizedAccountId"]),
+            None,
         )
         if authorization_exists:
             return True
@@ -76,32 +76,32 @@ def resource_exists(client, module, params):
 def create_resource(client, module, params, result):
     try:
         response = client.put_aggregation_authorization(
-            AuthorizedAccountId=params['AuthorizedAccountId'],
-            AuthorizedAwsRegion=params['AuthorizedAwsRegion']
+            AuthorizedAccountId=params["AuthorizedAccountId"],
+            AuthorizedAwsRegion=params["AuthorizedAwsRegion"],
         )
-        result['changed'] = True
+        result["changed"] = True
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't create AWS Aggregation authorization")
 
 
 def update_resource(client, module, params, result):
-    current_authorizations = client.describe_aggregation_authorizations()['AggregationAuthorizations']
+    current_authorizations = client.describe_aggregation_authorizations()["AggregationAuthorizations"]
     current_params = next(
-        (item for item in current_authorizations if item["AuthorizedAccountId"] == params['AuthorizedAccountId']),
-        None
+        (item for item in current_authorizations if item["AuthorizedAccountId"] == params["AuthorizedAccountId"]),
+        None,
     )
 
-    del current_params['AggregationAuthorizationArn']
-    del current_params['CreationTime']
+    del current_params["AggregationAuthorizationArn"]
+    del current_params["CreationTime"]
 
     if params != current_params:
         try:
             response = client.put_aggregation_authorization(
-                AuthorizedAccountId=params['AuthorizedAccountId'],
-                AuthorizedAwsRegion=params['AuthorizedAwsRegion']
+                AuthorizedAccountId=params["AuthorizedAccountId"],
+                AuthorizedAwsRegion=params["AuthorizedAwsRegion"],
             )
-            result['changed'] = True
+            result["changed"] = True
             return result
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create AWS Aggregation authorization")
@@ -110,10 +110,10 @@ def update_resource(client, module, params, result):
 def delete_resource(client, module, params, result):
     try:
         response = client.delete_aggregation_authorization(
-            AuthorizedAccountId=params['AuthorizedAccountId'],
-            AuthorizedAwsRegion=params['AuthorizedAwsRegion']
+            AuthorizedAccountId=params["AuthorizedAccountId"],
+            AuthorizedAwsRegion=params["AuthorizedAwsRegion"],
         )
-        result['changed'] = True
+        result["changed"] = True
         return result
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't delete AWS Aggregation authorization")
@@ -122,35 +122,35 @@ def delete_resource(client, module, params, result):
 def main():
     module = AnsibleAWSModule(
         argument_spec={
-            'state': dict(type='str', choices=['present', 'absent'], default='present'),
-            'authorized_account_id': dict(type='str', required=True),
-            'authorized_aws_region': dict(type='str', required=True),
+            "state": dict(type="str", choices=["present", "absent"], default="present"),
+            "authorized_account_id": dict(type="str", required=True),
+            "authorized_aws_region": dict(type="str", required=True),
         },
         supports_check_mode=False,
     )
 
-    result = {'changed': False}
+    result = {"changed": False}
 
     params = {
-        'AuthorizedAccountId': module.params.get('authorized_account_id'),
-        'AuthorizedAwsRegion': module.params.get('authorized_aws_region'),
+        "AuthorizedAccountId": module.params.get("authorized_account_id"),
+        "AuthorizedAwsRegion": module.params.get("authorized_aws_region"),
     }
 
-    client = module.client('config', retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("config", retry_decorator=AWSRetry.jittered_backoff())
     resource_status = resource_exists(client, module, params)
 
-    if module.params.get('state') == 'present':
+    if module.params.get("state") == "present":
         if not resource_status:
             create_resource(client, module, params, result)
         else:
             update_resource(client, module, params, result)
 
-    if module.params.get('state') == 'absent':
+    if module.params.get("state") == "absent":
         if resource_status:
             delete_resource(client, module, params, result)
 
-    module.exit_json(changed=result['changed'])
+    module.exit_json(changed=result["changed"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

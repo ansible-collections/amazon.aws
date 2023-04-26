@@ -135,7 +135,7 @@ class EcsAttributes(object):
 
     @staticmethod
     def _validate_attrs(attrs):
-        return all(tuple(attr.keys()) in (('name', 'value'), ('value', 'name')) for attr in attrs)
+        return all(tuple(attr.keys()) in (("name", "value"), ("value", "name")) for attr in attrs)
 
     def _parse_attrs(self, attrs):
         attrs_parsed = []
@@ -144,20 +144,18 @@ class EcsAttributes(object):
                 if len(attr) != 1:
                     self.module.fail_json(msg="Incorrect attribute format - %s" % str(attr))
                 name, value = list(attr.items())[0]
-                attrs_parsed.append({'name': name, 'value': value})
+                attrs_parsed.append({"name": name, "value": value})
             elif isinstance(attr, str):
-                attrs_parsed.append({'name': attr, 'value': None})
+                attrs_parsed.append({"name": attr, "value": None})
             else:
                 self.module.fail_json(msg="Incorrect attributes format - %s" % str(attrs))
 
         return attrs_parsed
 
     def _setup_attr_obj(self, ecs_arn, name, value=None, skip_value=False):
-        attr_obj = {'targetType': 'container-instance',
-                    'targetId': ecs_arn,
-                    'name': name}
+        attr_obj = {"targetType": "container-instance", "targetId": ecs_arn, "name": name}
         if not skip_value and value is not None:
-            attr_obj['value'] = value
+            attr_obj["value"] = value
 
         return attr_obj
 
@@ -186,23 +184,25 @@ class Ec2EcsInstance(object):
         self.ec2_id = ec2_id
 
         try:
-            self.ecs = module.client('ecs')
+            self.ecs = module.client("ecs")
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
+            module.fail_json_aws(e, msg="Failed to connect to AWS")
 
         self.ecs_arn = self._get_ecs_arn()
 
     def _get_ecs_arn(self):
         try:
-            ecs_instances_arns = self.ecs.list_container_instances(cluster=self.cluster)['containerInstanceArns']
-            ec2_instances = self.ecs.describe_container_instances(cluster=self.cluster,
-                                                                  containerInstances=ecs_instances_arns)['containerInstances']
+            ecs_instances_arns = self.ecs.list_container_instances(cluster=self.cluster)["containerInstanceArns"]
+            ec2_instances = self.ecs.describe_container_instances(
+                cluster=self.cluster, containerInstances=ecs_instances_arns
+            )["containerInstances"]
         except (ClientError, EndpointConnectionError) as e:
             self.module.fail_json(msg="Can't connect to the cluster - %s" % str(e))
 
         try:
-            ecs_arn = next(inst for inst in ec2_instances
-                           if inst['ec2InstanceId'] == self.ec2_id)['containerInstanceArn']
+            ecs_arn = next(inst for inst in ec2_instances if inst["ec2InstanceId"] == self.ec2_id)[
+                "containerInstanceArn"
+            ]
         except StopIteration:
             self.module.fail_json(msg="EC2 instance Id not found in ECS cluster - %s" % str(self.cluster))
 
@@ -211,16 +211,16 @@ class Ec2EcsInstance(object):
     def attrs_put(self, attrs):
         """Puts attributes on ECS container instance"""
         try:
-            self.ecs.put_attributes(cluster=self.cluster,
-                                    attributes=attrs.get_for_ecs_arn(self.ecs_arn))
+            self.ecs.put_attributes(cluster=self.cluster, attributes=attrs.get_for_ecs_arn(self.ecs_arn))
         except ClientError as e:
             self.module.fail_json(msg=str(e))
 
     def attrs_delete(self, attrs):
         """Deletes attributes from ECS container instance."""
         try:
-            self.ecs.delete_attributes(cluster=self.cluster,
-                                       attributes=attrs.get_for_ecs_arn(self.ecs_arn, skip_value=True))
+            self.ecs.delete_attributes(
+                cluster=self.cluster, attributes=attrs.get_for_ecs_arn(self.ecs_arn, skip_value=True)
+            )
         except ClientError as e:
             self.module.fail_json(msg=str(e))
 
@@ -229,33 +229,33 @@ class Ec2EcsInstance(object):
         Returns EcsAttributes object containing attributes from ECS container instance with names
         matching to attrs.attributes (EcsAttributes Object).
         """
-        attr_objs = [{'targetType': 'container-instance', 'attributeName': attr['name']}
-                     for attr in attrs]
+        attr_objs = [{"targetType": "container-instance", "attributeName": attr["name"]} for attr in attrs]
 
         try:
-            matched_ecs_targets = [attr_found for attr_obj in attr_objs
-                                   for attr_found in self.ecs.list_attributes(cluster=self.cluster, **attr_obj)['attributes']]
+            matched_ecs_targets = [
+                attr_found
+                for attr_obj in attr_objs
+                for attr_found in self.ecs.list_attributes(cluster=self.cluster, **attr_obj)["attributes"]
+            ]
         except ClientError as e:
             self.module.fail_json(msg="Can't connect to the cluster - %s" % str(e))
 
-        matched_objs = [target for target in matched_ecs_targets
-                        if target['targetId'] == self.ecs_arn]
+        matched_objs = [target for target in matched_ecs_targets if target["targetId"] == self.ecs_arn]
 
-        results = [{'name': match['name'], 'value': match.get('value', None)}
-                   for match in matched_objs]
+        results = [{"name": match["name"], "value": match.get("value", None)} for match in matched_objs]
 
         return EcsAttributes(self.module, results)
 
 
 def main():
     argument_spec = dict(
-        state=dict(required=False, default='present', choices=['present', 'absent']),
-        cluster=dict(required=True, type='str'),
-        ec2_instance_id=dict(required=True, type='str'),
-        attributes=dict(required=True, type='list', elements='dict'),
+        state=dict(required=False, default="present", choices=["present", "absent"]),
+        cluster=dict(required=True, type="str"),
+        ec2_instance_id=dict(required=True, type="str"),
+        attributes=dict(required=True, type="list", elements="dict"),
     )
 
-    required_together = [['cluster', 'ec2_instance_id', 'attributes']]
+    required_together = [["cluster", "ec2_instance_id", "attributes"]]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -263,39 +263,43 @@ def main():
         required_together=required_together,
     )
 
-    cluster = module.params['cluster']
-    ec2_instance_id = module.params['ec2_instance_id']
-    attributes = module.params['attributes']
+    cluster = module.params["cluster"]
+    ec2_instance_id = module.params["ec2_instance_id"]
+    attributes = module.params["attributes"]
 
     conti = Ec2EcsInstance(module, cluster, ec2_instance_id)
     attrs = EcsAttributes(module, attributes)
 
-    results = {'changed': False,
-               'attributes': [
-                   {'cluster': cluster,
-                    'ec2_instance_id': ec2_instance_id,
-                    'attributes': attributes}
-               ]}
+    results = {
+        "changed": False,
+        "attributes": [
+            {
+                "cluster": cluster,
+                "ec2_instance_id": ec2_instance_id,
+                "attributes": attributes,
+            }
+        ],
+    }
 
     attrs_present = conti.attrs_get_by_name(attrs)
 
-    if module.params['state'] == 'present':
+    if module.params["state"] == "present":
         attrs_diff = attrs.diff(attrs_present)
         if not attrs_diff:
             module.exit_json(**results)
 
         conti.attrs_put(attrs_diff)
-        results['changed'] = True
+        results["changed"] = True
 
-    elif module.params['state'] == 'absent':
+    elif module.params["state"] == "absent":
         if not attrs_present:
             module.exit_json(**results)
 
         conti.attrs_delete(attrs_present)
-        results['changed'] = True
+        results["changed"] = True
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
