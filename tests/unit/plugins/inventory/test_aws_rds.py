@@ -208,7 +208,7 @@ def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
 @pytest.mark.parametrize("length", range(0, 10, 2))
 def test_inventory_populate(inventory, length):
     group = "aws_rds"
-    hosts = ["host_%d" % i for i in range(length)]
+    hosts = [f"host_{int(i)}" for i in range(length)]
 
     inventory._add_hosts = MagicMock()
     inventory._populate(hosts=hosts)
@@ -420,7 +420,7 @@ def test_inventory_get_all_db_hosts(
 ):
     params = {
         "gather_clusters": gather_clusters,
-        "regions": ["us-east-%d" % i for i in range(regions)],
+        "regions": [f"us-east-{int(i)}" for i in range(regions)],
         "instance_filters": generate_random_string(),
         "cluster_filters": generate_random_string(),
         "strict": random.choice((True, False)),
@@ -429,11 +429,11 @@ def test_inventory_get_all_db_hosts(
 
     connections = [MagicMock() for i in range(regions)]
 
-    inventory.all_clients.return_value = [(connections[i], "us-east-%d" % i) for i in range(regions)]
+    inventory.all_clients.return_value = [(connections[i], f"us-east-{int(i)}") for i in range(regions)]
 
     ids = list(reversed(range(regions)))
-    db_instances = [{"DBInstanceIdentifier": "db_00%d" % i} for i in ids]
-    db_clusters = [{"DBClusterIdentifier": "cluster_00%d" % i} for i in ids]
+    db_instances = [{"DBInstanceIdentifier": f"db_00{int(i)}"} for i in ids]
+    db_clusters = [{"DBClusterIdentifier": f"cluster_00{int(i)}"} for i in ids]
 
     m_describe_db_instances.side_effect = [[i] for i in db_instances]
     m_describe_db_clusters.side_effect = [[i] for i in db_clusters]
@@ -470,17 +470,17 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
     }
 
     if hostvars_prefix:
-        _options["hostvars_prefix"] = "prefix_%s" % generate_random_string(length=8, with_punctuation=False)
+        _options["hostvars_prefix"] = f"prefix_{generate_random_string(length=8, with_punctuation=False)}"
     if hostvars_suffix:
-        _options["hostvars_suffix"] = "suffix_%s" % generate_random_string(length=8, with_punctuation=False)
+        _options["hostvars_suffix"] = f"suffix_{generate_random_string(length=8, with_punctuation=False)}"
 
     def _get_option_side_effect(x):
         return _options.get(x)
 
     inventory.get_option.side_effect = _get_option_side_effect
 
-    m_get_rds_hostname.side_effect = (
-        lambda h: h["DBInstanceIdentifier"] if "DBInstanceIdentifier" in h else h["DBClusterIdentifier"]
+    m_get_rds_hostname.side_effect = lambda h: (
+        h["DBInstanceIdentifier"] if "DBInstanceIdentifier" in h else h["DBClusterIdentifier"]
     )
 
     hosts = [
@@ -504,7 +504,7 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
         },
     ]
 
-    group = "test_add_hosts_group_%s" % generate_random_string(length=10, with_punctuation=False)
+    group = f"test_add_hosts_group_{generate_random_string(length=10, with_punctuation=False)}"
     inventory._add_hosts(hosts, group)
 
     m_get_rds_hostname.assert_has_calls([call(h) for h in hosts], any_order=True)
@@ -600,7 +600,7 @@ def test_inventory_parse(
     options["include_clusters"] = include_clusters
     options["filters"] = {
         "db-instance-id": [
-            "arn:db:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))
+            f"arn:db:{generate_random_string(with_punctuation=False)}" for i in range(random.randint(1, 10))
         ],
         "dbi-resource-id": generate_random_string(with_punctuation=False),
         "domain": generate_random_string(with_digits=False, with_punctuation=False),
@@ -608,7 +608,7 @@ def test_inventory_parse(
     }
     if filter_db_cluster_id:
         options["filters"]["db-cluster-id"] = [
-            "arn:cluster:%s" % generate_random_string(with_punctuation=False) for i in range(random.randint(1, 10))
+            f"arn:cluster:{generate_random_string(with_punctuation=False)}" for i in range(random.randint(1, 10))
         ]
 
     options["cache"] = user_cache_directive
@@ -629,10 +629,10 @@ def test_inventory_parse(
     inventory._populate_from_source = MagicMock()
     inventory._get_all_db_hosts = MagicMock()
     all_db_hosts = [
-        {"host": "host_%d" % random.randint(1, 1000)},
-        {"host": "host_%d" % random.randint(1, 1000)},
-        {"host": "host_%d" % random.randint(1, 1000)},
-        {"host": "host_%d" % random.randint(1, 1000)},
+        {"host": f"host_{int(random.randint(1, 1000))}"},
+        {"host": f"host_{int(random.randint(1, 1000))}"},
+        {"host": f"host_{int(random.randint(1, 1000))}"},
+        {"host": f"host_{int(random.randint(1, 1000))}"},
     ]
     inventory._get_all_db_hosts.return_value = all_db_hosts
 

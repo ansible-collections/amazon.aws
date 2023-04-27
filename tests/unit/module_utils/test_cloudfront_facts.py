@@ -51,7 +51,7 @@ def raise_botocore_error(operation="getCloudFront"):
 def test_unsupported_api(cloudfront_facts_service):
     with pytest.raises(CloudFrontFactsServiceManagerFailure) as err:
         cloudfront_facts_service._unsupported_api()
-        assert "Method {0} is not currently supported".format("_unsupported_api") in err
+        assert "Method _unsupported_api is not currently supported" in err
 
 
 def test_get_distribution(cloudfront_facts_service):
@@ -107,7 +107,7 @@ def test_get_invalidation_failure(cloudfront_facts_service):
 @patch(MOCK_CLOUDFRONT_FACTS_KEYED_LIST_HELPER)
 def test_list_distributions_by_web_acl_id(m_cloudfront_facts_keyed_list_helper, cloudfront_facts_service):
     web_acl_id = MagicMock()
-    distribution_webacl = {"DistributionList": {"Items": ["webacl_%d" % d for d in range(10)]}}
+    distribution_webacl = {"DistributionList": {"Items": [f"webacl_{int(d)}" for d in range(10)]}}
     cloudfront_facts_service.client.list_distributions_by_web_acl_id.return_value = distribution_webacl
     m_cloudfront_facts_keyed_list_helper.return_value = distribution_webacl["DistributionList"]["Items"]
 
@@ -124,7 +124,7 @@ def test_list_distributions_by_web_acl_id(m_cloudfront_facts_keyed_list_helper, 
 def test_list_origin_access_identities(
     m_cloudfront_paginate_build_full_result, m_cloudfront_facts_keyed_list_helper, cloudfront_facts_service
 ):
-    items = ["item_%d" % d for d in range(10)]
+    items = [f"item_{int(d)}" for d in range(10)]
     result = {"CloudFrontOriginAccessIdentityList": {"Items": items}}
 
     m_cloudfront_paginate_build_full_result.return_value = result
@@ -137,7 +137,7 @@ def test_list_origin_access_identities(
 def test_list_distributions(
     m_cloudfront_paginate_build_full_result, m_cloudfront_facts_keyed_list_helper, cloudfront_facts_service
 ):
-    items = ["item_%d" % d for d in range(10)]
+    items = [f"item_{int(d)}" for d in range(10)]
     result = {"DistributionList": {"Items": items}}
 
     m_cloudfront_paginate_build_full_result.return_value = result
@@ -152,7 +152,7 @@ def test_list_distributions(
 def test_list_invalidations(
     m_cloudfront_paginate_build_full_result, m_cloudfront_facts_keyed_list_helper, cloudfront_facts_service
 ):
-    items = ["item_%d" % d for d in range(10)]
+    items = [f"item_{int(d)}" for d in range(10)]
     result = {"InvalidationList": {"Items": items}}
     distribution_id = MagicMock()
 
@@ -438,8 +438,8 @@ def test_summary_get_distribution_list_failure(cloudfront_facts_service, streami
 
 def test_summary(cloudfront_facts_service):
     cloudfront_facts_service.summary_get_distribution_list = MagicMock()
-    cloudfront_facts_service.summary_get_distribution_list.side_effect = (
-        lambda x: {"called_with_true": True} if x else {"called_with_false": False}
+    cloudfront_facts_service.summary_get_distribution_list.side_effect = lambda x: (
+        {"called_with_true": True} if x else {"called_with_false": False}
     )
 
     cloudfront_facts_service.summary_get_origin_access_identity_list = MagicMock()

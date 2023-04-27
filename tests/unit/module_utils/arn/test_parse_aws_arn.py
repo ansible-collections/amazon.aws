@@ -8,12 +8,12 @@ import pytest
 from ansible_collections.amazon.aws.plugins.module_utils.arn import parse_aws_arn
 
 arn_bad_values = [
-    ("arn:aws:outpost:us-east-1: 123456789012:outpost/op-1234567890abcdef0"),
-    ("arn:aws:out post:us-east-1:123456789012:outpost/op-1234567890abcdef0"),
-    ("arn:aws:outpost:us east 1:123456789012:outpost/op-1234567890abcdef0"),
-    ("invalid:aws:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0"),
-    ("arn:junk:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0"),
-    ("arn:aws:outpost:us-east-1:junk:outpost/op-1234567890abcdef0"),
+    "arn:aws:outpost:us-east-1: 123456789012:outpost/op-1234567890abcdef0",
+    "arn:aws:out post:us-east-1:123456789012:outpost/op-1234567890abcdef0",
+    "arn:aws:outpost:us east 1:123456789012:outpost/op-1234567890abcdef0",
+    "invalid:aws:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0",
+    "arn:junk:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0",
+    "arn:aws:outpost:us-east-1:junk:outpost/op-1234567890abcdef0",
 ]
 
 arn_good_values = [
