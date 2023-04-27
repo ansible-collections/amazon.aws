@@ -419,8 +419,6 @@ def _reset_snapshpot_attribute(module, ec2, snapshot_id):
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to reset createVolumePermission")
 
-    # module.exit_json(changed=True, msg='Successfully reset CreateVolumePermission to private')
-
 
 def verify_user_id_update_needed(module, ec2, params):
     existing_create_vol_permission = _describe_snapshot_attribute(module, ec2, params["SnapshotId"])
