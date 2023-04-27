@@ -75,7 +75,7 @@ options:
       - If set to C(true), ec2 snapshot's createVolumePermissions can be modified.
     required: false
     type: bool
-    version_added: 5.5.0
+    version_added: 6.0.0
   purge_create_volume_permission:
     description:
       - Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.
@@ -83,7 +83,7 @@ options:
     required: False
     type: bool
     default: False
-    version_added: 5.5.0
+    version_added: 6.0.0
   group_names:
     description:
       - The group to be added or removed. The possible value is C(all).
@@ -91,7 +91,7 @@ options:
     required: false
     type: list
     elements: str
-    version_added: 5.5.0
+    version_added: 6.0.0
   user_ids:
     description:
       - The account user IDs to be added or removed. The possible value is C(all).
@@ -99,7 +99,7 @@ options:
     required: false
     type: list
     elements: str
-    version_added: 5.5.0
+    version_added: 6.0.0
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
   - amazon.aws.common.modules
