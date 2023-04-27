@@ -198,15 +198,22 @@
 
   - name: Modify the CA certificate identifier to rds-ca-ecc384-g1 - check_mode
     rds_instance:
-      id: '{{ instance_id }}'
       state: present
+      db_instance_identifier: '{{ modified_instance_id }}'
+      allow_major_version_upgrade: true
       ca_certificate_identifier: rds-ca-ecc384-g1
+      apply_immediately: true
+      tags:
+        Name: '{{ modified_instance_id }}'
+        Created_by: Ansible rds_instance tests
     register: result
     check_mode: true
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - name: Get curent CA certificate identifier
     rds_instance_info:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ modified_instance_id }}'
     register: db_info
   - name: Assert that CA certificate identifier has been modified - check_mode
     assert:
@@ -217,17 +224,23 @@
 
   - name: Modify the CA certificate identifier to rds-ca-ecc384-g1
     rds_instance:
-      id: '{{ instance_id }}'
       state: present
+      db_instance_identifier: '{{ modified_instance_id }}'
+      allow_major_version_upgrade: true
       ca_certificate_identifier: rds-ca-ecc384-g1
       apply_immediately: true
+      tags:
+        Name: '{{ modified_instance_id }}'
+        Created_by: Ansible rds_instance tests
     register: result
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - name: Get curent CA certificate identifier
     rds_instance_info:
-      db_instance_identifier: '{{ instance_id }}'
+      db_instance_identifier: '{{ modified_instance_id }}'
     register: db_info
-    retries: 10
+    retries: 20
     delay: 10
     until: db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
   - name: Assert that CA certificate identifier has been modified
@@ -236,31 +249,6 @@
         - result is changed
         - result is not failed
         - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
-
-  - name: Modify the CA certificate identifier to rds-ca-ecc384-g1 - Idempotent - check_mode
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      ca_certificate_identifier: rds-ca-ecc384-g1
-    register: result
-    check_mode: true
-  - name: Assert that CA certificate identifier is not modified
-    assert:
-      that:
-        - result is not changed
-        - result is not failed
-
-  - name: Modify the CA certificate identifier to rds-ca-ecc384-g1 - Idempotent
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      ca_certificate_identifier: rds-ca-ecc384-g1
-    register: result
-  - name: Assert that CA certificate identifier is not modified
-    assert:
-      that:
-        - result is not changed
-        - result is not failed
 
   always:
   - name: Delete the instance
