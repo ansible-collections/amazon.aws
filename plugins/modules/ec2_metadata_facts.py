@@ -256,7 +256,7 @@ ansible_facts:
             type: list
             elements: str
             sample: ["tagKey1", "tag_key2"]
-            version_added: 5.1.0
+            version_added: 5.5.0
         ansible_ec2_instance_type:
             description: The type of the instance.
             type: str

@@ -28,7 +28,7 @@ options:
     type: int
     aliases:
     - layer_version
-    version_added: 5.2.0
+    version_added: 5.5.0
   compatible_runtime:
     description:
     - A runtime identifier.
@@ -129,7 +129,7 @@ layers_versions:
         description: Details about the layer version.
         returned: if I(version_number) was provided
         type: complex
-        version_added: 5.2.0
+        version_added: 5.5.0
         contains:
             location:
                 description: A link to the layer archive in Amazon S3 that is valid for 10 minutes.

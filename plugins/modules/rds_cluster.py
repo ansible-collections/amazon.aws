@@ -169,7 +169,7 @@ options:
           - This setting is required to create a Multi-AZ DB cluster.
           - I(db_cluster_instance_class) require botocore >= 1.23.44.
         type: str
-        version_added: 5.4.0
+        version_added: 5.5.0
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
@@ -181,7 +181,7 @@ options:
           - This setting is required to create a Multi-AZ DB cluster.
           - I(allocated_storage) require botocore >= 1.23.44.
         type: int
-        version_added: 5.4.0
+        version_added: 5.5.0
     storage_type:
         description:
           - Specifies the storage type to be associated with the DB cluster.
@@ -192,7 +192,7 @@ options:
         type: str
         choices:
           - io1
-        version_added: 5.4.0
+        version_added: 5.5.0
     iops:
         description:
           - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
@@ -200,7 +200,7 @@ options:
           - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
           - I(iops) require botocore >= 1.23.44.
         type: int
-        version_added: 5.4.0
+        version_added: 5.5.0
     engine:
         description:
           - The name of the database engine to be used for this DB cluster. This is required to create a cluster.
@@ -209,7 +209,7 @@ options:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
           - When I(engine=mysql), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
           - When I(engine=postgres), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
-          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.4.0.
+          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.5.0.
         choices:
           - aurora
           - aurora-mysql
@@ -219,7 +219,7 @@ options:
         type: str
     engine_mode:
         description:
-          - The DB engine mode of the DB cluster. The combinaison of I(engine) and I(engine_mode) may not be supported.
+          - The DB engine mode of the DB cluster. The combination of I(engine) and I(engine_mode) may not be supported.
           - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
         choices:
@@ -229,7 +229,7 @@ options:
           - global
           - multimaster
         type: str
-        version_added: 5.1.0
+        version_added: 5.5.0
     engine_version:
         description:
           - The version number of the database engine to use.
