@@ -252,11 +252,11 @@ def get_snapshots(connection, module, request_args):
 
 def _describe_snapshot_attribute(module, ec2, snapshot_id):
     try:
-        response = ec2.describe_snapshot_attribute(Attribute='createVolumePermission', SnapshotId=snapshot_id)
+        response = ec2.describe_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
     except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
 
-    return response['CreateVolumePermissions']
+    return response["CreateVolumePermissions"]
 
 
 def list_ec2_snapshots(connection, module, request_args):
@@ -268,10 +268,10 @@ def list_ec2_snapshots(connection, module, request_args):
     result = {}
 
     # Add createVolumePermission info to snapshots result
-    for snapshot in snapshots['Snapshots']:
-        snapshot_id = snapshot.get('SnapshotId')
+    for snapshot in snapshots["Snapshots"]:
+        snapshot_id = snapshot.get("SnapshotId")
         create_vol_permission = _describe_snapshot_attribute(module, connection, snapshot_id)
-        snapshot['CreateVolumePermissions'] = create_vol_permission
+        snapshot["CreateVolumePermissions"] = create_vol_permission
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
