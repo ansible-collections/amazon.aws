@@ -422,6 +422,14 @@ def _reset_snapshpot_attribute(module, ec2, snapshot_id):
     # module.exit_json(changed=True, msg='Successfully reset CreateVolumePermission to private')
 
 
+def verify_user_id_update_needed(module, ec2, params):
+    existing_create_vol_permission = _describe_snapshot_attribute(module, ec2, params["SnapshotId"])
+    existing_user_ids = {item.get("UserId") for item in existing_create_vol_permission or []}
+    supplied_user_ids = set(params.get("UserIds", []))
+    if supplied_user_ids == existing_user_ids:
+        module.exit_json(changed=False, msg="Supplied User IDs already added to permissions, no update performed.")
+
+
 def _modify_snapshot_attribute(module, ec2, snapshot_id, purge_create_volume_permission):
     params = {"Attribute": "createVolumePermission", "OperationType": "add", "SnapshotId": snapshot_id}
 
@@ -430,15 +438,8 @@ def _modify_snapshot_attribute(module, ec2, snapshot_id, purge_create_volume_per
     if module.params.get("user_ids"):
         params["UserIds"] = module.params.get("user_ids")
 
-    existing_create_vol_permission = _describe_snapshot_attribute(module, ec2, snapshot_id)
-
-    change_needed_user_ids = True
-    if existing_create_vol_permission and "UserId" in existing_create_vol_permission[0] and "UserIds" in params:
-        supplied_user_ids = params["UserIds"]
-        existing_user_ids = [item["UserId"] for item in existing_create_vol_permission]
-        change_needed_user_ids = True if set(supplied_user_ids) != set(list(existing_user_ids)) else False
-        if change_needed_user_ids is False:
-            module.exit_json(changed=False, msg="Supplied User IDs alreday added to permissions, no update performed.")
+    # check if change in user_id in permissions is needed
+    verify_user_id_update_needed(module, ec2, params)
 
     if module.check_mode:
         module.exit_json(changed=True, msg="Would have modified CreateVolumePermission")
