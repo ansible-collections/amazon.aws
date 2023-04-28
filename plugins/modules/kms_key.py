@@ -64,6 +64,12 @@ options:
       - A description of the CMK.
       - Use a description that helps you decide whether the CMK is appropriate for a task.
     type: str
+  multi_region:
+    description:
+      -  Whether to create a multi-Region primary key or not.
+    default: False
+    type: bool
+    version_added: 5.2.0
   pending_window:
     description:
       - The number of days between requesting deletion of the CMK and when it will actually be deleted.
@@ -158,6 +164,14 @@ EXAMPLES = r'''
 # Create a new KMS key
 - amazon.aws.kms_key:
     alias: mykey
+    tags:
+      Name: myKey
+      Purpose: protect_stuff
+
+# Create a new multi-region KMS key
+- amazon.aws.kms_key:
+    alias: mykey
+    multi_region: true
     tags:
       Name: myKey
       Purpose: protect_stuff
@@ -413,6 +427,16 @@ had_invalid_entries:
   description: Whether there are invalid (non-ARN) entries in the KMS entry. These don't count as a change, but will be removed if any changes are being made.
   type: bool
   returned: always
+multi_region:
+  description:
+    - Indicates whether the CMK is a multi-Region C(True) or regional C(False) key.
+    - This value is True for multi-Region primary and replica CMKs and False for regional CMKs.
+  type: bool
+  version_added: 5.2.0
+  returned: always
+  sample: False
+
+
 '''
 
 # these mappings are used to go from simple labels to the actual 'Sid' values returned
@@ -523,8 +547,10 @@ def get_kms_tags(connection, module, key_id):
 def get_kms_policies(connection, module, key_id):
     try:
         policies = list_key_policies_with_backoff(connection, key_id)['PolicyNames']
-        return [get_key_policy_with_backoff(connection, key_id, policy)['Policy'] for
-                policy in policies]
+        return [
+            get_key_policy_with_backoff(connection, key_id, policy)['Policy']
+            for policy in policies
+        ]
     except is_boto3_error_code('AccessDeniedException'):
         return []
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -532,7 +558,7 @@ def get_kms_policies(connection, module, key_id):
 
 
 def camel_to_snake_grant(grant):
-    ''' camel_to_snake_grant snakifies everything except the encryption context '''
+    '''camel_to_snake_grant snakifies everything except the encryption context '''
     constraints = grant.get('Constraints', {})
     result = camel_dict_to_snake_dict(grant)
     if 'EncryptionContextEquals' in constraints:
@@ -565,8 +591,10 @@ def get_key_details(connection, module, key_id):
 
     # grants and tags get snakified differently
     try:
-        result['grants'] = [camel_to_snake_grant(grant) for grant in
-                            get_kms_grants_with_backoff(connection, key_id)['Grants']]
+        result['grants'] = [
+            camel_to_snake_grant(grant)
+            for grant in get_kms_grants_with_backoff(connection, key_id)['Grants']
+        ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to obtain key grants")
     tags = get_kms_tags(connection, module, key_id)
@@ -586,8 +614,9 @@ def get_kms_facts(connection, module):
 
 
 def convert_grant_params(grant, key):
-    grant_params = dict(KeyId=key['key_arn'],
-                        GranteePrincipal=grant['grantee_principal'])
+    grant_params = dict(
+        KeyId=key['key_arn'], GranteePrincipal=grant['grantee_principal']
+    )
     if grant.get('operations'):
         grant_params['Operations'] = grant['operations']
     if grant.get('retiring_principal'):
@@ -755,7 +784,11 @@ def update_tags(connection, module, key, desired_tags, purge_tags):
                 module.fail_json_aws(e, msg="Unable to remove tag")
         if to_add:
             try:
-                tags = ansible_dict_to_boto3_tag_list(module.params['tags'], tag_name_key_name='TagKey', tag_value_key_name='TagValue')
+                tags = ansible_dict_to_boto3_tag_list(
+                    module.params['tags'],
+                    tag_name_key_name='TagKey',
+                    tag_value_key_name='TagValue',
+                )
                 connection.tag_resource(KeyId=key_id, Tags=tags)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Unable to add tag to key")
@@ -863,16 +896,21 @@ def update_key(connection, module, key):
 def create_key(connection, module):
     key_usage = module.params.get('key_usage')
     key_spec = module.params.get('key_spec')
+    multi_region = module.params.get('multi_region')
     tags_list = ansible_dict_to_boto3_tag_list(
         module.params['tags'] or {},
-        # KMS doesn't use "Key" and "Value" as other APIs do.
-        tag_name_key_name='TagKey', tag_value_key_name='TagValue'
+        # KMS doesn't use 'Key' and 'Value' as other APIs do.
+        tag_name_key_name='TagKey',
+        tag_value_key_name='TagValue',
     )
-    params = dict(BypassPolicyLockoutSafetyCheck=False,
-                  Tags=tags_list,
-                  KeyUsage=key_usage,
-                  CustomerMasterKeySpec=key_spec,
-                  Origin='AWS_KMS')
+    params = dict(
+        BypassPolicyLockoutSafetyCheck=False,
+        Tags=tags_list,
+        KeyUsage=key_usage,
+        CustomerMasterKeySpec=key_spec,
+        Origin='AWS_KMS',
+        MultiRegion=multi_region,
+    )
 
     if module.check_mode:
         return {'changed': True}
@@ -881,7 +919,6 @@ def create_key(connection, module):
         params['Description'] = module.params['description']
     if module.params.get('policy'):
         params['Policy'] = module.params['policy']
-
     try:
         result = connection.create_key(**params)['KeyMetadata']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -944,7 +981,29 @@ def fetch_key_metadata(connection, module, key_id, alias):
     except connection.exceptions.NotFoundException:
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, 'Failed to fetch key metadata.')
+        module.fail_json_aws(e, "Failed to fetch key metadata.")
+
+
+def validate_params(module, key_metadata):
+    # We can't create keys with a specific ID, if we can't access the key we'll have to fail
+    if (
+        module.params.get('state') == 'present'
+        and module.params.get('key_id')
+        and not key_metadata
+    ):
+        module.fail_json(
+            msg='Could not find key with id {0} to update'.format(
+                module.params.get('key_id')
+            )
+        )
+    if (
+        module.params.get('multi_region')
+        and key_metadata
+        and module.params.get('state') == 'present'
+    ):
+        module.fail_json(
+            msg='You cannot change the multi-region property on an existing key.'
+        )
 
 
 def main():
@@ -954,6 +1013,7 @@ def main():
         key_id=dict(aliases=['key_arn']),
         description=dict(),
         enabled=dict(type='bool', default=True),
+        multi_region=dict(type='bool', default=False),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         grants=dict(type='list', default=[], elements='dict'),
@@ -961,9 +1021,26 @@ def main():
         purge_grants=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),
         enable_key_rotation=(dict(type='bool')),
-        key_spec=dict(type='str', default='SYMMETRIC_DEFAULT', aliases=['customer_master_key_spec'],
-                      choices=['SYMMETRIC_DEFAULT', 'RSA_2048', 'RSA_3072', 'RSA_4096', 'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521', 'ECC_SECG_P256K1']),
-        key_usage=dict(type='str', default='ENCRYPT_DECRYPT', choices=['ENCRYPT_DECRYPT', 'SIGN_VERIFY']),
+        key_spec=dict(
+            type='str',
+            default='SYMMETRIC_DEFAULT',
+            aliases=['customer_master_key_spec'],
+            choices=[
+                'SYMMETRIC_DEFAULT',
+                'RSA_2048',
+                'RSA_3072',
+                'RSA_4096',
+                'ECC_NIST_P256',
+                'ECC_NIST_P384',
+                'ECC_NIST_P521',
+                'ECC_SECG_P256K1',
+            ],
+        ),
+        key_usage=dict(
+            type='str',
+            default='ENCRYPT_DECRYPT',
+            choices=['ENCRYPT_DECRYPT', 'SIGN_VERIFY'],
+        ),
     )
 
     module = AnsibleAWSModule(
@@ -974,13 +1051,14 @@ def main():
 
     kms = module.client('kms')
 
-    module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
-                     date='2024-05-01', collection_name='amazon.aws')
+    module.deprecate(
+        "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
+        date='2024-05-01',
+        collection_name='amazon.aws',
+    )
 
     key_metadata = fetch_key_metadata(kms, module, module.params.get('key_id'), module.params.get('alias'))
-    # We can't create keys with a specific ID, if we can't access the key we'll have to fail
-    if module.params.get('state') == 'present' and module.params.get('key_id') and not key_metadata:
-        module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get('key_id')))
+    validate_params(module, key_metadata)
 
     if module.params.get('state') == 'absent':
         if key_metadata is None:
