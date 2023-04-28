@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: lambda_layer_info
-version_added: 5.1.0
+version_added: 5.5.0
 short_description: List lambda layer or lambda layer versions
 description:
   - This module is used to list the versions of an Lambda layer or all available lambda layers.

@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: lambda_layer
-version_added: 5.1.0
+version_added: 5.5.0
 short_description: Creates an AWS Lambda layer or deletes an AWS Lambda layer version
 description:
   - This module allows the management of AWS Lambda functions aliases via the Ansible

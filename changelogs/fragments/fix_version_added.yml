@@ -7,3 +7,4 @@ trivial:
 - "Fix version_added (https://github.com/ansible-collections/amazon.aws/pull/1209)."
 - "Fix version_added (https://github.com/ansible-collections/amazon.aws/pull/1191)."
 - "Fix version_added (https://github.com/ansible-collections/amazon.aws/pull/1118)."
+- "Fix version_added (https://github.com/ansible-collections/amazon.aws/pull/1095)."
