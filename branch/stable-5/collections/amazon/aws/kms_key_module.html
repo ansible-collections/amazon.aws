@@ -387,6 +387,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-multi_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-multi-region"><strong>multi_region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-multi_region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether to create a multi-Region primary key or not.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-pending_window"></div>
 <div class="ansibleOptionAnchor" id="parameter-deletion_delay"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-pending-window"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-deletion-delay"></span><strong>pending_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pending_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: deletion_delay</span></p>
@@ -399,7 +412,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>See also: <a class="reference external" href="https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays">https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays</a></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-policy"><strong>policy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
 </div></td>
@@ -407,7 +420,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>See <a class="reference external" href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html">https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html</a></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-profile"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -419,7 +432,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_grants"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-purge-grants"><strong>purge_grants</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_grants" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -431,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -445,7 +458,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-region"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-kms-key-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -460,7 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -477,7 +490,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -495,7 +508,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -509,7 +522,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-tags"><span id="ansible-collections-amazon-aws-kms-key-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -519,7 +532,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -551,6 +564,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a new KMS key</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span>
+<span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span>
+
+<span class="c1"># Create a new multi-region KMS key</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
+<span class="w">    </span><span class="nt">multi_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myKey</span>
 <span class="w">      </span><span class="nt">Purpose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_stuff</span>
@@ -821,6 +842,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-multi_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-multi-region"><strong>multi_region</strong></p>
+<a class="ansibleOptionLink" href="#return-multi_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether the CMK is a multi-Region <code class="docutils literal notranslate"><span class="pre">True</span></code> or regional <code class="docutils literal notranslate"><span class="pre">False</span></code> key.</p>
+<p>This value is True for multi-Region primary and replica CMKs and False for regional CMKs.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-origin"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-origin"><strong>origin</strong></p>
 <a class="ansibleOptionLink" href="#return-origin" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -829,7 +861,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AWS_KMS&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-policies"><strong>policies</strong></p>
 <a class="ansibleOptionLink" href="#return-policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -838,7 +870,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Id&quot;:</span> <span class="pre">&quot;auto-ebs-2&quot;,</span> <span class="pre">&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Encrypt&quot;,</span> <span class="pre">&quot;kms:Decrypt&quot;,</span> <span class="pre">&quot;kms:ReEncrypt*&quot;,</span> <span class="pre">&quot;kms:GenerateDataKey*&quot;,</span> <span class="pre">&quot;kms:CreateGrant&quot;,</span> <span class="pre">&quot;kms:DescribeKey&quot;],</span> <span class="pre">&quot;Condition&quot;:</span> <span class="pre">{&quot;StringEquals&quot;:</span> <span class="pre">{&quot;kms:CallerAccount&quot;:</span> <span class="pre">&quot;123456789012&quot;,</span> <span class="pre">&quot;kms:ViaService&quot;:</span> <span class="pre">&quot;ec2.ap-southeast-2.amazonaws.com&quot;}},</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;*&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">access</span> <span class="pre">through</span> <span class="pre">EBS</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">principals</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">account</span> <span class="pre">that</span> <span class="pre">are</span> <span class="pre">authorized</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">EBS&quot;},</span> <span class="pre">{&quot;Action&quot;:</span> <span class="pre">[&quot;kms:Describe*&quot;,</span> <span class="pre">&quot;kms:Get*&quot;,</span> <span class="pre">&quot;kms:List*&quot;,</span> <span class="pre">&quot;kms:RevokeGrant&quot;],</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;AWS&quot;:</span> <span class="pre">&quot;arn:aws:iam::123456789012:root&quot;},</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Allow</span> <span class="pre">direct</span> <span class="pre">access</span> <span class="pre">to</span> <span class="pre">key</span> <span class="pre">metadata</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">account&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-kms-key-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
