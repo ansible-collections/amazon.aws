@@ -521,7 +521,7 @@ def create_snapshot_ansible_module():
         modify_create_vol_permission=dict(type="bool"),
         purge_create_vol_permission=dict(type="bool", default=False),
         user_ids=dict(type="list", elements="str"),
-        group_names=dict(type="list", elements="str", choices=['all']),
+        group_names=dict(type="list", elements="str", choices=["all"]),
     )
     mutually_exclusive = [
         ("instance_id", "snapshot_id", "volume_id"),
