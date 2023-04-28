@@ -170,12 +170,12 @@ EXAMPLES = r"""
       - '111111111111'
 
 - name: Modify snapshot createVolmePermission - make createVolumePermission "Public"
-    amazon.aws.ec2_snapshot:
+  amazon.aws.ec2_snapshot:
     snapshot_id: snap-06a6f641234567890
     modify_create_vol_permission: true
     purge_create_vol_permission: true
     group_names:
-        - all
+      - all
 """
 
 RETURN = r"""
