@@ -79,7 +79,7 @@ options:
   purge_create_vol_permission:
     description:
       - Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.
-      - Must set I(modify_create_vol_permission) to C(True) for when I(purge_create_vol_permission) is set to I(purge_create_vol_permission).
+      - Must set I(modify_create_vol_permission) to C(True) for when I(purge_create_vol_permission) is set to C(True).
     required: False
     type: bool
     default: False
@@ -91,10 +91,11 @@ options:
     required: false
     type: list
     elements: str
+    choices: ["all"]
     version_added: 6.0.0
   user_ids:
     description:
-      - The account user IDs to be added or removed. The possible value is C(all).
+      - The account user IDs to be added or removed.
       - If createVolumePermission on snapshot is currently set to Public i.e. I(group_names=all),
         providing I(user_ids) will not make createVolumePermission Private unless I(create_volume_permission) is set to C(true).
       - Mutually exclusive with I(group_names).
@@ -520,7 +521,7 @@ def create_snapshot_ansible_module():
         modify_create_vol_permission=dict(type="bool"),
         purge_create_vol_permission=dict(type="bool", default=False),
         user_ids=dict(type="list", elements="str"),
-        group_names=dict(type="list", elements="str"),
+        group_names=dict(type="list", elements="str", choices=['all']),
     )
     mutually_exclusive = [
         ("instance_id", "snapshot_id", "volume_id"),
