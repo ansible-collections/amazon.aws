@@ -144,6 +144,27 @@ options:
     description:
       - Set to simple to enable enhanced networking with the Intel 82599 Virtual Function interface for the AMI and any instances that you launch from the AMI.
     type: str
+  boot_mode:
+    description:
+      - The boot mode of the AMI.
+      - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html).
+    type: str
+    choices: ['legacy-bios', 'uefi']
+  tpm_support:
+    description:
+      - Set to v2.0 to enable Trusted Platform Module (TPM) support.
+      - If the image is configured for NitroTPM support, the value is v2.0 .
+      - Requires I(boot_mode) to be set to 'uefi'.
+      - Requires an instance type that is compatible with Nitro.
+      - Requires minimum botocore version 1.26.0.
+      - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
+    type: str
+  uefi_data:
+    description:
+      - Base64 representation of the non-volatile UEFI variable store.
+      - Requires minimum botocore version 1.26.0.
+      - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html).
+    type: str
 author:
   - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
   - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
@@ -215,6 +236,22 @@ EXAMPLES = '''
           volume_type: gp2
         - device_name: /dev/sdb
           no_device: true
+
+- name: AMI Creation with boot_mode and tpm_support
+  amazon.aws.ec2_ami:
+    name: newtest
+    state: present
+    architecture: x86_64
+    virtualization_type: hvm
+    root_device_name: /dev/sda1
+    device_mapping:
+        - device_name: /dev/sda1
+          snapshot_id: "{{ snapshot_id }}"
+    wait: yes
+    region: us-east-1
+    boot_mode: uefi
+    uefi_data: data_file.bin
+    tpm_support: v2.0
 
 - name: Deregister/Delete AMI (keep associated snapshots)
   amazon.aws.ec2_ami:
@@ -441,6 +478,12 @@ def create_image(module, connection):
     billing_products = module.params.get('billing_products')
     ramdisk_id = module.params.get('ramdisk_id')
     sriov_net_support = module.params.get('sriov_net_support')
+    boot_mode = module.params.get('boot_mode')
+    tpm_support = module.params.get('tpm_support')
+    uefi_data = module.params.get('uefi_data')
+
+    if tpm_support and boot_mode != 'uefi':
+        module.fail_json(msg="To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     if module.check_mode:
         image = connection.describe_images(Filters=[{'Name': 'name', 'Values': [str(name)]}])
@@ -509,6 +552,12 @@ def create_image(module, connection):
                 params['KernelId'] = kernel_id
             if root_device_name:
                 params['RootDeviceName'] = root_device_name
+            if boot_mode:
+                params['BootMode'] = boot_mode
+            if tpm_support:
+                params['TpmSupport'] = tpm_support
+            if uefi_data:
+                params['UefiData'] = uefi_data
             image_id = connection.register_image(aws_retry=True, **params).get('ImageId')
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Error registering image")
@@ -731,6 +780,9 @@ def main():
         sriov_net_support=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
+        boot_mode=dict(type='str', choices=['legacy-bios', 'uefi']),
+        tpm_support=dict(type='str'),
+        uefi_data=dict(type='str'),
     )
 
     module = AnsibleAWSModule(
@@ -745,6 +797,9 @@ def main():
     # the required_if for state=absent, so check manually instead
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
+
+    if any([module.params['tpm_support'], module.params['uefi_data']]):
+        module.require_botocore_at_least('1.26.0', reason='required for ec2.register_image with tpm_support or uefi_data')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

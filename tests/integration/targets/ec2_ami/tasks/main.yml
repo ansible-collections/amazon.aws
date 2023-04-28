@@ -10,6 +10,12 @@
     - amazon.aws
   block:
 
+    # AWS CLI is needed until there's a module to get instance uefi data
+    - name: Install AWS CLI
+      pip:
+        name: awscli==1.25.83
+        state: present
+
     # ============================================================
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
@@ -73,6 +79,21 @@
         device_name: '{{ ec2_ami_root_disk }}'
         state: present
       register: setup_snapshot
+
+    # note: the current CI supported instance types (t2, t3, m1) do not support uefi boot mode + tpm_support
+    # disabling the task as aws documentation states that support for t3 will be coming soon
+    # - name: get instance UEFI data
+    #   command: aws ec2 get-instance-uefi-data --instance-id {{ ec2_instance_id }} --region {{ aws_region }}
+    #   environment:
+    #     AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+    #     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    #     AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+    #     AWS_DEFAULT_REGION: "{{ aws_region }}"
+    #   register: instance_uefi_data_output
+
+    # - name: Convert it to an object
+    #   set_fact:
+    #     instance_uefi_data: "{{ instance_uefi_data_output.stdout | from_json }}"
 
     # ============================================================
 
@@ -629,6 +650,52 @@
           - not result.changed
           - not result.failed
 
+    # ============================================================
+
+    - name: create an image from the snapshot with boot_mode and tpm_support
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        description: '{{ ec2_ami_description }}'
+        state: present
+        boot_mode: uefi
+        tpm_support: v2.0
+        launch_permissions:
+          user_ids: []
+        tags:
+          Name: '{{ ec2_ami_name }}_ami-boot-tpm'
+        root_device_name: '{{ ec2_ami_root_disk }}'
+        device_mapping:
+          - device_name: '{{ ec2_ami_root_disk }}'
+            volume_type: gp2
+            size: 8
+            delete_on_termination: true
+            snapshot_id: '{{ setup_snapshot.snapshot_id }}'
+      register: result
+      ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_image_id_boot_tpm: "{{ result.image_id }}"
+        ec2_ami_snapshot_boot_tpm: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
+
+    - name: gather facts about the image created
+      ec2_ami_info:
+        image_ids: '{{ ec2_ami_image_id_boot_tpm }}'
+      register: ami_facts_result_boot_tpm
+      ignore_errors: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: assert that new ami has been created with desired options
+      assert:
+        that:
+          - "result.changed"
+          - "result.image_id.startswith('ami-')"
+          - ami_facts_result_boot_tpm.images[0].image_id | length != 0
+          - ami_facts_result_boot_tpm.images[0].boot_mode == 'uefi'
+          - ami_facts_result_boot_tpm.images[0].tpm_support == 'v2.0'
 
     # ============================================================
 
@@ -640,6 +707,13 @@
     - name: Announce teardown start
       debug:
         msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id_boot_tpm }}"
+        wait: yes
+      ignore_errors: yes
 
     - name: delete ami
       ec2_ami:
