@@ -35,6 +35,13 @@ options:
       - The id of the elastic IP allocation. If this is not passed and the
         eip_address is not passed. An EIP is generated for this NAT Gateway.
     type: str
+  connectivity_type:
+    description:
+      - Indicates whether the NAT gateway supports public or private connectivity.
+    choices: ["public", "private"]
+    default: "public"
+    type: str
+    version_added: 5.2.0
   eip_address:
     description:
       - The elastic IP address of the EIP you want attached to this NAT Gateway.
@@ -96,11 +103,12 @@ EXAMPLES = r'''
     client_token: abcd-12345678
   register: new_nat_gateway
 
-- name: Create new nat gateway using an allocation-id.
+- name: Create new nat gateway using an allocation-id and connectivity type.
   amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     allocation_id: eipalloc-12345678
+    connectivity_type: "private"
     region: ap-southeast-2
   register: new_nat_gateway
 
@@ -544,13 +552,14 @@ def release_address(client, module, allocation_id):
 
 
 def create(client, module, subnet_id, allocation_id, tags, client_token=None,
-           wait=False):
+           wait=False, connectivity_type='public'):
     """Create an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
         module: AnsibleAWSModule class instance
         subnet_id (str): The subnet_id the nat resides in
         allocation_id (str): The eip Amazon identifier
+        connectivity_type (str): public or private connectivity support
         tags (dict): Tags to associate to the NAT gateway
         purge_tags (bool): If true, remove tags not listed in I(tags)
             type: bool
@@ -566,7 +575,7 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
         >>> module = AnsibleAWSModule(...)
         >>> subnet_id = 'subnet-1234567'
         >>> allocation_id = 'eipalloc-1234567'
-        >>> create(client, module, subnet_id, allocation_id, wait=True)
+        >>> create(client, module, subnet_id, allocation_id, wait=True, connectivity_type='public')
         [
             true,
             {
@@ -595,8 +604,12 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
 
     params = {
         'SubnetId': subnet_id,
-        'AllocationId': allocation_id
+        'ConnectivityType': connectivity_type
     }
+
+    if connectivity_type == "public":
+        params.update({'AllocationId': allocation_id})
+
     request_time = datetime.datetime.utcnow()
     changed = False
     token_provided = False
@@ -649,7 +662,7 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
 
 
 def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, eip_address=None,
-               if_exist_do_not_create=False, wait=False, client_token=None):
+               if_exist_do_not_create=False, wait=False, client_token=None, connectivity_type='public'):
     """Create an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -676,7 +689,7 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
         >>> module = AnsibleAWSModule(...)
         >>> subnet_id = 'subnet-w4t12897'
         >>> allocation_id = 'eipalloc-36014da3'
-        >>> pre_create(client, module, subnet_id, allocation_id, if_exist_do_not_create=True, wait=True)
+        >>> pre_create(client, module, subnet_id, allocation_id, if_exist_do_not_create=True, wait=True, connectivity_type=public)
         [
             true,
             "",
@@ -779,13 +792,13 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
             return changed, msg, results
 
     changed, results, msg = create(
-        client, module, subnet_id, allocation_id, tags, client_token, wait
+        client, module, subnet_id, allocation_id, tags, client_token, wait, connectivity_type
     )
 
     return changed, msg, results
 
 
-def remove(client, module, nat_gateway_id, wait=False, release_eip=False):
+def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connectivity_type='public'):
     """Delete an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -795,12 +808,13 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False):
     Kwargs:
         wait (bool): Wait for the nat to be in the deleted state before returning.
         release_eip (bool): Once the nat has been deleted, you can deallocate the eip from the vpc.
+        connectivity_type (str): private/public connection type
 
     Basic Usage:
         >>> client = boto3.client('ec2')
         >>> module = AnsibleAWSModule(...)
         >>> nat_gw_id = 'nat-03835afb6e31df79b'
-        >>> remove(client, module, nat_gw_id, wait=True, release_eip=True)
+        >>> remove(client, module, nat_gw_id, wait=True, release_eip=True, connectivity_type='public')
         [
             true,
             "",
@@ -851,9 +865,10 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False):
         if len(gw_list) == 1:
             results = gw_list[0]
             client.delete_nat_gateway(aws_retry=True, **params)
-            allocation_id = (
-                results['nat_gateway_addresses'][0]['allocation_id']
-            )
+            if connectivity_type == "public":
+                allocation_id = (
+                    results['nat_gateway_addresses'][0]['allocation_id']
+                )
             changed = True
             msg = (
                 'NAT gateway {0} is in a deleting state. Delete was successful'
@@ -872,7 +887,7 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e)
 
-    if release_eip:
+    if release_eip and allocation_id:
         eip_released, msg = (
             release_address(client, module, allocation_id))
         if not eip_released:
@@ -888,6 +903,7 @@ def main():
         subnet_id=dict(type='str'),
         eip_address=dict(type='str'),
         allocation_id=dict(type='str'),
+        connectivity_type=dict(type='str', default='public', choices=['private', 'public']),
         if_exist_do_not_create=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),
         wait=dict(type='bool', default=False),
@@ -912,6 +928,7 @@ def main():
     state = module.params.get('state').lower()
     subnet_id = module.params.get('subnet_id')
     allocation_id = module.params.get('allocation_id')
+    connectivity_type = module.params.get('connectivity_type')
     eip_address = module.params.get('eip_address')
     nat_gateway_id = module.params.get('nat_gateway_id')
     wait = module.params.get('wait')
@@ -933,13 +950,13 @@ def main():
         changed, msg, results = (
             pre_create(
                 client, module, subnet_id, tags, purge_tags, allocation_id, eip_address,
-                if_exist_do_not_create, wait, client_token
+                if_exist_do_not_create, wait, client_token, connectivity_type
             )
         )
     else:
         changed, msg, results = (
             remove(
-                client, module, nat_gateway_id, wait, release_eip
+                client, module, nat_gateway_id, wait, release_eip, connectivity_type
             )
         )
 
