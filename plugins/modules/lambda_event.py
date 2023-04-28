@@ -79,6 +79,13 @@ options:
           - Required when I(event_source=stream).
         choices: [TRIM_HORIZON,LATEST]
         type: str
+      function_response_types:
+        description:
+          - (Streams and Amazon SQS) A list of current response type enums applied to the event source mapping.
+        type: list
+        elements: str
+        choices: [ReportBatchItemFailures]
+        version_added: 5.2.0
     required: true
     type: dict
 extends_documentation_fragment:
@@ -97,10 +104,25 @@ EXAMPLES = '''
     function_name: "{{ function_name }}"
     alias: Dev
     source_params:
-    source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
-    enabled: True
-    batch_size: 100
-    starting_position: TRIM_HORIZON
+      source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
+      enabled: True
+      batch_size: 100
+      starting_position: TRIM_HORIZON
+  register: event
+
+# Example that creates a lambda event notification for a DynamoDB stream
+- name: DynamoDB stream event mapping
+  amazon.aws.lambda_event:
+    state: present
+    event_source: stream
+    function_name: "{{ function_name }}"
+    source_params:
+      source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
+      enabled: True
+      batch_size: 100
+      starting_position: LATEST
+      function_response_types:
+        - ReportBatchItemFailures
   register: event
 
 - name: Show source event
@@ -344,6 +366,8 @@ def lambda_event_stream(module, aws):
                 api_params.update(Enabled=source_param_enabled)
             if source_params.get('batch_size'):
                 api_params.update(BatchSize=source_params.get('batch_size'))
+            if source_params.get('function_response_types'):
+                api_params.update(FunctionResponseTypes=source_params.get('function_response_types'))
 
             try:
                 if not module.check_mode:
