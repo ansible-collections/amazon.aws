@@ -7,7 +7,9 @@ concurrency:
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'stable-*'
   workflow_dispatch:
 
 jobs:
