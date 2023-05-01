@@ -1,0 +1,48 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create an AWS Backup vault for the plan to target
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+
+    - name: Create an AWS Backup plan
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - RuleName: daily
+            TargetBackupVaultName: "{{ backup_vault_name }}"
+            ScheduleExpression: "cron(0 5 ? * * *)"
+            StartWindowMinutes: 60
+            CompletionWindowMinutes: 1440
+        tags:
+          environment: test
+      register: backup_plan_create_result
+
+    - name: Print result
+      ansible.builtin.debug:
+        msg: "{{ backup_plan_create_result }}"
+
+    - name: Verify results
+      ansible.builtin.assert:
+        that:
+          - backup_plan_create_result exists is true
+          - backup_plan_create_result changed is true
+          - backup_plan_create_result.plan.backup_plan_name == backup_plan_name
+
+  always:
+    - name: Delete AWS Backup plan created during this test
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete AWS Backup vault created during this test
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
+      ignore_errors: true
