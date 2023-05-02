@@ -1,0 +1,2 @@
+trivial:
+  - "Use engine: aurora-mysql rather than aurora."
