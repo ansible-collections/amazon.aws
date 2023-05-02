@@ -20,10 +20,8 @@ on:  # yamllint disable-line rule:truthy
       - '*'
 
 jobs:
-  changelog:
-    uses: ./.github/workflows/changelog.yml  # use the callable changelog job to run tests
-  linters:
-    uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
+  changelog-and-linters:
+    uses: ./.github/workflows/changelog_and_linters.yml  # use the callable changelog-and-linters job to run tests
   sanity:
     uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
   units:
@@ -38,8 +36,7 @@ jobs:
     steps:
       - run: >-
           python -c "assert set([
-          '${{ needs.changelog.result }}',
+          '${{ needs.changelog-and-linters.result }}',
           '${{ needs.sanity.result }}',
-          '${{ needs.linters.result }}',
           '${{ needs.units.result }}'
           ]) == {'success'}"

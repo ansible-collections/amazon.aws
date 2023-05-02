@@ -1,17 +1,55 @@
 ---
-name: black
-
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.sha }}'
-  cancel-in-progress: true
+name: 'Python formatting linter (Black)'
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches:
       - main
-      - 'stable-*'
-  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
 
 jobs:
-  format:
-    uses: abikouo/github_actions/.github/workflows/black.yml@automate_changes_a
+  check-black:
+    runs-on: ${{ fromJSON('["ubuntu-latest", "self-hosted"]')[github.repository == 'github/docs-internal'] }}
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ inputs.python }}
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        with:
+          source_path: ${{ env.source_directory }}
+
+      - name: Build and install the collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        with:
+          install_python_dependencies: false
+          source_path: ${{ env.source_directory }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+
+      - name: Install black
+        run: pip install black
+
+      - name: Run black
+        run: |
+          black -v --check --diff .
+        working-directory: ${{ steps.identify.outputs.collection_path }}
