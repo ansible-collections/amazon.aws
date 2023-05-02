@@ -1,0 +1,45 @@
+---
+name: all_green
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - 'stable-*'
+    tags:
+      - '*'
+
+jobs:
+  changelog:
+    uses: ./.github/workflows/changelog.yml  # use the callable changelog job to run tests
+  linters:
+    uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
+  sanity:
+    uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
+  units:
+    uses: ./.github/workflows/units.yml  # use the callable units job to run tests
+  all_green:
+    if: ${{ always() }}
+    needs:
+      - changelog-and-linters
+      - sanity
+      - units
+    runs-on: ubuntu-latest
+    steps:
+      - run: >-
+          python -c "assert set([
+          '${{ needs.changelog.result }}',
+          '${{ needs.sanity.result }}',
+          '${{ needs.linters.result }}',
+          '${{ needs.units.result }}'
+          ]) == {'success'}"

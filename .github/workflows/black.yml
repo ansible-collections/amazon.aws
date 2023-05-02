@@ -1,5 +1,5 @@
 ---
-name: update collection variables
+name: black
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.sha }}'
@@ -13,5 +13,5 @@ on:
   pull_request_target:
 
 jobs:
-  update-variables:
-    uses: abikouo/github_actions/.github/workflows/update_aws_variables.yml@automate_aws_user_agent_variable
+  format:
+    uses: abikouo/github_actions/.github/workflows/black.yml@automate_changes_a
