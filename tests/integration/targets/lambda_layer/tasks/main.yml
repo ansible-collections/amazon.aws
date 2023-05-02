@@ -45,7 +45,7 @@
         bucket: "{{ s3_bucket_name }}"
         mode: put
         object: "{{ s3_bucket_object }}"
-        permission: public-read
+        # permission: public-read  # Commented on because botocore.exceptions.ClientError: An error occurred (AccessControlListNotSupported) when calling the PutObject operation: The bucket does not allow ACLs
         src: "{{ zip_file_path }}"
 
     - name: Create lambda layer (check_mode=true)
@@ -98,7 +98,7 @@
     - name: Retrieve all layers with latest version
       lambda_layer_info:
       register: layers
-    
+
     - name: Ensure layer created above was found
       assert:
         that:
