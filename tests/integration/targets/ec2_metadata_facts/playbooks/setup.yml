@@ -132,7 +132,6 @@
       tags:
         snake_case_key: a_snake_case_value
         camelCaseKey: aCamelCaseValue
-      wait: True
     register: ec2_instance
     vars:
       ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
@@ -153,8 +152,15 @@
       network:
         assign_public_ip: true
         delete_on_termination: true
+      metadata_options:
+          instance_metadata_tags: enabled
+      tags:
+        snake_case_key: a_snake_case_value
+        camelCaseKey: aCamelCaseValue
       wait: True
     register: ec2_instance_py2
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - set_fact:
       ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
