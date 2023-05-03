@@ -626,6 +626,17 @@
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_tags_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-tags-keys"><strong>ansible_ec2_instance_tags_keys</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_tags_keys" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The list of tags keys of the instance.</p>
+<p>Returns empty list if access to tags (InstanceMetadataTags) in instance metadata is not enabled.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;tagKey1&quot;,</span> <span class="pre">&quot;tag_key2&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-type"><strong>ansible_ec2_instance_type</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -634,7 +645,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;m4.large&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_local_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-local-hostname"><strong>ansible_ec2_local_hostname</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_local_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -644,7 +655,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-0-0-1.ec2.internal&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_local_ipv4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-local-ipv4"><strong>ansible_ec2_local_ipv4</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_local_ipv4" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -654,7 +665,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_mac"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-mac"><strong>ansible_ec2_mac</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_mac" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -664,7 +675,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:11:22:33:44:55&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_metrics_vhostmd"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-metrics-vhostmd"><strong>ansible_ec2_metrics_vhostmd</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_metrics_vhostmd" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -673,7 +684,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_device_number"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-device-number"><strong>ansible_ec2_network_interfaces_macs_mac_address_device_number</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_device_number" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -683,7 +694,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;0&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-interface-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_interface_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -692,7 +703,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-12345678&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-ipv4-associations-ip-address"><strong>ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -701,7 +712,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv6s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-ipv6s"><strong>ansible_ec2_network_interfaces_macs_mac_address_ipv6s</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv6s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -710,7 +721,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-local-hostname"><strong>ansible_ec2_network_interfaces_macs_mac_address_local_hostname</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -719,7 +730,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-local-ipv4s"><strong>ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -728,7 +739,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_mac"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-mac"><strong>ansible_ec2_network_interfaces_macs_mac_address_mac</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_mac" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -737,7 +748,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:11:22:33:44:55&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-owner-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -748,7 +759,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-public-hostname"><strong>ansible_ec2_network_interfaces_macs_mac_address_public_hostname</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -757,7 +768,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-1-2-3-4.compute-1.amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-public-ipv4s"><strong>ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -766,7 +777,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1.2.3.4&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_group_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-security-group-ids"><strong>ansible_ec2_network_interfaces_macs_mac_address_security_group_ids</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_group_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -775,7 +786,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sg-01234567,sg-01234568&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-security-groups"><strong>ansible_ec2_network_interfaces_macs_mac_address_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -784,7 +795,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;secgroup1,secgroup2&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -793,7 +804,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-01234567&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-ipv4-cidr-block"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -802,7 +813,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.1.0/24&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-ipv6-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -811,7 +822,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -820,7 +831,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0123456&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv4-cidr-block"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -829,7 +840,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.0/16&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv4-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -838,7 +849,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.0/16&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv6-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -847,7 +858,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_placement_availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-placement-availability-zone"><strong>ansible_ec2_placement_availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_placement_availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -856,7 +867,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_placement_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-placement-region"><strong>ansible_ec2_placement_region</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_placement_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -865,7 +876,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_product_codes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-product-codes"><strong>ansible_ec2_product_codes</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_product_codes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -874,7 +885,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aw0evgkw8e5c1q413zgy5pjce&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-profile"><strong>ansible_ec2_profile</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_profile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -883,7 +894,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default-hvm&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-hostname"><strong>ansible_ec2_public_hostname</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -892,7 +903,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-1-2-3-4.compute-1.amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_ipv4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-ipv4"><strong>ansible_ec2_public_ipv4</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_ipv4" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -901,7 +912,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1.2.3.4&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-key"><strong>ansible_ec2_public_key</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -910,7 +921,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ramdisk_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ramdisk-id"><strong>ansible_ec2_ramdisk_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ramdisk_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -919,7 +930,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_reservation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-reservation-id"><strong>ansible_ec2_reservation_id</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_reservation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -928,7 +939,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;r-0123456789abcdef0&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-security-groups"><strong>ansible_ec2_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -938,7 +949,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;securitygroup1,securitygroup2&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_services_domain"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-services-domain"><strong>ansible_ec2_services_domain</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_services_domain" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -947,7 +958,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_services_partition"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-services-partition"><strong>ansible_ec2_services_partition</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_services_partition" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -958,7 +969,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aws&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_spot_termination_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-spot-termination-time"><strong>ansible_ec2_spot_termination_time</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_spot_termination_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -969,7 +980,7 @@
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-01-05T18:02:00Z&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_user_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-user-data"><strong>ansible_ec2_user_data</strong></p>
 <a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_user_data" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
