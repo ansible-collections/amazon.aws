@@ -70,6 +70,8 @@ action_groups:
   - lambda_event
   - lambda_execute
   - lambda_info
+  - lambda_layer
+  - lambda_layer_info
   - lambda_policy
   - rds_cluster
   - rds_cluster_info
