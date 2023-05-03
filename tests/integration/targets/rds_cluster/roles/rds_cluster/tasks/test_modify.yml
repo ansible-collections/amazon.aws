@@ -167,7 +167,7 @@
 
   - name: Create DB cluster parameter group if not exists
     command: aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name
-      {{ new_db_parameter_group_name }} --db-parameter-group-family aurora5.7 --description
+      {{ new_db_parameter_group_name }} --db-parameter-group-family aurora-mysql5.7 --description
       "Test DB cluster parameter group"
     environment:
       AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
