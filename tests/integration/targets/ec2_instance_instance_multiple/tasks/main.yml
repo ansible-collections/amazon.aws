@@ -16,6 +16,8 @@
       state: present
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+      filters:
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
     register: create_multiple_instances
     check_mode: true
 
@@ -35,6 +37,8 @@
       state: present
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+      filters:
+       "tag:TestId": "{{ ec2_instance_tag_TestId }}"
       wait: true
     register: create_multiple_instances
 
