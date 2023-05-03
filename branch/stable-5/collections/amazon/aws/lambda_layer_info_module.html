@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.lambda_policy module – Creates, updates or deletes AWS Lambda policy statements. &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.lambda_layer_info module – List lambda layer or lambda layer versions &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
@@ -19,8 +19,8 @@
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.rds_cluster module – rds_cluster module" href="rds_cluster_module.html" />
-    <link rel="prev" title="amazon.aws.lambda_layer_info module – List lambda layer or lambda layer versions" href="lambda_layer_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="amazon.aws.lambda_policy module – Creates, updates or deletes AWS Lambda policy statements." href="lambda_policy_module.html" />
+    <link rel="prev" title="amazon.aws.lambda_layer module – Creates an AWS Lambda layer or deletes an AWS Lambda layer version" href="lambda_layer_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -121,10 +121,10 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.lambda_policy module – Creates, updates or deletes AWS Lambda policy statements.</li>
+      <li class="breadcrumb-item active">amazon.aws.lambda_layer_info module – List lambda layer or lambda layer versions</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/lambda_policy.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/lambda_layer_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -134,17 +134,17 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-lambda-policy-module"></span><section id="amazon-aws-lambda-policy-module-creates-updates-or-deletes-aws-lambda-policy-statements">
-<h1>amazon.aws.lambda_policy module – Creates, updates or deletes AWS Lambda policy statements.<a class="headerlink" href="#amazon-aws-lambda-policy-module-creates-updates-or-deletes-aws-lambda-policy-statements" title="Permalink to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-lambda-layer-info-module"></span><section id="amazon-aws-lambda-layer-info-module-list-lambda-layer-or-lambda-layer-versions">
+<h1>amazon.aws.lambda_layer_info module – List lambda layer or lambda layer versions<a class="headerlink" href="#amazon-aws-lambda-layer-info-module-list-lambda-layer-or-lambda-layer-versions" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 5.4.0).</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-policy-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.lambda_policy</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.lambda_layer_info</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 5.1.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -158,14 +158,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>This module allows the management of AWS Lambda policy statements.</p></li>
-<li><p>It is idempotent and supports “Check” mode.</p></li>
-<li><p>Use module <a class="reference internal" href="lambda_module.html#ansible-collections-amazon-aws-lambda-module"><span class="std std-ref">amazon.aws.lambda</span></a> to manage the lambda function itself, <a class="reference internal" href="lambda_alias_module.html#ansible-collections-amazon-aws-lambda-alias-module"><span class="std std-ref">amazon.aws.lambda_alias</span></a> to manage function aliases, <a class="reference internal" href="lambda_event_module.html#ansible-collections-amazon-aws-lambda-event-module"><span class="std std-ref">amazon.aws.lambda_event</span></a> to manage event source mappings such as Kinesis streams, <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/execute_lambda_module.html#ansible-collections-community-aws-execute-lambda-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.execute_lambda</span></a> to execute a lambda function and <a class="reference internal" href="lambda_info_module.html#ansible-collections-amazon-aws-lambda-info-module"><span class="std std-ref">amazon.aws.lambda_info</span></a> to gather information relating to one or more lambda functions.</p></li>
-<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
+<li><p>This module is used to list the versions of an Lambda layer or all available lambda layers.</p></li>
+<li><p>The lambda layer versions that have been deleted aren’t listed.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-lambda-policy-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-lambda-layer-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -186,7 +184,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <div class="ansibleOptionAnchor" id="parameter-access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-access-key"></span><strong>access_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-access-key"></span><strong>access_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -200,21 +198,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-action"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-action"><strong>action</strong></p>
-<a class="ansibleOptionLink" href="#parameter-action" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The AWS Lambda action you want to allow in this statement. Each Lambda action is a string starting with lambda: followed by the API name (see Operations ). For example, <code class="docutils literal notranslate"><span class="pre">lambda:CreateFunction</span></code> . You can use wildcard (<code class="docutils literal notranslate"><span class="pre">lambda:*</span></code>) to grant permission for all AWS Lambda actions.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-alias"><strong>alias</strong></p>
-<a class="ansibleOptionLink" href="#parameter-alias" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Name of the function alias. Mutually exclusive with <em>version</em>.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
@@ -222,7 +206,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-config"><strong>aws_config</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-config"><strong>aws_config</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
@@ -230,7 +214,25 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-compatible_architecture"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-compatible-architecture"><strong>compatible_architecture</strong></p>
+<a class="ansibleOptionLink" href="#parameter-compatible_architecture" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A compatible instruction set architectures.</p>
+<p>Specify this option without <em>name</em> to include only to list only latest layers versions of layers that are compatible with that instruction set architecture.</p>
+<p>Specify this option with <em>name</em> to include only layer versions that are compatible with that architecture.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-compatible_runtime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-compatible-runtime"><strong>compatible_runtime</strong></p>
+<a class="ansibleOptionLink" href="#parameter-compatible_runtime" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A runtime identifier.</p>
+<p>Specify this option without <em>name</em> to list only latest layers versions of layers that indicate that they’re compatible with that runtime.</p>
+<p>Specify this option with <em>name</em> to list only layer versions that indicate that they’re compatible with that runtime.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use a <code class="docutils literal notranslate"><span class="pre">botocore.endpoint</span></code> logger to parse the unique (rather than total) <code class="docutils literal notranslate"><span class="pre">&quot;resource:action&quot;</span></code> API calls made during a task, outputing the set to the resource_actions key in the task results. Use the <code class="docutils literal notranslate"><span class="pre">aws_resource_action</span></code> callback to output to total list made during a playbook.</p>
@@ -246,7 +248,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -257,36 +259,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-event_source_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-event-source-token"><strong>event_source_token</strong></p>
-<a class="ansibleOptionLink" href="#parameter-event_source_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-layer_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-layer-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Token string representing source ARN or account. Mutually exclusive with <em>source_arn</em> or <em>source_account</em>.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-function_name"></div>
-<div class="ansibleOptionAnchor" id="parameter-lambda_function_arn"></div>
-<div class="ansibleOptionAnchor" id="parameter-function_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-lambda-function-arn"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-function-name"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-function-arn"></span><strong>function_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-function_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: lambda_function_arn, function_arn</span></p>
-<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Name of the Lambda function whose resource policy you are updating by adding a new permission.</p>
-<p>You can specify a function name (for example, Thumbnail ) or you can specify Amazon Resource Name (ARN) of the</p>
-<p>function (for example, <code class="docutils literal notranslate"><span class="pre">arn:aws:lambda:us-west-2:account-id:function:ThumbNail</span></code> ). AWS Lambda also allows you to</p>
-<p>specify partial ARN (for example, <code class="docutils literal notranslate"><span class="pre">account-id:Thumbnail</span></code> ). Note that the length constraint applies only to the</p>
-<p>ARN. If you specify only the function name, it is limited to 64 character in length.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-principal"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-principal"><strong>principal</strong></p>
-<a class="ansibleOptionLink" href="#parameter-principal" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The principal who is getting this permission. It can be Amazon S3 service Principal (s3.amazonaws.com ) if you want Amazon S3 to invoke the function, an AWS account ID if you are granting cross-account permission, or any valid AWS service principal such as sns.amazonaws.com . For example, you might want to allow a custom application in another AWS account to push events to AWS Lambda by invoking your function.</p>
+<td><div class="ansible-option-cell"><p>The name or Amazon Resource Name (ARN) of the Lambda layer.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-profile"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-profile"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -299,7 +282,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-region"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-region"></span><strong>region</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-region"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-region"></span><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -315,7 +298,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -333,7 +316,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-session-token"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-access-token"></span><strong>session_token</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-session-token"><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-access-token"></span><strong>session_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -347,42 +330,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-source_account"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-source-account"><strong>source_account</strong></p>
-<a class="ansibleOptionLink" href="#parameter-source_account" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The AWS account ID (without a hyphen) of the source owner. For example, if <em>source_arn</em> identifies a bucket, then this is the bucket owner’s account ID. You can use this additional condition to ensure the bucket you specify is owned by a specific account (it is possible the bucket owner deleted the bucket and some other AWS account created the bucket). You can also use this condition to specify all sources (that is, you don’t specify the <em>source_arn</em> ) owned by a specific account.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-source-arn"><strong>source_arn</strong></p>
-<a class="ansibleOptionLink" href="#parameter-source_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>This is optional; however, when granting Amazon S3 permission to invoke your function, you should specify this field with the bucket Amazon Resource Name (ARN) as its value. This ensures that only events generated from the specified bucket can invoke the function.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-state"><strong>state</strong></p>
-<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Describes the desired state.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
-<ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-statement_id"></div>
-<div class="ansibleOptionAnchor" id="parameter-sid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-statement-id"><span id="ansible-collections-amazon-aws-lambda-policy-module-parameter-sid"></span><strong>statement_id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-statement_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: sid</span></p>
-<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>A unique statement identifier.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, SSL certificates will not be validated for communication with the AWS APIs.</p>
@@ -392,13 +340,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-parameter-version"><strong>version</strong></p>
-<a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Version of the Lambda function. Mutually exclusive with <em>alias</em>.</p>
 </div></td>
 </tr>
 </tbody>
@@ -416,21 +357,26 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Lambda S3 event notification</span>
-<span class="w">  </span><span class="nt">amazon.aws.lambda_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">function_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">functionName</span>
-<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dev</span>
-<span class="w">    </span><span class="nt">statement_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lambda-s3-myBucket-create-data-log</span>
-<span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lambda:InvokeFunction</span>
-<span class="w">    </span><span class="nt">principal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3.amazonaws.com</span>
-<span class="w">    </span><span class="nt">source_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:s3:eu-central-1:123456789012:bucketName</span>
-<span class="w">    </span><span class="nt">source_account</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123456789012</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lambda_policy_action</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="c1"># Display information about the versions for the layer named blank-java-lib</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">show results</span>
-<span class="w">  </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">var</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lambda_policy_action</span>
+<span class="c1"># Display information about the versions for the layer named blank-java-lib compatible with architecture x86_64</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retrieve layer versions</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blank-java-lib</span>
+<span class="w">    </span><span class="nt">compatible_architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+
+<span class="c1"># list latest versions of available layers</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+
+<span class="c1"># list latest versions of available layers compatible with runtime python3.7</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list latest versions for all layers</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_layer_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">compatible_runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3.7</span>
 </pre></div>
 </div>
 </section>
@@ -445,11 +391,81 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-lambda_policy_action"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-policy-module-return-lambda-policy-action"><strong>lambda_policy_action</strong></p>
-<a class="ansibleOptionLink" href="#return-lambda_policy_action" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-layers_versions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions"><strong>layers_versions</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>describes what action was taken</p>
+<td><div class="ansible-option-cell"><p>The layers versions that exists.</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/compatible_architectures"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-compatible-architectures"><strong>compatible_architectures</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/compatible_architectures" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of compatible instruction set architectures.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if it was defined for the layer version.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/compatible_runtimes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-compatible-runtimes"><strong>compatible_runtimes</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/compatible_runtimes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of compatible runtimes.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if it was defined for the layer version.</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;python3.7&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/created_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-created-date"><strong>created_date</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/created_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date that the layer version was created, in ISO-8601 format (YYYY-MM-DDThh:mm:ss.sTZD).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if the layer version exists or has been created</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2022-09-28T14:27:35.866+0000&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> <em>state=present</em></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/layer_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-layer-arn"><strong>layer_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/layer_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the layer.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when <code class="docutils literal notranslate"><span class="pre">name</span></code> is provided</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:eu-west-2:123456789012:layer:pylayer&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/layer_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-layer-version-arn"><strong>layer_version_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/layer_version_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the layer version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if the layer version exists or has been created</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:eu-west-2:123456789012:layer:pylayer:2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/license_info"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-license-info"><strong>license_info</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/license_info" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The layer’s software license.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if it was defined for the layer version.</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;GPL-3.0-only&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-layers_versions/version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-info-module-return-layers-versions-version"><strong>version</strong></p>
+<a class="ansibleOptionLink" href="#return-layers_versions/version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The version number.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> if the layer version exists or has been created</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
 </tbody>
@@ -457,8 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
 <ul class="simple">
-<li><p>Pierre Jodouin (&#64;pjodouin)</p></li>
-<li><p>Michael De La Rue (&#64;mikedlr)</p></li>
+<li><p>Aubin Bikouo (&#64;abikouo)</p></li>
 </ul>
 </section>
 <section id="collection-links">
@@ -477,8 +492,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-p
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="lambda_layer_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.lambda_layer_info module – List lambda layer or lambda layer versions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="rds_cluster_module.html" class="btn btn-neutral float-right" title="amazon.aws.rds_cluster module – rds_cluster module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="lambda_layer_module.html" class="btn btn-neutral float-left" title="amazon.aws.lambda_layer module – Creates an AWS Lambda layer or deletes an AWS Lambda layer version" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lambda_policy_module.html" class="btn btn-neutral float-right" title="amazon.aws.lambda_policy module – Creates, updates or deletes AWS Lambda policy statements." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
