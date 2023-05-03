@@ -104,6 +104,45 @@
       - result.changed == False
       - '"parameters are required together" in result.msg'
 
+  - name: test state=present with incomplete layers
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: '{{ lambda_python_runtime }}'
+      role: '{{ lambda_role_name }}'
+      handler: mini_lambda.handler
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_name: test-layer
+    check_mode: true
+    register: result
+    ignore_errors: true
+  - name: assert lambda fails with proper message
+    assert:
+      that:
+      - result is failed
+      - result is not changed
+      - '"parameters are required together: layer_name, version found in layers" in result.msg'
+
+  - name: test state=present with incomplete layers
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: '{{ lambda_python_runtime }}'
+      role: '{{ lambda_role_name }}'
+      handler: mini_lambda.handler
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_version_arn: 'arn:aws:lambda:us-east-2:123456789012:layer:blank-java-lib:7'
+          version: 9
+    check_mode: true
+    register: result
+    ignore_errors: true
+  - name: assert lambda fails with proper message
+    assert:
+      that:
+      - result is failed
+      - result is not changed
+      - '"parameters are mutually exclusive: version|layer_version_arn found in layers" in result.msg'
+
   # Prepare minimal Lambda
   - name: test state=present - upload the lambda (check mode)
     lambda:
@@ -604,8 +643,131 @@
     assert:
       that:
       - result is not failed
+  
+  # Test creation with layers
+  - name: Create temporary directory for testing
+    tempfile:
+      suffix: lambda
+      state: directory
+    register: test_dir
+
+  - name: Create python directory for lambda layer
+    file:
+      path: "{{ remote_tmp_dir }}/python"
+      state: directory
+
+  - name: Create lambda layer library
+    copy:
+      content: |
+        def hello():
+          print("Hello from the ansible amazon.aws lambda layer")
+          return 1
+      dest: "{{ remote_tmp_dir }}/python/lambda_layer.py"
+
+  - name: Create lambda layer archive
+    archive:
+      format: zip
+      path: "{{ remote_tmp_dir }}"
+      dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
+
+  - name: Create lambda layer
+    lambda_layer:
+      name: "{{ lambda_python_layers_names[0] }}"
+      description: '{{ lambda_python_layers_names[0] }} lambda layer'
+      content:
+        zip_file: "{{ remote_tmp_dir }}/lambda_layer.zip"
+    register: first_layer
+
+  - name: Create another lambda layer
+    lambda_layer:
+      name: "{{ lambda_python_layers_names[1] }}"
+      description: '{{ lambda_python_layers_names[1] }} lambda layer'
+      content:
+        zip_file: "{{ remote_tmp_dir }}/lambda_layer.zip"
+    register: second_layer
+
+  - name: Create lambda function with layers
+    lambda:
+      name: '{{ lambda_function_name_with_layer }}'
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_version_arn: "{{ first_layer.layer_versions.0.layer_version_arn }}"
+    register: result
+  - name: Validate that lambda function was created with expected property
+    assert:
+      that:
+        - result is changed
+        - '"layers" in result.configuration'
+        - result.configuration.layers | length == 1
+        - result.configuration.layers.0.arn == first_layer.layer_versions.0.layer_version_arn
+
+  - name: Create lambda function with layers once again (validate idempotency)
+    lambda:
+      name: '{{ lambda_function_name_with_layer }}'
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_version_arn: "{{ first_layer.layer_versions.0.layer_version_arn }}"
+    register: result
+  - name: Validate that no change were made
+    assert:
+      that:
+        - result is not changed
+
+  - name: Create lambda function with mutiple layers
+    lambda:
+      name: '{{ lambda_function_name_with_multiple_layer }}'
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_version_arn: "{{ first_layer.layer_versions.0.layer_version_arn }}"
+        - layer_name: "{{ second_layer.layer_versions.0.layer_arn }}"
+          version: "{{ second_layer.layer_versions.0.version }}"
+    register: result
+  - name: Validate that lambda function was created with expected property
+    assert:
+      that:
+        - result is changed
+        - '"layers" in result.configuration'
+        - result.configuration.layers | length == 2
+        - first_layer.layer_versions.0.layer_version_arn in lambda_layer_versions
+        - second_layer.layer_versions.0.layer_version_arn in lambda_layer_versions
+    vars:
+      lambda_layer_versions: "{{ result.configuration.layers | map(attribute='arn') | list }}"
+
+  - name: Create lambda function with mutiple layers and changing layers order (idempotency)
+    lambda:
+      name: '{{ lambda_function_name_with_multiple_layer }}'
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+      layers:
+        - layer_version_arn: "{{ second_layer.layer_versions.0.layer_version_arn }}"
+        - layer_name: "{{ first_layer.layer_versions.0.layer_arn }}"
+          version: "{{ first_layer.layer_versions.0.version }}"
+    register: result
+  - name: Validate that lambda function was created with expected property
+    assert:
+      that:
+        - result is not changed
 
   always:
+
+  - name: Delete lambda layers
+    lambda_layer:
+      name: "{{ item }}"
+      version: -1
+      state: absent
+    ignore_errors: true
+    with_items: "{{ lambda_python_layers_names }}"
 
   - name: ensure functions are absent at end of test
     lambda:

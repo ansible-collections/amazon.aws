@@ -120,6 +120,31 @@ options:
     choices: ['x86_64', 'arm64']
     aliases: ['architectures']
     version_added: 5.0.0
+  layers:
+    description:
+      - A list of function layers to add to the function's execution environment.
+      - Specify each layer by its ARN, including the version.
+    suboptions:
+        layer_version_arn:
+            description:
+            - The ARN of the layer version.
+            - Mutually exclusive with I(layer_version_arn).
+            type: str
+        layer_name:
+            description:
+            - The name or Amazon Resource Name (ARN) of the layer.
+            - Mutually exclusive with I(layer_version_arn).
+            type: str
+            aliases: ['layer_arn']
+        version:
+            description:
+            - The version number.
+            - Required when I(layer_name) is provided, ignored if not.
+            type: int
+            aliases: ['layer_version']
+    type: list
+    elements: dict
+    version_added: 5.1.0
 author:
   - 'Steyn Huizinga (@steynovich)'
 extends_documentation_fragment:
@@ -179,6 +204,18 @@ EXAMPLES = r'''
   loop:
     - HelloWorld
     - ByeBye
+
+# Create Lambda functions with function layers
+- name: looped creation
+  amazon.aws.lambda:
+    name: 'HelloWorld'
+    state: present
+    zip_file: 'hello-code.zip'
+    runtime: 'python2.7'
+    role: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
+    handler: 'hello_python.my_handler'
+    layers:
+        - layer_version_arn: 'arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7'
 '''
 
 RETURN = r'''
@@ -329,12 +366,36 @@ configuration:
               'subnet_ids': [],
               'vpc_id': '123'
             }
+        layers:
+            description: The function's layers.
+            returned: on success
+            version_added: 5.1.0
+            type: complex
+            contains:
+                arn:
+                    description: The Amazon Resource Name (ARN) of the function layer.
+                    returned: always
+                    type: str
+                    sample: active
+                code_size:
+                    description: The size of the layer archive in bytes.
+                    returned: always
+                    type: str
+                signing_profile_version_arn:
+                    description: The Amazon Resource Name (ARN) for a signing profile version.
+                    returned: always
+                    type: str
+                signing_job_arn:
+                    description: The Amazon Resource Name (ARN) of a signing job.
+                    returned: always
+                    type: str
 '''
 
 import base64
 import hashlib
 import traceback
 import re
+from collections import Counter
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError, WaiterError
@@ -392,6 +453,17 @@ def get_current_function(connection, function_name, qualifier=None):
         return connection.get_function(FunctionName=function_name, aws_retry=True)
     except is_boto3_error_code('ResourceNotFoundException'):
         return None
+
+
+def get_layer_version_arn(module, connection, layer_name, version_number):
+    try:
+        layer_versions = connection.list_layer_versions(LayerName=layer_name, aws_retry=True)['LayerVersions']
+        for v in layer_versions:
+            if v["Version"] == version_number:
+                return v["LayerVersionArn"]
+        module.fail_json(msg='Unable to find version {0} from Lambda layer {1}'.format(version_number, layer_name))
+    except is_boto3_error_code('ResourceNotFoundException'):
+        module.fail_json(msg='Lambda layer {0} not found'.format(layer_name))
 
 
 def sha256sum(filename):
@@ -553,6 +625,21 @@ def main():
         architecture=dict(choices=['x86_64', 'arm64'], type='str', aliases=['architectures']),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
+        layers=dict(
+            type='list',
+            elements='dict',
+            options=dict(
+                layer_version_arn=dict(type='str'),
+                layer_name=dict(type='str', aliases=['layer_arn']),
+                version=dict(type='int', aliases=['layer_version']),
+            ),
+            required_together=[['layer_name', 'version']],
+            required_one_of=[['layer_version_arn', 'layer_name']],
+            mutually_exclusive=[
+                ['layer_name', 'layer_version_arn'],
+                ['version', 'layer_version_arn']
+            ],
+        ),
     )
 
     mutually_exclusive = [['zip_file', 's3_key'],
@@ -595,6 +682,7 @@ def main():
     purge_tags = module.params.get('purge_tags')
     kms_key_arn = module.params.get('kms_key_arn')
     architectures = module.params.get('architecture')
+    layers = []
 
     check_mode = module.check_mode
     changed = False
@@ -615,6 +703,14 @@ def main():
             # get account ID and assemble ARN
             account_id, partition = get_account_info(module)
             role_arn = 'arn:{0}:iam::{1}:role/{2}'.format(partition, account_id, role)
+
+        # create list of layer version arn
+        if module.params.get("layers"):
+            for layer in module.params.get("layers"):
+                layer_version_arn = layer.get("layer_version_arn")
+                if layer_version_arn is None:
+                    layer_version_arn = get_layer_version_arn(module, client, layer.get("layer_name"), layer.get("version"))
+                layers.append(layer_version_arn)
 
     # Get function configuration if present, False otherwise
     current_function = get_current_function(client, name)
@@ -676,6 +772,13 @@ def main():
             # No VPC configuration is desired, assure VPC config is empty when present in current config
             if 'VpcConfig' in current_config and current_config['VpcConfig'].get('VpcId'):
                 func_kwargs.update({'VpcConfig': {'SubnetIds': [], 'SecurityGroupIds': []}})
+
+        # Check layers
+        if layers:
+            # compare two lists to see if the target layers are equal to the current
+            current_layers = current_config.get('Layers', [])
+            if Counter(layers) != Counter((f['Arn'] for f in current_layers)):
+                func_kwargs.update({'Layers': layers})
 
         # Upload new configuration if configuration has changed
         if len(func_kwargs) > 1:
@@ -760,6 +863,10 @@ def main():
         if vpc_subnet_ids:
             func_kwargs.update({'VpcConfig': {'SubnetIds': vpc_subnet_ids,
                                               'SecurityGroupIds': vpc_security_group_ids}})
+
+        # Layers
+        if layers:
+            func_kwargs.update({'Layers': layers})
 
         # Tag Function
         if tags:
