@@ -304,9 +304,10 @@ def _ssm_retry(func):
     * remaining_tries is <2
     * retries limit reached
     """
+
     @wraps(func)
     def wrapped(self, *args, **kwargs):
-        remaining_tries = int(self.get_option('reconnection_retries')) + 1
+        remaining_tries = int(self.get_option("reconnection_retries")) + 1
         cmd_summary = f"{args[0]}..."
         for attempt in range(remaining_tries):
             try:
@@ -317,7 +318,7 @@ def _ssm_retry(func):
             except (AnsibleConnectionFailure, Exception) as e:
                 if attempt == remaining_tries - 1:
                     raise
-                pause = 2 ** attempt - 1
+                pause = 2**attempt - 1
                 pause = min(pause, 30)
 
                 if isinstance(e, AnsibleConnectionFailure):
@@ -337,17 +338,18 @@ def _ssm_retry(func):
                 continue
 
         return return_tuple
+
     return wrapped
 
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i:i + n]  # fmt: skip
 
 
 class Connection(ConnectionBase):
-    ''' AWS SSM based connections '''
+    """AWS SSM based connections"""
 
     transport = "community.aws.aws_ssm"
     default_user = ""
@@ -361,7 +363,7 @@ class Connection(ConnectionBase):
     _s3_client = None
     _session = None
     _stdout = None
-    _session_id = ''
+    _session_id = ""
     _timeout = False
     MARK_LENGTH = 26
 
@@ -392,18 +394,20 @@ class Connection(ConnectionBase):
         (new AWS regions and new buckets in a region other than the one we're running in)
         """
 
-        region_name = self.get_option('region') or 'us-east-1'
-        profile_name = self.get_option('profile') or ''
+        region_name = self.get_option("region") or "us-east-1"
+        profile_name = self.get_option("profile") or ""
         self._vvvv("_get_bucket_endpoint: S3 (global)")
         tmp_s3_client = self._get_boto_client(
-            's3', region_name=region_name, profile_name=profile_name,
+            "s3",
+            region_name=region_name,
+            profile_name=profile_name,
         )
         # Fetch the location of the bucket so we can open a client against the 'right' endpoint
         # This /should/ always work
         bucket_location = tmp_s3_client.get_bucket_location(
-            Bucket=(self.get_option('bucket_name')),
+            Bucket=(self.get_option("bucket_name")),
         )
-        bucket_region = bucket_location['LocationConstraint']
+        bucket_region = bucket_location["LocationConstraint"]
 
         if self.get_option("bucket_endpoint_url"):
             return self.get_option("bucket_endpoint_url"), bucket_region
@@ -411,28 +415,35 @@ class Connection(ConnectionBase):
         # Create another client for the region the bucket lives in, so we can nab the endpoint URL
         self._vvvv(f"_get_bucket_endpoint: S3 (bucket region) - {bucket_region}")
         s3_bucket_client = self._get_boto_client(
-            's3', region_name=bucket_region, profile_name=profile_name,
+            "s3",
+            region_name=bucket_region,
+            profile_name=profile_name,
         )
 
         return s3_bucket_client.meta.endpoint_url, s3_bucket_client.meta.region_name
 
     def _init_clients(self):
         self._vvvv("INITIALIZE BOTO3 CLIENTS")
-        profile_name = self.get_option('profile') or ''
-        region_name = self.get_option('region')
+        profile_name = self.get_option("profile") or ""
+        region_name = self.get_option("region")
 
         # The SSM Boto client, currently used to initiate and manage the session
         # Note: does not handle the actual SSM session traffic
         self._vvvv("SETUP BOTO3 CLIENTS: SSM")
         ssm_client = self._get_boto_client(
-            'ssm', region_name=region_name, profile_name=profile_name,
+            "ssm",
+            region_name=region_name,
+            profile_name=profile_name,
         )
         self._client = ssm_client
 
         s3_endpoint_url, s3_region_name = self._get_bucket_endpoint()
         self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
         s3_bucket_client = self._get_boto_client(
-            's3', region_name=s3_region_name, endpoint_url=s3_endpoint_url, profile_name=profile_name,
+            "s3",
+            region_name=s3_region_name,
+            endpoint_url=s3_endpoint_url,
+            profile_name=profile_name,
         )
 
         self._s3_client = s3_bucket_client
@@ -445,21 +456,21 @@ class Connection(ConnectionBase):
 
         self.host = self._play_context.remote_addr
 
-        if getattr(self._shell, "SHELL_FAMILY", '') == 'powershell':
+        if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
             self.delegate = None
             self.has_native_async = True
             self.always_pipeline_modules = True
-            self.module_implementation_preferences = ('.ps1', '.exe', '')
+            self.module_implementation_preferences = (".ps1", ".exe", "")
             self.protocol = None
             self.shell_id = None
-            self._shell_type = 'powershell'
+            self._shell_type = "powershell"
             self.is_windows = True
 
     def __del__(self):
         self.close()
 
     def _connect(self):
-        ''' connect to the host via ssm '''
+        """connect to the host via ssm"""
 
         self._play_context.remote_user = getpass.getuser()
 
@@ -468,37 +479,37 @@ class Connection(ConnectionBase):
         return self
 
     def reset(self):
-        ''' start a fresh ssm session '''
-        self._vvvv('reset called on ssm connection')
+        """start a fresh ssm session"""
+        self._vvvv("reset called on ssm connection")
         self.close()
         return self.start_session()
 
     def start_session(self):
-        ''' start ssm session '''
+        """start ssm session"""
 
-        if self.get_option('instance_id') is None:
+        if self.get_option("instance_id") is None:
             self.instance_id = self.host
         else:
-            self.instance_id = self.get_option('instance_id')
+            self.instance_id = self.get_option("instance_id")
 
         self._vvv(f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
 
-        executable = self.get_option('plugin')
-        if not os.path.exists(to_bytes(executable, errors='surrogate_or_strict')):
+        executable = self.get_option("plugin")
+        if not os.path.exists(to_bytes(executable, errors="surrogate_or_strict")):
             raise AnsibleError(f"failed to find the executable specified {executable}.")
 
         self._init_clients()
 
         self._vvvv(f"START SSM SESSION: {self.instance_id}")
         start_session_args = dict(Target=self.instance_id, Parameters={})
-        document_name = self.get_option('ssm_document')
+        document_name = self.get_option("ssm_document")
         if document_name is not None:
-            start_session_args['DocumentName'] = document_name
+            start_session_args["DocumentName"] = document_name
         response = self._client.start_session(**start_session_args)
-        self._session_id = response['SessionId']
+        self._session_id = response["SessionId"]
 
-        region_name = self.get_option('region')
-        profile_name = self.get_option('profile') or ''
+        region_name = self.get_option("region")
+        profile_name = self.get_option("profile") or ""
         cmd = [
             executable,
             json.dumps(response),
@@ -522,7 +533,7 @@ class Connection(ConnectionBase):
         )
 
         os.close(stdout_w)
-        self._stdout = os.fdopen(stdout_r, 'rb', 0)
+        self._stdout = os.fdopen(stdout_r, "rb", 0)
         self._session = session
         self._poll_stdout = select.poll()
         self._poll_stdout.register(self._stdout, select.POLLIN)
@@ -536,7 +547,7 @@ class Connection(ConnectionBase):
 
     @_ssm_retry
     def exec_command(self, cmd, in_data=None, sudoable=True):
-        ''' run a command on the ssm host '''
+        """run a command on the ssm host"""
 
         super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
@@ -557,20 +568,19 @@ class Connection(ConnectionBase):
         self._flush_stderr(session)
 
         for chunk in chunks(cmd, 1024):
-            session.stdin.write(to_bytes(chunk, errors='surrogate_or_strict'))
+            session.stdin.write(to_bytes(chunk, errors="surrogate_or_strict"))
 
         # Read stdout between the markers
-        stdout = ''
-        win_line = ''
+        stdout = ""
+        win_line = ""
         begin = False
-        stop_time = int(round(time.time())) + self.get_option('ssm_timeout')
+        stop_time = int(round(time.time())) + self.get_option("ssm_timeout")
         while session.poll() is None:
             remaining = stop_time - int(round(time.time()))
             if remaining < 1:
                 self._timeout = True
                 self._vvvv(f"EXEC timeout stdout: \n{to_text(stdout)}")
-                raise AnsibleConnectionFailure(
-                    f"SSM exec_command timeout on host: {self.instance_id}")
+                raise AnsibleConnectionFailure(f"SSM exec_command timeout on host: {self.instance_id}")
             if self._poll_stdout.poll(1000):
                 line = self._filter_ansi(self._stdout.readline())
                 self._vvvv(f"EXEC stdout line: \n{to_text(line)}")
@@ -585,7 +595,7 @@ class Connection(ConnectionBase):
             if mark_start in line:
                 begin = True
                 if not line.startswith(mark_start):
-                    stdout = ''
+                    stdout = ""
                 continue
             if begin:
                 if mark_end in line:
@@ -600,7 +610,7 @@ class Connection(ConnectionBase):
         return (returncode, stdout, stderr)
 
     def _prepare_terminal(self):
-        ''' perform any one-time terminal settings '''
+        """perform any one-time terminal settings"""
         # No windows setup for now
         if self.is_windows:
             return
@@ -615,16 +625,12 @@ class Connection(ConnectionBase):
         disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
 
         disable_prompt_complete = None
-        end_mark = "".join(
-            [random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)]
-        )
+        end_mark = "".join([random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)])
         disable_prompt_cmd = to_bytes(
             "PS1='' ; printf '\\n%s\\n' '" + end_mark + "'\n",
             errors="surrogate_or_strict",
         )
-        disable_prompt_reply = re.compile(
-            r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE
-        )
+        disable_prompt_reply = re.compile(r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE)
 
         stdout = ""
         # Custom command execution for when we're waiting for startup
@@ -634,9 +640,7 @@ class Connection(ConnectionBase):
             if remaining < 1:
                 self._timeout = True
                 self._vvvv(f"PRE timeout stdout: \n{to_bytes(stdout)}")
-                raise AnsibleConnectionFailure(
-                    f"SSM start_session timeout on host: {self.instance_id}"
-                )
+                raise AnsibleConnectionFailure(f"SSM start_session timeout on host: {self.instance_id}")
             if self._poll_stdout.poll(1000):
                 stdout += to_text(self._stdout.read(1024))
                 self._vvvv(f"PRE stdout line: \n{to_bytes(stdout)}")
@@ -670,17 +674,15 @@ class Connection(ConnectionBase):
             if disable_prompt_complete is False:
                 match = disable_prompt_reply.search(stdout)
                 if match:
-                    stdout = stdout[match.end():]
+                    stdout = stdout[match.end():]  # fmt: skip
                     disable_prompt_complete = True
 
         if not disable_prompt_complete:
-            raise AnsibleConnectionFailure(
-                f"SSM process closed during _prepare_terminal on host: {self.instance_id}"
-            )
+            raise AnsibleConnectionFailure(f"SSM process closed during _prepare_terminal on host: {self.instance_id}")
         self._vvvv("PRE Terminal configured")
 
     def _wrap_command(self, cmd, sudoable, mark_start, mark_end):
-        ''' wrap command so stdout and status can be extracted '''
+        """wrap command so stdout and status can be extracted"""
 
         if self.is_windows:
             if not cmd.startswith(" ".join(_common_args) + " -EncodedCommand"):
@@ -691,13 +693,13 @@ class Connection(ConnectionBase):
                 f"printf '%s\\n' '{mark_start}';\n"
                 f"echo | {cmd};\n"
                 f"printf '\\n%s\\n%s\\n' \"$?\" '{mark_end}';\n"
-            )
+            )  # fmt: skip
 
         self._vvvv(f"_wrap_command: \n'{to_text(cmd)}'")
         return cmd
 
     def _post_process(self, stdout, mark_begin):
-        ''' extract command status and strip unwanted lines '''
+        """extract command status and strip unwanted lines"""
 
         if not self.is_windows:
             # Get command return code
@@ -705,50 +707,50 @@ class Connection(ConnectionBase):
 
             # Throw away final lines
             for _x in range(0, 3):
-                stdout = stdout[:stdout.rfind('\n')]
+                stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
 
             return (returncode, stdout)
 
         # Windows is a little more complex
         # Value of $LASTEXITCODE will be the line after the mark
-        trailer = stdout[stdout.rfind(mark_begin):]
+        trailer = stdout[stdout.rfind(mark_begin):]  # fmt: skip
         last_exit_code = trailer.splitlines()[1]
         if last_exit_code.isdigit:
             returncode = int(last_exit_code)
         else:
             returncode = -1
         # output to keep will be before the mark
-        stdout = stdout[:stdout.rfind(mark_begin)]
+        stdout = stdout[:stdout.rfind(mark_begin)]  # fmt: skip
 
         # If it looks like JSON remove any newlines
-        if stdout.startswith('{'):
-            stdout = stdout.replace('\n', '')
+        if stdout.startswith("{"):
+            stdout = stdout.replace("\n", "")
 
         return (returncode, stdout)
 
     def _filter_ansi(self, line):
-        ''' remove any ANSI terminal control codes '''
+        """remove any ANSI terminal control codes"""
         line = to_text(line)
 
         if self.is_windows:
-            osc_filter = re.compile(r'\x1b\][^\x07]*\x07')
-            line = osc_filter.sub('', line)
-            ansi_filter = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
-            line = ansi_filter.sub('', line)
+            osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
+            line = osc_filter.sub("", line)
+            ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
+            line = ansi_filter.sub("", line)
 
             # Replace or strip sequence (at terminal width)
-            line = line.replace('\r\r\n', '\n')
+            line = line.replace("\r\r\n", "\n")
             if len(line) == 201:
                 line = line[:-1]
 
         return line
 
     def _flush_stderr(self, session_process):
-        ''' read and return stderr with minimal blocking '''
+        """read and return stderr with minimal blocking"""
 
         poll_stderr = select.poll()
         poll_stderr.register(session_process.stderr, select.POLLIN)
-        stderr = ''
+        stderr = ""
 
         while session_process.poll() is None:
             if not poll_stderr.poll(1):
@@ -760,20 +762,20 @@ class Connection(ConnectionBase):
         return stderr
 
     def _get_url(self, client_method, bucket_name, out_path, http_method, extra_args=None):
-        ''' Generate URL for get_object / put_object '''
+        """Generate URL for get_object / put_object"""
 
         client = self._s3_client
-        params = {'Bucket': bucket_name, 'Key': out_path}
+        params = {"Bucket": bucket_name, "Key": out_path}
         if extra_args is not None:
             params.update(extra_args)
         return client.generate_presigned_url(client_method, Params=params, ExpiresIn=3600, HttpMethod=http_method)
 
     def _get_boto_client(self, service, region_name=None, profile_name=None, endpoint_url=None):
-        ''' Gets a boto3 client based on the STS token '''
+        """Gets a boto3 client based on the STS token"""
 
-        aws_access_key_id = self.get_option('access_key_id')
-        aws_secret_access_key = self.get_option('secret_access_key')
-        aws_session_token = self.get_option('session_token')
+        aws_access_key_id = self.get_option("access_key_id")
+        aws_secret_access_key = self.get_option("secret_access_key")
+        aws_session_token = self.get_option("session_token")
 
         session_args = dict(
             aws_access_key_id=aws_access_key_id,
@@ -782,7 +784,7 @@ class Connection(ConnectionBase):
             region_name=region_name,
         )
         if profile_name:
-            session_args['profile_name'] = profile_name
+            session_args["profile_name"] = profile_name
         session = boto3.session.Session(**session_args)
 
         client = session.client(
@@ -790,8 +792,8 @@ class Connection(ConnectionBase):
             endpoint_url=endpoint_url,
             config=Config(
                 signature_version="s3v4",
-                s3={'addressing_style': self.get_option('s3_addressing_style')}
-            )
+                s3={"addressing_style": self.get_option("s3_addressing_style")},
+            ),
         )
         return client
 
@@ -801,21 +803,21 @@ class Connection(ConnectionBase):
     def _generate_encryption_settings(self):
         put_args = {}
         put_headers = {}
-        if not self.get_option('bucket_sse_mode'):
+        if not self.get_option("bucket_sse_mode"):
             return put_args, put_headers
 
-        put_args['ServerSideEncryption'] = self.get_option('bucket_sse_mode')
-        put_headers['x-amz-server-side-encryption'] = self.get_option('bucket_sse_mode')
-        if self.get_option('bucket_sse_mode') == 'aws:kms' and self.get_option('bucket_sse_kms_key_id'):
-            put_args['SSEKMSKeyId'] = self.get_option('bucket_sse_kms_key_id')
-            put_headers['x-amz-server-side-encryption-aws-kms-key-id'] = self.get_option('bucket_sse_kms_key_id')
+        put_args["ServerSideEncryption"] = self.get_option("bucket_sse_mode")
+        put_headers["x-amz-server-side-encryption"] = self.get_option("bucket_sse_mode")
+        if self.get_option("bucket_sse_mode") == "aws:kms" and self.get_option("bucket_sse_kms_key_id"):
+            put_args["SSEKMSKeyId"] = self.get_option("bucket_sse_kms_key_id")
+            put_headers["x-amz-server-side-encryption-aws-kms-key-id"] = self.get_option("bucket_sse_kms_key_id")
         return put_args, put_headers
 
     def _generate_commands(self, bucket_name, s3_path, in_path, out_path):
         put_args, put_headers = self._generate_encryption_settings()
 
-        put_url = self._get_url('put_object', bucket_name, s3_path, 'PUT', extra_args=put_args)
-        get_url = self._get_url('get_object', bucket_name, s3_path, 'GET')
+        put_url = self._get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
+        get_url = self._get_url("get_object", bucket_name, s3_path, "GET")
 
         if self.is_windows:
             put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
@@ -827,14 +829,14 @@ class Connection(ConnectionBase):
                     f"-Uri '{put_url}' "
                     f"-UseBasicParsing"
                 ),
-            ]
+            ]  # fmt: skip
             get_commands = [
                 (
                     "Invoke-WebRequest "
                     f"'{get_url}' "
                     f"-OutFile '{out_path}'"
                 ),
-            ]
+            ]  # fmt: skip
         else:
             put_command_headers = " ".join([f"-H '{h}: {v}'" for h, v in put_headers.items()])
             put_commands = [
@@ -844,7 +846,7 @@ class Connection(ConnectionBase):
                     f"--upload-file '{in_path}' "
                     f"'{put_url}'"
                 ),
-            ]
+            ]  # fmt: skip
             get_commands = [
                 (
                     "curl "
@@ -860,20 +862,18 @@ class Connection(ConnectionBase):
                     "touch "
                     f"'{out_path}'"
                 )
-            ]
+            ]  # fmt: skip
 
         return get_commands, put_commands, put_args
 
     def _exec_transport_commands(self, in_path, out_path, commands):
-        stdout_combined, stderr_combined = '', ''
+        stdout_combined, stderr_combined = "", ""
         for command in commands:
             (returncode, stdout, stderr) = self.exec_command(command, in_data=None, sudoable=False)
 
             # Check the return code
             if returncode != 0:
-                raise AnsibleError(
-                    f"failed to transfer file to {in_path} {out_path}:\n"
-                    f"{stdout}\n{stderr}")
+                raise AnsibleError(f"failed to transfer file to {in_path} {out_path}:\n{stdout}\n{stderr}")
 
             stdout_combined += stdout
             stderr_combined += stderr
@@ -882,24 +882,27 @@ class Connection(ConnectionBase):
 
     @_ssm_retry
     def _file_transport_command(self, in_path, out_path, ssm_action):
-        ''' transfer a file to/from host using an intermediate S3 bucket '''
+        """transfer a file to/from host using an intermediate S3 bucket"""
 
         bucket_name = self.get_option("bucket_name")
         s3_path = self._escape_path(f"{self.instance_id}/{out_path}")
 
         get_commands, put_commands, put_args = self._generate_commands(
-            bucket_name, s3_path, in_path, out_path,
+            bucket_name,
+            s3_path,
+            in_path,
+            out_path,
         )
 
         client = self._s3_client
 
         try:
-            if ssm_action == 'get':
+            if ssm_action == "get":
                 (returncode, stdout, stderr) = self._exec_transport_commands(in_path, out_path, put_commands)
-                with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
+                with open(to_bytes(out_path, errors="surrogate_or_strict"), "wb") as data:
                     client.download_fileobj(bucket_name, s3_path, data)
             else:
-                with open(to_bytes(in_path, errors='surrogate_or_strict'), 'rb') as data:
+                with open(to_bytes(in_path, errors="surrogate_or_strict"), "rb") as data:
                     client.upload_fileobj(data, bucket_name, s3_path, ExtraArgs=put_args)
                 (returncode, stdout, stderr) = self._exec_transport_commands(in_path, out_path, get_commands)
             return (returncode, stdout, stderr)
@@ -908,28 +911,27 @@ class Connection(ConnectionBase):
             client.delete_object(Bucket=bucket_name, Key=s3_path)
 
     def put_file(self, in_path, out_path):
-        ''' transfer a file from local to remote '''
+        """transfer a file from local to remote"""
 
         super().put_file(in_path, out_path)
 
         self._vvv(f"PUT {in_path} TO {out_path}")
-        if not os.path.exists(to_bytes(in_path, errors='surrogate_or_strict')):
+        if not os.path.exists(to_bytes(in_path, errors="surrogate_or_strict")):
             raise AnsibleFileNotFound(f"file or module does not exist: {in_path}")
 
-        return self._file_transport_command(in_path, out_path, 'put')
+        return self._file_transport_command(in_path, out_path, "put")
 
     def fetch_file(self, in_path, out_path):
-        ''' fetch a file from remote to local '''
+        """fetch a file from remote to local"""
 
         super().fetch_file(in_path, out_path)
 
         self._vvv(f"FETCH {in_path} TO {out_path}")
-        return self._file_transport_command(in_path, out_path, 'get')
+        return self._file_transport_command(in_path, out_path, "get")
 
     def close(self):
-        ''' terminate the connection '''
+        """terminate the connection"""
         if self._session_id:
-
             self._vvv(f"CLOSING SSM CONNECTION TO: {self.instance_id}")
             if self._timeout:
                 self._session.terminate()
@@ -939,4 +941,4 @@ class Connection(ConnectionBase):
 
             self._vvvv(f"TERMINATE SSM SESSION: {self._session_id}")
             self._client.terminate_session(SessionId=self._session_id)
-            self._session_id = ''
+            self._session_id = ""
