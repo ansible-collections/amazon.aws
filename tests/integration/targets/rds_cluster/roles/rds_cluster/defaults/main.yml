@@ -4,7 +4,7 @@
 cluster_id: ansible-test-{{ inventory_hostname | replace('_','-') }}{{ tiny_prefix}}
 username: testrdsusername
 password: test-rds_password
-engine: aurora-mysql
+engine: aurora
 port: 3306
 tags_create:
   Name: ansible-test-cluster-{{ tiny_prefix }}
