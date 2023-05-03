@@ -1,0 +1,2 @@
+trivial:
+  - "Use engine: 'aurora-mysql' rather tan engine: 'aurora' in rds_cluster_snapshot tests."
