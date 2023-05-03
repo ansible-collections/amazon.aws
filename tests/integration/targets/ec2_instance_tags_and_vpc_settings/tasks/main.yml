@@ -132,6 +132,15 @@
       that:
         - "'Something' not in check_tags.instances[0].tags"
 
+  - debug:
+       var: check_tags.instances[0].private_ip_address
+
+  - debug:
+       var: testing_subnet_b
+
+  - debug:
+       var: subnet_b_startswith
+
   - name: "check that subnet-default public IP rule was followed"
     assert:
       that:
