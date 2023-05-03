@@ -1226,11 +1226,11 @@ def build_userdata(params):
         return {'UserData': to_native(params.get('user_data'))}
     if params.get('aap_callback'):
         userdata = tower_callback_script(
-            tower_address=params.get('aap_callback').get('tower_address'),
-            job_template_id=params.get('aap_callback').get('job_template_id'),
-            host_config_key=params.get('aap_callback').get('host_config_key'),
-            windows=params.get('aap_callback').get('windows'),
-            passwd=params.get('aap_callback').get('set_passwd'),
+            tower_address=params.get("aap_callback").get("tower_address"),
+            job_template_id=params.get("aap_callback").get("job_template_id"),
+            host_config_key=params.get("aap_callback").get("host_config_key"),
+            windows=params.get("aap_callback").get("windows"),
+            passwd=params.get("aap_callback").get("set_password"),
         )
         return {'UserData': userdata}
     return {}

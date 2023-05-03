@@ -12,7 +12,7 @@
       name: "{{ vpc_name }}"
       cidr_block: "{{ vpc_cidr }}"
       tags:
-        Name: Ansible ec2_instance Testing VPC
+        Name: "{{ vpc_name }}"
       tenancy: default
     register: testing_vpc
     notify:
@@ -25,7 +25,7 @@
       cidr: "{{ subnet_a_cidr }}"
       az: "{{ subnet_a_az }}"
       resource_tags:
-        Name: "{{ resource_prefix }}-subnet-a"
+        Name: "{{ subnet_a_name }}"
     register: testing_subnet_a
 
   - name: "Create secondary subnet in zone B"
@@ -35,13 +35,13 @@
       cidr: "{{ subnet_b_cidr }}"
       az: "{{ subnet_b_az }}"
       resource_tags:
-        Name: "{{ resource_prefix }}-subnet-b"
+        Name: "{{ subnet_b_name }}"
     register: testing_subnet_b
 
   - name: "create a security group with the vpc"
     ec2_group:
       state: present
-      name: "{{ resource_prefix }}-sg"
+      name: "{{ security_group_name_1 }}"
       description: a security group for ansible tests
       vpc_id: "{{ testing_vpc.vpc.id }}"
       rules:
@@ -57,7 +57,7 @@
 
   - name: "create secondary security group with the vpc"
     ec2_group:
-      name: "{{ resource_prefix }}-sg-2"
+      name: "{{ security_group_name_2 }}"
       description: a secondary security group for ansible tests
       vpc_id: "{{ testing_vpc.vpc.id }}"
       rules:
@@ -70,3 +70,19 @@
           to_port: 80
           cidr_ip: 0.0.0.0/0
     register: sg2
+
+  - name: Preserve defaults for other roles
+    set_fact:
+      # Ensure variables are available outside of this role
+      vpc_cidr: '{{ vpc_cidr }}'
+      vpc_name: '{{ vpc_name }}'
+      subnet_a_az: '{{ subnet_a_az }}'
+      subnet_a_cidr: '{{ subnet_a_cidr }}'
+      subnet_a_startswith: '{{ subnet_a_startswith }}'
+      subnet_a_name: '{{ subnet_a_name }}'
+      subnet_b_az: '{{ subnet_b_az }}'
+      subnet_b_cidr: '{{ subnet_b_cidr }}'
+      subnet_b_startswith: '{{ subnet_b_startswith }}'
+      subnet_b_name: '{{ subnet_b_name }}'
+      security_group_name_1: '{{ security_group_name_1 }}'
+      security_group_name_2: '{{ security_group_name_2 }}'

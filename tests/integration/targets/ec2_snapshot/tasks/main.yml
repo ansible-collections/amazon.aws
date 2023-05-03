@@ -233,12 +233,12 @@
         # Anything under 15 will trigger SnapshotCreationPerVolumeRateExceeded,
         # this should now be automatically handled, but pause a little anyway to
         # avoid being aggressive
-        pause: 10
+        pause: 15
         label: "Generate extra snapshots - {{ item }}"
 
     - name: Pause to allow creation to finish
       pause:
-        minutes: 2
+        minutes: 3
 
     # check that snapshot_ids and max_results are mutually exclusive
     - name: Check that max_results and snapshot_ids are mutually exclusive
