@@ -252,6 +252,14 @@ ansible_facts:
             description: The purchasing option of the instance.
             type: str
             sample: "on-demand"
+        ansible_ec2_instance_tags_keys:
+            description:
+                - The list of tags keys of the instance.
+                - Returns empty list if access to tags (InstanceMetadataTags) in instance metadata is not enabled.
+            type: list
+            elements: str
+            sample: ["tagKey1", "tag_key2"]
+            version_added: 5.1.0
         ansible_ec2_instance_type:
             description: The type of the instance.
             type: str
@@ -453,14 +461,25 @@ except AttributeError:
 class Ec2Metadata(object):
     ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
     ec2_metadata_uri = 'http://169.254.169.254/latest/meta-data/'
+    ec2_metadata_instance_tags_uri = 'http://169.254.169.254/latest/meta-data/tags/instance'
     ec2_sshdata_uri = 'http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key'
     ec2_userdata_uri = 'http://169.254.169.254/latest/user-data/'
     ec2_dynamicdata_uri = 'http://169.254.169.254/latest/dynamic/'
 
-    def __init__(self, module, ec2_metadata_token_uri=None, ec2_metadata_uri=None, ec2_sshdata_uri=None, ec2_userdata_uri=None, ec2_dynamicdata_uri=None):
+    def __init__(
+        self,
+        module,
+        ec2_metadata_token_uri=None,
+        ec2_metadata_uri=None,
+        ec2_metadata_instance_tags_uri=None,
+        ec2_sshdata_uri=None,
+        ec2_userdata_uri=None,
+        ec2_dynamicdata_uri=None,
+    ):
         self.module = module
         self.uri_token = ec2_metadata_token_uri or self.ec2_metadata_token_uri
         self.uri_meta = ec2_metadata_uri or self.ec2_metadata_uri
+        self.uri_instance_tags = ec2_metadata_instance_tags_uri or self.ec2_metadata_instance_tags_uri
         self.uri_user = ec2_userdata_uri or self.ec2_userdata_uri
         self.uri_ssh = ec2_sshdata_uri or self.ec2_sshdata_uri
         self.uri_dynamic = ec2_dynamicdata_uri or self.ec2_dynamicdata_uri
@@ -583,6 +602,10 @@ class Ec2Metadata(object):
         dyndata = self._mangle_fields(self._data, self.uri_dynamic)
         data.update(dyndata)
         data = self.fix_invalid_varnames(data)
+
+        instance_tags_keys = self._fetch(self.uri_instance_tags)
+        instance_tags_keys = instance_tags_keys.split('\n') if instance_tags_keys != "None" else []
+        data[self._prefix % 'instance_tags_keys'] = instance_tags_keys
 
         # Maintain old key for backwards compatibility
         if 'ansible_ec2_instance_identity_document_region' in data:
