@@ -295,6 +295,43 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-layers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers"><strong>layers</strong></p>
+<a class="ansibleOptionLink" href="#parameter-layers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of function layers to add to the function’s execution environment.</p>
+<p>Specify each layer by its ARN, including the version.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-layers/layer_name"></div>
+<div class="ansibleOptionAnchor" id="parameter-layers/layer_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-name"><span id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-arn"></span><strong>layer_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-layers/layer_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_arn</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name or Amazon Resource Name (ARN) of the layer.</p>
+<p>Mutually exclusive with <em>layer_version_arn</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-layers/layer_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-version-arn"><strong>layer_version_arn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-layers/layer_version_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the layer version.</p>
+<p>Mutually exclusive with <em>layer_version_arn</em>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-layers/version"></div>
+<div class="ansibleOptionAnchor" id="parameter-layers/layer_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-version"><span id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-version"></span><strong>version</strong></p>
+<a class="ansibleOptionLink" href="#parameter-layers/version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_version</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The version number.</p>
+<p>Required when <em>layer_name</em> is provided, ignored if not.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-memory_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-memory-size"><strong>memory_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-memory_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -573,6 +610,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <span class="w">  </span><span class="nt">loop</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HelloWorld</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ByeBye</span>
+
+<span class="c1"># Create Lambda functions with function layers</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">looped creation</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;HelloWorld&#39;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">zip_file</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;hello-code.zip&#39;</span>
+<span class="w">    </span><span class="nt">runtime</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;python2.7&#39;</span>
+<span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:iam::123456789012:role/lambda_basic_execution&#39;</span>
+<span class="w">    </span><span class="nt">handler</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;hello_python.my_handler&#39;</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">layer_version_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -753,6 +802,48 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-configuration/layers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-layers"><strong>layers</strong></p>
+<a class="ansibleOptionLink" href="#return-configuration/layers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The function’s layers.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> on success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-configuration/layers/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-layers-arn"><strong>arn</strong></p>
+<a class="ansibleOptionLink" href="#return-configuration/layers/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the function layer.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;active&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-configuration/layers/code_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-layers-code-size"><strong>code_size</strong></p>
+<a class="ansibleOptionLink" href="#return-configuration/layers/code_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The size of the layer archive in bytes.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-configuration/layers/signing_job_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-layers-signing-job-arn"><strong>signing_job_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-configuration/layers/signing_job_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of a signing job.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-configuration/layers/signing_profile_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-layers-signing-profile-version-arn"><strong>signing_profile_version_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-configuration/layers/signing_profile_version_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) for a signing profile version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/memory_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-memory-size"><strong>memory_size</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/memory_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -761,7 +852,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">128</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/revision_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-revision-id"><strong>revision_id</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/revision_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -770,7 +861,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;a2x9886d-d48a-4a0c-ab64-82abc005x80c&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-role"><strong>role</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/role" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -779,7 +870,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:role/lambda_basic_execution&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/runtime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-runtime"><strong>runtime</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/runtime" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -788,7 +879,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nodejs6.10&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-timeout"><strong>timeout</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/timeout" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -797,7 +888,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/tracing_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-tracing-config"><strong>tracing_config</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/tracing_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -806,7 +897,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;mode&quot;:</span> <span class="pre">&quot;Active&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/tracing_config/mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-tracing-config-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/tracing_config/mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -815,7 +906,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-version"><strong>version</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -824,7 +915,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-configuration/vpc_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration-vpc-config"><strong>vpc_config</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration/vpc_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
