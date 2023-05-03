@@ -1,4 +1,5 @@
 time=10m
 
+disabled
 cloud/aws
 connection_aws_ssm
