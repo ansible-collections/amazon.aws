@@ -466,6 +466,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-engine_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-engine-mode"><strong>engine_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-engine_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The DB engine mode of the DB cluster. The combinaison of <em>engine</em> and <em>engine_mode</em> may not be supported.</p>
+<p>See AWS documentation for details: <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html">Amazon RDS Documentation</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;provisioned&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;serverless&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;parallelquery&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;multimaster&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-engine-version"><strong>engine_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -474,14 +491,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Aurora PostgreSQL example, <code class="docutils literal notranslate"><span class="pre">9.6.3</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-final_snapshot_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-final-snapshot-identifier"><strong>final_snapshot_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-final_snapshot_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The DB cluster snapshot identifier of the new DB cluster snapshot created when <em>skip_final_snapshot=false</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force_backtrack"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-force-backtrack"><strong>force_backtrack</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_backtrack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -493,7 +510,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force_update_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-force-update-password"><strong>force_update_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_update_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -506,14 +523,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-global_cluster_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-global-cluster-identifier"><strong>global_cluster_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-global_cluster_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The global cluster ID of an Aurora cluster that becomes the primary cluster in the new global database cluster.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-iops"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-iops"><strong>iops</strong></p>
 <a class="ansibleOptionLink" href="#parameter-iops" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
@@ -524,7 +541,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p><em>iops</em> require botocore &gt;= 1.23.44.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-kms-key-id"><strong>kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -533,7 +550,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>If <em>storage_encrypted=true</em> and and <em>replication_source_identifier</em> is not provided, the default encryption key is used.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-master_user_password"></div>
 <div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-password"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-master-user-password"></span><strong>master_user_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-master_user_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: password</span></p>
@@ -544,7 +561,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>To modify the password use <em>force_password_update</em>. Use <em>apply immediately</em> to change the password immediately, otherwise it is updated during the next maintenance window.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-master_username"></div>
 <div class="ansibleOptionAnchor" id="parameter-username"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-username"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-master-username"></span><strong>master_username</strong></p>
 <a class="ansibleOptionLink" href="#parameter-master_username" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: username</span></p>
@@ -553,7 +570,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The name of the master user for the DB cluster. Must be 1-16 letters or numbers and begin with a letter.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-new_db_cluster_identifier"></div>
 <div class="ansibleOptionAnchor" id="parameter-new_cluster_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-new_id"></div>
@@ -566,21 +583,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Use <em>apply_immediately</em> to rename immediately, otherwise it is updated during the next maintenance window.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-option_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-option-group-name"><strong>option_group_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-option_group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The option group to associate with the DB cluster.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-port"><strong>port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS defaults this to <code class="docutils literal notranslate"><span class="pre">3306</span></code> if the <em>engine</em> is <code class="docutils literal notranslate"><span class="pre">aurora</span></code> and c(5432) if the <em>engine</em> is <code class="docutils literal notranslate"><span class="pre">aurora-postgresql</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-preferred_backup_window"></div>
 <div class="ansibleOptionAnchor" id="parameter-backup_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-preferred-backup-window"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-backup-window"></span><strong>preferred_backup_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-preferred_backup_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: backup_window</span></p>
@@ -589,7 +606,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are enabled using <em>backup_retention_period</em>. The option must be in the format of “hh24:mi-hh24:mi” and not conflict with <em>preferred_maintenance_window</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-preferred_maintenance_window"></div>
 <div class="ansibleOptionAnchor" id="parameter-maintenance_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-preferred-maintenance-window"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-maintenance-window"></span><strong>preferred_maintenance_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-preferred_maintenance_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: maintenance_window</span></p>
@@ -598,7 +615,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The weekly time range (in UTC) of at least 30 minutes, during which system maintenance can occur. The option must be in the format “ddd:hh24:mi-ddd:hh24:mi” where ddd is one of Mon, Tue, Wed, Thu, Fri, Sat, Sun.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-profile"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -610,7 +627,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-promote"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-promote"><strong>promote</strong></p>
 <a class="ansibleOptionLink" href="#parameter-promote" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -622,7 +639,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_cloudwatch_logs_exports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-purge-cloudwatch-logs-exports"><strong>purge_cloudwatch_logs_exports</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_cloudwatch_logs_exports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -634,7 +651,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-purge-security-groups"><strong>purge_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -647,7 +664,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -661,7 +678,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-region"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -676,7 +693,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-replication_source_identifier"></div>
 <div class="ansibleOptionAnchor" id="parameter-replication_src_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-replication-src-id"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-replication-source-identifier"></span><strong>replication_source_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replication_source_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: replication_src_id</span></p>
@@ -685,7 +702,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the source DB instance or DB cluster if this DB cluster is created as a Read Replica.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-restore_to_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-restore-to-time"><strong>restore_to_time</strong></p>
 <a class="ansibleOptionLink" href="#parameter-restore_to_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -693,7 +710,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>If this is not provided while restoring a cluster, <em>use_latest_restorable_time</em> must be. May not be specified if <em>restore_type</em> is copy-on-write.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-restore_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-restore-type"><strong>restore_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-restore_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -705,28 +722,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-role-arn"><strong>role_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-role_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the IAM role to associate with the Aurora DB cluster, for example “arn:aws:iam::123456789012:role/AuroraAccessRole”</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_bucket_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-s3-bucket-name"><strong>s3_bucket_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_bucket_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the Amazon S3 bucket that contains the data used to create the Amazon Aurora DB cluster.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_ingestion_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-s3-ingestion-role-arn"><strong>s3_ingestion_role_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_ingestion_role_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that authorizes Amazon RDS to access the Amazon S3 bucket on your behalf.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-s3-prefix"><strong>s3_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -734,7 +751,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>If you do not specify a SourceS3Prefix value, then the Amazon Aurora DB cluster is created by using all of the files in the Amazon S3 bucket.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -751,7 +768,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -769,7 +786,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-skip_final_snapshot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-skip-final-snapshot"><strong>skip_final_snapshot</strong></p>
 <a class="ansibleOptionLink" href="#parameter-skip_final_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -782,7 +799,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-snapshot_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-snapshot-identifier"><strong>snapshot_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-snapshot_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -790,14 +807,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>You can use either the name or the ARN to specify a DB cluster snapshot. However, you can use only the ARN to specify a DB snapshot.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_db_cluster_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-source-db-cluster-identifier"><strong>source_db_cluster_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_db_cluster_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The identifier of the source DB cluster from which to restore.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_engine"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-source-engine"><strong>source_engine</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_engine" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -808,21 +825,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-source-engine-version"><strong>source_engine_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The version of the database that the backup files were created from.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-source-region"><strong>source_region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the region that contains the source for the DB cluster.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -834,7 +851,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-encrypted"><strong>storage_encrypted</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_encrypted" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -846,7 +863,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-type"><strong>storage_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
@@ -862,7 +879,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-tags"><span id="ansible-collections-amazon-aws-rds-cluster-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -872,7 +889,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_earliest_time_on_point_in_time_unavailable"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-use-earliest-time-on-point-in-time-unavailable"><strong>use_earliest_time_on_point_in_time_unavailable</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_earliest_time_on_point_in_time_unavailable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -884,7 +901,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_latest_restorable_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-use-latest-restorable-time"><strong>use_latest_restorable_time</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_latest_restorable_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -896,7 +913,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -909,14 +926,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_security_group_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-vpc-security-group-ids"><strong>vpc_security_group_ids</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_security_group_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of EC2 VPC security groups to associate with the DB cluster.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -995,6 +1012,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">username</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">cluster_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cluster-</span><span class="cp">{{</span> <span class="nv">resource_prefix</span> <span class="cp">}}</span><span class="s">-restored&quot;</span>
 <span class="w">    </span><span class="nt">snapshot_identifier</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cluster-</span><span class="cp">{{</span> <span class="nv">resource_prefix</span> <span class="cp">}}</span><span class="s">-snapshot&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an Aurora PostgreSQL cluster and attach an intance</span>
+<span class="w">  </span><span class="nt">amazon.aws.rds_cluster</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aurora-postgresql</span>
+<span class="w">    </span><span class="nt">engine_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provisioned</span>
+<span class="w">    </span><span class="nt">cluster_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">cluster_id</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">username</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">password</span> <span class="cp">}}</span><span class="s">&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Attach a new instance to the cluster</span>
+<span class="w">  </span><span class="nt">amazon.aws.rds_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">instance_id</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">    </span><span class="nt">cluster_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">cluster_id</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aurora-postgresql</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">db_instance_class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;db.t3.medium&#39;</span>
 </pre></div>
 </div>
 </section>
