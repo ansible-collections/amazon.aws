@@ -8,6 +8,7 @@ action_groups:
   - aws_caller_info
   - aws_s3
   - backup_plan
+  - backup_plan_info
   - backup_tag
   - backup_tag_info
   - backup_vault

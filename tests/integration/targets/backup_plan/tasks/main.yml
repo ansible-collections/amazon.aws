@@ -30,9 +30,15 @@
     - name: Verify results
       ansible.builtin.assert:
         that:
-          - backup_plan_create_result exists is true
-          - backup_plan_create_result changed is true
-          - backup_plan_create_result.plan.backup_plan_name == backup_plan_name
+          - backup_plan_create_result.exists
+          - backup_plan_create_result.changed
+          - backup_plan_create_result.backup_plan.backup_plan_name == backup_plan_name
+
+    - name: Get info on AWS Backup plan
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info_result
 
   always:
     - name: Delete AWS Backup plan created during this test

@@ -21,6 +21,7 @@ options:
       - The display name of a backup plan. Must contain 1 to 50 alphanumeric or '-_.' characters.
     required: true
     type: str
+    aliases: ['name']
   rules:
     description:
       - An array of BackupRule objects, each of which specifies a scheduled task that is used to back up a selection of resources.
@@ -62,66 +63,76 @@ EXAMPLES = r"""
 
 """
 RETURN = r"""
-backup_plan_name:
-  description: backup plan name
-  returned: always
-  type: str
-  sample: elastic
+backup_plan_arn:
+    description: ARN of the backup plan.
+    type: str
+    sample: arn:aws:backup:eu-central-1:111122223333:backup-plan:1111f877-1ecf-4d79-9718-a861cd09df3b
 backup_plan_id:
-  description: backup plan id
-  returned: always
-  type: str
-  sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+    description: Id of the backup plan.
+    type: str
+    sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+backup_plan_name:
+    description: Name of the backup plan.
+    type: str
+    sample: elastic
+creation_date:
+    description: Creation date of the backup plan.
+    type: str
+    sample: '2023-01-24T10:08:03.193000+01:00'
+last_execution_date:
+    description: Last execution date of the backup plan.
+    type: str
+    sample: '2023-03-24T06:30:08.250000+01:00'
+tags:
+    description: Tags of the backup plan
+    type: str
+version_id:
+    description: Version id of the backup plan
+    type: str
 backup_plan:
-  description: backup plan details
-  returned: always
-  type: complex
-  contains:
-    backup_plan_arn:
-      description: backup plan arn
-      returned: always
-      type: str
-      sample: arn:aws:backup:eu-central-1:111122223333:backup-plan:1111f877-1ecf-4d79-9718-a861cd09df3b
-    backup_plan_id:
-      description: backup plan id
-      returned: always
-      type: str
-      sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+    description: backup plan details
+    returned: always
+    type: complex
+    contains:
+        backup_plan_arn:
+            description: backup plan arn
+            returned: always
+            type: str
+            sample: arn:aws:backup:eu-central-1:111122223333:backup-plan:1111f877-1ecf-4d79-9718-a861cd09df3b
     backup_plan_name:
-      description: backup plan name
-      returned: always
-      type: str
-      sample:  elastic
-    creation_date:
-      description: backup plan creation date
-      returned: always
-      type: str
-      sample: '2023-01-24T10:08:03.193000+01:00'
-    last_execution_date:
-      description: backup plan last execution date
-      returned: always
-      type: str
-      sample: '2023-03-24T06:30:08.250000+01:00'
-    tags:
-      description: backup plan tags
-      returned: always
-      type: str
-      sample:
-    version_id:
-      description: backup plan version id
-      returned: always
-      type: str
+        description: backup plan name
+        returned: always
+        type: str
+        sample:  elastic
+    advanced_backup_settings:
+        description: Advanced backup settings of the backup plan
+        type: list
+        elements: dict
+        contains:
+            resource_type:
+                description: Resource type of the advanced setting
+                type: str
+            backup_options:
+                description: Options of the advanced setting
+                type: dict
+    rules:
+        description:
+        - An array of BackupRule objects, each of which specifies a scheduled task that is used to back up a selection of resources.
+        type: list
+
 """
 
-import json
-from typing import Optional
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+import json
+from typing import Optional
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 
 
 def create_backup_plan(module: AnsibleAWSModule, client, params: dict):
@@ -140,34 +151,8 @@ def create_backup_plan(module: AnsibleAWSModule, client, params: dict):
         ClientError,
     ) as err:
         module.fail_json_aws(err, msg="Failed to create Backup Plan")
+
     return response
-
-
-def get_plan_details(module, client, backup_plan_name: str):
-    try:
-        plan = paginated_list(client, filter_by=backup_plan_name)[0]
-    except (BotoCoreError, ClientError) as err:
-        module.debug("Unable to get backup plan details {0}".format(err))
-        plan = None
-    except IndexError:
-        plan = None
-    return plan
-
-
-def paginated_list(
-    client, filter_by: Optional[str] = None, **pagination_params
-) -> list[dict]:
-    results = []
-    paginator = client.get_paginator("list_backup_plans")
-    page_iterator = paginator.paginate(**pagination_params)
-    if filter_by:
-        filtered_iterator = page_iterator.search(
-            f"BackupPlansList[?BackupPlanName=='{filter_by}']"
-        )
-        results.extend(list(filtered_iterator))
-    else:
-        results.extend([item["BackupPlansList"] for item in page_iterator])
-    return results
 
 
 def plan_update_needed(client, backup_plan_id: str, backup_plan_data: dict) -> bool:
@@ -248,16 +233,18 @@ def main():
         ("state", "absent", ["backup_plan_name"]),
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if)
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if, supports_check_mode=True)
 
     # collect parameters
     state = module.params.get("state")
     backup_plan_name = module.params["backup_plan_name"]
     purge_tags = module.params["purge_tags"]
-    client = module.client("backup")
-    results = {"changed": False, "exists": False}
+    try:
+        client = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
+    except (ClientError, BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    # TODO: support check mode?
+    results = {"changed": False, "exists": False}
 
     current_plan = get_plan_details(module, client, backup_plan_name)
 
@@ -272,8 +259,15 @@ def main():
             "CreatorRequestId": module.params.get("creator_request_id"),
         }
 
-        if current_plan is None:  # Plan does not exist, create it
+        if not current_plan:  # Plan does not exist, create it
+            results["exists"] = True
+            results["changed"] = True
+
+            if module.check_mode:
+                module.exit_json(**results, msg="Would have created backup plan if not in check mode")
+
             create_backup_plan(module, client, new_plan_data)
+
             # TODO: add tags
             # ensure_tags(
             #     client,
@@ -283,13 +277,18 @@ def main():
             #     tags=module.params.get("tags"),
             #     resource_type="BackupPlan",
             # )
-            results["exists"] = True
 
         else:  # Plan exists, update if needed
             results["exists"] = True
-            current_plan_id = current_plan["BackupPlanId"]
+            current_plan_id = current_plan[0]["backup_plan_id"]
             if plan_update_needed(client, current_plan_id, new_plan_data):
+                results["changed"] = True
+
+                if module.check_mode:
+                    module.exit_json(**results, msg="Would have updated backup plan if not in check mode")
+
                 update_backup_plan(module, client, current_plan_id, new_plan_data)
+
             if purge_tags:
                 pass
                 # TODO: Update plan tags
@@ -301,20 +300,20 @@ def main():
                 #     tags=module.params.get("tags"),
                 #     resource_type="BackupPlan",
                 # )
-        results["changed"] = True
+
         new_plan = get_plan_details(module, client, backup_plan_name)
-        results["backup_plan"] = camel_dict_to_snake_dict(new_plan)
+        results = results | new_plan[0]
 
     elif state == "absent":
-        if current_plan is None:  # Plan does not exist, can't delete it
-            module.fail_json(
-                msg=f"Backup plan {backup_plan_name} not found.",
-                # TODO: existing_backup_plans="list existing backup plan names",
-            )
+        if not current_plan:  # Plan does not exist, can't delete it
+            module.exit_json(**results)
         else:  # Plan exists, delete it
-            delete_backup_plan(module, client, current_plan["BackupPlanId"])
             results["changed"] = True
-            results["exists"] = False
+
+            if module.check_mode:
+                module.exit_json(**results, msg="Would have deleted backup plan if not in check mode")
+
+            delete_backup_plan(module, client, current_plan[0]["backup_plan_id"])
 
     module.exit_json(**results)
 
