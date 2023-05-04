@@ -69,7 +69,7 @@ options:
       -  Whether to create a multi-Region primary key or not.
     default: False
     type: bool
-    version_added: 5.2.0
+    version_added: 5.5.0
   pending_window:
     description:
       - The number of days between requesting deletion of the CMK and when it will actually be deleted.
@@ -432,7 +432,7 @@ multi_region:
     - Indicates whether the CMK is a multi-Region C(True) or regional C(False) key.
     - This value is True for multi-Region primary and replica CMKs and False for regional CMKs.
   type: bool
-  version_added: 5.2.0
+  version_added: 5.5.0
   returned: always
   sample: False
 

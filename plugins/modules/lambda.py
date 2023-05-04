@@ -144,7 +144,7 @@ options:
             aliases: ['layer_version']
     type: list
     elements: dict
-    version_added: 5.1.0
+    version_added: 5.5.0
 author:
   - 'Steyn Huizinga (@steynovich)'
 extends_documentation_fragment:
@@ -369,7 +369,7 @@ configuration:
         layers:
             description: The function's layers.
             returned: on success
-            version_added: 5.1.0
+            version_added: 5.5.0
             type: complex
             contains:
                 arn:

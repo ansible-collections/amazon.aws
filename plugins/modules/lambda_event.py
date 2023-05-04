@@ -85,7 +85,7 @@ options:
         type: list
         elements: str
         choices: [ReportBatchItemFailures]
-        version_added: 5.2.0
+        version_added: 5.5.0
     required: true
     type: dict
 extends_documentation_fragment:
