@@ -98,7 +98,7 @@ Don't forget to add [a changelog entry](https://docs.ansible.com/ansible/latest/
 Then create a pull request.
 
 If you're struggling with running integration tests locally, don't worry.
-After creating a pull request the CI bot will automatically test for you.
+After creating a pull request the GitHub Actions will automatically test for you.
 
 ## More information about contributing
 
