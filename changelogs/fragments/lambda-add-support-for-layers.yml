@@ -1,3 +1,0 @@
----
-minor_changes:
-- lambda -  add support for function layers when creating or updating lambda function (https://github.com/ansible-collections/amazon.aws/pull/1118).

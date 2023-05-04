@@ -1,3 +1,0 @@
----
-minor_changes:
-- cloudwatch - Add metrics and extended_statistic keys to cloudwatch module (https://github.com/ansible-collections/amazon.aws/pull/1133).
