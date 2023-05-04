@@ -336,7 +336,7 @@ options:
         description:
           - An integer that specifies the order in which an Aurora Replica is promoted to the primary instance after a failure of
             the existing primary instance.
-        type: str
+        type: int
     publicly_accessible:
         description:
           - Specifies the accessibility options for the DB instance. A value of true specifies an Internet-facing instance with
@@ -1349,13 +1349,13 @@ def main():
         new_db_instance_identifier=dict(aliases=['new_instance_id', 'new_id']),
         option_group_name=dict(),
         performance_insights_kms_key_id=dict(),
-        performance_insights_retention_period=dict(type='int'),
-        port=dict(type='int'),
-        preferred_backup_window=dict(aliases=['backup_window']),
-        preferred_maintenance_window=dict(aliases=['maintenance_window']),
-        processor_features=dict(type='dict'),
-        promotion_tier=dict(),
-        publicly_accessible=dict(type='bool'),
+        performance_insights_retention_period=dict(type="int"),
+        port=dict(type="int"),
+        preferred_backup_window=dict(aliases=["backup_window"]),
+        preferred_maintenance_window=dict(aliases=["maintenance_window"]),
+        processor_features=dict(type="dict"),
+        promotion_tier=dict(type='int'),
+        publicly_accessible=dict(type="bool"),
         restore_time=dict(),
         s3_bucket_name=dict(),
         s3_ingestion_role_arn=dict(),
