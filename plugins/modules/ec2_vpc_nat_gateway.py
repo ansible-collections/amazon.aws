@@ -39,7 +39,7 @@ options:
     choices: ["public", "private"]
     default: "public"
     type: str
-    version_added: 5.2.0
+    version_added: 5.5.0
   eip_address:
     description:
       - The elastic IP address of the EIP you want attached to this NAT Gateway.

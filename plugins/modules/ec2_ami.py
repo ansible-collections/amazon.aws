@@ -148,6 +148,7 @@ options:
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html).
     type: str
     choices: ['legacy-bios', 'uefi']
+    version_added: 5.5.0
   tpm_support:
     description:
       - Set to v2.0 to enable Trusted Platform Module (TPM) support.
@@ -157,12 +158,14 @@ options:
       - Requires minimum botocore version 1.26.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
     type: str
+    version_added: 5.5.0
   uefi_data:
     description:
       - Base64 representation of the non-volatile UEFI variable store.
       - Requires minimum botocore version 1.26.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html).
     type: str
+    version_added: 5.5.0
 author:
   - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
   - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
