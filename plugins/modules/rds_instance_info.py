@@ -387,7 +387,7 @@ def get_instance_tags(conn, arn):
     try:
         return boto3_tag_list_to_ansible_dict(conn.list_tags_for_resource(ResourceName=arn, aws_retry=True)["TagList"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise RdsInstanceInfoFailure(e, "Couldn't get tags for instance %s" % arn)
+        raise RdsInstanceInfoFailure(e, f"Couldn't get tags for instance {arn}")
 
 
 def instance_info(conn, instance_name, filters):

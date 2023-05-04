@@ -1182,7 +1182,7 @@ def main():
                 and module.params.get("db_cluster_instance_class")
             ):
                 module.fail_json(
-                    f"When engine={module.params['engine']} allocated_storage, iops and db_cluster_instance_class msut be specified"
+                    f"When engine={module.params['engine']} allocated_storage, iops and db_cluster_instance_class must be specified"
                 )
             else:
                 # Fall to default value

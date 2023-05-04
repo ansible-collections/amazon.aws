@@ -105,6 +105,8 @@ tags:
     returned: when state is present
 """
 
+from itertools import zip_longest
+
 try:
     import botocore
 except ImportError:
@@ -182,8 +184,7 @@ def update_parameters(module, connection):
     for param_key, param_value in desired.items():
         if param_key not in lookup:
             errors.append(
-                "Parameter %s is not an available parameter for the %s engine"
-                % (param_key, module.params.get("engine"))
+                f"Parameter {param_key} is not an available parameter for the {module.params.get('engine')} engine"
             )
         else:
             converted_value = convert_parameter(lookup[param_key], param_value)
@@ -194,14 +195,10 @@ def update_parameters(module, connection):
                         dict(ParameterValue=converted_value, ParameterName=param_key, ApplyMethod=apply_method)
                     )
                 else:
-                    errors.append("Parameter %s is not modifiable" % param_key)
+                    errors.append(f"Parameter {param_key} is not modifiable")
 
     # modify_db_parameters takes at most 20 parameters
     if modify_list and not module.check_mode:
-        try:
-            from itertools import izip_longest as zip_longest  # python 2
-        except ImportError:
-            from itertools import zip_longest  # python 3
         for modify_slice in zip_longest(*[iter(modify_list)] * 20, fillvalue=None):
             non_empty_slice = [item for item in modify_slice if item]
             try:

@@ -987,11 +987,8 @@ def get_parameters(client, module, parameters, method_name):
 
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
-        module.fail_json(
-            msg="To {0} requires the parameters: {1}".format(
-                get_rds_method_attribute(method_name, module).operation_description, required_options
-            )
-        )
+        description = get_rds_method_attribute(method_name, module).operation_description
+        module.fail_json(msg=f"To {description} requires the parameters: {required_options}")
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 
@@ -1086,7 +1083,10 @@ def get_options_with_changing_values(client, module, parameters):
 
                 if new_storage_throughput < 500 and GP3_THROUGHPUT:
                     module.fail_json(
-                        msg="Storage Throughput must be at least 500 when the allocated storage is larger than or equal to 400 GB."
+                        msg=(
+                            "Storage Throughput must be at least 500 when the allocated storage is larger than or equal"
+                            " to 400 GB."
+                        )
                     )
 
                 if current_iops != new_iops:
@@ -1245,10 +1245,10 @@ def validate_options(client, module, instance):
         modified_instance = {}
 
     if modified_id and instance and modified_instance:
-        module.fail_json(msg="A new instance ID {0} was provided but it already exists".format(modified_id))
+        module.fail_json(msg=f"A new instance ID {modified_id} was provided but it already exists")
     if modified_id and not instance and modified_instance:
         module.fail_json(
-            msg="A new instance ID {0} was provided but the instance to be renamed does not exist".format(modified_id)
+            msg=f"A new instance ID {modified_id} was provided but the instance to be renamed does not exist"
         )
     if state in ("absent", "terminated") and instance and not skip_final_snapshot and snapshot_id is None:
         module.fail_json(
@@ -1257,12 +1257,13 @@ def validate_options(client, module, instance):
     if engine is not None and not (engine.startswith("mysql") or engine.startswith("oracle")) and tde_options:
         module.fail_json(msg="TDE is available for MySQL and Oracle DB instances")
     if read_replica is True and not instance and creation_source not in [None, "instance"]:
-        module.fail_json(
-            msg="Cannot create a read replica from {0}. You must use a source DB instance".format(creation_source)
-        )
+        module.fail_json(msg=f"Cannot create a read replica from {creation_source}. You must use a source DB instance")
     if read_replica is True and not instance and not source_instance:
         module.fail_json(
-            msg="read_replica is true and the instance does not exist yet but all of the following are missing: source_db_instance_identifier"
+            msg=(
+                "read_replica is true and the instance does not exist yet but all of the following are missing:"
+                " source_db_instance_identifier"
+            )
         )
 
 
@@ -1321,9 +1322,7 @@ def ensure_iam_roles(client, module, instance_id):
     engine = instance.get("engine")
     if engine not in valid_engines_iam_roles:
         module.fail_json(
-            msg="DB engine {0} is not valid for adding IAM roles. Valid engines are {1}".format(
-                engine, valid_engines_iam_roles
-            )
+            msg=f"DB engine {engine} is not valid for adding IAM roles. Valid engines are {valid_engines_iam_roles}"
         )
 
     changed = False
@@ -1509,7 +1508,8 @@ def main():
     # see: amazon.aws.module_util.rds.handle_errors.
     if module.params.get("allow_major_version_upgrade") and module.check_mode:
         module.warn(
-            "allow_major_version_upgrade is not returned when describing db instances, so changed will always be `True` on check mode runs."
+            "allow_major_version_upgrade is not returned when describing db instances, so changed will always be `True`"
+            " on check mode runs."
         )
 
     client = module.client("rds")
