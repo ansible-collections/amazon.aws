@@ -200,7 +200,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-allocated_storage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-allocated-storage"><strong>allocated_storage</strong></p>
 <a class="ansibleOptionLink" href="#parameter-allocated_storage" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
@@ -323,7 +323,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-db_cluster_instance_class"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-db-cluster-instance-class"><strong>db_cluster_instance_class</strong></p>
 <a class="ansibleOptionLink" href="#parameter-db_cluster_instance_class" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example <code class="docutils literal notranslate"><span class="pre">db.m6gd.xlarge</span></code>.</p>
 <p>Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.</p>
@@ -454,7 +454,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>See AWS documentation for details: <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html">Amazon RDS Documentation</a>.</p>
 <p>When <em>engine=mysql</em>, <em>allocated_storage</em>, <em>iops</em> and <em>db_cluster_instance_class</em> must also be specified.</p>
 <p>When <em>engine=postgres</em>, <em>allocated_storage</em>, <em>iops</em> and <em>db_cluster_instance_class</em> must also be specified.</p>
-<p>Support for <code class="docutils literal notranslate"><span class="pre">postgres</span></code> and <code class="docutils literal notranslate"><span class="pre">mysql</span></code> was added in amazon.aws 5.4.0.</p>
+<p>Support for <code class="docutils literal notranslate"><span class="pre">postgres</span></code> and <code class="docutils literal notranslate"><span class="pre">mysql</span></code> was added in amazon.aws 5.5.0.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aurora&quot;</span></code></p></li>
@@ -468,9 +468,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-engine_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-engine-mode"><strong>engine_mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-engine_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.1.0</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The DB engine mode of the DB cluster. The combinaison of <em>engine</em> and <em>engine_mode</em> may not be supported.</p>
+<td><div class="ansible-option-cell"><p>The DB engine mode of the DB cluster. The combination of <em>engine</em> and <em>engine_mode</em> may not be supported.</p>
 <p>See AWS documentation for details: <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html">Amazon RDS Documentation</a>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
@@ -533,7 +533,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-iops"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-iops"><strong>iops</strong></p>
 <a class="ansibleOptionLink" href="#parameter-iops" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster</p>
@@ -866,7 +866,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-type"><strong>storage_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.4.0</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies the storage type to be associated with the DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
