@@ -94,6 +94,10 @@ options:
     description:
       - Configure public access block for S3 bucket.
       - This option cannot be used together with I(delete_public_access).
+      - |
+        Note: At the end of April 2023 Amazon updated the default settings to block public access by
+        default.  While the defaults for this module remain unchanged, it is necessary to explicitly
+        pass the I(public_access) parameter to enable public access ACLs.
     suboptions:
       block_public_acls:
         description: Sets BlockPublicAcls value.
@@ -133,6 +137,7 @@ options:
         if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
       - C(BucketOwnerEnforced) has been added in version 3.2.0.
+      - "Note: At the end of April 2023 Amazon updated the default setting to C(BucketOwnerEnforced)."
     choices: [ 'BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
@@ -465,6 +470,43 @@ def create_or_update_bucket(s3_client, module, location):
 
         result['requester_pays'] = requester_pays
 
+    # Public access clock configuration
+    current_public_access = {}
+    try:
+        current_public_access = get_bucket_public_access(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if public_access is not None:
+            module.fail_json_aws(e, msg="Bucket public access settings are not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if public_access is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+        module.debug("AccessDenied fetching bucket public access settings")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+    else:
+        # -- Create / Update public access block
+        if public_access is not None:
+            camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
+
+            if current_public_access == camel_public_block:
+                result["public_access_block"] = current_public_access
+            else:
+                put_bucket_public_access(s3_client, name, camel_public_block)
+                changed = True
+                result["public_access_block"] = camel_public_block
+
+        # -- Delete public access block
+        if delete_public_access:
+            if current_public_access == {}:
+                result["public_access_block"] = current_public_access
+            else:
+                delete_bucket_public_access(s3_client, name)
+                changed = True
+                result["public_access_block"] = {}
+
     # Policy
     try:
         current_policy = get_bucket_policy(s3_client, name)
@@ -573,36 +615,6 @@ def create_or_update_bucket(s3_client, module, location):
                     current_encryption = put_bucket_key_with_retry(module, s3_client, name, expected_encryption)
                     changed = True
         result['encryption'] = current_encryption
-    # Public access clock configuration
-    current_public_access = {}
-
-    try:
-        current_public_access = get_bucket_public_access(s3_client, name)
-    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
-        if public_access is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-    else:
-        # -- Create / Update public access block
-        if public_access is not None:
-            camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
-
-            if current_public_access == camel_public_block:
-                result['public_access_block'] = current_public_access
-            else:
-                put_bucket_public_access(s3_client, name, camel_public_block)
-                changed = True
-                result['public_access_block'] = camel_public_block
-
-        # -- Delete public access block
-        if delete_public_access:
-            if current_public_access == {}:
-                result['public_access_block'] = current_public_access
-            else:
-                delete_bucket_public_access(s3_client, name)
-                changed = True
-                result['public_access_block'] = {}
 
     # -- Bucket ownership
     try:

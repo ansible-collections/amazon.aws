@@ -1,0 +1,2 @@
+minor_changes:
+- s3_bucket - ensure ``public_access`` is configured before updating policies (https://github.com/ansible-collections/amazon.aws/pull/1511).

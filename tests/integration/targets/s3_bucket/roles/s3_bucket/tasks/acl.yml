@@ -12,6 +12,7 @@
     - name: 'Create a simple bucket'
       s3_bucket:
         name: '{{ local_bucket_name }}'
+        object_ownership: BucketOwnerPreferred
         public_access:
           block_public_acls: true
           block_public_policy: true
