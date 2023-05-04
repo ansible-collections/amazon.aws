@@ -90,7 +90,7 @@ jobs:
 
       - name: Build and install collection
         id: install-amazon
-        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
           install_python_dependencies: true
           source_path: ${{ env.AMAZON_PATH }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Build and install dependency collection (community.aws)
         id: install-community
-        uses: abikouo/github_actions/.github/actions/build_install_collection@build_install_collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
           install_python_dependencies: true
           source_path: ${{ env.COMMUNITY_PATH }}
@@ -119,14 +119,14 @@ jobs:
         if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Create AWS/sts session credentials
-        uses: abikouo/github_actions/.github/actions/ansible_aws_test_provider@ansible_test_integration_b
+        uses: ansible-network/github_actions/.github/actions/ansible_aws_test_provider@main
         with:
           collection_path: ${{ steps.collection-path.outputs.path }}
           ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
         if: steps.read-targets.outputs.ansible_test_targets != ''
 
       - name: Run integration tests
-        uses: abikouo/github_actions/.github/actions/ansible_test_integration@ansible_test_integration_b
+        uses: ansible-network/github_actions/.github/actions/ansible_test_integration@main
         with:
           collection_path: ${{ steps.collection-path.outputs.path }}
           python_version: ${{ matrix.python }}
