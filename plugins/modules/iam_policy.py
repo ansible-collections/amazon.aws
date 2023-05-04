@@ -187,7 +187,7 @@ class Policy:
             if self.policy_json is not None:
                 return self.get_policy_from_json()
         except json.JSONDecodeError as e:
-            raise PolicyError("Failed to decode the policy as valid JSON: %s" % str(e))
+            raise PolicyError(f"Failed to decode the policy as valid JSON: {str(e)}")
         return None
 
     def get_policy_from_json(self):
@@ -334,7 +334,10 @@ def main():
             policy = GroupPolicy(**args)
 
         module.deprecate(
-            "The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are returned for now.",
+            (
+                "The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are"
+                " returned for now."
+            ),
             date="2024-08-01",
             collection_name="amazon.aws",
         )

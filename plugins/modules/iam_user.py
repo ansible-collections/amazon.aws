@@ -369,7 +369,7 @@ def create_or_update_user(connection, module):
                         connection.detach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(
-                            e, msg="Unable to detach policy {0} from user {1}".format(policy_arn, params["UserName"])
+                            e, msg=f"Unable to detach policy {policy_arn} from user {params['UserName']}"
                         )
 
         # If there are policies to adjust that aren't in the current list, then things have changed
@@ -383,7 +383,7 @@ def create_or_update_user(connection, module):
                         connection.attach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(
-                            e, msg="Unable to attach policy {0} to user {1}".format(policy_arn, params["UserName"])
+                            e, msg=f"Unable to attach policy {policy_arn} to user {params['UserName']}"
                         )
 
     if module.check_mode:
@@ -417,7 +417,7 @@ def destroy_user(connection, module):
         for policy in get_attached_policy_list(connection, module, user_name):
             connection.detach_user_policy(UserName=user_name, PolicyArn=policy["PolicyArn"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to delete user {0}".format(user_name))
+        module.fail_json_aws(e, msg=f"Unable to delete user {user_name}")
 
     try:
         # Remove user's access keys
@@ -467,7 +467,7 @@ def destroy_user(connection, module):
 
         connection.delete_user(UserName=user_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to delete user {0}".format(user_name))
+        module.fail_json_aws(e, msg=f"Unable to delete user {user_name}")
 
     module.exit_json(changed=True)
 
@@ -484,7 +484,7 @@ def get_user(connection, module, name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to get user {name}")
 
     tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
     user = camel_dict_to_snake_dict(user)
@@ -501,7 +501,7 @@ def get_attached_policy_list(connection, module, name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to get policies for user {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to get policies for user {name}")
 
 
 def user_has_login_profile(connection, module, name):
@@ -522,7 +522,7 @@ def user_has_login_profile(connection, module, name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to get login profile for user {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to get login profile for user {name}")
     return True
 
 
@@ -545,7 +545,7 @@ def update_user_tags(connection, module, params, user):
             if tags_to_add:
                 connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to set tags for user %s" % user_name)
+            module.fail_json_aws(e, msg=f"Unable to set tags for user {user_name}")
 
     changed = bool(tags_to_add) or bool(tags_to_remove)
     return changed

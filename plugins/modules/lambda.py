@@ -422,9 +422,9 @@ def get_layer_version_arn(module, connection, layer_name, version_number):
         for v in layer_versions:
             if v["Version"] == version_number:
                 return v["LayerVersionArn"]
-        module.fail_json(msg="Unable to find version {0} from Lambda layer {1}".format(version_number, layer_name))
+        module.fail_json(msg=f"Unable to find version {version_number} from Lambda layer {layer_name}")
     except is_boto3_error_code("ResourceNotFoundException"):
-        module.fail_json(msg="Lambda layer {0} not found".format(layer_name))
+        module.fail_json(msg=f"Lambda layer {layer_name} not found")
 
 
 def sha256sum(filename):
@@ -477,7 +477,7 @@ def set_tag(client, module, tags, function, purge_tags):
             changed = True
 
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to tag resource {0}".format(arn))
+        module.fail_json_aws(e, msg=f"Unable to tag resource {arn}")
 
     return changed
 
@@ -655,7 +655,7 @@ def main():
         else:
             # get account ID and assemble ARN
             account_id, partition = get_aws_account_info(module)
-            role_arn = "arn:{0}:iam::{1}:role/{2}".format(partition, account_id, role)
+            role_arn = f"arn:{partition}:iam::{account_id}:role/{role}"
 
         # create list of layer version arn
         if module.params.get("layers"):

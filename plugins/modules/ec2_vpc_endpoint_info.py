@@ -202,9 +202,7 @@ def get_endpoints(client, module):
         results = _describe_endpoints(client, **params)["VpcEndpoints"]
         results = normalize_boto3_result(results)
     except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
-        module.exit_json(
-            msg="VpcEndpoint {0} does not exist".format(module.params.get("vpc_endpoint_ids")), vpc_endpoints=[]
-        )
+        module.exit_json(msg=f"VpcEndpoint {module.params.get('vpc_endpoint_ids')} does not exist", vpc_endpoints=[])
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,

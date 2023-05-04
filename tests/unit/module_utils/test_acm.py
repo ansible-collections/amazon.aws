@@ -115,7 +115,7 @@ def test_acm_service_manager_get_domain_of_cert_failure(acm_service_mgr):
     with pytest.raises(SystemExit):
         acm_service_mgr.get_domain_of_cert(arn=arn)
 
-    error = "Couldn't obtain certificate data for arn %s" % arn
+    error = f"Couldn't obtain certificate data for arn {arn}"
     acm_service_mgr.module.fail_json_aws.assert_called_with(boto_err, msg=error)
     acm_service_mgr.module.fail.assert_not_called()
 
@@ -152,7 +152,7 @@ def test_acm_service_manager_import_certificate_failure_at_tagging(acm_service_m
 
     with pytest.raises(SystemExit):
         acm_service_mgr.import_certificate(certificate=MagicMock(), private_key=MagicMock())
-    acm_service_mgr.module.fail_json_aws.assert_called_with(boto_err, msg="Couldn't tag certificate %s" % arn)
+    acm_service_mgr.module.fail_json_aws.assert_called_with(boto_err, msg=f"Couldn't tag certificate {arn}")
 
 
 def test_acm_service_manager_import_certificate_failure_at_deletion(acm_service_mgr):
@@ -166,7 +166,7 @@ def test_acm_service_manager_import_certificate_failure_at_deletion(acm_service_
     with pytest.raises(SystemExit):
         acm_service_mgr.import_certificate(certificate=MagicMock(), private_key=MagicMock())
     acm_service_mgr.module.warn.assert_called_with(
-        "Certificate %s exists, and is not tagged. So Ansible will not see it on the next run." % arn
+        f"Certificate {arn} exists, and is not tagged. So Ansible will not see it on the next run."
     )
 
 
@@ -180,7 +180,7 @@ def test_acm_service_manager_import_certificate_failure_with_arn_change(acm_serv
     with pytest.raises(SystemExit):
         acm_service_mgr.import_certificate(certificate=MagicMock(), private_key=MagicMock(), arn=original_arn)
     acm_service_mgr.module.fail_json.assert_called_with(
-        msg="ARN changed with ACM update, from %s to %s" % (original_arn, arn)
+        msg=f"ARN changed with ACM update, from {original_arn} to {arn}"
     )
 
 
@@ -199,7 +199,7 @@ def test_acm_service_manager_delete_certificate_keyword_arn(acm_service_mgr):
     arn = "arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012"
     acm_service_mgr.delete_certificate_with_backoff = MagicMock()
     acm_service_mgr.delete_certificate(arn=arn)
-    err = "Couldn't delete certificate %s" % arn
+    err = f"Couldn't delete certificate {arn}"
     acm_service_mgr.delete_certificate_with_backoff.assert_called_with(arn, module=acm_service_mgr.module, error=err)
 
 
@@ -209,7 +209,7 @@ def test_acm_service_manager_delete_certificate_positional_arn(acm_service_mgr):
     module = MagicMock()
     client = MagicMock()
     acm_service_mgr.delete_certificate(module, client, arn)
-    err = "Couldn't delete certificate %s" % arn
+    err = f"Couldn't delete certificate {arn}"
     acm_service_mgr.delete_certificate_with_backoff.assert_called_with(arn, module=acm_service_mgr.module, error=err)
 
 

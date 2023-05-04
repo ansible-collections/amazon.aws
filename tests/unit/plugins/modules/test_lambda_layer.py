@@ -223,7 +223,9 @@ def test_create_layer(m_list_layer, b_s3content, tmp_path):
         "Content": {
             "CodeSha256": "tv9jJO+rPbXUUXuRKi7CwHzKtLDkDRJLB3cC3Z/ouXo=",
             "CodeSize": 169,
-            "Location": "https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb",
+            "Location": (
+                "https://awslambda-us-west-2-layers.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-layer-4aaa2fbb"
+            ),
         },
         "CreatedDate": "2018-11-14T23:03:52.894+0000",
         "Description": "ansible units testing sample layer",

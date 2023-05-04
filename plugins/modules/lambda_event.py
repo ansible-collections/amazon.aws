@@ -182,7 +182,7 @@ class AWSConnection:
                 self.region = self.resource_client["lambda"].meta.region_name
 
         except (ClientError, ParamValidationError, MissingParametersError) as e:
-            ansible_obj.fail_json(msg="Unable to connect, authorize or access resource: {0}".format(e))
+            ansible_obj.fail_json(msg=f"Unable to connect, authorize or access resource: {e}")
 
         # set account ID
         try:
@@ -253,27 +253,23 @@ def validate_params(module, aws):
     # validate function name
     if not re.search(r"^[\w\-:]+$", function_name):
         module.fail_json(
-            msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(
-                function_name
-            )
+            msg=f"Function name {function_name} is invalid. Names must contain only alphanumeric characters and hyphens.",
         )
     if len(function_name) > 64 and not function_name.startswith("arn:aws:lambda:"):
-        module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
+        module.fail_json(msg=f'Function name "{function_name}" exceeds 64 character limit')
 
     elif len(function_name) > 140 and function_name.startswith("arn:aws:lambda:"):
-        module.fail_json(msg='ARN "{0}" exceeds 140 character limit'.format(function_name))
+        module.fail_json(msg=f'ARN "{function_name}" exceeds 140 character limit')
 
     # check if 'function_name' needs to be expanded in full ARN format
     if not module.params["lambda_function_arn"].startswith("arn:aws:lambda:"):
         function_name = module.params["lambda_function_arn"]
-        module.params["lambda_function_arn"] = "arn:aws:lambda:{0}:{1}:function:{2}".format(
-            aws.region, aws.account_id, function_name
-        )
+        module.params["lambda_function_arn"] = f"arn:aws:lambda:{aws.region}:{aws.account_id}:function:{function_name}"
 
     qualifier = get_qualifier(module)
     if qualifier:
         function_arn = module.params["lambda_function_arn"]
-        module.params["lambda_function_arn"] = "{0}:{1}".format(function_arn, qualifier)
+        module.params["lambda_function_arn"] = f"{function_arn}:{qualifier}"
 
     return
 
@@ -337,7 +333,7 @@ def lambda_event_stream(module, aws):
             source_params["batch_size"] = int(batch_size)
         except ValueError:
             module.fail_json(
-                msg="Source parameter 'batch_size' must be an integer, found: {0}".format(source_params["batch_size"])
+                msg=f"Source parameter 'batch_size' must be an integer, found: {source_params['batch_size']}"
             )
 
     # optional boolean value needs special treatment as not present does not imply False
@@ -349,7 +345,7 @@ def lambda_event_stream(module, aws):
         if facts:
             current_state = "present"
     except ClientError as e:
-        module.fail_json(msg="Error retrieving stream event notification configuration: {0}".format(e))
+        module.fail_json(msg=f"Error retrieving stream event notification configuration: {e}")
 
     if state == "present":
         if current_state == "absent":
@@ -374,7 +370,7 @@ def lambda_event_stream(module, aws):
                     facts = client.create_event_source_mapping(**api_params)
                 changed = True
             except (ClientError, ParamValidationError, MissingParametersError) as e:
-                module.fail_json(msg="Error creating stream source event mapping: {0}".format(e))
+                module.fail_json(msg=f"Error creating stream source event mapping: {e}")
 
         else:
             # current_state is 'present'
@@ -404,7 +400,7 @@ def lambda_event_stream(module, aws):
                         facts = client.update_event_source_mapping(**api_params)
                     changed = True
                 except (ClientError, ParamValidationError, MissingParametersError) as e:
-                    module.fail_json(msg="Error updating stream source event mapping: {0}".format(e))
+                    module.fail_json(msg=f"Error updating stream source event mapping: {e}")
 
     else:
         if current_state == "present":
@@ -416,7 +412,7 @@ def lambda_event_stream(module, aws):
                     facts = client.delete_event_source_mapping(**api_params)
                 changed = True
             except (ClientError, ParamValidationError, MissingParametersError) as e:
-                module.fail_json(msg="Error removing stream source event mapping: {0}".format(e))
+                module.fail_json(msg=f"Error removing stream source event mapping: {e}")
 
     return camel_dict_to_snake_dict(dict(changed=changed, events=facts))
 

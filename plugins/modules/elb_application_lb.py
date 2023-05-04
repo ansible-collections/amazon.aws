@@ -556,13 +556,13 @@ def find_default_sg(connection, module, vpc_id):
     try:
         sg = describe_sgs_with_backoff(connection, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="No default security group found for VPC {0}".format(vpc_id))
+        module.fail_json_aws(e, msg=f"No default security group found for VPC {vpc_id}")
     if len(sg) == 1:
         return sg[0]["GroupId"]
     elif len(sg) == 0:
-        module.fail_json(msg="No default security group found for VPC {0}".format(vpc_id))
+        module.fail_json(msg=f"No default security group found for VPC {vpc_id}")
     else:
-        module.fail_json(msg='Multiple security groups named "default" found for VPC {0}'.format(vpc_id))
+        module.fail_json(msg=f'Multiple security groups named "default" found for VPC {vpc_id}')
 
 
 def create_or_update_alb(alb_obj):

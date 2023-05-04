@@ -202,7 +202,7 @@ def get_trail_detail(connection, module):
             for tag_dict in tag_list["ResourceTagList"]:
                 cloud_trail.update(tag_dict)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.warn("Failed to get the trail tags - {0}".format(e))
+            module.warn(f"Failed to get the trail tags - {e}")
         snaked_cloud_trail.append(camel_dict_to_snake_dict(cloud_trail))
 
     # Turn the boto3 result in to ansible friendly tag dictionary

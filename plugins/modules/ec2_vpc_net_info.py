@@ -177,7 +177,7 @@ def describe_vpcs(connection, module):
     try:
         response = connection.describe_vpcs(VpcIds=vpc_ids, Filters=filters, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to describe VPCs {0}".format(vpc_ids))
+        module.fail_json_aws(e, msg=f"Unable to describe VPCs {vpc_ids}")
 
     # We can get these results in bulk but still needs two separate calls to the API
     dns_support = {}

@@ -44,7 +44,10 @@ class TestFailJsonAwsTestSuite:
         self.CAMEL_RESPONSE = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("ResponseMetadata"))
         self.CAMEL_ERROR = camel_dict_to_snake_dict(self.EXAMPLE_EXCEPTION_DATA.get("Error"))
         # ClientError(EXAMPLE_EXCEPTION_DATA, "testCall") will generate this
-        self.EXAMPLE_MSG = "An error occurred (InvalidParameterValue) when calling the testCall operation: The filter 'exampleFilter' is invalid"
+        self.EXAMPLE_MSG = (
+            "An error occurred (InvalidParameterValue) when calling the testCall operation: The filter 'exampleFilter'"
+            " is invalid"
+        )
         self.DEFAULT_CORE_MSG = "An unspecified error occurred"
         self.FAIL_MSG = "I Failed!"
 

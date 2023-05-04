@@ -92,7 +92,7 @@ def describe_log_group(client, log_group_name, module):
         paginator = client.get_paginator("describe_log_groups")
         desc_log_group = paginator.paginate(**params).build_full_result()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to describe log group {0}".format(log_group_name))
+        module.fail_json_aws(e, msg=f"Unable to describe log group {log_group_name}")
 
     for log_group in desc_log_group["logGroups"]:
         log_group_name = log_group["logGroupName"]
@@ -100,12 +100,12 @@ def describe_log_group(client, log_group_name, module):
             tags = client.list_tags_log_group(logGroupName=log_group_name)
         except is_boto3_error_code("AccessDeniedException"):
             tags = {}
-            module.warn("Permission denied listing tags for log group {0}".format(log_group_name))
+            module.warn(f"Permission denied listing tags for log group {log_group_name}")
         except (
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to describe tags for log group {0}".format(log_group_name))
+            module.fail_json_aws(e, msg=f"Unable to describe tags for log group {log_group_name}")
         log_group["tags"] = tags.get("tags", {})
 
     return desc_log_group

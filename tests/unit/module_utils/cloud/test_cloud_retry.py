@@ -23,7 +23,7 @@ class TestCloudRetry:
             self.status = status
 
         def __str__(self):
-            return "TestException with status: {0}".format(self.status)
+            return f"TestException with status: {self.status}"
 
     class UnitTestsRetry(CloudRetry):
         base_class = Exception

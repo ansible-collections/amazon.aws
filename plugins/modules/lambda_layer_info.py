@@ -191,7 +191,7 @@ def list_layer_versions(lambda_client, name, compatible_runtime=None, compatible
         layer_versions = _list_layer_versions(lambda_client, **params)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layer versions for name {0}".format(name))
+        raise LambdaLayerInfoFailure(exc=e, msg=f"Unable to list layer versions for name {name}")
 
 
 def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=None):
@@ -209,7 +209,7 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
             layer_versions.append(camel_dict_to_snake_dict(layer))
         return layer_versions
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layers {0}".format(params))
+        raise LambdaLayerInfoFailure(exc=e, msg=f"Unable to list layers {params}")
 
 
 def get_layer_version(lambda_client, layer_name, version_number):

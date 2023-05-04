@@ -197,7 +197,7 @@ def validate_params(module_params):
     # validate function name
     if not re.search(r"^[\w\-:]+$", function_name):
         raise LambdaAnsibleAWSError(
-            f"Function name {function_name} is invalid. " "Names must contain only alphanumeric characters and hyphens."
+            f"Function name {function_name} is invalid. Names must contain only alphanumeric characters and hyphens."
         )
     if len(function_name) > 64:
         raise LambdaAnsibleAWSError(f"Function name '{function_name}' exceeds 64 character limit")

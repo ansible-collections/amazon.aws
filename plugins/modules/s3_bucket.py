@@ -398,7 +398,7 @@ def create_or_update_bucket(s3_client, module):
     try:
         bucket_is_present = bucket_exists(s3_client, name)
     except botocore.exceptions.EndpointConnectionError as e:
-        module.fail_json_aws(e, msg="Invalid endpoint provided: %s" % to_text(e))
+        module.fail_json_aws(e, msg=f"Invalid endpoint provided: {to_text(e)}")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to check bucket presence")
 
@@ -1146,7 +1146,7 @@ def destroy_bucket(s3_client, module):
     try:
         bucket_is_present = bucket_exists(s3_client, name)
     except botocore.exceptions.EndpointConnectionError as e:
-        module.fail_json_aws(e, msg="Invalid endpoint provided: %s" % to_text(e))
+        module.fail_json_aws(e, msg=f"Invalid endpoint provided: {to_text(e)}")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to check bucket presence")
 
@@ -1169,9 +1169,10 @@ def destroy_bucket(s3_client, module):
                 if formatted_keys:
                     resp = s3_client.delete_objects(Bucket=name, Delete={"Objects": formatted_keys})
                     if resp.get("Errors"):
+                        objects_to_delete = ", ".join([k["Key"] for k in resp["Errors"]])
                         module.fail_json(
-                            msg="Could not empty bucket before deleting. Could not delete objects: {0}".format(
-                                ", ".join([k["Key"] for k in resp["Errors"]])
+                            msg=(
+                                f"Could not empty bucket before deleting. Could not delete objects: {objects_to_delete}"
                             ),
                             errors=resp["Errors"],
                             response=resp,

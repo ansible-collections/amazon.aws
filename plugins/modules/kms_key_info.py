@@ -439,7 +439,7 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("NotFoundException"):
         return None
     except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
-        module.warn("Permission denied fetching key metadata ({0})".format(key_id))
+        module.warn(f"Permission denied fetching key metadata ({key_id})")
         return None
     except (
         botocore.exceptions.ClientError,
@@ -468,7 +468,7 @@ def get_key_details(connection, module, key_id, tokens=None):
     try:
         result["grants"] = get_kms_grants_with_backoff(connection, key_id, tokens=tokens)["Grants"]
     except is_boto3_error_code("AccessDeniedException"):
-        module.warn("Permission denied fetching key grants ({0})".format(key_id))
+        module.warn(f"Permission denied fetching key grants ({key_id})")
         result["grants"] = []
     except (
         botocore.exceptions.ClientError,
@@ -524,7 +524,10 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     module.deprecate(
-        "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
+        (
+            "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned"
+            " for now."
+        ),
         date="2024-05-01",
         collection_name="amazon.aws",
     )

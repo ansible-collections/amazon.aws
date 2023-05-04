@@ -275,7 +275,7 @@ def get_instance(module, ec2_conn, instance_id=None):
         reservation_response = ec2_conn.describe_instances(aws_retry=True, InstanceIds=[instance_id])
         instance = camel_dict_to_snake_dict(reservation_response["Reservations"][0]["Instances"][0])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error while getting instance_id with id {0}".format(instance))
+        module.fail_json_aws(e, msg=f"Error while getting instance_id with id {instance}")
 
     return instance
 
@@ -308,21 +308,21 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
         vols = list(vols_response)[0].get("Volumes")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         if is_boto3_error_code("InvalidVolume.NotFound"):
-            module.exit_json(msg="Volume {0} does not exist".format(vol_id), changed=False)
-        module.fail_json_aws(e, msg="Error while getting EBS volumes with the parameters {0}".format(find_params))
+            module.exit_json(msg=f"Volume {vol_id} does not exist", changed=False)
+        module.fail_json_aws(e, msg=f"Error while getting EBS volumes with the parameters {find_params}")
 
     if not vols:
         if fail_on_not_found and vol_id:
-            msg = "Could not find volume with id: {0}".format(vol_id)
+            msg = f"Could not find volume with id: {vol_id}"
             if name:
-                msg += " and name: {0}".format(name)
+                msg += f" and name: {name}"
             module.fail_json(msg=msg)
         else:
             return None
 
     if len(vols) > 1:
         module.fail_json(
-            msg="Found more than one volume in zone (if specified) with name: {0}".format(name),
+            msg=f"Found more than one volume in zone (if specified) with name: {name}",
             found=[v["VolumeId"] for v in vols],
         )
     vol = camel_dict_to_snake_dict(vols[0])
@@ -528,19 +528,16 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
     if attachment_data:
         if module.check_mode:
             if attachment_data[0].get("status") in ["attached", "attaching"]:
+                instance_id = attachment_data[0].get("instance_id", "None")
                 module.exit_json(
-                    changed=False,
-                    msg="IN CHECK MODE - volume already attached to instance: {0}.".format(
-                        attachment_data[0].get("instance_id", None)
-                    ),
+                    changed=False, msg=f"IN CHECK MODE - volume already attached to instance: {instance_id}."
                 )
         if not volume_dict["multi_attach_enabled"]:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get("instance_id", None) != instance_dict["instance_id"]:
+                instance_id = attachment_data[0].get("instance_id", "None")
                 module.fail_json(
-                    msg="Volume {0} is already attached to another instance: {1}.".format(
-                        volume_dict["volume_id"], attachment_data[0].get("instance_id", None)
-                    )
+                    msg=f"Volume {volume_dict['volume_id']} is already attached to another instance: {instance_id}."
                 )
             else:
                 return volume_dict, changed
@@ -600,7 +597,7 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(
-                e, msg="Error while modifying Block Device Mapping of instance {0}".format(instance_dict["instance_id"])
+                e, msg=f"Error while modifying Block Device Mapping of instance {instance_dict['instance_id']}"
             )
 
     return changed
@@ -815,7 +812,7 @@ def main():
 
                 if other_volume_mapped:
                     module.exit_json(
-                        msg="Volume mapping for {0} already exists on instance {1}".format(device_name, instance),
+                        msg=f"Volume mapping for {device_name} already exists on instance {instance}",
                         volume_id=mapped_device["ebs"]["volume_id"],
                         found_volume=volume,
                         device=device_name,
