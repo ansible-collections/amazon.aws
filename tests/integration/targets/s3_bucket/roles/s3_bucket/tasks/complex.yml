@@ -9,6 +9,8 @@
         policy: "{{ lookup('template','policy.json') }}"
         requester_pays: yes
         versioning: yes
+        public_access:
+          block_public_acls: false
         tags:
           example: tag1
           another: tag2
