@@ -103,61 +103,20 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.backup import get_backup_resource_tags
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 
 
-def get_backup_plans(connection, module, backup_plan_name_list):
-    all_backup_plans = []
-    try:
-        result = connection.get_paginator("list_backup_plans")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to get the backup plans.")
-    for page in result.paginate():
-        for backup_plan in page["BackupPlansList"]:
-            if backup_plan["BackupPlanName"] in backup_plan_name_list or len(backup_plan_name_list) == 0:
-                all_backup_plans.append(backup_plan["BackupPlanId"])
-    return all_backup_plans
+def get_backup_plan_detail(client, module):
+    backup_plan_list = []
+    backup_plan_names = module.params.get("backup_plan_names")
 
+    for name in backup_plan_names:
+        backup_plan_list.extend(get_plan_details(module, client, name))
 
-def get_backup_plan_detail(connection, module):
-    output = []
-    result = {}
-    backup_plan_name_list = module.params.get("backup_plan_names")
-    backup_plan_id_list = get_backup_plans(connection, module, backup_plan_name_list)
-
-    for backup_plan_id in backup_plan_id_list:
-        try:
-            output.append(connection.get_backup_plan(BackupPlanId=backup_plan_id, aws_retry=True))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to describe vault {0}".format(backup_plan_id))
-
-    # Turn the boto3 result in to ansible_friendly_snaked_names
-    snaked_backup_plan = []
-
-    for backup_plan in output:
-        try:
-            module.params["resource"] = backup_plan.get("BackupPlanArn", None)
-            tag_dict = get_backup_resource_tags(module, connection)
-            backup_plan.update({"tags": tag_dict})
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.warn("Failed to get the backup plan tags - {0}".format(e))
-        snaked_backup_plan.append(camel_dict_to_snake_dict(backup_plan))
-
-    # Turn the boto3 result in to ansible friendly tag dictionary
-    for v in snaked_backup_plan:
-        if "tags_list" in v:
-            v["tags"] = boto3_tag_list_to_ansible_dict(v["tags_list"], "key", "value")
-            del v["tags_list"]
-        if "response_metadata" in v:
-            del v["response_metadata"]
-        v["backup_plan_name"] = v["backup_plan"]["backup_plan_name"]
-    result["backup_plans"] = snaked_backup_plan
-    return result
+    module.exit_json(**{"backup_plans": backup_plan_list})
 
 
 def main():
@@ -171,8 +130,8 @@ def main():
         connection = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
-    result = get_backup_plan_detail(connection, module)
-    module.exit_json(**result)
+
+    get_backup_plan_detail(connection, module)
 
 
 if __name__ == "__main__":
