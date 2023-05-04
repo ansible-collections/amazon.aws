@@ -55,7 +55,7 @@ options:
             you to create an alarm based on the result of a metric math expression.
         type: list
         required: false
-        version_added: "5.1.0"
+        version_added: "5.5.0"
         elements: dict
         suboptions:
             id:
@@ -145,7 +145,7 @@ options:
         description: The percentile statistic for the metric specified in the metric name.
         type: str
         required: false
-        version_added: "5.1.0"
+        version_added: "5.5.0"
     comparison:
         description:
           - Determines how the threshold value is compared
