@@ -397,6 +397,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><code class="docutils literal notranslate"><span class="pre">ObjectWriter</span></code> - The uploading account will own the object if the object is uploaded with the bucket-owner-full-control canned ACL.</p>
 <p>This option cannot be used together with a <em>delete_object_ownership</em> definition.</p>
 <p><code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> has been added in version 3.2.0.</p>
+<p>Note: At the end of April 2023 Amazon updated the default setting to <code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code>.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;BucketOwnerEnforced&quot;</span></code></p></li>
@@ -431,6 +432,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 <td><div class="ansible-option-cell"><p>Configure public access block for S3 bucket.</p>
 <p>This option cannot be used together with <em>delete_public_access</em>.</p>
+<dl class="simple">
+<dt>Note: At the end of April 2023 Amazon updated the default settings to block public access by</dt><dd><p>default.  While the defaults for this module remain unchanged, it is necessary to explicitly
+pass the <em>public_access</em> parameter to enable public access ACLs.</p>
+</dd>
+</dl>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
