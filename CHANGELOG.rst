@@ -5,6 +5,25 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v4.5.0
+======
+
+Release Summary
+---------------
+
+This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
+
+
+Minor Changes
+-------------
+
+- ec2_key - minor refactoring and improved unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1288).
+
+Bugfixes
+--------
+
+- ec2_vol - handle ec2_vol.tags when the associated instance already exists (https://github.com/ansible-collections/amazon.aws/pull/1071).
+
 v4.4.0
 ======
 
