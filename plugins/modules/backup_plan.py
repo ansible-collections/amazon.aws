@@ -30,7 +30,8 @@ options:
     type: list
   advanced_backup_settings:
     description:
-      -  Specifies a list of BackupOptions for each resource type. These settings are only available for Windows Volume Shadow Copy Service (VSS) backup jobs.
+      - Specifies a list of BackupOptions for each resource type.
+      - These settings are only available for Windows Volume Shadow Copy Service (VSS) backup jobs.
     required: false
     type: list
   state:
@@ -48,20 +49,21 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: create backup plan
+- name: Create an AWSbackup plan
   amazon.aws.backup_plan:
     state: present
     backup_plan_name: elastic
     rules:
-      - RuleName: every_morning
-        TargetBackupVaultName: elastic
-        ScheduleExpression: "cron(0 5 ? * * *)"
-        StartWindowMinutes: 120
-        CompletionWindowMinutes: 10080
-        Lifecycle:
-          DeleteAfterDays: 7
-        EnableContinuousBackup: true
+      - rule_name: daily
+        target_backup_vault_name: "{{ backup_vault_name }}"
+        schedule_expression: "cron(0 5 ? * * *)"
+        start_window_minutes: 60
+        completion_window_minutes: 1440
 
+- name: Delete an AWS Backup plan
+  amazon.aws.backup_plan:
+    backup_plan_name: elastic
+    state: absent
 """
 RETURN = r"""
 backup_plan_arn:
@@ -80,10 +82,6 @@ creation_date:
     description: Creation date of the backup plan.
     type: str
     sample: '2023-01-24T10:08:03.193000+01:00'
-last_execution_date:
-    description: Last execution date of the backup plan.
-    type: str
-    sample: '2023-03-24T06:30:08.250000+01:00'
 tags:
     description: Tags of the backup plan
     type: str
@@ -134,6 +132,8 @@ from typing import Optional
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 def create_backup_plan(module: AnsibleAWSModule, client, params: dict):
@@ -176,7 +176,7 @@ def plan_update_needed(client, backup_plan_id: str, backup_plan_data: dict) -> b
         update_needed = True
 
     configured_advanced_backup_settings = json.dumps(
-        full_plan.get("BackupPlan", {}).get("AdvancedBackupSettings", None),
+        full_plan.get("BackupPlan", {}).get("AdvancedBackupSettings", []),
         sort_keys=True,
     )
     supplied_advanced_backup_settings = json.dumps(
@@ -194,7 +194,7 @@ def update_backup_plan(
     try:
         response = client.update_backup_plan(
             BackupPlanId=backup_plan_id,
-            BackupPlan=backup_plan_data["BackupPlan"],
+            BackupPlan=backup_plan_data["BackupPlan"]
         )
     except (
         BotoCoreError,
@@ -253,8 +253,8 @@ def main():
         new_plan_data = {
             "BackupPlan": {
                 "BackupPlanName": backup_plan_name,
-                "Rules": module.params["rules"],
-                "AdvancedBackupSettings": module.params.get("advanced_backup_settings"),
+                "Rules": snake_dict_to_camel_dict(module.params["rules"], capitalize_first=True),
+                "AdvancedBackupSettings": snake_dict_to_camel_dict(module.params.get("advanced_backup_settings"), capitalize_first=True) or [],
             },
             "BackupPlanTags": module.params.get("tags"),
             "CreatorRequestId": module.params.get("creator_request_id"),
@@ -281,7 +281,7 @@ def main():
 
         else:  # Plan exists, update if needed
             results["exists"] = True
-            current_plan_id = current_plan[0]["backup_plan_id"]
+            current_plan_id = current_plan[0]["BackupPlanId"]
             if plan_update_needed(client, current_plan_id, new_plan_data):
                 results["changed"] = True
 
@@ -303,7 +303,7 @@ def main():
                 # )
 
         new_plan = get_plan_details(module, client, backup_plan_name)
-        results = results | new_plan[0]
+        results = results | camel_dict_to_snake_dict(new_plan[0])
 
     elif state == "absent":
         if not current_plan:  # Plan does not exist, can't delete it
@@ -314,7 +314,7 @@ def main():
             if module.check_mode:
                 module.exit_json(**results, msg="Would have deleted backup plan if not in check mode")
 
-            delete_backup_plan(module, client, current_plan[0]["backup_plan_id"])
+            delete_backup_plan(module, client, current_plan[0]["BackupPlanId"])
 
     module.exit_json(**results)
 

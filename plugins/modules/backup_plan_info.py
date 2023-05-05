@@ -11,19 +11,18 @@ module: backup_plan_info
 version_added: 6.0.0
 short_description: Describe AWS Backup Plans
 description:
-  - Lists info about Backup Plan configuration.
+  - Get info about a AWS Backup Plan configuration.
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
   - Kristof Imre Szabo (@krisek)
   - Alina Buzachis (@alinabuzachis)
 options:
-  backup_plan_names:
+  backup_plan_name:
     type: list
     elements: str
-    default: []
+    required: true
     description:
-      - Specifies a list of plan names.
-      - If an empty list is specified, information for the backup plans in the current region is returned.
+      - Specifies a list of AWS backup plan names.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -122,7 +121,7 @@ def get_backup_plan_detail(client, module):
 
 def main():
     argument_spec = dict(
-        backup_plan_names=dict(type="list", elements="str", default=[]),
+        backup_plan_names=dict(type="list", elements="str", required=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
