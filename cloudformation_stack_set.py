@@ -182,9 +182,11 @@ EXAMPLES = r"""
     description: Test stack in two accounts
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template
-    accounts: [1234567890, 2345678901]
+    accounts:
+      - 123456789012
+      - 234567890123
     regions:
-    - us-east-1
+      - us-east-1
 
 - name: on subsequent calls, templates are optional but parameters and tags can be altered
   community.aws.cloudformation_stack_set:
@@ -195,9 +197,11 @@ EXAMPLES = r"""
     tags:
       foo: bar
       test: stack
-    accounts: [1234567890, 2345678901]
+    accounts:
+      - 123456789012
+      - 234567890123
     regions:
-    - us-east-1
+     - us-east-1
 
 - name: The same type of update, but wait for the update to complete in all stacks
   community.aws.cloudformation_stack_set:
@@ -209,7 +213,26 @@ EXAMPLES = r"""
     tags:
       foo: bar
       test: stack
-    accounts: [1234567890, 2345678901]
+    accounts:
+      - 123456789012
+      - 234567890123
+    regions:
+    - us-east-1
+
+- name: Register new accounts (create new stack instances) with an existing stack set.
+  community.aws.cloudformation_stack_set:
+    name: my-stack
+    state: present
+    wait: true
+    parameters:
+      InstanceName: my_restacked_instance
+    tags:
+      foo: bar
+      test: stack
+    accounts:
+      - 123456789012
+      - 234567890123
+      - 345678901234
     regions:
     - us-east-1
 """
@@ -654,6 +677,14 @@ def main():
             if module.params.get("regions"):
                 stack_params["OperationPreferences"] = get_operation_preferences(module)
             changed |= update_stack_set(module, stack_params, cfn)
+
+            await_stack_set_operation(
+                module,
+                cfn,
+                operation_id=stack_params["OperationId"],
+                stack_set_name=stack_params["StackSetName"],
+                max_wait=module.params.get("wait_timeout"),
+            )
 
         # now create/update any appropriate stack instances
         new_stack_instances, existing_stack_instances, unspecified_stack_instances = compare_stack_instances(
