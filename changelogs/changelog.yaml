@@ -1671,3 +1671,69 @@ releases:
     - 5.4.0-release.yml
     - 5.4.0-route53_health_check.yml
     release_date: '2023-03-27'
+  5.5.0:
+    changes:
+      bugfixes:
+      - cloudwatch_metric_alarm - Don't consider ``StateTransitionedTimestamp`` in
+        change detection. (https://github.com/ansible-collections/amazon.aws/pull/1440).
+      - ec2_instance - Pick up ``app_callback -> set_password`` rather than ``app_callback
+        -> set_passwd`` (https://github.com/ansible-collections/amazon.aws/issues/1449).
+      - lambda_info - Do not convert environment variables to snake_case when querying
+        lambda config. (https://github.com/ansible-collections/amazon.aws/pull/1457).
+      - rds_instance - fix type of ``promotion_tier`` as passed to the APIs (https://github.com/ansible-collections/amazon.aws/pull/1475).
+      minor_changes:
+      - Add connectivity_type to ec2_vpc_nat_gateway module (https://github.com/ansible-collections/amazon.aws/pull/1267).
+      - cloudwatch - Add metrics and extended_statistic keys to cloudwatch module
+        (https://github.com/ansible-collections/amazon.aws/pull/1133).
+      - ec2_ami - add support for BootMode, TpmSupport, UefiData params (https://github.com/ansible-collections/amazon.aws/pull/1037).
+      - ec2_metadata_facts - added support to query instance tags in metadata (https://github.com/ansible-collections/amazon.aws/pull/1186).
+      - kms_key - Add multi_region option to create_key (https://github.com/ansible-collections/amazon.aws/pull/1290).
+      - lambda -  add support for function layers when creating or updating lambda
+        function (https://github.com/ansible-collections/amazon.aws/pull/1118).
+      - lambda_event -  Added support to set FunctionResponseTypes when creating lambda
+        event source mappings (https://github.com/ansible-collections/amazon.aws/pull/1209).
+      - module_utils/elbv2 - removed compatibility code for ``botocore < 1.10.30``
+        (https://github.com/ansible-collections/amazon.aws/pull/1477).
+      - rds_cluster - New ``engine_mode`` parameter (https://github.com/ansible-collections/amazon.aws/pull/941).
+      - rds_cluster - add new options (e.g., ``db_cluster_instance_class``, ``allocated_storage``,
+        ``storage_type``, ``iops``) (https://github.com/ansible-collections/amazon.aws/pull/1191).
+      - rds_cluster - update list of supported engines with ``mysql`` and ``postgres``
+        (https://github.com/ansible-collections/amazon.aws/pull/1191).
+      - s3_bucket - ensure ``public_access`` is configured before updating policies
+        (https://github.com/ansible-collections/amazon.aws/pull/1511).
+      release_summary: 'This release contains a number of bugfixes, new features and
+        new modules.  This is the last planned minor release prior to the release
+        of version 6.0.0.
+
+        '
+    fragments:
+    - 1037-ec2_ami-add-support-for-boot_mode-tpm_support-uefi_data.yml
+    - 1133-add_metrics_cloudwatch.yml
+    - 1186-ec2_metadata_facts-query-instance-metadata-tags.yml
+    - 1191-rds_cluster-new_options.yml
+    - 1209-lambda_event-add-support-for-function_response_types.yml
+    - 1258-ec2_instance.yml
+    - 1267-ec2_vpc_nat_gateway_connectivitytype.yml
+    - 1290-create_multi_region_key.yml
+    - 1440-cloudwatch_metric_alarm-fix-change-detection.yml
+    - 1457-lambda_info-fix-env-var-in-output.yml
+    - 1474-ec2_vol.yml
+    - 1475-rds_instance-promotion-tier.yml
+    - 1477-elbv2-botocore.yml
+    - 1505-ec2_instance_test_fixes.yml
+    - 1511-s3_bucket-public_access.yml
+    - 20230424-ec2_instance-app_callback.yml
+    - 20230502-rds_cluster-engine.yml
+    - 20230503-rds_cluster-engine-rds_cluster_snapshot.yml
+    - fix_version_added.yml
+    - lambda-add-support-for-layers.yml
+    - rds_cluster_engine_mode.yaml
+    - release-summary.yml
+    modules:
+    - description: Creates an AWS Lambda layer or deletes an AWS Lambda layer version
+      name: lambda_layer
+      namespace: ''
+    - description: List lambda layer or lambda layer versions
+      name: lambda_layer_info
+      namespace: ''
+    release_date: '2023-05-04'

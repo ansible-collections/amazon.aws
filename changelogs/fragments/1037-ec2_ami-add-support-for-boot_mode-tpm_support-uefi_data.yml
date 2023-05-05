@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_ami - add support for BootMode, TpmSupport, UefiData params (https://github.com/ansible-collections/amazon.aws/pull/1037).
