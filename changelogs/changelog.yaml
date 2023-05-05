@@ -1108,6 +1108,25 @@ releases:
     - 20230106-ec2_vol.yml
     - release_summary.yml
     release_date: '2023-01-09'
+  4.5.0:
+    changes:
+      bugfixes:
+      - ec2_vol - handle ec2_vol.tags when the associated instance already exists
+        (https://github.com/ansible-collections/amazon.aws/pull/1071).
+      minor_changes:
+      - ec2_key - minor refactoring and improved unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1288).
+      release_summary: 'This release contains a minor bugfix for the ``ec2_vol`` module,
+        some minor work on the ``ec2_key`` module, and various documentation fixes.  This
+        is the last planned release of the 4.x series.
+
+        '
+    fragments:
+    - 1071-ec2_vol_tags_idempotent.yaml
+    - 1357-subnet-example.yml
+    - 1395-s3-encryption.yml
+    - release-notes.yml
+    - unit-tests_test_ec2_key_only.yaml
+    release_date: '2023-05-05'
   5.0.0:
     changes:
       breaking_changes:
