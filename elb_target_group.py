@@ -719,7 +719,7 @@ def create_or_update_target_group(connection, module):
                 # TODO: required and here?
                 if "Matcher" in params:
                     code_key = "HttpCode"
-                    if target_group["ProtocolVersion"] == "GRPC":
+                    if target_group.get("ProtocolVersion") == "GRPC":
                         code_key = "GrpcCode"
                     current_matcher_list = target_group["Matcher"][code_key].split(",")
                     requested_matcher_list = params["Matcher"][code_key].split(",")
