@@ -1,2 +1,0 @@
-minor_changes:
-- kms_key - Add multi_region option to create_key (https://github.com/ansible-collections/amazon.aws/pull/1290).

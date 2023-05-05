@@ -1,2 +1,0 @@
-minor_changes:
-- Add connectivity_type to ec2_vpc_nat_gateway module (https://github.com/ansible-collections/amazon.aws/pull/1267).

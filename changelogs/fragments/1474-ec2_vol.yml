@@ -1,2 +1,0 @@
-trivial:
-- ec2_vol - Fix documentation typo ``/def/`` should have been ``/dev/`` (https://github.com/ansible-collections/amazon.aws/pull/1474).
