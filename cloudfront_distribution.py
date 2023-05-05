@@ -121,7 +121,7 @@ options:
             origin_shield_region:
               description: Specify which AWS region will be used for Origin Shield. Required if Origin Shield is enabled.
               type: str
-          version_added: 5.1.0
+          version_added: 6.0.0
         custom_headers:
           description:
             - Custom headers you wish to add to the request before passing it to the origin.
@@ -177,11 +177,13 @@ options:
                        The minimum number is C(1), the maximum is C(3).
           type: int
           default: 3
+          version_added: 6.0.0
         connection_timeout:
           description: The number of seconds that CloudFront waits when trying to establish a connection to the origin.
                        The minimum timeout is C(1) second, the maximum is C(10) seconds.
           type: int
           default: 10
+          version_added: 6.0.0
     purge_origins:
       description: Whether to remove any origins that aren't listed in I(origins).
       default: false
@@ -1320,7 +1322,7 @@ origins:
               returned: when enabled is true
               type: str
               sample: us-east-1
-          version_added: 5.1.0
+          version_added: 6.0.0
         s3_origin_config:
           description: Origin access identity configuration for S3 Origin.
           returned: when s3_origin_access_identity_enabled is true
