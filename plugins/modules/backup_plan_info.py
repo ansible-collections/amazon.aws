@@ -62,10 +62,6 @@ backup_plans:
             description: Creation date of the backup plan.
             type: str
             sample: '2023-01-24T10:08:03.193000+01:00'
-        last_execution_date:
-            description: Last execution date of the backup plan.
-            type: str
-            sample: '2023-03-24T06:30:08.250000+01:00'
         tags:
             description: Tags of the backup plan
             type: str
