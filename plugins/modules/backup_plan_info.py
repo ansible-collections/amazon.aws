@@ -15,6 +15,7 @@ description:
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
   - Kristof Imre Szabo (@krisek)
+  - Alina Buzachis (@alinabuzachis)
 options:
   backup_plan_names:
     type: list

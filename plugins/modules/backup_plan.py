@@ -15,6 +15,7 @@ description:
   - For more information see the AWS documentation for Backup plans U(https://docs.aws.amazon.com/aws-backup/latest/devguide/about-backup-plans.html).
 author:
   - Kristof Imre Szabo (@krisek)
+  - Alina Buzachis (@alinabuzachis)
 options:
   backup_plan_name:
     description:
