@@ -5,27 +5,18 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
-<<<<<<< HEAD
 v5.5.0
-=======
-v4.5.0
->>>>>>> a805e8e9 (Prepare 4.5.0 release (#1522))
 ======
 
 Release Summary
 ---------------
 
-<<<<<<< HEAD
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
-=======
-This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
->>>>>>> a805e8e9 (Prepare 4.5.0 release (#1522))
 
 
 Minor Changes
 -------------
 
-<<<<<<< HEAD
 - Add connectivity_type to ec2_vpc_nat_gateway module (https://github.com/ansible-collections/amazon.aws/pull/1267).
 - cloudwatch - Add metrics and extended_statistic keys to cloudwatch module (https://github.com/ansible-collections/amazon.aws/pull/1133).
 - ec2_ami - add support for BootMode, TpmSupport, UefiData params (https://github.com/ansible-collections/amazon.aws/pull/1037).
@@ -38,14 +29,10 @@ Minor Changes
 - rds_cluster - add new options (e.g., ``db_cluster_instance_class``, ``allocated_storage``, ``storage_type``, ``iops``) (https://github.com/ansible-collections/amazon.aws/pull/1191).
 - rds_cluster - update list of supported engines with ``mysql`` and ``postgres`` (https://github.com/ansible-collections/amazon.aws/pull/1191).
 - s3_bucket - ensure ``public_access`` is configured before updating policies (https://github.com/ansible-collections/amazon.aws/pull/1511).
-=======
-- ec2_key - minor refactoring and improved unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1288).
->>>>>>> a805e8e9 (Prepare 4.5.0 release (#1522))
 
 Bugfixes
 --------
 
-<<<<<<< HEAD
 - cloudwatch_metric_alarm - Don't consider ``StateTransitionedTimestamp`` in change detection. (https://github.com/ansible-collections/amazon.aws/pull/1440).
 - ec2_instance - Pick up ``app_callback -> set_password`` rather than ``app_callback -> set_passwd`` (https://github.com/ansible-collections/amazon.aws/issues/1449).
 - lambda_info - Do not convert environment variables to snake_case when querying lambda config. (https://github.com/ansible-collections/amazon.aws/pull/1457).
@@ -336,9 +323,25 @@ New Modules
 - cloudtrail_info - Gather information about trails in AWS Cloud Trail.
 - cloudwatch_metric_alarm_info - Gather information about the alarms for the specified metric
 - s3_object_info - Gather information about objects in S3
-=======
+
+v4.5.0
+======
+
+Release Summary
+---------------
+
+This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
+
+
+Minor Changes
+-------------
+
+- ec2_key - minor refactoring and improved unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1288).
+
+Bugfixes
+--------
+
 - ec2_vol - handle ec2_vol.tags when the associated instance already exists (https://github.com/ansible-collections/amazon.aws/pull/1071).
->>>>>>> a805e8e9 (Prepare 4.5.0 release (#1522))
 
 v4.4.0
 ======
