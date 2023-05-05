@@ -1,2 +1,0 @@
-release_summary: |
-  This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
