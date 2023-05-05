@@ -272,7 +272,7 @@ def associate_ip_and_device(
                 msg = f"Couldn't associate Elastic IP address with network interface '{device_id}'"
                 module.fail_json_aws(e, msg=msg)
         if not res:
-            module.fail_json_aws(msg="Association failed.")
+            module.fail_json(msg="Association failed.")
 
     return {"changed": True}
 
