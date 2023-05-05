@@ -192,21 +192,17 @@ def validate_params(module):
     if function_name.startswith("arn:"):
         if not re.search(r"^[\w\-:]+$", function_name):
             module.fail_json(
-                msg="ARN {0} is invalid. ARNs must contain only alphanumeric characters, hyphens and colons.".format(
-                    function_name
-                )
+                msg=f"ARN {function_name} is invalid. ARNs must contain only alphanumeric characters, hyphens and colons.",
             )
         if len(function_name) > 140:
-            module.fail_json(msg='ARN name "{0}" exceeds 140 character limit'.format(function_name))
+            module.fail_json(msg=f'ARN name "{function_name}" exceeds 140 character limit')
     else:
         if not re.search(r"^[\w\-]+$", function_name):
             module.fail_json(
-                msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(
-                    function_name
-                )
+                msg=f"Function name {function_name} is invalid. Names must contain only alphanumeric characters and hyphens.",
             )
         if len(function_name) > 64:
-            module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
+            module.fail_json(msg=f'Function name "{function_name}" exceeds 64 character limit')
 
 
 def get_qualifier(module):

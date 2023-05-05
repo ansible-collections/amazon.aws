@@ -157,19 +157,19 @@ class LookupModule(AWSLookupBase):
             not isinstance(on_missing, string_types) or on_missing.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
-                '"on_missing" must be a string and one of "error", "warn" or "skip", not {0}'.format(on_missing)
+                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {on_missing}'
             )
         if on_denied is not None and (
             not isinstance(on_denied, string_types) or on_denied.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
-                '"on_denied" must be a string and one of "error", "warn" or "skip", not {0}'.format(on_denied)
+                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
             )
         if on_deleted is not None and (
             not isinstance(on_deleted, string_types) or on_deleted.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
-                '"on_deleted" must be a string and one of "error", "warn" or "skip", not {0}'.format(on_deleted)
+                f'"on_deleted" must be a string and one of "error", "warn" or "skip", not {on_deleted}'
             )
 
         client = self.client("secretsmanager", AWSRetry.jittered_backoff())
@@ -193,7 +193,7 @@ class LookupModule(AWSLookupBase):
                     secrets = [secrets]
 
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    raise AnsibleLookupError("Failed to retrieve secret: {0}".format(to_native(e)))
+                    raise AnsibleLookupError(f"Failed to retrieve secret: {to_native(e)}")
         else:
             secrets = []
             for term in terms:
@@ -255,30 +255,30 @@ class LookupModule(AWSLookupBase):
                             ret_val = ret_val[key]
                         else:
                             raise AnsibleLookupError(
-                                "Successfully retrieved secret but there exists no key {0} in the secret".format(key)
+                                f"Successfully retrieved secret but there exists no key {key} in the secret"
                             )
                     return str(ret_val)
                 else:
                     return response["SecretString"]
         except is_boto3_error_message("marked for deletion"):
             if on_deleted == "error":
-                raise AnsibleLookupError("Failed to find secret {0} (marked for deletion)".format(term))
+                raise AnsibleLookupError(f"Failed to find secret {term} (marked for deletion)")
             elif on_deleted == "warn":
-                self._display.warning("Skipping, did not find secret (marked for deletion) {0}".format(term))
+                self._display.warning(f"Skipping, did not find secret (marked for deletion) {term}")
         except is_boto3_error_code("ResourceNotFoundException"):  # pylint: disable=duplicate-except
             if on_missing == "error":
-                raise AnsibleLookupError("Failed to find secret {0} (ResourceNotFound)".format(term))
+                raise AnsibleLookupError(f"Failed to find secret {term} (ResourceNotFound)")
             elif on_missing == "warn":
-                self._display.warning("Skipping, did not find secret {0}".format(term))
+                self._display.warning(f"Skipping, did not find secret {term}")
         except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
             if on_denied == "error":
-                raise AnsibleLookupError("Failed to access secret {0} (AccessDenied)".format(term))
+                raise AnsibleLookupError(f"Failed to access secret {term} (AccessDenied)")
             elif on_denied == "warn":
-                self._display.warning("Skipping, access denied for secret {0}".format(term))
+                self._display.warning(f"Skipping, access denied for secret {term}")
         except (
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError("Failed to retrieve secret: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Failed to retrieve secret: {to_native(e)}")
 
         return None

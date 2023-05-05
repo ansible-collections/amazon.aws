@@ -155,7 +155,7 @@ def get_rds_method_attribute(method_name, module):
     else:
         if module.params.get("wait"):
             raise NotImplementedError(
-                f"method {method_name} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py"
+                f"method {method_name} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
             )
 
     return Boto3ClientMethod(
@@ -179,7 +179,7 @@ def get_final_identifier(method_name, module):
         identifier = module.params["db_cluster_snapshot_identifier"]
     else:
         raise NotImplementedError(
-            f"method {method_name} hasn't been added to the list of accepted methods in module_utils/rds.py"
+            f"method {method_name} hasn't been added to the list of accepted methods in module_utils/rds.py",
         )
     if not module.check_mode and updated_identifier and apply_immediately:
         identifier = updated_identifier
@@ -188,9 +188,7 @@ def get_final_identifier(method_name, module):
 
 def handle_errors(module, exception, method_name, parameters):
     if not isinstance(exception, ClientError):
-        module.fail_json_aws(
-            exception, msg="Unexpected failure for method {0} with parameters {1}".format(method_name, parameters)
-        )
+        module.fail_json_aws(exception, msg=f"Unexpected failure for method {method_name} with parameters {parameters}")
 
     changed = True
     error_code = exception.response["Error"]["Code"]
@@ -205,7 +203,7 @@ def handle_errors(module, exception, method_name, parameters):
         else:
             module.fail_json_aws(
                 exception,
-                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+                msg=f"Unable to {get_rds_method_attribute(method_name, module).operation_description}",
             )
     elif method_name == "promote_read_replica" and error_code == "InvalidDBInstanceState":
         if "DB Instance is not a read replica" in to_text(exception):
@@ -213,7 +211,7 @@ def handle_errors(module, exception, method_name, parameters):
         else:
             module.fail_json_aws(
                 exception,
-                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+                msg=f"Unable to {get_rds_method_attribute(method_name, module).operation_description}",
             )
     elif method_name == "promote_read_replica_db_cluster" and error_code == "InvalidDBClusterStateFault":
         if "DB Cluster that is not a read replica" in to_text(exception):
@@ -221,22 +219,23 @@ def handle_errors(module, exception, method_name, parameters):
         else:
             module.fail_json_aws(
                 exception,
-                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+                msg=f"Unable to {get_rds_method_attribute(method_name, module).operation_description}",
             )
     elif method_name == "create_db_cluster" and error_code == "InvalidParameterValue":
         accepted_engines = ["aurora", "aurora-mysql", "aurora-postgresql", "mysql", "postgres"]
         if parameters.get("Engine") not in accepted_engines:
             module.fail_json_aws(
-                exception, msg="DB engine {0} should be one of {1}".format(parameters.get("Engine"), accepted_engines)
+                exception, msg=f"DB engine {parameters.get('Engine')} should be one of {accepted_engines}"
             )
         else:
             module.fail_json_aws(
                 exception,
-                msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description),
+                msg=f"Unable to {get_rds_method_attribute(method_name, module).operation_description}",
             )
     else:
         module.fail_json_aws(
-            exception, msg="Unable to {0}".format(get_rds_method_attribute(method_name, module).operation_description)
+            exception,
+            msg=f"Unable to {get_rds_method_attribute(method_name, module).operation_description}",
         )
 
     return changed
@@ -283,15 +282,10 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
             if e.last_response.get("Error", {}).get("Code") == "DBInstanceNotFound":
                 sleep(10)
                 continue
-            module.fail_json_aws(
-                e, msg="Error while waiting for DB instance {0} to be {1}".format(db_instance_id, expected_status)
-            )
+            module.fail_json_aws(e, msg=f"Error while waiting for DB instance {db_instance_id} to be {expected_status}")
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(
-                e,
-                msg="Unexpected error while waiting for DB instance {0} to be {1}".format(
-                    db_instance_id, expected_status
-                ),
+                e, msg=f"Unexpected error while waiting for DB instance {db_instance_id} to be {expected_status}"
             )
 
 
@@ -300,14 +294,12 @@ def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
         get_waiter(client, waiter_name).wait(DBClusterIdentifier=db_cluster_id)
     except WaiterError as e:
         if waiter_name == "cluster_deleted":
-            msg = "Failed to wait for DB cluster {0} to be deleted".format(db_cluster_id)
+            msg = f"Failed to wait for DB cluster {db_cluster_id} to be deleted"
         else:
-            msg = "Failed to wait for DB cluster {0} to be available".format(db_cluster_id)
+            msg = f"Failed to wait for DB cluster {db_cluster_id} to be available"
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(
-            e, msg="Failed with an unexpected error while waiting for the DB cluster {0}".format(db_cluster_id)
-        )
+        module.fail_json_aws(e, msg=f"Failed with an unexpected error while waiting for the DB cluster {db_cluster_id}")
 
 
 def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_name):
@@ -315,13 +307,13 @@ def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_nam
         client.get_waiter(waiter_name).wait(DBSnapshotIdentifier=db_snapshot_id)
     except WaiterError as e:
         if waiter_name == "db_snapshot_deleted":
-            msg = "Failed to wait for DB snapshot {0} to be deleted".format(db_snapshot_id)
+            msg = f"Failed to wait for DB snapshot {db_snapshot_id} to be deleted"
         else:
-            msg = "Failed to wait for DB snapshot {0} to be available".format(db_snapshot_id)
+            msg = f"Failed to wait for DB snapshot {db_snapshot_id} to be available"
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(
-            e, msg="Failed with an unexpected error while waiting for the DB snapshot {0}".format(db_snapshot_id)
+            e, msg=f"Failed with an unexpected error while waiting for the DB snapshot {db_snapshot_id}"
         )
 
 
@@ -330,14 +322,14 @@ def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name
         client.get_waiter(waiter_name).wait(DBClusterSnapshotIdentifier=db_snapshot_id)
     except WaiterError as e:
         if waiter_name == "db_cluster_snapshot_deleted":
-            msg = "Failed to wait for DB cluster snapshot {0} to be deleted".format(db_snapshot_id)
+            msg = f"Failed to wait for DB cluster snapshot {db_snapshot_id} to be deleted"
         else:
-            msg = "Failed to wait for DB cluster snapshot {0} to be available".format(db_snapshot_id)
+            msg = f"Failed to wait for DB cluster snapshot {db_snapshot_id} to be available"
         module.fail_json_aws(e, msg=msg)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(
             e,
-            msg="Failed with an unexpected error while waiting for the DB cluster snapshot {0}".format(db_snapshot_id),
+            msg=f"Failed with an unexpected error while waiting for the DB cluster snapshot {db_snapshot_id}",
         )
 
 

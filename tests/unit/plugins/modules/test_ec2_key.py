@@ -207,7 +207,11 @@ def test__create_key_pair():
 
     ec2_client.create_key_pair.return_value = {
         "KeyFingerprint": "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62",
-        "KeyMaterial": "-----BEGIN RSA PRIVATE KEY-----\nMIIEXm7/Bi9wba2m0Qtclu\nCXQw2paSIZb\n-----END RSA PRIVATE KEY-----",
+        "KeyMaterial": (
+            "-----BEGIN RSA PRIVATE KEY-----\n"  # gitleaks:allow
+            "MIIEXm7/Bi9wba2m0Qtclu\nCXQw2paSIZb\n"
+            "-----END RSA PRIVATE KEY-----"
+        ),
         "KeyName": "my_keypair",
         "KeyPairId": "key-012345678905a208d",
     }

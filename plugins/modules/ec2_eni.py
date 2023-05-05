@@ -476,9 +476,7 @@ def create_eni(connection, vpc_id, module):
         changed = True
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(
-            e, "Failed to create eni {0} for {1} in {2} with {3}".format(name, subnet_id, vpc_id, private_ip_address)
-        )
+        module.fail_json_aws(e, f"Failed to create eni {name} for {subnet_id} in {vpc_id} with {private_ip_address}")
 
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
@@ -629,12 +627,12 @@ def modify_eni(connection, module, eni):
         changed |= manage_tags(connection, module, eni, name, tags, purge_tags)
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to modify eni {0}".format(eni_id))
+        module.fail_json_aws(e, f"Failed to modify eni {eni_id}")
 
     eni = describe_eni(connection, module, eni_id)
     if module.check_mode and changed:
         module.exit_json(
-            changed=changed, msg="Would have modified ENI: {0} if not in check mode".format(eni["NetworkInterfaceId"])
+            changed=changed, msg=f"Would have modified ENI: {eni['NetworkInterfaceId']} if not in check mode"
         )
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
@@ -646,7 +644,7 @@ def _wait_for_detach(connection, module, eni_id):
             WaiterConfig={"Delay": 5, "MaxAttempts": 80},
         )
     except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, "Timeout waiting for ENI {0} to detach".format(eni_id))
+        module.fail_json_aws(e, f"Timeout waiting for ENI {eni_id} to detach")
 
 
 def delete_eni(connection, module):
@@ -682,7 +680,7 @@ def delete_eni(connection, module):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, "Failure during delete of {0}".format(eni_id))
+        module.fail_json_aws(e, f"Failure during delete of {eni_id}")
 
 
 def detach_eni(connection, eni, module):
@@ -712,7 +710,7 @@ def describe_eni(connection, module, eni_id):
         else:
             return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to describe eni with id: {0}".format(eni_id))
+        module.fail_json_aws(e, f"Failed to describe eni with id: {eni_id}")
 
 
 def uniquely_find_eni(connection, module, eni=None):
@@ -763,7 +761,7 @@ def uniquely_find_eni(connection, module, eni=None):
         else:
             return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to find unique eni with filters: {0}".format(filters))
+        module.fail_json_aws(e, f"Failed to find unique eni with filters: {filters}")
 
     return None
 
@@ -782,7 +780,7 @@ def _get_vpc_id(connection, module, subnet_id):
         subnets = connection.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
         return subnets["Subnets"][0]["VpcId"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to get vpc_id for {0}".format(subnet_id))
+        module.fail_json_aws(e, f"Failed to get vpc_id for {subnet_id}")
 
 
 def manage_tags(connection, module, eni, name, tags, purge_tags):

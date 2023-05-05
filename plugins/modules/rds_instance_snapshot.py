@@ -257,7 +257,7 @@ def get_snapshot(snapshot_id):
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't get snapshot {0}".format(snapshot_id))
+        module.fail_json_aws(e, msg=f"Couldn't get snapshot {snapshot_id}")
     return snapshot
 
 
@@ -267,11 +267,8 @@ def get_parameters(parameters, method_name):
 
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
-        module.fail_json(
-            msg="To {0} requires the parameters: {1}".format(
-                get_rds_method_attribute(method_name, module).operation_description, required_options
-            )
-        )
+        method_description = get_rds_method_attribute(method_name, module).operation_description
+        module.fail_json(msg=f"To {method_description} requires the parameters: {*required_options,}")
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 

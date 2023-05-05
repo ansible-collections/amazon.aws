@@ -19,7 +19,9 @@ one_action = [
                 }
             ],
         },
-        "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-58045486/5b231e04f663ae21",
+        "TargetGroupArn": (
+            "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg-58045486/5b231e04f663ae21"
+        ),
         "Type": "forward",
     }
 ]
@@ -76,7 +78,9 @@ class TestElBV2Utils:
             "SecurityGroups": ["sg-5943793c"],
             "LoadBalancerName": "my-load-balancer",
             "State": {"Code": "active"},
-            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188",
+            "LoadBalancerArn": (
+                "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188"
+            ),
         }
         self.paginate.build_full_result.return_value = {"LoadBalancers": [self.loadbalancer]}
 

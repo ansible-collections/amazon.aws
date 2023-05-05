@@ -134,7 +134,7 @@ def get_backup_vault_detail(connection, module):
         try:
             output.append(connection.describe_backup_vault(BackupVaultName=name, aws_retry=True))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to describe vault {0}".format(name))
+            module.fail_json_aws(e, msg=f"Failed to describe vault {name}")
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_backup_vault = []
     for backup_vault in output:
@@ -143,7 +143,7 @@ def get_backup_vault_detail(connection, module):
             tag_dict = get_backup_resource_tags(module, connection)
             backup_vault.update({"tags": tag_dict})
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.warn("Failed to get the backup vault tags - {0}".format(e))
+            module.warn(f"Failed to get the backup vault tags - {e}")
         snaked_backup_vault.append(camel_dict_to_snake_dict(backup_vault))
 
     # Turn the boto3 result in to ansible friendly tag dictionary

@@ -262,7 +262,7 @@ def main():
     try:
         vault = get_vault_facts(module, client, ct_params["BackupVaultName"])
     except (BotoCoreError, ClientError) as err:
-        module.debug("Unable to get vault facts {0}".format(err))
+        module.debug(f"Unable to get vault facts {err}")
 
     # If the vault exists set the result exists variable
     if vault is not None:

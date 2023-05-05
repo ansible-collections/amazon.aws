@@ -314,7 +314,7 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
 
     if module.params["wait"] and not module.check_mode:
         # Wait for tags to be updated
-        filters = [{"Name": "tag:{0}".format(k), "Values": [v]} for k, v in tags.items()]
+        filters = [{"Name": f"tag:{k}", "Values": [v]} for k, v in tags.items()]
         handle_waiter(conn, module, "subnet_exists", {"SubnetIds": [subnet["id"]], "Filters": filters}, start_time)
 
     return changed
@@ -349,9 +349,7 @@ def disassociate_ipv6_cidr(conn, module, subnet, start_time):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(
             e,
-            msg="Couldn't disassociate ipv6 cidr block id {0} from subnet {1}".format(
-                subnet["ipv6_association_id"], subnet["id"]
-            ),
+            msg=f"Couldn't disassociate ipv6 cidr block id {subnet['ipv6_association_id']} from subnet {subnet['id']}",
         )
 
     # Wait for cidr block to be disassociated
@@ -383,7 +381,7 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
             module.fail_json_aws(e, msg="Couldn't get subnet info")
 
         if check_subnets and check_subnets[0]["ipv6_cidr_block"]:
-            module.fail_json(msg="The IPv6 CIDR '{0}' conflicts with another subnet".format(ipv6_cidr))
+            module.fail_json(msg=f"The IPv6 CIDR '{ipv6_cidr}' conflicts with another subnet")
 
         if subnet["ipv6_association_id"]:
             if not check_mode:
@@ -397,7 +395,7 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
                 )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't associate ipv6 cidr {0} to {1}".format(ipv6_cidr, subnet["id"]))
+            module.fail_json_aws(e, msg=f"Couldn't associate ipv6 cidr {ipv6_cidr} to {subnet['id']}")
         else:
             if not check_mode and wait:
                 filters = ansible_dict_to_boto3_filter_list(

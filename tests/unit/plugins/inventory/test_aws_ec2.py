@@ -74,7 +74,7 @@ def inventory():
         ({}, None),
         ({"GroupId": "test01"}, "test01"),
         ({"GroupId": ["test01"]}, "test01"),
-        ({"GroupId": ("test01")}, "test01"),
+        ({"GroupId": "test01"}, "test01"),
         ({"GroupId": ["test01", "test02"]}, ["test01", "test02"]),
         ([{"GroupId": ["test01", "test02"]}], ["test01", "test02"]),
         ([{"GroupId": ["test01"]}], "test01"),
@@ -415,10 +415,10 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
     }
 
     for u in include_filters:
-        params["include_filters"].append({"Name": "in_filters_%d" % u, "Values": [u]})
+        params["include_filters"].append({"Name": f"in_filters_{int(u)}", "Values": [u]})
 
     for u in exclude_filters:
-        params["exclude_filters"].append({"Name": "ex_filters_%d" % u, "Values": [u]})
+        params["exclude_filters"].append({"Name": f"ex_filters_{int(u)}", "Values": [u]})
 
     assert inventory._query(**params) == {"aws_ec2": instances}
     if not instances_by_region:

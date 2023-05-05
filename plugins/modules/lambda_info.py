@@ -399,7 +399,7 @@ def config_details(client, module, function_name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get {0} configuration".format(function_name))
+        module.fail_json_aws(e, msg=f"Trying to get {function_name} configuration")
 
     if "Environment" in lambda_info and "Variables" in lambda_info["Environment"]:
         env_vars = lambda_info["Environment"]["Variables"]
@@ -463,7 +463,7 @@ def policy_details(client, module, function_name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get {0} policy".format(function_name))
+        module.fail_json_aws(e, msg=f"Trying to get {function_name} policy")
 
     return camel_dict_to_snake_dict(lambda_info)
 
@@ -490,7 +490,7 @@ def version_details(client, module, function_name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get {0} versions".format(function_name))
+        module.fail_json_aws(e, msg=f"Trying to get {function_name} versions")
 
     return camel_dict_to_snake_dict(lambda_info)
 
@@ -515,7 +515,7 @@ def tags_details(client, module, function_name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get {0} tags".format(function_name))
+        module.fail_json_aws(e, msg=f"Trying to get {function_name} tags")
 
     return camel_dict_to_snake_dict(lambda_info)
 
@@ -543,19 +543,19 @@ def main():
     if function_name:
         if not re.search(r"^[\w\-:]+$", function_name):
             module.fail_json(
-                msg="Function name {0} is invalid. Names must contain only alphanumeric characters and hyphens.".format(
-                    function_name
-                )
+                msg=f"Function name {function_name} is invalid. Names must contain only alphanumeric characters and hyphens.",
             )
         if len(function_name) > 64:
-            module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
+            module.fail_json(msg=f'Function name "{function_name}" exceeds 64 character limit')
 
     client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
 
     # Deprecate previous return key of `function`, as it was a dict of dicts, as opposed to a list of dicts
     module.deprecate(
-        "The returned key 'function', which returned a dictionary of dictionaries, is deprecated and will be replaced by 'functions',"
-        " which returns a list of dictionaries. Both keys are returned for now.",
+        (
+            "The returned key 'function', which returned a dictionary of dictionaries, is deprecated and will be"
+            " replaced by 'functions', which returns a list of dictionaries. Both keys are returned for now."
+        ),
         date="2025-01-01",
         collection_name="amazon.aws",
     )

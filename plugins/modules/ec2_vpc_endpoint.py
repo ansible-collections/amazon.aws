@@ -434,7 +434,10 @@ def main():
         if module.params.get("vpc_endpoint_type") == "Gateway":
             if module.params.get("vpc_endpoint_subnets") or module.params.get("vpc_endpoint_security_groups"):
                 module.fail_json(
-                    msg="Parameter vpc_endpoint_subnets and/or vpc_endpoint_security_groups can't be used with Gateway endpoint type"
+                    msg=(
+                        "Parameter vpc_endpoint_subnets and/or vpc_endpoint_security_groups can't be used with Gateway"
+                        " endpoint type"
+                    )
                 )
 
         if module.params.get("vpc_endpoint_type") == "GatewayLoadBalancer":
@@ -446,11 +449,17 @@ def main():
         if module.params.get("vpc_endpoint_type") == "Interface":
             if module.params.get("vpc_endpoint_subnets") and not module.params.get("vpc_endpoint_security_groups"):
                 module.fail_json(
-                    msg="Parameter vpc_endpoint_security_groups must be set when endpoint type is Interface and vpc_endpoint_subnets is defined"
+                    msg=(
+                        "Parameter vpc_endpoint_security_groups must be set when endpoint type is Interface and"
+                        " vpc_endpoint_subnets is defined"
+                    )
                 )
             if not module.params.get("vpc_endpoint_subnets") and module.params.get("vpc_endpoint_security_groups"):
                 module.fail_json(
-                    msg="Parameter vpc_endpoint_subnets must be set when endpoint type is Interface and vpc_endpoint_security_groups is defined"
+                    msg=(
+                        "Parameter vpc_endpoint_subnets must be set when endpoint type is Interface and"
+                        " vpc_endpoint_security_groups is defined"
+                    )
                 )
 
     try:

@@ -70,15 +70,15 @@ class LookupModule(LookupBase):
         except getattr(json.decoder, "JSONDecodeError", ValueError) as e:
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
-            raise AnsibleLookupError("Could not decode AWS IP ranges: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Could not decode AWS IP ranges: {to_native(e)}")
         except HTTPError as e:
-            raise AnsibleLookupError("Received HTTP error while pulling IP ranges: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Received HTTP error while pulling IP ranges: {to_native(e)}")
         except SSLValidationError as e:
-            raise AnsibleLookupError("Error validating the server's certificate for: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Error validating the server's certificate for: {to_native(e)}")
         except URLError as e:
-            raise AnsibleLookupError("Failed look up IP range service: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Failed look up IP range service: {to_native(e)}")
         except ConnectionError as e:
-            raise AnsibleLookupError("Error connecting to IP range service: {0}".format(to_native(e)))
+            raise AnsibleLookupError(f"Error connecting to IP range service: {to_native(e)}")
 
         if "region" in kwargs:
             region = kwargs["region"]

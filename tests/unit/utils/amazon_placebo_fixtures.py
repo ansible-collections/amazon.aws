@@ -67,7 +67,7 @@ def placeboify(request, monkeypatch):
 
     if not os.getenv("PLACEBO_RECORD"):
         if not os.path.isdir(recordings_path):
-            raise NotImplementedError("Missing Placebo recordings in directory: %s" % recordings_path)
+            raise NotImplementedError(f"Missing Placebo recordings in directory: {recordings_path}")
     else:
         try:
             # make sure the directory for placebo test recordings is available
@@ -85,7 +85,7 @@ def placeboify(request, monkeypatch):
     def boto3_middleman_connection(module, conn_type, resource, region="us-west-2", **kwargs):
         if conn_type != "client":
             # TODO support resource-based connections
-            raise ValueError("Mocker only supports client, not %s" % conn_type)
+            raise ValueError(f"Mocker only supports client, not {conn_type}")
         return session.client(resource, region_name=region)
 
     import ansible_collections.amazon.aws.plugins.module_utils.ec2

@@ -303,8 +303,8 @@ except ImportError:
 def common_snapshot_info(module, conn, method, prefix, params):
     paginator = conn.get_paginator(method)
     try:
-        results = paginator.paginate(**params).build_full_result()["%ss" % prefix]
-    except is_boto3_error_code("%sNotFound" % prefix):
+        results = paginator.paginate(**params).build_full_result()[f"{prefix}s"]
+    except is_boto3_error_code(f"{prefix}NotFound"):
         results = []
     except (
         botocore.exceptions.ClientError,
@@ -316,10 +316,11 @@ def common_snapshot_info(module, conn, method, prefix, params):
         try:
             if snapshot["SnapshotType"] != "shared":
                 snapshot["Tags"] = boto3_tag_list_to_ansible_dict(
-                    conn.list_tags_for_resource(ResourceName=snapshot["%sArn" % prefix], aws_retry=True)["TagList"]
+                    conn.list_tags_for_resource(ResourceName=snapshot[f"{prefix}Arn"], aws_retry=True)["TagList"]
                 )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get tags for snapshot %s" % snapshot["%sIdentifier" % prefix])
+            snapshot_name = snapshot[f"{prefix}Identifier"]
+            module.fail_json_aws(e, f"Couldn't get tags for snapshot {snapshot_name}")
 
     return [camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]) for snapshot in results]
 

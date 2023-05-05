@@ -24,7 +24,7 @@ def handler(event, context):
 
     extra = os.environ.get("EXTRA_MESSAGE")
     if extra is not None and len(extra) > 0:
-        greeting = "hello {0}. {1}".format(name, extra)
+        greeting = f"hello {name}. {extra}"
     else:
         greeting = "hello " + name
 

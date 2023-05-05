@@ -192,9 +192,11 @@ def main():
         invoke_params["LogType"] = "Tail"
     elif tail_log and not await_return:
         module.fail_json(
-            msg="The `tail_log` parameter is only available if "
-            "the invocation waits for the function to complete. "
-            "Set `wait` to true or turn off `tail_log`."
+            msg=(
+                "The `tail_log` parameter is only available if "
+                "the invocation waits for the function to complete. "
+                "Set `wait` to true or turn off `tail_log`."
+            )
         )
     else:
         invoke_params["LogType"] = "None"
@@ -219,9 +221,11 @@ def main():
     except is_boto3_error_code("ResourceNotFoundException") as nfe:
         module.fail_json_aws(
             nfe,
-            msg="Could not find Lambda to execute. Make sure "
-            "the ARN is correct and your profile has "
-            "permissions to execute this function.",
+            msg=(
+                "Could not find Lambda to execute. Make sure "
+                "the ARN is correct and your profile has "
+                "permissions to execute this function."
+            ),
         )
     except botocore.exceptions.ClientError as ce:  # pylint: disable=duplicate-except
         module.fail_json_aws(ce, msg="Client-side error when invoking Lambda, check inputs and specific error")

@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: lambda_layer_info
-version_added: 5.1.0
+version_added: 5.5.0
 short_description: List lambda layer or lambda layer versions
 description:
   - This module is used to list the versions of an Lambda layer or all available lambda layers.
@@ -28,7 +28,7 @@ options:
     type: int
     aliases:
     - layer_version
-    version_added: 5.2.0
+    version_added: 6.0.0
   compatible_runtime:
     description:
     - A runtime identifier.
@@ -129,7 +129,7 @@ layers_versions:
         description: Details about the layer version.
         returned: if I(version_number) was provided
         type: complex
-        version_added: 5.2.0
+        version_added: 6.0.0
         contains:
             location:
                 description: A link to the layer archive in Amazon S3 that is valid for 10 minutes.
@@ -191,7 +191,7 @@ def list_layer_versions(lambda_client, name, compatible_runtime=None, compatible
         layer_versions = _list_layer_versions(lambda_client, **params)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layer versions for name {0}".format(name))
+        raise LambdaLayerInfoFailure(exc=e, msg=f"Unable to list layer versions for name {name}")
 
 
 def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=None):
@@ -209,7 +209,7 @@ def list_layers(lambda_client, compatible_runtime=None, compatible_architecture=
             layer_versions.append(camel_dict_to_snake_dict(layer))
         return layer_versions
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise LambdaLayerInfoFailure(exc=e, msg="Unable to list layers {0}".format(params))
+        raise LambdaLayerInfoFailure(exc=e, msg=f"Unable to list layers {params}")
 
 
 def get_layer_version(lambda_client, layer_name, version_number):

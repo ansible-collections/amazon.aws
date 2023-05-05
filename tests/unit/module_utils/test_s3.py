@@ -30,8 +30,8 @@ def generate_random_string(size, include_digits=True):
 def test_s3_head_objects(parts, version):
     client = MagicMock()
 
-    s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
-    s3bucket_object = "s3-bucket-object-%s" % (generate_random_string(8, False))
+    s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
+    s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     versionId = None
     if version:
         versionId = random.randint(0, 1000)
@@ -69,7 +69,7 @@ def test_calculate_checksum(m_s3_head_objects, m_s3_md5, use_file, parts, tmp_pa
     mock_md5.digest.return_value = b"1"
     mock_md5.hexdigest.return_value = "".join(["f" for i in range(32)])
 
-    m_s3_head_objects.return_value = [{"ContentLength": "%d" % (i + 1)} for i in range(parts)]
+    m_s3_head_objects.return_value = [{"ContentLength": f"{int(i + 1)}"} for i in range(parts)]
 
     content = b'"f20e84ac3d0c33cea77b3f29e3323a09"'
     test_function = s3.calculate_checksum_with_content
@@ -82,13 +82,13 @@ def test_calculate_checksum(m_s3_head_objects, m_s3_md5, use_file, parts, tmp_pa
 
         content = str(etag_file)
 
-    s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
-    s3bucket_object = "s3-bucket-object-%s" % (generate_random_string(8, False))
+    s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
+    s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
 
     result = test_function(client, parts, s3bucket_name, s3bucket_object, version, content)
 
-    expected = '"{0}-{1}"'.format(mock_md5.hexdigest.return_value, parts)
+    expected = f'"{mock_md5.hexdigest.return_value}-{parts}"'
     assert result == expected
 
     mock_md5.digest.assert_has_calls([call() for i in range(parts)])
@@ -106,8 +106,8 @@ def test_calculate_etag(m_checksum_file, etag_multipart):
     module.fail_json_aws.side_effect = SystemExit(2)
     module.md5.return_value = generate_random_string(32)
 
-    s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
-    s3bucket_object = "s3-bucket-object-%s" % (generate_random_string(8, False))
+    s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
+    s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
     parts = 3
 
@@ -118,10 +118,10 @@ def test_calculate_etag(m_checksum_file, etag_multipart):
 
     if not etag_multipart:
         result = s3.calculate_etag(module, file_name, etag, client, s3bucket_name, s3bucket_object, version)
-        assert result == '"{0}"'.format(module.md5.return_value)
+        assert result == f'"{module.md5.return_value}"'
         module.md5.assert_called_once_with(file_name)
     else:
-        etag = '"f20e84ac3d0c33cea77b3f29e3323a09-{0}"'.format(parts)
+        etag = f'"f20e84ac3d0c33cea77b3f29e3323a09-{parts}"'
         m_checksum_file.return_value = digest
         assert digest == s3.calculate_etag(module, file_name, etag, client, s3bucket_name, s3bucket_object, version)
 
@@ -136,8 +136,8 @@ def test_calculate_etag_content(m_checksum_content, etag_multipart):
 
     module.fail_json_aws.side_effect = SystemExit(2)
 
-    s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
-    s3bucket_object = "s3-bucket-object-%s" % (generate_random_string(8, False))
+    s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
+    s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
     parts = 3
 
@@ -150,7 +150,7 @@ def test_calculate_etag_content(m_checksum_content, etag_multipart):
             module, content, etag, client, s3bucket_name, s3bucket_object, version
         )
     else:
-        etag = '"f20e84ac3d0c33cea77b3f29e3323a09-{0}"'.format(parts)
+        etag = f'"f20e84ac3d0c33cea77b3f29e3323a09-{parts}"'
         m_checksum_content.return_value = digest
         result = s3.calculate_etag_content(module, content, etag, client, s3bucket_name, s3bucket_object, version)
         assert result == digest
@@ -167,12 +167,12 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
 
     module.fail_json_aws.side_effect = SystemExit(2)
 
-    s3bucket_name = "s3-bucket-%s" % (generate_random_string(8, False))
-    s3bucket_object = "s3-bucket-object-%s" % (generate_random_string(8, False))
+    s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
+    s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
     parts = 3
 
-    etag = '"f20e84ac3d0c33cea77b3f29e3323a09-{0}"'.format(parts)
+    etag = f'"f20e84ac3d0c33cea77b3f29e3323a09-{parts}"'
     content = "some content or file name"
 
     if using_file:

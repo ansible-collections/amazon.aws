@@ -196,7 +196,10 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {"wait": True},
             *error(
                 NotImplementedError,
-                match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
+                    " module_utils/rds.py"
+                ),
             ),
         ),
     ],
@@ -360,7 +363,10 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {"wait": True},
             *error(
                 NotImplementedError,
-                match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
+                    " module_utils/rds.py"
+                ),
             ),
         ),
     ],
@@ -505,7 +511,10 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {"wait": True},
             *error(
                 NotImplementedError,
-                match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
+                    " module_utils/rds.py"
+                ),
             ),
         ),
     ],
@@ -627,7 +636,8 @@ def test__handle_errors(method_name, exception, expected):
                 message="ModifyDbCluster API",
             ),
             *expected(
-                "It appears you are trying to modify attributes that are managed at the cluster level. Please see rds_cluster"
+                "It appears you are trying to modify attributes that are managed at the cluster level. Please see"
+                " rds_cluster"
             ),
         ),
         (
@@ -635,7 +645,10 @@ def test__handle_errors(method_name, exception, expected):
             build_exception("modify_db_instance", code="InvalidParameterCombination"),
             *error(
                 NotImplementedError,
-                match="method modify_db_instance hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method modify_db_instance hasn't been added to the list of accepted methods to use a waiter in"
+                    " module_utils/rds.py"
+                ),
             ),
         ),
         (
@@ -643,7 +656,10 @@ def test__handle_errors(method_name, exception, expected):
             build_exception("promote_read_replica", code="InvalidDBInstanceState"),
             *error(
                 NotImplementedError,
-                match="method promote_read_replica hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method promote_read_replica hasn't been added to the list of accepted methods to use a waiter in"
+                    " module_utils/rds.py"
+                ),
             ),
         ),
         (
@@ -651,7 +667,10 @@ def test__handle_errors(method_name, exception, expected):
             build_exception("promote_read_replica_db_cluster", code="InvalidDBClusterStateFault"),
             *error(
                 NotImplementedError,
-                match="method promote_read_replica_db_cluster hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+                match=(
+                    "method promote_read_replica_db_cluster hasn't been added to the list of accepted methods to use a"
+                    " waiter in module_utils/rds.py"
+                ),
             ),
         ),
         (

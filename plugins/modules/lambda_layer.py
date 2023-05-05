@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: lambda_layer
-version_added: 5.1.0
+version_added: 5.5.0
 short_description: Creates an AWS Lambda layer or deletes an AWS Lambda layer version
 description:
   - This module allows the management of AWS Lambda functions aliases via the Ansible
@@ -248,7 +248,7 @@ def list_layer_versions(lambda_client, name):
         layer_versions = _list_layer_versions(lambda_client, LayerName=name)["LayerVersions"]
         return [camel_dict_to_snake_dict(layer) for layer in layer_versions]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise LambdaLayerFailure(e, "Unable to list layer versions for name {0}".format(name))
+        raise LambdaLayerFailure(e, f"Unable to list layer versions for name {name}")
 
 
 def create_layer_version(lambda_client, params, check_mode=False):
@@ -300,7 +300,7 @@ def delete_layer_version(lambda_client, params, check_mode=False):
                     lambda_client.delete_layer_version(LayerName=name, VersionNumber=layer["version"])
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                     raise LambdaLayerFailure(
-                        e, "Failed to delete layer version LayerName={0}, VersionNumber={1}.".format(name, version)
+                        e, f"Failed to delete layer version LayerName={name}, VersionNumber={version}."
                     )
     return {"changed": changed, "layer_versions": deleted_versions}
 

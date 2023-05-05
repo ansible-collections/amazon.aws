@@ -414,7 +414,7 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
 
     if missing_args:
         module.fail_json(
-            msg="missing required arguments for creation: {0}".format(", ".join(missing_args)),
+            msg=f"missing required arguments for creation: {', '.join(missing_args)}",
         )
 
     if module.check_mode:
@@ -606,7 +606,7 @@ def main():
             existing_check = client.get_health_check(HealthCheckId=id_to_update_delete)["HealthCheck"]
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.exit_json(
-                changed=False, msg="The specified health check with ID: {0} does not exist".format(id_to_update_delete)
+                changed=False, msg=f"The specified health check with ID: {id_to_update_delete} does not exist"
             )
     else:
         existing_check = find_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
