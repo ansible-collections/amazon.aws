@@ -1219,7 +1219,7 @@ def create_autoscaling_group(connection):
             else:
                 ag["LaunchTemplate"] = launch_object["LaunchTemplate"]
         else:
-            module.fail_json_aws(e, msg="Missing LaunchConfigurationName or LaunchTemplate")
+            module.fail_json_aws(msg="Missing LaunchConfigurationName or LaunchTemplate")
 
         try:
             create_asg(connection, **ag)
