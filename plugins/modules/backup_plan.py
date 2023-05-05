@@ -188,14 +188,9 @@ def plan_update_needed(client, backup_plan_id: str, backup_plan_data: dict) -> b
     return update_needed
 
 
-def update_backup_plan(
-    module: AnsibleAWSModule, client, backup_plan_id: str, backup_plan_data: dict
-):
+def update_backup_plan(module: AnsibleAWSModule, client, backup_plan_id: str, backup_plan_data: dict):
     try:
-        response = client.update_backup_plan(
-            BackupPlanId=backup_plan_id,
-            BackupPlan=backup_plan_data["BackupPlan"]
-        )
+        response = client.update_backup_plan(BackupPlanId=backup_plan_id, BackupPlan=backup_plan_data["BackupPlan"])
     except (
         BotoCoreError,
         ClientError,
@@ -254,7 +249,10 @@ def main():
             "BackupPlan": {
                 "BackupPlanName": backup_plan_name,
                 "Rules": snake_dict_to_camel_dict(module.params["rules"], capitalize_first=True),
-                "AdvancedBackupSettings": snake_dict_to_camel_dict(module.params.get("advanced_backup_settings"), capitalize_first=True) or [],
+                "AdvancedBackupSettings": snake_dict_to_camel_dict(
+                    module.params.get("advanced_backup_settings"), capitalize_first=True
+                )
+                or [],
             },
             "BackupPlanTags": module.params.get("tags"),
             "CreatorRequestId": module.params.get("creator_request_id"),

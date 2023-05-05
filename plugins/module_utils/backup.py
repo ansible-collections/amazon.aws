@@ -49,7 +49,7 @@ def _list_backup_plans(client, backup_plan_name):
             if backup_plan_name == backup_plan["BackupPlanName"]:
                 return backup_plan["BackupPlanId"]
         try:
-            next_token = response.get('NextToken')
+            next_token = response.get("NextToken")
         except:
             next_token = None
 
@@ -66,11 +66,11 @@ def get_plan_details(module, client, backup_plan_name: str):
         module.fail_json_aws(e, msg=f"Failed to describe plan {backup_plan_id}")
 
     try:
-       module.params["resource"] = _result.get("BackupPlanArn", None)
-       tag_dict = get_backup_resource_tags(module, client)
-       _result.update({"tags": tag_dict})
+        module.params["resource"] = _result.get("BackupPlanArn", None)
+        tag_dict = get_backup_resource_tags(module, client)
+        _result.update({"tags": tag_dict})
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-     module.fail_json_aws(e, msg=f"Failed to get the backup plan tags")
+        module.fail_json_aws(e, msg=f"Failed to get the backup plan tags")
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     result = [_result]
