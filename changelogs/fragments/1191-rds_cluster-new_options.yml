@@ -1,3 +1,0 @@
-minor_changes:
-- rds_cluster - update list of supported engines with ``mysql`` and ``postgres`` (https://github.com/ansible-collections/amazon.aws/pull/1191).
-- rds_cluster - add new options (e.g., ``db_cluster_instance_class``, ``allocated_storage``, ``storage_type``, ``iops``) (https://github.com/ansible-collections/amazon.aws/pull/1191).

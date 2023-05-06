@@ -1,2 +1,0 @@
-trivial:
-  - ec2_instance - Add filter statement to integration tests to prevent test collisions (https://github.com/ansible-collections/amazon.aws/pull/1505)

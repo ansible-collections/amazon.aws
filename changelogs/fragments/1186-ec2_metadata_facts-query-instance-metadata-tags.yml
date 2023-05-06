@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_metadata_facts - added support to query instance tags in metadata (https://github.com/ansible-collections/amazon.aws/pull/1186).
