@@ -11,6 +11,8 @@ action_groups:
   - backup_plan_info
   - backup_tag
   - backup_tag_info
+  - backup_selection
+  - backup_selection_info
   - backup_vault
   - backup_vault_info
   - cloudformation

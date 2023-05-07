@@ -19,9 +19,18 @@ author:
 options:
   backup_plan_name:
     description:
-      - Uniquely identifies the backup plan the selections should be listed for.
+      - Uniquely identifies the backup plan to be associated with the selection of resources.
     required: true
     type: str
+    aliases:
+      - plan_name
+  backup_selection_names:
+    description:
+      - Uniquely identifies the backup plan the selections should be listed for.
+    type: list
+    elemenst: str
+    aliases:
+     - selection_names
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -30,12 +39,15 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-# Gather information about all backup selections
-- amazon.aws.backup_selection_info
-# Gather information about a particular backup selection
-- amazon.aws.backup_selection_info:
+- name: Gather information about all backup selections
+  amazon.aws.backup_selection_info:
+    backup_plan_name: "{{ backup_plan_name }}"
+
+- name: Gather information about a particular backup selection
+  amazon.aws.backup_selection_info:
+    backup_plan_name: "{{ backup_plan_name }}"
     backup_selection_names:
-      - elastic
+      - "{{ backup_selection_name }}"
 """
 
 RETURN = r"""
@@ -46,122 +58,86 @@ backup_selections:
     returned: always
     contains:
         backup_plan_id:
-            description: backup plan id
+            description: Backup plan id.
             returned: always
             type: str
             sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
         creation_date:
-            description: backup plan creation date
+            description: Backup plan creation date.
             returned: always
             type: str
             sample: 2023-01-24T10:08:03.193000+01:00
         iam_role_arn:
-            description: iam role arn
+            description: IAM role arn.
             returned: always
             type: str
             sample: arn:aws:iam::111122223333:role/system-backup
         selection_id:
-            description: backup selection id
+            description: Backup selection id.
             returned: always
             type: str
             sample: 1111c217-5d71-4a55-8728-5fc4e63d437b
         selection_name:
-            description: backup selection name
+            description: Backup selection name.
             returned: always
             type: str
             sample: elastic
         conditions:
-            description: list of conditions (expressed as a dict) that are defined to assign resources to the backup plan using tags
+            description: List of conditions (expressed as a dict) that are defined to assign resources to the backup plan using tags.
             returned: always
             type: dict
-            sample:
+            sample: {}
         list_of_tags:
-            description: conditions defined to assign resources to the backup plans using tags
+            description: Conditions defined to assign resources to the backup plans using tags.
             returned: always
             type: list
-            sample:
+            elements: dict
+            sample: []
         not_resources:
-            description: list of Amazon Resource Names (ARNs) that are excluded from the backup plan
+            description: List of Amazon Resource Names (ARNs) that are excluded from the backup plan.
             returned: always
             type: list
-            sample:
+            sample: []
         resources:
-            description: list of Amazon Resource Names (ARNs) that are assigned to the backup plan
+            description: List of Amazon Resource Names (ARNs) that are assigned to the backup plan.
             returned: always
             type: list
-            sample:
+            sample: []
 """
+
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_selection_details
-
-
-def get_backup_selections(connection, module, backup_plan_id):
-    all_backup_selections = []
-    try:
-        result = connection.get_paginator("list_backup_selections")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to get the backup plans.")
-    for page in result.paginate(BackupPlanId=backup_plan_id):
-        for backup_selection in page["BackupSelectionsList"]:
-            all_backup_selections.append(backup_selection["SelectionId"])
-    return all_backup_selections
-
-
-def get_backup_selection_detail(connection, module):
-    output = []
-    result = {}
-    backup_plan_id = module.params.get("backup_plan_id")
-    backup_selection_list = get_backup_selections(connection, module, backup_plan_id)
-
-    for backup_selection in backup_selection_list:
-        try:
-            output.append(connection.get_backup_selection(SelectionId=backup_selection, BackupPlanId=backup_plan_id, aws_retry=True))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to describe selection SelectionId={0} BackupPlanId={1}".format(backup_selection, backup_plan_id))
-
-    # Turn the boto3 result in to ansible_friendly_snaked_names
-    snaked_backup_selection = []
-
-    for backup_selection in output:
-        snaked_backup_selection.append(camel_dict_to_snake_dict(backup_selection))
-
-    # Turn the boto3 result in to ansible friendly dictionary
-    for v in snaked_backup_selection:
-        if "tags_list" in v:
-            v["tags"] = boto3_tag_list_to_ansible_dict(v["tags_list"], "key", "value")
-            del v["tags_list"]
-        if "response_metadata" in v:
-            del v["response_metadata"]
-        if "backup_selection" in v:
-            for backup_selection_key in v['backup_selection']:
-                v[backup_selection_key] = v['backup_selection'][backup_selection_key]
-        del v["backup_selection"]
-    result["backup_selections"] = snaked_backup_selection
-    return result
 
 
 def main():
     argument_spec = dict(
-        backup_plan_id=dict(type="str", required=True),
+        backup_plan_name=dict(type="str", required=True, aliases=["plan_name"]),
+        backup_selection_names=dict(type="list", elements="str", aliases=["selection_names"]),
     )
+
+    global client
+    global module
+    result = {}
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     try:
-        connection = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("backup", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
-    
-    get_backup_selection_detail(connection, module)
+
+    result["backup_selections"] = get_selection_details(
+        module, client, module.params.get("backup_plan_name"), module.params.get("backup_selection_names")
+    )
+    module.exit_json(**result)
+
 
 if __name__ == "__main__":
     main()

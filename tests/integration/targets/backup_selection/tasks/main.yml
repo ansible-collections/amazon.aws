@@ -1,0 +1,271 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    - name: Create an IAM Role
+      community.aws.iam_role:
+        name: "{{ backup_iam_role_name }}"
+        assume_role_policy_document: '{{ lookup("file", "backup-policy.json") }}'
+        create_instance_profile: no
+        description: "Ansible AWS Backup Role"
+        managed_policy:
+          - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+      register: iam_role
+
+    - name: Create an AWS Backup vault for the plan to target
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+      register: _resutl_create_backup_vault
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _resutl_create_backup_vault.changed
+
+    # - name: Create an AWS Backup plan
+    #   amazon.aws.backup_plan:
+    #     backup_plan_name: "{{ backup_plan_name }}"
+    #     rules:
+    #       - RuleName: DailyBackups
+    #         TargetBackupVaultName: "{{ backup_vault_name }}"
+    #         ScheduleExpression: "cron(0 5 ? * * *)"
+    #         StartWindowMinutes: 60
+    #         CompletionWindowMinutes: 1440
+    #     tags:
+    #       environment: test
+    #   register: _resutl_create_backup_plan
+
+    # - name: Verify result
+    #   ansible.builtin.assert:
+    #     that:
+    #       - _resutl_create_backup_plan.changed
+
+    # - name: Get detailed information about the AWS Backup plan
+    #   amazon.aws.backup_plan_info:
+    #     backup_plan_names:
+    #       - "{{ backup_plan_name }}"
+    #   register: _result_backup_plan_info
+
+    # - name: Verify result
+    #   ansible.builtin.assert:
+    #     that:
+    #       - _result_backup_plan_info.backup_plans | length == 1
+
+    - name: Create an AWS Backup plan
+      command: aws backup create-backup-plan --backup-plan "{\"BackupPlanName\":\"{{ backup_plan_name }}\",\"Rules\":[{\"RuleName\":\"DailyBackups\",\"ScheduleExpression\":\"cron(0 5 ? * * *)\",\"StartWindowMinutes\":60,\"TargetBackupVaultName\":\"{{ backup_vault_name }}\",\"CompletionWindowMinutes\":1440,\"Lifecycle\":{\"DeleteAfterDays\":35}}]}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: _result_create_backup_plan
+
+    - set_fact:
+        backup_plan_id: "{{ (_result_create_backup_plan.stdout | from_json).BackupPlanId }}"
+
+    - name: Create an AWS Backup selection (check_mode)
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "daily"
+      check_mode: true
+      register: _create_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _create_result_backup_selection.changed
+
+    - name: Create an AWS Backup selection
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "daily"
+      register: _create_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _create_result_backup_selection.changed
+          - "'backup_selection' in _create_result_backup_selection"
+          - _create_result_backup_selection.backup_selection.iam_role_arn == iam_role.iam_role.arn
+          - _create_result_backup_selection.backup_selection.selection_name == "{{ backup_selection_name }}"
+
+    - name: Create an AWS Backup selection (idempotency)
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "daily"
+      register: _create_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - not _create_result_backup_selection.changed
+          - "'backup_selection' in _create_result_backup_selection"
+          - _create_result_backup_selection.backup_selection.iam_role_arn == iam_role.iam_role.arn
+          - _create_result_backup_selection.backup_selection.selection_name == "{{ backup_selection_name }}"
+
+    - name: Get detailed information about the AWS Backup selection
+      amazon.aws.backup_selection_info:
+        backup_plan_name: "{{ backup_plan_name }}"
+        selection_names:
+          - "{{ backup_selection_name }}"
+      register: _result_backup_selection_info
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _result_backup_selection_info.backup_selections | length == 1
+
+    - name: Modify an AWS Backup selection (check_mode)
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "weekly"
+      check_mode: true
+      register: _modify_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _modify_result_backup_selection.changed
+
+    - name: Modify an AWS Backup selection
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "weekly"
+      register: _modify_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _modify_result_backup_selection.changed
+          - "'backup_selection' in _modify_result_backup_selection"
+          - _modify_result_backup_selection.backup_selection.iam_role_arn == iam_role.iam_role.arn
+          - _modify_result_backup_selection.backup_selection.selection_name == "{{ backup_selection_name }}"
+
+    - name: Modify an AWS Backup selection (idempotency)
+      amazon.aws.backup_selection:
+        selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        iam_role_arn: "{{ iam_role.iam_role.arn }}"
+        list_of_tags:
+          - condition_type: "STRINGEQUALS"
+            condition_key: "backup"
+            condition_value: "weekly"
+      register: _modify_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - not _modify_result_backup_selection.changed
+          - "'backup_selection' in _modify_result_backup_selection"
+          - _modify_result_backup_selection.backup_selection.iam_role_arn == iam_role.iam_role.arn
+          - _modify_result_backup_selection.backup_selection.selection_name == "{{ backup_selection_name }}"
+
+    - name: List all AWS Backup selections
+      amazon.aws.backup_selection_info:
+        backup_plan_name: "{{ backup_plan_name }}"
+      register: _result_backup_selection_list
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - "'backup_selections' in _result_backup_selection_list"
+          - _result_backup_selection_list.backup_selections | length != 0
+
+    - name: Delete AWS Backup selection (check_mode)
+      amazon.aws.backup_selection:
+        backup_selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      check_mode: true
+      register: _delete_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _delete_result_backup_selection.changed
+          - "'backup_selection' in _delete_result_backup_selection"
+
+    - name: Delete AWS Backup selection
+      amazon.aws.backup_selection:
+        backup_selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      register: _delete_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - _delete_result_backup_selection.changed
+          - "'backup_selection' in _delete_result_backup_selection"
+
+    - name: Delete AWS Backup selection (idempotency)
+      amazon.aws.backup_selection:
+        backup_selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      register: _delete_result_backup_selection
+
+    - name: Verify result
+      ansible.builtin.assert:
+        that:
+          - not _delete_result_backup_selection.changed
+          - "'backup_selection' in _delete_result_backup_selection"
+
+  always:
+    - name: Delete AWS Backup selection created during this test
+      amazon.aws.backup_selection:
+        backup_selection_name: "{{ backup_selection_name }}"
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      ignore_errors: true
+
+    # - name: Delete AWS Backup plan created during this test
+    #   amazon.aws.backup_plan:
+    #     backup_plan_name: "{{ backup_plan_name }}"
+    #     state: absent
+    #   ignore_errors: true
+
+    - name: Delete AWS Backup plan created during this test
+      command: aws backup delete-backup-plan --backup-plan-id "{{ backup_plan_id }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: _result_create_backup_plan
+
+    - name: Delete AWS Backup vault created during this test
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
+      ignore_errors: true
