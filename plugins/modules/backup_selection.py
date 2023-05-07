@@ -21,7 +21,7 @@ options:
     type: str
     aliases:
       - plan_name
-  selection_name:
+  backup_selection_name:
     description:
       - The display name of a resource selection document. Must contain 1 to 50 alphanumeric or '-_.' characters.
     required: true
@@ -62,8 +62,7 @@ options:
     default: present
     choices: ['present', 'absent']
     type: str
-
-authors:
+author:
   - Kristof Imre Szabo (@krisek)
   - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
@@ -94,22 +93,22 @@ backup_selection:
       description: Backup plan id.
       returned: always
       type: str
-      sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+      sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
     creation_date:
       description: Backup plan creation date.
       returned: always
       type: str
-      sample: 2023-01-24T10:08:03.193000+01:00
+      sample: "2023-01-24T10:08:03.193000+01:00"
     iam_role_arn:
       description: The ARN of the IAM role that Backup uses.
       returned: always
       type: str
-      sample: arn:aws:iam::111122223333:role/system-backup
+      sample: "arn:aws:iam::111122223333:role/system-backup"
     selection_id:
       description: Backup selection id.
       returned: always
       type: str
-      sample: 1111c217-5d71-4a55-8728-5fc4e63d437b
+      sample: "1111c217-5d71-4a55-8728-5fc4e63d437b"
     selection_name:
       description: Backup selection name.
       returned: always

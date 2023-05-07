@@ -28,7 +28,7 @@ options:
     description:
       - Uniquely identifies the backup plan the selections should be listed for.
     type: list
-    elemenst: str
+    elements: str
     aliases:
      - selection_names
 extends_documentation_fragment:
@@ -61,22 +61,22 @@ backup_selections:
             description: Backup plan id.
             returned: always
             type: str
-            sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+            sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
         creation_date:
             description: Backup plan creation date.
             returned: always
             type: str
-            sample: 2023-01-24T10:08:03.193000+01:00
+            sample: "2023-01-24T10:08:03.193000+01:00"
         iam_role_arn:
             description: IAM role arn.
             returned: always
             type: str
-            sample: arn:aws:iam::111122223333:role/system-backup
+            sample: "arn:aws:iam::111122223333:role/system-backup"
         selection_id:
             description: Backup selection id.
             returned: always
             type: str
-            sample: 1111c217-5d71-4a55-8728-5fc4e63d437b
+            sample: "1111c217-5d71-4a55-8728-5fc4e63d437b"
         selection_name:
             description: Backup selection name.
             returned: always
