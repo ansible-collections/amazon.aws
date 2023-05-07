@@ -152,12 +152,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-import logging
-
-logging.basicConfig(
-    filename="/tmp/file.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(name)s:%(message)s"
-)
-
 
 def check_for_update(current_selection, backup_selection_data, iam_role_arn):
     update_needed = False

@@ -13,12 +13,6 @@ from typing import Union
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-import logging
-
-logging.basicConfig(
-    filename="/tmp/file.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(name)s:%(message)s"
-)
-
 
 def get_backup_resource_tags(module, backup_client):
     resource = module.params.get("resource")
