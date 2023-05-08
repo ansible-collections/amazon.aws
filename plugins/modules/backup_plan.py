@@ -258,9 +258,7 @@ from typing import Optional
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.backup import (
-    get_plan_details
-)
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 try:
@@ -365,9 +363,7 @@ def format_client_params(
     return params
 
 
-def format_check_mode_response(
-    plan_name: str, plan: dict, tags: dict, delete: bool = False
-) -> dict:
+def format_check_mode_response(plan_name: str, plan: dict, tags: dict, delete: bool = False) -> dict:
     """
     Formats plan details in check mode to match result expectations.
 
@@ -432,10 +428,7 @@ def plan_update_needed(existing_plan: dict, new_plan: dict) -> bool:
 
     # Check whether rules match
     existing_rules = json.dumps(
-        [
-            {key: val for key, val in rule.items() if key != "rule_id"}
-            for rule in existing_plan["backup_plan"]["rules"]
-        ],
+        [{key: val for key, val in rule.items() if key != "rule_id"} for rule in existing_plan["backup_plan"]["rules"]],
         sort_keys=True,
     )
     new_rules = json.dumps(new_plan["rules"], sort_keys=True)
@@ -447,9 +440,7 @@ def plan_update_needed(existing_plan: dict, new_plan: dict) -> bool:
         existing_plan["backup_plan"].get("advanced_backup_settings", []),
         sort_keys=True,
     )
-    new_advanced_backup_settings = json.dumps(
-        new_plan.get("advanced_backup_settings", []), sort_keys=True
-    )
+    new_advanced_backup_settings = json.dumps(new_plan.get("advanced_backup_settings", []), sort_keys=True)
     if existing_advanced_backup_settings != new_advanced_backup_settings:
         update_needed = True
 
@@ -499,9 +490,7 @@ def tag_backup_plan(
 
     new_tags = new_tags or {}
     current_tags = current_tags or {}
-    tags_to_add, tags_to_remove = compare_aws_tags(
-        current_tags, new_tags, purge_tags=module.params["purge_tags"]
-    )
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, new_tags, purge_tags=module.params["purge_tags"])
 
     if not tags_to_add and not tags_to_remove:
         return False
@@ -552,10 +541,7 @@ def main():
     plan_name = module.params["backup_plan_name"]
     plan = {
         "backup_plan_name": module.params["backup_plan_name"],
-        "rules": [
-            {k: v for k, v in rule.items() if v is not None}
-            for rule in module.params["rules"] or []
-        ],
+        "rules": [{k: v for k, v in rule.items() if v is not None} for rule in module.params["rules"] or []],
         "advanced_backup_settings": [
             {k: v for k, v in setting.items() if v is not None}
             for setting in module.params["advanced_backup_settings"] or []
@@ -576,9 +562,7 @@ def main():
             if module.check_mode:  # Use supplied params as result data in check mode
                 backup_plan = format_check_mode_response(plan_name, plan, tags)
             else:
-                client_params = format_client_params(
-                    module, plan, tags=tags, operation="create"
-                )
+                client_params = format_client_params(module, plan, tags=tags, operation="create")
                 response = create_backup_plan(module, client, client_params)
                 backup_plan = get_plan_details(module, client, plan_name)[0]
             result["exists"] = True
@@ -616,9 +600,7 @@ def main():
             module.debug(msg=f"Backup plan {plan_name} not found.")
         else:  # Plan exists, delete it
             if module.check_mode:
-                response = format_check_mode_response(
-                    plan_name, existing_plan, tags, True
-                )
+                response = format_check_mode_response(plan_name, existing_plan, tags, True)
             else:
                 response = delete_backup_plan(module, client, existing_plan_id)
             result["changed"] = True
