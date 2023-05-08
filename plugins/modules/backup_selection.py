@@ -226,7 +226,9 @@ def main():
             type="list",
             elements="dict",
             options=dict(
-                condition_type=dict(type="str"), condition_key=dict(type="str"), condition_value=dict(type="str")
+                condition_type=dict(type="str"),
+                condition_key=dict(type="str", no_log=False),
+                condition_value=dict(type="str"),
             ),
         ),
         state=dict(default="present", choices=["present", "absent"]),
