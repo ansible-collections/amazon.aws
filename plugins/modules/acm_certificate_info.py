@@ -296,7 +296,7 @@ def main():
     )
 
     if module.params["certificate_arn"] and len(certificates) != 1:
-        module.fail_json(msg="No certificate exists in this region with ARN %s" % module.params["certificate_arn"])
+        module.fail_json(msg=f"No certificate exists in this region with ARN {module.params['certificate_arn']}")
 
     module.exit_json(certificates=certificates)
 
