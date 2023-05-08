@@ -276,7 +276,7 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:
-            module.fail_json_aws(e, "Couldn't add tags to certificate {0}".format(resource_arn))
+            module.fail_json_aws(e, f"Couldn't add tags to certificate {resource_arn}")
     if tags_to_remove and not module.check_mode:
         # remove_tags_from_certificate wants a list of key, value pairs, not a list of keys.
         tags_list = [{"Key": key, "Value": existing_tags.get(key)} for key in tags_to_remove]
@@ -289,7 +289,7 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:
-            module.fail_json_aws(e, "Couldn't remove tags from certificate {0}".format(resource_arn))
+            module.fail_json_aws(e, f"Couldn't remove tags from certificate {resource_arn}")
     new_tags = deepcopy(existing_tags)
     for key, value in tags_to_add.items():
         new_tags[key] = value
@@ -441,7 +441,7 @@ def ensure_certificates_present(client, module, acm, certificates, desired_tags,
     cert_arn = None
     changed = False
     if len(certificates) > 1:
-        msg = "More than one certificate with Name=%s exists in ACM in this region" % module.params["name_tag"]
+        msg = f"More than one certificate with Name={module.params['name_tag']} exists in ACM in this region"
         module.fail_json(msg=msg, certificates=certificates)
     elif len(certificates) == 1:
         # Update existing certificate that was previously imported to ACM.
@@ -496,7 +496,7 @@ def main():
         absent_args = ["certificate_arn", "domain_name", "name_tag"]
         if sum([(module.params[a] is not None) for a in absent_args]) < 1:
             for a in absent_args:
-                module.debug("%s is %s" % (a, module.params[a]))
+                module.debug(f"{a} is {module.params[a]}")
             module.fail_json(
                 msg="If 'state' is specified as 'present' then at least one of 'name_tag', 'certificate_arn' or 'domain_name' must be specified"
             )
@@ -505,7 +505,7 @@ def main():
         absent_args = ["certificate_arn", "domain_name", "name_tag"]
         if sum([(module.params[a] is not None) for a in absent_args]) != 1:
             for a in absent_args:
-                module.debug("%s is %s" % (a, module.params[a]))
+                module.debug(f"{a} is {module.params[a]}")
             module.fail_json(
                 msg="If 'state' is specified as 'absent' then exactly one of 'name_tag', 'certificate_arn' or 'domain_name' must be specified"
             )
@@ -543,7 +543,7 @@ def main():
         only_tags=filter_tags,
     )
 
-    module.debug("Found %d corresponding certificates in ACM" % len(certificates))
+    module.debug(f"Found {len(certificates)} corresponding certificates in ACM")
     if module.params["state"] == "present":
         ensure_certificates_present(client, module, acm, certificates, desired_tags, filter_tags)
 
