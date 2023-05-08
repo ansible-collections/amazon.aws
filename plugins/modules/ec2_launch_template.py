@@ -453,13 +453,11 @@ def determine_iam_role(module, name_or_arn):
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
         return {"arn": role["InstanceProfile"]["Arn"]}
     except is_boto3_error_code("NoSuchEntity") as e:
-        module.fail_json_aws(e, msg="Could not find instance_role {0}".format(name_or_arn))
+        module.fail_json_aws(e, msg=f"Could not find instance_role {name_or_arn}")
     except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
-            msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(
-                name_or_arn
-            ),
+            msg=f"An error occurred while searching for instance_role {name_or_arn}. Please try supplying the full ARN.",
         )
 
 
@@ -481,15 +479,18 @@ def existing_templates(module):
     except is_boto3_error_code("InvalidLaunchTemplateId.Malformed") as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
-            msg="Launch template with ID {0} is not a valid ID. It should start with `lt-....`".format(
-                module.params.get("launch_template_id")
+            msg=(
+                f"Launch template with ID {module.params.get('launch_template_id')} is not a valid ID. It should start"
+                " with `lt-....`"
             ),
         )
     except is_boto3_error_code("InvalidLaunchTemplateId.NotFoundException") as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
-            msg="Launch template with ID {0} could not be found, please supply a name "
-            "instead so that a new template can be created".format(module.params.get("launch_template_id")),
+            msg=(
+                f"Launch template with ID {module.params.get('launch_template_id')} could not be found, please supply a"
+                " name instead so that a new template can be created"
+            ),
         )
     except (ClientError, BotoCoreError, WaiterError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not check existing launch templates. This may be an IAM permission problem.")
@@ -510,9 +511,7 @@ def existing_templates(module):
         except (ClientError, BotoCoreError, WaiterError) as e:
             module.fail_json_aws(
                 e,
-                msg="Could not find launch template versions for {0} (ID: {1}).".format(
-                    template["LaunchTemplateName"], template_id
-                ),
+                msg=f"Could not find launch template versions for {template['LaunchTemplateName']} (ID: {template_id}).",
             )
 
 
@@ -547,10 +546,8 @@ def delete_template(module):
                 )
                 if v_resp["UnsuccessfullyDeletedLaunchTemplateVersions"]:
                     module.warn(
-                        "Failed to delete template versions {0} on launch template {1}".format(
-                            v_resp["UnsuccessfullyDeletedLaunchTemplateVersions"],
-                            template["LaunchTemplateId"],
-                        )
+                        f"Failed to delete template versions {v_resp['UnsuccessfullyDeletedLaunchTemplateVersions']} on"
+                        f" launch template {template['LaunchTemplateId']}"
                     )
                 deleted_versions = [
                     camel_dict_to_snake_dict(v) for v in v_resp["SuccessfullyDeletedLaunchTemplateVersions"]
@@ -558,9 +555,7 @@ def delete_template(module):
             except (ClientError, BotoCoreError) as e:
                 module.fail_json_aws(
                     e,
-                    msg="Could not delete existing versions of the launch template {0}".format(
-                        template["LaunchTemplateId"]
-                    ),
+                    msg=f"Could not delete existing versions of the launch template {template['LaunchTemplateId']}",
                 )
         try:
             resp = ec2.delete_launch_template(
@@ -568,7 +563,7 @@ def delete_template(module):
                 aws_retry=True,
             )
         except (ClientError, BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Could not delete launch template {0}".format(template["LaunchTemplateId"]))
+            module.fail_json_aws(e, msg=f"Could not delete launch template {template['LaunchTemplateId']}")
         return {
             "deleted_versions": deleted_versions,
             "deleted_template": camel_dict_to_snake_dict(resp["LaunchTemplate"]),
@@ -647,9 +642,7 @@ def create_or_update(module, template_options):
                     int(module.params.get("source_version"))
                 except ValueError:
                     module.fail_json(
-                        msg='source_version param was not a valid integer, got "{0}"'.format(
-                            module.params.get("source_version")
-                        )
+                        msg=f"source_version param was not a valid integer, got \"{module.params.get('source_version')}\""
                     )
                 # get source template version
                 source_version = next(
@@ -658,7 +651,7 @@ def create_or_update(module, template_options):
                 )
                 if source_version is None:
                     module.fail_json(
-                        msg='source_version does not exist, got "{0}"'.format(module.params.get("source_version"))
+                        msg=f"source_version does not exist, got \"{module.params.get('source_version')}\""
                     )
                 resp = ec2.create_launch_template_version(
                     LaunchTemplateId=template["LaunchTemplateId"],
@@ -684,9 +677,7 @@ def create_or_update(module, template_options):
                     int(module.params.get("default_version"))
                 except ValueError:
                     module.fail_json(
-                        msg='default_version param was not a valid integer, got "{0}"'.format(
-                            module.params.get("default_version")
-                        )
+                        msg=f"default_version param was not a valid integer, got \"{module.params.get('default_version')}\""
                     )
                 set_default = ec2.modify_launch_template(
                     LaunchTemplateId=template["LaunchTemplateId"],
@@ -863,7 +854,7 @@ def main():
     elif module.params.get("state") == "absent":
         out = delete_template(module)
     else:
-        module.fail_json(msg='Unsupported value "{0}" for `state` parameter'.format(module.params.get("state")))
+        module.fail_json(msg=f"Unsupported value \"{module.params.get('state')}\" for `state` parameter")
 
     module.exit_json(**out)
 
