@@ -302,8 +302,8 @@ class EFSConnection(object):
             AWS documentation is available here:
             https://docs.aws.amazon.com/efs/latest/ug/gs-step-three-connect-to-ec2-instance.html
             """
-            item["MountPoint"] = ".%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
-            item["FilesystemAddress"] = "%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
+            item["MountPoint"] = f".{item['FileSystemId']}.efs.{self.region}.amazonaws.com:/"
+            item["FilesystemAddress"] = f"{item['FileSystemId']}.efs.{self.region}.amazonaws.com:/"
             if "Timestamp" in item["SizeInBytes"]:
                 item["SizeInBytes"]["Timestamp"] = str(item["SizeInBytes"]["Timestamp"])
             if item["LifeCycleState"] == self.STATE_AVAILABLE:

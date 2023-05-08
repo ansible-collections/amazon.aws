@@ -301,7 +301,7 @@ def find_cluster_by_name(client, module, cluster_name):
         module.fail_json_aws(e, "Failed to find kafka cluster by name")
     if cluster_list:
         if len(cluster_list) != 1:
-            module.fail_json(msg="Found more than one cluster with name '{0}'".format(cluster_name))
+            module.fail_json(msg=f"Found more than one cluster with name '{cluster_name}'")
         return cluster_list[0]
     return {}
 
@@ -340,9 +340,7 @@ def wait_for_cluster_state(client, module, arn, state="ACTIVE"):
         if current_state == state:
             return
         if time.time() - start > timeout:
-            module.fail_json(
-                msg="Timeout waiting for cluster {0} (desired state is '{1}')".format(current_state, state)
-            )
+            module.fail_json(msg=f"Timeout waiting for cluster {current_state} (desired state is '{state}')")
         time.sleep(check_interval)
 
 
@@ -559,7 +557,7 @@ def create_or_update_cluster(client, module):
             try:
                 update_method = getattr(client, options.get("update_method", "update_" + method))
             except AttributeError as e:
-                module.fail_json_aws(e, "There is no update method 'update_{0}'".format(method))
+                module.fail_json_aws(e, f"There is no update method 'update_{method}'")
 
             if options["current_value"] != options["target_value"]:
                 changed = True
@@ -575,9 +573,7 @@ def create_or_update_cluster(client, module):
                         wait_for_cluster_state(client, module, arn=cluster["ClusterArn"], state="ACTIVE")
                     else:
                         module.fail_json(
-                            msg="Cluster can be updated only in active state, current state is '{0}'. check cluster state or use wait option".format(
-                                state
-                            )
+                            msg=f"Cluster can be updated only in active state, current state is '{state}'. check cluster state or use wait option"
                         )
                 try:
                     response["changes"][method] = update_method(
@@ -587,7 +583,7 @@ def create_or_update_cluster(client, module):
                     botocore.exceptions.BotoCoreError,
                     botocore.exceptions.ClientError,
                 ) as e:
-                    module.fail_json_aws(e, "Failed to update cluster via 'update_{0}'".format(method))
+                    module.fail_json_aws(e, f"Failed to update cluster via 'update_{method}'")
 
                 if module.params["wait"]:
                     wait_for_cluster_state(client, module, arn=cluster["ClusterArn"], state="ACTIVE")
@@ -606,7 +602,7 @@ def update_cluster_tags(client, module, arn):
     try:
         existing_tags = client.list_tags_for_resource(ResourceArn=arn, aws_retry=True)["Tags"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to retrieve tags for cluster '{0}'".format(arn))
+        module.fail_json_aws(e, msg=f"Unable to retrieve tags for cluster '{arn}'")
 
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
 
@@ -617,7 +613,7 @@ def update_cluster_tags(client, module, arn):
             if tags_to_add:
                 client.tag_resource(ResourceArn=arn, Tags=tags_to_add, aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to set tags for cluster '{0}'".format(arn))
+            module.fail_json_aws(e, msg=f"Unable to set tags for cluster '{arn}'")
 
     changed = bool(tags_to_add) or bool(tags_to_remove)
     return changed
@@ -761,7 +757,7 @@ def main():
             )
         if len(module.params["name"]) > 64:
             module.fail_json(
-                module.fail_json(msg='Cluster name "{0}" exceeds 64 character limit'.format(module.params["name"]))
+                module.fail_json(msg=f"Cluster name \"{module.params['name']}\" exceeds 64 character limit")
             )
         changed, response = create_or_update_cluster(client, module)
     elif module.params["state"] == "absent":
@@ -784,7 +780,7 @@ def main():
         ) as e:
             module.fail_json_aws(
                 e,
-                "Can not obtain information about cluster {0}".format(response["ClusterArn"]),
+                f"Can not obtain information about cluster {response['ClusterArn']}",
             )
 
     module.exit_json(

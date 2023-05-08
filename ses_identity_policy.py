@@ -101,7 +101,7 @@ def get_identity_policy(connection, module, identity, policy_name):
     try:
         response = connection.get_identity_policies(Identity=identity, PolicyNames=[policy_name], aws_retry=True)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to retrieve identity policy {policy}".format(policy=policy_name))
+        module.fail_json_aws(e, msg=f"Failed to retrieve identity policy {policy_name}")
     policies = response["Policies"]
     if policy_name in policies:
         return policies[policy_name]
@@ -125,7 +125,7 @@ def create_or_update_identity_policy(connection, module):
                     Identity=identity, PolicyName=policy_name, Policy=required_policy, aws_retry=True
                 )
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Failed to put identity policy {policy}".format(policy=policy_name))
+            module.fail_json_aws(e, msg=f"Failed to put identity policy {policy_name}")
 
     # Load the list of applied policies to include in the response.
     # In principle we should be able to just return the response, but given
@@ -162,7 +162,7 @@ def delete_identity_policy(connection, module):
             if not module.check_mode:
                 connection.delete_identity_policy(Identity=identity, PolicyName=policy_name, aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Failed to delete identity policy {policy}".format(policy=policy_name))
+            module.fail_json_aws(e, msg=f"Failed to delete identity policy {policy_name}")
         changed = True
         policies_present = list(policies_present)
         policies_present.remove(policy_name)

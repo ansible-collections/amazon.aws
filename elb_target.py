@@ -136,7 +136,7 @@ def convert_tg_name_to_arn(connection, module, tg_name):
     try:
         response = describe_target_groups_with_backoff(connection, tg_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to describe target group {0}".format(tg_name))
+        module.fail_json_aws(e, msg=f"Unable to describe target group {tg_name}")
 
     tg_arn = response["TargetGroups"][0]["TargetGroupArn"]
 
@@ -170,7 +170,7 @@ def describe_targets(connection, module, tg_arn, target=None):
             return {}
         return targets[0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to describe target health for target {0}".format(target))
+        module.fail_json_aws(e, msg=f"Unable to describe target health for target {target}")
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10)
@@ -216,7 +216,7 @@ def register_target(connection, module):
                         connection, module, target_group_arn, target, target_status, target_status_timeout
                     )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to deregister target {0}".format(target))
+                module.fail_json_aws(e, msg=f"Unable to deregister target {target}")
 
     # Get all targets for the target group
     target_descriptions = describe_targets(connection, module, target_group_arn)
@@ -274,7 +274,7 @@ def deregister_target(connection, module):
             deregister_target_with_backoff(connection, target_group_arn, target)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json(msg="Unable to deregister target {0}".format(target))
+            module.fail_json(msg=f"Unable to deregister target {target}")
     else:
         if current_target_reason != "Target.NotRegistered" and current_target_state != "draining":
             module.warn(
@@ -306,9 +306,7 @@ def target_status_check(connection, module, target_group_arn, target, target_sta
         sleep(1)
     if not reached_state:
         module.fail_json(
-            msg="Status check timeout of {0} exceeded, last status was {1}: ".format(
-                target_status_timeout, health_state
-            )
+            msg=f"Status check timeout of {target_status_timeout} exceeded, last status was {health_state}: "
         )
 
 

@@ -164,8 +164,7 @@ def run_module():
         if module.params.get("state") == "present":
             if requesting_unsupported_modifications(current_config, module.params):
                 message = (
-                    "Cannot modify destination_region or grant_name. "
-                    "Please disable cross-region snapshots, and re-run."
+                    "Cannot modify destination_region or grant_name. Please disable cross-region snapshots, and re-run."
                 )
                 module.fail_json(msg=message, **result)
             if needs_update(current_config, module.params):

@@ -155,7 +155,7 @@ def update_active_rule_set(client, module, name, desired_active):
                 try:
                     client.set_active_receipt_rule_set(RuleSetName=name, aws_retry=True)
                 except (BotoCoreError, ClientError) as e:
-                    module.fail_json_aws(e, msg="Couldn't set active rule set to {0}.".format(name))
+                    module.fail_json_aws(e, msg=f"Couldn't set active rule set to {name}.")
             changed = True
             active = True
         elif not desired_active and active:
@@ -177,7 +177,7 @@ def create_or_update_rule_set(client, module):
             try:
                 client.create_receipt_rule_set(RuleSetName=name, aws_retry=True)
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Couldn't create rule set {0}.".format(name))
+                module.fail_json_aws(e, msg=f"Couldn't create rule set {name}.")
         changed = True
         rule_sets = list(rule_sets)
         rule_sets.append(
@@ -206,12 +206,13 @@ def remove_rule_set(client, module):
         active = ruleset_active(client, module, name)
         if active and not module.params.get("force"):
             module.fail_json(
-                msg="Couldn't delete rule set {0} because it is currently active. Set force=true to delete an active ruleset.".format(
-                    name
+                msg=(
+                    f"Couldn't delete rule set {name} because it is currently active. Set force=true to delete an"
+                    " active ruleset."
                 ),
                 error={
                     "code": "CannotDelete",
-                    "message": "Cannot delete active rule set: {0}".format(name),
+                    "message": f"Cannot delete active rule set: {name}",
                 },
             )
         if not check_mode:
@@ -220,7 +221,7 @@ def remove_rule_set(client, module):
             try:
                 client.delete_receipt_rule_set(RuleSetName=name, aws_retry=True)
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Couldn't delete rule set {0}.".format(name))
+                module.fail_json_aws(e, msg=f"Couldn't delete rule set {name}.")
         changed = True
         rule_sets = [x for x in rule_sets if x["Name"] != name]
 

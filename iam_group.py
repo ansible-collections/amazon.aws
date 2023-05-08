@@ -263,7 +263,7 @@ def create_or_update_group(connection, module):
                     try:
                         connection.detach_group_policy(GroupName=params["GroupName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't detach policy from group %s" % params["GroupName"])
+                        module.fail_json_aws(e, msg=f"Couldn't detach policy from group {params['GroupName']}")
         # If there are policies to adjust that aren't in the current list, then things have changed
         # Otherwise the only changes were in purging above
         if set(managed_policies) - set(current_attached_policies_arn_list):
@@ -274,13 +274,13 @@ def create_or_update_group(connection, module):
                     try:
                         connection.attach_group_policy(GroupName=params["GroupName"], PolicyArn=policy_arn)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't attach policy to group %s" % params["GroupName"])
+                        module.fail_json_aws(e, msg=f"Couldn't attach policy to group {params['GroupName']}")
 
     # Manage group memberships
     try:
         current_group_members = get_group(connection, module, params["GroupName"])["Users"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
+        module.fail_json_aws(e, f"Couldn't get group {params['GroupName']}")
 
     current_group_members_list = []
     for member in current_group_members:
@@ -296,9 +296,7 @@ def create_or_update_group(connection, module):
                     try:
                         connection.remove_user_from_group(GroupName=params["GroupName"], UserName=user)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(
-                            e, msg="Couldn't remove user %s from group %s" % (user, params["GroupName"])
-                        )
+                        module.fail_json_aws(e, msg=f"Couldn't remove user {user} from group {params['GroupName']}")
         # If there are users to adjust that aren't in the current list, then things have changed
         # Otherwise the only changes were in purging above
         if set(users) - set(current_group_members_list):
@@ -309,7 +307,7 @@ def create_or_update_group(connection, module):
                     try:
                         connection.add_user_to_group(GroupName=params["GroupName"], UserName=user)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't add user %s to group %s" % (user, params["GroupName"]))
+                        module.fail_json_aws(e, msg=f"Couldn't add user {user} to group {params['GroupName']}")
     if module.check_mode:
         module.exit_json(changed=changed)
 
@@ -317,7 +315,7 @@ def create_or_update_group(connection, module):
     try:
         group = get_group(connection, module, params["GroupName"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
+        module.fail_json_aws(e, f"Couldn't get group {params['GroupName']}")
 
     module.exit_json(changed=changed, iam_group=camel_dict_to_snake_dict(group))
 
@@ -329,7 +327,7 @@ def destroy_group(connection, module):
     try:
         group = get_group(connection, module, params["GroupName"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
+        module.fail_json_aws(e, f"Couldn't get group {params['GroupName']}")
     if group:
         # Check mode means we would remove this group
         if module.check_mode:
@@ -340,26 +338,26 @@ def destroy_group(connection, module):
             for policy in get_attached_policy_list(connection, module, params["GroupName"]):
                 connection.detach_group_policy(GroupName=params["GroupName"], PolicyArn=policy["PolicyArn"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't remove policy from group %s" % params["GroupName"])
+            module.fail_json_aws(e, msg=f"Couldn't remove policy from group {params['GroupName']}")
 
         # Remove any users in the group otherwise deletion fails
         current_group_members_list = []
         try:
             current_group_members = get_group(connection, module, params["GroupName"])["Users"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't get group %s" % params["GroupName"])
+            module.fail_json_aws(e, f"Couldn't get group {params['GroupName']}")
         for member in current_group_members:
             current_group_members_list.append(member["UserName"])
         for user in current_group_members_list:
             try:
                 connection.remove_user_from_group(GroupName=params["GroupName"], UserName=user)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, "Couldn't remove user %s from group %s" % (user, params["GroupName"]))
+                module.fail_json_aws(e, f"Couldn't remove user {user} from group {params['GroupName']}")
 
         try:
             connection.delete_group(**params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't delete group %s" % params["GroupName"])
+            module.fail_json_aws(e, f"Couldn't delete group {params['GroupName']}")
 
     else:
         module.exit_json(changed=False)

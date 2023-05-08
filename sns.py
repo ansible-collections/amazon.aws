@@ -226,7 +226,7 @@ def main():
         sns_kwargs["TopicArn"] = topic_arn_lookup(client, module, topic)
 
     if not sns_kwargs["TopicArn"]:
-        module.fail_json(msg="Could not find topic: {0}".format(topic))
+        module.fail_json(msg=f"Could not find topic: {topic}")
 
     if sns_kwargs["MessageStructure"] == "json":
         sns_kwargs["Message"] = json.dumps(dict_msg)

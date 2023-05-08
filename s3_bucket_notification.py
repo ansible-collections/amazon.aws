@@ -184,7 +184,7 @@ class AmazonBucket:
             try:
                 config_lookup = self.client.get_bucket_notification_configuration(Bucket=self.bucket_name)
             except (ClientError, BotoCoreError) as e:
-                self.module.fail_json(msg="{0}".format(e))
+                self.module.fail_json(msg=f"{e}")
 
             # Handle different event targets
             if config_lookup.get("QueueConfigurations"):
@@ -251,7 +251,7 @@ class AmazonBucket:
             try:
                 self.client.put_bucket_notification_configuration(**api_params)
             except (ClientError, BotoCoreError) as e:
-                self.module.fail_json(msg="{0}".format(e))
+                self.module.fail_json(msg=f"{e}")
 
 
 class Config:
@@ -299,7 +299,7 @@ class Config:
             elif params["lambda_alias"]:
                 qualifier = str(params["lambda_alias"])
             if qualifier:
-                params["lambda_function_arn"] = "{0}:{1}".format(function_arn, qualifier)
+                params["lambda_function_arn"] = f"{function_arn}:{qualifier}"
 
             bucket_event_params["LambdaFunctionArn"] = params["lambda_function_arn"]
 

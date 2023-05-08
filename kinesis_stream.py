@@ -317,7 +317,7 @@ def wait_for_status(client, stream_name, status, wait_timeout=300, check_mode=Fa
     if not status_achieved:
         err_msg = "Wait time out reached, while waiting for results"
     else:
-        err_msg = "Status {0} achieved successfully".format(status)
+        err_msg = f"Status {status} achieved successfully"
 
     return status_achieved, err_msg, stream
 
@@ -361,14 +361,14 @@ def tags_action(client, stream_name, tags, action="create", check_mode=False):
                 client.remove_tags_from_stream(**params)
                 success = True
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
         else:
             if action == "create":
                 success = True
             elif action == "delete":
                 success = True
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
 
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
@@ -461,14 +461,14 @@ def stream_action(client, stream_name, shard_count=1, action="create", timeout=3
                 client.delete_stream(**params)
                 success = True
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
         else:
             if action == "create":
                 success = True
             elif action == "delete":
                 success = True
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
 
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
@@ -519,14 +519,14 @@ def stream_encryption_action(
                 client.stop_stream_encryption(**params)
                 success = True
             else:
-                err_msg = "Invalid encryption action {0}".format(action)
+                err_msg = f"Invalid encryption action {action}"
         else:
             if action == "start_encryption":
                 success = True
             elif action == "stop_encryption":
                 success = True
             else:
-                err_msg = "Invalid encryption action {0}".format(action)
+                err_msg = f"Invalid encryption action {action}"
 
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
@@ -567,21 +567,21 @@ def retention_action(client, stream_name, retention_period=24, action="increase"
                 params["RetentionPeriodHours"] = retention_period
                 client.increase_stream_retention_period(**params)
                 success = True
-                err_msg = "Retention Period increased successfully to {0}".format(retention_period)
+                err_msg = f"Retention Period increased successfully to {retention_period}"
             elif action == "decrease":
                 params["RetentionPeriodHours"] = retention_period
                 client.decrease_stream_retention_period(**params)
                 success = True
-                err_msg = "Retention Period decreased successfully to {0}".format(retention_period)
+                err_msg = f"Retention Period decreased successfully to {retention_period}"
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
         else:
             if action == "increase":
                 success = True
             elif action == "decrease":
                 success = True
             else:
-                err_msg = "Invalid action {0}".format(action)
+                err_msg = f"Invalid action {action}"
 
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
@@ -695,9 +695,7 @@ def update(
                 )
 
             elif retention_period == current_stream["RetentionPeriodHours"]:
-                retention_msg = "Retention {0} is the same as {1}".format(
-                    retention_period, current_stream["RetentionPeriodHours"]
-                )
+                retention_msg = f"Retention {retention_period} is the same as {current_stream['RetentionPeriodHours']}"
                 success = True
 
             if retention_changed:
@@ -715,13 +713,12 @@ def update(
                 stream_found, stream_msg, current_stream = find_stream(client, stream_name)
                 if stream_found:
                     if current_stream["StreamStatus"] != "ACTIVE":
-                        err_msg = "Retention Period for {0} is in the process of updating".format(stream_name)
+                        err_msg = f"Retention Period for {stream_name} is in the process of updating"
                         return success, changed, err_msg
         else:
             err_msg = (
-                "StreamStatus has to be ACTIVE in order to modify the retention period. Current status is {0}".format(
-                    current_stream.get("StreamStatus", "UNKNOWN")
-                )
+                "StreamStatus has to be ACTIVE in order to modify the retention period."
+                f" Current status is {current_stream.get('StreamStatus', 'UNKNOWN')}"
             )
             return success, changed, err_msg
 
@@ -742,7 +739,7 @@ def update(
         else:
             stream_found, stream_msg, current_stream = find_stream(client, stream_name)
             if stream_found and current_stream["StreamStatus"] != "ACTIVE":
-                err_msg = "Number of shards for {0} is in the process of updating".format(stream_name)
+                err_msg = f"Number of shards for {stream_name} is in the process of updating"
                 return success, changed, err_msg
 
     if tags:
@@ -753,9 +750,9 @@ def update(
             client, stream_name, "ACTIVE", wait_timeout, check_mode=check_mode
         )
     if success and changed:
-        err_msg = "Kinesis Stream {0} updated successfully.".format(stream_name)
+        err_msg = f"Kinesis Stream {stream_name} updated successfully."
     elif success and not changed:
-        err_msg = "Kinesis Stream {0} did not change.".format(stream_name)
+        err_msg = f"Kinesis Stream {stream_name} did not change."
 
     return success, changed, err_msg
 
@@ -829,7 +826,7 @@ def create_stream(
         )
         if not create_success:
             changed = True
-            err_msg = "Failed to create Kinesis stream: {0}".format(create_msg)
+            err_msg = f"Failed to create Kinesis stream: {create_msg}"
             return False, True, err_msg, {}
         else:
             changed = True
@@ -837,11 +834,11 @@ def create_stream(
                 wait_success, wait_msg, results = wait_for_status(
                     client, stream_name, "ACTIVE", wait_timeout, check_mode=check_mode
                 )
-                err_msg = "Kinesis Stream {0} is in the process of being created".format(stream_name)
+                err_msg = f"Kinesis Stream {stream_name} is in the process of being created"
                 if not wait_success:
                     return wait_success, True, wait_msg, results
             else:
-                err_msg = "Kinesis Stream {0} created successfully".format(stream_name)
+                err_msg = f"Kinesis Stream {stream_name} created successfully"
 
             if tags:
                 changed, err_msg = tags_action(client, stream_name, tags, action="create", check_mode=check_mode)
@@ -860,8 +857,9 @@ def create_stream(
                 if not success:
                     return success, changed, err_msg, results
             else:
-                err_msg = "StreamStatus has to be ACTIVE in order to modify the retention period. Current status is {0}".format(
-                    current_stream.get("StreamStatus", "UNKNOWN")
+                err_msg = (
+                    "StreamStatus has to be ACTIVE in order to modify the retention period."
+                    f" Current status is {current_stream.get('StreamStatus', 'UNKNOWN')}"
                 )
                 success = create_success
                 changed = True
@@ -916,15 +914,15 @@ def delete_stream(client, stream_name, wait=False, wait_timeout=300, check_mode=
                 success, err_msg, results = wait_for_status(
                     client, stream_name, "DELETING", wait_timeout, check_mode=check_mode
                 )
-                err_msg = "Stream {0} deleted successfully".format(stream_name)
+                err_msg = f"Stream {stream_name} deleted successfully"
                 if not success:
                     return success, True, err_msg, results
             else:
-                err_msg = "Stream {0} is in the process of being deleted".format(stream_name)
+                err_msg = f"Stream {stream_name} is in the process of being deleted"
     else:
         success = True
         changed = False
-        err_msg = "Stream {0} does not exist".format(stream_name)
+        err_msg = f"Stream {stream_name} does not exist"
 
     return success, changed, err_msg, results
 
@@ -968,7 +966,7 @@ def start_stream_encryption(
         if current_stream.get("EncryptionType") == encryption_type and current_stream.get("KeyId") == key_id:
             changed = False
             success = True
-            err_msg = "Kinesis Stream {0} encryption already configured.".format(stream_name)
+            err_msg = f"Kinesis Stream {stream_name} encryption already configured."
         else:
             success, err_msg = stream_encryption_action(
                 client,
@@ -984,15 +982,15 @@ def start_stream_encryption(
                     success, err_msg, results = wait_for_status(
                         client, stream_name, "ACTIVE", wait_timeout, check_mode=check_mode
                     )
-                    err_msg = "Kinesis Stream {0} encryption started successfully.".format(stream_name)
+                    err_msg = f"Kinesis Stream {stream_name} encryption started successfully."
                     if not success:
                         return success, True, err_msg, results
                 else:
-                    err_msg = "Kinesis Stream {0} is in the process of starting encryption.".format(stream_name)
+                    err_msg = f"Kinesis Stream {stream_name} is in the process of starting encryption."
     else:
         success = True
         changed = False
-        err_msg = "Kinesis Stream {0} does not exist".format(stream_name)
+        err_msg = f"Kinesis Stream {stream_name} does not exist"
 
     if success:
         stream_found, stream_msg, results = find_stream(client, stream_name)
@@ -1056,16 +1054,16 @@ def stop_stream_encryption(
                 )
                 if not success:
                     return success, True, err_msg, results
-                err_msg = "Kinesis Stream {0} encryption stopped successfully.".format(stream_name)
+                err_msg = f"Kinesis Stream {stream_name} encryption stopped successfully."
             else:
-                err_msg = "Stream {0} is in the process of stopping encryption.".format(stream_name)
+                err_msg = f"Stream {stream_name} is in the process of stopping encryption."
         elif current_stream.get("EncryptionType") == "NONE":
             success = True
-            err_msg = "Kinesis Stream {0} encryption already stopped.".format(stream_name)
+            err_msg = f"Kinesis Stream {stream_name} encryption already stopped."
     else:
         success = True
         changed = False
-        err_msg = "Stream {0} does not exist.".format(stream_name)
+        err_msg = f"Stream {stream_name} does not exist."
 
     if success:
         stream_found, stream_msg, results = find_stream(client, stream_name)

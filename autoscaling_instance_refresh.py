@@ -229,7 +229,7 @@ def start_or_cancel_instance_refresh(conn, module):
         result = dict(instance_refreshes=camel_dict_to_snake_dict(instance_refreshes["InstanceRefreshes"][0]))
         return module.exit_json(**result)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to {0} InstanceRefresh".format(asg_state.replace("ed", "")))
+        module.fail_json_aws(e, msg=f"Failed to {asg_state.replace('ed', '')} InstanceRefresh")
 
 
 def main():

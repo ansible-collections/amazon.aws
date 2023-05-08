@@ -219,9 +219,9 @@ def ensure_present(client, module):
             params["tags"] = module.params["tags"]
         cluster = client.create_cluster(**params)["cluster"]
     except botocore.exceptions.EndpointConnectionError as e:
-        module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
+        module.fail_json(msg=f"Region {client.meta.region_name} is not supported by EKS")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't create cluster %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't create cluster {name}")
 
     if wait:
         wait_until(client, module, "cluster_active")
@@ -242,9 +242,9 @@ def ensure_absent(client, module):
         try:
             client.delete_cluster(name=module.params["name"])
         except botocore.exceptions.EndpointConnectionError as e:
-            module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
+            module.fail_json(msg=f"Region {client.meta.region_name} is not supported by EKS")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete cluster %s" % name)
+            module.fail_json_aws(e, msg=f"Couldn't delete cluster {name}")
 
     if wait:
         wait_until(client, module, "cluster_deleted")
@@ -259,12 +259,12 @@ def get_cluster(client, module):
     except is_boto3_error_code("ResourceNotFoundException"):
         return None
     except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
-        module.fail_json(msg="Region %s is not supported by EKS" % client.meta.region_name)
+        module.fail_json(msg=f"Region {client.meta.region_name} is not supported by EKS")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't get cluster %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't get cluster {name}")
 
 
 def wait_until(client, module, waiter_name="cluster_active"):

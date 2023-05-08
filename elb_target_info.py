@@ -279,11 +279,11 @@ class TargetInfoGatherer(object):
             # typically this will happen if the instance doesn't exist
             self.module.fail_json_aws(
                 e,
-                msg="Could not get instance info for instance '%s'" % (self.instance_id),
+                msg=f"Could not get instance info for instance '{self.instance_id}'",
             )
 
         if len(reservations) < 1:
-            self.module.fail_json(msg="Instance ID %s could not be found" % self.instance_id)
+            self.module.fail_json(msg=f"Instance ID {self.instance_id} could not be found")
 
         instance = reservations[0]["Instances"][0]
 
@@ -340,7 +340,7 @@ class TargetInfoGatherer(object):
                 response = self.elbv2.describe_target_health(TargetGroupArn=tg.target_group_arn, aws_retry=True)
             except (BotoCoreError, ClientError) as e:
                 self.module.fail_json_aws(
-                    e, msg="Could not describe target " + "health for target group %s" % tg.target_group_arn
+                    e, msg="Could not describe target " + f"health for target group {tg.target_group_arn}"
                 )
 
             for t in response["TargetHealthDescriptions"]:

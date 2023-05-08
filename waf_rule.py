@@ -210,7 +210,7 @@ def find_and_update_rule(client, module, rule_id):
         try:
             pred_results = func()[MATCH_LOOKUP[condition_type]["conditionset"] + "s"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Could not list %s conditions" % condition_type)
+            module.fail_json_aws(e, msg=f"Could not list {condition_type} conditions")
         for pred in pred_results:
             pred["DataId"] = pred[MATCH_LOOKUP[condition_type]["conditionset"] + "Id"]
             all_conditions[condition_type][pred["Name"]] = camel_dict_to_snake_dict(pred)
@@ -231,7 +231,7 @@ def find_and_update_rule(client, module, rule_id):
     for condition_type in desired_conditions:
         for condition_name, condition in desired_conditions[condition_type].items():
             if condition_name not in all_conditions[condition_type]:
-                module.fail_json(msg="Condition %s of type %s does not exist" % (condition_name, condition_type))
+                module.fail_json(msg=f"Condition {condition_name} of type {condition_type} does not exist")
             condition["data_id"] = all_conditions[condition_type][condition_name]["data_id"]
             if condition["data_id"] not in existing_conditions[condition_type]:
                 insertions.append(format_for_insertion(condition))
@@ -326,7 +326,7 @@ def ensure_rule_absent(client, module):
     in_use_web_acls = find_rule_in_web_acls(client, module, rule_id)
     if in_use_web_acls:
         web_acl_names = ", ".join(in_use_web_acls)
-        module.fail_json(msg="Rule %s is in use by Web ACL(s) %s" % (module.params["name"], web_acl_names))
+        module.fail_json(msg=f"Rule {module.params['name']} is in use by Web ACL(s) {web_acl_names}")
     if rule_id:
         remove_rule_conditions(client, module, rule_id)
         try:

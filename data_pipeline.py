@@ -271,7 +271,7 @@ def pipeline_field(client, dp_id, field):
     for field_key in dp_description["pipelineDescriptionList"][0]["fields"]:
         if field_key["key"] == field:
             return field_key["stringValue"]
-    raise KeyError("Field key {0} not found!".format(field))
+    raise KeyError(f"Field key {field} not found!")
 
 
 def run_with_timeout(timeout, func, *func_args, **func_kwargs):
@@ -350,7 +350,7 @@ def activate_pipeline(client, module):
     try:
         dp_id = pipeline_id(client, dp_name)
     except DataPipelineNotFound:
-        module.fail_json(msg="Data Pipeline {0} not found".format(dp_name))
+        module.fail_json(msg=f"Data Pipeline {dp_name} not found")
 
     if pipeline_field(client, dp_id, field="@pipelineState") in DP_ACTIVE_STATES:
         changed = False
@@ -388,7 +388,7 @@ def deactivate_pipeline(client, module):
     try:
         dp_id = pipeline_id(client, dp_name)
     except DataPipelineNotFound:
-        module.fail_json(msg="Data Pipeline {0} not found".format(dp_name))
+        module.fail_json(msg=f"Data Pipeline {dp_name} not found")
 
     if pipeline_field(client, dp_id, field="@pipelineState") in DP_INACTIVE_STATES:
         changed = False
@@ -527,7 +527,7 @@ def define_pipeline(client, module, objects, dp_id):
     dp_name = module.params.get("name")
 
     if pipeline_field(client, dp_id, field="@pipelineState") == "FINISHED":
-        msg = "Data Pipeline {0} is unable to be updated while in state FINISHED.".format(dp_name)
+        msg = f"Data Pipeline {dp_name} is unable to be updated while in state FINISHED."
         changed = False
 
     elif objects:
@@ -538,14 +538,16 @@ def define_pipeline(client, module, objects, dp_id):
             client.put_pipeline_definition(
                 pipelineId=dp_id, pipelineObjects=objects, parameterObjects=parameters, parameterValues=values
             )
-            msg = "Data Pipeline {0} has been updated.".format(dp_name)
+            msg = f"Data Pipeline {dp_name} has been updated."
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(
                 e,
-                msg=f"Failed to put the definition for pipeline {dp_name}. Check that string/reference fields"
-                "are not empty and that the number of objects in the pipeline does not exceed maximum allowed"
-                "objects",
+                msg=(
+                    f"Failed to put the definition for pipeline {dp_name}. Check that string/reference fields"
+                    "are not empty and that the number of objects in the pipeline does not exceed maximum allowed"
+                    "objects"
+                ),
             )
     else:
         changed = False

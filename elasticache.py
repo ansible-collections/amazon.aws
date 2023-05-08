@@ -218,8 +218,7 @@ class ElastiCacheManager:
             if self.wait:
                 self._wait_for_status("gone")
             else:
-                msg = "'%s' is currently deleting. Cannot create."
-                self.module.fail_json(msg=msg % self.name)
+                self.module.fail_json(msg=f"'{self.name}' is currently deleting. Cannot create.")
 
         kwargs = dict(
             CacheClusterId=self.name,
@@ -262,8 +261,7 @@ class ElastiCacheManager:
             if self.wait:
                 self._wait_for_status("available")
             else:
-                msg = "'%s' is currently %s. Cannot delete."
-                self.module.fail_json(msg=msg % (self.name, self.status))
+                self.module.fail_json(msg=f"'{self.name}' is currently {self.status}. Cannot delete.")
 
         try:
             response = self.conn.delete_cache_cluster(CacheClusterId=self.name)
@@ -280,8 +278,7 @@ class ElastiCacheManager:
     def sync(self):
         """Sync settings to cluster if required"""
         if not self.exists():
-            msg = "'%s' is %s. Cannot sync."
-            self.module.fail_json(msg=msg % (self.name, self.status))
+            self.module.fail_json(msg=f"'{self.name}' is {self.status}. Cannot sync.")
 
         if self.status in ["creating", "rebooting", "modifying"]:
             if self.wait:
@@ -293,11 +290,13 @@ class ElastiCacheManager:
 
         if self._requires_destroy_and_create():
             if not self.hard_modify:
-                msg = "'%s' requires destructive modification. 'hard_modify' must be set to true to proceed."
-                self.module.fail_json(msg=msg % self.name)
+                self.module.fail_json(
+                    msg=f"'{self.name}' requires destructive modification. 'hard_modify' must be set to true to proceed."
+                )
             if not self.wait:
-                msg = "'%s' requires destructive modification. 'wait' must be set to true."
-                self.module.fail_json(msg=msg % self.name)
+                self.module.fail_json(
+                    msg=f"'{self.name}' requires destructive modification. 'wait' must be set to true to proceed."
+                )
             self.delete()
             self.create()
             return
@@ -331,16 +330,14 @@ class ElastiCacheManager:
     def reboot(self):
         """Reboot the cache cluster"""
         if not self.exists():
-            msg = "'%s' is %s. Cannot reboot."
-            self.module.fail_json(msg=msg % (self.name, self.status))
+            self.module.fail_json(msg=f"'{self.name}' is {self.status}. Cannot reboot.")
         if self.status == "rebooting":
             return
         if self.status in ["creating", "modifying"]:
             if self.wait:
                 self._wait_for_status("available")
             else:
-                msg = "'%s' is currently %s. Cannot reboot."
-                self.module.fail_json(msg=msg % (self.name, self.status))
+                self.module.fail_json(msg=f"'{self.name}' is currently {self.status}. Cannot reboot.")
 
         # Collect ALL nodes for reboot
         cache_node_ids = [cn["CacheNodeId"] for cn in self.data["CacheNodes"]]
@@ -369,12 +366,12 @@ class ElastiCacheManager:
             # No need to wait, we're already done
             return
         if status_map[self.status] != awaited_status:
-            msg = "Invalid awaited status. '%s' cannot transition to '%s'"
-            self.module.fail_json(msg=msg % (self.status, awaited_status))
+            self.module.fail_json(
+                msg=f"Invalid awaited status. '{self.status}' cannot transition to '{awaited_status}'"
+            )
 
         if awaited_status not in set(status_map.values()):
-            msg = "'%s' is not a valid awaited status."
-            self.module.fail_json(msg=msg % awaited_status)
+            self.module.fail_json(msg=f"'{awaited_status}' is not a valid awaited status.")
 
         while True:
             sleep(1)
@@ -470,8 +467,9 @@ class ElastiCacheManager:
             return []
 
         if not self.hard_modify:
-            msg = "'%s' requires removal of cache nodes. 'hard_modify' must be set to true to proceed."
-            self.module.fail_json(msg=msg % self.name)
+            self.module.fail_json(
+                msg=f"'{self.name}' requires removal of cache nodes. 'hard_modify' must be set to true to proceed."
+            )
 
         cache_node_ids = [cn["CacheNodeId"] for cn in self.data["CacheNodes"]]
         return cache_node_ids[-num_nodes_to_remove:]

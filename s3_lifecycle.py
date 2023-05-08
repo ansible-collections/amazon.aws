@@ -661,7 +661,7 @@ def main():
             if module.params.get(param) is None:
                 break
         else:
-            msg = "one of the following is required when 'state' is 'present': %s" % ", ".join(required_when_present)
+            msg = f"one of the following is required when 'state' is 'present': {', '.join(required_when_present)}"
             module.fail_json(msg=msg)
 
     # If dates have been set, make sure they're in a valid format

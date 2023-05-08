@@ -565,9 +565,7 @@ def upgrade_domain(client, module, source_version, target_engine_version):
             # Check the module parameters to determine if this is allowed or not.
             if not module.params.get("allow_intermediate_upgrades"):
                 module.fail_json(
-                    msg="Cannot upgrade from {0} to version {1}. The highest compatible version is {2}".format(
-                        source_version, target_engine_version, next_version
-                    )
+                    msg=f"Cannot upgrade from {source_version} to version {target_engine_version}. The highest compatible version is {next_version}"
                 )
 
         parameters = {
@@ -591,15 +589,13 @@ def upgrade_domain(client, module, source_version, target_engine_version):
             # raised if it's not possible to upgrade to the target version.
             module.fail_json_aws(
                 e,
-                msg="Couldn't upgrade domain {0} from {1} to {2}".format(domain_name, current_version, next_version),
+                msg=f"Couldn't upgrade domain {domain_name} from {current_version} to {next_version}",
             )
 
         if module.check_mode:
             module.exit_json(
                 changed=True,
-                msg="Would have upgraded domain from {0} to {1} if not in check mode".format(
-                    current_version, next_version
-                ),
+                msg=f"Would have upgraded domain from {current_version} to {next_version} if not in check mode",
             )
         current_version = next_version
 
@@ -664,9 +660,7 @@ def set_cluster_config(module, current_domain_config, desired_domain_config, cha
             }
 
     if current_domain_config is not None and current_domain_config["ClusterConfig"] != cluster_config:
-        change_set.append(
-            "ClusterConfig changed from {0} to {1}".format(current_domain_config["ClusterConfig"], cluster_config)
-        )
+        change_set.append(f"ClusterConfig changed from {current_domain_config['ClusterConfig']} to {cluster_config}")
         changed = True
     return changed
 
@@ -693,7 +687,7 @@ def set_ebs_options(module, current_domain_config, desired_domain_config, change
             ebs_config["Iops"] = ebs_opts.get("iops")
 
     if current_domain_config is not None and current_domain_config["EBSOptions"] != ebs_config:
-        change_set.append("EBSOptions changed from {0} to {1}".format(current_domain_config["EBSOptions"], ebs_config))
+        change_set.append(f"EBSOptions changed from {current_domain_config['EBSOptions']} to {ebs_config}")
         changed = True
     return changed
 
@@ -719,10 +713,8 @@ def set_encryption_at_rest_options(module, current_domain_config, desired_domain
         and current_domain_config["EncryptionAtRestOptions"] != encryption_at_rest_config
     ):
         change_set.append(
-            "EncryptionAtRestOptions changed from {0} to {1}".format(
-                current_domain_config["EncryptionAtRestOptions"],
-                encryption_at_rest_config,
-            )
+            f"EncryptionAtRestOptions changed from {current_domain_config['EncryptionAtRestOptions']} to"
+            f" {encryption_at_rest_config}"
         )
         changed = True
     return changed
@@ -742,10 +734,8 @@ def set_node_to_node_encryption_options(module, current_domain_config, desired_d
         and current_domain_config["NodeToNodeEncryptionOptions"] != node_to_node_encryption_config
     ):
         change_set.append(
-            "NodeToNodeEncryptionOptions changed from {0} to {1}".format(
-                current_domain_config["NodeToNodeEncryptionOptions"],
-                node_to_node_encryption_config,
-            )
+            f"NodeToNodeEncryptionOptions changed from {current_domain_config['NodeToNodeEncryptionOptions']} to"
+            f" {node_to_node_encryption_config}"
         )
         changed = True
     return changed
@@ -805,18 +795,14 @@ def set_vpc_options(module, current_domain_config, desired_domain_config, change
             # Note the subnets may be the same but be listed in a different order.
             if set(current_domain_config["VPCOptions"]["SubnetIds"]) != set(vpc_config["SubnetIds"]):
                 change_set.append(
-                    "SubnetIds changed from {0} to {1}".format(
-                        current_domain_config["VPCOptions"]["SubnetIds"],
-                        vpc_config["SubnetIds"],
-                    )
+                    f"SubnetIds changed from {current_domain_config['VPCOptions']['SubnetIds']} to"
+                    f" {vpc_config['SubnetIds']}"
                 )
                 changed = True
             if set(current_domain_config["VPCOptions"]["SecurityGroupIds"]) != set(vpc_config["SecurityGroupIds"]):
                 change_set.append(
-                    "SecurityGroup changed from {0} to {1}".format(
-                        current_domain_config["VPCOptions"]["SecurityGroupIds"],
-                        vpc_config["SecurityGroupIds"],
-                    )
+                    f"SecurityGroup changed from {current_domain_config['VPCOptions']['SecurityGroupIds']} to"
+                    f" {vpc_config['SecurityGroupIds']}"
                 )
                 changed = True
     return changed
@@ -857,9 +843,7 @@ def set_cognito_options(module, current_domain_config, desired_domain_config, ch
             cognito_config["RoleArn"] = cognito_opts.get("cognito_role_arn")
 
     if current_domain_config is not None and current_domain_config["CognitoOptions"] != cognito_config:
-        change_set.append(
-            "CognitoOptions changed from {0} to {1}".format(current_domain_config["CognitoOptions"], cognito_config)
-        )
+        change_set.append(f"CognitoOptions changed from {current_domain_config['CognitoOptions']} to {cognito_config}")
         changed = True
     return changed
 
@@ -922,10 +906,8 @@ def set_advanced_security_options(module, current_domain_config, desired_domain_
         and current_domain_config["AdvancedSecurityOptions"] != advanced_security_config
     ):
         change_set.append(
-            "AdvancedSecurityOptions changed from {0} to {1}".format(
-                current_domain_config["AdvancedSecurityOptions"],
-                advanced_security_config,
-            )
+            f"AdvancedSecurityOptions changed from {current_domain_config['AdvancedSecurityOptions']} to"
+            f" {advanced_security_config}"
         )
         changed = True
     return changed
@@ -953,9 +935,8 @@ def set_domain_endpoint_options(module, current_domain_config, desired_domain_co
 
     if current_domain_config is not None and current_domain_config["DomainEndpointOptions"] != domain_endpoint_config:
         change_set.append(
-            "DomainEndpointOptions changed from {0} to {1}".format(
-                current_domain_config["DomainEndpointOptions"], domain_endpoint_config
-            )
+            f"DomainEndpointOptions changed from {current_domain_config['DomainEndpointOptions']} to"
+            f" {domain_endpoint_config}"
         )
         changed = True
     return changed
@@ -997,18 +978,15 @@ def set_auto_tune_options(module, current_domain_config, desired_domain_config, 
     if current_domain_config is not None:
         if current_domain_config["AutoTuneOptions"]["DesiredState"] != auto_tune_config["DesiredState"]:
             change_set.append(
-                "AutoTuneOptions.DesiredState changed from {0} to {1}".format(
-                    current_domain_config["AutoTuneOptions"]["DesiredState"],
-                    auto_tune_config["DesiredState"],
-                )
+                "AutoTuneOptions.DesiredState changed from"
+                f" {current_domain_config['AutoTuneOptions']['DesiredState']} to {auto_tune_config['DesiredState']}"
             )
             changed = True
         if auto_tune_config["MaintenanceSchedules"] != current_domain_config["AutoTuneOptions"]["MaintenanceSchedules"]:
             change_set.append(
-                "AutoTuneOptions.MaintenanceSchedules changed from {0} to {1}".format(
-                    current_domain_config["AutoTuneOptions"]["MaintenanceSchedules"],
-                    auto_tune_config["MaintenanceSchedules"],
-                )
+                "AutoTuneOptions.MaintenanceSchedules changed from"
+                f" {current_domain_config['AutoTuneOptions']['MaintenanceSchedules']} to"
+                f" {auto_tune_config['MaintenanceSchedules']}"
             )
             changed = True
     return changed
@@ -1023,12 +1001,12 @@ def set_access_policy(module, current_domain_config, desired_domain_config, chan
     try:
         access_policy_config = json.dumps(access_policy_opt)
     except Exception as e:
-        module.fail_json(msg="Failed to convert the policy into valid JSON: %s" % str(e))
+        module.fail_json(msg=f"Failed to convert the policy into valid JSON: {str(e)}")
     if current_domain_config is not None:
         # Updating existing domain
         current_access_policy = json.loads(current_domain_config["AccessPolicies"])
         if not compare_policies(current_access_policy, access_policy_opt):
-            change_set.append("AccessPolicy changed from {0} to {1}".format(current_access_policy, access_policy_opt))
+            change_set.append(f"AccessPolicy changed from {current_access_policy} to {access_policy_opt}")
             changed = True
             desired_domain_config["AccessPolicies"] = access_policy_config
     else:
@@ -1134,7 +1112,7 @@ def ensure_domain_present(client, module):
                 botocore.exceptions.BotoCoreError,
                 botocore.exceptions.ClientError,
             ) as e:
-                module.fail_json_aws(e, msg="Couldn't update domain {0}".format(domain_name))
+                module.fail_json_aws(e, msg=f"Couldn't update domain {domain_name}")
 
     else:
         # Create new OpenSearch cluster
@@ -1152,12 +1130,12 @@ def ensure_domain_present(client, module):
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
         ) as e:
-            module.fail_json_aws(e, msg="Couldn't update domain {0}".format(domain_name))
+            module.fail_json_aws(e, msg=f"Couldn't update domain {domain_name}")
 
     try:
         existing_tags = boto3_tag_list_to_ansible_dict(client.list_tags(ARN=domain_arn, aws_retry=True)["TagList"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get tags for domain %s" % domain_name)
+        module.fail_json_aws(e, f"Couldn't get tags for domain {domain_name}")
 
     desired_tags = module.params["tags"]
     purge_tags = module.params["purge_tags"]

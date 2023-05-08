@@ -91,7 +91,7 @@ def verify_acls(connection, module, target_bucket):
         current_acl = connection.get_bucket_acl(aws_retry=True, Bucket=target_bucket)
         current_grants = current_acl["Grants"]
     except is_boto3_error_code("NoSuchBucket"):
-        module.fail_json(msg="Target Bucket '{0}' not found".format(target_bucket))
+        module.fail_json(msg=f"Target Bucket '{target_bucket}' not found")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -132,7 +132,7 @@ def enable_bucket_logging(connection, module):
     try:
         bucket_logging = connection.get_bucket_logging(aws_retry=True, Bucket=bucket_name)
     except is_boto3_error_code("NoSuchBucket"):
-        module.fail_json(msg="Bucket '{0}' not found".format(bucket_name))
+        module.fail_json(msg=f"Bucket '{bucket_name}' not found")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,

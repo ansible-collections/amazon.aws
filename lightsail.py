@@ -229,8 +229,7 @@ def wait_for_instance_state(module, client, instance_name, states):
             module.fail_json_aws(e)
     else:
         module.fail_json(
-            msg='Timed out waiting for instance "{0}" to get to one of the following states -'
-            " {1}".format(instance_name, states)
+            msg=f'Timed out waiting for instance "{instance_name}" to get to one of the following states - {states}'
         )
 
 

@@ -145,7 +145,7 @@ def make_current_modifiable_param_dict(module, conn, name):
     """Gets the current state of the cache parameter group and creates a dict with the format: {ParameterName: [Allowed_Values, DataType, ParameterValue]}"""
     current_info = get_info(conn, name)
     if current_info is False:
-        module.fail_json(msg="Could not connect to the cache parameter group %s." % name)
+        module.fail_json(msg=f"Could not connect to the cache parameter group {name}.")
 
     parameters = current_info["Parameters"]
     modifiable_params = {}
@@ -168,8 +168,7 @@ def check_valid_modification(module, values, modifiable_params):
         # check valid modifiable parameters
         if parameter not in modifiable_params:
             module.fail_json(
-                msg="%s is not a modifiable parameter. Valid parameters to modify are: %s."
-                % (parameter, modifiable_params.keys())
+                msg=f"{parameter} is not a modifiable parameter. Valid parameters to modify are: {modifiable_params.keys()}."
             )
 
         # check allowed datatype for modified parameters
@@ -186,13 +185,17 @@ def check_valid_modification(module, values, modifiable_params):
                     values[parameter] = 1 if new_value else 0
                 else:
                     module.fail_json(
-                        msg="%s (type %s) is not an allowed value for the parameter %s. Expected a type %s."
-                        % (new_value, type(new_value), parameter, modifiable_params[parameter][1])
+                        msg=(
+                            f"{new_value} (type {type(new_value)}) is not an allowed value for the parameter"
+                            f" {parameter}. Expected a type {modifiable_params[parameter][1]}."
+                        )
                     )
             else:
                 module.fail_json(
-                    msg="%s (type %s) is not an allowed value for the parameter %s. Expected a type %s."
-                    % (new_value, type(new_value), parameter, modifiable_params[parameter][1])
+                    msg=(
+                        f"{new_value} (type {type(new_value)}) is not an allowed value for the parameter {parameter}."
+                        f" Expected a type {modifiable_params[parameter][1]}."
+                    )
                 )
 
         # check allowed values for modifiable parameters
@@ -200,8 +203,7 @@ def check_valid_modification(module, values, modifiable_params):
         if choices:
             if not (to_text(new_value) in choices or isinstance(new_value, int)):
                 module.fail_json(
-                    msg="%s is not an allowed value for the parameter %s. Valid parameters are: %s."
-                    % (new_value, parameter, choices)
+                    msg=f"{new_value} is not an allowed value for the parameter {parameter}. Valid parameters are: {choices}."
                 )
 
         # check if a new value is different from current value
@@ -327,7 +329,7 @@ def main():
         module.fail_json(msg="Creating a group requires a family group.")
     elif state == "reset" and not exists:
         module.fail_json(
-            msg="No group %s to reset. Please create the group before using the state 'reset'." % parameter_group_name
+            msg=f"No group {parameter_group_name} to reset. Please create the group before using the state 'reset'."
         )
 
     # Taking action

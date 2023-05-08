@@ -174,7 +174,7 @@ def ec2_win_password(module):
         decoded = b64decode(data)
 
     if wait and datetime.datetime.now() >= end:
-        module.fail_json(msg="wait for password timeout after %d seconds" % wait_timeout)
+        module.fail_json(msg=f"wait for password timeout after {int(wait_timeout)} seconds")
 
     if key_file is not None and b_key_data is None:
         try:
@@ -182,7 +182,7 @@ def ec2_win_password(module):
                 key = load_pem_private_key(f.read(), b_key_passphrase, default_backend())
         except IOError as e:
             # Handle bad files
-            module.fail_json(msg="I/O error (%d) opening key file: %s" % (e.errno, e.strerror))
+            module.fail_json(msg=f"I/O error ({int(e.errno)}) opening key file: {e.strerror}")
         except (ValueError, TypeError) as e:
             # Handle issues loading key
             module.fail_json(msg="unable to parse key file")

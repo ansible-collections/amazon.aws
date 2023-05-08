@@ -153,7 +153,7 @@ def create_or_update_metrics_configuration(client, module):
             aws_retry=True, Bucket=bucket_name, Id=mc_id, MetricsConfiguration=new_configuration
         )
     except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to put bucket metrics configuration '%s'" % mc_id)
+        module.fail_json_aws(e, msg=f"Failed to put bucket metrics configuration '{mc_id}'")
 
     module.exit_json(changed=True)
 
@@ -177,7 +177,7 @@ def delete_metrics_configuration(client, module):
     except is_boto3_error_code("NoSuchConfiguration"):
         module.exit_json(changed=False)
     except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to delete bucket metrics configuration '%s'" % mc_id)
+        module.fail_json_aws(e, msg=f"Failed to delete bucket metrics configuration '{mc_id}'")
 
     module.exit_json(changed=True)
 

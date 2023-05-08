@@ -130,7 +130,7 @@ def create(sfn_client, module):
 
 
 def remove(state_machine_arn, sfn_client, module):
-    check_mode(module, msg="State machine would be deleted: {0}".format(state_machine_arn), changed=True)
+    check_mode(module, msg=f"State machine would be deleted: {state_machine_arn}", changed=True)
 
     sfn_client.delete_state_machine(stateMachineArn=state_machine_arn)
     module.exit_json(changed=True, state_machine_arn=state_machine_arn)
@@ -140,7 +140,7 @@ def update(state_machine_arn, sfn_client, module):
     tags_to_add, tags_to_remove = compare_tags(state_machine_arn, sfn_client, module)
 
     if params_changed(state_machine_arn, sfn_client, module) or tags_to_add or tags_to_remove:
-        check_mode(module, msg="State machine would be updated: {0}".format(state_machine_arn), changed=True)
+        check_mode(module, msg=f"State machine would be updated: {state_machine_arn}", changed=True)
 
         sfn_client.update_state_machine(
             stateMachineArn=state_machine_arn,

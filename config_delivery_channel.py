@@ -164,8 +164,7 @@ def update_resource(client, module, params, result):
         except is_boto3_error_code("InsufficientDeliveryPolicyException") as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(
                 e,
-                msg="The `s3_prefix` or `s3_bucket` parameter is invalid. "
-                "Make sure the bucket exists and is available",
+                msg="The `s3_prefix` or `s3_bucket` parameter is invalid. Make sure the bucket exists and is available",
             )
         except (
             botocore.exceptions.ClientError,

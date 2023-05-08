@@ -277,7 +277,7 @@ def _ensure_tags(redshift, identifier, existing_tags, module):
 
     account_id = get_aws_account_id(module)
     region = module.params.get("region")
-    resource_arn = "arn:aws:redshift:{0}:{1}:cluster:{2}".format(region, account_id, identifier)
+    resource_arn = f"arn:aws:redshift:{region}:{account_id}:cluster:{identifier}"
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
 
@@ -565,7 +565,7 @@ def modify_cluster(module, redshift):
                 redshift, ClusterIdentifier=identifier, EnhancedVpcRouting=module.params.get("enhanced_vpc_routing")
             )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
+            module.fail_json_aws(e, msg=f"Couldn't modify redshift cluster {identifier} ")
     if wait:
         attempts = wait_timeout // 60
         waiter = redshift.get_waiter("cluster_available")
@@ -580,7 +580,7 @@ def modify_cluster(module, redshift):
             redshift, ClusterIdentifier=identifier, **snake_dict_to_camel_dict(params, capitalize_first=True)
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
+        module.fail_json_aws(e, msg=f"Couldn't modify redshift cluster {identifier} ")
 
     if module.params.get("new_cluster_identifier"):
         identifier = module.params.get("new_cluster_identifier")
@@ -595,7 +595,7 @@ def modify_cluster(module, redshift):
     try:
         resource = _describe_cluster(redshift, identifier)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't modify redshift cluster %s " % identifier)
+        module.fail_json_aws(e, msg=f"Couldn't modify redshift cluster {identifier} ")
 
     if _ensure_tags(redshift, identifier, resource["Tags"], module):
         resource = redshift.describe_clusters(ClusterIdentifier=identifier)["Clusters"][0]

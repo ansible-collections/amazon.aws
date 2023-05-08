@@ -242,9 +242,7 @@ def get_verification_attributes(connection, module, identity, retries=0, retryDe
         try:
             response = connection.get_identity_verification_attributes(Identities=[identity], aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Failed to retrieve identity verification attributes for {identity}".format(identity=identity)
-            )
+            module.fail_json_aws(e, msg=f"Failed to retrieve identity verification attributes for {identity}")
         identity_verification = response["VerificationAttributes"]
         if identity in identity_verification:
             break
@@ -265,9 +263,7 @@ def get_identity_notifications(connection, module, identity, retries=0, retryDel
         try:
             response = connection.get_identity_notification_attributes(Identities=[identity], aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Failed to retrieve identity notification attributes for {identity}".format(identity=identity)
-            )
+            module.fail_json_aws(e, msg=f"Failed to retrieve identity notification attributes for {identity}")
         notification_attributes = response["NotificationAttributes"]
 
         # No clear AWS docs on when this happens, but it appears sometimes identities are not included in
@@ -341,10 +337,7 @@ def update_notification_topic(connection, module, identity, identity_notificatio
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(
                 e,
-                msg="Failed to set identity notification topic for {identity} {notification_type}".format(
-                    identity=identity,
-                    notification_type=notification_type,
-                ),
+                msg=f"Failed to set identity notification topic for {identity} {notification_type}",
             )
         return True
     return False
@@ -378,11 +371,7 @@ def update_notification_topic_headers(connection, module, identity, identity_not
                 )
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(
-                e,
-                msg="Failed to set identity headers in notification for {identity} {notification_type}".format(
-                    identity=identity,
-                    notification_type=notification_type,
-                ),
+                e, msg=f"Failed to set identity headers in notification for {identity} {notification_type}"
             )
         return True
     return False
@@ -411,9 +400,7 @@ def update_feedback_forwarding(connection, module, identity, identity_notificati
                     Identity=identity, ForwardingEnabled=required, aws_retry=True
                 )
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Failed to set identity feedback forwarding for {identity}".format(identity=identity)
-            )
+            module.fail_json_aws(e, msg=f"Failed to set identity feedback forwarding for {identity}")
         return True
     return False
 
@@ -460,8 +447,10 @@ def validate_params_for_identity_present(module):
     if module.params.get("feedback_forwarding") is False:
         if not (desired_topic(module, "Bounce") and desired_topic(module, "Complaint")):
             module.fail_json(
-                msg="Invalid Parameter Value 'False' for 'feedback_forwarding'. AWS requires "
-                "feedback forwarding to be enabled unless bounces and complaints are handled by SNS topics"
+                msg=(
+                    "Invalid Parameter Value 'False' for 'feedback_forwarding'. AWS requires "
+                    "feedback forwarding to be enabled unless bounces and complaints are handled by SNS topics"
+                )
             )
 
 
@@ -477,7 +466,7 @@ def create_or_update_identity(connection, module, region, account_id):
                 else:
                     connection.verify_domain_identity(Domain=identity, aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Failed to verify identity {identity}".format(identity=identity))
+            module.fail_json_aws(e, msg=f"Failed to verify identity {identity}")
         if module.check_mode:
             verification_attributes = {
                 "VerificationStatus": "Pending",
@@ -520,7 +509,7 @@ def destroy_identity(connection, module):
             if not module.check_mode:
                 connection.delete_identity(Identity=identity, aws_retry=True)
         except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Failed to delete identity {identity}".format(identity=identity))
+            module.fail_json_aws(e, msg=f"Failed to delete identity {identity}")
         changed = True
 
     module.exit_json(

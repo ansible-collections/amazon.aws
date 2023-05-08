@@ -274,7 +274,7 @@ def create_vgw(client, module):
         get_waiter(client, "vpn_gateway_exists").wait(VpnGatewayIds=[response["VpnGateway"]["VpnGatewayId"]])
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(
-            e, msg="Failed to wait for Vpn Gateway {0} to be available".format(response["VpnGateway"]["VpnGatewayId"])
+            e, msg=f"Failed to wait for Vpn Gateway {response['VpnGateway']['VpnGatewayId']} to be available"
         )
     except is_boto3_error_code("VpnGatewayLimitExceeded") as e:
         module.fail_json_aws(e, msg="Too many VPN gateways exist in this account.")

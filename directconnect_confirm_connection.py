@@ -87,7 +87,7 @@ def find_connection_id(client, connection_id=None, connection_name=None):
         response = describe_connections(client, params)
     except (BotoCoreError, ClientError) as e:
         if connection_id:
-            msg = "Failed to describe DirectConnect ID {0}".format(connection_id)
+            msg = f"Failed to describe DirectConnect ID {connection_id}"
         else:
             msg = "Failed to describe DirectConnect connections"
         raise DirectConnectError(
@@ -117,7 +117,7 @@ def get_connection_state(client, connection_id):
         return response["connections"][0]["connectionState"]
     except (BotoCoreError, ClientError, IndexError) as e:
         raise DirectConnectError(
-            msg="Failed to describe DirectConnect connection {0} state".format(connection_id),
+            msg=f"Failed to describe DirectConnect connection {connection_id} state",
             last_traceback=traceback.format_exc(),
             exception=e,
         )

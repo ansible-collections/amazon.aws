@@ -370,21 +370,21 @@ def validate_tags(client, module, nodegroup):
         existing_tags = client.list_tags_for_resource(resourceArn=nodegroup["nodegroupArn"])["tags"]
         tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get("purge_tags"))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list or compare tags for Nodegroup %s." % module.params.get("name"))
+        module.fail_json_aws(e, msg=f"Unable to list or compare tags for Nodegroup {module.params.get('name')}.")
     if tags_to_remove:
         if not module.check_mode:
             changed = True
             try:
                 client.untag_resource(aws_retry=True, ResourceArn=nodegroup["nodegroupArn"], tagKeys=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Nodegroup %s." % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Nodegroup {module.params.get('name')}.")
     if tags_to_add:
         if not module.check_mode:
             changed = True
             try:
                 client.tag_resource(aws_retry=True, ResourceArn=nodegroup["nodegroupArn"], tags=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Nodegroup %s." % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Nodegroup {module.params.get('name')}.")
 
     return changed
 
@@ -422,7 +422,7 @@ def validate_taints(client, module, nodegroup, param_taints):
             try:
                 client.update_nodegroup_config(**params)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set taints for Nodegroup %s." % params["nodegroupName"])
+                module.fail_json_aws(e, msg=f"Unable to set taints for Nodegroup {params['nodegroupName']}.")
 
     return changed
 
@@ -458,7 +458,7 @@ def validate_labels(client, module, nodegroup, param_labels):
             try:
                 client.update_nodegroup_config(**params)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set labels for Nodegroup %s." % params["nodegroupName"])
+                module.fail_json_aws(e, msg=f"Unable to set labels for Nodegroup {params['nodegroupName']}.")
 
     return changed
 
@@ -467,7 +467,7 @@ def compare_params(module, params, nodegroup):
     for param in ["nodeRole", "subnets", "diskSize", "instanceTypes", "amiTypes", "remoteAccess", "capacityType"]:
         if (param in nodegroup) and (param in params):
             if nodegroup[param] != params[param]:
-                module.fail_json(msg="Cannot modify parameter %s." % param)
+                module.fail_json(msg=f"Cannot modify parameter {param}.")
     if ("launchTemplate" not in nodegroup) and ("launchTemplate" in params):
         module.fail_json(msg="Cannot add Launch Template in this Nodegroup.")
     if nodegroup["updateConfig"] != params["updateConfig"]:
@@ -485,7 +485,7 @@ def compare_params_launch_template(module, params, nodegroup):
             if (key in params["launchTemplate"]) and (
                 params["launchTemplate"][key] != nodegroup["launchTemplate"][key]
             ):
-                module.fail_json(msg="Cannot modify Launch Template %s." % key)
+                module.fail_json(msg=f"Cannot modify Launch Template {key}.")
         if ("version" in params["launchTemplate"]) and (
             params["launchTemplate"]["version"] != nodegroup["launchTemplate"]["version"]
         ):
@@ -593,7 +593,7 @@ def create_or_update_nodegroups(client, module):
     try:
         nodegroup = client.create_nodegroup(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't create Nodegroup %s." % params["nodegroupName"])
+        module.fail_json_aws(e, msg=f"Couldn't create Nodegroup {params['nodegroupName']}.")
 
     if wait:
         wait_until(client, module, "nodegroup_active", params["nodegroupName"], params["clusterName"])
@@ -613,7 +613,7 @@ def delete_nodegroups(client, module):
         try:
             client.delete_nodegroup(clusterName=clusterName, nodegroupName=name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete Nodegroup %s." % name)
+            module.fail_json_aws(e, msg=f"Couldn't delete Nodegroup {name}.")
 
         if wait:
             wait_until(client, module, "nodegroup_deleted", name, clusterName)
@@ -630,7 +630,7 @@ def get_nodegroup(client, module, nodegroup_name, cluster_name):
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't get Nodegroup %s." % nodegroup_name)
+        module.fail_json_aws(e, msg=f"Couldn't get Nodegroup {nodegroup_name}.")
 
 
 def wait_until(client, module, waiter_name, nodegroup_name, cluster_name):

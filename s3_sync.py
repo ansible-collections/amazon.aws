@@ -413,8 +413,8 @@ def filter_list(s3, bucket, s3filelist, strategy):
 
                 remote_size = entry["s3_head"]["ContentLength"]
 
-                entry["whytime"] = "{0} / {1}".format(local_modified_epoch, remote_modified_epoch)
-                entry["whysize"] = "{0} / {1}".format(local_size, remote_size)
+                entry["whytime"] = f"{local_modified_epoch} / {remote_modified_epoch}"
+                entry["whysize"] = f"{local_size} / {remote_size}"
 
                 if local_modified_epoch <= remote_modified_epoch and local_size == remote_size:
                     entry["skip_flag"] = True

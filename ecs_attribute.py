@@ -142,13 +142,13 @@ class EcsAttributes(object):
         for attr in attrs:
             if isinstance(attr, dict):
                 if len(attr) != 1:
-                    self.module.fail_json(msg="Incorrect attribute format - %s" % str(attr))
+                    self.module.fail_json(msg=f"Incorrect attribute format - {str(attr)}")
                 name, value = list(attr.items())[0]
                 attrs_parsed.append({"name": name, "value": value})
             elif isinstance(attr, str):
                 attrs_parsed.append({"name": attr, "value": None})
             else:
-                self.module.fail_json(msg="Incorrect attributes format - %s" % str(attrs))
+                self.module.fail_json(msg=f"Incorrect attributes format - {str(attrs)}")
 
         return attrs_parsed
 
@@ -197,14 +197,14 @@ class Ec2EcsInstance(object):
                 cluster=self.cluster, containerInstances=ecs_instances_arns
             )["containerInstances"]
         except (ClientError, EndpointConnectionError) as e:
-            self.module.fail_json(msg="Can't connect to the cluster - %s" % str(e))
+            self.module.fail_json(msg=f"Can't connect to the cluster - {str(e)}")
 
         try:
             ecs_arn = next(inst for inst in ec2_instances if inst["ec2InstanceId"] == self.ec2_id)[
                 "containerInstanceArn"
             ]
         except StopIteration:
-            self.module.fail_json(msg="EC2 instance Id not found in ECS cluster - %s" % str(self.cluster))
+            self.module.fail_json(msg=f"EC2 instance Id not found in ECS cluster - {str(self.cluster)}")
 
         return ecs_arn
 
@@ -238,7 +238,7 @@ class Ec2EcsInstance(object):
                 for attr_found in self.ecs.list_attributes(cluster=self.cluster, **attr_obj)["attributes"]
             ]
         except ClientError as e:
-            self.module.fail_json(msg="Can't connect to the cluster - %s" % str(e))
+            self.module.fail_json(msg=f"Can't connect to the cluster - {str(e)}")
 
         matched_objs = [target for target in matched_ecs_targets if target["targetId"] == self.ecs_arn]
 

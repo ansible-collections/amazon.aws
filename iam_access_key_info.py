@@ -85,7 +85,7 @@ def get_access_keys(user):
     try:
         results = client.list_access_keys(aws_retry=True, UserName=user)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to get access keys for user "{0}"'.format(user))
+        module.fail_json_aws(e, msg=f'Failed to get access keys for user "{user}"')
     if not results:
         return None
 

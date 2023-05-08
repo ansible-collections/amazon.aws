@@ -606,7 +606,7 @@ class Condition(object):
         try:
             return func()[self.conditionsets]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Could not list %s conditions" % self.type)
+            self.module.fail_json_aws(e, msg=f"Could not list {self.type} conditions")
 
     def tidy_up_regex_patterns(self, regex_match_set):
         all_regex_match_sets = self.list_conditions()
@@ -643,7 +643,7 @@ class Condition(object):
         in_use_rules = self.find_condition_in_rules(condition_set_id)
         if in_use_rules:
             rulenames = ", ".join(in_use_rules)
-            self.module.fail_json(msg="Condition %s is in use by %s" % (current_condition["Name"], rulenames))
+            self.module.fail_json(msg=f"Condition {current_condition['Name']} is in use by {rulenames}")
         if current_condition[self.conditiontuples]:
             # Filters are deleted using update with the DELETE action
             func = getattr(self.client, "update_" + self.method_suffix)

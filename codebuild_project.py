@@ -310,8 +310,7 @@ class CodeBuildAnsibleAWSError(AnsibleAWSError):
 def do_create_project(client, params, formatted_params):
     if params["source"] is None or params["artifacts"] is None:
         raise CodeBuildAnsibleAWSError(
-            message="The source and artifacts parameters must be provided "
-            "when creating a new project.  No existing project was found."
+            message="The source and artifacts parameters must be provided when creating a new project.  No existing project was found."
         )
 
     if params["tags"] is not None:

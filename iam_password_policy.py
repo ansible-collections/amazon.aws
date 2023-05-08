@@ -112,7 +112,7 @@ class IAMConnection(object):
             self.connection = module.resource("iam")
             self.module = module
         except Exception as e:
-            module.fail_json(msg="Failed to connect to AWS: %s" % str(e))
+            module.fail_json(msg=f"Failed to connect to AWS: {str(e)}")
 
     def policy_to_dict(self, policy):
         policy_attributes = [

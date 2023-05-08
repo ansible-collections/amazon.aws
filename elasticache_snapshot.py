@@ -156,8 +156,10 @@ def delete(module, connection, name):
         changed = False
     except is_boto3_error_code("InvalidSnapshotState"):  # pylint: disable=duplicate-except
         module.fail_json(
-            msg="Error: InvalidSnapshotState. The snapshot is not in an available state or failed state to allow deletion."
-            "You may need to wait a few minutes."
+            msg=(
+                "Error: InvalidSnapshotState. The snapshot is not in an available state or failed state to allow"
+                " deletion.You may need to wait a few minutes."
+            )
         )
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to delete the snapshot.")

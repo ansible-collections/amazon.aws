@@ -413,7 +413,7 @@ class SnsTopicManager(object):
             try:
                 response = self.connection.create_topic(Name=self.name, Attributes=attributes, Tags=tags)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.module.fail_json_aws(e, msg="Couldn't create topic %s" % self.name)
+                self.module.fail_json_aws(e, msg=f"Couldn't create topic {self.name}")
             self.topic_arn = response["TopicArn"]
         return True
 
@@ -422,7 +422,7 @@ class SnsTopicManager(object):
         try:
             topic_attributes = self.connection.get_topic_attributes(TopicArn=self.topic_arn)["Attributes"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Couldn't get topic attributes for topic %s" % self.topic_arn)
+            self.module.fail_json_aws(e, msg=f"Couldn't get topic attributes for topic {self.topic_arn}")
 
         if self.display_name and self.display_name != topic_attributes["DisplayName"]:
             changed = True
@@ -509,7 +509,7 @@ class SnsTopicManager(object):
                 try:
                     self.connection.subscribe(TopicArn=self.topic_arn, Protocol=protocol, Endpoint=endpoint)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    self.module.fail_json_aws(e, msg="Couldn't subscribe to topic %s" % self.topic_arn)
+                    self.module.fail_json_aws(e, msg=f"Couldn't subscribe to topic {self.topic_arn}")
         return changed
 
     def _init_desired_subscription_attributes(self):
@@ -537,7 +537,7 @@ class SnsTopicManager(object):
                     "Attributes"
                 ]
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.module.fail_json_aws(e, "Couldn't get subscription attributes for subscription %s" % sub_arn)
+                self.module.fail_json_aws(e, f"Couldn't get subscription attributes for subscription {sub_arn}")
 
             raw_message = self.desired_subscription_attributes[sub_key].get("RawMessageDelivery")
             if raw_message is not None and "RawMessageDelivery" in sub_current_attributes:
@@ -575,7 +575,7 @@ class SnsTopicManager(object):
             try:
                 self.connection.delete_topic(TopicArn=self.topic_arn)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.module.fail_json_aws(e, msg="Couldn't delete topic %s" % self.topic_arn)
+                self.module.fail_json_aws(e, msg=f"Couldn't delete topic {self.topic_arn}")
         return True
 
     def _name_is_arn(self):

@@ -1463,7 +1463,7 @@ def ansible_list_to_cloudfront_list(list_items=None, include_quantity=True):
     if list_items is None:
         list_items = []
     if not isinstance(list_items, list):
-        raise ValueError("Expected a list, got a {0} with value {1}".format(type(list_items).__name__, str(list_items)))
+        raise ValueError(f"Expected a list, got a {type(list_items).__name__} with value {str(list_items)}")
     result = {}
     if include_quantity:
         result["quantity"] = len(list_items)
@@ -1491,7 +1491,7 @@ def delete_distribution(client, module, distribution):
             aws_retry=True, Id=distribution["Distribution"]["Id"], IfMatch=distribution["ETag"]
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error deleting distribution %s" % to_native(distribution["Distribution"]))
+        module.fail_json_aws(e, msg=f"Error deleting distribution {to_native(distribution['Distribution'])}")
 
 
 def update_distribution(client, module, config, distribution_id, e_tag):
@@ -1500,7 +1500,7 @@ def update_distribution(client, module, config, distribution_id, e_tag):
             "Distribution"
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error updating distribution to %s" % to_native(config))
+        module.fail_json_aws(e, msg=f"Error updating distribution to {to_native(config)}")
 
 
 def tag_resource(client, module, arn, tags):
@@ -1721,13 +1721,11 @@ class CloudFrontValidationManager(object):
 
     def validate_is_list(self, list_to_validate, list_name):
         if not isinstance(list_to_validate, list):
-            self.module.fail_json(
-                msg="%s is of type %s. Must be a list." % (list_name, type(list_to_validate).__name__)
-            )
+            self.module.fail_json(msg=f"{list_name} is of type {type(list_to_validate).__name__}. Must be a list.")
 
     def validate_required_key(self, key_name, full_key_name, dict_object):
         if key_name not in dict_object:
-            self.module.fail_json(msg="%s must be specified." % full_key_name)
+            self.module.fail_json(msg=f"{full_key_name} must be specified.")
 
     def validate_origins(
         self,
@@ -1781,8 +1779,8 @@ class CloudFrontValidationManager(object):
             return existing_config["s3_origin_config"]["origin_access_identity"]
 
         try:
-            comment = "access-identity-by-ansible-%s-%s" % (origin.get("domain_name"), self.__default_datetime_string)
-            caller_reference = "%s-%s" % (origin.get("domain_name"), self.__default_datetime_string)
+            comment = f"access-identity-by-ansible-{origin.get('domain_name')}-{self.__default_datetime_string}"
+            caller_reference = f"{origin.get('domain_name')}-{self.__default_datetime_string}"
             cfoai_config = dict(
                 CloudFrontOriginAccessIdentityConfig=dict(CallerReference=caller_reference, Comment=comment)
             )
@@ -1790,8 +1788,8 @@ class CloudFrontValidationManager(object):
                 "Id"
             ]
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Couldn't create Origin Access Identity for id %s" % origin["id"])
-        return "origin-access-identity/cloudfront/%s" % oai
+            self.module.fail_json_aws(e, msg=f"Couldn't create Origin Access Identity for id {origin['id']}")
+        return f"origin-access-identity/cloudfront/{oai}"
 
     def validate_origin(self, client, existing_config, origin, default_origin_path):
         try:
@@ -1948,9 +1946,9 @@ class CloudFrontValidationManager(object):
                 if is_default_cache:
                     cache_behavior_name = "Default cache behavior"
                 else:
-                    cache_behavior_name = "Cache behavior for path %s" % cache_behavior["path_pattern"]
+                    cache_behavior_name = f"Cache behavior for path {cache_behavior['path_pattern']}"
                 self.module.fail_json(
-                    msg="%s has target_origin_id pointing to an origin that does not exist." % cache_behavior_name
+                    msg=f"{cache_behavior_name} has target_origin_id pointing to an origin that does not exist."
                 )
             cache_behavior["target_origin_id"] = target_origin_id
             cache_behavior = self.add_key_else_validate(
@@ -2262,21 +2260,15 @@ class CloudFrontValidationManager(object):
                 or isinstance(allowed_list, set)
                 and not set(allowed_list).issuperset(attribute_list)
             ):
-                self.module.fail_json(
-                    msg="The attribute list {0} must be one of [{1}]".format(
-                        attribute_list_name, " ".join(str(a) for a in allowed_list)
-                    )
-                )
+                attribute_list = " ".join(str(a) for a in allowed_list)
+                self.module.fail_json(msg=f"The attribute list {attribute_list_name} must be one of [{attribute_list}]")
         except Exception as e:
             self.module.fail_json_aws(e, msg="Error validating attribute list with allowed value list")
 
     def validate_attribute_with_allowed_values(self, attribute, attribute_name, allowed_list):
         if attribute is not None and attribute not in allowed_list:
-            self.module.fail_json(
-                msg="The attribute {0} must be one of [{1}]".format(
-                    attribute_name, " ".join(str(a) for a in allowed_list)
-                )
-            )
+            attribute_list = " ".join(str(a) for a in allowed_list)
+            self.module.fail_json(msg=f"The attribute {attribute_name} must be one of [{attribute_list}]")
 
     def validate_distribution_from_caller_reference(self, caller_reference):
         try:
@@ -2333,12 +2325,11 @@ class CloudFrontValidationManager(object):
         except botocore.exceptions.WaiterError as e:
             self.module.fail_json_aws(
                 e,
-                msg="Timeout waiting for CloudFront action."
-                " Waited for {0} seconds before timeout.".format(to_text(wait_timeout)),
+                msg=f"Timeout waiting for CloudFront action. Waited for {to_text(wait_timeout)} seconds before timeout.",
             )
 
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Error getting distribution {0}".format(distribution_id))
+            self.module.fail_json_aws(e, msg=f"Error getting distribution {distribution_id}")
 
 
 def main():

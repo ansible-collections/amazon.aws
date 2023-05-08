@@ -107,7 +107,7 @@ def dict_to_prop(d):
     """convert dictionary to multi-line properties"""
     if len(d) == 0:
         return ""
-    return "\n".join("{0}={1}".format(k, v) for k, v in d.items())
+    return "\n".join(f"{k}={v}" for k, v in d.items())
 
 
 def prop_to_dict(p):
@@ -149,7 +149,7 @@ def find_active_config(client, module):
         if len(active_configs) == 1:
             return active_configs[0]
         else:
-            module.fail_json_aws(msg="found more than one active config with name '{0}'".format(name))
+            module.fail_json_aws(msg=f"found more than one active config with name '{name}'")
 
     return None
 

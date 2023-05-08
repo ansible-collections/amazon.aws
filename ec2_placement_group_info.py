@@ -95,7 +95,7 @@ def get_placement_groups_details(connection, module):
         else:
             response = connection.describe_placement_groups()
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't find placement groups named [%s]" % names)
+        module.fail_json_aws(e, msg=f"Couldn't find placement groups named [{names}]")
 
     results = []
     for placement_group in response["PlacementGroups"]:

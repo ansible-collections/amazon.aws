@@ -447,7 +447,7 @@ def create_scaling_policy(connection, module):
         # it's only required if policy is SimpleScaling and state is present
         if not module.params["scaling_adjustment"]:
             module.fail_json(
-                msg="scaling_adjustment is required when policy_type is SimpleScaling " "and state is present"
+                msg="scaling_adjustment is required when policy_type is SimpleScaling and state is present"
             )
         params["ScalingAdjustment"] = module.params["scaling_adjustment"]
         if module.params["cooldown"]:
@@ -455,7 +455,7 @@ def create_scaling_policy(connection, module):
 
     elif policy_type == "StepScaling":
         if not module.params["step_adjustments"]:
-            module.fail_json(msg="step_adjustments is required when policy_type is StepScaling" "and state is present")
+            module.fail_json(msg="step_adjustments is required when policy_type is StepScaling and state is present")
         params["StepAdjustments"] = []
         for step_adjustment in module.params["step_adjustments"]:
             step_adjust_params = dict(ScalingAdjustment=step_adjustment["scaling_adjustment"])
@@ -472,8 +472,7 @@ def create_scaling_policy(connection, module):
     elif policy_type == "TargetTrackingScaling":
         if not module.params["target_tracking_config"]:
             module.fail_json(
-                msg="target_tracking_config is required when policy_type is "
-                "TargetTrackingScaling and state is present"
+                msg="target_tracking_config is required when policy_type is TargetTrackingScaling and state is present"
             )
         else:
             params["TargetTrackingConfiguration"] = build_target_specification(
@@ -488,7 +487,7 @@ def create_scaling_policy(connection, module):
             aws_retry=True, AutoScalingGroupName=asg_name, PolicyNames=[policy_name]
         )["ScalingPolicies"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+        module.fail_json_aws(e, msg=f"Failed to obtain autoscaling policy {policy_name}")
 
     before = after = {}
     if not policies:
@@ -512,7 +511,7 @@ def create_scaling_policy(connection, module):
                 aws_retry=True, AutoScalingGroupName=asg_name, PolicyNames=[policy_name]
             )["ScalingPolicies"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+            module.fail_json_aws(e, msg=f"Failed to obtain autoscaling policy {policy_name}")
 
     policy = camel_dict_to_snake_dict(policies[0])
     # Backward compatible return values
@@ -532,7 +531,7 @@ def delete_scaling_policy(connection, module):
     try:
         policy = connection.describe_policies(aws_retry=True, PolicyNames=[policy_name])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+        module.fail_json_aws(e, msg=f"Failed to obtain autoscaling policy {policy_name}")
 
     if policy["ScalingPolicies"]:
         try:

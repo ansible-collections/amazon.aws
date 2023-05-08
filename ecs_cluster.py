@@ -203,7 +203,7 @@ class EcsClusterManager:
             c = self.find_in_array(response["clusters"], cluster_name)
             if c:
                 return c
-        raise Exception("Unknown problem describing cluster %s." % cluster_name)
+        raise Exception(f"Unknown problem describing cluster {cluster_name}.")
 
     def create_cluster(self, cluster_name, capacity_providers, capacity_provider_strategy):
         params = dict(clusterName=cluster_name)

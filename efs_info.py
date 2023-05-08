@@ -195,7 +195,7 @@ class EFSConnection(object):
             self.connection = module.client("efs")
             self.module = module
         except Exception as e:
-            module.fail_json(msg="Failed to connect to AWS: %s" % to_native(e))
+            module.fail_json(msg=f"Failed to connect to AWS: {to_native(e)}")
 
         self.region = module.region
 
@@ -280,8 +280,8 @@ class EFSConnection(object):
             AWS documentation is available here:
             U(https://docs.aws.amazon.com/efs/latest/ug/gs-step-three-connect-to-ec2-instance.html)
             """
-            item["MountPoint"] = ".%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
-            item["FilesystemAddress"] = "%s.efs.%s.amazonaws.com:/" % (item["FileSystemId"], self.region)
+            item["MountPoint"] = f".{item['FileSystemId']}.efs.{self.region}.amazonaws.com:/"
+            item["FilesystemAddress"] = f"{item['FileSystemId']}.efs.{self.region}.amazonaws.com:/"
 
             if "Timestamp" in item["SizeInBytes"]:
                 item["SizeInBytes"]["Timestamp"] = str(item["SizeInBytes"]["Timestamp"])

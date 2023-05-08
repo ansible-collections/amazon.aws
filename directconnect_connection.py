@@ -187,7 +187,7 @@ def connection_exists(client, connection_id=None, connection_name=None, verify=T
         response = AWSRetry.jittered_backoff(**retry_params)(client.describe_connections)(**params)
     except (BotoCoreError, ClientError) as e:
         if connection_id:
-            msg = "Failed to describe DirectConnect ID {0}".format(connection_id)
+            msg = f"Failed to describe DirectConnect ID {connection_id}"
         else:
             msg = "Failed to describe DirectConnect connections"
         raise DirectConnectError(msg=msg, last_traceback=traceback.format_exc(), exception=e)
@@ -233,7 +233,7 @@ def create_connection(client, location, bandwidth, name, lag_id):
         connection = AWSRetry.jittered_backoff(**retry_params)(client.create_connection)(**params)
     except (BotoCoreError, ClientError) as e:
         raise DirectConnectError(
-            msg="Failed to create DirectConnect connection {0}".format(name),
+            msg=f"Failed to create DirectConnect connection {name}",
             last_traceback=traceback.format_exc(),
             exception=e,
         )

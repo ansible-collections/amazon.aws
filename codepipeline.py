@@ -216,7 +216,7 @@ def create_pipeline(client, name, role_arn, artifact_store, stages, version, mod
         resp = client.create_pipeline(pipeline=pipeline_dict)
         return resp
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable create pipeline {0}".format(pipeline_dict["name"]))
+        module.fail_json_aws(e, msg=f"Unable create pipeline {pipeline_dict['name']}")
 
 
 def update_pipeline(client, pipeline_dict, module):
@@ -224,7 +224,7 @@ def update_pipeline(client, pipeline_dict, module):
         resp = client.update_pipeline(pipeline=pipeline_dict)
         return resp
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable update pipeline {0}".format(pipeline_dict["name"]))
+        module.fail_json_aws(e, msg=f"Unable update pipeline {pipeline_dict['name']}")
 
 
 def delete_pipeline(client, name, module):
@@ -232,7 +232,7 @@ def delete_pipeline(client, name, module):
         resp = client.delete_pipeline(name=name)
         return resp
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable delete pipeline {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable delete pipeline {name}")
 
 
 def describe_pipeline(client, name, version, module):

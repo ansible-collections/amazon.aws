@@ -366,7 +366,7 @@ class SecretsManagerInterface(object):
         try:
             json.loads(secret.secret_resource_policy_args.get("ResourcePolicy"))
         except (TypeError, ValueError) as e:
-            self.module.fail_json(msg="Failed to parse resource policy as JSON: %s" % (str(e)), exception=format_exc())
+            self.module.fail_json(msg=f"Failed to parse resource policy as JSON: {str(e)}", exception=format_exc())
 
         try:
             response = self.client.put_resource_policy(**secret.secret_resource_policy_args)

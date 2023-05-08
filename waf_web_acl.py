@@ -205,7 +205,7 @@ def get_web_acl(client, module, web_acl_id):
     try:
         return client.get_web_acl(WebACLId=web_acl_id)["WebACL"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Could not get Web ACL with id %s" % web_acl_id)
+        module.fail_json_aws(e, msg=f"Could not get Web ACL with id {web_acl_id}")
 
 
 def list_web_acls(

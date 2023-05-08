@@ -320,7 +320,7 @@ def ensure_tags(connection, module, glue_job):
         return False
 
     account_id, partition = get_aws_account_info(module)
-    arn = "arn:{0}:glue:{1}:{2}:job/{3}".format(partition, module.region, account_id, module.params.get("name"))
+    arn = f"arn:{partition}:glue:{module.region}:{account_id}:job/{module.params.get('name')}"
 
     try:
         existing_tags = connection.get_tags(aws_retry=True, ResourceArn=arn).get("Tags", {})
@@ -328,7 +328,7 @@ def ensure_tags(connection, module, glue_job):
         if module.check_mode:
             existing_tags = {}
         else:
-            module.fail_json_aws(e, msg="Unable to get tags for Glue job %s" % module.params.get("name"))
+            module.fail_json_aws(e, msg=f"Unable to get tags for Glue job {module.params.get('name')}")
 
     tags_to_add, tags_to_remove = compare_aws_tags(
         existing_tags, module.params.get("tags"), module.params.get("purge_tags")
@@ -340,7 +340,7 @@ def ensure_tags(connection, module, glue_job):
             try:
                 connection.untag_resource(aws_retry=True, ResourceArn=arn, TagsToRemove=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Glue job %s" % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Glue job {module.params.get('name')}")
 
     if tags_to_add:
         changed = True
@@ -348,7 +348,7 @@ def ensure_tags(connection, module, glue_job):
             try:
                 connection.tag_resource(aws_retry=True, ResourceArn=arn, TagsToAdd=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Glue job %s" % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Glue job {module.params.get('name')}")
 
     return changed
 

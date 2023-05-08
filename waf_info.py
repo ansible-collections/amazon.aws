@@ -134,7 +134,7 @@ def main():
     if name:
         web_acls = [web_acl for web_acl in web_acls if web_acl["Name"] == name]
         if not web_acls:
-            module.fail_json(msg="WAF named %s not found" % name)
+            module.fail_json(msg=f"WAF named {name} not found")
     module.exit_json(wafs=[get_web_acl(client, module, web_acl["WebACLId"]) for web_acl in web_acls])
 
 

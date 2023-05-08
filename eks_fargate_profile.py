@@ -188,7 +188,7 @@ def validate_tags(client, module, fargate_profile):
         existing_tags = client.list_tags_for_resource(resourceArn=fargate_profile["fargateProfileArn"])["tags"]
         tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get("purge_tags"))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list or compare tags for Fargate Profile %s" % module.params.get("name"))
+        module.fail_json_aws(e, msg=f"Unable to list or compare tags for Fargate Profile {module.params.get('name')}")
 
     if tags_to_remove:
         changed = True
@@ -196,7 +196,7 @@ def validate_tags(client, module, fargate_profile):
             try:
                 client.untag_resource(resourceArn=fargate_profile["fargateProfileArn"], tagKeys=tags_to_remove)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Fargate Profile %s" % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Fargate Profile {module.params.get('name')}")
 
     if tags_to_add:
         changed = True
@@ -204,7 +204,7 @@ def validate_tags(client, module, fargate_profile):
             try:
                 client.tag_resource(resourceArn=fargate_profile["fargateProfileArn"], tags=tags_to_add)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Unable to set tags for Fargate Profile %s" % module.params.get("name"))
+                module.fail_json_aws(e, msg=f"Unable to set tags for Fargate Profile {module.params.get('name')}")
 
     return changed
 
@@ -252,7 +252,7 @@ def create_or_update_fargate_profile(client, module):
         )
         fargate_profile = client.create_fargate_profile(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Couldn't create fargate profile %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't create fargate profile {name}")
 
     if wait:
         wait_until(client, module, "fargate_profile_active", name, cluster_name)
@@ -274,7 +274,7 @@ def delete_fargate_profile(client, module):
         try:
             client.delete_fargate_profile(clusterName=cluster_name, fargateProfileName=name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete fargate profile %s" % name)
+            module.fail_json_aws(e, msg=f"Couldn't delete fargate profile {name}")
 
         if wait:
             wait_until(client, module, "fargate_profile_deleted", name, cluster_name)

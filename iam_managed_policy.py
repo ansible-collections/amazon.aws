@@ -184,7 +184,7 @@ def get_or_create_policy_version(policy, policy_document):
                 "Document"
             ]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't get policy version {0}".format(v["VersionId"]))
+            module.fail_json_aws(e, msg=f"Couldn't get policy version {v['VersionId']}")
 
         if module.check_mode and compare_policies(document, json.loads(to_native(policy_document))):
             return v, True
@@ -249,23 +249,23 @@ def detach_all_entities(policy, **kwargs):
     try:
         entities = client.list_entities_for_policy(PolicyArn=policy["Arn"], **kwargs)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't detach list entities for policy {0}".format(policy["PolicyName"]))
+        module.fail_json_aws(e, msg=f"Couldn't detach list entities for policy {policy['PolicyName']}")
 
     for g in entities["PolicyGroups"]:
         try:
             client.detach_group_policy(PolicyArn=policy["Arn"], GroupName=g["GroupName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't detach group policy {0}".format(g["GroupName"]))
+            module.fail_json_aws(e, msg=f"Couldn't detach group policy {g['GroupName']}")
     for u in entities["PolicyUsers"]:
         try:
             client.detach_user_policy(PolicyArn=policy["Arn"], UserName=u["UserName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't detach user policy {0}".format(u["UserName"]))
+            module.fail_json_aws(e, msg=f"Couldn't detach user policy {u['UserName']}")
     for r in entities["PolicyRoles"]:
         try:
             client.detach_role_policy(PolicyArn=policy["Arn"], RoleName=r["RoleName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't detach role policy {0}".format(r["RoleName"]))
+            module.fail_json_aws(e, msg=f"Couldn't detach role policy {r['RoleName']}")
     if entities["IsTruncated"]:
         detach_all_entities(policy, marker=entities["Marker"])
 
@@ -289,7 +289,7 @@ def create_or_update_policy(existing_policy):
         try:
             rvalue = client.create_policy(PolicyName=name, Path="/", PolicyDocument=policy, Description=description)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't create policy {0}".format(name))
+            module.fail_json_aws(e, msg=f"Couldn't create policy {name}")
 
         module.exit_json(changed=True, policy=camel_dict_to_snake_dict(rvalue["Policy"]))
     else:
@@ -327,12 +327,12 @@ def delete_policy(existing_policy):
                 try:
                     client.delete_policy_version(PolicyArn=existing_policy["Arn"], VersionId=v["VersionId"])
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, msg="Couldn't delete policy version {0}".format(v["VersionId"]))
+                    module.fail_json_aws(e, msg=f"Couldn't delete policy version {v['VersionId']}")
         # Delete policy
         try:
             client.delete_policy(PolicyArn=existing_policy["Arn"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete policy {0}".format(existing_policy["PolicyName"]))
+            module.fail_json_aws(e, msg=f"Couldn't delete policy {existing_policy['PolicyName']}")
 
         # This is the one case where we will return the old policy
         module.exit_json(changed=True, policy=camel_dict_to_snake_dict(existing_policy))

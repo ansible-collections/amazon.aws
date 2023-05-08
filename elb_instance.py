@@ -386,7 +386,7 @@ def main():
     if ec2_elbs is not None:
         for elb in ec2_elbs:
             if not elb_man.exists(elb):
-                module.fail_json(msg="ELB {0} does not exist".format(elb))
+                module.fail_json(msg=f"ELB {elb} does not exist")
 
     if module.params["state"] == "present":
         elb_man.register(wait, enable_availability_zone, timeout)

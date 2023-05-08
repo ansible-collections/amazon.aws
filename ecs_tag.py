@@ -123,7 +123,7 @@ def get_tags(ecs, module, resource):
     try:
         return boto3_tag_list_to_ansible_dict(ecs.list_tags_for_resource(resourceArn=resource)["tags"])
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to fetch tags for resource {0}".format(resource))
+        module.fail_json_aws(e, msg=f"Failed to fetch tags for resource {resource}")
 
 
 def get_arn(ecs, module, cluster_name, resource_type, resource):
@@ -144,9 +144,9 @@ def get_arn(ecs, module, cluster_name, resource_type, resource):
             description = ecs.describe_container_instances(clusters=[resource])
             resource_arn = description["containerInstances"][0]["containerInstanceArn"]
     except (IndexError, KeyError):
-        module.fail_json(msg="Failed to find {0} {1}".format(resource_type, resource))
+        module.fail_json(msg=f"Failed to find {resource_type} {resource}")
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to find {0} {1}".format(resource_type, resource))
+        module.fail_json_aws(e, msg=f"Failed to find {resource_type} {resource}")
 
     return resource_arn
 
@@ -200,7 +200,7 @@ def main():
             try:
                 ecs.untag_resource(resourceArn=resource_arn, tagKeys=list(remove_tags.keys()))
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to remove tags {0} from resource {1}".format(remove_tags, resource))
+                module.fail_json_aws(e, msg=f"Failed to remove tags {remove_tags} from resource {resource}")
 
     if state == "present" and add_tags:
         result["changed"] = True
@@ -211,7 +211,7 @@ def main():
                 tags = ansible_dict_to_boto3_tag_list(add_tags, tag_name_key_name="key", tag_value_key_name="value")
                 ecs.tag_resource(resourceArn=resource_arn, tags=tags)
             except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to set tags {0} on resource {1}".format(add_tags, resource))
+                module.fail_json_aws(e, msg=f"Failed to set tags {add_tags} on resource {resource}")
 
     result["tags"] = get_tags(ecs, module, resource_arn)
     module.exit_json(**result)

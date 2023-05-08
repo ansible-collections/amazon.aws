@@ -660,7 +660,7 @@ def _generate_global_indexes(billing_mode):
             continue
         name = index.get("name")
         if name in index_exists:
-            module.fail_json(msg="Duplicate key {0} in list of global indexes".format(name))
+            module.fail_json(msg=f"Duplicate key {name} in list of global indexes")
         # Convert the type name to upper case and remove the global_
         index["type"] = index["type"].upper()[7:]
         index = _generate_index(index, include_throughput)
@@ -680,7 +680,7 @@ def _generate_local_indexes():
             continue
         name = index.get("name")
         if name in index_exists:
-            module.fail_json(msg="Duplicate key {0} in list of local indexes".format(name))
+            module.fail_json(msg=f"Duplicate key {name} in list of local indexes")
         index["type"] = index["type"].upper()
         index = _generate_index(index, False)
         index_exists[name] = True
@@ -697,7 +697,7 @@ def _generate_global_index_map(current_table):
             continue
         name = index.get("name")
         if name in global_index_map:
-            module.fail_json(msg="Duplicate key {0} in list of global indexes".format(name))
+            module.fail_json(msg=f"Duplicate key {name} in list of global indexes")
         idx = _merge_index_params(index, existing_indexes.get(name, {}))
         # Convert the type name to upper case and remove the global_
         idx["type"] = idx["type"].upper()[7:]
@@ -713,7 +713,7 @@ def _generate_local_index_map(current_table):
             continue
         name = index.get("name")
         if name in local_index_map:
-            module.fail_json(msg="Duplicate key {0} in list of local indexes".format(name))
+            module.fail_json(msg=f"Duplicate key {name} in list of local indexes")
         idx = _merge_index_params(index, existing_indexes.get(name, {}))
         # Convert the type name to upper case
         idx["type"] = idx["type"].upper()
@@ -734,8 +734,8 @@ def _generate_index(index, include_throughput=True):
     else:
         if non_key_attributes:
             module.fail_json(
-                "DynamoDB does not support specifying non-key-attributes ('includes') for "
-                "indexes of type 'all'. Index name: {0}".format(index["name"])
+                "DynamoDB does not support specifying non-key-attributes ('includes') for indexes of type 'all'. Index"
+                f" name: {index['name']}"
             )
 
     idx = dict(
@@ -919,9 +919,7 @@ def update_table(current_table):
     primary_index_changes = _primary_index_changes(current_table)
     if primary_index_changes:
         module.fail_json(
-            "DynamoDB does not support updating the Primary keys on a table. Changed paramters are: {0}".format(
-                primary_index_changes
-            )
+            f"DynamoDB does not support updating the Primary keys on a table. Changed paramters are: {primary_index_changes}"
         )
 
     changed = False
