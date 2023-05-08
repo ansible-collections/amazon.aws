@@ -124,7 +124,7 @@ def check_duplicate_cert(new_cert):
             continue
         module.fail_json(
             changed=False,
-            msg="This certificate already exists under the name {0} and dup_ok=False".format(cert_name),
+            msg=f"This certificate already exists under the name {cert_name} and dup_ok=False",
             duplicate_cert=cert,
         )
 
@@ -195,7 +195,7 @@ def create_server_certificate():
     try:
         client.upload_server_certificate(aws_retry=True, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to update server certificate {0}".format(name))
+        module.fail_json_aws(e, msg=f"Failed to update server certificate {name}")
 
     return True
 
@@ -217,7 +217,7 @@ def rename_server_certificate(current_cert):
     cert_metadata = current_cert.get("server_certificate_metadata", {})
 
     if not current_cert:
-        module.fail_json(msg="Unable to find certificate {0}".format(name))
+        module.fail_json(msg=f"Unable to find certificate {name}")
 
     current_path = cert_metadata.get("path", None)
     if new_path and current_path != new_path:
@@ -232,7 +232,7 @@ def rename_server_certificate(current_cert):
     try:
         client.update_server_certificate(aws_retry=True, ServerCertificateName=name, **changes)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to update server certificate {0}".format(name), changes=changes)
+        module.fail_json_aws(e, msg=f"Failed to update server certificate {name}", changes=changes)
 
     return True
 
@@ -257,7 +257,7 @@ def delete_server_certificate(current_cert):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to delete server certificate {0}".format(name))
+        module.fail_json_aws(e, msg=f"Failed to delete server certificate {name}")
 
     return True
 
@@ -276,7 +276,7 @@ def get_server_certificate(name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get server certificate {0}".format(name))
+        module.fail_json_aws(e, msg=f"Failed to get server certificate {name}")
     cert = dict(camel_dict_to_snake_dict(result.get("ServerCertificate")))
     return cert
 
@@ -353,7 +353,7 @@ def main():
         if changed:
             results["deleted_cert"] = name
         else:
-            msg = "Certificate with the name {0} already absent".format(name)
+            msg = f"Certificate with the name {name} already absent"
             results["msg"] = msg
     else:
         if new_name or new_path:
