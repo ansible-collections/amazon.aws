@@ -71,7 +71,7 @@ def get_plan_details(module, client, backup_plan_name: str):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to get the backup plan tags")
 
-    snaked_backup_plan.append(camel_dict_to_snake_dict(result))
+    snaked_backup_plan.append(camel_dict_to_snake_dict(result, ignore_list="tags"))
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for v in snaked_backup_plan:

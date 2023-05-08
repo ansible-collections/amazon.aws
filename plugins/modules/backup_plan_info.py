@@ -74,9 +74,10 @@ backup_plans:
             description: Version id of the backup plan
             type: str
         backup_plan:
-            elements: dict
             returned: always
             description: Detailed information about the backup plan.
+            type: list
+            elements: dict
             contains:
                 backup_plan_name:
                     description: Name of the backup plan.
