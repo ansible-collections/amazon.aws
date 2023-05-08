@@ -17,6 +17,10 @@
           - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
       register: iam_role
 
+    # Wait for the role to be created
+    - pause:
+        seconds: 20
+
     - name: Create an AWS Backup vault for the plan to target
       amazon.aws.backup_vault:
         backup_vault_name: "{{ backup_vault_name }}"
