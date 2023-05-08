@@ -384,7 +384,7 @@ def add_routes(connection, vpn_connection_id, routes_to_add):
             )
         except (BotoCoreError, ClientError) as e:
             raise VPNConnectionException(
-                msg="Failed while adding route {0} to the VPN connection {1}.".format(route, vpn_connection_id),
+                msg=f"Failed while adding route {route} to the VPN connection {vpn_connection_id}.",
                 exception=e,
             )
 
@@ -397,7 +397,7 @@ def remove_routes(connection, vpn_connection_id, routes_to_remove):
             )
         except (BotoCoreError, ClientError) as e:
             raise VPNConnectionException(
-                msg="Failed to remove route {0} from the VPN connection {1}.".format(route, vpn_connection_id),
+                msg=f"Failed to remove route {route} from the VPN connection {vpn_connection_id}.",
                 exception=e,
             )
 
@@ -435,7 +435,7 @@ def create_filter(module_params, provided_filters):
         elif raw_param in list(boto3ify_filter.items()):
             param = raw_param
         else:
-            raise VPNConnectionException(msg="{0} is not a valid filter.".format(raw_param))
+            raise VPNConnectionException(msg=f"{raw_param} is not a valid filter.")
 
         # reformat filters with special formats
         if param == "tag":
@@ -487,8 +487,10 @@ def find_connection_response(connections=None):
             return None
         else:
             raise VPNConnectionException(
-                msg="More than one matching VPN connection was found. "
-                "To modify or delete a VPN please specify vpn_connection_id or add filters."
+                msg=(
+                    "More than one matching VPN connection was found. "
+                    "To modify or delete a VPN please specify vpn_connection_id or add filters."
+                )
             )
 
     # Found unique match
@@ -524,8 +526,10 @@ def create_connection(
 
     if not (customer_gateway_id and vpn_gateway_id):
         raise VPNConnectionException(
-            msg="No matching connection was found. To create a new connection you must provide "
-            "both vpn_gateway_id and customer_gateway_id."
+            msg=(
+                "No matching connection was found. To create a new connection you must provide "
+                "both vpn_gateway_id and customer_gateway_id."
+            )
         )
     try:
         vpn = connection.create_vpn_connection(
@@ -537,7 +541,7 @@ def create_connection(
         )
     except WaiterError as e:
         raise VPNConnectionException(
-            msg="Failed to wait for VPN connection {0} to be available".format(vpn["VpnConnection"]["VpnConnectionId"]),
+            msg=f"Failed to wait for VPN connection {vpn['VpnConnection']['VpnConnectionId']} to be available",
             exception=e,
         )
     except (BotoCoreError, ClientError) as e:
@@ -555,19 +559,17 @@ def delete_connection(connection, vpn_connection_id, delay, max_attempts):
         )
     except WaiterError as e:
         raise VPNConnectionException(
-            msg="Failed to wait for VPN connection {0} to be removed".format(vpn_connection_id), exception=e
+            msg=f"Failed to wait for VPN connection {vpn_connection_id} to be removed", exception=e
         )
     except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(
-            msg="Failed to delete the VPN connection: {0}".format(vpn_connection_id), exception=e
-        )
+        raise VPNConnectionException(msg=f"Failed to delete the VPN connection: {vpn_connection_id}", exception=e)
 
 
 def add_tags(connection, vpn_connection_id, add):
     try:
         connection.create_tags(aws_retry=True, Resources=[vpn_connection_id], Tags=add)
     except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg="Failed to add the tags: {0}.".format(add), exception=e)
+        raise VPNConnectionException(msg=f"Failed to add the tags: {add}.", exception=e)
 
 
 def remove_tags(connection, vpn_connection_id, remove):
@@ -576,7 +578,7 @@ def remove_tags(connection, vpn_connection_id, remove):
     try:
         connection.delete_tags(aws_retry=True, Resources=[vpn_connection_id], Tags=key_dict_list)
     except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg="Failed to remove the tags: {0}.".format(remove), exception=e)
+        raise VPNConnectionException(msg=f"Failed to remove the tags: {remove}.", exception=e)
 
 
 def check_for_update(connection, module_params, vpn_connection_id):
@@ -624,9 +626,10 @@ def check_for_update(connection, module_params, vpn_connection_id):
 
         if will_be is not None and to_text(will_be) != to_text(is_now):
             raise VPNConnectionException(
-                msg="You cannot modify {0}, the current value of which is {1}. Modifiable VPN "
-                "connection attributes are tags and routes. The value you tried to change it to "
-                "is {2}.".format(attribute, is_now, will_be)
+                msg=(
+                    f"You cannot modify {attribute}, the current value of which is {is_now}. Modifiable VPN connection"
+                    f" attributes are tags and routes. The value you tried to change it to is {will_be}."
+                )
             )
 
     return changes
