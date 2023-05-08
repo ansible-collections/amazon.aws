@@ -149,7 +149,7 @@ class CloudFrontFactsServiceManager:
             keyed = self.CLOUDFRONT_CLIENT_PAGINATE_API_MAPPING[name].get("keyed", False)
             return partial(self.paginate_list_cloudfront_property, client_method, key, keyed, error)
 
-        raise CloudFrontFactsServiceManagerFailure("Method {0} is not currently supported".format(name))
+        raise CloudFrontFactsServiceManagerFailure(f"Method {name} is not currently supported")
 
     def summary(self):
         summary_dict = {}

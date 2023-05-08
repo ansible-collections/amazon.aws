@@ -125,7 +125,7 @@ class ACMServiceManager:
             if len(args) < 3:
                 self.module.fail_json(msg="Missing required certificate arn to delete.")
             arn = args[2]
-        error = "Couldn't delete certificate %s" % arn
+        error = f"Couldn't delete certificate {arn}"
         self.delete_certificate_with_backoff(arn, module=self.module, error=error)
 
     def get_certificates(self, *args, domain_name=None, statuses=None, arn=None, only_tags=None, **kwargs):
@@ -154,7 +154,7 @@ class ACMServiceManager:
             cert_data = self.describe_certificate_with_backoff(
                 certificate["CertificateArn"],
                 module=self.module,
-                error="Couldn't obtain certificate metadata for domain %s" % certificate["DomainName"],
+                error=f"Couldn't obtain certificate metadata for domain {certificate['DomainName']}",
                 ignore_error_codes=["ResourceNotFoundException"],
             )
             if cert_data is None:
@@ -165,7 +165,7 @@ class ACMServiceManager:
                 cert_info = self.get_certificate_with_backoff(
                     certificate["CertificateArn"],
                     module=self.module,
-                    error="Couldn't obtain certificate data for domain %s" % certificate["DomainName"],
+                    error=f"Couldn't obtain certificate data for domain {certificate['DomainName']}",
                     ignore_error_codes=["ResourceNotFoundException"],
                 )
                 if cert_info is None:
@@ -176,7 +176,7 @@ class ACMServiceManager:
             tags = self.list_certificate_tags_with_backoff(
                 certificate["CertificateArn"],
                 module=self.module,
-                error="Couldn't obtain tags for domain %s" % certificate["DomainName"],
+                error=f"Couldn't obtain tags for domain {certificate['DomainName']}",
                 ignore_error_codes=["ResourceNotFoundException"],
             )
             if tags is None:
@@ -196,7 +196,7 @@ class ACMServiceManager:
         """
         if arn is None:
             self.module.fail_json(msg="Internal error with ACM domain fetching, no certificate ARN specified")
-        error = "Couldn't obtain certificate data for arn %s" % arn
+        error = f"Couldn't obtain certificate data for arn {arn}"
         cert_data = self.describe_certificate_with_backoff(certificate_arn=arn, module=self.module, error=error)
         return cert_data["DomainName"]
 
@@ -217,7 +217,7 @@ class ACMServiceManager:
             # I'm not sure whether the API guarentees that the ARN will not change
             # I'm failing just in case.
             # If I'm wrong, I'll catch it in the integration tests.
-            self.module.fail_json(msg="ARN changed with ACM update, from %s to %s" % (original_arn, arn))
+            self.module.fail_json(msg=f"ARN changed with ACM update, from {original_arn} to {arn}")
 
         # tag that cert
         try:
@@ -227,9 +227,9 @@ class ACMServiceManager:
                 self.delete_certificate_with_backoff(arn)
             except (BotoCoreError, ClientError):
                 self.module.warn(
-                    "Certificate %s exists, and is not tagged. So Ansible will not see it on the next run." % arn
+                    f"Certificate {arn} exists, and is not tagged. So Ansible will not see it on the next run."
                 )
-                self.module.fail_json_aws(e, msg="Couldn't tag certificate %s, couldn't delete it either" % arn)
-            self.module.fail_json_aws(e, msg="Couldn't tag certificate %s" % arn)
+                self.module.fail_json_aws(e, msg=f"Couldn't tag certificate {arn}, couldn't delete it either")
+            self.module.fail_json_aws(e, msg=f"Couldn't tag certificate {arn}")
 
         return arn

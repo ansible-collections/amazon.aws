@@ -15,6 +15,6 @@ def get_backup_resource_tags(module, backup_client):
     try:
         response = backup_client.list_tags(ResourceArn=resource)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to list tags on the resource {0}".format(resource))
+        module.fail_json_aws(e, msg=f"Failed to list tags on the resource {resource}")
 
     return response["Tags"]

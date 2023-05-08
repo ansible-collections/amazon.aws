@@ -175,8 +175,10 @@ def sort_json_policy_dict(policy_dict):
     """
 
     ansible_warnings.deprecate(
-        "amazon.aws.module_utils.policy.sort_json_policy_dict has been deprecated, consider using "
-        "amazon.aws.module_utils.policy.compare_policies instead",
+        (
+            "amazon.aws.module_utils.policy.sort_json_policy_dict has been deprecated, consider using "
+            "amazon.aws.module_utils.policy.compare_policies instead"
+        ),
         version="8.0.0",
         collection_name="amazon.aws",
     )

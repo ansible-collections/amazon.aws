@@ -463,7 +463,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         if self.elb is not None and self.elb["Type"] != "application":
             self.module.fail_json(
-                msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead."
+                msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead.",
             )
 
     def _elb_create_params(self):
@@ -699,7 +699,7 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
         if self.elb is not None and self.elb["Type"] != "network":
             self.module.fail_json(
-                msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead."
+                msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead.",
             )
 
     def _elb_create_params(self):
