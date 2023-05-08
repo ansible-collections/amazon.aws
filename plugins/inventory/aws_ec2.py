@@ -416,7 +416,7 @@ def _prepare_host_vars(
 
     if use_contrib_script_compatible_ec2_tag_keys:
         for k, v in host_vars["tags"].items():
-            host_vars["ec2_tag_%s" % k] = v
+            host_vars[f"ec2_tag_{k}"] = v
 
     if hostvars_prefix or hostvars_suffix:
         for hostvar, hostval in host_vars.copy().items():
