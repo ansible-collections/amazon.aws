@@ -327,7 +327,7 @@ class AnsibleEc2Tgw(object):
 
         if len(tgws) > 1:
             self._module.fail_json(
-                msg="EC2 returned more than one transit Gateway for description {0}, aborting".format(description)
+                msg=f"EC2 returned more than one transit Gateway for description {description}, aborting"
             )
         elif tgws:
             tgw = camel_dict_to_snake_dict(tgws[0], ignore_list=["Tags"])
@@ -375,7 +375,7 @@ class AnsibleEc2Tgw(object):
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id)
 
-        self._results["msg"] = " Transit gateway {0} created".format(result["transit_gateway_id"])
+        self._results["msg"] = f" Transit gateway {result['transit_gateway_id']} created"
 
         return result
 
@@ -401,7 +401,7 @@ class AnsibleEc2Tgw(object):
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id, skip_deleted=False)
 
-        self._results["msg"] = " Transit gateway {0} deleted".format(tgw_id)
+        self._results["msg"] = f" Transit gateway {tgw_id} deleted"
 
         return result
 
