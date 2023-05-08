@@ -1,0 +1,2 @@
+trivial:
+- "Add black and flake8 to linters env in tox.ini."

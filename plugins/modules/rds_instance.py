@@ -1433,7 +1433,7 @@ def main():
         preferred_backup_window=dict(aliases=["backup_window"]),
         preferred_maintenance_window=dict(aliases=["maintenance_window"]),
         processor_features=dict(type="dict"),
-        promotion_tier=dict(type='int'),
+        promotion_tier=dict(type="int"),
         publicly_accessible=dict(type="bool"),
         restore_time=dict(),
         s3_bucket_name=dict(),
