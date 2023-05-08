@@ -290,7 +290,7 @@ def attach_policies(module, client, policies_to_attach, role_name):
             client.attach_role_policy(RoleName=role_name, PolicyArn=policy_arn, aws_retry=True)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to attach policy {0} to role {1}".format(policy_arn, role_name))
+            module.fail_json_aws(e, msg=f"Unable to attach policy {policy_arn} to role {role_name}")
     return changed
 
 
@@ -309,7 +309,7 @@ def remove_policies(module, client, policies_to_remove, role_name):
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to detach policy {0} from {1}".format(policy, role_name))
+            module.fail_json_aws(e, msg=f"Unable to detach policy {policy} from {role_name}")
     return changed
 
 
@@ -324,7 +324,7 @@ def remove_inline_policies(module, client, role_name):
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to delete policy {0} embedded in {1}".format(policy, role_name))
+            module.fail_json_aws(e, msg=f"Unable to delete policy {policy} embedded in {role_name}")
 
 
 def generate_create_params(module):
@@ -376,7 +376,7 @@ def update_role_assumed_policy(module, client, role_name, target_assumed_policy,
     try:
         client.update_assume_role_policy(RoleName=role_name, PolicyDocument=target_assumed_policy, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to update assume role policy for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to update assume role policy for role {role_name}")
     return True
 
 
@@ -391,7 +391,7 @@ def update_role_description(module, client, role_name, target_description, curre
     try:
         client.update_role(RoleName=role_name, Description=target_description, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to update description for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to update description for role {role_name}")
     return True
 
 
@@ -406,7 +406,7 @@ def update_role_max_session_duration(module, client, role_name, target_duration,
     try:
         client.update_role(RoleName=role_name, MaxSessionDuration=target_duration, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to update maximum session duration for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to update maximum session duration for role {role_name}")
     return True
 
 
@@ -424,14 +424,14 @@ def update_role_permissions_boundary(
         try:
             client.delete_role_permissions_boundary(RoleName=role_name, aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to remove permission boundary for role {0}".format(role_name))
+            module.fail_json_aws(e, msg=f"Unable to remove permission boundary for role {role_name}")
     else:
         try:
             client.put_role_permissions_boundary(
                 RoleName=role_name, PermissionsBoundary=target_permissions_boundary, aws_retry=True
             )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to update permission boundary for role {0}".format(role_name))
+            module.fail_json_aws(e, msg=f"Unable to update permission boundary for role {role_name}")
     return True
 
 
@@ -540,7 +540,7 @@ def create_instance_profiles(module, client, role_name, path):
             "InstanceProfiles"
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list instance profiles for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to list instance profiles for role {role_name}")
 
     # Profile already exists
     if any(p["InstanceProfileName"] == role_name for p in instance_profiles):
@@ -560,13 +560,13 @@ def create_instance_profiles(module, client, role_name, path):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to create instance profile for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to create instance profile for role {role_name}")
 
     # And attach the role to the profile
     try:
         client.add_role_to_instance_profile(InstanceProfileName=role_name, RoleName=role_name, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to attach role {0} to instance profile {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to attach role {role_name} to instance profile {role_name}")
 
     return True
 
@@ -579,7 +579,7 @@ def remove_instance_profiles(module, client, role_name):
             "InstanceProfiles"
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list instance profiles for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to list instance profiles for role {role_name}")
 
     # Remove the role from the instance profile(s)
     for profile in instance_profiles:
@@ -599,11 +599,9 @@ def remove_instance_profiles(module, client, role_name):
                             botocore.exceptions.ClientError,
                             botocore.exceptions.BotoCoreError,
                         ) as e:  # pylint: disable=duplicate-except
-                            module.fail_json_aws(e, msg="Unable to remove instance profile {0}".format(profile_name))
+                            module.fail_json_aws(e, msg=f"Unable to remove instance profile {profile_name}")
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(
-                e, msg="Unable to remove role {0} from instance profile {1}".format(role_name, profile_name)
-            )
+            module.fail_json_aws(e, msg=f"Unable to remove role {role_name} from instance profile {profile_name}")
 
 
 def destroy_role(module, client):
@@ -640,7 +638,7 @@ def get_role_with_backoff(module, client, name):
             "Role"
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to get role {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to get role {name}")
 
 
 def get_role(module, client, name):
@@ -652,21 +650,21 @@ def get_role(module, client, name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to get role {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to get role {name}")
 
 
 def get_attached_policy_list(module, client, name):
     try:
         return client.list_attached_role_policies(RoleName=name, aws_retry=True)["AttachedPolicies"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list attached policies for role {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to list attached policies for role {name}")
 
 
 def get_inline_policy_list(module, client, name):
     try:
         return client.list_role_policies(RoleName=name, aws_retry=True)["PolicyNames"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list attached policies for role {0}".format(name))
+        module.fail_json_aws(e, msg=f"Unable to list attached policies for role {name}")
 
 
 def get_role_tags(module, client):
@@ -674,7 +672,7 @@ def get_role_tags(module, client):
     try:
         return boto3_tag_list_to_ansible_dict(client.list_role_tags(RoleName=role_name, aws_retry=True)["Tags"])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list tags for role {0}".format(role_name))
+        module.fail_json_aws(e, msg=f"Unable to list tags for role {role_name}")
 
 
 def update_role_tags(module, client, role_name, new_tags, purge_tags):
@@ -698,7 +696,7 @@ def update_role_tags(module, client, role_name, new_tags, purge_tags):
             if tags_to_add:
                 client.tag_role(RoleName=role_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add), aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to set tags for role %s" % role_name)
+            module.fail_json_aws(e, msg=f"Unable to set tags for role {role_name}")
 
     changed = bool(tags_to_add) or bool(tags_to_remove)
     return changed
