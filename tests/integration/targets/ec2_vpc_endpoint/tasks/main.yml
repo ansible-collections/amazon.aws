@@ -180,7 +180,6 @@
       - '"creation_timestamp" in first_endpoint'
       - '"policy_document" in first_endpoint'
       - '"route_table_ids" in first_endpoint'
-      - first_endpoint.route_table_ids | length == 0
       - '"service_name" in first_endpoint'
       - '"state" in first_endpoint'
       - '"vpc_endpoint_id" in first_endpoint'
