@@ -481,6 +481,11 @@ def ensure_subnet_present(conn, module):
 
     subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
     if not module.check_mode and module.params["wait"]:
+        for _rewait in range(0, 5):
+            if subnet:
+                break
+            time.sleep(2)
+            subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
         # GET calls are not monotonic for map_public_ip_on_launch and assign_ipv6_address_on_creation
         # so we only wait for those if necessary just before returning the subnet
         subnet = ensure_final_subnet(conn, module, subnet, start_time)
