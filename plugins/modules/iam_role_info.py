@@ -195,15 +195,15 @@ def describe_iam_role(module, client, role):
     try:
         role["InlinePolicies"] = list_iam_role_policies_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't get inline policies for role %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't get inline policies for role {name}")
     try:
         role["ManagedPolicies"] = list_iam_attached_role_policies_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't get managed  policies for role %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't get managed  policies for role {name}")
     try:
         role["InstanceProfiles"] = list_iam_instance_profiles_for_role_with_backoff(client, name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't get instance profiles for role %s" % name)
+        module.fail_json_aws(e, msg=f"Couldn't get instance profiles for role {name}")
     try:
         role["tags"] = boto3_tag_list_to_ansible_dict(role["Tags"])
         del role["Tags"]
@@ -224,7 +224,7 @@ def describe_iam_roles(module, client):
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
         ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Couldn't get IAM role %s" % name)
+            module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
     else:
         params = dict()
         if path_prefix:
