@@ -68,8 +68,8 @@ def get_plan_details(module, client, backup_plan_name: str):
 
     try:
         module.params["resource"] = result.get("BackupPlanArn", None)
-        tag_dict = get_backup_resource_tags(module, client)
-        result.update({"tags": tag_dict})
+        # tag_dict = get_backup_resource_tags(module, client)
+        # result.update({"tags": tag_dict})
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to get the backup plan tags")
 
@@ -77,9 +77,8 @@ def get_plan_details(module, client, backup_plan_name: str):
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for v in snaked_backup_plan:
-        if "tags_list" in v:
-            v["tags"] = boto3_tag_list_to_ansible_dict(v["tags_list"], "key", "value")
-            del v["tags_list"]
+        # if "tags_list" in v:
+        #    v["tags"] = boto3_tag_list_to_ansible_dict(v["tags_list"], "key", "value")
         if "response_metadata" in v:
             del v["response_metadata"]
         v["backup_plan_name"] = v["backup_plan"]["backup_plan_name"]
