@@ -157,7 +157,7 @@ def delete_access_key(access_keys, user, access_key_id):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg='Failed to delete access key "{0}" for user "{1}"'.format(access_key_id, user))
+        module.fail_json_aws(e, msg=f'Failed to delete access key "{access_key_id}" for user "{user}"')
 
     return True
 
@@ -165,7 +165,7 @@ def delete_access_key(access_keys, user, access_key_id):
 def update_access_key(access_keys, user, access_key_id, enabled):
     if access_key_id not in access_keys:
         module.fail_json(
-            msg='Access key "{0}" not found attached to User "{1}"'.format(access_key_id, user),
+            msg=f'Access key "{access_key_id}" not found attached to User "{user}"',
         )
 
     changes = dict()
@@ -188,7 +188,7 @@ def update_access_key(access_keys, user, access_key_id, enabled):
         module.fail_json_aws(
             e,
             changes=changes,
-            msg='Failed to update access key "{0}" for user "{1}"'.format(access_key_id, user),
+            msg=f'Failed to update access key "{access_key_id}" for user "{user}"',
         )
     return True
 
@@ -210,7 +210,7 @@ def create_access_key(access_keys, user, rotate_keys, enabled):
     try:
         results = client.create_access_key(aws_retry=True, UserName=user)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to create access key for user "{0}"'.format(user))
+        module.fail_json_aws(e, msg=f'Failed to create access key for user "{user}"')
     results = camel_dict_to_snake_dict(results)
     access_key = results.get("access_key")
     access_key = normalize_boto3_result(access_key)
@@ -232,7 +232,7 @@ def get_access_keys(user):
     try:
         results = client.list_access_keys(aws_retry=True, UserName=user)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to get access keys for user "{0}"'.format(user))
+        module.fail_json_aws(e, msg=f'Failed to get access keys for user "{user}"')
     if not results:
         return None
 
@@ -259,7 +259,7 @@ def main():
     )
 
     required_if = [
-        ["state", "absent", ("id")],
+        ["state", "absent", ("id",)],
     ]
     mutually_exclusive = [
         ["rotate_keys", "id"],
