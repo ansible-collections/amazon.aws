@@ -45,6 +45,20 @@ options:
       - Condition operators are case sensitive.
     type: list
     elements: dict
+    suboptions:
+        condition_type:
+            description:
+            - An operation applied to a key-value pair used to assign resources to your backup plan.
+            - Condition only supports C(StringEquals).
+            type: str
+        condition_key:
+            description:
+            - The key in a key-value pair.
+            type: str
+        condition_value:
+            description:
+            - The value in a key-value pair.
+            type: str
   not_resources:
     description:
       - A list of Amazon Resource Names (ARNs) to exclude from a backup plan. The maximum number of ARNs is 500 without wildcards,
@@ -55,6 +69,7 @@ options:
   conditions:
     description:
       - A list of conditions (expressed as a dict) that you define to assign resources to your backup plans using tags.
+      - I(conditions) supports C(StringEquals), C(StringLike), C(StringNotEquals), and C(StringNotLike). I(list_of_tags) only supports C(StringEquals).
     type: dict
   state:
     description:
@@ -207,7 +222,13 @@ def main():
         resources=dict(type="list", elements="str"),
         conditions=dict(type="dict"),
         not_resources=dict(type="list", elements="str"),
-        list_of_tags=dict(type="list", elements="dict"),
+        list_of_tags=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                condition_type=dict(type="str"), condition_key=dict(type="str"), condition_value=dict(type="str")
+            ),
+        ),
         state=dict(default="present", choices=["present", "absent"]),
     )
     required_if = [

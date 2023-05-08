@@ -15,11 +15,12 @@
         description: "Ansible AWS Backup Role"
         managed_policy:
           - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+      wait: true
       register: iam_role
 
     # Wait for the role to be created
     - pause:
-        seconds: 20
+        seconds: 5
 
     - name: Create an AWS Backup vault for the plan to target
       amazon.aws.backup_vault:

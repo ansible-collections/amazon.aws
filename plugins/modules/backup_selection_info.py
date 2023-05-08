@@ -121,9 +121,6 @@ def main():
         backup_plan_name=dict(type="str", required=True, aliases=["plan_name"]),
         backup_selection_names=dict(type="list", elements="str", aliases=["selection_names"]),
     )
-
-    global client
-    global module
     result = {}
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
