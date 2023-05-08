@@ -171,7 +171,7 @@ def copy_image(module, ec2):
 
     try:
         if module.params.get("tag_equality"):
-            filters = [{"Name": "tag:%s" % k, "Values": [v]} for (k, v) in module.params.get("tags").items()]
+            filters = [{"Name": f"tag:{k}", "Values": [v]} for (k, v) in module.params.get("tags").items()]
             filters.append(dict(Name="state", Values=["available", "pending"]))
             images = ec2.describe_images(Filters=filters)
             if len(images["Images"]) > 0:
@@ -197,7 +197,7 @@ def copy_image(module, ec2):
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Could not copy AMI")
     except Exception as e:
-        module.fail_json(msg="Unhandled exception. (%s)" % to_native(e))
+        module.fail_json(msg=f"Unhandled exception. ({to_native(e)})")
 
 
 def main():
