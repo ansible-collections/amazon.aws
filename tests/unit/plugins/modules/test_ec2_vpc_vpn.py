@@ -357,9 +357,7 @@ def test_check_for_update_nonmodifiable_attr(placeboify, maybe_sleep):
     # update a parameter that isn't modifiable
     m.params.update(vpn_gateway_id="invalidchange")
 
-    expected_message = "You cannot modify vpn_gateway_id, the current value of which is {0}. Modifiable VPN connection attributes are".format(
-        current_vgw
-    )
+    expected_message = f"You cannot modify vpn_gateway_id, the current value of which is {current_vgw}. Modifiable VPN connection attributes are"
     with pytest.raises(ec2_vpc_vpn.VPNConnectionException, match=expected_message):
         ec2_vpc_vpn.check_for_update(conn, m.params, vpn["VpnConnectionId"])
 
