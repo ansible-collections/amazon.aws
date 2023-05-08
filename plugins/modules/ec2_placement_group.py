@@ -120,7 +120,7 @@ def search_placement_group(connection, module):
     try:
         response = connection.describe_placement_groups(Filters=[{"Name": "group-name", "Values": [name]}])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't find placement group named [%s]" % name)
+        module.fail_json_aws(e, msg=f"Couldn't find placement group named [{name}]")
 
     if len(response["PlacementGroups"]) != 1:
         return None
@@ -178,7 +178,7 @@ def create_placement_group(connection, module):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't create placement group [%s]" % name)
+        module.fail_json_aws(e, msg=f"Couldn't create placement group [{name}]")
 
     module.exit_json(changed=True, placement_group=get_placement_group_information(connection, name))
 
@@ -190,7 +190,7 @@ def delete_placement_group(connection, module):
     try:
         connection.delete_placement_group(GroupName=name, DryRun=module.check_mode)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't delete placement group [%s]" % name)
+        module.fail_json_aws(e, msg=f"Couldn't delete placement group [{name}]")
 
     module.exit_json(changed=True)
 
@@ -220,9 +220,7 @@ def main():
             else:
                 name = module.params.get("name")
                 module.fail_json(
-                    msg=("Placement group '{}' exists, can't change strategy" + " from '{}' to '{}'").format(
-                        name, placement_group["strategy"], strategy
-                    )
+                    msg=f"Placement group '{name}' exists, can't change strategy from '{placement_group['strategy']}' to '{strategy}'"
                 )
 
     elif state == "absent":
