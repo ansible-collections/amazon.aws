@@ -66,7 +66,7 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
     for k, v in tag_candidates.items():
         if k in tags_list[0] and v in tags_list[0]:
             return dict((tag[k], tag[v]) for tag in tags_list)
-    raise ValueError("Couldn't find tag key (candidates %s) in tag list %s" % (str(tag_candidates), str(tags_list)))
+    raise ValueError(f"Couldn't find tag key (candidates {str(tag_candidates)}) in tag list {str(tags_list)}")
 
 
 def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value_key_name="Value"):

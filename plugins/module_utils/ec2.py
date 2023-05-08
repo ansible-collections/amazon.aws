@@ -133,7 +133,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
         sec_group_id_list[:] = [sg for sg in unmatched if re.match("sg-[a-fA-F0-9]+$", sg)]
         still_unmatched = [sg for sg in unmatched if not re.match("sg-[a-fA-F0-9]+$", sg)]
         if len(still_unmatched) > 0:
-            raise ValueError("The following group names are not valid: %s" % ", ".join(still_unmatched))
+            raise ValueError(f"The following group names are not valid: {', '.join(still_unmatched)}")
 
     sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
@@ -165,7 +165,7 @@ def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
             Resources=[resource_id], Tags=tags_to_add
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to add tags {0} to {1}".format(tags_to_set, resource_id))
+        module.fail_json_aws(e, msg=f"Unable to add tags {tags_to_set} to {resource_id}")
     return True
 
 
@@ -195,7 +195,7 @@ def remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes=None
             Resources=[resource_id], Tags=tags_to_remove
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to delete tags {0} from {1}".format(tags_to_unset, resource_id))
+        module.fail_json_aws(e, msg=f"Unable to delete tags {tags_to_unset} from {resource_id}")
     return True
 
 
@@ -224,7 +224,7 @@ def describe_ec2_tags(client, module, resource_id, resource_type=None, retry_cod
         )
         return boto3_tag_list_to_ansible_dict(results.get("Tags", None))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to describe tags for EC2 Resource: {0}".format(resource_id))
+        module.fail_json_aws(e, msg=f"Failed to describe tags for EC2 Resource: {resource_id}")
 
 
 def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, purge_tags=True, retry_codes=None):
