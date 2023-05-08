@@ -10,4 +10,4 @@ GitHub Actions are used to run the Continuous Integration for amazon.aws collect
 | Linters | Runs `black` and `flake8` on plugins and tests | 3.9 | devel |
 | Sanity | Runs absible sanity checks | 3.8, 3.9, 3.10, 3.11 | Stable-2.12, 2.13, 2.14 (not on py 3.11), Stable-2.15+ (not on 3.8) |
 | Unit tests | Executes the unit test cases | 3.9, 3.10 | Stable-2.12+ |
-| Integration tests | Executest the integration test suites| <TBA> | <TBA> |
+| Integration tests | Executes the integration test suites| <TBA> | <TBA> |
