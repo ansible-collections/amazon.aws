@@ -5,6 +5,166 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.0.0
+======
+
+Release Summary
+---------------
+
+This release brings some new plugins and features. Several bugfixes, breaking changes and deprecated features are also included. The amazon.aws collection has dropped support for ``botocore<1.25.0`` and ``boto3<1.22.0``. Support for Python 3.6 has also been dropped.
+
+Minor Changes
+-------------
+
+- Add github actions to run unit and sanity tests.(https://github.com/ansible-collections/amazon.aws/pull/1393).
+- AnsibleAWSModule - add support to the ``client`` and ``resource`` methods for overriding the default parameters (https://github.com/ansible-collections/amazon.aws/pull/1303).
+- CONTRIBUTING.md - refactors and adds to contributor documentation (https://github.com/ansible-collections/amazon.aws/issues/924)
+- Refactor inventory plugins and add aws_rds inventory unit tests (https://github.com/ansible-collections/amazon.aws/pull/1218).
+- Refactor module_utils/cloudfront_facts.py and add unit tests (https://github.com/ansible-collections/amazon.aws/pull/1265).
+- The ``black`` code formatter has been run across the collection to improve code consistency (https://github.com/ansible-collections/amazon.aws/pull/1465).
+- amazon.aws inventory plugins - additional refactorization of inventory plugin connection handling (https://github.com/ansible-collections/amazon.aws/pull/1271).
+- amazon.aws lookup plugins - ``aws_access_key`` has been renamed to ``access_key`` for consistency between modules and plugins, ``aws_access_key`` remains as an alias. This change should have no observable effect for users outside the module/plugin documentation (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- amazon.aws lookup plugins - ``aws_profile`` has been renamed to ``profile`` for consistency between modules and plugins, ``aws_profile`` remains as an alias. This change should have no observable effect for users outside the module/plugin documentation (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- amazon.aws lookup plugins - ``aws_secret_key`` has been renamed to ``secret_key`` for consistency between modules and plugins, ``aws_secret_key`` remains as an alias. This change should have no observable effect for users outside the module/plugin documentation (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- amazon.aws lookup plugins - ``aws_security_token`` has been renamed to ``session_token`` for consistency between modules and plugins, ``aws_security_token`` remains as an alias. This change should have no observable effect for users outside the module/plugin documentation (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- amazon.aws modules - bulk update of import statements following various refactors (https://github.com/ansible-collections/amazon.aws/pull/1310).
+- autoscaling_group - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- aws_account_attribute - the ``aws_account_attribute`` lookup plugin has been refactored to use ``AWSLookupBase`` as its base class (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- aws_ec2 inventory - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- aws_secret - the ``aws_secret`` lookup plugin has been refactored to use ``AWSLookupBase`` as its base class (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- aws_secret - the ``aws_secret`` lookup plugin has been renamed ``secretsmanager_secret``, ``aws_secret`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- aws_ssm - the ``aws_ssm`` lookup plugin has been refactored to use ``AWSLookupBase`` as its base class (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- aws_ssm - the ``aws_ssm`` lookup plugin has been renamed ``ssm_parameter``, ``aws_ssm`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- backup - Add logic for backup_selection* modules (https://github.com/ansible-collections/amazon.aws/pull/1530).
+- bulk migration of ``%`` and ``.format()`` to fstrings (https://github.com/ansible-collections/amazon.aws/pull/1483).
+- cloud module_utils - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- cloudtrail_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- cloudwatchlogs_log_group - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- docs_fragments - ``amazon.aws.boto3`` fragment now pulls the botocore version requirements from ``module_utils.botocore`` (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- docs_fragments - common parameters for modules and plugins have been synchronised and moved to ``amazon.aws.common.modules`` and ``amazon.aws.common.plugins`` (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- docs_fragments - region parameters for modules and plugins have been synchronised and moved to ``amazon.aws.region.modules`` and ``amazon.aws.region.plugins`` (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- ec2_ami - Extend the unit-test coverage of the module (https://github.com/ansible-collections/amazon.aws/pull/1159).
+- ec2_ami - allow ``ImageAvailable`` waiter to retry when the image can't be found (https://github.com/ansible-collections/amazon.aws/pull/1321).
+- ec2_ami_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1252).
+- ec2_eip - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- ec2_eni_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1236).
+- ec2_instance - avoid changing ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1187).
+- ec2_instance - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1337).
+- ec2_security_group - added rule options to argument specifications to improve handling of inputs (https://github.com/ansible-collections/amazon.aws/pull/1214).
+- ec2_security_group - refacter ``get_target_from_rule()`` (https://github.com/ansible-collections/amazon.aws/pull/1221).
+- ec2_security_group - refactor rule expansion and add unit tests (https://github.com/ansible-collections/amazon.aws/pull/1261).
+- ec2_snapshot - Reenable the integration tests (https://github.com/ansible-collections/amazon.aws/pull/1235).
+- ec2_snapshot_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1211).
+- ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).
+- ec2_vpc_subnet - retry fetching subnet details after creation if the first attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).
+- inventory aws ec2 - add parameter `use_ssm_inventory` allowing to query ssm inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
+- inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
+- inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
+- inventory_aws_ec2 integration tests - replace local module `test_get_ssm_inventory` by `community.aws.ssm_inventory_info` (https://github.com/ansible-collections/amazon.aws/pull/1416).
+- kms_key_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- lambda - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- lambda - use common ``get_aws_account_info`` helper rather than reimplementing (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- lambda_alias - refactored to avoid passing around the complex ``module`` resource (https://github.com/ansible-collections/amazon.aws/pull/1336).
+- lambda_alias - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1336).
+- lambda_execute - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- lambda_info - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1336).
+- lambda_layer_info -  add support for parameter version_number to retrieve detailed information for a specific layer version (https://github.com/ansible-collections/amazon.aws/pull/1293).
+- module_utils - move RetryingBotoClientWrapper into module_utils.retries for reuse with other plugin types (https://github.com/ansible-collections/amazon.aws/pull/1230).
+- module_utils - move exceptions into dedicated python module (https://github.com/ansible-collections/amazon.aws/pull/1246).
+- module_utils - refacter botocore version validation into module_utils.botocore for future reuse (https://github.com/ansible-collections/amazon.aws/pull/1227).
+- module_utils.acm - Refactor ACMServiceManager class and add unit tests (https://github.com/ansible-collections/amazon.aws/pull/1273).
+- module_utils.botocore - Add Ansible AWS User-Agent identification (https://github.com/ansible-collections/amazon.aws/pull/1306).
+- module_utils.botocore - refactorization of ``get_aws_region``, ``get_aws_connection_info`` so that the code can be reused by non-module plugins (https://github.com/ansible-collections/amazon.aws/pull/1231).
+- module_utils.policy - minor refacter of code to reduce complexity and improve test coverage (https://github.com/ansible-collections/amazon.aws/pull/1136).
+- module_utils.s3 - Refactor get_s3_connection into a module_utils for S3 modules and expand module_utils.s3 unit tests (https://github.com/ansible-collections/amazon.aws/pull/1139).
+- module_utils/botocore - added support to ``_boto3_conn`` for passing dictionaries of configuration (https://github.com/ansible-collections/amazon.aws/pull/1307).
+- plugin_utils - Added ``AWSConnectionBase`` to support refactoring connection plugins (https://github.com/ansible-collections/amazon.aws/pull/1340).
+- rds - AWS is phasing out aurora1. Integration tests use aurora2 (aurora-mysql) by default (https://github.com/ansible-collections/amazon.aws/pull/1233).
+- rds_cluster - Split up the functional tests in smaller targets (https://github.com/ansible-collections/amazon.aws/pull/1175).
+- rds_cluster_snapshot - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- rds_instance - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- rds_instance_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1132).
+- rds_instance_snapshot - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- rds_param_group - drop Python2 import fallbacks (https://github.com/ansible-collections/amazon.aws/pull/1513).
+- route53_health_check - Drop deprecation warning (https://github.com/ansible-collections/community.aws/pull/1335).
+- route53_health_check - minor fix for returning health check info while updating a Route53 health check (https://github.com/ansible-collections/amazon.aws/pull/1200).
+- route53_health_check - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- route53_info - drop unused imports (https://github.com/ansible-collections/amazon.aws/pull/1462).
+- s3_bucket - add support for S3 dualstack endpoint (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_bucket - handle missing read permissions more gracefully when possible (https://github.com/ansible-collections/amazon.aws/pull/1406).
+- s3_bucket - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object - refactor main to reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/1193).
+- s3_object_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
+- s3_object_info - refactor S3 connection code (https://github.com/ansible-collections/amazon.aws/pull/1305).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- The amazon.aws collection has dropped support for ``botocore<1.25.0`` and ``boto3<1.22.0``. Most modules will continue to work with older versions of the AWS SDK, however compatibility with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/1342).
+- amazon.aws - compatibility code for Python < 3.6 has been removed (https://github.com/ansible-collections/amazon.aws/pull/1257).
+- ec2_eip - the previously deprecated ``instance_id`` alias for the ``device_id`` parameter has been removed. Please use the ``device_id`` parameter name instead (https://github.com/ansible-collections/amazon.aws/issues/1176).
+- ec2_instance - the default value for ``instance_type`` has been removed. At least one of ``instance_type`` or ``launch_template`` must be specified when launching new instances (https://github.com/ansible-collections/amazon.aws/pull/1315).
+- ec2_vpc_dhcp_options - the ``new_options`` return value has been deprecated after being renamed to ``dhcp_config``.  Please use the ``dhcp_config`` or ``dhcp_options`` return values (https://github.com/ansible-collections/amazon.aws/pull/1327).
+- ec2_vpc_endpoint - the ``policy_file`` parameter has been removed.  I(policy) with a file lookup can be used instead (https://github.com/ansible-collections/amazon.aws/issues/1178).
+- ec2_vpc_net - the ``classic_link_enabled`` return value has been removed. Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).
+- ec2_vpc_net_info - the ``classic_link_dns_status`` return value has been removed. Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).
+- ec2_vpc_net_info - the ``classic_link_enabled`` return value has been removed. Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).
+- module_utils.cloud - the previously deprecated ``CloudRetry.backoff`` has been removed. Please use ``CloudRetry.exponential_backoff`` or ``CloudRetry.jittered_backoff`` instead (https://github.com/ansible-collections/amazon.aws/issues/1110).
+
+Deprecated Features
+-------------------
+
+- amazon.aws collection - due to the AWS SDKs Python support policies (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/) support for Python less than 3.8 by this collection is expected to be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1342).
+- amazon.aws collection - due to the AWS SDKs announcing the end of support for Python less than 3.7 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/) support for Python less than 3.7 by this collection has been deprecated and will be removed in release 7.0.0. (https://github.com/ansible-collections/amazon.aws/pull/1342).
+- amazon.aws lookup plugins - the ``boto3_profile`` alias for the ``profile`` option has been deprecated, please use ``profile`` instead (https://github.com/ansible-collections/amazon.aws/pull/1225).
+- docs_fragments - ``amazon.aws.aws_credentials`` docs fragment has been deprecated please use ``amazon.aws.common.plugins`` instead (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- docs_fragments - ``amazon.aws.aws_region`` docs fragment has been deprecated please use ``amazon.aws.region.plugins`` instead (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- docs_fragments - ``amazon.aws.aws`` docs fragment has been deprecated please use ``amazon.aws.common.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- docs_fragments - ``amazon.aws.ec2`` docs fragment has been deprecated please use ``amazon.aws.region.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/1248).
+- module_utils.policy - ``ansible_collections.amazon.aws.module_utils.policy.sort_json_policy_dict`` has been deprecated consider using ``ansible_collections.amazon.aws.module_utils.poilcies.compare_policies`` instead (https://github.com/ansible-collections/amazon.aws/pull/1136).
+- s3_object - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been deprecated, the ``dualstack`` parameter is ignored when ``endpoint_url`` is passed. Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object - Support for passing values of ``overwrite`` other than ``always``, ``never``, ``different`` or last ``last`` has been deprecated.  Boolean values should be replaced by the strings ``always`` or ``never`` Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
+- s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been deprecated, the ``dualstack`` parameter is ignored when ``endpoint_url`` is passed. Support will be removed in a release after 2024-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1305).
+
+Removed Features (previously deprecated)
+----------------------------------------
+
+- ec2_vpc_endpoint_info - support for the ``query`` parameter was removed. The ``amazon.aws.ec2_vpc_endpoint_info`` module now only queries for endpoints. Services can be queried using the ``amazon.aws.ec2_vpc_endpoint_service_info`` module (https://github.com/ansible-collections/amazon.aws/pull/1308).
+- s3_object - support for creating and deleting buckets using the ``s3_object`` module has been removed. S3 buckets can be created and deleted using the ``amazon.aws.s3_bucket`` module (https://github.com/ansible-collections/amazon.aws/issues/1112).
+
+Bugfixes
+--------
+
+- ec2_security_group - file included unreachable code. Fix now removes unreachable code by removing an inapproproate logic (https://github.com/ansible-collections/amazon.aws/pull/1348).
+- ec2_vpc_dhcp_option - retry ``describe_dhcp_options`` after creation when ``InvalidDhcpOptionID.NotFound`` is raised (https://github.com/ansible-collections/amazon.aws/pull/1320).
+- lambda_execute - Fix waiter error when function_arn is passed instead of name(https://github.com/ansible-collections/amazon.aws/issues/1268).
+- module_utils - fixes ``TypeError: deciding_wrapper() got multiple values for argument 'aws_retry'`` when passing positional arguments to functions wrapped by AnsibleAWSModule.client (https://github.com/ansible-collections/amazon.aws/pull/1230).
+- rds_param_group - added a check to fail the task while modifying/updating rds_param_group if trying to change DB parameter group family. (https://github.com/ansible-collections/amazon.aws/pull/1169).
+- route53_health_check - Fix "Name" tag key removal idempotentcy issue when creating health_check with `use_unique_names` and `tags` set (https://github.com/ansible-collections/amazon.aws/pull/1253).
+- s3_bucket - Handle setting of permissions while acl is disabled.(https://github.com/ansible-collections/amazon.aws/pull/1168).
+
+New Plugins
+-----------
+
+Lookup
+~~~~~~
+
+- aws_collection_constants - expose various collection related constants
+
+New Modules
+-----------
+
+- backup_plan - Manage AWS Backup Plans
+- backup_plan_info - Describe AWS Backup Plans
+- backup_restore_job_info - List information about backup restore jobs
+- backup_selection - Create, delete and modify AWS Backup selection
+- backup_selection_info - Describe AWS Backup Selections
+- backup_tag - Manage tags on backup plan, backup vault, recovery point
+- backup_tag_info - List tags on AWS Backup resources
+- backup_vault - Manage AWS Backup Vaults
+- backup_vault_info - Describe AWS Backup Vaults
+
 v5.5.0
 ======
 
@@ -353,6 +513,7 @@ The amazon.aws 4.4.0 release includes a number of security and minor bug fixes.
 
 Minor Changes
 -------------
+
 - ec2_instance - refacter ``tower_callback`` code to handle parameter validation as part of the argument specification (https://github.com/ansible-collections/amazon.aws/pull/1199).
 - ec2_instance - the ``tower_callback`` parameter has been renamed to ``aap_callback``, ``tower_callback`` remains as an alias.  This change should have no observable effect for users outside the module documentation (https://github.com/ansible-collections/amazon.aws/pull/1199).
 

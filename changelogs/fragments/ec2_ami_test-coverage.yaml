@@ -1,3 +1,0 @@
----
-minor_changes:
-- "ec2_ami - Extend the unit-test coverage of the module (https://github.com/ansible-collections/amazon.aws/pull/1159)."

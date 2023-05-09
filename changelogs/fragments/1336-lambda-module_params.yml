@@ -1,4 +1,0 @@
-minor_changes:
-- lambda_info - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1336).
-- lambda_alias - updated to avoid manipulating ``module.params`` (https://github.com/ansible-collections/amazon.aws/pull/1336).
-- lambda_alias - refactored to avoid passing around the complex ``module`` resource (https://github.com/ansible-collections/amazon.aws/pull/1336).

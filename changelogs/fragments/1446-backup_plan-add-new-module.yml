@@ -1,3 +1,0 @@
-trivial:
-- backup_plan - Added a new module that manages AWS Backup plans. (https://github.com/ansible-collections/amazon.aws/pull/1446).
-- backup_plan_info - Added a new module that describes AWS Backup plans. (https://github.com/ansible-collections/amazon.aws/pull/1446).

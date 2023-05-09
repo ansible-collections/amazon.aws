@@ -1,3 +1,0 @@
----
-minor_changes:
-  - inventory_aws_ec2 integration tests - replace local module `test_get_ssm_inventory` by `community.aws.ssm_inventory_info` (https://github.com/ansible-collections/amazon.aws/pull/1416).

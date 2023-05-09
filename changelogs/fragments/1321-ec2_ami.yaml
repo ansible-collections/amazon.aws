@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_ami - allow ``ImageAvailable`` waiter to retry when the image can't be found (https://github.com/ansible-collections/amazon.aws/pull/1321).

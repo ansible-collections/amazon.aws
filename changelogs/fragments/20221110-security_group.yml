@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_security_group - refactor rule expansion and add unit tests (https://github.com/ansible-collections/amazon.aws/pull/1261).

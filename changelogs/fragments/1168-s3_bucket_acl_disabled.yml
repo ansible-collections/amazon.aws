@@ -1,2 +1,0 @@
-bugfixes:
-- s3_bucket - Handle setting of permissions while acl is disabled.(https://github.com/ansible-collections/amazon.aws/pull/1168).

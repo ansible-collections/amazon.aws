@@ -1,4 +1,0 @@
-breaking_changes:
-- module_utils.cloud - the previously deprecated ``CloudRetry.backoff`` has been removed.
-  Please use ``CloudRetry.exponential_backoff`` or ``CloudRetry.jittered_backoff``
-  instead (https://github.com/ansible-collections/amazon.aws/issues/1110).

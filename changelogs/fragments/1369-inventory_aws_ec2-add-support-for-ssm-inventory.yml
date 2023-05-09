@@ -1,3 +1,0 @@
----
-minor_changes:
-  - inventory aws ec2 - add parameter `use_ssm_inventory` allowing to query ssm inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).

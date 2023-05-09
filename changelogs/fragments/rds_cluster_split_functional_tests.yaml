@@ -1,3 +1,0 @@
----
-minor_changes:
-- "rds_cluster - Split up the functional tests in smaller targets (https://github.com/ansible-collections/amazon.aws/pull/1175)."

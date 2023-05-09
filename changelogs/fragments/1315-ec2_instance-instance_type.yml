@@ -1,4 +1,0 @@
-breaking_changes:
-- ec2_instance - the default value for ``instance_type`` has been removed.
-  At least one of ``instance_type`` or ``launch_template`` must be specified when launching new
-  instances (https://github.com/ansible-collections/amazon.aws/pull/1315).

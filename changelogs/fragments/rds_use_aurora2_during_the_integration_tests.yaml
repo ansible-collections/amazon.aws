@@ -1,3 +1,0 @@
----
-minor_changes:
-- "rds - AWS is phasing out aurora1. Integration tests use aurora2 (aurora-mysql) by default (https://github.com/ansible-collections/amazon.aws/pull/1233)."

@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils.botocore - Add Ansible AWS User-Agent identification (https://github.com/ansible-collections/amazon.aws/pull/1306).

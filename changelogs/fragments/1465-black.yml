@@ -1,2 +1,0 @@
-minor_changes:
-- The ``black`` code formatter has been run across the collection to improve code consistency (https://github.com/ansible-collections/amazon.aws/pull/1465).

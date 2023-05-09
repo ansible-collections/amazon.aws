@@ -1,2 +1,0 @@
-trivial:
-- "Comment on permission because of botocore.exceptions.ClientError: An error occurred (AccessControlListNotSupported) when calling the PutObject operation: The bucket does not allow ACLs."

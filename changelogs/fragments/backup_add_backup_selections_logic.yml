@@ -1,2 +1,0 @@
-minor_changes:
-  - backup - Add logic for backup_selection* modules (https://github.com/ansible-collections/amazon.aws/pull/1530).

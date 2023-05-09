@@ -1,4 +1,0 @@
-minor_changes:
-- "module_utils - move RetryingBotoClientWrapper into module_utils.retries for reuse with other plugin types (https://github.com/ansible-collections/amazon.aws/pull/1230)."
-bugfixes:
-- "module_utils - fixes ``TypeError: deciding_wrapper() got multiple values for argument 'aws_retry'`` when passing positional arguments to functions wrapped by AnsibleAWSModule.client (https://github.com/ansible-collections/amazon.aws/pull/1230)."

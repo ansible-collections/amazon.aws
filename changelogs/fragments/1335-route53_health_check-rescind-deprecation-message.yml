@@ -1,2 +1,0 @@
-minor_changes:
-  - route53_health_check - Drop deprecation warning (https://github.com/ansible-collections/community.aws/pull/1335).

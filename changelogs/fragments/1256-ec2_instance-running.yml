@@ -1,2 +1,0 @@
-trivial:
-- ec2_instance - Update tests to wait for state when testing state (https://github.com/ansible-collections/amazon.aws/pull/1256).

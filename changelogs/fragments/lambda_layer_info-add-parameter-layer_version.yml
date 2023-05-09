@@ -1,3 +1,0 @@
----
-minor_changes:
-- lambda_layer_info -  add support for parameter version_number to retrieve detailed information for a specific layer version (https://github.com/ansible-collections/amazon.aws/pull/1293).

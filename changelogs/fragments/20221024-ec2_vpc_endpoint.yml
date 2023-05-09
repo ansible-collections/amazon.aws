@@ -1,2 +1,0 @@
-breaking_changes:
-- ec2_vpc_endpoint - the ``policy_file`` parameter has been removed.  I(policy) with a file lookup can be used instead (https://github.com/ansible-collections/amazon.aws/issues/1178).

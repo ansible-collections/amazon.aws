@@ -1,7 +1,0 @@
-deprecated_features:
-- module_utils.policy - ``ansible_collections.amazon.aws.module_utils.policy.sort_json_policy_dict``
-  has been deprecated consider using ``ansible_collections.amazon.aws.module_utils.poilcies.compare_policies`` instead
-  (https://github.com/ansible-collections/amazon.aws/pull/1136).
-minor_changes:
-- module_utils.policy - minor refacter of code to reduce complexity and improve test coverage
-  (https://github.com/ansible-collections/amazon.aws/pull/1136).

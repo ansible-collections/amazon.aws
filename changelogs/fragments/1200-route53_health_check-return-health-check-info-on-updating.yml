@@ -1,2 +1,0 @@
-minor_changes:
-- route53_health_check - minor fix for returning health check info while updating a Route53 health check (https://github.com/ansible-collections/amazon.aws/pull/1200).
