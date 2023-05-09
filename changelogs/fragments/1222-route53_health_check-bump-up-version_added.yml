@@ -1,2 +1,0 @@
-trivial:
-- route53_health_check - bump ``version_Added`` for ``measure_latency`` to ``5.2.0``.

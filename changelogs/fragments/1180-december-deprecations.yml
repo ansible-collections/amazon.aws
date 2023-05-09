@@ -1,2 +1,0 @@
-trivial:
-- various modules - bump 2022-12-01 deprecations over to version 6.0.0 (https://github.com/ansible-collections/amazon.aws/pull/1180).

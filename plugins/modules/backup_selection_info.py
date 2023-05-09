@@ -9,7 +9,7 @@ DOCUMENTATION = r"""
 ---
 module: backup_selection_info
 version_added: 6.0.0
-short_description: Describe AWS Backup Plans
+short_description: Describe AWS Backup Selections
 description:
   - Lists info about Backup Selection configuration for a given Backup Plan.
 author:

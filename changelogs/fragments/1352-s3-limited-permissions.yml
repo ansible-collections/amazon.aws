@@ -1,2 +1,0 @@
-minor_changes:
-- s3_bucket - handle missing read permissions more gracefully when possible (https://github.com/ansible-collections/amazon.aws/pull/1406).

@@ -1,3 +1,0 @@
----
-minor_changes:
-- Refactor module_utils/cloudfront_facts.py and add unit tests (https://github.com/ansible-collections/amazon.aws/pull/1265).

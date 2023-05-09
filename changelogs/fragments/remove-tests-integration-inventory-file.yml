@@ -1,3 +1,0 @@
----
-trivial:
-  - Remove file tests/integration/inventory, this is generated dynamically when running ansible-test integration (https://github.com/ansible-collections/amazon.aws/pull/1364).

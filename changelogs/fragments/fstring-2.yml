@@ -1,5 +1,0 @@
-# 1483 includes a fragment and links to 1513
-trivial:
-- bulk migration of ``%`` and ``.format()`` to fstrings (https://github.com/ansible-collections/amazon.aws/pull/1513).
-minor_changes:
-- rds_param_group - drop Python2 import fallbacks (https://github.com/ansible-collections/amazon.aws/pull/1513).

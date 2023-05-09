@@ -1,7 +1,0 @@
-breaking_changes:
-- ec2_vpc_net - the ``classic_link_enabled`` return value has been removed.
-  Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).
-- ec2_vpc_net_info - the ``classic_link_enabled`` return value has been removed.
-  Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).
-- ec2_vpc_net_info - the ``classic_link_dns_status`` return value has been removed.
-  Support for EC2 Classic networking was dropped by AWS (https://github.com/ansible-collections/amazon.aws/pull/1374).

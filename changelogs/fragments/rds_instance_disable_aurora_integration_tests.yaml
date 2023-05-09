@@ -1,3 +1,0 @@
----
-trivial:
-- "rds_instance - Disable the Aurora tests temporarily (https://github.com/ansible-collections/amazon.aws/pull/1192)." 

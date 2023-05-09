@@ -1,2 +1,0 @@
-trivial:
-- ec2_snapshot - tweak to ec2_snapshot tests for ``max_results`` and ``next_token_id``

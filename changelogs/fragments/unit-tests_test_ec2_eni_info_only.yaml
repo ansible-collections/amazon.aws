@@ -1,3 +1,0 @@
----
-minor_changes:
-- "ec2_eni_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1236)."

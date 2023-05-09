@@ -1,3 +1,0 @@
-trivial:
-- inventory tests - move tasks out of playbook director (https://github.com/ansible-collections/amazon.aws/pull/1394).
-- ec2_vpc_net - remove unused import (https://github.com/ansible-collections/amazon.aws/pull/1394).

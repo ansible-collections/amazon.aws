@@ -1,3 +1,0 @@
-breaking_changes:
-- ec2_eip - the previously deprecated ``instance_id`` alias for the ``device_id`` parameter has been removed.
-  Please use the ``device_id`` parameter name instead (https://github.com/ansible-collections/amazon.aws/issues/1176).

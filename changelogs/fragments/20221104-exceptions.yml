@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils - move exceptions into dedicated python module (https://github.com/ansible-collections/amazon.aws/pull/1246).

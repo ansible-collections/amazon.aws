@@ -1,3 +1,0 @@
-minor_changes:
-- inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
-- inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).

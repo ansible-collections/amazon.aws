@@ -1,2 +1,0 @@
-minor_changes:
-- s3_object - refactor main to reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/1193).

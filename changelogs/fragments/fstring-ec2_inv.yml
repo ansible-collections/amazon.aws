@@ -1,5 +1,0 @@
-# 1483 includes a fragment and links to 1513
-trivial:
-- bulk migration of ``%`` and ``.format()`` to fstrings (https://github.com/ansible-collections/amazon.aws/pull/1526).
-minor_changes:
-- ec2_vpc_subnet - retry fetching subnet details after creation if the first attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).

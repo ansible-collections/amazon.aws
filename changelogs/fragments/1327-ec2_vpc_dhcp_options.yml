@@ -1,4 +1,0 @@
-breaking_changes:
-- ec2_vpc_dhcp_options - the ``new_options`` return value has been deprecated after being renamed
-  to ``dhcp_config``.  Please use the ``dhcp_config`` or ``dhcp_options`` return values
-  (https://github.com/ansible-collections/amazon.aws/pull/1327).

@@ -1,2 +1,0 @@
-breaking_changes:
-- amazon.aws - compatibility code for Python < 3.6 has been removed (https://github.com/ansible-collections/amazon.aws/pull/1257).
