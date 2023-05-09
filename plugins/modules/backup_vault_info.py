@@ -139,8 +139,8 @@ def get_backup_vault_detail(connection, module):
     snaked_backup_vault = []
     for backup_vault in output:
         try:
-            module.params["resource"] = backup_vault.get("BackupVaultArn", None)
-            tag_dict = get_backup_resource_tags(module, connection)
+            resource = backup_vault.get("BackupVaultArn", None)
+            tag_dict = get_backup_resource_tags(module, connection, resource)
             backup_vault.update({"tags": tag_dict})
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.warn(f"Failed to get the backup vault tags - {e}")

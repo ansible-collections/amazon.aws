@@ -57,7 +57,7 @@ def main():
     )
     backup_client = module.client("backup")
 
-    current_tags = get_backup_resource_tags(module, backup_client)
+    current_tags = get_backup_resource_tags(module, backup_client, module.params["resource"])
 
     module.exit_json(changed=False, tags=current_tags)
 

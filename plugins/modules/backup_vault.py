@@ -187,8 +187,8 @@ def get_vault_facts(module, client, vault_name):
     # Now check to see if our vault exists and get status and tags
     if resp:
         if resp.get("BackupVaultArn"):
-            module.params["resource"] = resp.get("BackupVaultArn")
-            resp["tags"] = get_backup_resource_tags(module, client)
+            resource = resp.get("BackupVaultArn")
+            resp["tags"] = get_backup_resource_tags(module, client, resource)
 
         # Check for non-existent values and populate with None
         optional_vals = set(
@@ -302,7 +302,7 @@ def main():
             module,
             client,
             tags=tags,
-            vault_arn=module.params["resource"],
+            vault_arn=vault["BackupVaultArn"],
             curr_tags=vault["tags"],
             purge_tags=purge_tags,
         )

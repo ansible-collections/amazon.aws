@@ -1,0 +1,2 @@
+trivial:
+- backup - explicitly pass ``resource`` rather than reading indirectly from module.params.
