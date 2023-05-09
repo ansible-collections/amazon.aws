@@ -132,7 +132,7 @@ try:
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
@@ -171,13 +171,13 @@ class LookupModule(LookupBase):
         '''
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleLookupError(missing_required_lib('botocore and boto3'))
 
         # validate arguments 'on_missing' and 'on_denied'
         if on_missing is not None and (not isinstance(on_missing, string_types) or on_missing.lower() not in ['error', 'warn', 'skip']):
-            raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % on_missing)
+            raise AnsibleLookupError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % on_missing)
         if on_denied is not None and (not isinstance(on_denied, string_types) or on_denied.lower() not in ['error', 'warn', 'skip']):
-            raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % on_denied)
+            raise AnsibleLookupError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % on_denied)
 
         ret = []
         ssm_dict = {}
@@ -249,18 +249,18 @@ class LookupModule(LookupBase):
             paramlist = paginator.paginate(**ssm_dict).build_full_result()['Parameters']
         except is_boto3_error_code('AccessDeniedException'):
             if on_denied == 'error':
-                raise AnsibleError("Failed to access SSM parameter path %s (AccessDenied)" % term)
+                raise AnsibleLookupError("Failed to access SSM parameter path %s (AccessDenied)" % term)
             elif on_denied == 'warn':
                 self._display.warning('Skipping, access denied for SSM parameter path %s' % term)
                 paramlist = [{}]
             elif on_denied == 'skip':
                 paramlist = [{}]
         except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
+            raise AnsibleLookupError("SSM lookup exception: {0}".format(to_native(e)))
 
         if not len(paramlist):
             if on_missing == "error":
-                raise AnsibleError("Failed to find SSM parameter path %s (ResourceNotFound)" % term)
+                raise AnsibleLookupError("Failed to find SSM parameter path %s (ResourceNotFound)" % term)
             elif on_missing == "warn":
                 self._display.warning('Skipping, did not find SSM parameter path %s' % term)
 
@@ -273,14 +273,14 @@ class LookupModule(LookupBase):
             return response['Parameter']['Value']
         except is_boto3_error_code('ParameterNotFound'):
             if on_missing == 'error':
-                raise AnsibleError("Failed to find SSM parameter %s (ResourceNotFound)" % term)
+                raise AnsibleLookupError("Failed to find SSM parameter %s (ResourceNotFound)" % term)
             elif on_missing == 'warn':
                 self._display.warning('Skipping, did not find SSM parameter %s' % term)
         except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
             if on_denied == 'error':
-                raise AnsibleError("Failed to access SSM parameter %s (AccessDenied)" % term)
+                raise AnsibleLookupError("Failed to access SSM parameter %s (AccessDenied)" % term)
             elif on_denied == 'warn':
                 self._display.warning('Skipping, access denied for SSM parameter %s' % term)
         except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
+            raise AnsibleLookupError("SSM lookup exception: {0}".format(to_native(e)))
         return None

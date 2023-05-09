@@ -126,7 +126,7 @@ try:
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleLookupError
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import missing_required_lib
@@ -147,9 +147,9 @@ def _boto3_conn(region, credentials):
             try:
                 connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-                raise AnsibleError("Insufficient credentials found.")
+                raise AnsibleLookupError("Insufficient credentials found.")
         else:
-            raise AnsibleError("Insufficient credentials found.")
+            raise AnsibleLookupError("Insufficient credentials found.")
     return connection
 
 
@@ -178,19 +178,19 @@ class LookupModule(LookupBase):
                    :returns: A list of parameter values or a list of dictionaries if bypath=True.
                '''
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleLookupError(missing_required_lib('botocore and boto3'))
 
         deleted = on_deleted.lower()
         if not isinstance(deleted, string_types) or deleted not in ['error', 'warn', 'skip']:
-            raise AnsibleError('"on_deleted" must be a string and one of "error", "warn" or "skip", not %s' % deleted)
+            raise AnsibleLookupError('"on_deleted" must be a string and one of "error", "warn" or "skip", not %s' % deleted)
 
         missing = on_missing.lower()
         if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
-            raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
+            raise AnsibleLookupError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
 
         denied = on_denied.lower()
         if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
-            raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
+            raise AnsibleLookupError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
         credentials = {}
         if aws_profile:
@@ -227,7 +227,7 @@ class LookupModule(LookupBase):
                     secrets = [secrets]
 
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
+                    raise AnsibleLookupError("Failed to retrieve secret: %s" % to_native(e))
         else:
             secrets = []
             for term in terms:
@@ -253,7 +253,7 @@ class LookupModule(LookupBase):
             params['VersionStage'] = version_stage
         if nested:
             if len(term.split('.')) < 2:
-                raise AnsibleError("Nested query must use the following syntax: `aws_secret_name.<key_name>.<key_name>")
+                raise AnsibleLookupError("Nested query must use the following syntax: `aws_secret_name.<key_name>.<key_name>")
             secret_name = term.split('.')[0]
             params['SecretId'] = secret_name
 
@@ -270,26 +270,26 @@ class LookupModule(LookupBase):
                         if key in ret_val:
                             ret_val = ret_val[key]
                         else:
-                            raise AnsibleError("Successfully retrieved secret but there exists no key {0} in the secret".format(key))
+                            raise AnsibleLookupError("Successfully retrieved secret but there exists no key {0} in the secret".format(key))
                     return str(ret_val)
                 else:
                     return response['SecretString']
         except is_boto3_error_message('marked for deletion'):
             if on_deleted == 'error':
-                raise AnsibleError("Failed to find secret %s (marked for deletion)" % term)
+                raise AnsibleLookupError("Failed to find secret %s (marked for deletion)" % term)
             elif on_deleted == 'warn':
                 self._display.warning('Skipping, did not find secret (marked for deletion) %s' % term)
         except is_boto3_error_code('ResourceNotFoundException'):  # pylint: disable=duplicate-except
             if on_missing == 'error':
-                raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
+                raise AnsibleLookupError("Failed to find secret %s (ResourceNotFound)" % term)
             elif on_missing == 'warn':
                 self._display.warning('Skipping, did not find secret %s' % term)
         except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
             if on_denied == 'error':
-                raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
+                raise AnsibleLookupError("Failed to access secret %s (AccessDenied)" % term)
             elif on_denied == 'warn':
                 self._display.warning('Skipping, access denied for secret %s' % term)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-            raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
+            raise AnsibleLookupError("Failed to retrieve secret: %s" % to_native(e))
 
         return None
