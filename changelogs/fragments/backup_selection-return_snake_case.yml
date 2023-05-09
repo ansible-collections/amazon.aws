@@ -1,0 +1,2 @@
+trivial:
+  - "backup_selection_info ensure result is returned as snake_case rather than CamelCase."
