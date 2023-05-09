@@ -139,6 +139,12 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections | length == 1
+          - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
+          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - "'resources' in _result_backup_selection_info.backup_selections[0]"
+          - "'not_resources' in _result_backup_selection_info.backup_selections[0]"
+          - "'list_of_tags' in _result_backup_selection_info.backup_selections[0]"
+          - "'conditions' in _result_backup_selection_info.backup_selections[0]"
 
     - name: Modify an AWS Backup selection (check_mode)
       amazon.aws.backup_selection:
