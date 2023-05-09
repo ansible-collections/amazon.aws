@@ -35,7 +35,7 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 - name: Get information about an OpenSearch domain instance
   community.aws.opensearch_info:
-    domain-name: my-search-cluster
+    domain_name: my-search-cluster
   register: new_cluster_info
 
 - name: Get all OpenSearch instances
