@@ -55,7 +55,7 @@ try:
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.lookup import LookupBase
@@ -74,9 +74,9 @@ def _boto3_conn(region, credentials):
             try:
                 connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region)
             except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-                raise AnsibleError("Insufficient credentials found.")
+                raise AnsibleLookupError("Insufficient credentials found.")
         else:
-            raise AnsibleError("Insufficient credentials found.")
+            raise AnsibleLookupError("Insufficient credentials found.")
     return connection
 
 
@@ -100,7 +100,7 @@ class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
 
         if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib('botocore and boto3'))
+            raise AnsibleLookupError(missing_required_lib('botocore and boto3'))
 
         self.set_options(var_options=variables, direct=kwargs)
         boto_credentials = _get_credentials(self._options)
@@ -120,7 +120,7 @@ class LookupModule(LookupBase):
         try:
             response = _describe_account_attributes(client, **params)['AccountAttributes']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
+            raise AnsibleLookupError("Failed to describe account attributes: %s" % to_native(e))
 
         if check_ec2_classic:
             attr = response[0]
