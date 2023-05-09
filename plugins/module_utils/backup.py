@@ -66,8 +66,8 @@ def get_plan_details(module, client, backup_plan_name: str):
 
     try:
         resource = result.get("BackupPlanArn", None)
-        # tag_dict = get_backup_resource_tags(module, client, resource)
-        # result.update({"tags": tag_dict})
+        tag_dict = get_backup_resource_tags(module, client, resource)
+        result.update({"tags": tag_dict})
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to get the backup plan tags")
 

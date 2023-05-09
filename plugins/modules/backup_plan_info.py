@@ -20,10 +20,9 @@ options:
   backup_plan_names:
     type: list
     elements: str
-    default: []
+    required: true
     description:
       - Specifies a list of plan names.
-      - If an empty list is specified, information for the backup plans in the current region is returned.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -123,7 +122,7 @@ def get_backup_plan_detail(client, module):
 
 def main():
     argument_spec = dict(
-        backup_plan_names=dict(type="list", elements="str", default=[]),
+        backup_plan_names=dict(type="list", elements="str", required=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
