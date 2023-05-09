@@ -13,8 +13,7 @@ from typing import Union
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
-def get_backup_resource_tags(module, backup_client):
-    resource = module.params.get("resource")
+def get_backup_resource_tags(module, backup_client, resource):
     try:
         response = backup_client.list_tags(ResourceArn=resource)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -66,8 +65,8 @@ def get_plan_details(module, client, backup_plan_name: str):
     snaked_backup_plan = []
 
     try:
-        module.params["resource"] = result.get("BackupPlanArn", None)
-        # tag_dict = get_backup_resource_tags(module, client)
+        resource = result.get("BackupPlanArn", None)
+        # tag_dict = get_backup_resource_tags(module, client, resource)
         # result.update({"tags": tag_dict})
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to get the backup plan tags")

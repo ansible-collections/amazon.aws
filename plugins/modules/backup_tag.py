@@ -124,7 +124,7 @@ def manage_tags(module, backup_client):
     state = module.params.get("state")
     purge_tags = module.params.get("purge_tags")
 
-    current_tags = get_backup_resource_tags(module, backup_client)
+    current_tags = get_backup_resource_tags(module, backup_client, resource)
     tags_to_add, tags_to_remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
 
     remove_tags = {}
@@ -157,7 +157,7 @@ def manage_tags(module, backup_client):
             except (BotoCoreError, ClientError) as set_tag_error:
                 module.fail_json_aws(set_tag_error, msg=f"Failed to set tags {tags_to_add} on resource {resource}")
 
-    result["tags"] = get_backup_resource_tags(module, backup_client)
+    result["tags"] = get_backup_resource_tags(module, backup_client, resource)
     return result
 
 
