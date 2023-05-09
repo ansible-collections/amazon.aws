@@ -114,6 +114,7 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_selection_details
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 def main():
@@ -133,7 +134,7 @@ def main():
     result["backup_selections"] = get_selection_details(
         module, client, module.params.get("backup_plan_name"), module.params.get("backup_selection_names")
     )
-    module.exit_json(**result)
+    module.exit_json(**camel_dict_to_snake_dict(result))
 
 
 if __name__ == "__main__":
