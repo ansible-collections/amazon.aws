@@ -1,0 +1,192 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create a backup vault for the plan to target
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+      register: backup_vault_create_result
+
+    - name: Create a backup plan in check mode
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: daily
+            target_backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          Environment: Test
+      check_mode: true
+      register: check_mode_create_result
+
+    - name: Verify backup plan create in check mode result
+      ansible.builtin.assert:
+        that:
+          - check_mode_create_result.exists is true
+          - check_mode_create_result.changed is true
+          - check_mode_create_result.backup_plan_name == backup_plan_name
+
+    - name: Get backup plan info
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info
+
+    - name: Verify backup plan was not actually created in check mode
+      ansible.builtin.assert:
+        that:
+          - backup_plan_info.backup_plans | length == 0
+
+    - name: Create a backup plan
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: daily
+            target_backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          Environment: Test
+      register: backup_plan_create_result
+
+    - name: Verify backup plan create result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_create_result.exists is true
+          - backup_plan_create_result.changed is true
+          - backup_plan_create_result.backup_plan_name == backup_plan_name
+
+    - name: Get backup plan info
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info
+
+    - name: Recreate the same AWS Backup plan - idempotency check
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: daily
+            target_backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          Environment: Test
+      register: backup_plan_idempotency_result
+
+    - name: Verify backup plan idempotency check result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_idempotency_result.exists is true
+          - backup_plan_idempotency_result.changed is false
+          - backup_plan_idempotency_result.backup_plan_id == backup_plan_info.backup_plans[0].backup_plan_id
+          - backup_plan_idempotency_result.version_id == backup_plan_info.backup_plans[0].version_id
+          - backup_plan_idempotency_result.creation_date == backup_plan_info.backup_plans[0].creation_date
+
+    - name: Update backup plan in check mode
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: hourly
+            target_backup_vault_name: "{{ backup_vault_name }}"
+            schedule_expression: "cron(0 * ? * * *)"
+        tags:
+          Environment: Dev
+      check_mode: true
+      register: check_mode_update_result
+
+    - name: Verify backup plan update in check mode result
+      ansible.builtin.assert:
+        that:
+          - check_mode_update_result.exists is true
+          - check_mode_update_result.changed is true
+          - check_mode_update_result.backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
+          - check_mode_update_result.backup_plan.tags is defined
+
+    - name: Update Backup plan
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: hourly
+            target_backup_vault_name: "{{ backup_vault_name }}"
+            schedule_expression: "cron(0 * ? * * *)"
+            start_window_minutes: 60
+            completion_window_minutes: 150
+            lifecycle:
+              move_to_cold_storage_after_days: 30
+              delete_after_days: 120
+            recovery_point_tags:
+              type: hourly_backup
+            copy_actions:
+              - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
+                lifecycle:
+                  move_to_cold_storage_after_days: 90
+                  delete_after_days: 300
+        tags:
+          status: archive
+      register: backup_plan_update_result
+
+    - name: Verify backup plan update result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_update_result.exists is true
+          - backup_plan_update_result.changed is true
+          - backup_plan_update_result.backup_plan_id == backup_plan_info.backup_plans[0].backup_plan_id
+          - backup_plan_update_result.backup_plan_arn == backup_plan_info.backup_plans[0].backup_plan_arn
+          - backup_plan_update_result.creation_date != backup_plan_info.backup_plans[0].creation_date
+          - backup_plan_update_result.version_id != backup_plan_info.backup_plans[0].version_id
+          - backup_plan_update_result.backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
+          - backup_plan_update_result.tags != backup_plan_info.backup_plans[0].tags
+
+    - name: Delete backup plan in check mode
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      check_mode: true
+      register: check_mode_delete_result
+
+    - name: Verify backup plan delete in check mode result
+      ansible.builtin.assert:
+        that:
+          - check_mode_delete_result.exists is false
+          - check_mode_delete_result.changed is true
+          - check_mode_delete_result.backup_plan_name == backup_plan_info.backup_plans[0].backup_plan_name
+          - check_mode_delete_result.deletion_date is defined
+
+    - name: Get backup plan info
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info
+
+    - name: Verify backup plan was not actually deleted in check mode
+      ansible.builtin.assert:
+        that:
+          - backup_plan_info.backup_plans | length > 0
+
+    - name: Delete backup plan
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      register: backup_plan_delete_result
+
+    - name: Verify backup plan delete result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_delete_result.exists is false
+          - backup_plan_delete_result.changed is true
+          - backup_plan_delete_result.backup_plan_id == backup_plan_info.backup_plans[0].backup_plan_id
+          - backup_plan_delete_result.backup_plan_arn == backup_plan_info.backup_plans[0].backup_plan_arn
+          - backup_plan_delete_result.deletion_date is defined
+
+  always:
+    - name: Delete AWS Backup plan created during this test
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete AWS Backup vault created during this test
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        state: absent
+      ignore_errors: true
