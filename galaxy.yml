@@ -8,7 +8,7 @@ description: null
 license_file: COPYING
 tags: [amazon, aws, cloud]
 repository: https://github.com/ansible-collections/amazon.aws
-documentation: https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html
+documentation: https://ansible-collections.github.io/amazon.aws/branch/stable-6/collections/amazon/aws/index.html
 homepage: https://github.com/ansible-collections/amazon.aws
 issues: https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
