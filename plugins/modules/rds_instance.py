@@ -99,7 +99,7 @@ options:
         description:
           - The identifier of the CA certificate for the DB instance.
         type: str
-        version_added: 5.5.0
+        version_added: 6.1.0
     character_set_name:
         description:
           - The character set to associate with the DB instance.
