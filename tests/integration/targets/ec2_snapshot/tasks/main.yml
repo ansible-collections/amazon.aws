@@ -26,6 +26,9 @@
       aws_az_info:
       register: azs
 
+    - name: Run tasks for testing snapshot createVolumePermissions modifications
+      import_tasks: test_modify_create_volume_permissions.yml
+
     # Create a new volume in detached mode without tags
     - name: Create a detached volume without tags
       ec2_vol:
