@@ -1163,7 +1163,7 @@ def destroy_bucket(s3_client, module):
                     # unversioned objects are deleted using `DeleteObject`
                     # rather than `DeleteObjectVersion`, improving backwards
                     # compatibility with older IAM policies.
-                    if not fk.get("VersionId"):
+                    if not fk.get("VersionId") or fk.get("VersionId") == "null":
                         fk.pop("VersionId")
 
                 if formatted_keys:
