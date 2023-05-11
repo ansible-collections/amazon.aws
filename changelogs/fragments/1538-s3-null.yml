@@ -1,0 +1,2 @@
+bugfixes:
+- s3_bucket - fixes issue when deleting a bucket with unversioned objects (https://github.com/ansible-collections/amazon.aws/issues/1533).
