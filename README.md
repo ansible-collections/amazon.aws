@@ -31,7 +31,7 @@ All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
 ## Included content
 <!--start collection content-->
-See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).
+See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/stable-6/collections/amazon/aws/index.html#plugin-index).
 
 <!--end collection content-->
 
@@ -104,7 +104,7 @@ You can also join us on:
 
 ## Release notes
 
-See the [rendered changelog](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/docsite/CHANGELOG.html) or the [raw generated changelog](https://github.com/ansible-collections/amazon.aws/tree/main/CHANGELOG.rst).
+See the [rendered changelog](https://ansible-collections.github.io/amazon.aws/branch/stable-6/collections/amazon/aws/docsite/CHANGELOG.html) or the [raw generated changelog](https://github.com/ansible-collections/amazon.aws/tree/stable-6/CHANGELOG.rst).
 
 ## Roadmap
 
