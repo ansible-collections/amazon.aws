@@ -250,6 +250,62 @@
         - result is not failed
         - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
 
+  - name: Modify the CA certificate identifier to rds-ca-ecc384-g1 - idempotent
+    rds_instance:
+      state: present
+      db_instance_identifier: '{{ modified_instance_id }}'
+      ca_certificate_identifier: rds-ca-ecc384-g1
+      apply_immediately: true
+      tags:
+        Name: '{{ modified_instance_id }}'
+        Created_by: Ansible rds_instance tests
+    register: result
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+  - name: Get curent CA certificate identifier
+    rds_instance_info:
+      db_instance_identifier: '{{ modified_instance_id }}'
+    register: db_info
+    retries: 20
+    delay: 10
+    until: db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
+  - name: Assert that CA certificate identifier has been modified
+    assert:
+      that:
+        - result is not changed
+        - result is not failed
+        - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
+
+  - name: Modify the CA certificate identifier to rds-ca-ecc384-g1 - idempotent - check_mode
+    rds_instance:
+      state: present
+      db_instance_identifier: '{{ modified_instance_id }}'
+      ca_certificate_identifier: rds-ca-ecc384-g1
+      apply_immediately: true
+      tags:
+        Name: '{{ modified_instance_id }}'
+        Created_by: Ansible rds_instance tests
+    register: result
+    check_mode: true
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+  - name: Get curent CA certificate identifier
+    rds_instance_info:
+      db_instance_identifier: '{{ modified_instance_id }}'
+    register: db_info
+    retries: 20
+    delay: 10
+    until: db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
+  - name: Assert that CA certificate identifier has been modified
+    assert:
+      that:
+        - result is not changed
+        - result is not failed
+        - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
+  # Test modifying CA certificate identifier Complete-------------------------------------------
+
   always:
   - name: Delete the instance
     rds_instance:
