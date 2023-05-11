@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon.Aws &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="amazon.aws Release Notes" href="docsite/CHANGELOG.html" />
+    <link rel="prev" title="Collections in the Amazon Namespace" href="../index.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Amazon.Aws</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changelog">Changelog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+      <li class="breadcrumb-item active">Amazon.Aws</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="amazon-aws">
+<span id="plugins-in-amazon-aws"></span><h1>Amazon.Aws<a class="headerlink" href="#amazon-aws" title="Permalink to this heading"></a></h1>
+<p>Collection version 6.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#description" id="id1">Description</a></p></li>
+<li><p><a class="reference internal" href="#communication" id="id2">Communication</a></p></li>
+<li><p><a class="reference internal" href="#changelog" id="id3">Changelog</a></p></li>
+<li><p><a class="reference internal" href="#scenario-guide" id="id4">Scenario Guide</a></p></li>
+<li><p><a class="reference internal" href="#module-development-guidelines" id="id5">Module Development Guidelines</a></p></li>
+<li><p><a class="reference internal" href="#dynamic-inventory-plugin-guide" id="id6">Dynamic Inventory Plugin Guide</a></p></li>
+<li><p><a class="reference internal" href="#plugin-index" id="id7">Plugin Index</a></p></li>
+</ul>
+</nav>
+<section id="description">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Description</a><a class="headerlink" href="#description" title="Permalink to this heading"></a></h2>
+<p><strong>Author:</strong></p>
+<ul class="simple">
+<li><p>Ansible (<a class="reference external" href="https://github.com/ansible">https://github.com/ansible</a>)</p></li>
+</ul>
+<p><strong>Supported ansible-core versions:</strong></p>
+<ul class="simple">
+<li><p>2.12.0 or newer</p></li>
+</ul>
+<p class="ansible-links">
+  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
+  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
+</p></section>
+<section id="communication">
+<span id="communication-for-amazon-aws"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Communication</a><a class="headerlink" href="#communication" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Matrix room <code class="docutils literal notranslate"><span class="pre">#aws:ansible.im</span></code>: <a class="reference external" href="https://matrix.to/#/#aws:ansible.im">General usage and support questions</a>.</p></li>
+<li><p>IRC channel <code class="docutils literal notranslate"><span class="pre">#ansible-aws</span></code> (Libera network):
+<a class="reference external" href="https://web.libera.chat/?channel=#ansible-aws">General usage and support questions</a>.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="changelog">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Changelog</a><a class="headerlink" href="#changelog" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/CHANGELOG.html">amazon.aws Release Notes</a></li>
+</ul>
+</div>
+</section>
+<section id="scenario-guide">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Scenario Guide</a><a class="headerlink" href="#scenario-guide" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/guide_aws.html">Amazon Web Services Guide</a></li>
+</ul>
+</div>
+</section>
+<section id="module-development-guidelines">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Module Development Guidelines</a><a class="headerlink" href="#module-development-guidelines" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/dev_guidelines.html">Guidelines for Ansible Amazon AWS module development</a></li>
+</ul>
+</div>
+</section>
+<section id="dynamic-inventory-plugin-guide">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Dynamic Inventory Plugin Guide</a><a class="headerlink" href="#dynamic-inventory-plugin-guide" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html">Dynamic Inventory Plugin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html#authentication">Authentication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html#minimal-example">Minimal Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html#allowed-options">Allowed Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html#complex-example">Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/aws_ec2_guide.html#using-dynamic-inventory-inside-playbook">Using Dynamic Inventory Inside Playbook</a></li>
+</ul>
+</div>
+</section>
+<section id="plugin-index">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Plugin Index</a><a class="headerlink" href="#plugin-index" title="Permalink to this heading"></a></h2>
+<p>These are the plugins in the amazon.aws collection:</p>
+<section id="modules">
+<h3>Modules<a class="headerlink" href="#modules" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="autoscaling_group_module.html#ansible-collections-amazon-aws-autoscaling-group-module"><span class="std std-ref">autoscaling_group module</span></a> – Create or delete AWS AutoScaling Groups (ASGs)</p></li>
+<li><p><a class="reference internal" href="autoscaling_group_info_module.html#ansible-collections-amazon-aws-autoscaling-group-info-module"><span class="std std-ref">autoscaling_group_info module</span></a> – Gather information about EC2 Auto Scaling Groups (ASGs) in AWS</p></li>
+<li><p><a class="reference internal" href="aws_az_info_module.html#ansible-collections-amazon-aws-aws-az-info-module"><span class="std std-ref">aws_az_info module</span></a> – Gather information about availability zones in AWS</p></li>
+<li><p><a class="reference internal" href="aws_caller_info_module.html#ansible-collections-amazon-aws-aws-caller-info-module"><span class="std std-ref">aws_caller_info module</span></a> – Get information about the user and account being used to make AWS calls</p></li>
+<li><p><a class="reference internal" href="backup_plan_module.html#ansible-collections-amazon-aws-backup-plan-module"><span class="std std-ref">backup_plan module</span></a> – Manage AWS Backup Plans</p></li>
+<li><p><a class="reference internal" href="backup_plan_info_module.html#ansible-collections-amazon-aws-backup-plan-info-module"><span class="std std-ref">backup_plan_info module</span></a> – Describe AWS Backup Plans</p></li>
+<li><p><a class="reference internal" href="backup_restore_job_info_module.html#ansible-collections-amazon-aws-backup-restore-job-info-module"><span class="std std-ref">backup_restore_job_info module</span></a> – List information about backup restore jobs</p></li>
+<li><p><a class="reference internal" href="backup_selection_module.html#ansible-collections-amazon-aws-backup-selection-module"><span class="std std-ref">backup_selection module</span></a> – Create, delete and modify AWS Backup selection</p></li>
+<li><p><a class="reference internal" href="backup_selection_info_module.html#ansible-collections-amazon-aws-backup-selection-info-module"><span class="std std-ref">backup_selection_info module</span></a> – Describe AWS Backup Selections</p></li>
+<li><p><a class="reference internal" href="backup_tag_module.html#ansible-collections-amazon-aws-backup-tag-module"><span class="std std-ref">backup_tag module</span></a> – Manage tags on backup plan, backup vault, recovery point</p></li>
+<li><p><a class="reference internal" href="backup_tag_info_module.html#ansible-collections-amazon-aws-backup-tag-info-module"><span class="std std-ref">backup_tag_info module</span></a> – List tags on AWS Backup resources</p></li>
+<li><p><a class="reference internal" href="backup_vault_module.html#ansible-collections-amazon-aws-backup-vault-module"><span class="std std-ref">backup_vault module</span></a> – Manage AWS Backup Vaults</p></li>
+<li><p><a class="reference internal" href="backup_vault_info_module.html#ansible-collections-amazon-aws-backup-vault-info-module"><span class="std std-ref">backup_vault_info module</span></a> – Describe AWS Backup Vaults</p></li>
+<li><p><a class="reference internal" href="cloudformation_module.html#ansible-collections-amazon-aws-cloudformation-module"><span class="std std-ref">cloudformation module</span></a> – Create or delete an AWS CloudFormation stack</p></li>
+<li><p><a class="reference internal" href="cloudformation_info_module.html#ansible-collections-amazon-aws-cloudformation-info-module"><span class="std std-ref">cloudformation_info module</span></a> – Obtain information about an AWS CloudFormation stack</p></li>
+<li><p><a class="reference internal" href="cloudtrail_module.html#ansible-collections-amazon-aws-cloudtrail-module"><span class="std std-ref">cloudtrail module</span></a> – manage CloudTrail create, delete, update</p></li>
+<li><p><a class="reference internal" href="cloudtrail_info_module.html#ansible-collections-amazon-aws-cloudtrail-info-module"><span class="std std-ref">cloudtrail_info module</span></a> – Gather information about trails in AWS Cloud Trail.</p></li>
+<li><p><a class="reference internal" href="cloudwatch_metric_alarm_module.html#ansible-collections-amazon-aws-cloudwatch-metric-alarm-module"><span class="std std-ref">cloudwatch_metric_alarm module</span></a> – Create/update or delete AWS CloudWatch ‘metric alarms’</p></li>
+<li><p><a class="reference internal" href="cloudwatch_metric_alarm_info_module.html#ansible-collections-amazon-aws-cloudwatch-metric-alarm-info-module"><span class="std std-ref">cloudwatch_metric_alarm_info module</span></a> – Gather information about the alarms for the specified metric</p></li>
+<li><p><a class="reference internal" href="cloudwatchevent_rule_module.html#ansible-collections-amazon-aws-cloudwatchevent-rule-module"><span class="std std-ref">cloudwatchevent_rule module</span></a> – Manage CloudWatch Event rules and targets</p></li>
+<li><p><a class="reference internal" href="cloudwatchlogs_log_group_module.html#ansible-collections-amazon-aws-cloudwatchlogs-log-group-module"><span class="std std-ref">cloudwatchlogs_log_group module</span></a> – create or delete log_group in CloudWatchLogs</p></li>
+<li><p><a class="reference internal" href="cloudwatchlogs_log_group_info_module.html#ansible-collections-amazon-aws-cloudwatchlogs-log-group-info-module"><span class="std std-ref">cloudwatchlogs_log_group_info module</span></a> – Get information about log_group in CloudWatchLogs</p></li>
+<li><p><a class="reference internal" href="cloudwatchlogs_log_group_metric_filter_module.html#ansible-collections-amazon-aws-cloudwatchlogs-log-group-metric-filter-module"><span class="std std-ref">cloudwatchlogs_log_group_metric_filter module</span></a> – Manage CloudWatch log group metric filter</p></li>
+<li><p><a class="reference internal" href="ec2_ami_module.html#ansible-collections-amazon-aws-ec2-ami-module"><span class="std std-ref">ec2_ami module</span></a> – Create or destroy an image (AMI) in EC2</p></li>
+<li><p><a class="reference internal" href="ec2_ami_info_module.html#ansible-collections-amazon-aws-ec2-ami-info-module"><span class="std std-ref">ec2_ami_info module</span></a> – Gather information about ec2 AMIs</p></li>
+<li><p><a class="reference internal" href="ec2_eip_module.html#ansible-collections-amazon-aws-ec2-eip-module"><span class="std std-ref">ec2_eip module</span></a> – manages EC2 elastic IP (EIP) addresses.</p></li>
+<li><p><a class="reference internal" href="ec2_eip_info_module.html#ansible-collections-amazon-aws-ec2-eip-info-module"><span class="std std-ref">ec2_eip_info module</span></a> – List EC2 EIP details</p></li>
+<li><p><a class="reference internal" href="ec2_eni_module.html#ansible-collections-amazon-aws-ec2-eni-module"><span class="std std-ref">ec2_eni module</span></a> – Create and optionally attach an Elastic Network Interface (ENI) to an instance</p></li>
+<li><p><a class="reference internal" href="ec2_eni_info_module.html#ansible-collections-amazon-aws-ec2-eni-info-module"><span class="std std-ref">ec2_eni_info module</span></a> – Gather information about EC2 ENI interfaces in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_instance_module.html#ansible-collections-amazon-aws-ec2-instance-module"><span class="std std-ref">ec2_instance module</span></a> – Create &amp; manage EC2 instances</p></li>
+<li><p><a class="reference internal" href="ec2_instance_info_module.html#ansible-collections-amazon-aws-ec2-instance-info-module"><span class="std std-ref">ec2_instance_info module</span></a> – Gather information about ec2 instances in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_key_module.html#ansible-collections-amazon-aws-ec2-key-module"><span class="std std-ref">ec2_key module</span></a> – Create or delete an EC2 key pair</p></li>
+<li><p><a class="reference internal" href="ec2_metadata_facts_module.html#ansible-collections-amazon-aws-ec2-metadata-facts-module"><span class="std std-ref">ec2_metadata_facts module</span></a> – Gathers facts (instance metadata) about remote hosts within EC2</p></li>
+<li><p><a class="reference internal" href="ec2_security_group_module.html#ansible-collections-amazon-aws-ec2-security-group-module"><span class="std std-ref">ec2_security_group module</span></a> – Maintain an EC2 security group</p></li>
+<li><p><a class="reference internal" href="ec2_security_group_info_module.html#ansible-collections-amazon-aws-ec2-security-group-info-module"><span class="std std-ref">ec2_security_group_info module</span></a> – Gather information about EC2 security groups in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_snapshot_module.html#ansible-collections-amazon-aws-ec2-snapshot-module"><span class="std std-ref">ec2_snapshot module</span></a> – Creates a snapshot from an existing volume</p></li>
+<li><p><a class="reference internal" href="ec2_snapshot_info_module.html#ansible-collections-amazon-aws-ec2-snapshot-info-module"><span class="std std-ref">ec2_snapshot_info module</span></a> – Gathers information about EC2 volume snapshots in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_spot_instance_module.html#ansible-collections-amazon-aws-ec2-spot-instance-module"><span class="std std-ref">ec2_spot_instance module</span></a> – Request, stop, reboot or cancel spot instance</p></li>
+<li><p><a class="reference internal" href="ec2_spot_instance_info_module.html#ansible-collections-amazon-aws-ec2-spot-instance-info-module"><span class="std std-ref">ec2_spot_instance_info module</span></a> – Gather information about ec2 spot instance requests</p></li>
+<li><p><a class="reference internal" href="ec2_tag_module.html#ansible-collections-amazon-aws-ec2-tag-module"><span class="std std-ref">ec2_tag module</span></a> – Create and remove tags on ec2 resources</p></li>
+<li><p><a class="reference internal" href="ec2_tag_info_module.html#ansible-collections-amazon-aws-ec2-tag-info-module"><span class="std std-ref">ec2_tag_info module</span></a> – List tags on ec2 resources</p></li>
+<li><p><a class="reference internal" href="ec2_vol_module.html#ansible-collections-amazon-aws-ec2-vol-module"><span class="std std-ref">ec2_vol module</span></a> – Create and attach a volume, return volume ID and device map</p></li>
+<li><p><a class="reference internal" href="ec2_vol_info_module.html#ansible-collections-amazon-aws-ec2-vol-info-module"><span class="std std-ref">ec2_vol_info module</span></a> – Gather information about EC2 volumes in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_dhcp_option_module.html#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-module"><span class="std std-ref">ec2_vpc_dhcp_option module</span></a> – Manages DHCP Options, and can ensure the DHCP options for the given VPC match what’s requested</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_dhcp_option_info_module.html#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module"><span class="std std-ref">ec2_vpc_dhcp_option_info module</span></a> – Gather information about DHCP options sets in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_endpoint_module.html#ansible-collections-amazon-aws-ec2-vpc-endpoint-module"><span class="std std-ref">ec2_vpc_endpoint module</span></a> – Create and delete AWS VPC endpoints</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_endpoint_info_module.html#ansible-collections-amazon-aws-ec2-vpc-endpoint-info-module"><span class="std std-ref">ec2_vpc_endpoint_info module</span></a> – Retrieves AWS VPC endpoints details using AWS methods</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_endpoint_service_info_module.html#ansible-collections-amazon-aws-ec2-vpc-endpoint-service-info-module"><span class="std std-ref">ec2_vpc_endpoint_service_info module</span></a> – Retrieves AWS VPC endpoint service details</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_igw_module.html#ansible-collections-amazon-aws-ec2-vpc-igw-module"><span class="std std-ref">ec2_vpc_igw module</span></a> – Manage an AWS VPC Internet gateway</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_igw_info_module.html#ansible-collections-amazon-aws-ec2-vpc-igw-info-module"><span class="std std-ref">ec2_vpc_igw_info module</span></a> – Gather information about internet gateways in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_nat_gateway_module.html#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module"><span class="std std-ref">ec2_vpc_nat_gateway module</span></a> – Manage AWS VPC NAT Gateways</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_nat_gateway_info_module.html#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module"><span class="std std-ref">ec2_vpc_nat_gateway_info module</span></a> – Retrieves AWS VPC Managed Nat Gateway details using AWS methods</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_net_module.html#ansible-collections-amazon-aws-ec2-vpc-net-module"><span class="std std-ref">ec2_vpc_net module</span></a> – Configure AWS Virtual Private Clouds</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_net_info_module.html#ansible-collections-amazon-aws-ec2-vpc-net-info-module"><span class="std std-ref">ec2_vpc_net_info module</span></a> – Gather information about ec2 VPCs in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_route_table_module.html#ansible-collections-amazon-aws-ec2-vpc-route-table-module"><span class="std std-ref">ec2_vpc_route_table module</span></a> – Manage route tables for AWS Virtual Private Clouds</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_route_table_info_module.html#ansible-collections-amazon-aws-ec2-vpc-route-table-info-module"><span class="std std-ref">ec2_vpc_route_table_info module</span></a> – Gather information about ec2 VPC route tables in AWS</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_subnet_module.html#ansible-collections-amazon-aws-ec2-vpc-subnet-module"><span class="std std-ref">ec2_vpc_subnet module</span></a> – Manage subnets in AWS virtual private clouds</p></li>
+<li><p><a class="reference internal" href="ec2_vpc_subnet_info_module.html#ansible-collections-amazon-aws-ec2-vpc-subnet-info-module"><span class="std std-ref">ec2_vpc_subnet_info module</span></a> – Gather information about ec2 VPC subnets in AWS</p></li>
+<li><p><a class="reference internal" href="elb_application_lb_module.html#ansible-collections-amazon-aws-elb-application-lb-module"><span class="std std-ref">elb_application_lb module</span></a> – Manage an Application Load Balancer</p></li>
+<li><p><a class="reference internal" href="elb_application_lb_info_module.html#ansible-collections-amazon-aws-elb-application-lb-info-module"><span class="std std-ref">elb_application_lb_info module</span></a> – Gather information about Application Load Balancers in AWS</p></li>
+<li><p><a class="reference internal" href="elb_classic_lb_module.html#ansible-collections-amazon-aws-elb-classic-lb-module"><span class="std std-ref">elb_classic_lb module</span></a> – Creates, updates or destroys an Amazon ELB</p></li>
+<li><p><a class="reference internal" href="iam_policy_module.html#ansible-collections-amazon-aws-iam-policy-module"><span class="std std-ref">iam_policy module</span></a> – Manage inline IAM policies for users, groups, and roles</p></li>
+<li><p><a class="reference internal" href="iam_policy_info_module.html#ansible-collections-amazon-aws-iam-policy-info-module"><span class="std std-ref">iam_policy_info module</span></a> – Retrieve inline IAM policies for users, groups, and roles</p></li>
+<li><p><a class="reference internal" href="iam_user_module.html#ansible-collections-amazon-aws-iam-user-module"><span class="std std-ref">iam_user module</span></a> – Manage AWS IAM users</p></li>
+<li><p><a class="reference internal" href="iam_user_info_module.html#ansible-collections-amazon-aws-iam-user-info-module"><span class="std std-ref">iam_user_info module</span></a> – Gather IAM user(s) facts in AWS</p></li>
+<li><p><a class="reference internal" href="kms_key_module.html#ansible-collections-amazon-aws-kms-key-module"><span class="std std-ref">kms_key module</span></a> – Perform various KMS key management tasks</p></li>
+<li><p><a class="reference internal" href="kms_key_info_module.html#ansible-collections-amazon-aws-kms-key-info-module"><span class="std std-ref">kms_key_info module</span></a> – Gather information about AWS KMS keys</p></li>
+<li><p><a class="reference internal" href="lambda_module.html#ansible-collections-amazon-aws-lambda-module"><span class="std std-ref">lambda module</span></a> – Manage AWS Lambda functions</p></li>
+<li><p><a class="reference internal" href="lambda_alias_module.html#ansible-collections-amazon-aws-lambda-alias-module"><span class="std std-ref">lambda_alias module</span></a> – Creates, updates or deletes AWS Lambda function aliases</p></li>
+<li><p><a class="reference internal" href="lambda_event_module.html#ansible-collections-amazon-aws-lambda-event-module"><span class="std std-ref">lambda_event module</span></a> – Creates, updates or deletes AWS Lambda function event mappings</p></li>
+<li><p><a class="reference internal" href="lambda_execute_module.html#ansible-collections-amazon-aws-lambda-execute-module"><span class="std std-ref">lambda_execute module</span></a> – Execute an AWS Lambda function</p></li>
+<li><p><a class="reference internal" href="lambda_info_module.html#ansible-collections-amazon-aws-lambda-info-module"><span class="std std-ref">lambda_info module</span></a> – Gathers AWS Lambda function details</p></li>
+<li><p><a class="reference internal" href="lambda_layer_module.html#ansible-collections-amazon-aws-lambda-layer-module"><span class="std std-ref">lambda_layer module</span></a> – Creates an AWS Lambda layer or deletes an AWS Lambda layer version</p></li>
+<li><p><a class="reference internal" href="lambda_layer_info_module.html#ansible-collections-amazon-aws-lambda-layer-info-module"><span class="std std-ref">lambda_layer_info module</span></a> – List lambda layer or lambda layer versions</p></li>
+<li><p><a class="reference internal" href="lambda_policy_module.html#ansible-collections-amazon-aws-lambda-policy-module"><span class="std std-ref">lambda_policy module</span></a> – Creates, updates or deletes AWS Lambda policy statements.</p></li>
+<li><p><a class="reference internal" href="rds_cluster_module.html#ansible-collections-amazon-aws-rds-cluster-module"><span class="std std-ref">rds_cluster module</span></a> – rds_cluster module</p></li>
+<li><p><a class="reference internal" href="rds_cluster_info_module.html#ansible-collections-amazon-aws-rds-cluster-info-module"><span class="std std-ref">rds_cluster_info module</span></a> – Obtain information about one or more RDS clusters</p></li>
+<li><p><a class="reference internal" href="rds_cluster_snapshot_module.html#ansible-collections-amazon-aws-rds-cluster-snapshot-module"><span class="std std-ref">rds_cluster_snapshot module</span></a> – Manage Amazon RDS snapshots of DB clusters</p></li>
+<li><p><a class="reference internal" href="rds_instance_module.html#ansible-collections-amazon-aws-rds-instance-module"><span class="std std-ref">rds_instance module</span></a> – Manage RDS instances</p></li>
+<li><p><a class="reference internal" href="rds_instance_info_module.html#ansible-collections-amazon-aws-rds-instance-info-module"><span class="std std-ref">rds_instance_info module</span></a> – obtain information about one or more RDS instances</p></li>
+<li><p><a class="reference internal" href="rds_instance_snapshot_module.html#ansible-collections-amazon-aws-rds-instance-snapshot-module"><span class="std std-ref">rds_instance_snapshot module</span></a> – Manage Amazon RDS instance snapshots</p></li>
+<li><p><a class="reference internal" href="rds_option_group_module.html#ansible-collections-amazon-aws-rds-option-group-module"><span class="std std-ref">rds_option_group module</span></a> – Manages the creation, modification, deletion of RDS option groups</p></li>
+<li><p><a class="reference internal" href="rds_option_group_info_module.html#ansible-collections-amazon-aws-rds-option-group-info-module"><span class="std std-ref">rds_option_group_info module</span></a> – rds_option_group_info module</p></li>
+<li><p><a class="reference internal" href="rds_param_group_module.html#ansible-collections-amazon-aws-rds-param-group-module"><span class="std std-ref">rds_param_group module</span></a> – manage RDS parameter groups</p></li>
+<li><p><a class="reference internal" href="rds_snapshot_info_module.html#ansible-collections-amazon-aws-rds-snapshot-info-module"><span class="std std-ref">rds_snapshot_info module</span></a> – obtain information about one or more RDS snapshots</p></li>
+<li><p><a class="reference internal" href="rds_subnet_group_module.html#ansible-collections-amazon-aws-rds-subnet-group-module"><span class="std std-ref">rds_subnet_group module</span></a> – manage RDS database subnet groups</p></li>
+<li><p><a class="reference internal" href="route53_module.html#ansible-collections-amazon-aws-route53-module"><span class="std std-ref">route53 module</span></a> – add or delete entries in Amazons Route 53 DNS service</p></li>
+<li><p><a class="reference internal" href="route53_health_check_module.html#ansible-collections-amazon-aws-route53-health-check-module"><span class="std std-ref">route53_health_check module</span></a> – Manage health-checks in Amazons Route53 DNS service</p></li>
+<li><p><a class="reference internal" href="route53_info_module.html#ansible-collections-amazon-aws-route53-info-module"><span class="std std-ref">route53_info module</span></a> – Retrieves route53 details using AWS methods</p></li>
+<li><p><a class="reference internal" href="route53_zone_module.html#ansible-collections-amazon-aws-route53-zone-module"><span class="std std-ref">route53_zone module</span></a> – add or delete Route53 zones</p></li>
+<li><p><a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">s3_bucket module</span></a> – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID</p></li>
+<li><p><a class="reference internal" href="s3_object_module.html#ansible-collections-amazon-aws-s3-object-module"><span class="std std-ref">s3_object module</span></a> – Manage objects in S3</p></li>
+<li><p><a class="reference internal" href="s3_object_info_module.html#ansible-collections-amazon-aws-s3-object-info-module"><span class="std std-ref">s3_object_info module</span></a> – Gather information about objects in S3</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="callback-plugins">
+<h3>Callback Plugins<a class="headerlink" href="#callback-plugins" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="aws_resource_actions_callback.html#ansible-collections-amazon-aws-aws-resource-actions-callback"><span class="std std-ref">aws_resource_actions callback</span></a> – summarizes all “resource:actions” completed</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="inventory-plugins">
+<h3>Inventory Plugins<a class="headerlink" href="#inventory-plugins" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">aws_ec2 inventory</span></a> – EC2 inventory source</p></li>
+<li><p><a class="reference internal" href="aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">aws_rds inventory</span></a> – RDS instance inventory source</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="lookup-plugins">
+<h3>Lookup Plugins<a class="headerlink" href="#lookup-plugins" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="aws_account_attribute_lookup.html#ansible-collections-amazon-aws-aws-account-attribute-lookup"><span class="std std-ref">aws_account_attribute lookup</span></a> – Look up AWS account attributes</p></li>
+<li><p><a class="reference internal" href="aws_collection_constants_lookup.html#ansible-collections-amazon-aws-aws-collection-constants-lookup"><span class="std std-ref">aws_collection_constants lookup</span></a> – expose various collection related constants</p></li>
+<li><p><a class="reference internal" href="aws_service_ip_ranges_lookup.html#ansible-collections-amazon-aws-aws-service-ip-ranges-lookup"><span class="std std-ref">aws_service_ip_ranges lookup</span></a> – Look up the IP ranges for services provided in AWS such as EC2 and S3.</p></li>
+<li><p><a class="reference internal" href="secretsmanager_secret_lookup.html#ansible-collections-amazon-aws-secretsmanager-secret-lookup"><span class="std std-ref">secretsmanager_secret lookup</span></a> – Look up secrets stored in AWS Secrets Manager</p></li>
+<li><p><a class="reference internal" href="ssm_parameter_lookup.html#ansible-collections-amazon-aws-ssm-parameter-lookup"><span class="std std-ref">ssm_parameter lookup</span></a> – gets the value for a SSM parameter or all parameters under a path</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>List of <a class="reference internal" href="../../index.html#list-of-collections"><span class="std std-ref">collections</span></a> with docs hosted here.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Collections in the Amazon Namespace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="docsite/CHANGELOG.html" class="btn btn-neutral float-right" title="amazon.aws Release Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
