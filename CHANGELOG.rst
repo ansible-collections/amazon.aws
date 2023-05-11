@@ -57,10 +57,10 @@ Minor Changes
 - ec2_snapshot_info - Add unit-tests coverage (https://github.com/ansible-collections/amazon.aws/pull/1211).
 - ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).
 - ec2_vpc_subnet - retry fetching subnet details after creation if the first attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).
-- inventory aws ec2 - add parameter `use_ssm_inventory` allowing to query ssm inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
+- inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query ssm inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
 - inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
 - inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
-- inventory_aws_ec2 integration tests - replace local module `test_get_ssm_inventory` by `community.aws.ssm_inventory_info` (https://github.com/ansible-collections/amazon.aws/pull/1416).
+- inventory_aws_ec2 integration tests - replace local module ``test_get_ssm_inventory`` by ``community.aws.ssm_inventory_info`` (https://github.com/ansible-collections/amazon.aws/pull/1416).
 - kms_key_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
 - lambda - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/1181).
 - lambda - use common ``get_aws_account_info`` helper rather than reimplementing (https://github.com/ansible-collections/amazon.aws/pull/1181).
@@ -141,7 +141,7 @@ Bugfixes
 - lambda_execute - Fix waiter error when function_arn is passed instead of name(https://github.com/ansible-collections/amazon.aws/issues/1268).
 - module_utils - fixes ``TypeError: deciding_wrapper() got multiple values for argument 'aws_retry'`` when passing positional arguments to functions wrapped by AnsibleAWSModule.client (https://github.com/ansible-collections/amazon.aws/pull/1230).
 - rds_param_group - added a check to fail the task while modifying/updating rds_param_group if trying to change DB parameter group family. (https://github.com/ansible-collections/amazon.aws/pull/1169).
-- route53_health_check - Fix "Name" tag key removal idempotentcy issue when creating health_check with `use_unique_names` and `tags` set (https://github.com/ansible-collections/amazon.aws/pull/1253).
+- route53_health_check - Fix ``Name`` tag key removal idempotentcy issue when creating health_check with ``use_unique_names`` and ``tags`` set (https://github.com/ansible-collections/amazon.aws/pull/1253).
 - s3_bucket - Handle setting of permissions while acl is disabled.(https://github.com/ansible-collections/amazon.aws/pull/1168).
 
 New Plugins
@@ -943,7 +943,7 @@ Minor Changes
 - aws_s3 - add ``tags`` and ``purge_tags`` features for an S3 object (https://github.com/ansible-collections/amazon.aws/pull/335)
 - aws_s3 - new mode to copy existing on another bucket (https://github.com/ansible-collections/amazon.aws/pull/359).
 - aws_secret - added support for gracefully handling deleted secrets (https://github.com/ansible-collections/amazon.aws/pull/455).
-- aws_ssm - add "on_missing" and "on_denied" option (https://github.com/ansible-collections/amazon.aws/pull/370).
+- aws_ssm - add ``on_missing`` and ``on_denied`` option (https://github.com/ansible-collections/amazon.aws/pull/370).
 - cloudformation - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - cloudformation - Tests for compatibility with older versions of the AWS SDKs have been removed (https://github.com/ansible-collections/amazon.aws/pull/442).
 - ec2_ami - ensure tags are propagated to the snapshot(s) when creating an AMI (https://github.com/ansible-collections/amazon.aws/pull/437).
@@ -1085,7 +1085,7 @@ Minor Changes
 
 - aws_caller_info - add AWSRetry decorator to automatically retry on common temporary failures (https://github.com/ansible-collections/amazon.aws/pull/208)
 - aws_s3 - Add support for uploading templated content (https://github.com/ansible-collections/amazon.aws/pull/20).
-- aws_secret - add "on_missing" and "on_denied" option (https://github.com/ansible-collections/amazon.aws/pull/122).
+- aws_secret - add ``on_missing`` and ``on_denied`` option (https://github.com/ansible-collections/amazon.aws/pull/122).
 - ec2_ami - Add retries for ratelimiting related errors (https://github.com/ansible-collections/amazon.aws/pull/195).
 - ec2_ami - fixed and streamlined ``max_attempts`` logic when waiting for AMI creation to finish (https://github.com/ansible-collections/amazon.aws/pull/194).
 - ec2_ami - increased default ``wait_timeout`` to 1200 seconds (https://github.com/ansible-collections/amazon.aws/pull/194).
@@ -1201,7 +1201,7 @@ Bugfixes
 - aws_s3 - Delete objects and delete markers so versioned buckets can be removed.
 - aws_s3 - Try to wait for the bucket to exist before setting the access control list.
 - cloudformation_info - Fix a KeyError returning information about the stack(s).
-- ec2_asg - Ensure "wait" is honored during replace operations
+- ec2_asg - Ensure ``wait`` is honored during replace operations
 - ec2_launch_template - Update output to include latest_version and default_version, matching the documentation
 - ec2_transit_gateway - Use AWSRetry before ClientError is handled when describing transit gateways
 - ec2_transit_gateway - fixed issue where auto_attach set to yes was not being honored (https://github.com/ansible/ansible/issues/61907)
