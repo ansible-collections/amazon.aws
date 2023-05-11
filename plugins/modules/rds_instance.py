@@ -99,7 +99,6 @@ options:
         description:
           - The identifier of the CA certificate for the DB instance.
         type: str
-        version_added: 6.1.0
     character_set_name:
         description:
           - The character set to associate with the DB instance.
@@ -1010,12 +1009,6 @@ def get_parameters(client, module, parameters, method_name):
 
     if method_name == "modify_db_instance":
         parameters = get_options_with_changing_values(client, module, parameters)
-
-    if parameters.get("CACertificateIdentifier") is not None and method_name in [
-        "create_db_instance",
-        "modify_db_instance",
-    ]:
-        parameters["CACertificateIdentifier"] = parameters.get("CACertificateIdentifier")
 
     return parameters
 
