@@ -580,7 +580,9 @@ backup_retention_period:
   type: int
   sample: 1
 ca_certificate_identifier:
-  description: The identifier of the CA certificate for the DB instance.
+  description:
+    - The identifier of the CA certificate for the DB instance.
+    - Requires minimum botocore version 1.29.44.
   returned: always
   type: str
   sample: rds-ca-2015
@@ -1019,7 +1021,10 @@ def get_options_with_changing_values(client, module, parameters):
     apply_immediately = parameters.pop("ApplyImmediately", None)
     cloudwatch_logs_enabled = module.params["enable_cloudwatch_logs_exports"]
     purge_security_groups = module.params["purge_security_groups"]
+    ca_certificate_identifier = module.params["ca_certificate_identifier"]
 
+    if ca_certificate_identifier:
+        parameters["CACertificateIdentifier"] = ca_certificate_identifier
     if port:
         parameters["DBPortNumber"] = port
     if not force_update_password:
@@ -1394,7 +1399,7 @@ def main():
         auto_minor_version_upgrade=dict(type="bool"),
         availability_zone=dict(aliases=["az", "zone"]),
         backup_retention_period=dict(type="int"),
-        ca_certificate_identifier=dict(),
+        ca_certificate_identifier=dict(type="str"),
         character_set_name=dict(),
         copy_tags_to_snapshot=dict(type="bool"),
         db_cluster_identifier=dict(aliases=["cluster_id"]),
@@ -1486,6 +1491,11 @@ def main():
         mutually_exclusive=mutually_exclusive,
         supports_check_mode=True,
     )
+
+    if module.params["ca_certificate_identifier"]:
+        module.require_botocore_at_least(
+            "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
+        )
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
