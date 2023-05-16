@@ -117,7 +117,8 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
     def _describe_regions(self, service):
         # Try pulling a list of regions from the service
         try:
-            client = self.client(service)
+            initial_region = self.region or "us-east-1"
+            client = self.client(service, region=initial_region)
             resp = client.describe_regions()
         except AttributeError:
             # Not all clients support describe
