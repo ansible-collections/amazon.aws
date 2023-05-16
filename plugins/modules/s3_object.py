@@ -93,8 +93,9 @@ options:
       - Can be used to create "virtual directories", see examples.
       - Object key names should not include the leading C(/), see
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html) for more
-        information.  Support for passing the leading C(/) has been deprecated and will be removed
-        in a release after 2025-12-01.
+        information.
+#      - Support for passing the leading C(/) has been deprecated and will be removed
+#        in a release after 2025-12-01.
     type: str
   sig_v4:
     description:
@@ -1378,11 +1379,11 @@ def populate_params(module):
         if obj.startswith("/"):
             obj = obj[1:]
             variable_dict["object"] = obj
-            module.deprecate(
-                "Support for passing object key names with a leading '/' has been deprecated.",
-                date="2025-12-01",
-                collection_name="amazon.aws",
-            )
+            #  module.deprecate(
+            #      "Support for passing object key names with a leading '/' has been deprecated.",
+            #      date="2025-12-01",
+            #      collection_name="amazon.aws",
+            #  )
 
     variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
     variable_dict["acl_disabled"] = False
