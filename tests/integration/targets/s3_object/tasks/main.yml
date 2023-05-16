@@ -269,6 +269,27 @@
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
+    - name: test get object (absolute path)
+      s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: get
+        dest: "{{ remote_tmp_dir }}/download-2.txt"
+        object: /delete.txt
+      retries: 3
+      delay: 3
+      register: result
+      until: "result.msg == 'GET operation complete'"
+
+    - name: stat the file so we can compare the checksums
+      stat:
+        path: "{{ remote_tmp_dir }}/download-2.txt"
+        get_checksum: yes
+      register: download_file
+
+    - assert:
+        that:
+          - upload_file.stat.checksum == download_file.stat.checksum
+
     - name: test get with overwrite=different and identical files
       s3_object:
         bucket: "{{ bucket_name }}"
