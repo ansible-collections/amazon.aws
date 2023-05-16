@@ -649,7 +649,7 @@
       s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: file-with-permissions.txt
         permission: private
         ignore_nonexistent_bucket: True
