@@ -645,13 +645,14 @@
             that:
               - result is not changed
 
+    # Public objects aren't allowed by default
     - name: fail to upload the file to the bucket with an ACL
       s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
         object: file-with-permissions.txt
-        permission: private
+        permission: public-read
         ignore_nonexistent_bucket: True
       register: upload_private
       ignore_errors: True
