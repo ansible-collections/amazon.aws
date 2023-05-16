@@ -89,8 +89,12 @@ options:
     type: str
   object:
     description:
-      - Keyname of the object inside the bucket.
+      - Key name of the object inside the bucket.
       - Can be used to create "virtual directories", see examples.
+      - Object key names should not include the leading C(/), see
+        U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html) for more
+        information.  Support for passing the leading C(/) has been deprecated and will be removed
+        in a release after 2025-12-01.
     type: str
   sig_v4:
     description:
@@ -399,13 +403,13 @@ s3_keys:
   - prefix1/key2
 """
 
+import base64
+import copy
+import io
 import mimetypes
 import os
-import io
-from ssl import SSLError
-import base64
 import time
-
+from ssl import SSLError
 
 try:
     import botocore
@@ -1325,9 +1329,9 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
     )
 
 
-def populate_facts(module, **variable_dict):
-    for k, v in module.params.items():
-        variable_dict[k] = v
+def populate_params(module):
+    # Copy the parameters dict, we shouldn't be directly modifying it.
+    variable_dict = copy.deepcopy(module.params)
 
     if variable_dict["validate_bucket_name"]:
         validate_bucket_name(variable_dict["bucket"])
@@ -1347,8 +1351,19 @@ def populate_facts(module, **variable_dict):
             variable_dict["overwrite"] = "never"
 
     # Bucket deletion does not require obj.  Prevents ambiguity with delobj.
-    if variable_dict["object"] and variable_dict.get("mode") == "delete":
-        module.fail_json(msg="Parameter obj cannot be used with mode=delete")
+    if variable_dict["object"]:
+        if variable_dict.get("mode") == "delete":
+            module.fail_json(msg="Parameter object cannot be used with mode=delete")
+        obj = variable_dict["object"]
+        # If the object starts with / remove the leading character
+        if obj.startswith("/"):
+            obj = obj[1:]
+            variable_dict["object"] = obj
+            module.deprecate(
+                "Support for passing object key names with a leading '/' has been deprecated.",
+                date="2025-12-01",
+                collection_name="amazon.aws",
+            )
 
     variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
     variable_dict["acl_disabled"] = False
@@ -1483,7 +1498,7 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    s3_object_params = populate_facts(module, **module.params)
+    s3_object_params = populate_params(module)
     s3_object_params.update(validate_bucket(module, s3, s3_object_params))
 
     func_mapping = {
