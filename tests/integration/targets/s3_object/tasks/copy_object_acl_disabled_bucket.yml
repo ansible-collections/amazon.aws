@@ -98,7 +98,7 @@
           - permission_result is changed
           - upload_file_result is not failed
           - '"PutObjectAcl operation : The bucket does not allow ACLs." in permission_result.warnings'
-          - '"Virtual directory /test_directory/ created" in permission_result.msg'
+          - '"Virtual directory test_directory/ created" in permission_result.msg'
 
   always:
 

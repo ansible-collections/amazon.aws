@@ -1,9 +1,8 @@
 - name: delete bucket at the end of Integration tests
   block:
     - name: list bucket object
-      s3_object:
-        bucket: "{{ item }}"
-        mode: list
+      s3_object_info:
+        bucket_name: "{{ item }}"
       register: objects
       ignore_errors: true
 

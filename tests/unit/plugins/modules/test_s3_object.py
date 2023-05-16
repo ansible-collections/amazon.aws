@@ -95,7 +95,7 @@ def test_s3_object_do_list_success(m_paginated_list, m_list_keys):
 
 
 @patch(utils + ".get_aws_connection_info")
-def test_populate_facts(m_get_aws_connection_info):
+def test_populate_params(m_get_aws_connection_info):
     module = MagicMock()
     m_get_aws_connection_info.return_value = (
         "us-east-1",
@@ -143,10 +143,18 @@ def test_populate_facts(m_get_aws_connection_info):
         "validate_certs": True,
         "version": None,
     }
-    result = s3_object.populate_facts(module)
+    result = s3_object.populate_params(module)
     for k, v in module.params.items():
         assert result[k] == v
 
+    module.params.update({"object": "example.txt", "mode": "get"})
+    result = s3_object.populate_params(module)
+    assert result["object"] == "example.txt"
+
+    module.params.update({"object": "/example.txt", "mode": "get"})
+    result = s3_object.populate_params(module)
+    assert result["object"] == "example.txt"
+
     module.params.update({"object": "example.txt", "mode": "delete"})
-    result = s3_object.populate_facts(module)
-    module.fail_json.assert_called_with(msg="Parameter obj cannot be used with mode=delete")
+    result = s3_object.populate_params(module)
+    module.fail_json.assert_called_with(msg="Parameter object cannot be used with mode=delete")
