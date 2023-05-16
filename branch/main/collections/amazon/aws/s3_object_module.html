@@ -461,8 +461,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-object"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-object"><strong>object</strong></p>
 <a class="ansibleOptionLink" href="#parameter-object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Keyname of the object inside the bucket.</p>
+<td><div class="ansible-option-cell"><p>Key name of the object inside the bucket.</p>
 <p>Can be used to create “virtual directories”, see examples.</p>
+<p>Object key names should not include the leading <code class="docutils literal notranslate"><span class="pre">/</span></code>, see <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html</a> for more information.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
