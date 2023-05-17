@@ -22,7 +22,7 @@ mod_delete_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.
 
 
 @pytest.mark.parametrize(
-    "params,api_result,calls,ansible_result",
+    "params,api_result,calls,_ansible_result",
     [
         ({"name": "testlayer", "version": 4}, [], [], {"changed": False, "layer_versions": []}),
         (
@@ -121,13 +121,13 @@ mod_delete_layer = "ansible_collections.amazon.aws.plugins.modules.lambda_layer.
     ],
 )
 @patch(mod_list_layer)
-def test_delete_layer(m_list_layer, params, api_result, calls, ansible_result):
+def test_delete_layer(m_list_layer, params, api_result, calls, _ansible_result):
     lambda_client = MagicMock()
     lambda_client.delete_layer_version.return_value = None
 
     m_list_layer.return_value = api_result
     result = lambda_layer.delete_layer_version(lambda_client, params)
-    assert result == ansible_result
+    assert result == _ansible_result
 
     m_list_layer.assert_called_once_with(lambda_client, params.get("name"))
 
@@ -160,7 +160,7 @@ def test_delete_layer_check_mode(m_list_layer):
     ]
     params = {"name": "testlayer", "version": -1}
     result = lambda_layer.delete_layer_version(lambda_client, params, check_mode=True)
-    ansible_result = {
+    _ansible_result = {
         "changed": True,
         "layer_versions": [
             {
@@ -179,7 +179,7 @@ def test_delete_layer_check_mode(m_list_layer):
             },
         ],
     }
-    assert result == ansible_result
+    assert result == _ansible_result
 
     m_list_layer.assert_called_once_with(lambda_client, params.get("name"))
     lambda_client.delete_layer_version.assert_not_called()
