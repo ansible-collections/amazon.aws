@@ -89,8 +89,13 @@ options:
     type: str
   object:
     description:
-      - Keyname of the object inside the bucket.
+      - Key name of the object inside the bucket.
       - Can be used to create "virtual directories", see examples.
+      - Object key names should not include the leading C(/), see
+        U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html) for more
+        information.
+#      - Support for passing the leading C(/) has been deprecated and will be removed
+#        in a release after 2025-12-01.
     type: str
   sig_v4:
     description:
@@ -399,15 +404,18 @@ s3_keys:
   - prefix1/key2
 """
 
+import base64
+import copy
+import io
 import mimetypes
 import os
-import io
-from ssl import SSLError
-import base64
 import time
-
+from ssl import SSLError
 
 try:
+    # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
+    # re-raises them as boto3 exceptions.
+    import boto3
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
@@ -457,6 +465,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(f"Failed while looking up object (during key check) {obj}.", e)
 
@@ -525,6 +534,7 @@ def bucket_check(module, s3, bucket, validate=True):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(
             f"Failed while looking up bucket '{bucket}' (during bucket_check).",
@@ -571,6 +581,7 @@ def list_keys(module, s3, bucket, prefix, marker, max_keys):
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
     ) as e:
         raise S3ObjectFailure(f"Failed while listing the keys in the bucket {bucket}", e)
 
@@ -587,6 +598,7 @@ def delete_key(module, s3, bucket, obj):
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
     ) as e:
         raise S3ObjectFailure(f"Failed while trying to delete {obj}.", e)
 
@@ -607,6 +619,7 @@ def put_object_acl(module, s3, bucket, obj, params=None):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(f"Failed while creating object {obj}.", e)
 
@@ -747,6 +760,7 @@ def upload_s3file(
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
     ) as e:
         raise S3ObjectFailure("Unable to complete PUT operation.", e)
 
@@ -786,6 +800,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(f"Could not find the key {obj}.", e)
 
@@ -797,6 +812,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         except (
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
+            boto3.exceptions.Boto3Error,
         ) as e:
             # actually fail on last pass through the loop.
             if x >= retries:
@@ -830,6 +846,7 @@ def download_s3str(module, s3, bucket, obj, version=None):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(f"Failed while getting contents of object {obj} as a string.", e)
 
@@ -852,6 +869,7 @@ def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
     ) as e:
         raise S3ObjectFailure("Failed while getting download url.", e)
 
@@ -867,6 +885,7 @@ def put_download_url(s3, bucket, obj, expiry):
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
     ) as e:
         raise S3ObjectFailure("Unable to generate presigned URL", e)
 
@@ -937,6 +956,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure(
             f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
@@ -981,6 +1001,7 @@ def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict, version=N
         except (
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
+            boto3.exceptions.Boto3Error,
         ) as e:
             raise S3ObjectFailure("Failed to get object tags.", e)
 
@@ -1006,6 +1027,7 @@ def ensure_tags(client, module, bucket, obj):
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
         raise S3ObjectFailure("Failed to get object tags.", e)
 
@@ -1029,6 +1051,7 @@ def ensure_tags(client, module, bucket, obj):
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
+            boto3.exceptions.Boto3Error,
         ) as e:
             raise S3ObjectFailure("Failed to update object tags.", e)
     else:
@@ -1037,6 +1060,7 @@ def ensure_tags(client, module, bucket, obj):
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
+            boto3.exceptions.Boto3Error,
         ) as e:
             raise S3ObjectFailure("Failed to delete object tags.", e)
 
@@ -1325,9 +1349,9 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
     )
 
 
-def populate_facts(module, **variable_dict):
-    for k, v in module.params.items():
-        variable_dict[k] = v
+def populate_params(module):
+    # Copy the parameters dict, we shouldn't be directly modifying it.
+    variable_dict = copy.deepcopy(module.params)
 
     if variable_dict["validate_bucket_name"]:
         validate_bucket_name(variable_dict["bucket"])
@@ -1347,8 +1371,19 @@ def populate_facts(module, **variable_dict):
             variable_dict["overwrite"] = "never"
 
     # Bucket deletion does not require obj.  Prevents ambiguity with delobj.
-    if variable_dict["object"] and variable_dict.get("mode") == "delete":
-        module.fail_json(msg="Parameter obj cannot be used with mode=delete")
+    if variable_dict["object"]:
+        if variable_dict.get("mode") == "delete":
+            module.fail_json(msg="Parameter object cannot be used with mode=delete")
+        obj = variable_dict["object"]
+        # If the object starts with / remove the leading character
+        if obj.startswith("/"):
+            obj = obj[1:]
+            variable_dict["object"] = obj
+            #  module.deprecate(
+            #      "Support for passing object key names with a leading '/' has been deprecated.",
+            #      date="2025-12-01",
+            #      collection_name="amazon.aws",
+            #  )
 
     variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
     variable_dict["acl_disabled"] = False
@@ -1480,10 +1515,14 @@ def main():
     try:
         s3 = module.client("s3", retry_decorator=retry_decorator, **extra_params)
         s3_v4 = module.client("s3", retry_decorator=retry_decorator, **extra_params_v4)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+        boto3.exceptions.Boto3Error,
+    ) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    s3_object_params = populate_facts(module, **module.params)
+    s3_object_params = populate_params(module)
     s3_object_params.update(validate_bucket(module, s3, s3_object_params))
 
     func_mapping = {
