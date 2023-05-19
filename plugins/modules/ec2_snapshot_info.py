@@ -194,13 +194,6 @@ snapshots:
             type: str
             returned: always
             sample: "arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
-        create_volume_permissions:
-            description:
-              - The users and groups that have the permissions for creating volumes from the snapshot.
-              - The module will return empty list if the create volume permissions on snapshot are 'private'.
-            type: list
-            elements: dict
-            sample: [{"group": "all"}]
 next_token_id:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
@@ -210,7 +203,7 @@ next_token_id:
 """
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -239,7 +232,7 @@ def build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters,
 
 
 def get_snapshots(connection, module, request_args):
-    snapshot_ids = request_args.get("SnapshotIds")
+    snapshot_ids = request_args.get("snapshot_ids")
     try:
         snapshots = connection.describe_snapshots(aws_retry=True, **request_args)
     except is_boto3_error_code("InvalidSnapshot.NotFound") as e:
@@ -250,15 +243,6 @@ def get_snapshots(connection, module, request_args):
     return snapshots
 
 
-def _describe_snapshot_attribute(module, ec2, snapshot_id):
-    try:
-        response = ec2.describe_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
-
-    return response["CreateVolumePermissions"]
-
-
 def list_ec2_snapshots(connection, module, request_args):
     try:
         snapshots = get_snapshots(connection, module, request_args)
@@ -266,13 +250,6 @@ def list_ec2_snapshots(connection, module, request_args):
         module.fail_json_aws(e, msg="Failed to describe snapshots")
 
     result = {}
-
-    # Add createVolumePermission info to snapshots result
-    for snapshot in snapshots["Snapshots"]:
-        snapshot_id = snapshot.get("SnapshotId")
-        create_vol_permission = _describe_snapshot_attribute(module, connection, snapshot_id)
-        snapshot["CreateVolumePermissions"] = create_vol_permission
-
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
     for snapshot in snapshots["Snapshots"]:

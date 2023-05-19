@@ -70,39 +70,6 @@ options:
     required: false
     default: 0
     type: int
-  modify_create_vol_permission:
-    description:
-      - If set to C(true), ec2 snapshot's createVolumePermissions can be modified.
-    required: false
-    type: bool
-    version_added: 6.1.0
-  purge_create_vol_permission:
-    description:
-      - Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.
-      - Must set I(modify_create_vol_permission) to C(True) for when I(purge_create_vol_permission) is set to C(True).
-    required: False
-    type: bool
-    default: False
-    version_added: 6.1.0
-  group_names:
-    description:
-      - The group to be added or removed. The possible value is C(all).
-      - Mutually exclusive with I(user_ids).
-    required: false
-    type: list
-    elements: str
-    choices: ["all"]
-    version_added: 6.1.0
-  user_ids:
-    description:
-      - The account user IDs to be added or removed.
-      - If createVolumePermission on snapshot is currently set to Public i.e. I(group_names=all),
-        providing I(user_ids) will not make createVolumePermission Private unless I(create_volume_permission) is set to C(true).
-      - Mutually exclusive with I(group_names).
-    required: false
-    type: list
-    elements: str
-    version_added: 6.1.0
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -139,44 +106,6 @@ EXAMPLES = r"""
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     last_snapshot_min_age: 60
-
-- name: Reset snapshot createVolumePermission (change permission to "Private")
-  amazon.aws.ec2_snapshot:
-    snapshot_id: snap-06a6f641234567890
-    modify_create_vol_permission: true
-    purge_create_vol_permission: true
-
-- name: Modify snapshot createVolmePermission to add user IDs (specify purge_create_vol_permission=true to change permssion to "Private")
-  amazon.aws.ec2_snapshot:
-    snapshot_id: snap-06a6f641234567890
-    modify_create_vol_permission: true
-    user_ids:
-      - '123456789012'
-      - '098765432109'
-
-- name: Modify snapshot createVolmePermission - remove all except specified user_ids
-  amazon.aws.ec2_snapshot:
-    snapshot_id: snap-06a6f641234567890
-    modify_create_vol_permission: true
-    purge_create_vol_permission: true
-    user_ids:
-      - '123456789012'
-
-- name: Replace (purge existing) snapshot createVolmePermission annd add user IDs
-  amazon.aws.ec2_snapshot:
-    snapshot_id: snap-06a6f641234567890
-    modify_create_vol_permission: true
-    purge_create_vol_permission: true
-    user_ids:
-      - '111111111111'
-
-- name: Modify snapshot createVolmePermission - make createVolumePermission "Public"
-  amazon.aws.ec2_snapshot:
-    snapshot_id: snap-06a6f641234567890
-    modify_create_vol_permission: true
-    purge_create_vol_permission: true
-    group_names:
-      - all
 """
 
 RETURN = r"""
@@ -403,109 +332,6 @@ def delete_snapshot(module, ec2, snapshot_id):
     module.exit_json(changed=True)
 
 
-def _describe_snapshot_attribute(module, ec2, snapshot_id):
-    try:
-        response = ec2.describe_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
-
-    return response["CreateVolumePermissions"]
-
-
-def build_modify_createVolumePermission_params(module):
-    snapshot_id = module.params.get("snapshot_id")
-    user_ids = module.params.get("user_ids")
-    group_names = module.params.get("group_names")
-
-    if not user_ids and not group_names:
-        module.fail_json(msg="Please provide either Group IDs or User IDs to modify permissions")
-
-    params = {
-        "Attribute": "createVolumePermission",
-        "OperationType": "add",
-        "SnapshotId": snapshot_id,
-        "GroupNames": group_names,
-        "UserIds": user_ids,
-    }
-
-    # remove empty value params
-    params = {k: v for k, v in params.items() if v}
-
-    return params
-
-
-def check_user_or_group_update_needed(module, ec2):
-    existing_create_vol_permission = _describe_snapshot_attribute(module, ec2, module.params.get("snapshot_id"))
-    purge_permission = module.params.get("purge_create_vol_permission")
-    supplied_group_names = module.params.get("group_names")
-    supplied_user_ids = module.params.get("user_ids")
-
-    # if createVolumePermission is already "Public", adding "user_ids" is not needed
-    if any(item.get("Group") == "all" for item in existing_create_vol_permission) and not purge_permission:
-        return False
-
-    if supplied_group_names:
-        existing_group_names = {item.get("Group") for item in existing_create_vol_permission or []}
-        if set(supplied_group_names) == set(existing_group_names):
-            return False
-        else:
-            return True
-
-    if supplied_user_ids:
-        existing_user_ids = {item.get("UserId") for item in existing_create_vol_permission or []}
-        if set(supplied_user_ids) == set(existing_user_ids):
-            return False
-        else:
-            return True
-
-    if purge_permission and existing_create_vol_permission == []:
-        return False
-
-    return True
-
-
-def _modify_snapshot_createVolumePermission(module, ec2, snapshot_id, purge_create_vol_permission):
-    update_needed = check_user_or_group_update_needed(module, ec2)
-
-    if not update_needed:
-        module.exit_json(changed=False, msg="Supplied CreateVolumePermission already applied, update not needed")
-
-    if purge_create_vol_permission is True:
-        _reset_snapshpot_attribute(module, ec2, snapshot_id)
-        if not module.params.get("user_ids") and not module.params.get("group_names"):
-            module.exit_json(changed=True, msg="Reset createVolumePermission successfully")
-
-    params = build_modify_createVolumePermission_params(module)
-
-    if module.check_mode:
-        module.exit_json(changed=True, msg="Would have modified CreateVolumePermission")
-
-    try:
-        ec2.modify_snapshot_attribute(**params)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to modify createVolumePermission")
-
-    module.exit_json(changed=True, msg="Successfully modified CreateVolumePermission")
-
-
-def _reset_snapshpot_attribute(module, ec2, snapshot_id):
-    if module.check_mode:
-        module.exit_json(changed=True, msg="Would have reset CreateVolumePermission")
-    try:
-        response = ec2.reset_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to reset createVolumePermission")
-
-
 def create_snapshot_ansible_module():
     argument_spec = dict(
         volume_id=dict(),
@@ -518,18 +344,12 @@ def create_snapshot_ansible_module():
         last_snapshot_min_age=dict(type="int", default=0),
         snapshot_tags=dict(type="dict", default=dict()),
         state=dict(choices=["absent", "present"], default="present"),
-        modify_create_vol_permission=dict(type="bool"),
-        purge_create_vol_permission=dict(type="bool", default=False),
-        user_ids=dict(type="list", elements="str"),
-        group_names=dict(type="list", elements="str", choices=["all"]),
     )
     mutually_exclusive = [
         ("instance_id", "snapshot_id", "volume_id"),
-        ("group_names", "user_ids"),
     ]
     required_if = [
         ("state", "absent", ("snapshot_id",)),
-        ("purge_create_vol_permission", True, ("modify_create_vol_permission",)),
     ]
     required_one_of = [
         ("instance_id", "snapshot_id", "volume_id"),
@@ -563,8 +383,6 @@ def main():
     last_snapshot_min_age = module.params.get("last_snapshot_min_age")
     snapshot_tags = module.params.get("snapshot_tags")
     state = module.params.get("state")
-    modify_create_vol_permission = module.params.get("modify_create_vol_permission")
-    purge_create_vol_permission = module.params.get("purge_create_vol_permission")
 
     ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
@@ -574,9 +392,7 @@ def main():
             ec2=ec2,
             snapshot_id=snapshot_id,
         )
-    elif modify_create_vol_permission is True:
-        _modify_snapshot_createVolumePermission(module, ec2, snapshot_id, purge_create_vol_permission)
-    elif state == "present":
+    else:
         create_snapshot(
             module=module,
             description=description,
