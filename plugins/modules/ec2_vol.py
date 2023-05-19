@@ -439,6 +439,22 @@ def update_volume(module, ec2_conn, volume):
             volume["multi_attach_enabled"] = response.get("VolumeModification").get("TargetMultiAttachEnabled")
             volume["throughput"] = response.get("VolumeModification").get("TargetThroughput")
 
+            if module.params.get("wait_for_modify_volume_complete"):
+                mod_state = ""
+                _max_attempts = 100
+                _sleep_secs = 10
+                _attempt = 0
+                while mod_state != "completed":
+                    _attempt += 1
+                    mod_response = ec2_conn.describe_volumes_modifications(VolumeIds=[volume["volume_id"]])
+                    mod_state = mod_response.get("VolumesModifications")[0].get("ModificationState")
+                    # this can take a long time, depending on how much bigger the requested volume size is
+                    if _attempt > _max_attempts:
+                        module.fail_json(
+                            msg=f"Volume {volume['volume_id']} modification state has not reached 'completed' after {_max_attempts * _sleep_secs} seconds."
+                        )
+                    time.sleep(_sleep_secs)
+
     return volume, changed
 
 
@@ -714,6 +730,7 @@ def main():
         outpost_arn=dict(type="str"),
         purge_tags=dict(type="bool", default=True),
         multi_attach=dict(type="bool"),
+        wait_for_modify_volume_complete=dict(default=False, type="bool")
     )
 
     module = AnsibleAWSModule(
@@ -738,6 +755,9 @@ def main():
     volume_type = module.params.get("volume_type")
     throughput = module.params.get("throughput")
     multi_attach = module.params.get("multi_attach")
+    modify_volume = module.params.get("modify_volume")
+    wait_for_modify_volume_complete = module.params.get("wait_for_modify_volume_complete")
+
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == "present":
@@ -768,6 +788,9 @@ def main():
 
     if multi_attach is True and volume_type not in ("io1", "io2"):
         module.fail_json(msg="multi_attach is only supported for io1 and io2 volumes.")
+
+    if wait_for_modify_volume_complete is True and modify_volume is False:
+        module.fail_json(msg="wait_for_modify_volume_complete does nothing if modify_volume is False.")
 
     # Set changed flag
     changed = False
