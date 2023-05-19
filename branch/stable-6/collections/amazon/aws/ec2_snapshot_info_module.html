@@ -448,16 +448,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-snapshots/create_volume_permissions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-create-volume-permissions"><strong>create_volume_permissions</strong></p>
-<a class="ansibleOptionLink" href="#return-snapshots/create_volume_permissions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The users and groups that have the permissions for creating volumes from the snapshot.</p>
-<p>The module will return empty list if the create volume permissions on snapshot are ‘private’.</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
-<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;group&quot;:</span> <span class="pre">&quot;all&quot;}]</span></code></p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/data_encryption_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-data-encryption-key-id"><strong>data_encryption_key_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/data_encryption_key_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -466,7 +456,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -475,7 +465,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">important</span> <span class="pre">backup&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-encrypted"><strong>encrypted</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/encrypted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -484,7 +474,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-kms-key-id"><strong>kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/kms_key_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -493,7 +483,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;74c9742a-a1b2-45cb-b3fe-abcdef123456&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/owner_alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-owner-alias"><strong>owner_alias</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/owner_alias" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -502,7 +492,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -511,7 +501,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/progress"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-progress"><strong>progress</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/progress" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -520,7 +510,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;100%&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/snapshot_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-snapshot-id"><strong>snapshot_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/snapshot_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -529,7 +519,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;snap-01234567&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/start_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-start-time"><strong>start_time</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/start_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -538,7 +528,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-02-12T02:14:02+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -547,7 +537,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;completed&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/state_message"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-state-message"><strong>state_message</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/state_message" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -555,7 +545,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -564,7 +554,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;my_tag_key&quot;:</span> <span class="pre">&quot;my_tag_value&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/volume_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-volume-id"><strong>volume_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/volume_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -573,7 +563,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vol-01234567&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-snapshots/volume_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-return-snapshots-volume-size"><strong>volume_size</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/volume_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
