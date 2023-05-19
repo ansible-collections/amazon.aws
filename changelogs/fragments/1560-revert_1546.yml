@@ -1,0 +1,2 @@
+trivial:
+ - "Temporarily revert https://github.com/ansible-collections/amazon.aws/pull/1546."
