@@ -5,6 +5,21 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.0.1
+======
+
+Release Summary
+---------------
+
+This is a patch release that includes some bug fixes for the aws_ec2 inventory plugin and the s3_bucket and s3_object modules.
+
+Bugfixes
+--------
+
+- aws_ec2 inventory plugin - fix ``NoRegionError`` when no regions are provided and region isn't specified (https://github.com/ansible-collections/amazon.aws/issues/1551).
+- s3_bucket - fixes issue when deleting a bucket with unversioned objects (https://github.com/ansible-collections/amazon.aws/issues/1533).
+- s3_object - fixes regression related to objects with a leading ``/`` (https://github.com/ansible-collections/amazon.aws/issues/1548).
+
 v6.0.0
 ======
 
