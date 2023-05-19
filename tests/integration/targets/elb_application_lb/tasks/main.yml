@@ -115,6 +115,27 @@
       vpc_id: '{{ vpc_id }}'
       state: present
     register: tg
+  - name: Create a second target group for testing
+    community.aws.elb_target_group:
+      name: '{{ tg_2_name }}'
+      protocol: http
+      port: 80
+      vpc_id: '{{ vpc_id }}'
+      state: present
+    register: tg_2
+  - name: Get ARN of calling user
+    amazon.aws.aws_caller_info:
+    register: aws_caller_info
+  - name: Register account id
+    ansible.builtin.set_fact:
+      aws_account: "{{ aws_caller_info.account }}"
+  - name: Create S3 bucket for testing
+    amazon.aws.s3_bucket:
+      name: "{{ s3_bucket_name }}"
+      state: present
+      encryption: "aws:kms"
+      policy: "{{ lookup('template', 'policy.json') }}"
+
   - name: Create an ALB (invalid - SslPolicy is required when Protocol == HTTPS)
     elb_application_lb:
       name: '{{ alb_name }}'
@@ -267,6 +288,157 @@
       - alb is not changed
       - alb.listeners[0].rules | length == 1
       - alb.security_groups[0] == default_sg.security_groups[0].group_id
+
+    # ------------------------------------------------------------------------------------------
+
+  - name: Create an ALB with attributes - check_mode
+    amazon.aws.elb_application_lb:
+      name: '{{ alb_2_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: '{{ tg_2_name }}'
+      access_logs_enabled: true
+      access_logs_s3_bucket: "{{ s3_bucket_name }}"
+      access_logs_s3_prefix: "alb-logs"
+      ip_address_type: dualstack
+      http2: false
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: true
+      http_x_amzn_tls_version_and_cipher_suite: true
+      http_xff_client_port: true
+      waf_fail_open: true
+    register: alb_2
+    check_mode: true
+
+  - name: Verify check mode response
+    ansible.builtin.assert:
+      that:
+        - alb_2 is changed
+        - alb_2.msg is match('Would have created ALB if not in check mode.')
+
+  - name: Create an ALB with attributes
+    amazon.aws.elb_application_lb:
+      name: '{{ alb_2_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: '{{ tg_2_name }}'
+      access_logs_enabled: true
+      access_logs_s3_bucket: "{{ s3_bucket_name }}"
+      access_logs_s3_prefix: "alb-logs"
+      http2: false
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: true
+      http_x_amzn_tls_version_and_cipher_suite: true
+      http_xff_client_port: true
+      idle_timeout: 120
+      ip_address_type: dualstack
+      waf_fail_open: true
+    register: alb_2
+
+  - name: Verify ALB was created with correct attributes
+    ansible.builtin.assert:
+      that:
+        - alb_2 is changed
+        - alb_2.listeners[0].rules | length == 1
+        - alb_2.security_groups | length == 1
+        - alb_2.security_groups[0] == sec_group.group_id
+        - alb_2.ip_address_type == 'dualstack'
+        - alb_2.access_logs_s3_enabled | bool
+        - alb_2.access_logs_s3_bucket == "{{ s3_bucket_name }}"
+        - alb_2.access_logs_s3_prefix == "alb-logs"
+        - not alb_2.routing_http2_enabled | bool
+        - alb_2.routing_http_desync_mitigation_mode == 'monitor'
+        - alb_2.routing_http_drop_invalid_header_fields_enabled | bool
+        - alb_2.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+        - alb_2.routing_http_xff_client_port_enabled | bool
+        - alb_2.idle_timeout_timeout_seconds == "120"
+        - alb_2.waf_fail_open_enabled | bool
+
+  - name: Create an ALB with attributes (idempotence) - check_mode
+    amazon.aws.elb_application_lb:
+      name: '{{ alb_2_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: '{{ tg_2_name }}'
+      access_logs_enabled: true
+      access_logs_s3_bucket: "{{ s3_bucket_name }}"
+      access_logs_s3_prefix: "alb-logs"
+      ip_address_type: dualstack
+      http2: false
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: true
+      http_x_amzn_tls_version_and_cipher_suite: true
+      http_xff_client_port: true
+      waf_fail_open: true
+    register: alb_2
+    check_mode: true
+
+  - name: Verify idempotence check mode response
+    ansible.builtin.assert:
+      that:
+        - alb_2 is not changed
+        - alb_2.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+  - name: Create an ALB with attributes (idempotence)
+    amazon.aws.elb_application_lb:
+      name: '{{ alb_2_name }}'
+      subnets: '{{ public_subnets }}'
+      security_groups: '{{ sec_group.group_id }}'
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: '{{ tg_2_name }}'
+      access_logs_enabled: true
+      access_logs_s3_bucket: "{{ s3_bucket_name }}"
+      access_logs_s3_prefix: "alb-logs"
+      ip_address_type: dualstack
+      http2: false
+      http_desync_mitigation_mode: monitor
+      http_drop_invalid_header_fields: true
+      http_x_amzn_tls_version_and_cipher_suite: true
+      http_xff_client_port: true
+      waf_fail_open: true
+    register: alb_2
+
+  - name: Verify ALB was not changed
+    ansible.builtin.assert:
+      that:
+        - alb_2 is not changed
+        - alb_2.listeners[0].rules | length == 1
+        - alb_2.security_groups | length == 1
+        - alb_2.security_groups[0] == sec_group.group_id
+        - alb_2.ip_address_type == 'dualstack'
+        - alb_2.access_logs_s3_enabled | bool
+        - alb_2.access_logs_s3_bucket == "{{ s3_bucket_name }}"
+        - alb_2.access_logs_s3_prefix == "alb-logs"
+        - not alb_2.routing_http2_enabled | bool
+        - alb_2.routing_http_desync_mitigation_mode == 'monitor'
+        - alb_2.routing_http_drop_invalid_header_fields_enabled | bool
+        - alb_2.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+        - alb_2.routing_http_xff_client_port_enabled | bool
+        - alb_2.idle_timeout_timeout_seconds == "120"
+        - alb_2.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
 
@@ -1275,6 +1447,13 @@
       wait: true
       wait_timeout: 600
     ignore_errors: true
+  - name: Destroy ALB 2
+    amazon.aws.elb_application_lb:
+      name: '{{ alb_2_name }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
   - name: Destroy target group if it was created
     elb_target_group:
       name: '{{ tg_name }}'
@@ -1289,6 +1468,21 @@
     delay: 3
     until: remove_tg is success
     when: tg is defined
+    ignore_errors: true
+  - name: Destroy target group 2 if it was created
+    community.aws.elb_target_group:
+      name: '{{ tg_2_name }}'
+      protocol: http
+      port: 80
+      vpc_id: '{{ vpc_id }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    register: remove_tg_2
+    retries: 5
+    delay: 3
+    until: remove_tg_2 is success
+    when: tg_2 is defined
     ignore_errors: true
   - name: Destroy sec groups
     ec2_security_group:
@@ -1352,3 +1546,13 @@
     delay: 5
     until: remove_vpc is success
     ignore_errors: true
+  - name: Destroy ELB acccess log test file
+    amazon.aws.s3_object:
+      bucket: "{{ s3_bucket_name }}"
+      mode: delobj
+      object: alb-logs/AWSLogs/966509639900/ELBAccessLogTestFile
+  - name: Destroy S3 bucket
+    amazon.aws.s3_bucket:
+      name: "{{ s3_bucket_name }}"
+      state: absent
+      force: true

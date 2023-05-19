@@ -614,6 +614,10 @@ def create_or_update_alb(alb_obj):
             alb_obj.module.exit_json(changed=True, msg="Would have created ALB if not in check mode.")
         alb_obj.create_elb()
 
+        # Add ALB attributes
+        alb_obj.update_elb_attributes()
+        alb_obj.modify_elb_attributes()
+
     # Listeners
     listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
     listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
