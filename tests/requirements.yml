@@ -1,4 +1,0 @@
-integration_tests_dependencies:
-- ansible.windows
-- ansible.utils  # ipv6 filter
-unit_tests_dependencies: []
