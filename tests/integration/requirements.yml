@@ -1,0 +1,4 @@
+---
+collections:
+- ansible.windows
+- ansible.utils  # ipv6 filter
