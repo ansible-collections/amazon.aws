@@ -254,18 +254,44 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-group_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-group-names"><strong>group_names</strong></p>
+<a class="ansibleOptionLink" href="#parameter-group_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The group to be added or removed. The possible value is <code class="docutils literal notranslate"><span class="pre">all</span></code>.</p>
+<p>Mutually exclusive with <em>user_ids</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-instance-id"><strong>instance_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-instance_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Instance that has the required volume to snapshot mounted.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-last_snapshot_min_age"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-last-snapshot-min-age"><strong>last_snapshot_min_age</strong></p>
 <a class="ansibleOptionLink" href="#parameter-last_snapshot_min_age" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>If the volume’s most recent snapshot has started less than <em>last_snapshot_min_age</em> minutes ago, a new snapshot will not be created.</p>
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-modify_create_vol_permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-modify-create-vol-permission"><strong>modify_create_vol_permission</strong></p>
+<a class="ansibleOptionLink" href="#parameter-modify_create_vol_permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, ec2 snapshot’s createVolumePermissions can be modified.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -281,6 +307,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-purge_create_vol_permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-purge-create-vol-permission"><strong>purge_create_vol_permission</strong></p>
+<a class="ansibleOptionLink" href="#parameter-purge_create_vol_permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.</p>
+<p>Must set <em>modify_create_vol_permission</em> to <code class="docutils literal notranslate"><span class="pre">True</span></code> for when <em>purge_create_vol_permission</em> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -295,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -312,7 +352,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -330,14 +370,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-snapshot_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-snapshot-id"><strong>snapshot_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-snapshot_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Snapshot id to remove.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-snapshot_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-snapshot-tags"><strong>snapshot_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-snapshot_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -346,7 +386,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -356,6 +396,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-user_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-user-ids"><strong>user_ids</strong></p>
+<a class="ansibleOptionLink" href="#parameter-user_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The account user IDs to be added or removed.</p>
+<p>If createVolumePermission on snapshot is currently set to Public i.e. <em>group_names=all</em>, providing <em>user_ids</em> will not make createVolumePermission Private unless <em>create_volume_permission</em> is set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+<p>Mutually exclusive with <em>group_names</em>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -441,6 +491,44 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span>
 <span class="w">    </span><span class="nt">last_snapshot_min_age</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reset snapshot createVolumePermission (change permission to &quot;Private&quot;)</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
+<span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission to add user IDs (specify purge_create_vol_permission=true to change permssion to &quot;Private&quot;)</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
+<span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;123456789012&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;098765432109&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission - remove all except specified user_ids</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
+<span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;123456789012&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Replace (purge existing) snapshot createVolmePermission annd add user IDs</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
+<span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;111111111111&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission - make createVolumePermission &quot;Public&quot;</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
+<span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">group_names</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all</span>
 </pre></div>
 </div>
 </section>
