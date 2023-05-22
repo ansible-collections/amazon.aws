@@ -1903,8 +1903,9 @@ releases:
       - ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).
       - ec2_vpc_subnet - retry fetching subnet details after creation if the first
         attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).
-      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query ssm
-        inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
+      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query
+        ssm inventory information for configured EC2 instances and populate hostvars
+        (https://github.com/ansible-collections/amazon.aws/issues/704).
       - inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory_aws_ec2 integration tests - replace local module ``test_get_ssm_inventory``
@@ -2114,3 +2115,19 @@ releases:
         name: aws_collection_constants
         namespace: null
     release_date: '2023-05-09'
+  6.0.1:
+    changes:
+      bugfixes:
+      - aws_ec2 inventory plugin - fix ``NoRegionError`` when no regions are provided
+        and region isn't specified (https://github.com/ansible-collections/amazon.aws/issues/1551).
+      - s3_bucket - fixes issue when deleting a bucket with unversioned objects (https://github.com/ansible-collections/amazon.aws/issues/1533).
+      - s3_object - fixes regression related to objects with a leading ``/`` (https://github.com/ansible-collections/amazon.aws/issues/1548).
+      release_summary: This is a patch release that includes some bug fixes for the
+        aws_ec2 inventory plugin and the s3_bucket and s3_object modules.
+    fragments:
+    - 1538-s3-null.yml
+    - 1548-s3_object-leading-slash.yml
+    - 1551-ec2_inventory-no-region.yml
+    - 1560-revert_1546.yml
+    - release_summary.yml
+    release_date: '2023-05-19'
