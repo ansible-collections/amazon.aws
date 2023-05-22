@@ -1550,7 +1550,7 @@
     amazon.aws.s3_object:
       bucket: "{{ s3_bucket_name }}"
       mode: delobj
-      object: alb-logs/AWSLogs/966509639900/ELBAccessLogTestFile
+      object: "alb-logs/AWSLogs/{{ aws_account }}/ELBAccessLogTestFile"
   - name: Destroy S3 bucket
     amazon.aws.s3_bucket:
       name: "{{ s3_bucket_name }}"
