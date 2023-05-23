@@ -1,0 +1,38 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  environment: "{{ ansible_test.environment }}"
+
+  collections:
+    - amazon.aws
+    - community.aws
+
+  vars_files:
+    - vars/main.yml
+
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  tasks:
+
+    - name: assert the hostvars are defined with prefix and/or suffix
+      assert:
+        that:
+          - "hostvars[broker_name].{{ vars_prefix }}host_instance_type{{ vars_suffix }} == 'mq.t3.micro'"
+          - "hostvars[broker_name].{{ vars_prefix }}engine_type{{ vars_suffix }} == '{{ engine }}'"
+          - "hostvars[broker_name].{{ vars_prefix }}broker_state{{ vars_suffix }} in ('CREATION_IN_PROGRESS', 'RUNNING')"
+          - "'host_instance_type' not in hostvars[broker_name]"
+          - "'engine_type' not in hostvars[broker_name]"
+          - "'broker_state' not in hostvars[broker_name]"
+          - "'ansible_diff_mode' in hostvars[broker_name]"
+          - "'ansible_forks' in hostvars[broker_name]"
+          - "'ansible_version' in hostvars[broker_name]"
+      vars:
+        vars_prefix: "{{ inventory_prefix | default('') }}"
+        vars_suffix: "{{ inventory_suffix | default('') }}"

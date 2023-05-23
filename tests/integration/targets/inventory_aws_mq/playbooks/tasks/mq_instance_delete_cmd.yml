@@ -1,0 +1,17 @@
+---
+- include_tasks: find_broker.yml
+- name: remove broker instance
+  command: >
+    aws mq delete-broker --broker-id {{ broker_id }}
+  register: delete_broker_result
+  failed_when:
+    - delete_broker_result.failed
+    - >
+      'be deleted while in state [CREATION_IN_PROGRESS]' not in delete_broker_result.stderr and 'Cannot find broker ID' not in delete_broker_result.stderr
+  until:
+    - >
+      'be deleted while in state [CREATION_IN_PROGRESS]' not in delete_broker_result.stderr or 'Cannot find broker ID' in delete_broker_result.stderr
+  retries: 160
+  delay: 60
+  when:
+    - broker_exists

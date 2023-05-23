@@ -1,0 +1,40 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  environment: "{{ ansible_test.environment }}"
+
+  collections:
+    - amazon.aws
+    - community.aws
+
+  vars_files:
+    - vars/main.yml
+
+  # Toggle between the next two blocks, to run the tests with mq modules
+  # from community.aws >= 6.0.0 or command module
+  # module_defaults:
+  #   group/aws:
+  #     aws_access_key: '{{ aws_access_key }}'
+  #     aws_secret_key: '{{ aws_secret_key }}'
+  #     security_token: '{{ security_token | default(omit) }}'
+  #     region: '{{ aws_region }}'
+  environment:
+    AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
+    AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
+    AWS_DEFAULT_REGION: '{{ aws_region }}'
+
+  tasks:
+    - name: refresh inventory to populate cache
+      meta: refresh_inventory
+
+    - name: assert group was populated with inventory but is empty
+      assert:
+        that:
+          - "'aws_mq' in groups"
+          - "groups.aws_mq | length == 1"
+
+    - name: Delete MQ instance
+      include_tasks: tasks/mq_instance_delete_cmd.yml
+      # include_tasks: tasks/mq_instance_delete.yml

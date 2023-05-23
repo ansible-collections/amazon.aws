@@ -1,0 +1,13 @@
+---
+- name: List brokers
+  command: >
+    aws mq  list-brokers
+  register: list_result
+
+- name: Find broker by name, if exists
+  set_fact:
+    broker_exists: "{{ ( broker_name in broker_name_list ) | bool }}"
+    broker_id: "{{ (broker_entry | first)['BrokerId'] | default('', true) }}"
+  vars:
+    broker_name_list: "{{ list_result.stdout | from_json | json_query('BrokerSummaries') | map(attribute='BrokerName') }}"
+    broker_entry: "{{ list_result.stdout | from_json | json_query('BrokerSummaries') | selectattr('BrokerName', '==', broker_name) }}"

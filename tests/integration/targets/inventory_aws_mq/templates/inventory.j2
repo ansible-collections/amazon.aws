@@ -1,0 +1,12 @@
+plugin: amazon.aws.aws_mq
+aws_access_key_id: '{{ aws_access_key }}'
+aws_secret_access_key: '{{ aws_secret_key }}'
+{% if security_token | default(false) %}
+aws_security_token: '{{ security_token }}'
+{% endif %}
+regions:
+  - '{{ aws_region }}'
+{% if inventory_statuses | default(false) %}
+statuses:
+  - CREATION_FAILED
+{% endif %}

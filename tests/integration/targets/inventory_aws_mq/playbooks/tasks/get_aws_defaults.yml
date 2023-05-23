@@ -1,0 +1,14 @@
+---
+- amazon.aws.ec2_vpc_net_info:
+    filters:
+      "is-default": true
+  register: default_vpc_info
+- set_fact:
+    default_vpc: "{{ default_vpc_info.vpcs | map(attribute='id') }}"
+
+- amazon.aws.ec2_security_group_info:
+    filters:
+      vpc-id: "{{ default_vpc }}"
+  register: default_security_group_info
+- set_fact:
+    default_security_groups: "{{ default_security_group_info.security_groups | map(attribute='group_id')  }}"

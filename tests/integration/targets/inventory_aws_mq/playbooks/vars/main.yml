@@ -1,0 +1,6 @@
+---
+broker_name: "{{ resource_prefix }}-activemq"
+engine: "ACTIVEMQ"
+resource_tags:
+  workload_type: other
+aws_inventory_cache_dir: ""

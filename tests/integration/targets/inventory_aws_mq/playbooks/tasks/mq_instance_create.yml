@@ -1,0 +1,10 @@
+---
+- name: Create minimal MQ instance in default VPC and default subnet group
+  community.aws.mq_broker:
+    tags: "{{ resource_tags | default(omit) }}"
+    state: present
+    engine_type: "{{ engine }}"
+    broker_name: '{{ broker_name }}'
+    security_groups: "{{ default_security_groups }}"
+    host_instance_type: 'mq.t3.micro'
+  register: result

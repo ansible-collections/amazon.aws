@@ -1,0 +1,26 @@
+---
+- include_tasks: find_broker.yml
+- block:
+  - name: Get engine versions
+    command: >
+      aws mq  describe-broker-engine-types --engine {{ engine }}
+    register: describe_engine_result
+
+  - name: Select latest engine version
+    set_fact:
+      engine_version: "{{ describe_engine_result.stdout | from_json | json_query('BrokerEngineTypes[0].EngineVersions') | map(attribute='Name') | sort | max }}"
+
+  - name: Create minimal MQ instance in default VPC and default subnet group
+    command: >
+      aws mq create-broker
+        --broker-name {{ broker_name }}
+        --deployment-mode SINGLE_INSTANCE
+        --engine-type {{ engine }}
+        --engine-version {{ engine_version }}
+        {% if resource_tags is defined %}--tags '{{ resource_tags | to_json }}'{% endif %}
+        --host-instance-type mq.t3.micro
+        --users=ConsoleAccess=True,Groups=admin,Password=aODvFQAt4tt1W,Username=master
+        --auto-minor-version-upgrade
+        --no-publicly-accessible
+  when:
+    - not broker_exists

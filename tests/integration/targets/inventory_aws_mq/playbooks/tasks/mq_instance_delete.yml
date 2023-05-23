@@ -1,0 +1,13 @@
+---
+- name: remove broker instance
+  community.aws.mq_broker:
+    state: absent
+    engine_type: "{{ engine }}"
+    broker_name: '{{ broker_name }}'
+  register: delete_result
+  failed_when:
+    - delete_result.get('failed',false)
+    - (delete_result.get('message','')).find('be deleted while in state [CREATION_IN_PROGRESS]') == -1
+  until: (delete_result.get('message','')).find('be deleted while in state [CREATION_IN_PROGRESS]') == -1
+  retries: 150
+  delay:   60

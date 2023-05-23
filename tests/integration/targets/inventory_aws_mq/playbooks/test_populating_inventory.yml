@@ -1,0 +1,17 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  environment: "{{ ansible_test.environment }}"
+
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    - name: assert aws_mq inventory group contains MQ instance created by previous playbook
+      assert:
+        that:
+          - "'aws_mq' in groups"
+          - "groups.aws_mq | length == 1"
+          - "groups.aws_mq.0 == '{{ broker_name }}'"

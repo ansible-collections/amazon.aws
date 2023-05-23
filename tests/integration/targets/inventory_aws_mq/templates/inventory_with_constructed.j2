@@ -1,0 +1,13 @@
+plugin: amazon.aws.aws_mq
+aws_access_key_id: '{{ aws_access_key }}'
+aws_secret_access_key: '{{ aws_secret_key }}'
+{% if security_token | default(false) %}
+aws_security_token: '{{ security_token }}'
+{% endif %}
+regions:
+  - '{{ aws_region }}'
+keyed_groups:
+  - key: tags
+    prefix: tag
+  - key: engine_type
+    prefix: mq
