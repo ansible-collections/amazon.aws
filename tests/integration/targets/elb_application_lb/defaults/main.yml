@@ -2,9 +2,27 @@
 
 resource_short: "{{ '%0.8x'%((16**8) | random(seed=resource_prefix)) }}"
 alb_name: alb-test-{{ resource_short }}
+alb_2_name: alb-test-2-{{ resource_short }}
 tg_name: alb-test-{{ resource_short }}
+tg_2_name: alb-test-2-{{ resource_short }}
 vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
 private_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
 private_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
 public_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
 public_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24
+s3_bucket_name: alb-test-{{ resource_short }}
+
+# Amazon's SDKs don't provide the list of account ID's.  Amazon only provide a
+# web page.  If you want to run the tests outside the US regions you'll need to
+# update this.
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html
+elb_access_log_account_id_map:
+  us-east-1: "127311923021"
+  us-east-2: "033677994240"
+  us-west-1: "027434742980"
+  us-west-2: "797873946194"
+  us-gov-east-1: "190560391635"
+  us-gov-west-1: "048591011584"
+
+
+elb_account_id: '{{ elb_access_log_account_id_map[aws_region] }}'
