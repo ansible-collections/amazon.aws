@@ -1,0 +1,10 @@
+---
+name: changelog and linters
+
+on: [workflow_call]  # allow this workflow to be called from other workflows
+
+jobs:
+  changelog:
+    uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
+  linters:
+    uses: ansible-network/github_actions/.github/workflows/tox-linters.yml@main
