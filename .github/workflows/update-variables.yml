@@ -14,4 +14,4 @@ on:
 
 jobs:
   update-variables:
-    uses: abikouo/github_actions/.github/workflows/update_aws_variables.yml@automate_aws_user_agent_variable
+    uses: ansible-network/github_actions/.github/workflows/update_aws_variables.yml@main
