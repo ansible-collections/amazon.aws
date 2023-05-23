@@ -63,7 +63,15 @@ class ACMServiceManager:
     @AWSRetry.jittered_backoff(delay=5, catch_extra_error_codes=["RequestInProgressException"])
     def list_certificates_with_backoff(self, statuses=None):
         paginator = self.client.get_paginator("list_certificates")
-        kwargs = dict()
+        # `list_certificates` requires explicit key type filter, or it returns only RSA_2048 certificates
+        kwargs = {
+            "Includes": {
+                "keyTypes": [
+                    "RSA_1024", "RSA_2048", "RSA_3072", "RSA_4096",
+                    "EC_prime256v1", "EC_secp384r1", "EC_secp521r1",
+                ],
+            },
+        }
         if statuses:
             kwargs["CertificateStatuses"] = statuses
         return paginator.paginate(**kwargs).build_full_result()["CertificateSummaryList"]
