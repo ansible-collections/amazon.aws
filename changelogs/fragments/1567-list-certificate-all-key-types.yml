@@ -1,0 +1,3 @@
+bugfixes:
+- acm - fixes list_certificates returning only RSA_2048 certificates
+
