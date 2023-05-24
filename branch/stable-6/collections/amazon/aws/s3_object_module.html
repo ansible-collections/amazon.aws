@@ -14,6 +14,8 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
@@ -464,6 +466,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>Key name of the object inside the bucket.</p>
 <p>Can be used to create “virtual directories”, see examples.</p>
 <p>Object key names should not include the leading <code class="docutils literal notranslate"><span class="pre">/</span></code>, see <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html</a> for more information.</p>
+<p>Support for passing the leading <code class="docutils literal notranslate"><span class="pre">/</span></code> has been deprecated and will be removed in a release after 2025-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
