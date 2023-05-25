@@ -182,20 +182,20 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 ARGUMENT_SPEC = dict(
-    state=dict(type="str", choices=['present', 'absent'], default='present'),
-    private_dns_name=dict(required=False, type='str'),
-    supported_ip_address_types=dict(required=False, type='list', default=["ipv4"], choices=["ipv4", "ipv6"]),
-    gateway_load_balancer_arns=dict(required=False, type='list', default=[]),
-    network_load_balancer_arns=dict(required=False, type='list', default=[]),
-    permissions=dict(required=False, type='list', default=[]),
-    purge_permissions=dict(default=False, type='bool'),
-    tags=dict(required=False, type='dict', aliases=['resource_tags']),
-    acceptance_required=dict(default=False, type='bool'),
-    service_id=dict(required=False, type='str'),
+    state=dict(type="str", choices=["present", "absent"], default="present"),
+    private_dns_name=dict(required=False, type="str"),
+    supported_ip_address_types=dict(required=False, type="list", default=["ipv4"], choices=["ipv4", "ipv6"]),
+    gateway_load_balancer_arns=dict(required=False, type="list", default=[]),
+    network_load_balancer_arns=dict(required=False, type="list", default=[]),
+    permissions=dict(required=False, type="list", default=[]),
+    purge_permissions=dict(default=False, type="bool"),
+    tags=dict(required=False, type="dict", aliases=["resource_tags"]),
+    acceptance_required=dict(default=False, type="bool"),
+    service_id=dict(required=False, type="str"),
 )
 
 REQUIRED_IF = [
-    ('state', 'absent', ['service_id']),
+    ("state", "absent", ["service_id"]),
 ]
 
 SUPPORTS_CHECK_MODE = True
@@ -219,13 +219,19 @@ def format_client_params(
     """
 
     params = snake_dict_to_camel_dict(
-        {k: v for k, v in endpoint_service.items() if k not in ['permissions', 'purge_permissions', 'service_id', 'update_needed'] and v is not None},
+        {
+            k: v
+            for k, v in endpoint_service.items()
+            if k not in ["permissions", "purge_permissions", "service_id", "update_needed"] and v is not None
+        },
         capitalize_first=True,
     )
 
     if operation == "create":  # Add create-specific params
         if tags:
-            params["TagSpecifications"] = [{'ResourceType': 'vpc-endpoint-service', 'Tags': ansible_dict_to_boto3_tag_list(tags)}]
+            params["TagSpecifications"] = [
+                {"ResourceType": "vpc-endpoint-service", "Tags": ansible_dict_to_boto3_tag_list(tags)}
+            ]
 
     elif operation == "update":  # Add update-specific params
         params["ServiceId"] = service_id
@@ -234,7 +240,6 @@ def format_client_params(
 
 
 def create_vpc_endpoint_service(module: AnsibleAWSModule, client, create_params: dict) -> dict:
-
     try:
         response = client.create_vpc_endpoint_service_configuration(**create_params)
     except (
@@ -246,7 +251,6 @@ def create_vpc_endpoint_service(module: AnsibleAWSModule, client, create_params:
 
 
 def modify_vpc_endpoint_service(module: AnsibleAWSModule, client, modify_params: dict) -> dict:
-
     try:
         response = client.modify_vpc_endpoint_service_configuration(**modify_params)
     except (
@@ -258,7 +262,6 @@ def modify_vpc_endpoint_service(module: AnsibleAWSModule, client, modify_params:
 
 
 def delete_vpc_endpoint_service(module: AnsibleAWSModule, client, service_id) -> dict:
-
     try:
         response = client.delete_vpc_endpoint_service_configurations(ServiceIds=[service_id])
     except (
@@ -270,22 +273,23 @@ def delete_vpc_endpoint_service(module: AnsibleAWSModule, client, service_id) ->
 
 
 def get_vpc_endpoint_service_details(module: AnsibleAWSModule, client, endpoint_service: dict) -> dict:
-
-    paginator = client.get_paginator('describe_vpc_endpoint_service_configurations')
+    paginator = client.get_paginator("describe_vpc_endpoint_service_configurations")
     service_configurations = []
     for page in paginator.paginate():
-        service_configurations.extend(page['ServiceConfigurations'])
+        service_configurations.extend(page["ServiceConfigurations"])
 
-    endpoint_service_nlba = set(endpoint_service.get('network_load_balancer_arns', []))
-    endpoint_service_glba = set(endpoint_service.get('gateway_load_balancer_arns', []))
+    endpoint_service_nlba = set(endpoint_service.get("network_load_balancer_arns", []))
+    endpoint_service_glba = set(endpoint_service.get("gateway_load_balancer_arns", []))
 
     for service_configuration in service_configurations:
-        if (not endpoint_service['service_id'] and
-            set(service_configuration.get('NetworkLoadBalancerArns', [])) == endpoint_service_nlba and
-                set(service_configuration.get('GatewayLoadBalancerArns', [])) == endpoint_service_glba):
+        if (
+            not endpoint_service["service_id"]
+            and set(service_configuration.get("NetworkLoadBalancerArns", [])) == endpoint_service_nlba
+            and set(service_configuration.get("GatewayLoadBalancerArns", [])) == endpoint_service_glba
+        ):
             return camel_dict_to_snake_dict(service_configuration)
 
-        if endpoint_service.get('service_id') == service_configuration.get('ServiceId'):
+        if endpoint_service.get("service_id") == service_configuration.get("ServiceId"):
             return camel_dict_to_snake_dict(service_configuration)
 
     return None
@@ -302,29 +306,31 @@ def vpc_endpoint_update_needed(existing_endpoint_configuration: dict, new_endpoi
     """
 
     update_endpoint_configuration = {
-        'update_needed': False,
-        'service_id': existing_endpoint_configuration['service_id']
+        "update_needed": False,
+        "service_id": existing_endpoint_configuration["service_id"],
     }
 
-    supported_ip_address_types = existing_endpoint_configuration.get('supported_ip_address_types', [])
-    network_load_balancer_arns = existing_endpoint_configuration.get('network_load_balancer_arns', [])
-    gateway_load_balancer_arns = existing_endpoint_configuration.get('gateway_load_balancer_arns', [])
+    supported_ip_address_types = existing_endpoint_configuration.get("supported_ip_address_types", [])
+    network_load_balancer_arns = existing_endpoint_configuration.get("network_load_balancer_arns", [])
+    gateway_load_balancer_arns = existing_endpoint_configuration.get("gateway_load_balancer_arns", [])
 
-    if existing_endpoint_configuration.get('acceptance_required', False) != new_endpoint_configuration.get('acceptance_required', False):
-        update_endpoint_configuration['update_needed'] = True
+    if existing_endpoint_configuration.get("acceptance_required", False) != new_endpoint_configuration.get(
+        "acceptance_required", False
+    ):
+        update_endpoint_configuration["update_needed"] = True
 
-    update_endpoint_configuration['acceptance_required'] = new_endpoint_configuration.get('acceptance_required', False)
+    update_endpoint_configuration["acceptance_required"] = new_endpoint_configuration.get("acceptance_required", False)
 
-    update_endpoint_configuration['remove_private_dns_name'] = False
+    update_endpoint_configuration["remove_private_dns_name"] = False
 
-    existing_private_dns_name = existing_endpoint_configuration.get('private_dns_name', '') or ''
-    new_private_dns_name = new_endpoint_configuration.get('private_dns_name', '') or ''
+    existing_private_dns_name = existing_endpoint_configuration.get("private_dns_name", "") or ""
+    new_private_dns_name = new_endpoint_configuration.get("private_dns_name", "") or ""
 
     if existing_private_dns_name != new_private_dns_name:
-        update_endpoint_configuration['update_needed'] = True
-        update_endpoint_configuration['private_dns_name'] = new_endpoint_configuration.get('private_dns_name')
-        if new_endpoint_configuration.get('private_dns_name', '') == '':
-            update_endpoint_configuration['remove_private_dns_name'] = True
+        update_endpoint_configuration["update_needed"] = True
+        update_endpoint_configuration["private_dns_name"] = new_endpoint_configuration.get("private_dns_name")
+        if new_endpoint_configuration.get("private_dns_name", "") == "":
+            update_endpoint_configuration["remove_private_dns_name"] = True
 
     #
     # names1: what we have
@@ -333,59 +339,67 @@ def vpc_endpoint_update_needed(existing_endpoint_configuration: dict, new_endpoi
     # to_add = list(set(names1).symmetric_difference(set(names2)) - set(to_remove))
     #
 
-    for field in ['supported_ip_address_types', 'network_load_balancer_arns', 'gateway_load_balancer_arns']:
+    for field in ["supported_ip_address_types", "network_load_balancer_arns", "gateway_load_balancer_arns"]:
         # double protection -- maybe not needed
         if existing_endpoint_configuration.get(field, []) is None:
             existing_endpoint_configuration[field] = []
 
-        update_endpoint_configuration[f'remove_{field}'] = list(set(existing_endpoint_configuration.get(field, [])) - set(new_endpoint_configuration[field]))
-
-        update_endpoint_configuration[f'add_{field}'] = list(
-            set(existing_endpoint_configuration.get(field, [])).symmetric_difference(set(new_endpoint_configuration.get(field, []))) -
-            set(update_endpoint_configuration[f'remove_{field}'])
+        update_endpoint_configuration[f"remove_{field}"] = list(
+            set(existing_endpoint_configuration.get(field, [])) - set(new_endpoint_configuration[field])
         )
 
-        if len(update_endpoint_configuration[f'remove_{field}']) > 0 or len(update_endpoint_configuration[f'add_{field}']) > 0:
-            update_endpoint_configuration['update_needed'] = True
+        update_endpoint_configuration[f"add_{field}"] = list(
+            set(existing_endpoint_configuration.get(field, [])).symmetric_difference(
+                set(new_endpoint_configuration.get(field, []))
+            )
+            - set(update_endpoint_configuration[f"remove_{field}"])
+        )
+
+        if (
+            len(update_endpoint_configuration[f"remove_{field}"]) > 0
+            or len(update_endpoint_configuration[f"add_{field}"]) > 0
+        ):
+            update_endpoint_configuration["update_needed"] = True
 
     return update_endpoint_configuration
 
 
 def get_vpc_endpoint_service_permissions(module: AnsibleAWSModule, client, service_id: str) -> list:
-
-    permissions_paginator = client.get_paginator('describe_vpc_endpoint_service_permissions')
+    permissions_paginator = client.get_paginator("describe_vpc_endpoint_service_permissions")
     permissions_principals = []
     for page in permissions_paginator.paginate(ServiceId=service_id):
-        permissions_principals.extend(page['AllowedPrincipals'])
+        permissions_principals.extend(page["AllowedPrincipals"])
 
-    permissions = list(map(lambda AllowedPrincipal: AllowedPrincipal.get('Principal'), permissions_principals))
+    permissions = list(map(lambda AllowedPrincipal: AllowedPrincipal.get("Principal"), permissions_principals))
     if permissions is None:
         permissions = []
     return permissions
 
 
-def vpc_endpoint_service_permissions_update_needed(service_id: str, existing_permissions: list, new_permissions: list, purge_permissions: bool) -> dict:
-
-    update_permissions = {
-        'update_needed': False,
-        'service_id': service_id
-    }
+def vpc_endpoint_service_permissions_update_needed(
+    service_id: str, existing_permissions: list, new_permissions: list, purge_permissions: bool
+) -> dict:
+    update_permissions = {"update_needed": False, "service_id": service_id}
 
     if purge_permissions:
-        update_permissions['remove_allowed_principals'] = list(set(existing_permissions) - set(new_permissions))
+        update_permissions["remove_allowed_principals"] = list(set(existing_permissions) - set(new_permissions))
     else:
-        update_permissions['remove_allowed_principals'] = []
+        update_permissions["remove_allowed_principals"] = []
 
-    update_permissions['add_allowed_principals'] = list(set(existing_permissions).symmetric_difference(set(new_permissions)) - set(existing_permissions))
+    update_permissions["add_allowed_principals"] = list(
+        set(existing_permissions).symmetric_difference(set(new_permissions)) - set(existing_permissions)
+    )
 
-    if len(update_permissions['remove_allowed_principals']) > 0 or len(update_permissions['add_allowed_principals']) > 0:
-        update_permissions['update_needed'] = True
+    if (
+        len(update_permissions["remove_allowed_principals"]) > 0
+        or len(update_permissions["add_allowed_principals"]) > 0
+    ):
+        update_permissions["update_needed"] = True
 
     return update_permissions
 
 
 def modify_vpc_endpoint_service_permissions(module: AnsibleAWSModule, client, permission_params: list) -> dict:
-
     try:
         response = client.modify_vpc_endpoint_service_permissions(**permission_params)
     except (
@@ -397,7 +411,6 @@ def modify_vpc_endpoint_service_permissions(module: AnsibleAWSModule, client, pe
 
 
 def format_check_mode_response(endpoint_service: dict, tags: dict, delete: bool = False) -> dict:
-
     timestamp = datetime.now().isoformat()
     if delete:
         return {
@@ -409,7 +422,7 @@ def format_check_mode_response(endpoint_service: dict, tags: dict, delete: bool 
         return {
             "creation_date": timestamp,
             "version_id": "",
-            "endpoint_service": dict({'tags': tags}, **endpoint_service),
+            "endpoint_service": dict({"tags": tags}, **endpoint_service),
         }
 
 
@@ -446,51 +459,58 @@ def main():
             else:
                 client_params = format_client_params(module, endpoint_service, tags=tags, operation="create")
                 response = create_vpc_endpoint_service(module, client, client_params)
-                resulting_endpoint_service = camel_dict_to_snake_dict(response.get('ServiceConfiguration'))
-                if 'tags' in resulting_endpoint_service:
-                    resulting_endpoint_service['tags'] = boto3_tag_list_to_ansible_dict(resulting_endpoint_service['tags'])
-                if len(endpoint_service.get('permissions', [])) > 0:
+                resulting_endpoint_service = camel_dict_to_snake_dict(response.get("ServiceConfiguration"))
+                if "tags" in resulting_endpoint_service:
+                    resulting_endpoint_service["tags"] = boto3_tag_list_to_ansible_dict(
+                        resulting_endpoint_service["tags"]
+                    )
+                if len(endpoint_service.get("permissions", [])) > 0:
                     permission_params = {
-                        'ServiceId': response.get('ServiceConfiguration').get('ServiceId'),
-                        'AddAllowedPrincipals': endpoint_service['permissions'],
+                        "ServiceId": response.get("ServiceConfiguration").get("ServiceId"),
+                        "AddAllowedPrincipals": endpoint_service["permissions"],
                     }
                     response_permissions = modify_vpc_endpoint_service_permissions(module, client, permission_params)
-                    resulting_endpoint_service['permissions'] = endpoint_service['permissions']
+                    resulting_endpoint_service["permissions"] = endpoint_service["permissions"]
 
             result["exists"] = True
             result["changed"] = True
-            result['endpoint_service'] = resulting_endpoint_service
+            result["endpoint_service"] = resulting_endpoint_service
 
         else:  # Endpoint service exists, update as needed
             result["exists"] = True
-            service_id = existing_endpoint_service['service_id']
+            service_id = existing_endpoint_service["service_id"]
 
             # configuration changes
             update_endpoint_configuration = vpc_endpoint_update_needed(existing_endpoint_service, endpoint_service)
-            if update_endpoint_configuration.get('update_needed', False):
+            if update_endpoint_configuration.get("update_needed", False):
                 if not module.check_mode:
-                    client_params = format_client_params(module, update_endpoint_configuration, tags=tags, operation="update", service_id=service_id)
+                    client_params = format_client_params(
+                        module, update_endpoint_configuration, tags=tags, operation="update", service_id=service_id
+                    )
                     response = modify_vpc_endpoint_service(module, client, client_params)
                     result["changed"] = True
 
             # permission changes
             update_permissions = vpc_endpoint_service_permissions_update_needed(
                 service_id,
-                get_vpc_endpoint_service_permissions(module, client, service_id), endpoint_service.get('permissions', []),
-                endpoint_service.get('purge_permissions', False)
+                get_vpc_endpoint_service_permissions(module, client, service_id),
+                endpoint_service.get("permissions", []),
+                endpoint_service.get("purge_permissions", False),
             )
-            if update_permissions['update_needed']:
+            if update_permissions["update_needed"]:
                 if not module.check_mode:
-                    client_params = format_client_params(module, update_permissions, operation="update", service_id=service_id)
+                    client_params = format_client_params(
+                        module, update_permissions, operation="update", service_id=service_id
+                    )
                     response_permissions = modify_vpc_endpoint_service_permissions(module, client, client_params)
                     result["changed"] = True
 
             # now we see what we have done
             resulting_endpoint_service = get_vpc_endpoint_service_details(module, client, existing_endpoint_service)
-            if 'tags' in resulting_endpoint_service:
-                resulting_endpoint_service['tags'] = boto3_tag_list_to_ansible_dict(resulting_endpoint_service['tags'])
-            resulting_endpoint_service['permissions'] = get_vpc_endpoint_service_permissions(module, client, service_id)
-            result['endpoint_service'] = resulting_endpoint_service
+            if "tags" in resulting_endpoint_service:
+                resulting_endpoint_service["tags"] = boto3_tag_list_to_ansible_dict(resulting_endpoint_service["tags"])
+            resulting_endpoint_service["permissions"] = get_vpc_endpoint_service_permissions(module, client, service_id)
+            result["endpoint_service"] = resulting_endpoint_service
 
     elif state == "absent":  # Delete endpoint service
         if existing_endpoint_service is None:  # Endpoint service does not exist, can't delete it
@@ -499,7 +519,7 @@ def main():
             if module.check_mode:
                 response = format_check_mode_response(endpoint_service, tags, True)
             else:
-                response = delete_vpc_endpoint_service(module, client, endpoint_service['service_id'])
+                response = delete_vpc_endpoint_service(module, client, endpoint_service["service_id"])
             result["changed"] = True
             result["exists"] = False
             # result.update(camel_dict_to_snake_dict(response))
@@ -507,5 +527,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
