@@ -38,7 +38,8 @@ options:
     type: str
   supported_ip_address_types:
     description:
-      -  The supported IP address types. The possible values are ipv4 and ipv6.
+      -  The supported IP address types.
+    choices: ['ipv4', 'ipv6'].
     required: false
     type: list
   service_id:
