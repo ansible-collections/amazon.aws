@@ -3,7 +3,13 @@
   connection: local
   gather_facts: no
 
-  environment: "{{ ansible_test.environment }}"
+  vars:
+    env_vars:
+      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
+      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
+      AWS_DEFAULT_REGION: '{{ aws_region }}'
+
+  environment: "{{ ansible_test.environment | combine(env_vars) }}"
 
   collections:
     - amazon.aws
@@ -11,19 +17,6 @@
 
   vars_files:
     - vars/main.yml
-
-  # Toggle between the next two blocks, to run the tests with mq modules
-  # from community.aws >= 6.0.0 or command module
-  # module_defaults:
-  #   group/aws:
-  #     aws_access_key: '{{ aws_access_key }}'
-  #     aws_secret_key: '{{ aws_secret_key }}'
-  #     security_token: '{{ security_token | default(omit) }}'
-  #     region: '{{ aws_region }}'
-  environment:
-    AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-    AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-    AWS_DEFAULT_REGION: '{{ aws_region }}'
 
   tasks:
     - name: refresh inventory to populate cache

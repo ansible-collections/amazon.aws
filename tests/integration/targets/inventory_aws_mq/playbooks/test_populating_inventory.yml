@@ -3,7 +3,14 @@
   connection: local
   gather_facts: no
 
-  environment: "{{ ansible_test.environment }}"
+  vars:
+    env_vars:
+      AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
+      AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
+      AWS_DEFAULT_REGION: '{{ aws_region }}'
+      AWS_SECURITY_TOKEN: '{{ security_token }}'
+
+  environment: "{{ ansible_test.environment | combine(env_vars) }}"
 
   vars_files:
     - vars/main.yml
