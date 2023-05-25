@@ -11,7 +11,7 @@ module: ec2_vpc_endpoint_service
 short_description: create, delete VPC endpoint service
 version_added: 6.1.0
 description:
-  - Creates, updates, or deletes AWS Endpoint Services
+  - Creates, updates, or deletes AWS Endpoint Services.
   - For more information see the AWS documentation for VPC endpoint services
     U(https://docs.aws.amazon.com/vpc/latest/privatelink/what-is-privatelink.html).
 options:
