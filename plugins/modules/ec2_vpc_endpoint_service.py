@@ -422,7 +422,7 @@ def main():
 
     # Set initial result values
     result = dict(changed=False, exists=False)
-    client = module.client("ec2")
+    client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
     state = module.params["state"]
     endpoint_service = {
         "private_dns_name": module.params["private_dns_name"],
