@@ -184,7 +184,7 @@ except ImportError:
 ARGUMENT_SPEC = dict(
     state=dict(type="str", choices=['present', 'absent'], default='present'),
     private_dns_name=dict(required=False, type='str'),
-    supported_ip_address_types=dict(required=False, type='list', default=['ipv4']),
+    supported_ip_address_types=dict(required=False, type='list', default=["ipv4"], choices=["ipv4", "ipv6"]),
     gateway_load_balancer_arns=dict(required=False, type='list', default=[]),
     network_load_balancer_arns=dict(required=False, type='list', default=[]),
     permissions=dict(required=False, type='list', default=[]),
