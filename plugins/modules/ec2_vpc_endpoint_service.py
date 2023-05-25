@@ -164,7 +164,6 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-import json
 from datetime import datetime
 from typing import Optional
 
