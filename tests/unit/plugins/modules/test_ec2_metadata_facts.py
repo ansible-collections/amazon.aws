@@ -1,7 +1,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import base64
 import gzip
 import io
 import pytest
@@ -78,30 +77,7 @@ packages: ['httpie']
 --MIMEBOUNDARY--
 """
 
-    return_value = gzip.compress(bytes(base64.b64encode(user_data)))
-    m_fetch_url.return_value = (io.BytesIO(return_value), {"status": 200})
-
-    assert ec2_instance._fetch("http://169.254.169.254/latest/user-data") == user_data.decode("utf-8")
-
-
-@patch(module_name + ".fetch_url")
-def test__fetch_user_data_base64_encoded(m_fetch_url, ec2_instance):
-    user_data = b"""Content-Type: multipart/mixed; boundary="MIMEBOUNDARY"
-MIME-Version: 1.0
-
---MIMEBOUNDARY
-Content-Transfer-Encoding: 7bit
-Content-Type: text/cloud-config
-Mime-Version: 1.0
-
-packages: ['httpie']
-
---MIMEBOUNDARY--
-"""
-
-    return_value = bytes(base64.b64encode(user_data))
-    m_fetch_url.return_value = (io.BytesIO(return_value), {"status": 200})
-
+    m_fetch_url.return_value = (io.BytesIO(gzip.compress(user_data)), {"status": 200})
     assert ec2_instance._fetch("http://169.254.169.254/latest/user-data") == user_data.decode("utf-8")
 
 
@@ -121,5 +97,4 @@ packages: ['httpie']
 """
 
     m_fetch_url.return_value = (io.BytesIO(user_data), {"status": 200})
-
     assert ec2_instance._fetch("http://169.254.169.254/latest/user-data") == user_data.decode("utf-8")

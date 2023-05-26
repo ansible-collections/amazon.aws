@@ -435,12 +435,10 @@ ansible_facts:
 """
 
 import json
-import locale
 import re
 import socket
 import time
 import zlib
-import base64
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
@@ -490,37 +488,25 @@ class Ec2Metadata:
     def decode_user_data(self, data):
         is_compressed = False
 
-        # Get the current locale's encoding
-        current_encoding = locale.getpreferredencoding()
-
         # Check if data is compressed using zlib header
         if data.startswith(b"\x78\x9c") or data.startswith(b"\x1f\x8b"):
             is_compressed = True
 
-        if is_compressed:
-            # Data is compressed, decompress and decode
-            try:
-                # Decompress using zlib
-                decompressed_data = zlib.decompress(data, zlib.MAX_WBITS | 32).decode(current_encoding)
-            except zlib.error:
-                # Unable to decompress, return original data
-                return data.decode(current_encoding)
-
-            try:
-                # Attempt to decode using base64
-                decoded_data = base64.b64decode(decompressed_data)
-                return decoded_data.decode(current_encoding)
-            except:
-                # Unable to decode using base64, return as bytes
-                return decompressed_data
-        else:
-            # Data is not compressed, decode data using base64
-            try:
-                decoded_data = base64.b64decode(data)
-                return decoded_data.decode(current_encoding)
-            except:
-                # Unable to decode using base64, return as string
-                return data.decode(current_encoding)
+        try:
+            if is_compressed:
+                # Data is compressed, attempt decompression and decode using UTF-8
+                decoded_data = zlib.decompress(data, zlib.MAX_WBITS | 32).decode("utf-8")
+            else:
+                # Data is not compressed, decode using UTF-8
+                decoded_data = data.decode("utf-8")
+            return decoded_data
+        except zlib.error:
+            # Unable to decompress, return original data
+            return data.decode("utf-8")
+        except UnicodeDecodeError:
+            # Decoding as UTF-8 failed, return data without raising an error
+            self.module.warn("Decoding user-data as UTF-8 failed, return data as is ignoring any error")
+            return data.decode("utf-8", errors="ignore")
 
     def _fetch(self, url):
         encoded_url = quote(url, safe="%/:=&?~#+!$,;'@()*[]")
