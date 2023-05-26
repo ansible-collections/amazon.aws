@@ -1,0 +1,32 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "Make instance in the testing subnet created in the test VPC"
+    ec2_instance:
+      state: present
+      name: "{{ ec2_instance_name }}"
+      image_id: "{{ ec2_ami_id }}"
+      availability_zone: '{{ subnet_b_az }}'
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      instance_type: "{{ ec2_instance_type }}"
+      wait: false
+
+  - name: "Gather {{ ec2_instance_name }} info"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ ec2_instance_name }}"
+      include_attributes:
+        - instanceType
+    register: _instance_info
+
+  - assert:
+      that:
+        - _instance_info.instances | length > 0
+        - '"attributes" in _instance_info.instances[0]'
+        - _instance_info.instances[0].attributes.instance_type.value == ec2_instance_type

@@ -1,0 +1,4 @@
+time=1m
+cloud/aws
+ec2_instance_info
+ec2_instance
