@@ -44,7 +44,7 @@ options:
     type: list
     elements: str
     aliases: ['attributes']
-    version_added: 6.0.2
+    version_added: 6.1.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -529,7 +529,7 @@ instances:
                         'value': True
                     }
                 }
-            version_added: 6.0.2
+            version_added: 6.1.0
 """
 
 import datetime
