@@ -1510,16 +1510,19 @@ def change_network_attachments(instance, params):
         # network.interfaces can create the need to attach new interfaces
         old_ids = [inty["NetworkInterfaceId"] for inty in instance["NetworkInterfaces"]]
         to_attach = set(new_ids) - set(old_ids)
-        for eni_id in to_attach:
-            try:
-                client.attach_network_interface(
-                    aws_retry=True,
-                    DeviceIndex=new_ids.index(eni_id),
-                    InstanceId=instance["InstanceId"],
-                    NetworkInterfaceId=eni_id,
-                )
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}")
+        if not module.check_mode:
+            for eni_id in to_attach:
+                try:
+                    client.attach_network_interface(
+                        aws_retry=True,
+                        DeviceIndex=new_ids.index(eni_id),
+                        InstanceId=instance["InstanceId"],
+                        NetworkInterfaceId=eni_id,
+                    )
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(
+                        e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}"
+                    )
         return bool(len(to_attach))
     return False
 
