@@ -507,6 +507,9 @@ class Ec2Metadata:
                 return self._decode(decompressed)
             except zlib.error:
                 # Unable to decompress, return original data
+                self.module.warn(
+                    "Unable to decompress user-data using zlib, attempt to decode original user-data as UTF-8"
+                )
                 return self._decode(data)
         else:
             # Data is not compressed, decode using UTF-8
