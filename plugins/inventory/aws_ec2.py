@@ -580,7 +580,6 @@ class InventoryModule(AWSInventoryBase):
         :param hostnames: a list of hostname destination variables
         :return all the candidats matching the expectation
         """
-
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
