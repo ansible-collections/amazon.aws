@@ -484,7 +484,9 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 ``use_ssm_inventory``
 ---------------------
 
-``use_ssm_inventory: True`` will include SSM inventory variables into hostvars for ssm-configured instances.
+``use_ssm_inventory: True`` will allow to fetch EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars. By leveraging the SSM inventory data, the ``use_ssm_inventory`` option provides additional details and attributes about the EC2 instances in your inventory.
+These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.
+
 
 ``cache``
 ---------
