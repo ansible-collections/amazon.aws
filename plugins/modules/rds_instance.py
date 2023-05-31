@@ -26,11 +26,11 @@ options:
   # General module options
     state:
         description:
-          - Whether the snapshot should exist or not. I(rebooted) is not idempotent and will leave the DB instance in a running state
+          - Desired state of the RDS Instance.
+          - I(state=rebooted) is not idempotent and will leave the DB instance in a running state
             and start it prior to rebooting if it was stopped. I(present) will leave the DB instance in the current running/stopped state,
             (running if creating the DB instance).
-          - I(state=running) and I(state=started) are synonyms, as are I(state=rebooted) and I(state=restarted). Note - rebooting the instance
-            is not idempotent.
+          - I(state=running) and I(state=started) are synonyms, as are I(state=rebooted) and I(state=restarted).
         choices: ['present', 'absent', 'terminated', 'running', 'started', 'stopped', 'rebooted', 'restarted']
         default: 'present'
         type: str
