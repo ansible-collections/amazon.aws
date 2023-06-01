@@ -134,7 +134,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: create broker (if missing) with minimal required parameters
-  amazon.aws.mq_broker:
+  community.aws.mq_broker:
     broker_name: "{{ broker_name }}"
     security_groups:
       - sg_xxxxxxx
@@ -142,17 +142,20 @@ EXAMPLES = r"""
       - subnet_xxx
       - subnet_yyy
     register: result
+
 - set_fact:
     broker_id: "{{ result.broker['BrokerId'] }}"
+
 - name: use mq_broker_info to wait until broker is ready
-  amazon.aws.mq_broker_info:
+  community.aws.mq_broker_info:
     broker_id: "{{ broker_id }}"
   register: result
   until: "result.broker['BrokerState'] == 'RUNNING'"
   retries: 15
   delay:   60
+
 - name: create or update broker with almost all parameter set including credentials
-  amazon.aws.mq_broker:
+  community.aws.mq_broker:
     broker_name: "my_broker_2"
     state: present
     deployment_mode: 'ACTIVE_STANDBY_MULTI_AZ'
@@ -183,12 +186,14 @@ EXAMPLES = r"""
     host_instance_type: 'mq.t3.micro'
     enable_audit_log: true
     enable_general_log: true
+
 - name: reboot a broker
-  amazon.aws.mq_broker:
+  community.aws.mq_broker:
     broker_name: "my_broker_2"
     state: restarted
+
 - name: delete a broker
-  amazon.aws.mq_broker:
+  community.aws.mq_broker:
     broker_name: "my_broker_2"
     state: absent
 """

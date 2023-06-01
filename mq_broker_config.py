@@ -44,17 +44,19 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: send new XML config to broker relying on credentials from environment
-  amazon.aws.mq_broker_config:
+  community.aws.mq_broker_config:
     broker_id: "aws-mq-broker-id"
     config_xml: "{{ lookup('file', 'activemq.xml' )}}"
     region: "{{ aws_region }}"
+
 - name: send new XML config to broker and reboot if necessary
-  amazon.aws.mq_broker_config:
+  community.aws.mq_broker_config:
     broker_id: "aws-mq-broker-id"
     config_xml: "{{ lookup('file', 'activemq2.xml' )}}"
     reboot: true
+
 - name: send new broker config and set all credentials explicitly
-  amazon.aws.mq_broker_config:
+  community.aws.mq_broker_config:
     broker_id: "{{ broker_id }}"
     config_xml: "{{ lookup('file', 'activemq3.xml')}}"
     config_description: "custom description for configuration object"
@@ -129,7 +131,7 @@ def create_and_assign_config(conn, module, broker_id, cfg_id, cfg_xml_encoded):
     if "config_description" in module.params and module.params["config_description"]:
         kwargs["Description"] = module.params["config_description"]
     else:
-        kwargs["Description"] = "Updated through amazon.aws.mq_broker_config ansible module"
+        kwargs["Description"] = "Updated through community.aws.mq_broker_config ansible module"
     #
     try:
         c_response = conn.update_configuration(**kwargs)

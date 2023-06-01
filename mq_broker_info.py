@@ -31,11 +31,12 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: get current broker settings by id
-  amazon.aws.mq_broker_info:
+  community.aws.mq_broker_info:
     broker_id: "aws-mq-broker-id"
   register: broker_info
+
 - name: get current broker settings by name setting all credential parameters explicitly
-  amazon.aws.mq_broker_info:
+  community.aws.mq_broker_info:
     broker_name: "aws-mq-broker-name"
   register: broker_info
 """

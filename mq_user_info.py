@@ -50,20 +50,23 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: get all users as list - relying on environment for API credentials
-  amazon.aws.mq_user_info:
+  community.aws.mq_user_info:
     broker_id: "aws-mq-broker-id"
     max_results: 50
   register: result
+
 - name: get users as dict - explicitly specifying all credentials
-  amazon.aws.mq_user_info:
+  community.aws.mq_user_info:
     broker_id: "aws-mq-broker-id"
   register: result
+
 - name: get list of users to decide which may need to be deleted
-  amazon.aws.mq_user_info:
+  community.aws.mq_user_info:
     broker_id: "aws-mq-broker-id"
     skip_pending_delete: true
+
 - name: get list of users to decide which may need to be created
-  amazon.aws.mq_user_info:
+  community.aws.mq_user_info:
     broker_id: "aws-mq-broker-id"
     skip_pending_create: true
 """
