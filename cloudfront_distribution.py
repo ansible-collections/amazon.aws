@@ -2316,7 +2316,8 @@ class CloudFrontValidationManager(object):
 
     def wait_until_processed(self, client, wait_timeout, distribution_id, caller_reference):
         if distribution_id is None:
-            distribution_id = self.validate_distribution_from_caller_reference(caller_reference=caller_reference)["Id"]
+            distribution = self.validate_distribution_from_caller_reference(caller_reference=caller_reference)
+            distribution_id = distribution["Distribution"]["Id"]
 
         try:
             waiter = client.get_waiter("distribution_deployed")
