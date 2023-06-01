@@ -51,6 +51,27 @@
       assert:
         that:
           - event_rule_input_transformer_output.changed
+      
+    - name: Create cloudwatch event rule with input transformer
+      cloudwatchevent_rule:
+        name: "{{ input_transformer_event_name }}"
+        description: "Event rule with input transformer configuration"
+        state: present
+        event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input_transformer:
+              input_paths_map:
+                instance: "$.detail.instance-id"
+                state: "$.detail.state"
+              input_template: "<instance> is in state <state>"
+      register: event_rule_input_transformer_output
+
+    - name: Assert that input transformer event rule was created
+      assert:
+        that:
+          - not event_rule_input_transformer_output.changed
 
     - name: Create cloudwatch event rule with inputs
       cloudwatchevent_rule:

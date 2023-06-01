@@ -435,7 +435,7 @@ class CloudWatchEventRuleManager:
         remote_targets = self.rule.list_targets()
 
         # The self.targets have extra parameters, so scrub is used to
-        # delete extra parameters.
+        # keys with none values must be scrubbed off of self.targets 
         temp = []
         for t in self.targets:
             temp.append(scrub_none_parameters(t))
