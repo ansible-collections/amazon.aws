@@ -774,7 +774,7 @@ class InventoryModule(AWSInventoryBase):
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
         use_ssm_inventory = self.get_option("use_ssm_inventory")
 
-        if hostnames and not all(isinstance(element, dict | str) for element in hostnames):
+        if not all(isinstance(element, (dict, str)) for element in hostnames):
             self.fail_aws("hostnames should be a list of dict and str.")
 
         if self.get_option("include_extra_api_calls"):
