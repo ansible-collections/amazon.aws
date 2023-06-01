@@ -71,7 +71,7 @@
     - name: Assert that no changes were made to the rule
       assert:
         that:
-          - event_rule_input_transformer_output.changed == False
+          - 'not event_rule_input_transformer_output.changed'
 
     - name: Create cloudwatch event rule with inputs
       cloudwatchevent_rule:
