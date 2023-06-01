@@ -181,7 +181,6 @@ targets:
 """
 
 import json
-import q
 
 try:
     import botocore
