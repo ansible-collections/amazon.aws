@@ -52,7 +52,7 @@
         that:
           - event_rule_input_transformer_output.changed
       
-    - name: Create cloudwatch event rule with input transformer
+    - name: Create cloudwatch event rule with input transformer (idempotent)
       cloudwatchevent_rule:
         name: "{{ input_transformer_event_name }}"
         description: "Event rule with input transformer configuration"
@@ -68,7 +68,7 @@
               input_template: "<instance> is in state <state>"
       register: event_rule_input_transformer_output
 
-    - name: Assert that input transformer event rule was created
+    - name: Assert that no changes were made to the rule
       assert:
         that:
           - not event_rule_input_transformer_output.changed
