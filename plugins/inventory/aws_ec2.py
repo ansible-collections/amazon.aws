@@ -775,7 +775,7 @@ class InventoryModule(AWSInventoryBase):
         use_ssm_inventory = self.get_option("use_ssm_inventory")
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
-            self.fail_aws("hostnames should be a list of dict and str.")
+            self.fail_aws("Hostnames should be a list of dict and str.")
 
         if self.get_option("include_extra_api_calls"):
             self.display.deprecate(
