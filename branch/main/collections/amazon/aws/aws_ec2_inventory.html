@@ -408,9 +408,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostnames"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostnames"><strong>hostnames</strong></p>
-<a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<a class="ansibleOptionLink" href="#parameter-hostnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list in order of precedence for hostname variables.</p>
+<p>The elements of the list can be a dict with the keys mentioned below or a string.</p>
+<p>Can be one of the options specified in <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
+<p>If value provided does not exist in the above options, it will be used as a literal string.</p>
+<p>To use tags as hostnames use the syntax <a class="reference external" href="tag:Name=Value">tag:Name=Value</a> to use the hostname Name_Value, or <a class="reference external" href="tag:Name">tag:Name</a> to use the value of the Name tag.</p>
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -419,9 +423,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-hostnames/name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the host.</p>
-<p>Can be one of the options specified in <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
-<p>To use tags as hostnames use the syntax <a class="reference external" href="tag:Name=Value">tag:Name=Value</a> to use the hostname Name_Value, or <a class="reference external" href="tag:Name">tag:Name</a> to use the value of the Name tag.</p>
-<p>If value provided does not exist in the above options, it will be used as a literal string.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
