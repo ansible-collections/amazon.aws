@@ -32,16 +32,17 @@ options:
   hostnames:
     description:
       - A list in order of precedence for hostname variables.
+      - The elements of the list can be a dict with the keys mentioned below or a string.
+      - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+      - If value provided does not exist in the above options, it will be used as a literal string.
+      - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
     type: list
-    elements: dict
+    elements: raw
     default: []
     suboptions:
       name:
         description:
           - Name of the host.
-          - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-          - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
-          - If value provided does not exist in the above options, it will be used as a literal string.
         type: str
         required: True
       prefix:
@@ -772,6 +773,9 @@ class InventoryModule(AWSInventoryBase):
         hostvars_suffix = self.get_option("hostvars_suffix")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
         use_ssm_inventory = self.get_option("use_ssm_inventory")
+
+        if not all(isinstance(element, (dict, str)) for element in hostnames):
+            self.fail_aws("Hostnames should be a list of dict and str.")
 
         if self.get_option("include_extra_api_calls"):
             self.display.deprecate(

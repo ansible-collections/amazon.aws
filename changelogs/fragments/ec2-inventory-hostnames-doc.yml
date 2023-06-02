@@ -1,0 +1,2 @@
+trivial:
+  - "Module documetation fix for hostnames argument. It can be list of str and dict."
