@@ -1260,7 +1260,7 @@ def build_top_level_options(params):
             msg="You must include an image_id or image.id parameter to create an instance, or use a launch_template."
         )
 
-    if params.get("key_name") is not None:
+    if params.get("key_name") not in (None, ""):
         spec["KeyName"] = params.get("key_name")
 
     spec.update(build_userdata(params))
