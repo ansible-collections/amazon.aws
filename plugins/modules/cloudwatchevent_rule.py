@@ -438,7 +438,7 @@ class CloudWatchEventRuleManager:
         # keys with none values must be scrubbed off of self.targets
         temp = []
         for t in self.targets:
-            if t["input_transformer"]["input_template"] != None:
+            if t["input_transformer"] != None and t["input_transformer"]["input_template"] != None:
                 # The remote_targets contain quotes, so add
                 # quotes to temp
                 val = t["input_transformer"]["input_template"]
