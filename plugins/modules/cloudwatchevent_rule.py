@@ -181,6 +181,7 @@ targets:
 """
 
 import json
+import q
 
 try:
     import botocore
@@ -438,6 +439,11 @@ class CloudWatchEventRuleManager:
         # keys with none values must be scrubbed off of self.targets
         temp = []
         for t in self.targets:
+            if t["input_transformer"]["input_template"] != None:
+                # The remote_targets contain quotes, so add
+                # quotes to temp
+                val = t["input_transformer"]["input_template"]
+                t["input_transformer"]["input_template"] = "\"" + val + "\""
             temp.append(scrub_none_parameters(t))
         self.targets = temp
 
