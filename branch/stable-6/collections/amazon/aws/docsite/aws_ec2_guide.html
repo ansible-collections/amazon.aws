@@ -547,7 +547,8 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 </section>
 <section id="use-ssm-inventory">
 <h2><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code><a class="headerlink" href="#use-ssm-inventory" title="Permalink to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory:</span> <span class="pre">True</span></code> will include SSM inventory variables into hostvars for ssm-configured instances.</p>
+<p><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory:</span> <span class="pre">True</span></code> enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars. By leveraging the SSM inventory data, the <code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code> option provides additional details and attributes about the EC2 instances in your inventory.
+These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.</p>
 </section>
 <section id="cache">
 <h2><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Permalink to this heading"></a></h2>

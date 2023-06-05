@@ -746,7 +746,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-use_ssm_inventory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 6.0.0</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Add SSM inventory information into hostvars.</p>
+<td><div class="ansible-option-cell"><p>Enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars.</p>
+<p>By leveraging the SSM inventory data, the <em>use_ssm_inventory</em> option provides additional details and attributes about the EC2 instances in your inventory. These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
