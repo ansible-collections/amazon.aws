@@ -905,9 +905,9 @@ def get_properties(autoscaling_group):
         tg_chunk_size = 20
         properties["target_group_names"] = []
         tg_chunks = [
-            properties["target_group_arns"][i : i + tg_chunk_size]
+            properties["target_group_arns"][i: i + tg_chunk_size]
             for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
-        ]
+        ]  # fmt: skip
         for chunk in tg_chunks:
             tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
             properties["target_group_names"].extend([tg["TargetGroupName"] for tg in tg_result["TargetGroups"]])
