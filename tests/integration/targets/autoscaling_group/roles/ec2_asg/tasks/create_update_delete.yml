@@ -476,8 +476,8 @@
 
     # Target group names have max length of 32 characters
   - set_fact:
-      tg1_name: "{{ (resource_prefix + '-tg1' ) | regex_search('(.{1,32})$') }}"
-      tg2_name: "{{ (resource_prefix + '-tg2' ) | regex_search('(.{1,32})$') }}"
+      tg1_name: "ansible-test-{{tiny_prefix}}-asg-t1"
+      tg2_name: "ansible-test-{{tiny_prefix}}-asg-t2"
   - name: create target group 1
     elb_target_group:
       name: '{{ tg1_name }}'
