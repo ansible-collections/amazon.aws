@@ -901,12 +901,18 @@ def get_properties(autoscaling_group):
     if properties["target_group_arns"]:
         elbv2_connection = module.client("elbv2")
         tg_paginator = elbv2_connection.get_paginator("describe_target_groups")
-        tg_result = tg_paginator.paginate(TargetGroupArns=properties["target_group_arns"]).build_full_result()
-        target_groups = tg_result["TargetGroups"]
+        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
+        tg_chunk_size = 20
+        properties["target_group_names"] = []
+        tg_chunks = [
+            properties["target_group_arns"][i : i + tg_chunk_size]
+            for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
+        ]
+        for chunk in tg_chunks:
+            tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
+            properties["target_group_names"].extend([tg["TargetGroupName"] for tg in tg_result["TargetGroups"]])
     else:
-        target_groups = []
-
-    properties["target_group_names"] = [tg["TargetGroupName"] for tg in target_groups]
+        properties["target_group_names"] = []
 
     return properties
 
