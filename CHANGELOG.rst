@@ -5,6 +5,27 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.5.1
+======
+
+Release Summary
+---------------
+
+This release brings few bugfixes.
+
+
+Bugfixes
+--------
+
+- autoscaling_group - fix ValidationError when describing an autoscaling group that has more than 20 target groups attached to it by breaking the request into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+- autoscaling_group_info - fix ValidationError when describing an autoscaling group that has more than 20 target groups attached to it by breaking the request into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+- aws_account_attribute - raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
+- aws_secret -  raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
+- aws_service_ip_ranges raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
+- aws_ssm - raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
+- ec2_instance - fix check_mode issue when adding network interfaces (https://github.com/ansible-collections/amazon.aws/issues/1403).
+- elb_application_lb - fix missing attributes on creation of ALB. The ``create_or_update_alb()`` was including ALB-specific attributes when updating an existing ALB but not when creating a new ALB (https://github.com/ansible-collections/amazon.aws/issues/1510).
+
 v5.5.0
 ======
 

@@ -1,5 +1,0 @@
-bugfixes:
-- aws_account_attribute - raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
-- aws_secret -  raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
-- aws_service_ip_ranges raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
-- aws_ssm - raise correct ``AnsibleLookupError`` rather than ``AnsibleError`` (https://github.com/ansible-collections/amazon.aws/issues/1528).
