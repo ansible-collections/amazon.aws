@@ -415,12 +415,25 @@ def find_asgs(conn, module, name=None, tags=None):
             if asg.get('target_group_arns'):
                 if elbv2:
                     try:
-                        tg_paginator = elbv2.get_paginator('describe_target_groups')
-                        tg_result = tg_paginator.paginate(TargetGroupArns=asg['target_group_arns']).build_full_result()
-                        asg['target_group_names'] = [tg['TargetGroupName'] for tg in tg_result['TargetGroups']]
-                    except is_boto3_error_code('TargetGroupNotFound'):
-                        asg['target_group_names'] = []
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+                        tg_paginator = elbv2.get_paginator("describe_target_groups")
+                        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
+                        tg_chunk_size = 20
+                        asg["target_group_names"] = []
+                        tg_chunks = [
+                            asg["target_group_arns"][i: i + tg_chunk_size]
+                            for i in range(0, len(asg["target_group_arns"]), tg_chunk_size)
+                        ]
+                        for chunk in tg_chunks:
+                            tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
+                            asg["target_group_names"].extend(
+                                [tg["TargetGroupName"] for tg in tg_result["TargetGroups"]]
+                            )
+                    except is_boto3_error_code("TargetGroupNotFound"):
+                        asg["target_group_names"] = []
+                    except (
+                        botocore.exceptions.ClientError,
+                        botocore.exceptions.BotoCoreError,
+                    ) as e:  # pylint: disable=duplicate-except
                         module.fail_json_aws(e, msg="Failed to describe Target Groups")
             else:
                 asg['target_group_names'] = []
