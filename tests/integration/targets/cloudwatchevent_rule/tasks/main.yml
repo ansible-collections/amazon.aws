@@ -51,7 +51,7 @@
       assert:
         that:
           - event_rule_input_transformer_output.changed
-      
+
     - name: Create cloudwatch event rule with input transformer (idempotent)
       cloudwatchevent_rule:
         name: "{{ input_transformer_event_name }}"
