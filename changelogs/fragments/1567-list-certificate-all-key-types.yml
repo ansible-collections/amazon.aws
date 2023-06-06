@@ -1,0 +1,2 @@
+bugfixes:
+- module_utils.acm - fixes list_certificates returning only RSA_2048 certificates (https://github.com/ansible-collections/amazon.aws/issues/1567).
