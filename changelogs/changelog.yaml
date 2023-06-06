@@ -1698,3 +1698,37 @@ releases:
       name: lambda_layer_info
       namespace: ''
     release_date: '2023-05-04'
+  5.6.0:
+    changes:
+      bugfixes:
+      - autoscaling_group - fix ValidationError when describing an autoscaling group
+        that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - autoscaling_group_info - fix ValidationError when describing an autoscaling
+        group that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - aws_account_attribute - raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_secret -  raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_service_ip_ranges raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_ssm - raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - ec2_instance - fix check_mode issue when adding network interfaces (https://github.com/ansible-collections/amazon.aws/issues/1403).
+      - elb_application_lb - fix missing attributes on creation of ALB. The ``create_or_update_alb()``
+        was including ALB-specific attributes when updating an existing ALB but not
+        when creating a new ALB (https://github.com/ansible-collections/amazon.aws/issues/1510).
+      release_summary: 'This release brings some minor changes, bugfixes.
+
+        '
+    fragments:
+    - 1510-elb_application_lb-fix-alb-specific-attributes-not-added-on-create.yml
+    - 1528-lookup-error.yml
+    - 1578-rds-instance-docs.yml
+    - 1593-autoscaling_group_info-20-target-groups-per-call.yml
+    - ec2_instance-eni-attach-idempotency.yml
+    - endpoint.yml
+    - release-summary.yml
+    - test-reqs.yml
+    release_date: '2023-06-06'
