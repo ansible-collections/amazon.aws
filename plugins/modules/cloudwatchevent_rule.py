@@ -441,7 +441,7 @@ class CloudWatchEventRuleManager:
                 # The remote_targets contain quotes, so add
                 # quotes to temp
                 val = t["input_transformer"]["input_template"]
-                t["input_transformer"]["input_template"] = "\"" + val + "\""
+                t["input_transformer"]["input_template"] = '"' + val + '"'
             temp.append(scrub_none_parameters(t))
         self.targets = temp
 
