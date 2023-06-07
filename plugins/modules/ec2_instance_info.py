@@ -44,7 +44,7 @@ options:
     type: list
     elements: str
     aliases: ['attributes']
-    version_added: 6.1.0
+    version_added: 6.2.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
