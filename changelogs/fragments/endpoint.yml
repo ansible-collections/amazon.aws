@@ -1,2 +1,0 @@
-trivial:
-- ec2_vpc_endpoint - don't assume an endpoint we might not have created has no routes attached.
