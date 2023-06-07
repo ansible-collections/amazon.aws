@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>amazon.aws.s3_object module – Manage objects in S3 &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="amazon.aws.s3_object_info module – Gather information about objects in S3" href="s3_object_info_module.html" />
+    <link rel="prev" title="amazon.aws.s3_bucket module – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID" href="s3_bucket_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Amazon.Aws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#changelog">Changelog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">amazon.aws.s3_object module – Manage objects in S3</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/s3_object.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-amazon-aws-s3-object-module"></span><section id="amazon-aws-s3-object-module-manage-objects-in-s3">
+<h1>amazon.aws.s3_object module – Manage objects in S3<a class="headerlink" href="#amazon-aws-s3-object-module-manage-objects-in-s3" title="Permalink to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 6.1.0).</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.s3_object</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>This module allows the user to manage the objects and directories within S3 buckets. Includes support for creating and deleting objects and directories, retrieving objects as files or strings, generating download links and copying objects that are already stored in Amazon S3.</p></li>
+<li><p>S3 buckets can be created or deleted using the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p></li>
+<li><p>Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.</p></li>
+<li><p>When using non-AWS services, <em>endpoint_url</em> should be specified.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module has a corresponding <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/plugins/action.html#action-plugins" title="(in Ansible vdevel)"><span class="xref std std-ref">action plugin</span></a>.</p>
+</div>
+</section>
+<section id="requirements">
+<span id="ansible-collections-amazon-aws-s3-object-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>python &gt;= 3.6</p></li>
+<li><p>boto3 &gt;= 1.22.0</p></li>
+<li><p>botocore &gt;= 1.25.0</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-access-key"></span><strong>access_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS access key ID.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_CA_BUNDLE</span></code> environment variable may also be used.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-config"><strong>aws_config</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
+<p>Parameters can be found in the AWS documentation <a class="reference external" href="https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config">https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-bucket"><strong>bucket</strong></p>
+<a class="ansibleOptionLink" href="#parameter-bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Bucket name.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ceph"></div>
+<div class="ansibleOptionAnchor" id="parameter-rgw"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-rgw"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-ceph"></span><strong>ceph</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ceph" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: rgw</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enable API compatibility with Ceph RGW.</p>
+<p>It takes into account the S3 API subset working with Ceph in order to provide the same module behaviour where possible.</p>
+<p>Requires <em>endpoint_url</em> if <em>ceph=true</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-content"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-content"><strong>content</strong></p>
+<a class="ansibleOptionLink" href="#parameter-content" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 1.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The content to <code class="docutils literal notranslate"><span class="pre">put</span></code> into an object.</p>
+<p>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.</p>
+<p>To send binary data, use the <em>content_base64</em> parameter instead.</p>
+<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-content_base64"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-content-base64"><strong>content_base64</strong></p>
+<a class="ansibleOptionLink" href="#parameter-content_base64" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 1.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The base64-encoded binary data to <code class="docutils literal notranslate"><span class="pre">put</span></code> into an object.</p>
+<p>Use this if you need to put raw binary data, and don’t forget to encode in base64.</p>
+<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-copy_src"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src"><strong>copy_src</strong></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 2.0.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The source details of the object to copy.</p>
+<p>Required if <em>mode=copy</em>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-copy_src/bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-bucket"><strong>bucket</strong></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src/bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the source bucket.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-copy_src/object"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-object"><strong>object</strong></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src/object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>key name of the source object.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-copy_src/version_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-version-id"><strong>version_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src/version_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>version ID of the source object.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Use a <code class="docutils literal notranslate"><span class="pre">botocore.endpoint</span></code> logger to parse the unique (rather than total) <code class="docutils literal notranslate"><span class="pre">&quot;resource:action&quot;</span></code> API calls made during a task, outputing the set to the resource_actions key in the task results. Use the <code class="docutils literal notranslate"><span class="pre">aws_resource_action</span></code> callback to output to total list made during a playbook.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ANSIBLE_DEBUG_BOTOCORE_LOGS</span></code> environment variable may also be used.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-dest"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-dest"><strong>dest</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The destination file path when downloading an object/key when <em>mode=get</em>.</p>
+<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">get</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-dualstack"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-dualstack"><strong>dualstack</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dualstack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</p>
+<p>Support for passing <em>dualstack</em> and <em>endpoint_url</em> at the same time has been deprecated, the dualstack endpoints are automatically configured using the configured <em>region</em>. Support will be removed in a release after 2024-12-01.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-encrypt"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encrypt"><strong>encrypt</strong></p>
+<a class="ansibleOptionLink" href="#parameter-encrypt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Asks for server-side encryption of the objects when <em>mode=put</em> or <em>mode=copy</em>.</p>
+<p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">copy</span></code>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-encryption_kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-kms-key-id"><strong>encryption_kms_key_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-encryption_kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>.</p>
+<p>Ignored if <em>encryption</em> is not <code class="docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-encryption_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-mode"><strong>encryption_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-encryption_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The encryption mode to use if <em>encrypt=true</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;AES256&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aws:kms&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The  <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
+<p>The <em>ec2_url</em> and <em>s3_url</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-expiry"></div>
+<div class="ansibleOptionAnchor" id="parameter-expiration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-expiry"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-expiration"></span><strong>expiry</strong></p>
+<a class="ansibleOptionLink" href="#parameter-expiry" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: expiration</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <em>mode=put</em> or <em>mode=geturl</em> operation.</p>
+<p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">geturl</span></code>.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">600</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-headers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-headers"><strong>headers</strong></p>
+<a class="ansibleOptionLink" href="#parameter-headers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Custom headers to use when <em>mode=put</em> as a dictionary of key value pairs.</p>
+<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">put</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ignore_nonexistent_bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-ignore-nonexistent-bucket"><strong>ignore_nonexistent_bucket</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ignore_nonexistent_bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Overrides initial bucket lookups in case bucket or IAM policies are restrictive.</p>
+<p>This can be useful when a user may have the <code class="docutils literal notranslate"><span class="pre">GetObject</span></code> permission but no other permissions.  In which case using <em>mode=get</em> will fail unless <em>ignore_nonexistent_bucket=true</em> is specified.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-marker"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-marker"><strong>marker</strong></p>
+<a class="ansibleOptionLink" href="#parameter-marker" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specifies the key to start with when using list mode. Object keys are returned in alphabetical order, starting with key after the marker in order.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-max_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-max-keys"><strong>max_keys</strong></p>
+<a class="ansibleOptionLink" href="#parameter-max_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Max number of results to return when <em>mode=list</em>, set this if you want to retrieve fewer than the default 1000 keys.</p>
+<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1000</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-metadata"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-metadata"><strong>metadata</strong></p>
+<a class="ansibleOptionLink" href="#parameter-metadata" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Metadata to use when <em>mode=put</em> or <em>mode=copy</em> as a dictionary of key value pairs.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-mode"><strong>mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Switches the module behaviour between</p>
+<p><code class="docutils literal notranslate"><span class="pre">put</span></code>: upload</p>
+<p><code class="docutils literal notranslate"><span class="pre">get</span></code>: download</p>
+<p><code class="docutils literal notranslate"><span class="pre">geturl</span></code>: return download URL</p>
+<p><code class="docutils literal notranslate"><span class="pre">getstr</span></code>: download object as string</p>
+<p><code class="docutils literal notranslate"><span class="pre">list</span></code>: list keys</p>
+<p><code class="docutils literal notranslate"><span class="pre">create</span></code>: create bucket directories</p>
+<p><code class="docutils literal notranslate"><span class="pre">delobj</span></code>: delete object</p>
+<p><code class="docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
+<p>Support for creating and deleting buckets was removed in release 6.0.0. To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;get&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;put&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;create&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;geturl&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;getstr&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;delobj&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;list&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-object"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-object"><strong>object</strong></p>
+<a class="ansibleOptionLink" href="#parameter-object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Key name of the object inside the bucket.</p>
+<p>Can be used to create “virtual directories”, see examples.</p>
+<p>Object key names should not include the leading <code class="docutils literal notranslate"><span class="pre">/</span></code>, see <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html</a> for more information.</p>
+<p>Support for passing the leading <code class="docutils literal notranslate"><span class="pre">/</span></code> has been deprecated and will be removed in a release after 2025-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-overwrite"></div>
+<div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-overwrite"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-force"></span><strong>overwrite</strong></p>
+<a class="ansibleOptionLink" href="#parameter-overwrite" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: force</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Force overwrite either locally on the filesystem or remotely with the object/key.</p>
+<p>Used when <em>mode=put</em> or <em>mode=get</em>.</p>
+<p>Ignored when when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">get</span></code>.</p>
+<p>Must be a Boolean, <code class="docutils literal notranslate"><span class="pre">always</span></code>, <code class="docutils literal notranslate"><span class="pre">never</span></code>, <code class="docutils literal notranslate"><span class="pre">different</span></code> or <code class="docutils literal notranslate"><span class="pre">latest</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">true</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">always</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">false</span></code> is equal to <code class="docutils literal notranslate"><span class="pre">never</span></code>.</p>
+<p>When this is set to <code class="docutils literal notranslate"><span class="pre">different</span></code> the MD5 sum of the local file is compared with the ‘ETag’ of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html">https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</p>
+<p>When <em>mode=get</em> and <em>overwrite=latest</em> the last modified timestamp of local file is compared with the ‘LastModified’ of the object/key in S3.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;different&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-permission"><strong>permission</strong></p>
+<a class="ansibleOptionLink" href="#parameter-permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code> for a bucket or <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">aws-exec-read</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-full-control</span></code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file.</p>
+<p>For a full list of permissions see the AWS documentation <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl">https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;private&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;public-read&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;public-read-write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aws-exec-read&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;authenticated-read&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;bucket-owner-read&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;bucket-owner-full-control&quot;</span></code></p></li>
+</ul>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;private&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-prefix"><strong>prefix</strong></p>
+<a class="ansibleOptionLink" href="#parameter-prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Limits the response to keys that begin with the specified prefix for list mode.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-profile"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A named AWS profile to use for authentication.</p>
+<p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable may also be used.</p>
+<p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-purge-tags"><strong>purge_tags</strong></p>
+<a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
+<p>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</p>
+<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-region"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-region"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AWS region to use.</p>
+<p>For global services such as IAM, Route53 and CloudFront, <em>region</em> is ignored.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_REGION</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variables may also be used.</p>
+<p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ec2_region</span></code> alias has been deprecated and will be removed in a release after 2024-12-01</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-retries"></div>
+<div class="ansibleOptionAnchor" id="parameter-retry"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-retry"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-retries"></span><strong>retries</strong></p>
+<a class="ansibleOptionLink" href="#parameter-retries" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: retry</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>On recoverable failure, how many times to retry before actually failing.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS secret access key.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>, or <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-session-token"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-access-token"></span><strong>session_token</strong></p>
+<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS STS session token for use with temporary credentials.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code> environment variables may also be used in decreasing order of preference.</p>
+<p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
+<p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-sig_v4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-sig-v4"><strong>sig_v4</strong></p>
+<a class="ansibleOptionLink" href="#parameter-sig_v4" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.0.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Forces the Boto SDK to use Signature Version 4.</p>
+<p>Only applies to get modes, <em>mode=get</em>, <em>mode=getstr</em>, <em>mode=geturl</em>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-src"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-src"><strong>src</strong></p>
+<a class="ansibleOptionLink" href="#parameter-src" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The source file path when performing a <code class="docutils literal notranslate"><span class="pre">put</span></code> operation.</p>
+<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-tags"></div>
+<div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-tags"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-resource-tags"></span><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary representing the tags to be applied to the resource.</p>
+<p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-validate_bucket_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-validate-bucket-name"><strong>validate_bucket_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-validate_bucket_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether the bucket name should be validated to conform to AWS S3 naming rules.</p>
+<p>On by default, this may be disabled for S3 backends that do not enforce these rules.</p>
+<p>See the Amazon documentation for more information about bucket naming rules <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>When set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, SSL certificates will not be validated for communication with the AWS APIs.</p>
+<p>Setting <em>validate_certs=false</em> is strongly discouraged, as an alternative, consider setting <em>aws_ca_bundle</em> instead.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-version"><strong>version</strong></p>
+<a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Version ID of the object inside the bucket. Can be used to get a specific version of a file if versioning is enabled in the target bucket.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.0.0.</p></li>
+<li><p>In release 5.0.0 the <em>s3_url</em> parameter was merged into the <em>endpoint_url</em> parameter, <em>s3_url</em> remains as an alias for <em>endpoint_url</em>.</p></li>
+<li><p>For Walrus <em>endpoint_url</em> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
+<li><p>Support for the <code class="docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <em>endpoint_url</em> parameter or the <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> environment variable.</p></li>
+<li><p>Support for creating and deleting buckets was removed in release 6.0.0.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Simple PUT operation</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT operation from a rendered template</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/object.yaml</span>
+<span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;templates/object.yaml.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Simple PUT operation in Ceph RGW S3</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+<span class="w">    </span><span class="nt">ceph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">endpoint_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://localhost:8000&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Simple GET operation</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">get</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get a specific version of an object.</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">48c9ee5131af7a716edc22df9772aa6f</span>
+<span class="w">    </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">get</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT/upload with metadata</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Content-Encoding=gzip,Cache-Control=no-cache&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT/upload with custom headers</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+<span class="w">    </span><span class="nt">headers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;x-amz-grant-full-control=emailAddress=owner@example.com&#39;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List keys simple</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List keys all options</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/</span>
+<span class="w">    </span><span class="nt">marker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/0023.txt</span>
+<span class="w">    </span><span class="nt">max_keys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">472</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an empty bucket</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create</span>
+<span class="w">    </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-read</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a bucket with key as directory, in the EU region</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/directory/path</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eu-west-1</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete a bucket and all contents</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET an object but don&#39;t download if the file checksums match. New in 2.0</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">get</span>
+<span class="w">    </span><span class="nt">overwrite</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">different</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete an object from a bucket</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delobj</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Copy an object already stored in another bucket</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span>
+<span class="w">    </span><span class="nt">copy_src</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcbucket</span>
+<span class="w">        </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/source/key.txt</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-contents"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-return-contents"><strong>contents</strong></p>
+<a class="ansibleOptionLink" href="#return-contents" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Contents of the object as string.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for getstr operation)</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Hello,</span> <span class="pre">world!&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-expiry"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-return-expiry"><strong>expiry</strong></p>
+<a class="ansibleOptionLink" href="#return-expiry" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Number of seconds the presigned url is valid for.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for geturl operation)</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">600</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-msg"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-return-msg"><strong>msg</strong></p>
+<a class="ansibleOptionLink" href="#return-msg" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Message indicating the status of the operation.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;PUT</span> <span class="pre">operation</span> <span class="pre">complete&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-s3_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-return-s3-keys"><strong>s3_keys</strong></p>
+<a class="ansibleOptionLink" href="#return-s3_keys" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>List of object keys.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for list operation)</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;prefix1/&quot;,</span> <span class="pre">&quot;prefix1/key1&quot;,</span> <span class="pre">&quot;prefix1/key2&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-return-url"><strong>url</strong></p>
+<a class="ansibleOptionLink" href="#return-url" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>URL of the object.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> (for put and geturl operations)</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=&lt;access-key&gt;&amp;Expires=1506888865&amp;Signature=&lt;signature&gt;&quot;</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Lester Wade (&#64;lwade)</p></li>
+<li><p>Sloane Hertel (&#64;s-hertel)</p></li>
+<li><p>Alina Buzachis (&#64;alinabuzachis)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading"></a></h3>
+<p class="ansible-links">
+  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
+  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
+  <a href="./#communication-for-amazon-aws" aria-role="button" target="_blank">Communication</a>
+</p></section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="s3_bucket_module.html" class="btn btn-neutral float-left" title="amazon.aws.s3_bucket module – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="s3_object_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.s3_object_info module – Gather information about objects in S3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
