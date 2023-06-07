@@ -2114,3 +2114,63 @@ releases:
         name: aws_collection_constants
         namespace: null
     release_date: '2023-05-09'
+  6.0.1:
+    changes:
+      bugfixes:
+      - aws_ec2 inventory plugin - fix ``NoRegionError`` when no regions are provided
+        and region isn't specified (https://github.com/ansible-collections/amazon.aws/issues/1551).
+      - s3_bucket - fixes issue when deleting a bucket with unversioned objects (https://github.com/ansible-collections/amazon.aws/issues/1533).
+      - s3_object - fixes regression related to objects with a leading ``/`` (https://github.com/ansible-collections/amazon.aws/issues/1548).
+      release_summary: This is a patch release that includes some bug fixes for the
+        aws_ec2 inventory plugin and the s3_bucket and s3_object modules.
+    fragments:
+    - 1538-s3-null.yml
+    - 1548-s3_object-leading-slash.yml
+    - 1551-ec2_inventory-no-region.yml
+    - 1560-revert_1546.yml
+    - release_summary.yml
+    release_date: '2023-05-19'
+  6.1.0:
+    changes:
+      bugfixes:
+      - autoscaling_group - fix ValidationError when describing an autoscaling group
+        that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - autoscaling_group_info - fix ValidationError when describing an autoscaling
+        group that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - ec2_instance - fix check_mode issue when adding network interfaces (https://github.com/ansible-collections/amazon.aws/issues/1403).
+      - 'ec2_metadata_facts - Handle decompression when EC2 instance user-data is
+        gzip compressed. The fetch_url method from ansible.module_utils.urls does
+        not decompress the user-data unless the header explicitly contains ``Content-Encoding:
+        gzip`` (https://github.com/ansible-collections/amazon.aws/pull/1575).'
+      - elb_application_lb - fix missing attributes on creation of ALB. The ``create_or_update_alb()``
+        was including ALB-specific attributes when updating an existing ALB but not
+        when creating a new ALB (https://github.com/ansible-collections/amazon.aws/issues/1510).
+      - module_utils.acm - fixes list_certificates returning only RSA_2048 certificates
+        (https://github.com/ansible-collections/amazon.aws/issues/1567).
+      - rds_instance - add support for CACertificateIdentifier to create/update rds
+        instance (https://github.com/ansible-collections/amazon.aws/pull/1459)."
+      deprecated_features:
+      - s3_object - support for passing object keys with a leading ``/`` has been
+        deprecated and will be removed in a release after 2025-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1549).
+      minor_changes:
+      - ec2_snapshot - Add support for modifying createVolumePermission (https://github.com/ansible-collections/amazon.aws/pull/1464).
+      - ec2_snapshot_info - Add createVolumePermission to output result (https://github.com/ansible-collections/amazon.aws/pull/1464).
+      release_summary: This release brings some new features, several bugfixes, and
+        deprecated features are also included.
+    fragments:
+    - 1459-rds_instance-add-support-for-ca_certificate_identifier-to-create-update-instance.yml
+    - 1464-ec2_snapshot-ec2_snapshot_info-support-modifying-create-volume-permissions.yml
+    - 1510-elb_application_lb-fix-alb-specific-attributes-not-added-on-create.yml
+    - 1548-s3_object-leading-slash-deprecate.yml
+    - 1567-list-certificate-all-key-types.yml
+    - 1578-rds-instance-docs.yml
+    - 1593-autoscaling_group_info-20-target-groups-per-call.yml
+    - 20230526-ec2_mertadata_facts-handle_compressed_user_data.yml
+    - 20230531-aws_ec2-use_ssm_inventory_documentation.yml
+    - ec2-inventory-hostnames-doc.yml
+    - ec2_instance-eni-attach-idempotency.yml
+    - release_summary.yml
+    - test-reqs.yml
+    release_date: '2023-06-07'

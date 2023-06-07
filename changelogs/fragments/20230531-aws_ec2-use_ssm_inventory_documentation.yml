@@ -1,2 +1,0 @@
-trivial:
-  - "Update the ``aws_ec2`` inventory plugins documentation for the ``use_ssm_inventory`` option."
