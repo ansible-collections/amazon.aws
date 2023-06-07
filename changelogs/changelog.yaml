@@ -1731,4 +1731,4 @@ releases:
     - endpoint.yml
     - release-summary.yml
     - test-reqs.yml
-    release_date: '2023-06-06'
+    release_date: '2023-06-07'
