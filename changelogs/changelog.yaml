@@ -2174,4 +2174,4 @@ releases:
     - ec2_instance-eni-attach-idempotency.yml
     - release_summary.yml
     - test-reqs.yml
-    release_date: '2023-06-06'
+    release_date: '2023-06-07'
