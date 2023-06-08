@@ -675,7 +675,6 @@ def _generate_local_indexes():
     indexes = list()
 
     for index in module.params.get("indexes"):
-        index = dict()
         if index.get("type") not in ["all", "include", "keys_only"]:
             continue
         name = index.get("name")
