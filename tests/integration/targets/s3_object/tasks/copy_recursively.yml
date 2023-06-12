@@ -1,0 +1,152 @@
+- name: Test copy recursively object from one bucket to another one.
+  block:
+    - name: Create S3 bucket
+      s3_bucket:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "{{ bucket_src }}"
+        - "{{ bucket_dst }}"
+
+    - name: Create object into bucket
+      s3_object:
+        bucket: "{{ bucket_src }}"
+        mode: put
+        content: "{{ item.content }}"
+        object: "{{ item.object }}"
+      with_items: "{{ s3_objects }}"
+
+    - name: Copy all objects from source bucket into destination bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: copy
+        copy_src:
+          bucket: "{{ bucket_src }}"
+      check_mode: true
+
+    - name: list objects from bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+      register: _objects
+
+    - name: Ensure no object were found into bucket
+      assert:
+        that:
+          - _objects.s3_keys | length == 0
+
+    # Test: Copy all objects using prefix
+    - name: copy object using prefix
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: copy
+        copy_src:
+          bucket: "{{ bucket_src }}"
+          prefix: "file"
+      register: _copy_with_prefix
+
+    - name: list objects from bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+      register: _objects
+
+    - name: Ensure objects with prefix 'file' were copied into bucket
+      assert:
+        that:
+          - _copy_with_prefix is changed
+          - _objects.s3_keys | length == 3
+          - '"file1.txt" in _objects.s3_keys'
+          - '"file2.txt" in _objects.s3_keys'
+          - '"file3.txt" in _objects.s3_keys'
+
+    # Test: Copy all objects using prefix (idempotency)
+    - name: copy object using prefix (idempotency)
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: copy
+        copy_src:
+          bucket: "{{ bucket_src }}"
+          prefix: "file"
+      register: _copy_with_prefix_idempotency
+
+    - name: list objects from bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+      register: _objects
+
+    - name: Ensure objects with prefix 'file' were copied into bucket
+      assert:
+        that:
+          - _copy_with_prefix_idempotency is not changed
+          - _objects.s3_keys | length == 3
+          - '"file1.txt" in _objects.s3_keys'
+          - '"file2.txt" in _objects.s3_keys'
+          - '"file3.txt" in _objects.s3_keys'
+
+    # Test: Copy all objects from source bucket
+    - name: copy all objects from source bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: copy
+        copy_src:
+          bucket: "{{ bucket_src }}"
+      register: _copy_all
+
+    - name: list objects from bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+      register: _objects
+
+    - name: Ensure objects with prefix 'file' were copied into bucket
+      assert:
+        that:
+          - _copy_all is changed
+          - _objects.s3_keys | length == 5
+
+    # Test: Copy all objects from source bucket (idempotency)
+    - name: copy all objects from source bucket (idempotency)
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: copy
+        copy_src:
+          bucket: "{{ bucket_src }}"
+      register: _copy_all_idempotency
+
+    - name: list objects from bucket
+      s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+      register: _objects
+
+    - name: Ensure objects with prefix 'file' were copied into bucket
+      assert:
+        that:
+          - _copy_all_idempotency is not changed
+          - _objects.s3_keys | length == 5
+  
+  vars:
+    bucket_src: "{{ bucket_name }}-recursive-src"
+    bucket_dst: "{{ bucket_name }}-recursive-dst"
+    s3_objects:
+      - object: file1.txt
+        content: |
+          some content for file1.txt
+      - object: file2.txt
+        content: |
+          some content for file2.txt
+      - object: file3.txt
+        content: |
+          some content for file3.txt
+      - object: testfile.py
+        content: "This is a sample text file"
+      - object: another.txt
+        content: "another file to create into bucket"
+
+  always:
+    - include_tasks: delete_bucket.yml
+      with_items:
+        - "{{ bucket_src }}"
+        - "{{ bucket_dst }}"

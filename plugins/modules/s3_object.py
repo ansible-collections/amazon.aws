@@ -228,11 +228,19 @@ options:
         type: str
         description:
         - key name of the source object.
-        required: true
+        - if not specified, all the objects of the I(copy_src.bucket) will be copied into the specified bucket.
+        required: false
       version_id:
         type: str
         description:
         - version ID of the source object.
+      prefix:
+        description:
+        - Copy all the keys that begin with the specified prefix.
+        - Ignored if I(copy_src.object) is not set.
+        default: ""
+        type: str
+        version_added: 6.2.0
   validate_bucket_name:
     description:
       - Whether the bucket name should be validated to conform to AWS S3 naming rules.
@@ -370,6 +378,14 @@ EXAMPLES = r"""
     copy_src:
         bucket: srcbucket
         object: /source/key.txt
+
+- name: Copy all the objects with name starting with 'ansible_'
+  amazon.aws.s3_object:
+    bucket: mybucket
+    mode: copy
+    copy_src:
+        bucket: srcbucket
+        prefix: 'ansible_'
 """
 
 RETURN = r"""
@@ -566,18 +582,20 @@ def paginated_versioned_list_with_fallback(s3, **pagination_params):
             yield [{"Key": key}]
 
 
-def list_keys(module, s3, bucket, prefix, marker, max_keys):
+def list_keys(s3, bucket, prefix, marker=None, max_keys=None):
     pagination_params = {
         "Bucket": bucket,
-        "Prefix": prefix,
-        "StartAfter": marker,
-        "MaxKeys": max_keys,
     }
+    if prefix:
+        pagination_params["Prefix"] = prefix
+    if marker:
+        pagination_params["StartAfter"] = marker
+    if max_keys:
+        pagination_params["MaxKeys"] = max_keys
     pagination_params = {k: v for k, v in pagination_params.items() if v}
 
     try:
-        keys = list(paginated_list(s3, **pagination_params))
-        module.exit_json(msg="LIST operation complete", s3_keys=keys)
+        return list(paginated_list(s3, **pagination_params))
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
@@ -892,78 +910,6 @@ def put_download_url(s3, bucket, obj, expiry):
     return url
 
 
-def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag):
-    if module.check_mode:
-        module.exit_json(msg="COPY operation skipped - running in check mode", changed=True)
-    try:
-        params = {"Bucket": bucket, "Key": obj}
-        bucketsrc = {
-            "Bucket": module.params["copy_src"].get("bucket"),
-            "Key": module.params["copy_src"].get("object"),
-        }
-        version = None
-        if module.params["copy_src"].get("version_id"):
-            version = module.params["copy_src"].get("version_id")
-            bucketsrc.update({"VersionId": version})
-        if not key_check(
-            module,
-            s3,
-            bucketsrc["Bucket"],
-            bucketsrc["Key"],
-            version=version,
-            validate=validate,
-        ):
-            # Key does not exist in source bucket
-            module.exit_json(
-                msg=f"Key {bucketsrc['Key']} does not exist in bucket {bucketsrc['Bucket']}.",
-                changed=False,
-            )
-
-        s_etag = get_etag(s3, bucketsrc["Bucket"], bucketsrc["Key"], version=version)
-        if s_etag == d_etag:
-            # Tags
-            tags, changed = ensure_tags(s3, module, bucket, obj)
-            if not changed:
-                module.exit_json(
-                    msg="ETag from source and destination are the same",
-                    changed=False,
-                )
-            else:
-                module.exit_json(
-                    msg="tags successfully updated.",
-                    changed=changed,
-                    tags=tags,
-                )
-        else:
-            params.update({"CopySource": bucketsrc})
-            params.update(
-                get_extra_params(
-                    encrypt,
-                    module.params.get("encryption_mode"),
-                    module.params.get("encryption_kms_key_id"),
-                    metadata,
-                )
-            )
-            s3.copy_object(aws_retry=True, **params)
-            put_object_acl(module, s3, bucket, obj)
-            # Tags
-            tags, changed = ensure_tags(s3, module, bucket, obj)
-            module.exit_json(
-                msg=f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}.",
-                tags=tags,
-                changed=True,
-            )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(
-            f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
-            e,
-        )
-
-
 def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
     try:
         if version:
@@ -1230,14 +1176,15 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
 
 def s3_object_do_list(module, connection, connection_v4, s3_vars):
     # If the bucket does not exist then bail out
-    list_keys(
-        module,
+    keys = list_keys(
         connection,
         s3_vars["bucket"],
         s3_vars["prefix"],
         s3_vars["marker"],
         s3_vars["max_keys"],
     )
+
+    module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
 
 def s3_object_do_create(module, connection, connection_v4, s3_vars):
@@ -1330,23 +1277,132 @@ def s3_object_do_getstr(module, connection, connection_v4, s3_vars):
             module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
+def check_object_tags(module, connection, bucket, obj):
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+    diff = False
+    if tags:
+        current_tags_dict = get_current_object_tags_dict(module, connection, bucket, obj)
+        if not purge_tags:
+            # Ensure existing tags that aren't updated by desired tags remain
+            current_tags_dict.update(tags)
+        diff = current_tags_dict != tags
+    return diff
+
+
+def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
+    try:
+        params = {"Bucket": bucket, "Key": obj}
+        if not key_check(module, s3, src_bucket, src_obj, version=versionId, validate=validate):
+            # Key does not exist in source bucket
+            module.exit_json(
+                msg=f"Key {src_obj} does not exist in bucket {src_bucket}.",
+                changed=False,
+            )
+
+        s_etag = get_etag(s3, src_bucket, src_obj, version=versionId)
+        d_etag = get_etag(s3, bucket, obj)
+        if s_etag == d_etag:
+            if module.check_mode:
+                changed = check_object_tags(module, s3, bucket, obj)
+                result = {}
+                if changed:
+                    result.update({"msg": "Would have update object tags is not running in check mode."})
+                return changed, result
+
+            # Ensure tags
+            tags, changed = ensure_tags(s3, module, bucket, obj)
+            result = {"msg": "ETag from source and destination are the same"}
+            if changed:
+                result = {"msg": "tags successfully updated.", "tags": tags}
+            return changed, result
+        elif module.check_mode:
+            return True, {"msg": "ETag from source and destination differ"}
+        else:
+            changed = True
+            bucketsrc = {
+                "Bucket": src_bucket,
+                "Key": src_obj,
+            }
+            if versionId:
+                bucketsrc.update({"VersionId": versionId})
+            params.update({"CopySource": bucketsrc})
+            params.update(
+                get_extra_params(
+                    encrypt,
+                    module.params.get("encryption_mode"),
+                    module.params.get("encryption_kms_key_id"),
+                    metadata,
+                )
+            )
+            s3.copy_object(aws_retry=True, **params)
+            put_object_acl(module, s3, bucket, obj)
+            # Tags
+            tags, tags_updated = ensure_tags(s3, module, bucket, obj)
+            msg = f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}."
+            return changed, {"msg": msg, "tags": tags}
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(
+            f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
+            e,
+        )
+
+
 def s3_object_do_copy(module, connection, connection_v4, s3_vars):
-    # if copying an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
-    # these were separated into the variables bucket_acl and object_acl above
-    d_etag = get_etag(connection, s3_vars["bucket"], s3_vars["object"])
-    if not s3_vars["acl_disabled"]:
-        # only use valid object acls for the copy operation
-        s3_vars["permission"] = s3_vars["object_acl"]
-    copy_object_to_bucket(
-        module,
-        connection,
-        s3_vars["bucket"],
-        s3_vars["object"],
-        s3_vars["encrypt"],
-        s3_vars["metadata"],
-        s3_vars["validate"],
-        d_etag,
-    )
+    copy_src = module.params.get("copy_src")
+    if not copy_src.get("object") and s3_vars["object"]:
+        module.fail_json(
+            msg="A destination object was specified while trying to copy all the objects from the source bucket."
+        )
+    src_bucket = copy_src.get("bucket")
+    if not copy_src.get("object"):
+        # copy recursively object(s) from source bucket to destination bucket
+        # list all the objects from the source bucket
+        keys = list_keys(connection, src_bucket, copy_src.get("prefix"))
+        if len(keys) == 0:
+            module.exit_json(msg=f"No object found to be copied from source bucket {src_bucket}.")
+
+        changed = False
+        number_keys_updated = 0
+        for key in keys:
+            updated, result = copy_object_to_bucket(
+                module,
+                connection,
+                s3_vars["bucket"],
+                key,
+                s3_vars["encrypt"],
+                s3_vars["metadata"],
+                s3_vars["validate"],
+                src_bucket,
+                key,
+                versionId=copy_src.get("version_id"),
+            )
+            changed |= updated
+            number_keys_updated += 1 if updated else 0
+
+        msg = "object(s) from buckets '{0}' and '{1}' are the same.".format(src_bucket, s3_vars["bucket"])
+        if number_keys_updated:
+            msg = "{0} copied into bucket '{1}'".format(number_keys_updated, s3_vars["bucket"])
+        module.exit_json(changed=changed, msg=msg)
+    else:
+        # copy single object from source bucket into destination bucket
+        changed, result = copy_object_to_bucket(
+            module,
+            connection,
+            s3_vars["bucket"],
+            s3_vars["object"],
+            s3_vars["encrypt"],
+            s3_vars["metadata"],
+            s3_vars["validate"],
+            src_bucket,
+            copy_src.get("object"),
+            versionId=copy_src.get("version_id"),
+        )
+        module.exit_json(changed=changed, **result)
 
 
 def populate_params(module):
@@ -1459,7 +1515,8 @@ def main():
             type="dict",
             options=dict(
                 bucket=dict(required=True),
-                object=dict(required=True),
+                object=dict(),
+                prefix=dict(),
                 version_id=dict(),
             ),
         ),
