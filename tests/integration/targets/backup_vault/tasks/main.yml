@@ -28,6 +28,7 @@
           - backup_vault_result_check is changed
           - backup_vault_result_check.vault.backup_vault_name == backup_vault_name
           - backup_vault_result_check.vault.encryption_key_arn == ""
+          - backup_vault_result_check.vault.tags.environment == "dev"
 
     - name: Create an AWS Backup Vault
       amazon.aws.backup_vault:
@@ -42,7 +43,8 @@
           - backup_vault_result is changed
           - backup_vault_result.vault.backup_vault_name == backup_vault_name
           - backup_vault_result.vault.encryption_key_arn == key.key_arn
-    
+          - backup_vault_result.vault.tags.environment == "dev"
+
     - name: Get backup vault info by passing the vault name
       amazon.aws.backup_vault_info:
         backup_vault_names:
@@ -53,6 +55,7 @@
         that:
           - vault_info.backup_vaults[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
           - vault_info.backup_vaults[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
+          - vault_info.backup_vaults[0].tags.environment == "dev"
 
     - name: Create an AWS Backup Vault - idempotency check
       amazon.aws.backup_vault:
@@ -67,7 +70,23 @@
           - backup_vault_result_idem is not changed
           - backup_vault_result_idem.vault.backup_vault_name == backup_vault_name
           - backup_vault_result_idem.vault.encryption_key_arn == key.key_arn
- 
+          - backup_vault_result_idem.vault.tags.environment == "dev"
+
+    - name: Update AWS Backup Vault
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        encryption_key_arn: "{{ key.key_arn }}"
+        tags:
+          environment: test
+      register: backup_vault_update_result
+
+    - assert:
+        that:
+          - backup_vault_update_result is changed
+          - backup_vault_update_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_update_result.vault.encryption_key_arn == key.key_arn
+          - backup_vault_update_result.vault.tags.environment == "test"
+
   always:
     - name: Delete AWS Backup Vault created during this test
       amazon.aws.backup_vault:
