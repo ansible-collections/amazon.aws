@@ -1516,7 +1516,7 @@ def main():
             options=dict(
                 bucket=dict(required=True),
                 object=dict(),
-                prefix=dict(),
+                prefix=dict(default=""),
                 version_id=dict(),
             ),
         ),
