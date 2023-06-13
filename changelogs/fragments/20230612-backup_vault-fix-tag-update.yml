@@ -1,3 +1,3 @@
 ---
 bugfixes:
-  - backup_vault - fix error when updating tags on a backup vault by using the correct boto3 client methods for tagging and untagging backup resources.
+  - backup_vault - fix error when updating tags on a backup vault by using the correct boto3 client methods for tagging and untagging backup resources (https://github.com/ansible-collections/amazon.aws/pull/1610).
