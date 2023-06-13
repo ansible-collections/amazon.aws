@@ -113,12 +113,14 @@
             completion_window_minutes: 150
             lifecycle:
               move_to_cold_storage_after_days: 30
+              delete_after_days: 120
             recovery_point_tags:
               type: hourly_backup
             copy_actions:
               - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
                 lifecycle:
                   delete_after_days: 300
+                  move_to_cold_storage_after_days: 90
         tags:
           status: archive
       register: backup_plan_update_result
@@ -134,6 +136,133 @@
           - backup_plan_update_result.version_id != backup_plan_info.backup_plans[0].version_id
           - backup_plan_update_result.backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
           - backup_plan_update_result.tags != backup_plan_info.backup_plans[0].tags
+
+    - name: Get updated backup plan details
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info
+
+    - name: Update backup plan without nested optional values in check mode
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: hourly
+            target_backup_vault_name: "{{ backup_vault_name }}"
+            schedule_expression: "cron(0 * ? * * *)"
+            start_window_minutes: 60
+            completion_window_minutes: 150
+            lifecycle:
+              delete_after_days: 120
+            recovery_point_tags:
+              type: hourly_backup
+            copy_actions:
+              - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
+                lifecycle:
+                  move_to_cold_storage_after_days: 90
+        tags:
+          status: archive
+      check_mode: true
+      register: check_mode_update_without_nested_optional_values_result
+
+    - name: Verify backup plan update without nested optional values in check mode result
+      ansible.builtin.assert:
+        that:
+          - check_mode_update_without_nested_optional_values_result.exists is true
+          - check_mode_update_without_nested_optional_values_result.changed is true
+          - check_mode_update_without_nested_optional_values_result.backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
+
+    - name: Get backup plan details after update in check mode
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: backup_plan_info_after_check_mode_update
+
+    - name: Verify backup plan was not actually updated in check mode
+      ansible.builtin.assert:
+        that:
+          - backup_plan_info_after_check_mode_update.backup_plans[0] == backup_plan_info.backup_plans[0]
+
+    - name: Update backup plan without nested optional values
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: hourly
+            target_backup_vault_name: "{{ backup_vault_name }}"
+            schedule_expression: "cron(0 * ? * * *)"
+            start_window_minutes: 60
+            completion_window_minutes: 150
+            lifecycle:
+              delete_after_days: 120
+            recovery_point_tags:
+              type: hourly_backup
+            copy_actions:
+              - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
+                lifecycle:
+                  move_to_cold_storage_after_days: 90
+        tags:
+          status: archive
+      register: update_without_nested_optional_values_result
+
+    - name: Verify backup plan update without nested optional values result
+      ansible.builtin.assert:
+        that:
+          - update_without_nested_optional_values_result.exists is true
+          - update_without_nested_optional_values_result.changed is true
+          - update_without_nested_optional_values_result.backup_plan_id == backup_plan_info.backup_plans[0].backup_plan_id
+          - update_without_nested_optional_values_result.backup_plan_arn == backup_plan_info.backup_plans[0].backup_plan_arn
+          - update_without_nested_optional_values_result.creation_date != backup_plan_info.backup_plans[0].creation_date
+          - update_without_nested_optional_values_result.version_id != backup_plan_info.backup_plans[0].version_id
+          - update_without_nested_optional_values_result.backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
+          - update_without_nested_optional_values_result.tags == backup_plan_info.backup_plans[0].tags
+
+    - name: Get updated backup plan details
+      amazon.aws.backup_plan_info:
+        backup_plan_names:
+          - "{{ backup_plan_name }}"
+      register: updated_backup_plan_info
+
+    - name: Verify backup plan was actually updated
+      ansible.builtin.assert:
+        that:
+          - updated_backup_plan_info.backup_plans[0].backup_plan_name == backup_plan_info.backup_plans[0].backup_plan_name
+          - updated_backup_plan_info.backup_plans[0].backup_plan_arn == backup_plan_info.backup_plans[0].backup_plan_arn
+          - updated_backup_plan_info.backup_plans[0].version_id != backup_plan_info.backup_plans[0].version_id
+          - updated_backup_plan_info.backup_plans[0].backup_plan.rules != backup_plan_info.backup_plans[0].backup_plan.rules
+          - updated_backup_plan_info.backup_plans[0].tags == backup_plan_info.backup_plans[0].tags
+
+    - name: Update backup plan without nested optional values - idempotency
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: hourly
+            target_backup_vault_name: "{{ backup_vault_name }}"
+            schedule_expression: "cron(0 * ? * * *)"
+            start_window_minutes: 60
+            completion_window_minutes: 150
+            lifecycle:
+              delete_after_days: 120
+            recovery_point_tags:
+              type: hourly_backup
+            copy_actions:
+              - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
+                lifecycle:
+                  move_to_cold_storage_after_days: 90
+        tags:
+          status: archive
+      register: update_without_nested_optional_values_idempotency_result
+
+    - name: Verify backup plan update without nested optional values idempotency result
+      ansible.builtin.assert:
+        that:
+          - update_without_nested_optional_values_idempotency_result.exists is true
+          - update_without_nested_optional_values_idempotency_result.changed is false
+          - update_without_nested_optional_values_idempotency_result.backup_plan_id == updated_backup_plan_info.backup_plans[0].backup_plan_id
+          - update_without_nested_optional_values_idempotency_result.backup_plan_arn == updated_backup_plan_info.backup_plans[0].backup_plan_arn
+          - update_without_nested_optional_values_idempotency_result.creation_date == updated_backup_plan_info.backup_plans[0].creation_date
+          - update_without_nested_optional_values_idempotency_result.version_id == updated_backup_plan_info.backup_plans[0].version_id
+          - update_without_nested_optional_values_idempotency_result.backup_plan.rules == updated_backup_plan_info.backup_plans[0].backup_plan.rules
+          - update_without_nested_optional_values_idempotency_result.tags == updated_backup_plan_info.backup_plans[0].tags
 
     - name: Delete backup plan in check mode
       amazon.aws.backup_plan:
