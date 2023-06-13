@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - backup_plan - Use existing `scrub_none_values` function from module_utils to remove None values from nested dicts in supplied params. Nested None values were being retained and causing an error when sent through to the boto3 client operation.
