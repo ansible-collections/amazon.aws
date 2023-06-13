@@ -1,2 +1,0 @@
-trivial:
-  - "Remove incorrect mention of RDS snapshots in RDS instance state parameter, and reformat the remaining parameter explanation."
