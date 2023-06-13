@@ -113,13 +113,11 @@
             completion_window_minutes: 150
             lifecycle:
               move_to_cold_storage_after_days: 30
-              delete_after_days: 120
             recovery_point_tags:
               type: hourly_backup
             copy_actions:
               - destination_backup_vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
                 lifecycle:
-                  move_to_cold_storage_after_days: 90
                   delete_after_days: 300
         tags:
           status: archive
