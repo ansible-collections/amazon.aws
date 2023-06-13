@@ -544,8 +544,7 @@ def main():
         "backup_plan_name": module.params["backup_plan_name"],
         "rules": [scrub_none_parameters(rule) for rule in module.params["rules"] or []],
         "advanced_backup_settings": [
-            scrub_none_parameters(setting)
-            for setting in module.params["advanced_backup_settings"] or []
+            scrub_none_parameters(setting) for setting in module.params["advanced_backup_settings"] or []
         ],
     }
     tags = module.params["tags"]
