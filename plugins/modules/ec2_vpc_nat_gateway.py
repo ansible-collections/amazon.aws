@@ -745,9 +745,6 @@ def pre_create(
     elif eip_address or allocation_id:
         if eip_address and not allocation_id:
             allocation_id, msg = get_eip_allocation_id_by_address(client, module, eip_address)
-            # if not allocation_id:
-            #     changed = False
-            #     return changed, msg, dict()a
             if not allocation_id and not default_create:
                 changed = False
                 module.fail_json(msg=msg)
@@ -767,7 +764,7 @@ def pre_create(
                     connectivity_type,
                     default_create,
                 )
-        
+
         existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, module, subnet_id, allocation_id)
 
         if len(existing_gateways) > 0 and (allocation_id_exists or if_exist_do_not_create):
