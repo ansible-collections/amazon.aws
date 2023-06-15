@@ -78,7 +78,7 @@ options:
   default_create:
     description:
       - if EIP address is not found, create NAT gateway with EIP address as null.
-    default = true
+    default: false
     type: bool
 author:
   - Allen Sanabria (@linuxdynasty)
