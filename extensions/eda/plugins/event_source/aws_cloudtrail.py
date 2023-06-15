@@ -1,9 +1,9 @@
-"""
-aws_cloudtrail.py
+"""aws_cloudtrail.py.
 
 An ansible-rulebook event source module for getting events from an AWS CloudTrail
 
 Arguments:
+---------
     access_key:    Optional AWS access key ID
     secret_key:    Optional AWS secret access key
     session_token: Optional STS session token for use with temporary credentials
@@ -19,7 +19,7 @@ Arguments:
     event_category:     The optional event category to return. (e.g. 'insight')
 
 Example:
-
+-------
     - ansible.eda.aws_cloudtrail:
         region: us-east-1
         lookup_attributes:
@@ -34,7 +34,7 @@ Example:
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from aiobotocore.session import get_session
 
@@ -74,7 +74,7 @@ ARGS_MAPPING = {
 }
 
 
-async def main(queue: asyncio.Queue, args: Dict[str, Any]):
+async def main(queue: asyncio.Queue, args: dict[str, Any]):
     delay = int(args.get("delay_seconds", 10))
 
     session = get_session()
@@ -103,7 +103,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
             await asyncio.sleep(delay)
 
 
-def connection_args(args: Dict[str, Any]) -> Dict[str, Any]:
+def connection_args(args: dict[str, Any]) -> dict[str, Any]:
     selected_args = {}
 
     # Best Practice: get credentials from ~/.aws/credentials or the environment
