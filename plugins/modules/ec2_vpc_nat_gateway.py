@@ -75,6 +75,11 @@ options:
         When specifying this option, ensure you specify the eip_address parameter
         as well otherwise any subsequent runs will fail.
     type: str
+  default_create:
+    description:
+      - if EIP address is not found, create NAT gateway with EIP address as null.
+    default = true
+    type: bool
 author:
   - Allen Sanabria (@linuxdynasty)
   - Jon Hadfield (@jonhadfield)
@@ -682,6 +687,8 @@ def pre_create(
             default = False
         client_token (str):
             default = None
+        default_create (bool): create a NAT gateway even if EIP address is not found.
+            default = False
 
     Basic Usage:
         >>> client = boto3.client('ec2')
@@ -886,7 +893,7 @@ def main():
         client_token=dict(type="str", no_log=False),
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=True, type="bool"),
-        default_create=dict(type="str"),
+        default_create=dict(type="bool", default=False),
     )
 
     module = AnsibleAWSModule(

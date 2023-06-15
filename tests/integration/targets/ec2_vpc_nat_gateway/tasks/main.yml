@@ -412,32 +412,10 @@
 
 
   # ============================================================
-  - name: Allocate a new EIP
-    ec2_eip:
-      in_vpc: true
-      reuse_existing_ip_allowed: true
-      tag_name: FREE
-    register: eip_result
-
-  - name: Assert success
-    assert:
-      that:
-      - eip_result is successful
-      - '"allocation_id" in eip_result'
-      - eip_result.allocation_id.startswith("eipalloc-")
-      - '"public_ip" in eip_result'
-  
-  - name: 'Set fact: EIP allocation ID and EIP public IP'
-    set_fact:
-      third_eip_address: '{{ eip_result.public_ip }}'
-      third_allocation_id: '{{ eip_result.allocation_id }}'
-
-
-  # ============================================================
   - name: Create new NAT gateway when eip_address is invalid and create_default is true
     ec2_vpc_nat_gateway:
       subnet_id: '{{ subnet_id }}'
-      eip_address:  "{{ third_eip_address }}"
+      eip_address:  "192.0.2.1"
       state: present
       wait: yes
       default_create: true
@@ -450,7 +428,6 @@
         - '"create_time" in _nat_gateway'
         - '"nat_gateway_addresses" in _nat_gateway'
         - '"nat_gateway_id" in _nat_gateway'
-        - _nat_gateway.nat_gateway_addresses[0].allocation_id == third_allocation_id
         - _nat_gateway.nat_gateway_id.startswith("nat-")
         - '"state" in _nat_gateway'
         - _nat_gateway.state == 'available'
