@@ -67,6 +67,8 @@ action_groups:
   - elb_application_lb_info
   - elb_classic_lb
   - execute_lambda
+  - iam_instance_profile
+  - iam_instance_profile_info
   - iam_policy
   - iam_policy_info
   - iam_user
