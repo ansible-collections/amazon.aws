@@ -266,8 +266,7 @@ def main():
                 # format the stacktrace sent back as an array into a multiline string
                 "trace": "\n".join(
                     [
-                        " ".join([str(x) for x in line])  # cast line numbers to strings
-                        for line in results.get("output", {}).get("stackTrace", [])
+                        line for line in results.get("output", {}).get("stackTrace", [])
                     ]
                 ),
                 "errmsg": results["output"].get("errorMessage"),
