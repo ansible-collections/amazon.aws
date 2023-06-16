@@ -80,6 +80,7 @@ options:
       - if EIP address is not found, create NAT gateway with EIP address as null.
     default: false
     type: bool
+    version_added: 6.2.0
 author:
   - Allen Sanabria (@linuxdynasty)
   - Jon Hadfield (@jonhadfield)
