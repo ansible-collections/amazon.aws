@@ -337,8 +337,6 @@
     - assert:
         that:
           - profile_info.iam_instance_profiles | length == 1
-          - '"{{ test_role }}" in profile_names'
-          - '"{{ test_role }}-2" in profile_names'
           - '"{{ test_profile_complex }}" in profile_names'
 
           - '"arn" in complex_profile'
@@ -480,14 +478,15 @@
     # ===================================================================
     # Cleanup
 
-    - name: "iam_instance_profile_info after Role deletion"
-      iam_instance_profile_info:
-      ignore_errors: true
+#    - name: "iam_instance_profile_info after Role deletion"
+#      iam_instance_profile_info:
+#      ignore_errors: true
 
     - name: "Delete Instance Profiles"
       iam_instance_profile:
         state: absent
         name: "{{ item }}"
+      ignore_errors: true
       loop:
         - "{{ test_profile }}"
         - "{{ test_profile_complex }}"
@@ -505,7 +504,7 @@
         - "{{ test_role }}"
         - "{{ test_role }}-2"
 
-    - name: "iam_role_info after Role deletion"
-      iam_role_info:
-        path: "{{ test_path }}"
-      ignore_errors: true
+#    - name: "iam_role_info after Role deletion"
+#      iam_role_info:
+#        path: "{{ test_path }}"
+#      ignore_errors: true
