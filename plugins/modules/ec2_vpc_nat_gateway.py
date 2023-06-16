@@ -77,16 +77,11 @@ options:
     type: str
   default_create:
     description:
-      - When I(default_create=True), if I(eip_address) is set and it is not found, the NAT
-        gateway is successfully created and a new EIP is automatically allocated.
-      - The validity of the I(allocation_id) is independent of the I(default_create). If
-        I(allocation_id) is set and it is invalid or not found, this will fail, regardless
-        of I(default_create).
-      - The validity of the I(eip_address) is independent of the I(default_create). If
-        I(eip_address) is set and it is invalid, this will fail, regardless of
-        I(default_create).
-      - When I (default_create=False), if I(eip_address) is set and it is invalid or does not
-        exist, this will fail.
+      - When I(default_create=True) and I(eip_address) has been set, but not yet
+        allocated, the NAT gateway is created and a new EIP is automatically allocated.
+      - When I(default_create=False) and I(eip_address) has been set, but not yet
+        allocated, the module will fail.
+      - If I(eip_address) has not been set, this parameter has no effect.
     default: false
     type: bool
     version_added: 6.2.0
