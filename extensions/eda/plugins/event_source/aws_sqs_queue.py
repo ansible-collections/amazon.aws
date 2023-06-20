@@ -30,7 +30,8 @@ import botocore.exceptions
 from aiobotocore.session import get_session
 
 
-async def main(queue: asyncio.Queue, args: dict[str, Any]):
+async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+    """Receive events via an AWS SQS queue."""
     logger = logging.getLogger()
 
     if "name" not in args:
@@ -49,8 +50,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]):
                 == "AWS.SimpleQueueService.NonExistentQueue"
             ):
                 raise ValueError("Queue %s does not exist" % queue_name)
-            else:
-                raise
+            raise
 
         queue_url = response["QueueUrl"]
 
@@ -83,6 +83,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]):
 
 
 def connection_args(args: dict[str, Any]) -> dict[str, Any]:
+    """Provide connection arguments to AWS SQS queue."""
     selected_args = {}
 
     # Best Practice: get credentials from ~/.aws/credentials or the environment
@@ -102,9 +103,13 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
+    """MockQueue if running directly."""
 
     class MockQueue:
-        async def put(self, event):
-            print(event)
+        """A fake queue."""
+
+        async def put(self, event: dict) -> None:
+            """Print the event."""
+            print(event) # noqa: T201
 
     asyncio.run(main(MockQueue(), {"region": "us-east-1", "name": "eda"}))
