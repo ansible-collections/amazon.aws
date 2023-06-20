@@ -39,7 +39,7 @@ from typing import Any
 from aiobotocore.session import get_session
 
 
-def _cloudtrail_event_to_dict(event):
+def _cloudtrail_event_to_dict(event: dict) -> dict:
     event["EventTime"] = event["EventTime"].isoformat()
     event["CloudTrailEvent"] = json.loads(event["CloudTrailEvent"])
     return event
@@ -74,7 +74,8 @@ ARGS_MAPPING = {
 }
 
 
-async def main(queue: asyncio.Queue, args: dict[str, Any]):
+async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+    """Receive events via AWS CloudTrail."""
     delay = int(args.get("delay_seconds", 10))
 
     session = get_session()
@@ -104,6 +105,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]):
 
 
 def connection_args(args: dict[str, Any]) -> dict[str, Any]:
+    """Provide connection arguments to AWS CloudTrail."""
     selected_args = {}
 
     # Best Practice: get credentials from ~/.aws/credentials or the environment
@@ -123,9 +125,13 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
+    """MockQueue if running directly."""
 
     class MockQueue:
-        async def put(self, event):
-            print(event)
+        """A fake queue."""
+
+        async def put(self, event: dict) -> None:
+            """Print the event."""
+            print(event) # noqa: T201
 
     asyncio.run(main(MockQueue(), {}))
