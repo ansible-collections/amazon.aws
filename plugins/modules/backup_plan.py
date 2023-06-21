@@ -257,9 +257,10 @@ from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
@@ -541,10 +542,9 @@ def main():
     plan_name = module.params["backup_plan_name"]
     plan = {
         "backup_plan_name": module.params["backup_plan_name"],
-        "rules": [{k: v for k, v in rule.items() if v is not None} for rule in module.params["rules"] or []],
+        "rules": [scrub_none_parameters(rule) for rule in module.params["rules"] or []],
         "advanced_backup_settings": [
-            {k: v for k, v in setting.items() if v is not None}
-            for setting in module.params["advanced_backup_settings"] or []
+            scrub_none_parameters(setting) for setting in module.params["advanced_backup_settings"] or []
         ],
     }
     tags = module.params["tags"]
