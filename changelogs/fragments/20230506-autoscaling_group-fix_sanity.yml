@@ -1,0 +1,2 @@
+trivial:
+  - "Fix sanity errors autoscaling_group and autoscaling_group_info."

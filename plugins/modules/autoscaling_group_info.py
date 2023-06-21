@@ -420,7 +420,7 @@ def find_asgs(conn, module, name=None, tags=None):
                         tg_chunks = [
                             asg["target_group_arns"][i: i + tg_chunk_size]
                             for i in range(0, len(asg["target_group_arns"]), tg_chunk_size)
-                        ]
+                        ]  # fmt: skip
                         for chunk in tg_chunks:
                             tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
                             asg["target_group_names"].extend(
