@@ -262,11 +262,12 @@ def main():
                 "Function executed, but there was an error in the Lambda function. "
                 "Message: {errmsg}, Type: {type}, Stack Trace: {trace}"
             )
+
             error_data = {
                 # format the stacktrace sent back as an array into a multiline string
                 "trace": "\n".join(
                     [
-                        line for line in results.get("output", {}).get("stackTrace", [])
+                        list(results.get("output", {}).get("stackTrace", []))
                     ]
                 ),
                 "errmsg": results["output"].get("errorMessage"),
