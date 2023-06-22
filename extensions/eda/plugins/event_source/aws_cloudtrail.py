@@ -36,6 +36,7 @@ import json
 from datetime import datetime
 from typing import Any
 
+from aiobotocore.client import BaseClient
 from aiobotocore.session import get_session
 
 
@@ -45,7 +46,7 @@ def _cloudtrail_event_to_dict(event: dict) -> dict:
     return event
 
 
-def get_events(events, last_event_ids):
+def _get_events(events: list[dict], last_event_ids: list) -> list:
     event_time = None
     event_ids = []
     result = []
@@ -62,7 +63,7 @@ def get_events(events, last_event_ids):
     return result, event_time, event_ids
 
 
-async def get_cloudtrail_events(client, params):
+async def _get_cloudtrail_events(client: BaseClient, params: dict) -> list[dict]:
     paginator = client.get_paginator("lookup_events")
     results = await paginator.paginate(**params).build_full_result()
     return results.get("Events", [])
@@ -84,17 +85,17 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         if args.get(k) is not None:
             params[v] = args.get(k)
 
-    params["StartTime"] = datetime.utcnow()
+    params["StartTime"] = datetime.utcnow()  # noqa: DTZ003
 
     async with session.create_client("cloudtrail", **connection_args(args)) as client:
         event_time = None
         event_ids = []
         while True:
-            events = await get_cloudtrail_events(client, params)
+            events = await _get_cloudtrail_events(client, params)
             if event_time is not None:
                 params["StartTime"] = event_time
 
-            events, c_event_time, c_event_ids = get_events(events, event_ids)
+            events, c_event_time, c_event_ids = _get_events(events, event_ids)
             for event in events:
                 await queue.put(_cloudtrail_event_to_dict(event))
 
@@ -130,8 +131,8 @@ if __name__ == "__main__":
     class MockQueue:
         """A fake queue."""
 
-        async def put(self, event: dict) -> None:
+        async def put(self: "MockQueue", event: dict) -> None:
             """Print the event."""
-            print(event) # noqa: T201
+            print(event)  # noqa: T201
 
     asyncio.run(main(MockQueue(), {}))
