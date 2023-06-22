@@ -265,11 +265,7 @@ def main():
 
             error_data = {
                 # format the stacktrace sent back as an array into a multiline string
-                "trace": "\n".join(
-                    [
-                        list(results.get("output", {}).get("stackTrace", []))
-                    ]
-                ),
+                "trace": "\n".join(results.get("output", {}).get("stackTrace", [])),
                 "errmsg": results["output"].get("errorMessage"),
                 "type": results["output"].get("errorType"),
             }
