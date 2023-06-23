@@ -975,7 +975,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import parse_aws_arn
+from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
@@ -1791,8 +1791,7 @@ def pretty_instance(i):
 
 
 def determine_iam_role(name_or_arn):
-    result = parse_aws_arn(name_or_arn)
-    if result and result["service"] == "iam" and result["resource"].startswith("instance-profile/"):
+    if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
         return name_or_arn
     iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
     try:
