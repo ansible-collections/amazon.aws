@@ -150,7 +150,7 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
 
     if tags_to_remove:
         try:
-            client.untag_resource(ResourceArn=vault_arn, Tags=tags_to_remove)
+            client.untag_resource(ResourceArn=vault_arn, TagKeyList=tags_to_remove)
         except (BotoCoreError, ClientError) as err:
             module.fail_json_aws(err, msg="Failed to remove tags from the vault")
 
