@@ -224,6 +224,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -265,7 +266,7 @@ def wait_iam_exists(module, client):
 
 
 def convert_friendly_names_to_arns(module, client, policy_names):
-    if not any(not policy.startswith("arn:") for policy in policy_names):
+    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
         return policy_names
 
     allpolicies = {}
@@ -275,7 +276,7 @@ def convert_friendly_names_to_arns(module, client, policy_names):
         allpolicies[policy["PolicyName"]] = policy["Arn"]
         allpolicies[policy["Arn"]] = policy["Arn"]
     try:
-        return [allpolicies[policy] for policy in policy_names]
+        return [allpolicies[policy] for policy in policy_names if policy is not None]
     except KeyError as e:
         module.fail_json_aws(e, msg="Couldn't find policy")
 
@@ -746,7 +747,7 @@ def main():
     if module.params.get("boundary"):
         if module.params.get("create_instance_profile"):
             module.fail_json(msg="When using a boundary policy, `create_instance_profile` must be set to `false`.")
-        if not module.params.get("boundary").startswith("arn:aws:iam"):
+        if not validate_aws_arn(module.params.get("boundary"), service="iam"):
             module.fail_json(msg="Boundary policy must be an ARN")
     if module.params.get("max_session_duration"):
         max_session_duration = module.params.get("max_session_duration")
