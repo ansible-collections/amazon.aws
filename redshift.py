@@ -263,7 +263,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -275,9 +275,9 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 def _ensure_tags(redshift, identifier, existing_tags, module):
     """Compares and update resource tags"""
 
-    account_id = get_aws_account_id(module)
-    region = module.params.get("region")
-    resource_arn = f"arn:aws:redshift:{region}:{account_id}:cluster:{identifier}"
+    account_id, partition = get_aws_account_info(module)
+    region = module.region
+    resource_arn = f"arn:{partition}:redshift:{region}:{account_id}:cluster:{identifier}"
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
 

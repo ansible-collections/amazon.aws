@@ -338,9 +338,10 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.arn import parse_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.sns import list_topics
@@ -579,7 +580,7 @@ class SnsTopicManager(object):
         return True
 
     def _name_is_arn(self):
-        return self.name.startswith("arn:")
+        return bool(parse_aws_arn(self.name))
 
     def ensure_ok(self):
         changed = False

@@ -410,6 +410,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -444,18 +445,6 @@ def get_elasticache_tags_with_backoff(client, cluster_id):
     return client.list_tags_for_resource(ResourceName=cluster_id)["TagList"]
 
 
-def get_aws_account_id(module):
-    try:
-        client = module.client("sts")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Can't authorize connection")
-
-    try:
-        return client.get_caller_identity()["Account"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't obtain AWS account id")
-
-
 def get_elasticache_clusters(client, module):
     region = module.region
     try:
@@ -463,11 +452,11 @@ def get_elasticache_clusters(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't obtain cache cluster info")
 
-    account_id = get_aws_account_id(module)
+    account_id, partition = get_aws_account_info(module)
     results = []
     for cluster in clusters:
         cluster = camel_dict_to_snake_dict(cluster)
-        arn = f"arn:aws:elasticache:{region}:{account_id}:cluster:{cluster['cache_cluster_id']}"
+        arn = f"arn:{partition}:elasticache:{region}:{account_id}:cluster:{cluster['cache_cluster_id']}"
         try:
             tags = get_elasticache_tags_with_backoff(client, arn)
         except is_boto3_error_code("CacheClusterNotFound"):

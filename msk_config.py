@@ -98,6 +98,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
@@ -283,7 +284,8 @@ def main():
     # return some useless staff in check mode if configuration doesn't exists
     # can be useful when these options are referenced by other modules during check mode run
     if module.check_mode and not response.get("Arn"):
-        arn = "arn:aws:kafka:region:account:configuration/name/id"
+        account_id, partition = get_aws_account_info(module)
+        arn = f"arn:{partition}:kafka:{module.region}:{account_id}:configuration/{module.params['name']}/id"
         revision = 1
         server_properties = ""
     else:

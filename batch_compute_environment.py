@@ -233,6 +233,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
@@ -270,7 +271,7 @@ def validate_params(module):
         module.fail_json(
             msg=f"Function compute_environment_name {compute_environment_name} is invalid. Names must contain only alphanumeric characters and underscores."
         )
-    if not compute_environment_name.startswith("arn:aws:batch:"):
+    if not validate_aws_arn(compute_environment_name, service="batch"):
         if len(compute_environment_name) > 128:
             module.fail_json(msg=f'compute_environment_name "{compute_environment_name}" exceeds 128 character limit')
 

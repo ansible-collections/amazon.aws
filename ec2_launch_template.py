@@ -422,7 +422,6 @@ default_version:
   type: int
 """
 
-import re
 from uuid import uuid4
 
 try:
@@ -436,6 +435,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
@@ -446,7 +446,7 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 
 
 def determine_iam_role(module, name_or_arn):
-    if re.match(r"^arn:aws:iam::\d+:instance-profile/[\w+=/,.@-]+$", name_or_arn):
+    if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
         return {"arn": name_or_arn}
     iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
     try:
