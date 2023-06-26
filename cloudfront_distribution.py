@@ -1837,7 +1837,7 @@ class CloudFrontValidationManager(object):
 
                 if "custom_origin_config" in origin:
                     self.module.fail_json(
-                        msg="s3 origin domains and custom_origin_config are mutually exclusive"
+                        msg="s3 origin domains and custom_origin_config are mutually exclusive",
                     )
             else:
                 origin = self.add_missing_key(
