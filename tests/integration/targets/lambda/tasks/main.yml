@@ -469,25 +469,29 @@
       - lambda_infos_mappings.functions[0].policy is undefined
       - lambda_infos_mappings.functions[0].tags is undefined
 
-  # More Lambda update tests
-  - name: test state=present with all nullable variables explicitly set to null
-    lambda:
-      name: '{{lambda_function_name}}'
-      runtime: '{{ lambda_python_runtime }}'
-      role: '{{ lambda_role_name }}'
-      zip_file: '{{zip_res.dest}}'
-      handler: '{{ lambda_python_handler }}'
-      description:
-      vpc_subnet_ids:
-      vpc_security_group_ids:
-      environment_variables:
-      dead_letter_arn:
-    register: result
-  - name: assert lambda remains as before
-    assert:
-      that:
-      - result is not failed
-      - result.changed == False
+  # 2023-06-27
+  # An explicit "None" is no longer permitted by Ansible for parameters with a type other than "raw"
+  # (None is still the implicit value for "not set")
+  #
+  # # More Lambda update tests
+  # - name: test state=present with all nullable variables explicitly set to null
+  #   lambda:
+  #     name: '{{lambda_function_name}}'
+  #     runtime: '{{ lambda_python_runtime }}'
+  #     role: '{{ lambda_role_name }}'
+  #     zip_file: '{{zip_res.dest}}'
+  #     handler: '{{ lambda_python_handler }}'
+  #     description:
+  #     vpc_subnet_ids:
+  #     vpc_security_group_ids:
+  #     environment_variables:
+  #     dead_letter_arn:
+  #   register: result
+  # - name: assert lambda remains as before
+  #   assert:
+  #     that:
+  #     - result is not failed
+  #     - result.changed == False
 
   - name: test putting an environment variable changes lambda (check mode)
     lambda:
