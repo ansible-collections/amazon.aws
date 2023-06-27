@@ -93,7 +93,6 @@ backup_vault:
 
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -150,17 +149,14 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
         return True
 
     if tags_to_remove:
-        remove = {k: curr_tags[k] for k in tags_to_remove}
-        tags_to_remove = ansible_dict_to_boto3_tag_list(remove)
         try:
-            client.remove_tags(ResourceId=vault_arn, TagsList=tags_to_remove)
+            client.untag_resource(ResourceArn=vault_arn, TagKeyList=tags_to_remove)
         except (BotoCoreError, ClientError) as err:
             module.fail_json_aws(err, msg="Failed to remove tags from the vault")
 
     if tags_to_add:
-        tags_to_add = ansible_dict_to_boto3_tag_list(tags_to_add)
         try:
-            client.add_tags(ResourceId=vault_arn, TagsList=tags_to_add)
+            client.tag_resource(ResourceArn=vault_arn, Tags=tags_to_add)
         except (BotoCoreError, ClientError) as err:
             module.fail_json_aws(err, msg="Failed to add tags to Vault")
 
