@@ -100,7 +100,7 @@
         mode: list
       register: _objects
 
-    - name: Ensure objects with prefix 'file' were copied into bucket
+    - name: Ensure all objects were copied into bucket
       assert:
         that:
           - _copy_all is changed
@@ -121,7 +121,7 @@
         mode: list
       register: _objects
 
-    - name: Ensure objects with prefix 'file' were copied into bucket
+    - name: Ensure number of copied objects remains the same.
       assert:
         that:
           - _copy_all_idempotency is not changed

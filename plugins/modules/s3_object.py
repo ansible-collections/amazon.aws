@@ -237,7 +237,7 @@ options:
       prefix:
         description:
         - Copy all the keys that begin with the specified prefix.
-        - Ignored if I(copy_src.object) is not set.
+        - Ignored if I(copy_src.object) is supplied.
         default: ""
         type: str
         version_added: 6.2.0
@@ -582,16 +582,13 @@ def paginated_versioned_list_with_fallback(s3, **pagination_params):
             yield [{"Key": key}]
 
 
-def list_keys(s3, bucket, prefix, marker=None, max_keys=None):
+def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
     pagination_params = {
         "Bucket": bucket,
+        "Prefix": prefix,
+        "StartAfter": marker,
+        "MaxKeys": max_keys,
     }
-    if prefix:
-        pagination_params["Prefix"] = prefix
-    if marker:
-        pagination_params["StartAfter"] = marker
-    if max_keys:
-        pagination_params["MaxKeys"] = max_keys
     pagination_params = {k: v for k, v in pagination_params.items() if v}
 
     try:
