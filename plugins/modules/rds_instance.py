@@ -250,7 +250,7 @@ options:
     master_user_password:
         description:
           - An 8-41 character password for the master database user. The password can contain any printable ASCII character
-            except C(/), C("), or C(@). To modify the password use I(force_update_password). Use I(apply immediately) to change
+            except C(/), C("), or C(@). To modify the password use I(force_update_password). Use I(apply_immediately) to change
             the password immediately, otherwise it is updated during the next maintenance window.
         aliases:
           - password
