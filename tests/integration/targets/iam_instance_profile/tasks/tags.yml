@@ -1,0 +1,298 @@
+- vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+  module_defaults:
+    amazon.aws.iam_instance_profile:
+      name: '{{ test_profile }}'
+    amazon.aws.iam_instance_profile_info:
+      name: "{{ test_profile }}"
+  block:
+
+  # ============================================================
+  #
+
+  - name: (check) add tags
+    iam_instance_profile:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_profile is changed
+
+  - name: add tags
+    iam_instance_profile:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_profile
+
+  - name: get instance profile facts
+    iam_instance_profile_info: {}
+    register: tag_profile_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_profile is changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == first_tags
+
+  - name: (check) add tags - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_profile is not changed
+
+  - name: add tags - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info: {}
+    register: tag_profile_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_profile is not changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == first_tags
+
+  # ============================================================
+
+  - name: (check) modify tags with purge
+    iam_instance_profile:
+      tags: '{{ second_tags }}'
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_profile is changed
+
+  - name: modify tags with purge
+    iam_instance_profile:
+      tags: '{{ second_tags }}'
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_profile is changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == second_tags
+
+  - name: (check) modify tags with purge - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ second_tags }}'
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_profile is not changed
+
+  - name: modify tags with purge - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ second_tags }}'
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_profile is not changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == second_tags
+
+  # ============================================================
+
+  - name: (check) modify tags without purge
+    iam_instance_profile:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_profile is changed
+
+  - name: modify tags without purge
+    iam_instance_profile:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_profile is changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == final_tags
+
+  - name: (check) modify tags without purge - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_profile is not changed
+
+  - name: modify tags without purge - IDEMPOTENCY
+    iam_instance_profile:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_profile is not changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == final_tags
+
+  # ============================================================
+
+  - name: (check) No change to tags without setting tags
+    iam_instance_profile:
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_profile is not changed
+
+  - name: No change to tags without setting tags
+    iam_instance_profile:
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_profile is not changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == final_tags
+
+  # ============================================================
+
+  - name: (check) remove all tags
+    iam_instance_profile:
+      tags: {}
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_profile is changed
+
+  - name: remove all tags
+    iam_instance_profile:
+      tags: {}
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile facts
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_profile is changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == {}
+
+  - name: (check) remove all tags - IDEMPOTENCY
+    iam_instance_profile:
+      tags: {}
+      state: 'present'
+    register: tag_profile
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_profile is not changed
+
+  - name: remove all tags - IDEMPOTENCY
+    iam_instance_profile:
+      tags: {}
+      state: 'present'
+    register: tag_profile
+  - name: get instance profile
+    iam_instance_profile_info:
+    register: tag_profile_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_profile is not changed
+        - tag_profile_info.iam_instance_profiles[0].instance_profile_name == test_profile
+        - tag_profile_info.iam_instance_profiles[0].tags == {}
