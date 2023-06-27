@@ -385,12 +385,12 @@ def get_existing_checks_with_name():
     results = _list_health_checks()
     health_checks_with_name = {}
     while True:
-        for check in results.get('HealthChecks'):
-            if 'Name' in describe_health_check(check['Id'])['tags']:
-                check_name = describe_health_check(check['Id'])['tags']['Name']
+        for check in results.get("HealthChecks"):
+            if "Name" in describe_health_check(check["Id"])["tags"]:
+                check_name = describe_health_check(check["Id"])["tags"]["Name"]
                 health_checks_with_name[check_name] = check
-        if results.get('IsTruncated', False):
-            results = _list_health_checks(Marker=results.get('NextMarker'))
+        if results.get("IsTruncated", False):
+            results = _list_health_checks(Marker=results.get("NextMarker"))
         else:
             return health_checks_with_name
 
