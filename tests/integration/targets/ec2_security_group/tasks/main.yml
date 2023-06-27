@@ -32,15 +32,15 @@
           Description: "Created by ansible-test"
       register: vpc_result
     #TODO(ryansb): Update CI for VPC peering permissions
-    #- include: ./multi_account.yml
-    - include: ./diff_mode.yml
-    - include: ./numeric_protos.yml
-    - include: ./rule_group_create.yml
-    - include: ./egress_tests.yml
-    - include: ./icmp_verbs.yml
-    - include: ./data_validation.yml
-    - include: ./multi_nested_target.yml
-    - include: ./group_info.yml
+    #- include_tasks: ./multi_account.yml
+    - include_tasks: ./diff_mode.yml
+    - include_tasks: ./numeric_protos.yml
+    - include_tasks: ./rule_group_create.yml
+    - include_tasks: ./egress_tests.yml
+    - include_tasks: ./icmp_verbs.yml
+    - include_tasks: ./data_validation.yml
+    - include_tasks: ./multi_nested_target.yml
+    - include_tasks: ./group_info.yml
 
     # ============================================================
     - name: test state=absent (CHECK MODE)
@@ -137,7 +137,7 @@
 
     # ============================================================
     - name: tests IPv6 with the default VPC
-      include: ./ipv6_default_tests.yml
+      include_tasks: ./ipv6_default_tests.yml
       when: default_vpc
 
     - name: test IPv6 with a specified VPC
