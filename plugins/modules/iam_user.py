@@ -182,8 +182,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
@@ -208,7 +209,7 @@ def convert_friendly_names_to_arns(connection, module, policy_names):
     # List comprehension that looks for any policy in the 'policy_names' list
     # that does not begin with 'arn'. If there aren't any, short circuit.
     # If there are, translate friendly name to the full arn
-    if not any(not policy.startswith("arn:") for policy in policy_names if policy is not None):
+    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
     paginator = connection.get_paginator("list_policies")
@@ -218,7 +219,7 @@ def convert_friendly_names_to_arns(connection, module, policy_names):
         allpolicies[policy["PolicyName"]] = policy["Arn"]
         allpolicies[policy["Arn"]] = policy["Arn"]
     try:
-        return [allpolicies[policy] for policy in policy_names]
+        return [allpolicies[policy] for policy in policy_names if policy is not None]
     except KeyError as e:
         module.fail_json(msg="Couldn't find policy: " + str(e))
 

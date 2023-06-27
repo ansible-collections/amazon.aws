@@ -51,7 +51,7 @@ class FailJsonException(Exception):
 
 @pytest.fixture
 def ec2_instance(monkeypatch):
-    monkeypatch.setattr(ec2_instance_module, "parse_aws_arn", lambda arn: None)
+    monkeypatch.setattr(ec2_instance_module, "validate_aws_arn", lambda arn, service, resource_type: None)
     monkeypatch.setattr(ec2_instance_module, "module", MagicMock())
     ec2_instance_module.module.fail_json.side_effect = FailJsonException()
     ec2_instance_module.module.fail_json_aws.side_effect = FailJsonException()
@@ -60,7 +60,7 @@ def ec2_instance(monkeypatch):
 
 def test_determine_iam_role_arn(params_object, ec2_instance, monkeypatch):
     # Revert the default monkey patch to make it simple to try passing a valid ARNs
-    monkeypatch.setattr(ec2_instance, "parse_aws_arn", utils_arn.parse_aws_arn)
+    monkeypatch.setattr(ec2_instance, "validate_aws_arn", utils_arn.validate_aws_arn)
 
     # Simplest example, someone passes a valid instance profile ARN
     arn = ec2_instance.determine_iam_role("arn:aws:iam::123456789012:instance-profile/myprofile")
