@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.iam_instance_profile_info module – gather information on IAM instance profiles &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
@@ -21,8 +21,8 @@
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.iam_policy_info module – Retrieve inline IAM policies for users, groups, and roles" href="iam_policy_info_module.html" />
-    <link rel="prev" title="amazon.aws.iam_instance_profile_info module – gather information on IAM instance profiles" href="iam_instance_profile_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles" href="iam_policy_module.html" />
+    <link rel="prev" title="amazon.aws.iam_instance_profile module – manage IAM instance profiles" href="iam_instance_profile_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -123,10 +123,10 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles</li>
+      <li class="breadcrumb-item active">amazon.aws.iam_instance_profile_info module – gather information on IAM instance profiles</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/iam_policy.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/iam_instance_profile_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -136,17 +136,17 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-iam-policy-module"></span><section id="amazon-aws-iam-policy-module-manage-inline-iam-policies-for-users-groups-and-roles">
-<h1>amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles<a class="headerlink" href="#amazon-aws-iam-policy-module-manage-inline-iam-policies-for-users-groups-and-roles" title="Permalink to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-iam-instance-profile-info-module"></span><section id="amazon-aws-iam-instance-profile-info-module-gather-information-on-iam-instance-profiles">
+<h1>amazon.aws.iam_instance_profile_info module – gather information on IAM instance profiles<a class="headerlink" href="#amazon-aws-iam-instance-profile-info-module-gather-information-on-iam-instance-profiles" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 7.0.0-dev0).</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-policy-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.iam_policy</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.iam_instance_profile_info</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 5.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 6.2.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -160,13 +160,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>Allows uploading or removing inline IAM policies for IAM users, groups or roles.</p></li>
-<li><p>To administer managed policies please see <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/iam_user_module.html#ansible-collections-community-aws-iam-user-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.iam_user</span></a>, <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/iam_role_module.html#ansible-collections-community-aws-iam-role-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.iam_role</span></a>, <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/iam_group_module.html#ansible-collections-community-aws-iam-group-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.iam_group</span></a> and <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/iam_managed_policy_module.html#ansible-collections-community-aws-iam-managed-policy-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.iam_managed_policy</span></a></p></li>
-<li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
+<li><p>Gathers information about IAM instance profiles.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-iam-policy-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -187,7 +185,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <div class="ansibleOptionAnchor" id="parameter-access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-access-key"></span><strong>access_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-access-key"></span><strong>access_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -201,7 +199,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
@@ -209,7 +207,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-config"><strong>aws_config</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-config"><strong>aws_config</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
@@ -217,7 +215,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use a <code class="docutils literal notranslate"><span class="pre">botocore.endpoint</span></code> logger to parse the unique (rather than total) <code class="docutils literal notranslate"><span class="pre">&quot;resource:action&quot;</span></code> API calls made during a task, outputing the set to the resource_actions key in the task results. Use the <code class="docutils literal notranslate"><span class="pre">aws_resource_action</span></code> callback to output to total list made during a playbook.</p>
@@ -233,7 +231,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -244,42 +242,29 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-iam_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-iam-name"><strong>iam_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-iam_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-instance_profile_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-name"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-instance-profile-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: instance_profile_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of IAM resource you wish to target for policy actions. In other words, the user name, group name or role name.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-iam_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-iam-type"><strong>iam_type</strong></p>
-<a class="ansibleOptionLink" href="#parameter-iam_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Type of IAM resource.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;group&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;role&quot;</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-policy_json"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-policy-json"><strong>policy_json</strong></p>
-<a class="ansibleOptionLink" href="#parameter-policy_json" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>A properly json formatted policy as string.</p>
+<td><div class="ansible-option-cell"><p>Name of an instance profile to search for.</p>
+<p>Mutually exclusive with <em>prefix</em>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-policy-name"><strong>policy_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-policy_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-path_prefix"></div>
+<div class="ansibleOptionAnchor" id="parameter-path"></div>
+<div class="ansibleOptionAnchor" id="parameter-prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-prefix"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-path-prefix"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-path"></span><strong>path_prefix</strong></p>
+<a class="ansibleOptionLink" href="#parameter-path_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: path, prefix</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The name label for the policy to create or remove.</p>
+<td><div class="ansible-option-cell"><p>The path prefix for filtering the results.</p>
+<p>Mutually exclusive with <em>name</em>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-profile"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-profile"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -292,7 +277,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-region"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-region"></span><strong>region</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-region"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-region"></span><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -308,7 +293,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -326,7 +311,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-session-token"><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-iam-policy-module-parameter-access-token"></span><strong>session_token</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-session-token"><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-access-token"></span><strong>session_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -340,31 +325,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-skip_duplicates"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-skip-duplicates"><strong>skip_duplicates</strong></p>
-<a class="ansibleOptionLink" href="#parameter-skip_duplicates" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>When <em>skip_duplicates=true</em> the module looks for any policies that match the document you pass in. If there is a match it will not make a new policy object with the same rules.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
-<ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-state"><strong>state</strong></p>
-<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Whether to create or delete the IAM policy.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
-<ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, SSL certificates will not be validated for communication with the AWS APIs.</p>
@@ -391,37 +352,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Advanced example, create two new groups and add a READ-ONLY policy to both</span>
-<span class="c1"># groups.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create Two Groups, Mario and Luigi</span>
-<span class="w">  </span><span class="nt">community.aws.iam_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">  </span><span class="nt">loop</span><span class="p">:</span>
-<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Mario</span>
-<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Luigi</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_groups</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Find all existing IAM instance profiles</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_instance_profile_info</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Apply READ-ONLY policy to new groups that have been recently created</span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">iam_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">group</span>
-<span class="w">    </span><span class="nt">iam_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.iam_group.group.group_name</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;READ-ONLY&quot;</span>
-<span class="w">    </span><span class="nt">policy_json</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;readonly.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">new_groups.results</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Describe a single instance profile</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_instance_profile_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyIAMProfile</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
 
-<span class="c1"># Create a new S3 policy with prefix per user</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create S3 policy from template</span>
-<span class="w">  </span><span class="nt">amazon.aws.iam_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">iam_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span>
-<span class="w">    </span><span class="nt">iam_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.user</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;s3_limited_access_</span><span class="cp">{{</span> <span class="nv">item.prefix</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">policy_json</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;s3_policy.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">loop</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3_user</span>
-<span class="w">        </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3_user_prefix</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Find all IAM instance profiles starting with /some/path/</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_instance_profile_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">prefile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/some/path/</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
 </pre></div>
 </div>
 </section>
@@ -436,11 +379,65 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-policy_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-policy-names"><strong>policy_names</strong></p>
-<a class="ansibleOptionLink" href="#return-policy_names" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles"><strong>iam_instance_profiles</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).</p>
+<td><div class="ansible-option-cell"><p>List of IAM instance profiles</p>
 <p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-arn"><strong>arn</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Amazon Resource Name for the instance profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:instance-profile/AnsibleTestProfile&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-create-date"><strong>create_date</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date instance profile was created.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2023-01-12T11:18:29+00:00&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/instance_profile_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-instance-profile-id"><strong>instance_profile_id</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/instance_profile_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Amazon Identifier for the instance profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AROA12345EXAMPLE54321&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/instance_profile_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-instance-profile-name"><strong>instance_profile_name</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/instance_profile_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of instance profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AnsibleTestEC2Policy&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-path"><strong>path</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Path of instance profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/roles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-roles"><strong>roles</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/roles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of roles associated with this instance profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> always</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 </tbody>
@@ -448,8 +445,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
 <ul class="simple">
-<li><p>Jonathan I. Davila (&#64;defionscode)</p></li>
-<li><p>Dennis Podkovyrin (&#64;sbj-ss)</p></li>
+<li><p>Mark Chappell (&#64;tremble)</p></li>
 </ul>
 </section>
 <section id="collection-links">
@@ -468,8 +464,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="iam_instance_profile_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.iam_instance_profile_info module – gather information on IAM instance profiles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="iam_policy_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.iam_policy_info module – Retrieve inline IAM policies for users, groups, and roles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="iam_instance_profile_module.html" class="btn btn-neutral float-left" title="amazon.aws.iam_instance_profile module – manage IAM instance profiles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="iam_policy_module.html" class="btn btn-neutral float-right" title="amazon.aws.iam_policy module – Manage inline IAM policies for users, groups, and roles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
