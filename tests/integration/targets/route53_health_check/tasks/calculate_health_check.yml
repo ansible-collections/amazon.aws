@@ -1,0 +1,89 @@
+---
+- block:
+    # Create Health Check =================================================================
+    - name: 'Create Health Check with name'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+      register: create_result
+    
+    # Create, Update, and Delete =================================================================
+    - name: Create Calculated Health Check
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: create_calculated
+    
+    - name: 'Check result - Calculated Health Check'
+      assert:
+        that:
+        - create_calculated is not failed
+        - create_calculated is changed
+
+    - name: Update Calculated Health Check - idempotency
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: create_idem
+    
+    - name: 'Check result - Calculated Health Check - idempotency'
+      assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+    
+    - name: Update Calculated Health Check
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 2
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: updated_calculated
+    
+    - name: 'Check result - Update Calculated Health Check - idempotency'
+      assert:
+        that:
+        - updated_calculated is not failed
+        - updated_calculated is changed
+    
+  # Cleanup starts here =================================================================
+  always:
+      - name: 'Delete Calculated Health Check'
+        amazon.aws.route53_health_checK:
+          state: absent
+          health_check_id: '{{ create_calculated.health_check.id }}'
+        register: deleted_calculated
+
+      - assert:
+          that:
+            - deleted_calculated is not failed
+            - deleted_calculated is changed
+          
+      - name: 'Delete Health Check'
+        amazon.aws.route53_health_check:
+          state: absent
+          name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+          ip_address: '{{ ip_address }}'
+          port: '{{ port }}'
+          type: '{{ type_http }}'
+          resource_path: '{{ resource_path }}'
+          use_unique_names: true
+          fqdn: '{{ fqdn }}'
+
+      - assert:
+          that:
+            - delete_result is not failed
+            - delete_result is changed

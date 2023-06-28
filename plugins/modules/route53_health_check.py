@@ -278,7 +278,6 @@ health_check:
 """
 
 import uuid
-import q
 
 try:
     import botocore
@@ -452,7 +451,6 @@ def update_health_check(existing_check):
     # - IPAddress
     # - Port
     # - FullyQualifiedDomainName
-    # new
     # - ChildHealthChecks
     # - HealthThreshold
 
@@ -503,7 +501,6 @@ def update_health_check(existing_check):
                 changes['HealthThreshold'] = module.params.get('health_threshold')
 
     # No changes...
-    q(changes)
     if not changes:
         return False, None, check_id
     if module.check_mode:
@@ -548,11 +545,9 @@ def main():
         disabled=dict(type="bool"),
         ip_address=dict(),
         port=dict(type="int"),
-        # new
         type=dict(choices=["HTTP", "HTTPS", "HTTP_STR_MATCH", "HTTPS_STR_MATCH", "TCP", "CALCULATED"]),
         child_health_checks=dict(type='list', elements='str'),
         health_threshold=dict(type='int', default=1),
-        #
         resource_path=dict(),
         fqdn=dict(),
         string_match=dict(),
@@ -608,7 +603,6 @@ def main():
     health_check_name = module.params.get("health_check_name")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
-    # new
     child_health_checks_in = module.params.get("child_health_checks")
     health_threshold_in = module.params.get("health_threshold")
 
