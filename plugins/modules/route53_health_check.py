@@ -51,16 +51,13 @@ options:
     description:
       - The child health checks used for a calculated health check.
       - This parameter takes in the child health checks ids.
-    type: list of str
-    returned: When the health check exists and child health checks are configured.
-    sample: ['uuid1', 'uuid2']
+    type: list
+    elements: str
   health_threshold:
     description:
       - The minimum number of healthy child health checks for a calculated health check to be considered healthy.
     default: 1
     type: int
-    returned: When a calculated health check is configured.
-    sample: 1
   resource_path:
     description:
       - The path that you want Amazon Route 53 to request when performing
