@@ -47,6 +47,20 @@ options:
       - Once health_check is created, type can not be changed.
     choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP', 'CALCULATED' ]
     type: str
+  child_health_checks:
+    description:
+      - The child health checks used for a calculated health check. 
+      - This parameter takes in the child health checks ids.
+    type: list of str
+    returned: When the health check exists and child health checks are configured.
+    sample: ['uuid1', 'uuid2']
+  health_threshold:
+    description:
+      - The minimum number of healthy child health checks for a calculated health check to be considered healthy.
+    default: 1
+    type: int
+    returned: When a calculated health check is configured.
+    sample: 1
   resource_path:
     description:
       - The path that you want Amazon Route 53 to request when performing
@@ -119,18 +133,6 @@ options:
     type: bool
     required: False
     version_added: 5.4.0
-  child_health_checks:
-    description:
-      - The child health checks used for a calculated health check.
-    type: list of str
-    returned: When the health check exists and child health checks are configured.
-    sample: ['uuid1', 'uuid2']
-  health_threshold:
-    description:
-      - The minimum number of healthy child health checks for a calculated health check to be considered healthy.
-    type: int
-    returned: When a calculated health check is configured.
-    sample: 1
 author:
   - "zimbatm (@zimbatm)"
 notes:
