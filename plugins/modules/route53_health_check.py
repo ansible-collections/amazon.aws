@@ -45,7 +45,7 @@ options:
       - The type of health check that you want to create, which indicates how
         Amazon Route 53 determines whether an endpoint is healthy.
       - Once health_check is created, type can not be changed.
-    choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP' ]
+    choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP', 'CALCULATED' ]
     type: str
   resource_path:
     description:
@@ -119,6 +119,18 @@ options:
     type: bool
     required: False
     version_added: 5.4.0
+  child_health_checks:
+    description:
+      - The child health checks used for a calculated health check.
+    type: list of str
+    returned: When the health check exists and child health checks are configured.
+    sample: ['uuid1', 'uuid2']
+  health_threshold:
+    description:
+      - The minimum number of healthy child health checks for a calculated health check to be considered healthy.
+    type: int
+    returned: When a calculated health check is configured.
+    sample: 1
 author:
   - "zimbatm (@zimbatm)"
 notes:
@@ -373,7 +385,9 @@ def delete_health_check(check_id):
     return True, "delete"
 
 
-def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in, child_health_checks_in, health_threshold_in):
+def create_health_check(
+    ip_addr_in, fqdn_in, type_in, request_interval_in, port_in, child_health_checks_in, health_threshold_in
+):
     # In general, if a request is repeated with the same CallerRef it won't
     # result in a duplicate check appearing.  This means we can safely use our
     # retry decorators
@@ -404,13 +418,13 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
             missing_args.append("string_match")
         health_check["SearchString"] = module.params.get("string_match")
 
-    if type_in == 'CALCULATED':
+    if type_in == "CALCULATED":
         if not child_health_checks_in:
-            missing_args.append('child_health_checks')
+            missing_args.append("child_health_checks")
         if not health_threshold_in:
-            missing_args.append('health_threshold')
-        health_check['ChildHealthChecks'] = child_health_checks_in
-        health_check['HealthThreshold'] = health_threshold_in
+            missing_args.append("health_threshold")
+        health_check["ChildHealthChecks"] = child_health_checks_in
+        health_check["HealthThreshold"] = health_threshold_in
     else:
         failure_threshold = module.params.get("failure_threshold")
         if not failure_threshold:
@@ -457,7 +471,6 @@ def update_health_check(existing_check):
     changes = dict()
     existing_config = existing_check.get("HealthCheckConfig")
     check_id = existing_check.get("Id")
-    
 
     resource_path = module.params.get("resource_path", None)
     if resource_path and resource_path != existing_config.get("ResourcePath"):
@@ -467,11 +480,11 @@ def update_health_check(existing_check):
     if search_string and search_string != existing_config.get("SearchString"):
         changes["SearchString"] = search_string
 
-    type_in = module.params.get('type', None)
-    if type_in != 'CALCULATED':
-        failure_threshold = module.params.get('failure_threshold', None)
-        if failure_threshold and failure_threshold != existing_config.get('FailureThreshold'):
-            changes['FailureThreshold'] = failure_threshold
+    type_in = module.params.get("type", None)
+    if type_in != "CALCULATED":
+        failure_threshold = module.params.get("failure_threshold", None)
+        if failure_threshold and failure_threshold != existing_config.get("FailureThreshold"):
+            changes["FailureThreshold"] = failure_threshold
 
     disabled = module.params.get("disabled", None)
     if disabled is not None and disabled != existing_config.get("Disabled"):
@@ -491,14 +504,14 @@ def update_health_check(existing_check):
         if fqdn is not None and fqdn != existing_config.get("FullyQualifiedDomainName"):
             changes["FullyQualifiedDomainName"] = module.params.get("fqdn")
 
-        if type_in == 'CALCULATED':
-            child_health_checks = module.params.get('child_health_checks', None)
+        if type_in == "CALCULATED":
+            child_health_checks = module.params.get("child_health_checks", None)
             if child_health_checks is not None and child_health_checks != existing_config.get("ChildHealthChecks"):
-                changes['ChildHealthChecks'] = module.params.get('child_health_checks')
+                changes["ChildHealthChecks"] = module.params.get("child_health_checks")
 
-            health_threshold = module.params.get('health_threshold', None)
+            health_threshold = module.params.get("health_threshold", None)
             if health_threshold is not None and health_threshold != existing_config.get("HealthThreshold"):
-                changes['HealthThreshold'] = module.params.get('health_threshold')
+                changes["HealthThreshold"] = module.params.get("health_threshold")
 
     # No changes...
     if not changes:
@@ -546,8 +559,8 @@ def main():
         ip_address=dict(),
         port=dict(type="int"),
         type=dict(choices=["HTTP", "HTTPS", "HTTP_STR_MATCH", "HTTPS_STR_MATCH", "TCP", "CALCULATED"]),
-        child_health_checks=dict(type='list', elements='str'),
-        health_threshold=dict(type='int', default=1),
+        child_health_checks=dict(type="list", elements="str"),
+        health_threshold=dict(type="int", default=1),
         resource_path=dict(),
         fqdn=dict(),
         string_match=dict(),
@@ -652,7 +665,9 @@ def main():
     # Create Health Check
     elif state_in == "present":
         if existing_check is None and not module.params.get("use_unique_names") and not update_delete_by_id:
-            changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in, child_health_checks_in, health_threshold_in)
+            changed, action, check_id = create_health_check(
+                ip_addr_in, fqdn_in, type_in, request_interval_in, port_in, child_health_checks_in, health_threshold_in
+            )
 
         # Update Health Check
         else:
@@ -670,7 +685,13 @@ def main():
                 else:
                     # create a new health_check if another health check with same name does not exists
                     changed, action, check_id = create_health_check(
-                        ip_addr_in, fqdn_in, type_in, request_interval_in, port_in, child_health_checks_in, health_threshold_in,
+                        ip_addr_in,
+                        fqdn_in,
+                        type_in,
+                        request_interval_in,
+                        port_in,
+                        child_health_checks_in,
+                        health_threshold_in,
                     )
 
             else:
