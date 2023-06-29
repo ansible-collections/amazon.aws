@@ -49,7 +49,7 @@ options:
     type: str
   child_health_checks:
     description:
-      - The child health checks used for a calculated health check. 
+      - The child health checks used for a calculated health check.
       - This parameter takes in the child health checks ids.
     type: list of str
     returned: When the health check exists and child health checks are configured.
