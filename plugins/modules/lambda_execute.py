@@ -252,17 +252,16 @@ def main():
                 [results['output'].get('stackTrace'), results['output'].get('errorMessage')]):
             # AWS sends back stack traces and error messages when a function failed
             # in a RequestResponse (synchronous) context.
-            template = ("Function executed, but there was an error in the Lambda function. "
-                        "Message: {errmsg}, Type: {type}, Stack Trace: {trace}")
+            template = (
+                "Function executed, but there was an error in the Lambda function. "
+                "Message: {errmsg}, Type: {type}, Stack Trace: {trace}"
+            )
+
             error_data = {
                 # format the stacktrace sent back as an array into a multiline string
-                'trace': '\n'.join(
-                    [' '.join([
-                        str(x) for x in line  # cast line numbers to strings
-                    ]) for line in results.get('output', {}).get('stackTrace', [])]
-                ),
-                'errmsg': results['output'].get('errorMessage'),
-                'type': results['output'].get('errorType')
+                "trace": "\n".join(results.get("output", {}).get("stackTrace", [])),
+                "errmsg": results["output"].get("errorMessage"),
+                "type": results["output"].get("errorType"),
             }
             module.fail_json(msg=template.format(**error_data), result=results)
 
