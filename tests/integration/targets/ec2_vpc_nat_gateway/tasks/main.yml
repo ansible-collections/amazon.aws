@@ -919,6 +919,7 @@
       - create_ngw.changed
       - create_ngw.connectivity_type == 'private'
       - '"create_time" in create_ngw'
+      - '"allocation_id" not in create_ngw.nat_gateway_addresses[0]'
 
   - name: 'set facts: NAT gateway ID'
     set_fact:

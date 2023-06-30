@@ -736,10 +736,11 @@ def pre_create(
             msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
             return changed, msg, results
         else:
-            changed, msg, allocation_id = allocate_eip_address(client, module)
+            if connectivity_type == "public":
+                changed, msg, allocation_id = allocate_eip_address(client, module)
 
-            if not changed:
-                return changed, msg, dict()
+                if not changed:
+                    return changed, msg, dict()
 
     elif eip_address or allocation_id:
         if eip_address and not allocation_id:
