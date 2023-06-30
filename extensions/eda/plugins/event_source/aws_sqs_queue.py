@@ -14,7 +14,7 @@ Arguments:
 
 Example:
 -------
-    - ansible.eda.aws_sqs:
+    - ansible.eda.aws_sqs_queue:
         region: us-east-1
         name: eda
         delay_seconds: 10
