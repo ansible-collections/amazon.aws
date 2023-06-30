@@ -1,2 +1,5 @@
 minor_changes:
 - backup_selection - add validateion and documentation for all conditions suboptions (https://github.com/ansible-collections/amazon.aws/pull/1633).
+
+bugfixes:
+- module_utils.backup - get_selection_details fix empty list returned when multiple backup selections exist (https://github.com/ansible-collections/amazon.aws/pull/1633).
