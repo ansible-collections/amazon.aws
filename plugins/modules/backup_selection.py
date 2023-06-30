@@ -43,6 +43,7 @@ options:
     description:
       - A list of conditions that you define to assign resources to your backup plans using tags.
       - Condition operators are case sensitive.
+      - When you specify more than one condition in I(list_of_tags), you assign all resources that match AT LEAST ONE condition (using OR logic).
     type: list
     elements: dict
     suboptions:
@@ -69,8 +70,71 @@ options:
   conditions:
     description:
       - A list of conditions (expressed as a dict) that you define to assign resources to your backup plans using tags.
+      - When you specify more than one condition in I(conditions), you only assign the resources that match ALL conditions (using AND logic).
       - I(conditions) supports C(StringEquals), C(StringLike), C(StringNotEquals), and C(StringNotLike). I(list_of_tags) only supports C(StringEquals).
     type: dict
+    suboptions:
+      string_equals:
+        description:
+          - Filters the values of your tagged resources for only those resources that you tagged with the same value.
+        type: list
+        default: []
+        elements: dict
+        suboptions:
+          condition_key:
+            description:
+              - The key in a key-value pair.
+              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+            type: str
+          condition_value:
+            description: The value in a key-value pair.
+            type: str
+      string_like:
+        description:
+          - Filters the values of your tagged resources for matching tag values with the use of a wildcard character (*) anywhere in the string.
+            For example, "prod*" or "*rod*" matches the tag value "production".
+        type: list
+        default: []
+        elements: dict
+        suboptions:
+          condition_key:
+            description:
+              - The key in a key-value pair.
+              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+            type: str
+          condition_value:
+            description: The value in a key-value pair.
+            type: str
+      string_not_equals:
+        description:
+          - Filters the values of your tagged resources for only those resources that you tagged that do not have the same value.
+        type: list
+        default: []
+        elements: dict
+        suboptions:
+          condition_key:
+            description:
+              - The key in a key-value pair.
+              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+            type: str
+          condition_value:
+            description: The value in a key-value pair.
+            type: str
+      string_not_like:
+        description:
+          - Filters the values of your tagged resources for non-matching tag values with the use of a wildcard character (*) anywhere in the string.
+        type: list
+        default: []
+        elements: dict
+        suboptions:
+          condition_key:
+            description:
+              - The key in a key-value pair.
+              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+            type: str
+          condition_value:
+            description: The value in a key-value pair.
+            type: str
   state:
     description:
       - Create, delete a backup selection.
@@ -220,7 +284,47 @@ def main():
         backup_plan_name=dict(type="str", required=True, aliases=["plan_name"]),
         iam_role_arn=dict(type="str"),
         resources=dict(type="list", elements="str"),
-        conditions=dict(type="dict"),
+        conditions=dict(
+            type="dict",
+            options=dict(
+                string_equals=dict(
+                    type="list",
+                    default=[],
+                    elements="dict",
+                    options=dict(
+                        condition_key=dict(type="str", no_log=False),
+                        condition_value=dict(type="str"),
+                    ),
+                ),
+                string_like=dict(
+                    type="list",
+                    default=[],
+                    elements="dict",
+                    options=dict(
+                        condition_key=dict(type="str", no_log=False),
+                        condition_value=dict(type="str"),
+                    ),
+                ),
+                string_not_equals=dict(
+                    type="list",
+                    default=[],
+                    elements="dict",
+                    options=dict(
+                        condition_key=dict(type="str", no_log=False),
+                        condition_value=dict(type="str"),
+                    ),
+                ),
+                string_not_like=dict(
+                    type="list",
+                    default=[],
+                    elements="dict",
+                    options=dict(
+                        condition_key=dict(type="str", no_log=False),
+                        condition_value=dict(type="str"),
+                    ),
+                ),
+            ),
+        ),
         not_resources=dict(type="list", elements="str"),
         list_of_tags=dict(
             type="list",
@@ -271,8 +375,7 @@ def main():
 
         if current_selection:
             results["exists"] = True
-            update_needed |= check_for_update(current_selection, backup_selection_data, iam_role_arn)
-
+            update_needed = check_for_update(current_selection, backup_selection_data, iam_role_arn)
             if update_needed:
                 if module.check_mode:
                     results["changed"] = True
