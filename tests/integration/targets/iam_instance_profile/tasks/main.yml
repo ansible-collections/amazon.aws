@@ -1,0 +1,510 @@
+---
+# Tests for iam_instance_profile and iam_instance_profile_info
+#
+
+- name: "Setup AWS connection info"
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+    - community.general
+  block:
+    # ===================================================================
+    # Prepare
+
+    - name: "Prepare IAM Roles"
+      iam_role:
+        state: present
+        name: "{{ item }}"
+        path: "{{ test_path }}"
+        create_instance_profile: True
+        assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+        managed_policies:
+          - "{{ safe_managed_policy }}"
+        wait: True
+      loop:
+        - "{{ test_role }}"
+        - "{{ test_role }}-2"
+
+    # ===================================================================
+    # Test
+
+    # ===================================================================
+
+    - name: "Create minimal Instance Profile (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Create minimal Instance Profile"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Create minimal Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Create minimal Instance Profile - Idempotent"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # ===================================================================
+
+    - include_tasks: 'tags.yml'
+
+    # ===================================================================
+
+    - name: "Add role to Instance Profile (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Add role to Instance Profile"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Add role to Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Add role to Instance Profile - Idempotent"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # =====
+
+    - name: "Replace role on Instance Profile (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}-2"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Replace role on Instance Profile"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}-2"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Replace role on Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}-2"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Replace role on Instance Profile - Idempotent"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: "{{ test_role }}-2"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # =====
+
+    - name: "Remove role from Instance Profile (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: ""
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Remove role from Instance Profile"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: ""
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Remove role from Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: ""
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Remove role from Instance Profile - Idempotent"
+      iam_instance_profile:
+        name: "{{ test_profile }}"
+        role: ""
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # ===================================================================
+
+    - name: "Create complex Instance Profile (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile_complex }}"
+        role: "{{ test_role }}-2"
+        path: "{{ test_path }}"
+        tags: "{{ test_tags }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Create complex Instance Profile"
+      iam_instance_profile:
+        name: "{{ test_profile_complex }}"
+        role: "{{ test_role }}-2"
+        path: "{{ test_path }}"
+        tags: "{{ test_tags }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Create complex Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        name: "{{ test_profile_complex }}"
+        role: "{{ test_role }}-2"
+        path: "{{ test_path }}"
+        tags: "{{ test_tags }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Create complex Instance Profile - Idempotent"
+      iam_instance_profile:
+        name: "{{ test_profile_complex }}"
+        role: "{{ test_role }}-2"
+        path: "{{ test_path }}"
+        tags: "{{ test_tags }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # ===================================================================
+
+    - name: "List all Instance Profiles (no filter)"
+      iam_instance_profile_info:
+      register: profile_info
+
+    - assert:
+        that:
+          - profile_info.iam_instance_profiles | length >= 4
+          - '"{{ test_role }}" in profile_names'
+          - '"{{ test_role }}-2" in profile_names'
+          - '"{{ test_profile }}" in profile_names'
+          - '"{{ test_profile_complex }}" in profile_names'
+
+          - '"arn" in complex_profile'
+          - '"create_date" in complex_profile'
+          - '"instance_profile_id" in complex_profile'
+          - '"instance_profile_name" in complex_profile'
+          - complex_profile.instance_profile_name == test_profile_complex
+          - '"path" in complex_profile'
+          - complex_profile.path == test_path
+          - '"roles" in complex_profile'
+          - complex_profile.roles | length == 1
+          - '"arn" in complex_profile.roles[0]'
+          - '"assume_role_policy_document" in complex_profile.roles[0]'
+          - '"create_date" in complex_profile.roles[0]'
+          - '"path" in complex_profile.roles[0]'
+          - complex_profile.roles[0].path == test_path
+          - '"role_id" in complex_profile.roles[0]'
+          - '"role_name" in complex_profile.roles[0]'
+          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+      vars:
+        profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+
+    - name: "List all Instance Profiles (filter by path)"
+      iam_instance_profile_info:
+        path: "{{ test_path }}"
+      register: profile_info
+
+    - assert:
+        that:
+          - profile_info.iam_instance_profiles | length == 3
+          - '"{{ test_role }}" in profile_names'
+          - '"{{ test_role }}-2" in profile_names'
+          - '"{{ test_profile_complex }}" in profile_names'
+
+          - '"arn" in complex_profile'
+          - '"create_date" in complex_profile'
+          - '"instance_profile_id" in complex_profile'
+          - '"instance_profile_name" in complex_profile'
+          - complex_profile.instance_profile_name == test_profile_complex
+          - '"path" in complex_profile'
+          - complex_profile.path == test_path
+          - '"roles" in complex_profile'
+          - complex_profile.roles | length == 1
+          - '"arn" in complex_profile.roles[0]'
+          - '"assume_role_policy_document" in complex_profile.roles[0]'
+          - '"create_date" in complex_profile.roles[0]'
+          - '"path" in complex_profile.roles[0]'
+          - complex_profile.roles[0].path == test_path
+          - '"role_id" in complex_profile.roles[0]'
+          - '"role_name" in complex_profile.roles[0]'
+          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+      vars:
+        profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+
+    - name: "List all Instance Profiles (filter by name - complex)"
+      iam_instance_profile_info:
+        name: "{{ test_profile_complex }}"
+      register: profile_info
+
+    - assert:
+        that:
+          - profile_info.iam_instance_profiles | length == 1
+          - '"{{ test_profile_complex }}" in profile_names'
+
+          - '"arn" in complex_profile'
+          - '"create_date" in complex_profile'
+          - '"instance_profile_id" in complex_profile'
+          - '"instance_profile_name" in complex_profile'
+          - complex_profile.instance_profile_name == test_profile_complex
+          - '"path" in complex_profile'
+          - complex_profile.path == test_path
+          - '"tags" in complex_profile'
+          - complex_profile.tags == test_tags
+          - '"roles" in complex_profile'
+          - complex_profile.roles | length == 1
+          - '"arn" in complex_profile.roles[0]'
+          - '"assume_role_policy_document" in complex_profile.roles[0]'
+          - '"create_date" in complex_profile.roles[0]'
+          - '"path" in complex_profile.roles[0]'
+          - complex_profile.roles[0].path == test_path
+          - '"role_id" in complex_profile.roles[0]'
+          - '"role_name" in complex_profile.roles[0]'
+          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+          - '"tags" in complex_profile.roles[0]'
+          - complex_profile.roles[0].tags == {}
+      vars:
+        profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+
+    - name: "List an Instance Profile (filter by name)"
+      iam_instance_profile_info:
+        name: "{{ test_profile }}"
+      register: profile_info
+
+    - assert:
+        that:
+          - profile_info.iam_instance_profiles | length == 1
+          - '"arn" in simple_profile'
+          - '"create_date" in simple_profile'
+          - '"instance_profile_id" in simple_profile'
+          - '"instance_profile_name" in simple_profile'
+          - simple_profile.instance_profile_name == test_profile
+          - '"path" in simple_profile'
+          - simple_profile.path == "/"
+          - '"tags" in simple_profile'
+          - simple_profile.tags == {}
+          - '"roles" in simple_profile'
+          - simple_profile.roles | length == 0
+      vars:
+        simple_profile: '{{ profile_info.iam_instance_profiles[0] }}'
+
+    # ===================================================================
+
+    - name: "Delete minimal Instance Profile (CHECK)"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Delete minimal Instance Profile"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Delete minimal Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Delete minimal Instance Profile - Idempotent"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    # ===================================================================
+
+    - name: "Delete complex Instance Profile (CHECK)"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile_complex }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Delete complex Instance Profile"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile_complex }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is changed
+
+    - name: "Delete complex Instance Profile - Idempotent (CHECK)"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile_complex }}"
+      check_mode: True
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+    - name: "Delete complex Instance Profile - Idempotent"
+      iam_instance_profile:
+        state: absent
+        name: "{{ test_profile_complex }}"
+      register: profile_result
+
+    - assert:
+        that:
+          - profile_result is not changed
+
+  always:
+    # ===================================================================
+    # Cleanup
+
+#    - name: "iam_instance_profile_info after Role deletion"
+#      iam_instance_profile_info:
+#      ignore_errors: true
+
+    - name: "Delete Instance Profiles"
+      iam_instance_profile:
+        state: absent
+        name: "{{ item }}"
+      ignore_errors: true
+      loop:
+        - "{{ test_profile }}"
+        - "{{ test_profile_complex }}"
+        - "{{ test_role }}"
+        - "{{ test_role }}-2"
+
+    - name: "Remove IAM Roles"
+      iam_role:
+        state: absent
+        name: "{{ item }}"
+        path: "{{ test_path }}"
+        delete_instance_profile: yes
+      ignore_errors: true
+      loop:
+        - "{{ test_role }}"
+        - "{{ test_role }}-2"
+
+#    - name: "iam_role_info after Role deletion"
+#      iam_role_info:
+#        path: "{{ test_path }}"
+#      ignore_errors: true
