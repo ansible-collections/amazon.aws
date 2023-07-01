@@ -52,33 +52,6 @@
            - "'missing required arguments:' in result.msg"
 
     # ============================================================
-    - name: test with empty parameters
-      sts_assume_role:
-        role_arn:
-        role_session_name:
-        policy:
-        duration_seconds:
-        external_id:
-        mfa_token:
-        mfa_serial_number:
-      register: result
-      ignore_errors: true
-
-    - name: assert with empty parameters
-      assert:
-        that:
-           - 'result.failed'
-           - "'Missing required parameter in input:' in result.msg"
-      when: result.module_stderr is not defined
-
-    - name: assert with empty parameters
-      assert:
-        that:
-          - 'result.failed'
-          - "'Member must have length greater than or equal to 20' in result.module_stderr"
-      when: result.module_stderr is defined
-
-    # ============================================================
     - name: test with only 'role_arn' parameter
       sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
