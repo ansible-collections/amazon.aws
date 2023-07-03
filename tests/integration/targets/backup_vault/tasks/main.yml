@@ -28,6 +28,7 @@
           - backup_vault_result_check is changed
           - backup_vault_result_check.vault.backup_vault_name == backup_vault_name
           - backup_vault_result_check.vault.encryption_key_arn == ""
+          - backup_vault_result_check.vault.tags.environment == "dev"
 
     - name: Create an AWS Backup Vault
       amazon.aws.backup_vault:
@@ -42,7 +43,8 @@
           - backup_vault_result is changed
           - backup_vault_result.vault.backup_vault_name == backup_vault_name
           - backup_vault_result.vault.encryption_key_arn == key.key_arn
-    
+          - backup_vault_result.vault.tags.environment == "dev"
+
     - name: Get backup vault info by passing the vault name
       amazon.aws.backup_vault_info:
         backup_vault_names:
@@ -53,6 +55,7 @@
         that:
           - vault_info.backup_vaults[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
           - vault_info.backup_vaults[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
+          - vault_info.backup_vaults[0].tags.environment == "dev"
 
     - name: Create an AWS Backup Vault - idempotency check
       amazon.aws.backup_vault:
@@ -67,7 +70,180 @@
           - backup_vault_result_idem is not changed
           - backup_vault_result_idem.vault.backup_vault_name == backup_vault_name
           - backup_vault_result_idem.vault.encryption_key_arn == key.key_arn
- 
+          - backup_vault_result_idem.vault.tags.environment == "dev"
+
+    - name: Update AWS Backup Vault - check mode
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          owner: ansible
+        purge_tags: false
+      check_mode: true
+      register: backup_vault_update_check_mode_result
+
+    - name: Verify check mode update result
+      assert:
+        that:
+          - backup_vault_update_check_mode_result is changed
+          - backup_vault_update_check_mode_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_update_check_mode_result.vault.encryption_key_arn == key.key_arn
+          - backup_vault_update_check_mode_result.vault.tags.environment == "dev"
+          - backup_vault_update_check_mode_result.vault.tags.owner == "ansible"
+
+    - name: Get backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: update_check_mode_vault_info
+
+    - name: Verify backup vault was not updated in check mode
+      ansible.builtin.assert:
+        that:
+          - update_check_mode_vault_info.backup_vaults[0].backup_vault_name == vault_info.backup_vaults[0].backup_vault_name
+          - update_check_mode_vault_info.backup_vaults[0].encryption_key_arn == vault_info.backup_vaults[0].encryption_key_arn
+          - update_check_mode_vault_info.backup_vaults[0].backup_vault_arn == vault_info.backup_vaults[0].backup_vault_arn
+          - update_check_mode_vault_info.backup_vaults[0].tags == vault_info.backup_vaults[0].tags
+
+    - name: Update AWS Backup Vault
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          owner: ansible
+        purge_tags: false
+      register: backup_vault_update_result
+
+    - name: Verify update result
+      ansible.builtin.assert:
+        that:
+          - backup_vault_update_result is changed
+          - backup_vault_update_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_update_result.vault.encryption_key_arn == key.key_arn
+          - backup_vault_update_result.vault.tags.environment == "dev"
+          - backup_vault_update_check_mode_result.vault.tags.owner == "ansible"
+
+    - name: Get updated backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: updated_vault_info
+
+    - name: Verify backup vault was updated
+      ansible.builtin.assert:
+        that:
+          - updated_vault_info.backup_vaults[0].backup_vault_name == vault_info.backup_vaults[0].backup_vault_name
+          - updated_vault_info.backup_vaults[0].backup_vault_arn == vault_info.backup_vaults[0].backup_vault_arn
+          - updated_vault_info.backup_vaults[0].encryption_key_arn == vault_info.backup_vaults[0].encryption_key_arn
+          - updated_vault_info.backup_vaults[0].tags != vault_info.backup_vaults[0].tags
+
+    - name: Update AWS Backup Vault - idempotency
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          owner: ansible
+        purge_tags: false
+      register: backup_vault_update_idempotency_result
+
+    - name: Verify idempotency update result
+      ansible.builtin.assert:
+        that:
+          - backup_vault_update_idempotency_result is not changed
+
+    - name: Get backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: updated_vault_info_idempotency
+
+    - name: Verify backup vault was not updated
+      ansible.builtin.assert:
+        that:
+          - updated_vault_info_idempotency.backup_vaults[0].backup_vault_name == updated_vault_info.backup_vaults[0].backup_vault_name
+          - updated_vault_info_idempotency.backup_vaults[0].backup_vault_arn == updated_vault_info.backup_vaults[0].backup_vault_arn
+          - updated_vault_info_idempotency.backup_vaults[0].encryption_key_arn == updated_vault_info.backup_vaults[0].encryption_key_arn
+          - updated_vault_info_idempotency.backup_vaults[0].tags == updated_vault_info.backup_vaults[0].tags
+
+    - name: Update tags with purge - check mode
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          environment: test
+        purge_tags: true
+      check_mode: true
+      register: backup_vault_update_tags_check_mode_result
+
+    - name: Verify check mode tag update result
+      ansible.builtin.assert:
+        that:
+          - backup_vault_update_tags_check_mode_result is changed
+          - backup_vault_update_tags_check_mode_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_update_tags_check_mode_result.vault.tags | length == 1
+          - backup_vault_update_tags_check_mode_result.vault.tags.environment == "test"
+
+    - name: Get backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: update_tags_check_mode_info
+
+    - name: Verify backup vault tags were not updated in check mode
+      ansible.builtin.assert:
+        that:
+          - update_tags_check_mode_info.backup_vaults[0].backup_vault_name == updated_vault_info.backup_vaults[0].backup_vault_name
+          - update_tags_check_mode_info.backup_vaults[0].tags == updated_vault_info.backup_vaults[0].tags
+
+    - name: Update tags with purge
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          environment: test
+        purge_tags: true
+      register: backup_vault_update_tags_result
+
+    - name: Verify update tags with purge result
+      ansible.builtin.assert:
+        that:
+          - backup_vault_update_tags_result is changed
+          - backup_vault_update_tags_result.vault.backup_vault_name == backup_vault_name
+          - backup_vault_update_tags_result.vault.tags | length  == 1
+          - backup_vault_update_tags_result.vault.tags.environment == "test"
+
+    - name: Get backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: updated_tags_info
+
+    - name: Verify backup vault tags were updated
+      ansible.builtin.assert:
+        that:
+          - updated_tags_info.backup_vaults[0].backup_vault_name == updated_vault_info.backup_vaults[0].backup_vault_name
+          - updated_tags_info.backup_vaults[0].tags != updated_vault_info.backup_vaults[0].tags
+
+    - name: Update tags with purge - idempotency
+      amazon.aws.backup_vault:
+        backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          environment: test
+        purge_tags: true
+      register: backup_vault_update_tags_idempotency_result
+
+    - name: Verify update tags with purge idempotency result
+      ansible.builtin.assert:
+        that:
+          - backup_vault_update_tags_idempotency_result is not changed
+
+    - name: Get backup vault info
+      amazon.aws.backup_vault_info:
+        backup_vault_names:
+          - "{{ backup_vault_name }}"
+      register: updated_tags_idempotency_info
+
+    - name: Verify no changes were made
+      ansible.builtin.assert:
+        that:
+          - updated_tags_idempotency_info.backup_vaults[0].backup_vault_name == updated_tags_info.backup_vaults[0].backup_vault_name
+          - updated_tags_idempotency_info.backup_vaults[0].tags == updated_tags_info.backup_vaults[0].tags
+
   always:
     - name: Delete AWS Backup Vault created during this test
       amazon.aws.backup_vault:
