@@ -618,6 +618,18 @@ def main():
     child_health_checks_in = module.params.get("child_health_checks")
     health_threshold_in = module.params.get("health_threshold")
 
+    # Throw an exception if the input parameters for a calculated health check are invalid
+    if type_in == "CALCULATED":
+        msg = "When using type == CALCULATED, the input parameters should not contain"
+        if ip_addr_in:
+            msg += " ip address,"
+        if port_in:
+            msg += " port,"
+        if fqdn_in:
+            msg += " fqdn,"
+        if msg != "When using type == CALCULATED, the input parameters should not contain":
+            module.fail_json(msg=(msg[:len(msg) - 1] + "."))
+
     # Default port
     if port_in is None:
         if type_in in ["HTTP", "HTTP_STR_MATCH"]:

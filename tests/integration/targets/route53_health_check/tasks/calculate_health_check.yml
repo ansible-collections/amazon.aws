@@ -19,10 +19,9 @@
         health_check_name: "calculated_health_check"
         ip_address: '{{ ip_address }}'
         port: '{{ port }}'
-        type: '{{ type_http }}'
+        type: CALCULATED
         use_unique_names: true
         fqdn: '{{ fqdn }}'
-        type: CALCULATED
         health_threshold: 1
         child_health_checks: '{{ create_result.health_check.id }}'
       ignore_errors: true
