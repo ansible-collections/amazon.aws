@@ -13,7 +13,7 @@
         fqdn: '{{ fqdn }}'
       register: create_result
     
-    # Create, Update, and Delete =================================================================
+    # Create and Update  ===================================================================
     - name: 'Create Invalid Parameter Calculated Health Check'
       route53_health_check:
         health_check_name: "calculated_health_check"
@@ -32,6 +32,22 @@
         that:
         - error_create_calculated is failed
         - error_create_calculated.msg == "When using type == CALCULATED, the input parameters should not contain ip address, port, fqdn."
+
+    - name: 'Create Calculated Health Check - check_mode'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: check_create_calculated
+      check_mode: true
+
+    - name: 'Check result - Calculated Health Check'
+      assert:
+        that:
+        - check_create_calculated is not failed
+        - check_create_calculated is changed
 
     - name: 'Create Calculated Health Check'
       route53_health_check:
@@ -62,6 +78,22 @@
         that:
         - create_idem is not failed
         - create_idem is not changed
+
+    - name: 'Update Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 2
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: check_updated_calculated
+      check_mode: true
+    
+    - name: 'Check result - Update Calculated Health Check - check_mode'
+      assert:
+        that:
+        - check_updated_calculated is not failed
+        - check_updated_calculated is changed
     
     - name: 'Update Calculated Health Check'
       route53_health_check:
@@ -71,8 +103,8 @@
         health_threshold: 2
         child_health_checks: '{{ create_result.health_check.id }}'
       register: updated_calculated
-    
-    - name: 'Check result - Update Calculated Health Check - idempotency'
+
+    - name: 'Check result - Update Calculated Health Check'
       assert:
         that:
         - updated_calculated is not failed
