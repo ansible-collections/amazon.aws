@@ -17,26 +17,22 @@ utils = "ansible_collections.amazon.aws.plugins.module_utils.ec2"
 
 @patch(module_name + ".paginated_list")
 def test_list_keys_success(m_paginated_list):
-    module = MagicMock()
     s3 = MagicMock()
 
     m_paginated_list.return_value = ["delete.txt"]
 
-    s3_object.list_keys(module, s3, "a987e6b6026ab04e4717", "", "", 1000)
-
-    assert m_paginated_list.call_count == 1
-    module.exit_json.assert_called_with(msg="LIST operation complete", s3_keys=["delete.txt"])
+    assert ["delete.txt"] == s3_object.list_keys(s3, "a987e6b6026ab04e4717", "", "", 1000)
+    m_paginated_list.assert_called_once()
 
 
 @patch(module_name + ".paginated_list")
 def test_list_keys_failure(m_paginated_list):
-    module = MagicMock()
     s3 = MagicMock()
 
     m_paginated_list.side_effect = botocore.exceptions.BotoCoreError
 
     with pytest.raises(s3_object.S3ObjectFailure):
-        s3_object.list_keys(module, s3, "a987e6b6026ab04e4717", "", "", 1000)
+        s3_object.list_keys(s3, "a987e6b6026ab04e4717", "", "", 1000)
 
 
 @patch(module_name + ".delete_key")

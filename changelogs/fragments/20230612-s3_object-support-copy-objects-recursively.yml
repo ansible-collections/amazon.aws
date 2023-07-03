@@ -1,0 +1,2 @@
+minor_changes:
+- s3_object - Allow recursive copy of objects in S3 bucket (https://github.com/ansible-collections/amazon.aws/issues/1379).
