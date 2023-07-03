@@ -283,19 +283,30 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-copy_src/object"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-object"><strong>object</strong></p>
-<a class="ansibleOptionLink" href="#parameter-copy_src/object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src/object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>key name of the source object.</p>
+<p>if not specified, all the objects of the <em>copy_src.bucket</em> will be copied into the specified bucket.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-copy_src/prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-prefix"><strong>prefix</strong></p>
+<a class="ansibleOptionLink" href="#parameter-copy_src/prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Copy all the keys that begin with the specified prefix.</p>
+<p>Ignored if <em>copy_src.object</em> is supplied.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-copy_src/version_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-version-id"><strong>version_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-copy_src/version_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>version ID of the source object.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -308,7 +319,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-dest"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-dest"><strong>dest</strong></p>
 <a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
@@ -316,7 +327,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">get</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-dualstack"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-dualstack"><strong>dualstack</strong></p>
 <a class="ansibleOptionLink" href="#parameter-dualstack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -329,7 +340,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-encrypt"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encrypt"><strong>encrypt</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encrypt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -342,7 +353,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-encryption_kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-kms-key-id"><strong>encryption_kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encryption_kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -350,7 +361,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Ignored if <em>encryption</em> is not <code class="docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-encryption_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-mode"><strong>encryption_mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encryption_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -362,7 +373,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -376,7 +387,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-expiry"></div>
 <div class="ansibleOptionAnchor" id="parameter-expiration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-expiry"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-expiration"></span><strong>expiry</strong></p>
 <a class="ansibleOptionLink" href="#parameter-expiry" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: expiration</span></p>
@@ -387,7 +398,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">600</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-headers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-headers"><strong>headers</strong></p>
 <a class="ansibleOptionLink" href="#parameter-headers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -395,7 +406,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">put</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ignore_nonexistent_bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-ignore-nonexistent-bucket"><strong>ignore_nonexistent_bucket</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ignore_nonexistent_bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -408,7 +419,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-marker"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-marker"><strong>marker</strong></p>
 <a class="ansibleOptionLink" href="#parameter-marker" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -416,7 +427,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-max_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-max-keys"><strong>max_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-max_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -425,14 +436,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1000</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metadata"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-metadata"><strong>metadata</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metadata" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Metadata to use when <em>mode=put</em> or <em>mode=copy</em> as a dictionary of key value pairs.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -459,7 +470,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-object"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-object"><strong>object</strong></p>
 <a class="ansibleOptionLink" href="#parameter-object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -469,7 +480,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for passing the leading <code class="docutils literal notranslate"><span class="pre">/</span></code> has been deprecated and will be removed in a release after 2025-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-overwrite"></div>
 <div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-overwrite"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-force"></span><strong>overwrite</strong></p>
 <a class="ansibleOptionLink" href="#parameter-overwrite" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: force</span></p>
@@ -486,7 +497,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;different&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-permission"><strong>permission</strong></p>
 <a class="ansibleOptionLink" href="#parameter-permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -505,7 +516,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;private&quot;]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-prefix"><strong>prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -513,7 +524,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-profile"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -525,7 +536,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -539,7 +550,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-region"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-s3-object-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -554,7 +565,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-retries"></div>
 <div class="ansibleOptionAnchor" id="parameter-retry"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-retry"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-retries"></span><strong>retries</strong></p>
 <a class="ansibleOptionLink" href="#parameter-retries" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: retry</span></p>
@@ -564,7 +575,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -581,7 +592,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -599,7 +610,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-sig_v4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-sig-v4"><strong>sig_v4</strong></p>
 <a class="ansibleOptionLink" href="#parameter-sig_v4" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 5.0.0</span></p>
@@ -613,7 +624,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-src"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-src"><strong>src</strong></p>
 <a class="ansibleOptionLink" href="#parameter-src" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
@@ -621,7 +632,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-tags"><span id="ansible-collections-amazon-aws-s3-object-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -631,7 +642,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_bucket_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-validate-bucket-name"><strong>validate_bucket_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_bucket_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
@@ -646,7 +657,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -659,7 +670,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-version"><strong>version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -793,6 +804,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <span class="w">    </span><span class="nt">copy_src</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcbucket</span>
 <span class="w">        </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/source/key.txt</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Copy all the objects with name starting with &#39;ansible_&#39;</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span>
+<span class="w">    </span><span class="nt">copy_src</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcbucket</span>
+<span class="w">        </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ansible_&#39;</span>
 </pre></div>
 </div>
 </section>
