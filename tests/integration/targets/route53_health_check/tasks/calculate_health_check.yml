@@ -14,7 +14,27 @@
       register: create_result
     
     # Create, Update, and Delete =================================================================
-    - name: Create Calculated Health Check
+    - name: 'Create Invalid Parameter Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      ignore_errors: true
+      register: error_create_calculated
+
+    - name: 'Check result - Create Invalid Parameter Calculated Health Check'
+      assert:
+        that:
+        - error_create_calculated is failed
+        - error_create_calculated.msg == "When using type == CALCULATED, the input parameters should not contain ip address, port, fqdn."
+
+    - name: 'Create Calculated Health Check'
       route53_health_check:
         health_check_name: "calculated_health_check"
         use_unique_names: true
@@ -29,7 +49,7 @@
         - create_calculated is not failed
         - create_calculated is changed
 
-    - name: Update Calculated Health Check - idempotency
+    - name: 'Check result - Create Calculated Health Check - idempotency'
       route53_health_check:
         health_check_name: "calculated_health_check"
         use_unique_names: true
@@ -44,7 +64,7 @@
         - create_idem is not failed
         - create_idem is not changed
     
-    - name: Update Calculated Health Check
+    - name: 'Update Calculated Health Check'
       route53_health_check:
         health_check_name: "calculated_health_check"
         use_unique_names: true
@@ -62,17 +82,17 @@
   # Cleanup starts here =================================================================
   always:
       - name: 'Delete Calculated Health Check'
-        amazon.aws.route53_health_checK:
+        amazon.aws.route53_health_check:
           state: absent
           health_check_id: '{{ create_calculated.health_check.id }}'
         register: deleted_calculated
-
+        
       - assert:
           that:
-            - deleted_calculated is not failed
-            - deleted_calculated is changed
-          
-      - name: 'Delete Health Check'
+          - deleted_calculated is not failed
+          - deleted_calculated is changed
+        
+      - name: 'Delete HTTP health check with use_unique_names'
         amazon.aws.route53_health_check:
           state: absent
           name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
@@ -82,8 +102,9 @@
           resource_path: '{{ resource_path }}'
           use_unique_names: true
           fqdn: '{{ fqdn }}'
+        register: delete_result
 
       - assert:
           that:
-            - delete_result is not failed
             - delete_result is changed
+            - delete_result is not failed
