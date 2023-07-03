@@ -628,7 +628,7 @@ def main():
         if fqdn_in:
             msg += " fqdn,"
         if msg != "When using type == CALCULATED, the input parameters should not contain":
-            module.fail_json(msg=(msg[:len(msg) - 1] + "."))
+            module.fail_json(msg=(msg[: len(msg) - 1] + "."))
 
     # Default port
     if port_in is None:
