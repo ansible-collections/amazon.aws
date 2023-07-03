@@ -50,7 +50,7 @@ options:
         condition_type:
             description:
             - An operation applied to a key-value pair used to assign resources to your backup plan.
-            - Condition only supports C(StringEquals).
+            - Condition only supports C(string_equals).
             type: str
         condition_key:
             description:
@@ -71,7 +71,7 @@ options:
     description:
       - A list of conditions (expressed as a dict) that you define to assign resources to your backup plans using tags.
       - When you specify more than one condition in I(conditions), you only assign the resources that match ALL conditions (using AND logic).
-      - I(conditions) supports C(StringEquals), C(StringLike), C(StringNotEquals), and C(StringNotLike). I(list_of_tags) only supports C(StringEquals).
+      - I(conditions) supports C(string_equals), C(string_like), C(string_not_equals), and C(string_not_like). I(list_of_tags) only supports C(string_equals).
     type: dict
     suboptions:
       string_equals:
