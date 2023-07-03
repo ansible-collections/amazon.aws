@@ -16,3 +16,20 @@ src = [
     "tests/unit",
     "tests/integration",
 ]
+
+[tool.isort]
+profile = "black"
+force_single_line = true
+line_length = 120
+
+src_paths = [
+    "plugins",
+    "tests/unit",
+    "tests/integration",
+]
+
+sections=["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_AMAZON_AWS", "ANSIBLE_COMMUNITY_AWS", "LOCALFOLDER"]
+known_third_party=["botocore", "boto3"]
+known_ansible_core=["ansible"]
+known_ansible_amazon_aws=["ansible_collections.amazon.aws"]
+known_ansible_community_aws=["ansible_collections.community.aws"]
