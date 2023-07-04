@@ -255,13 +255,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-default_create"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-default-create"><strong>default_create</strong></p>
+<a class="ansibleOptionLink" href="#parameter-default_create" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.2.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>When <em>default_create=True</em> and <em>eip_address</em> has been set, but not yet allocated, the NAT gateway is created and a new EIP is automatically allocated.</p>
+<p>When <em>default_create=False</em> and <em>eip_address</em> has been set, but not yet allocated, the module will fail.</p>
+<p>If <em>eip_address</em> has not been set, this parameter has no effect.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-eip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-eip-address"><strong>eip_address</strong></p>
 <a class="ansibleOptionLink" href="#parameter-eip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The elastic IP address of the EIP you want attached to this NAT Gateway. If this is not passed and the allocation_id is not passed, an EIP is generated for this NAT Gateway.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -275,7 +290,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-if_exist_do_not_create"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-if-exist-do-not-create"><strong>if_exist_do_not_create</strong></p>
 <a class="ansibleOptionLink" href="#parameter-if_exist_do_not_create" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -287,14 +302,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-nat_gateway_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-nat-gateway-id"><strong>nat_gateway_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-nat_gateway_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The id AWS dynamically allocates to the NAT Gateway on creation. This is required when the absent option is present.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -306,7 +321,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -320,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -335,7 +350,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-release_eip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-release-eip"><strong>release_eip</strong></p>
 <a class="ansibleOptionLink" href="#parameter-release_eip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -349,7 +364,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -366,7 +381,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -384,7 +399,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -396,14 +411,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-subnet-id"><strong>subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-subnet_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The id of the subnet to create the NAT Gateway in. This is required with the present option.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-tags"><span id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -413,7 +428,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -426,7 +441,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -438,7 +453,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-wait-timeout"><strong>wait_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
