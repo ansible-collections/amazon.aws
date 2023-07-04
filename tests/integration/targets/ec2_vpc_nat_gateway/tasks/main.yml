@@ -412,6 +412,47 @@
 
 
   # ============================================================
+  - name: Create new NAT gateway when eip_address is invalid and create_default is true
+    ec2_vpc_nat_gateway:
+      subnet_id: '{{ subnet_id }}'
+      eip_address:  "192.0.2.1"
+      state: present
+      wait: yes
+      default_create: true
+    register: _nat_gateway
+
+  - name: 
+    assert:
+      that:
+        - _nat_gateway.changed
+        - '"create_time" in _nat_gateway'
+        - '"nat_gateway_addresses" in _nat_gateway'
+        - '"nat_gateway_id" in _nat_gateway'
+        - _nat_gateway.nat_gateway_id.startswith("nat-")
+        - '"state" in _nat_gateway'
+        - _nat_gateway.state == 'available'
+        - '"subnet_id" in _nat_gateway'
+        - _nat_gateway.subnet_id == subnet_id
+        - '"tags" in _nat_gateway'
+        - '"vpc_id" in _nat_gateway'
+        - _nat_gateway.vpc_id == vpc_id
+  
+  - name: Fail when eip_address is invalid and create_default is false
+    ec2_vpc_nat_gateway:
+      subnet_id: '{{ subnet_id }}'
+      eip_address:  "192.0.2.1"
+      state: present
+      wait: yes
+    register: _fail_nat_gateway
+    ignore_errors: true
+
+  - name: Assert fail because eip_address is invalid
+    assert:
+      that:
+        _fail_nat_gateway.msg == "EIP 192.0.2.1 does not exist"
+
+
+  # ============================================================
   - name: Fetch NAT gateway by ID (list)
     ec2_vpc_nat_gateway_info:
       nat_gateway_ids:
