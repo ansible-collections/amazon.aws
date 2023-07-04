@@ -144,7 +144,7 @@ def get_selection_details(module, client, plan_name: str, selection_name: Union[
                 if selection["SelectionName"] == selection_name:
                     selection_id = selection["SelectionId"]
                     result.append(_get_backup_selection(client, module, plan_id, selection_id))
-                break
+                    break
     else:
         for selection in selection_list:
             selection_id = selection["SelectionId"]
