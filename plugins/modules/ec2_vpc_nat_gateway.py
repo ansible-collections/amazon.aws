@@ -75,6 +75,16 @@ options:
         When specifying this option, ensure you specify the eip_address parameter
         as well otherwise any subsequent runs will fail.
     type: str
+  default_create:
+    description:
+      - When I(default_create=True) and I(eip_address) has been set, but not yet
+        allocated, the NAT gateway is created and a new EIP is automatically allocated.
+      - When I(default_create=False) and I(eip_address) has been set, but not yet
+        allocated, the module will fail.
+      - If I(eip_address) has not been set, this parameter has no effect.
+    default: false
+    type: bool
+    version_added: 6.2.0
 author:
   - Allen Sanabria (@linuxdynasty)
   - Jon Hadfield (@jonhadfield)
@@ -660,6 +670,7 @@ def pre_create(
     wait=False,
     client_token=None,
     connectivity_type="public",
+    default_create=False,
 ):
     """Create an Amazon NAT Gateway.
     Args:
@@ -681,6 +692,8 @@ def pre_create(
             default = False
         client_token (str):
             default = None
+        default_create (bool): create a NAT gateway even if EIP address is not found.
+            default = False
 
     Basic Usage:
         >>> client = boto3.client('ec2')
@@ -745,9 +758,25 @@ def pre_create(
     elif eip_address or allocation_id:
         if eip_address and not allocation_id:
             allocation_id, msg = get_eip_allocation_id_by_address(client, module, eip_address)
-            if not allocation_id:
+            if not allocation_id and not default_create:
                 changed = False
-                return changed, msg, dict()
+                module.fail_json(msg=msg)
+            elif not allocation_id and default_create:
+                eip_address = None
+                return pre_create(
+                    client,
+                    module,
+                    subnet_id,
+                    tags,
+                    purge_tags,
+                    allocation_id,
+                    eip_address,
+                    if_exist_do_not_create,
+                    wait,
+                    client_token,
+                    connectivity_type,
+                    default_create,
+                )
 
         existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, module, subnet_id, allocation_id)
 
@@ -870,6 +899,7 @@ def main():
         client_token=dict(type="str", no_log=False),
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=True, type="bool"),
+        default_create=dict(type="bool", default=False),
     )
 
     module = AnsibleAWSModule(
@@ -891,6 +921,7 @@ def main():
     if_exist_do_not_create = module.params.get("if_exist_do_not_create")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
+    default_create = module.params.get("default_create")
 
     try:
         client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
@@ -913,6 +944,7 @@ def main():
             wait,
             client_token,
             connectivity_type,
+            default_create,
         )
     else:
         changed, msg, results = remove(client, module, nat_gateway_id, wait, release_eip, connectivity_type)
