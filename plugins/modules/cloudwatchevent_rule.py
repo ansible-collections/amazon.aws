@@ -436,6 +436,18 @@ class CloudWatchEventRuleManager(object):
     def _targets_to_put(self):
         """Returns a list of targets that need to be updated or added remotely"""
         remote_targets = self.rule.list_targets()
+
+        # keys with none values must be scrubbed off of self.targets
+        temp = []
+        for t in self.targets:
+            if t["input_transformer"] is not None and t["input_transformer"]["input_template"] is not None:
+                # The remote_targets contain quotes, so add
+                # quotes to temp
+                val = t["input_transformer"]["input_template"]
+                t["input_transformer"]["input_template"] = '"' + val + '"'
+            temp.append(scrub_none_parameters(t))
+        self.targets = temp
+
         return [t for t in self.targets if t not in remote_targets]
 
     def _remote_target_ids_to_remove(self):
