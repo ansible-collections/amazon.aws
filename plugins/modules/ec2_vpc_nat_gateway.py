@@ -746,12 +746,11 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
             )
             return changed, msg, results
         else:
-            changed, msg, allocation_id = (
-                allocate_eip_address(client, module)
-            )
+            if connectivity_type == "public":
+                changed, msg, allocation_id = allocate_eip_address(client, module)
 
-            if not changed:
-                return changed, msg, dict()
+                if not changed:
+                    return changed, msg, dict()
 
     elif eip_address or allocation_id:
         if eip_address and not allocation_id:
