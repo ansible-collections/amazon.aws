@@ -238,7 +238,100 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <a class="ansibleOptionLink" href="#parameter-conditions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of conditions (expressed as a dict) that you define to assign resources to your backup plans using tags.</p>
-<p><em>conditions</em> supports <code class="docutils literal notranslate"><span class="pre">StringEquals</span></code>, <code class="docutils literal notranslate"><span class="pre">StringLike</span></code>, <code class="docutils literal notranslate"><span class="pre">StringNotEquals</span></code>, and <code class="docutils literal notranslate"><span class="pre">StringNotLike</span></code>. <em>list_of_tags</em> only supports <code class="docutils literal notranslate"><span class="pre">StringEquals</span></code>.</p>
+<p>When you specify more than one condition in <em>conditions</em>, you only assign the resources that match ALL conditions (using AND logic).</p>
+<p><em>conditions</em> supports <code class="docutils literal notranslate"><span class="pre">string_equals</span></code>, <code class="docutils literal notranslate"><span class="pre">string_like</span></code>, <code class="docutils literal notranslate"><span class="pre">string_not_equals</span></code>, and <code class="docutils literal notranslate"><span class="pre">string_not_like</span></code>. <em>list_of_tags</em> only supports <code class="docutils literal notranslate"><span class="pre">string_equals</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_equals"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-equals"><strong>string_equals</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_equals" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of your tagged resources for only those resources that you tagged with the same value.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_equals/condition_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-equals-condition-key"><strong>condition_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_equals/condition_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key in a key-value pair.</p>
+<p><em>condition_key</em> in the <em>conditions</em> option must use the AWS resource tag prefix, e.g. ‘aws:ResourceTag/key-name’</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_equals/condition_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-equals-condition-value"><strong>condition_value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_equals/condition_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value in a key-value pair.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_like"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-like"><strong>string_like</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_like" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of your tagged resources for matching tag values with the use of a wildcard character (*) anywhere in the string. For example, “prod*” or “*rod*” matches the tag value “production”.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_like/condition_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-like-condition-key"><strong>condition_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_like/condition_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key in a key-value pair.</p>
+<p><em>condition_key</em> in the <em>conditions</em> option must use the AWS resource tag prefix, e.g. ‘aws:ResourceTag/key-name’</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_like/condition_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-like-condition-value"><strong>condition_value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_like/condition_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value in a key-value pair.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_equals"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-equals"><strong>string_not_equals</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_equals" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of your tagged resources for only those resources that you tagged that do not have the same value.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_equals/condition_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-equals-condition-key"><strong>condition_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_equals/condition_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key in a key-value pair.</p>
+<p><em>condition_key</em> in the <em>conditions</em> option must use the AWS resource tag prefix, e.g. ‘aws:ResourceTag/key-name’</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_equals/condition_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-equals-condition-value"><strong>condition_value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_equals/condition_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value in a key-value pair.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_like"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-like"><strong>string_not_like</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_like" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of your tagged resources for non-matching tag values with the use of a wildcard character (*) anywhere in the string.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_like/condition_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-like-condition-key"><strong>condition_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_like/condition_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key in a key-value pair.</p>
+<p><em>condition_key</em> in the <em>conditions</em> option must use the AWS resource tag prefix, e.g. ‘aws:ResourceTag/key-name’</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-conditions/string_not_like/condition_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-parameter-conditions-string-not-like-condition-value"><strong>condition_value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-conditions/string_not_like/condition_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value in a key-value pair.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -281,6 +374,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of conditions that you define to assign resources to your backup plans using tags.</p>
 <p>Condition operators are case sensitive.</p>
+<p>When you specify more than one condition in <em>list_of_tags</em>, you assign all resources that match AT LEAST ONE condition (using OR logic).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -295,7 +389,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <a class="ansibleOptionLink" href="#parameter-list_of_tags/condition_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An operation applied to a key-value pair used to assign resources to your backup plan.</p>
-<p>Condition only supports <code class="docutils literal notranslate"><span class="pre">StringEquals</span></code>.</p>
+<p>Condition only supports <code class="docutils literal notranslate"><span class="pre">string_equals</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
