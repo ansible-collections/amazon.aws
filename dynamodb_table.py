@@ -130,13 +130,15 @@ options:
   wait_timeout:
     description:
       - How long (in seconds) to wait for creation / update / deletion to complete.
+      - AWS only allows secondary indexies to be updated one at a time, this module will automatically update them
+        in serial, and the timeout will be separately applied for each index.
     aliases: ['wait_for_active_timeout']
-    default: 300
+    default: 900
     type: int
   wait:
     description:
       - When I(wait=True) the module will wait for up to I(wait_timeout) seconds
-        for table creation or deletion to complete before returning.
+        for index updates, table creation or deletion to complete before returning.
     default: True
     type: bool
 extends_documentation_fragment:
@@ -256,8 +258,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
+from ansible_collections.community.aws.plugins.module_utils.dynamodb import wait_indexes_active
+from ansible_collections.community.aws.plugins.module_utils.dynamodb import wait_table_exists
+from ansible_collections.community.aws.plugins.module_utils.dynamodb import wait_table_not_exists
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-
 
 DYNAMO_TYPE_DEFAULT = "STRING"
 INDEX_REQUIRED_OPTIONS = ["name", "type", "hash_key_name"]
@@ -283,7 +287,7 @@ KEY_TYPE_CHOICES = list(DYNAMO_TYPE_MAP_LONG.keys())
     retries=45,
     delay=5,
     max_delay=30,
-    catch_extra_error_codes=["LimitExceededException", "ResourceInUseException", "ResourceNotFoundException"],
+    catch_extra_error_codes=["ResourceInUseException", "ResourceNotFoundException"],
 )
 def _update_table_with_long_retry(**changes):
     return client.update_table(TableName=module.params.get("name"), **changes)
@@ -296,47 +300,27 @@ def _describe_table(**params):
 
 
 def wait_exists():
-    table_name = module.params.get("name")
-    wait_timeout = module.params.get("wait_timeout")
-
-    delay = min(wait_timeout, 5)
-    max_attempts = wait_timeout // delay
-
-    try:
-        waiter = client.get_waiter("table_exists")
-        waiter.wait(
-            WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
-            TableName=table_name,
-        )
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="Timeout while waiting on table creation")
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while waiting on table creation")
+    wait_table_exists(
+        module,
+        module.params.get("wait_timeout"),
+        module.params.get("name"),
+    )
 
 
 def wait_not_exists():
-    table_name = module.params.get("name")
-    wait_timeout = module.params.get("wait_timeout")
+    wait_table_not_exists(
+        module,
+        module.params.get("wait_timeout"),
+        module.params.get("name"),
+    )
 
-    delay = min(wait_timeout, 5)
-    max_attempts = wait_timeout // delay
 
-    try:
-        waiter = client.get_waiter("table_not_exists")
-        waiter.wait(
-            WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
-            TableName=table_name,
-        )
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="Timeout while waiting on table deletion")
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed while waiting on table deletion")
+def wait_indexes():
+    wait_indexes_active(
+        module,
+        module.params.get("wait_timeout"),
+        module.params.get("name"),
+    )
 
 
 def _short_type_to_long(short_key):
@@ -858,6 +842,7 @@ def _update_table(current_table):
 
     if additional_global_index_changes:
         for index in additional_global_index_changes:
+            wait_indexes()
             try:
                 _update_table_with_long_retry(
                     GlobalSecondaryIndexUpdates=[index], AttributeDefinitions=changes["AttributeDefinitions"]
@@ -869,9 +854,6 @@ def _update_table(current_table):
                     changes=changes,
                     additional_global_index_changes=additional_global_index_changes,
                 )
-
-    if module.params.get("wait"):
-        wait_exists()
 
     return True
 
@@ -927,6 +909,7 @@ def update_table(current_table):
 
     if module.params.get("wait"):
         wait_exists()
+        wait_indexes()
 
     return changed
 
@@ -983,6 +966,7 @@ def create_table():
 
     if module.params.get("wait"):
         wait_exists()
+        wait_indexes()
 
     return True
 
@@ -1058,7 +1042,7 @@ def main():
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
         wait=dict(type="bool", default=True),
-        wait_timeout=dict(default=300, type="int", aliases=["wait_for_active_timeout"]),
+        wait_timeout=dict(default=900, type="int", aliases=["wait_for_active_timeout"]),
     )
 
     module = AnsibleAWSModule(
