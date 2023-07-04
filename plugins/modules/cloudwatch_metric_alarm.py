@@ -55,6 +55,7 @@ options:
             you to create an alarm based on the result of a metric math expression.
         type: list
         required: false
+        default: []
         version_added: "5.5.0"
         elements: dict
         suboptions:
@@ -433,7 +434,7 @@ def main():
         evaluation_periods=dict(type='int'),
         extended_statistic=dict(type='str'),
         description=dict(type='str'),
-        dimensions=dict(type='dict'),
+        dimensions=dict(type='dict', default={}),
         alarm_actions=dict(type='list', default=[], elements='str'),
         insufficient_data_actions=dict(type='list', default=[], elements='str'),
         ok_actions=dict(type='list', default=[], elements='str'),

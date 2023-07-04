@@ -12,8 +12,6 @@ from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.amazon.aws.plugins.module_utils import s3
 from ansible.module_utils.basic import AnsibleModule
 
-import pytest
-
 
 class FakeAnsibleModule(AnsibleModule):
     def __init__(self):

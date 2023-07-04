@@ -3,15 +3,13 @@
 
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from unittest.mock import call, ANY
+from unittest.mock import ANY
 
 import pytest
 import botocore
 import datetime
 from dateutil.tz import tzutc
 from ansible.module_utils._text import to_bytes
-
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_key
 

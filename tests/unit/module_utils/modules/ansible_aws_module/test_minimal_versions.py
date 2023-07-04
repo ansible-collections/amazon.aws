@@ -9,7 +9,6 @@ __metaclass__ = type
 from pprint import pprint
 import pytest
 import json
-import warnings
 
 try:
     import botocore
