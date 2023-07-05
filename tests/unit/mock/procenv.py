@@ -16,16 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-# Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import sys
 import json
 
 from contextlib import contextmanager
 from io import BytesIO, StringIO
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
+import unittest
 from ansible.module_utils.six import PY3
 from ansible.module_utils._text import to_bytes
 
