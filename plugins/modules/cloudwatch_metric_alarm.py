@@ -55,6 +55,7 @@ options:
             you to create an alarm based on the result of a metric math expression.
         type: list
         required: false
+        default: []
         version_added: "5.5.0"
         elements: dict
         suboptions:
@@ -216,7 +217,6 @@ options:
           - U(https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
         required: false
         type: dict
-        default: {}
     alarm_actions:
         description:
           - A list of the names action(s) taken when the alarm is in the C(alarm) status, denoted as Amazon Resource Name(s).

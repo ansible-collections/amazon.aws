@@ -1,0 +1,17 @@
+---
+name: update collection variables
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.sha }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - 'stable-*'
+  pull_request_target:
+
+jobs:
+  update-variables:
+    uses: ansible-network/github_actions/.github/workflows/update_aws_variables.yml@main

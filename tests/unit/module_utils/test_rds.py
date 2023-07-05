@@ -3,15 +3,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-import sys
 import pytest
-
-if sys.version_info < (3, 7):
-    pytest.skip("contextlib.nullcontext was introduced in Python 3.7", allow_module_level=True)
-
 from contextlib import nullcontext
 
 try:
@@ -20,7 +12,7 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
+from unittest.mock import MagicMock
 
 from ansible_collections.amazon.aws.plugins.module_utils import rds
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3

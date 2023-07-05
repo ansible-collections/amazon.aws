@@ -1,0 +1,4 @@
+trivial:
+  - "Add sanity, units and linters and changelog GitHub workflows."
+  - "Fix linting and validation errors across several modules."
+  - "Remove Python < 3.6 compatibility code for unit tests."
