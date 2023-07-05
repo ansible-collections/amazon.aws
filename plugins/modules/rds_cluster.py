@@ -25,9 +25,10 @@ options:
   # General module options
     state:
         description: Whether the snapshot should exist or not.
-        choices: ['present', 'absent']
+        choices: ['present', 'absent', 'stopped']
         default: 'present'
         type: str
+        version_added: 6.3.0
     creation_source:
         description: Which source to use if creating from a template (an existing cluster, S3 bucket, or snapshot).
         choices: ['snapshot', 's3', 'cluster']
@@ -689,7 +690,6 @@ vpc_security_groups:
       sample: sg-12345678
 """
 
-
 try:
     import botocore
 except ImportError:
@@ -917,13 +917,20 @@ def get_rds_method_attribute_name(cluster):
     method_name = None
     method_options_name = None
 
-    if state == "absent":
+    if state == "stopped":
+        if cluster and cluster["Status"] not in ["stopping", "stopped"]:
+            method_name = "stop_db_cluster"
+            method_options_name = "get_modify_options"
+    elif state == "absent":
         if cluster and cluster["Status"] not in ["deleting", "deleted"]:
             method_name = "delete_db_cluster"
-            method_options_name = "get_delete_options"
+            method_options_name = ""
     else:
         if cluster:
-            method_name = "modify_db_cluster"
+            if cluster["Status"] == "stopped" and state == "present":
+                method_name = "start_db_cluster"
+            else:
+                method_name = "modify_db_cluster"
             method_options_name = "get_modify_options"
         elif creation_source == "snapshot":
             method_name = "restore_db_cluster_from_snapshot"
@@ -1030,6 +1037,12 @@ def changing_cluster_options(modify_params, current_cluster):
         if apply_immediately is not None:
             changing_params["ApplyImmediately"] = apply_immediately
 
+    if module.params["state"] == "present" and current_cluster["Status"] == "stopped":
+        changing_params["DBClusterIdentifier"] = db_cluster_id
+
+    if module.params["state"] == "stopped":
+        changing_params["DBClusterIdentifier"] = db_cluster_id
+
     return changing_params
 
 
@@ -1087,7 +1100,7 @@ def main():
     global client
 
     arg_spec = dict(
-        state=dict(choices=["present", "absent"], default="present"),
+        state=dict(choices=["present", "absent", "stopped"], default="present"),
         creation_source=dict(type="str", choices=["snapshot", "s3", "cluster"]),
         force_update_password=dict(type="bool", default=False),
         promote=dict(type="bool", default=False),
