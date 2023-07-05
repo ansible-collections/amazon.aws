@@ -53,11 +53,13 @@ options:
       - This parameter takes in the child health checks ids.
     type: list
     elements: str
+    version_added: 6.3.0
   health_threshold:
     description:
       - The minimum number of healthy child health checks for a calculated health check to be considered healthy.
     default: 1
     type: int
+    version_added: 6.3.0
   resource_path:
     description:
       - The path that you want Amazon Route 53 to request when performing
