@@ -2231,4 +2231,4 @@ releases:
     - description: gather information on IAM instance profiles
       name: iam_instance_profile_info
       namespace: ''
-    release_date: '2023-07-04'
+    release_date: '2023-07-05'
