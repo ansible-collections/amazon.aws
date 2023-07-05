@@ -1,0 +1,12 @@
+name: Galaxy Importer
+on:
+  push:
+    branches:
+      - main
+      - stable-*
+  pull_request:
+  schedule:
+    - cron: '0 13 * * *'
+jobs:
+  importer:
+    uses: ansible-network/github_actions/.github/workflows/galaxy_importer.yml@main
