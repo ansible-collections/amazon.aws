@@ -1,10 +1,9 @@
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
 
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
-from ansible_collections.amazon.aws.tests.unit.compat.mock import patch
+import unittest
+from unittest.mock import patch
 from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
 
