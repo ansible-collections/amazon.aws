@@ -216,9 +216,7 @@ options:
           - 'For more information see the AWS documentation:'
           - U(https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
         required: false
-        type: list
-        elements: dict
-        default: []
+        type: dict
     alarm_actions:
         description:
           - A list of the names action(s) taken when the alarm is in the C(alarm) status, denoted as Amazon Resource Name(s).
@@ -272,7 +270,7 @@ EXAMPLES = r'''
       evaluation_periods: 3
       unit: "Percent"
       description: "This will alarm when a instance's CPU usage average is lower than 5% for 15 minutes"
-      dimensions: [{'InstanceId':'i-XXX'}]
+      dimensions: {'InstanceId':'i-XXX'}
       alarm_actions: ["action1","action2"]
 
   - name: create alarm with metrics
@@ -309,7 +307,7 @@ EXAMPLES = r'''
       evaluation_periods: 2
       unit: "Count"
       description: "This will recover an instance when it fails"
-      dimensions: [{"InstanceId":'i-XXX'}]
+      dimensions: {"InstanceId":'i-XXX'}
       alarm_actions: ["arn:aws:automate:us-west-1:ec2:recover"]
 '''
 
@@ -435,7 +433,7 @@ def main():
         evaluation_periods=dict(type='int'),
         extended_statistic=dict(type='str'),
         description=dict(type='str'),
-        dimensions=dict(type='list', elements='dict', default=[]),
+        dimensions=dict(type='dict'),
         alarm_actions=dict(type='list', default=[], elements='str'),
         insufficient_data_actions=dict(type='list', default=[], elements='str'),
         ok_actions=dict(type='list', default=[], elements='str'),
