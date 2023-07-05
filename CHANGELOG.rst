@@ -5,6 +5,21 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.5.2
+======
+
+Release Summary
+---------------
+
+This release brings few bugfixes.
+
+Bugfixes
+--------
+
+- cloudwatchevent_rule - Fixes changed status to report False when no change has been made. The module had incorrectly always reported a change. (https://github.com/ansible-collections/amazon.aws/pull/1589)
+- lambda_execute - Fixes to the stack trace output, where it does not contain spaces between each character. The module had incorrectly always outputted extra spaces between each character. (https://github.com/ansible-collections/amazon.aws/pull/1615)
+- ec2_vpc_nat_gateway - fixes to nat gateway so that when the user creates a private NAT gateway, an Elastic IP address should not be allocated. The module had inncorrectly always allocate elastic IP address when creating private nat gateway (https://github.com/ansible-collections/amazon.aws/pull/1632).
+
 v5.5.1
 ======
 
