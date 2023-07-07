@@ -144,7 +144,7 @@
     - assert:
         that:
         - not started_cluster.changed
-    
+
     - name: Start db clusters
       amazon.aws.rds_cluster:
         cluster_id: '{{ cluster_id }}'
