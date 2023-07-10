@@ -922,7 +922,7 @@ def get_rds_method_attribute_name(cluster):
             method_name = "delete_db_cluster"
             method_options_name = "get_delete_options"
     elif state == "started":
-        if cluster and cluster["Status"] not in ["starting", "started"]:
+        if cluster and cluster["Status"] not in ["starting", "started", "available"]:
             method_name = "start_db_cluster"
             method_options_name = "get_modify_options"
     elif state == "stopped":

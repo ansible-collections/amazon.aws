@@ -138,12 +138,12 @@
       amazon.aws.rds_cluster:
         cluster_id: '{{ cluster_id }}'
         state: started
-      register: started_cluster
+      register: check_started_cluster
       check_mode: yes
 
     - assert:
         that:
-        - not started_cluster.changed
+        - not check_started_cluster.changed
 
     - name: Start db clusters
       amazon.aws.rds_cluster:
