@@ -1,0 +1,179 @@
+name: integration
+
+concurrency:
+  group: amazon-aws-integration-${{ github.sha }}
+  cancel-in-progress: true
+
+on:
+  pull_request_target:
+    
+env:
+  AWS_INTEGRATION_TOTAL_JOBS: 22
+
+jobs:
+  safe-to-test:
+    if: ${{ github.event.label.name == 'safe to test' }} || ${{ github.event.action != 'labeled' }}
+    uses: abikouo/github_actions/.github/workflows/safe-to-test.yml@safe_to_test_v2
+  splitter:
+    runs-on: ubuntu-latest
+    needs:
+      - safe-to-test
+    env:
+      amazon_dir: "./amazon"
+      community_dir: "./community"
+    outputs:
+      test_targets: ${{ steps.display.outputs.test_targets }}
+    steps:
+      - name: Checkout repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          path: ${{ env.amazon_dir }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
+      - name: Checkout dependency (amazon.aws)
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.community_dir }}
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: list changes for pull request
+        id: splitter
+        uses: ansible-network/github_actions/.github/actions/ansible_test_splitter@main
+        with:
+          total_jobs: ${{ env.AWS_INTEGRATION_TOTAL_JOBS }}
+          collections_to_test: |
+            ${{ env.amazon_dir }}
+            ${{ env.community_dir }}
+
+      - name: display targets
+        id: display
+        run: echo "test_targets=${{ steps.splitter.outputs.test_targets }}" >> $GITHUB_OUTPUT
+        shell: bash
+  build_jobs:
+    runs-on: ubuntu-latest
+    if: ${{ needs.splitter.outputs.test_targets != '' }}
+    needs:
+      - splitter
+    outputs:
+      test_matrix: ${{ steps.generate-workflow.outputs.targets }}
+      test_targets: ${{ needs.splitter.outputs.test_targets }}
+    steps:
+      - name: Generate workflow id
+        id: generate-workflow
+        run: |
+          import os, json
+          targets=[d.split(':', maxsplit=1)[0] for d in os.environ.get('TEST_TARGETS').split(";")]
+          output_path = os.environ.get('GITHUB_OUTPUT')
+          with open(output_path, "a", encoding="utf-8") as fw:
+              fw.write(f'targets={json.dumps(targets)}\n')
+        shell: python
+        env:
+          TEST_TARGETS: ${{ needs.splitter.outputs.test_targets }}
+
+      - name: Display matrix elements
+        run: echo "Workflow list => ${{ steps.generate-workflow.outputs.targets }}"
+        shell: bash
+  integration:
+    needs:
+      - build_jobs
+    env:
+      test_targets: ${{ needs.build_jobs.outputs.test_targets }}
+      source: "./source"
+    if: ${{ needs.build_jobs.outputs.test_matrix != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - milestone
+        python-version:
+          - "3.9"
+        workflow-id: ${{ fromJson(needs.build_jobs.outputs.test_matrix) }}
+    name: "integration-${{ matrix.workflow-id }}-py${{ matrix.python-version }}-${{ matrix.ansible-version }}"
+    steps:
+      - name: Read ansible-test targets
+        id: read-targets
+        run: |
+          import os
+          workflow_id = os.environ.get('TEST_WORKFLOW_ID')
+          all_targets = os.environ.get('TEST_TARGETS')
+          workflow_targets={d.split(':', maxsplit=1)[0]: d.split(':', maxsplit=1)[1] for d in all_targets.split(";")}[workflow_id]
+          targets = " ".join(workflow_targets.split(","))
+          output_path = os.environ.get('GITHUB_OUTPUT')
+          with open(output_path, "a", encoding="utf-8") as fw:
+              fw.write(f"ansible_test_targets='{targets}'\n")
+              fw.write(f"ansible_collection_to_test={workflow_id.split('-', maxsplit=1)[0]}\n")
+        shell: python
+        env:
+          TEST_WORKFLOW_ID: "${{ matrix.workflow-id }}"
+          TEST_TARGETS: ${{ env.test_targets }}
+
+      # Install ansible
+      - name: Install ansible-core (${{ matrix.ansible-version }})
+        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      # Install community.aws collection
+      - name: Checkout the collection repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-collections/community.aws
+          path: ${{ env.source }}
+          ref: main
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Pre install collections dependencies first so the collection install does not
+        run: ansible-galaxy collection install --pre '-r${{ env.source }}/tests/integration/requirements.yml' -p /home/runner/collections/
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        with:
+          source_path: ${{ env.source }}
+
+      - name: Build and install the collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+          ansible_version: ${{ matrix.ansible-version }}
+
+      # Determines path to the collection being tested
+      - name: Determines path to the collection being tested
+        id: collection-path
+        run: |
+          if [ "${COLLECTION_TO_TEST}" == "amazon.aws" ]; then
+            echo "path=${AMAZON_COLLECTION_PATH}" >> $GITHUB_OUTPUT
+          else
+            echo "path=${COMMUNITY_COLLECTION_PATH}" >> $GITHUB_OUTPUT
+          fi
+        env:
+          COLLECTION_TO_TEST: ${{ steps.read-targets.outputs.ansible_collection_to_test }}
+          AMAZON_COLLECTION_PATH: /home/runner/collections/ansible_collections/amazon/aws/
+          COMMUNITY_COLLECTION_PATH: /home/runner/collections/ansible_collections/community/aws/
+
+      - name: Create AWS/sts session credentials
+        uses: ansible-network/github_actions/.github/actions/ansible_aws_test_provider@main
+        with:
+          collection_path: ${{ steps.collection-path.outputs.path }}
+          ansible_core_ci_key: ${{ secrets.ANSIBLE_CORE_CI_KEY }}
+
+      - name: Run integration tests
+        uses: ansible-network/github_actions/.github/actions/ansible_test_integration@main
+        with:
+          collection_path: ${{ steps.collection-path.outputs.path }}
+          python_version: ${{ matrix.python-version }}
+          ansible_version: ${{ matrix.ansible-version }}
+          ansible_test_requirement_files: |
+            requirements.txt
+            test-requirements.txt
+            tests/integration/requirements.txt
+          ansible_test_constraint_files: tests/integration/constraints.txt
+          ansible_test_targets: ${{ steps.read-targets.outputs.ansible_test_targets }}
