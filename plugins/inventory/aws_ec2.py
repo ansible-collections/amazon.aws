@@ -408,6 +408,7 @@ def _get_tag_hostname(preference, instance):
 
 def _prepare_host_vars(
     original_host_vars,
+    availability_zone_ids,
     hostvars_prefix=None,
     hostvars_suffix=None,
     use_contrib_script_compatible_ec2_tag_keys=False,
@@ -415,8 +416,9 @@ def _prepare_host_vars(
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
     host_vars["tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
 
-    # Allow easier grouping by region
+    # Allow easier grouping by region or by AZ id
     host_vars["placement"]["region"] = host_vars["placement"]["availability_zone"][:-1]
+    host_vars["placement"]["availability_zone_id"] = availability_zone_ids.get(host_vars["placement"]["availability_zone"])
 
     if use_contrib_script_compatible_ec2_tag_keys:
         for k, v in host_vars["tags"].items():
@@ -539,6 +541,26 @@ class InventoryModule(AWSInventoryBase):
             all_instances.extend(instances)
 
         return all_instances
+
+    def _get_availability_zones_id(self, strict_permissions):
+      """
+      :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+      :return a dictionary of az_name -> az_id mappings
+      """
+      availability_zones = {}
+
+      for connection, _region in self.all_clients("ec2"):
+        try:
+          for availability_zone in connection.describe_availability_zones().get('AvailabilityZones'):
+            availability_zones[availability_zone['ZoneName']] = availability_zone['ZoneId']
+        except is_boto3_error_code("UnauthorizedOperation") as e:
+            if not strict_permissions:
+                continue
+            self.fail_aws("Failed to describe availability zones", exception=e)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.fail_aws("Failed to describe availability zones", exception=e)
+
+      return availability_zones
 
     def _sanitize_hostname(self, hostname):
         if ":" in to_text(hostname):
@@ -663,6 +685,7 @@ class InventoryModule(AWSInventoryBase):
         self,
         groups,
         hostnames,
+        availability_zone_ids,
         allow_duplicated_hosts=False,
         hostvars_prefix=None,
         hostvars_suffix=None,
@@ -674,6 +697,7 @@ class InventoryModule(AWSInventoryBase):
                 hosts=groups[group],
                 group=group,
                 hostnames=hostnames,
+                availability_zone_ids=availability_zone_ids,
                 allow_duplicated_hosts=allow_duplicated_hosts,
                 hostvars_prefix=hostvars_prefix,
                 hostvars_suffix=hostvars_suffix,
@@ -685,6 +709,7 @@ class InventoryModule(AWSInventoryBase):
         self,
         hosts,
         hostnames,
+        availability_zone_ids,
         allow_duplicated_hosts=False,
         hostvars_prefix=None,
         hostvars_suffix=None,
@@ -700,6 +725,7 @@ class InventoryModule(AWSInventoryBase):
 
             host_vars = _prepare_host_vars(
                 host,
+                availability_zone_ids,
                 hostvars_prefix,
                 hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys,
@@ -712,6 +738,7 @@ class InventoryModule(AWSInventoryBase):
         hosts,
         group,
         hostnames,
+        availability_zone_ids,
         allow_duplicated_hosts=False,
         hostvars_prefix=None,
         hostvars_suffix=None,
@@ -721,6 +748,7 @@ class InventoryModule(AWSInventoryBase):
         :param hosts: a list of hosts to be added to a group
         :param group: the name of the group to which the hosts belong
         :param hostnames: a list of hostname destination variables in order of preference
+        :param availability_zone_ids: a dictionary of az_name -> az_id mappings
         :param bool allow_duplicated_hosts: if true, accept same host with different names
         :param str hostvars_prefix: starts the hostvars variable name with this prefix
         :param str hostvars_suffix: ends the hostvars variable name with this suffix
@@ -730,6 +758,7 @@ class InventoryModule(AWSInventoryBase):
         for name, host_vars in self.iter_entry(
             hosts,
             hostnames,
+            availability_zone_ids,
             allow_duplicated_hosts=allow_duplicated_hosts,
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
@@ -771,6 +800,7 @@ class InventoryModule(AWSInventoryBase):
         hostnames = self.get_option("hostnames")
         strict_permissions = self.get_option("strict_permissions")
         allow_duplicated_hosts = self.get_option("allow_duplicated_hosts")
+        availability_zone_ids = self._get_availability_zones_id(strict_permissions)
 
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
@@ -795,6 +825,7 @@ class InventoryModule(AWSInventoryBase):
         self._populate(
             results,
             hostnames,
+            availability_zone_ids,
             allow_duplicated_hosts=allow_duplicated_hosts,
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
