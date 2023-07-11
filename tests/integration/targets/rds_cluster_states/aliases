@@ -1,3 +1,4 @@
-time=20m
+time=30m
 cloud/aws
 rds_cluster
+rds_cluster_info
