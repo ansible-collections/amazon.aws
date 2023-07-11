@@ -2,4 +2,5 @@ cluster_id: ansible-test-cluster-{{ tiny_prefix }}
 username: testrdsusername
 password: test-rds_password
 engine: aurora
+error-engine: postgres
 db_cluster_instance_class: db.r5.large
