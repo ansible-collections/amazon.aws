@@ -1039,6 +1039,8 @@ def changing_cluster_options(modify_params, current_cluster):
             changing_params["ApplyImmediately"] = apply_immediately
 
     if module.params["state"] == "started":
+        if current_cluster["engine"] in ["mysql", "postgres"]:
+            module.fail_json("Only aurora clusters can use the state started or stopped")
         changing_params["DBClusterIdentifier"] = db_cluster_id
 
     if module.params["state"] == "stopped":
