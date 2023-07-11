@@ -2,3 +2,4 @@
 collections:
 - ansible.windows
 - ansible.utils  # ipv6 filter
+- ansible.netcommon # ipsubnet
