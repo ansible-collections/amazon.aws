@@ -38,13 +38,29 @@ options:
     type: int
   include_attributes:
     description:
-      - Describes the specified attributes of the returned instances. You can specify only one attribute at a time.
-        See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstanceAttribute.html) for possible values.
+      - Describes the specified attributes of the returned instances.
     required: false
     type: list
     elements: str
+    choices:
+    - instanceType
+    - kernel
+    - ramdisk
+    - userData
+    - disableApiTermination
+    - instanceInitiatedShutdownBehavior
+    - rootDeviceName
+    - blockDeviceMapping
+    - productCodes
+    - sourceDestCheck
+    - groupSet
+    - ebsOptimized
+    - sriovNetSupport
+    - enaSupport
+    - enclaveOptions
+    - disableApiStop
     aliases: ['attributes']
-    version_added: 6.2.0
+    version_added: 6.3.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -583,7 +599,7 @@ def list_ec2_instances(connection, module):
     attributes = module.params.get("include_attributes")
     if attributes:
         for instance in instances:
-            instance["attributes"] = describe_instance_attribute(connection, instance["InstanceId"], attributes)
+            instance["attributes"] = describe_instance_attributes(connection, instance["InstanceId"], attributes)
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
@@ -595,7 +611,7 @@ def list_ec2_instances(connection, module):
     module.exit_json(instances=snaked_instances)
 
 
-def describe_instance_attribute(connection, instance_id, attributes):
+def describe_instance_attributes(connection, instance_id, attributes):
     result = {}
     for attr in attributes:
         response = connection.describe_instance_attribute(Attribute=attr, InstanceId=instance_id)
@@ -606,11 +622,29 @@ def describe_instance_attribute(connection, instance_id, attributes):
 
 
 def main():
+    instance_attributes = [
+        "instanceType",
+        "kernel",
+        "ramdisk",
+        "userData",
+        "disableApiTermination",
+        "instanceInitiatedShutdownBehavior",
+        "rootDeviceName",
+        "blockDeviceMapping",
+        "productCodes",
+        "sourceDestCheck",
+        "groupSet",
+        "ebsOptimized",
+        "sriovNetSupport",
+        "enaSupport",
+        "enclaveOptions",
+        "disableApiStop",
+    ]
     argument_spec = dict(
         minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
         instance_ids=dict(default=[], type="list", elements="str"),
         filters=dict(default={}, type="dict"),
-        include_attributes=dict(type="list", elements="str", aliases=["attributes"]),
+        include_attributes=dict(type="list", elements="str", aliases=["attributes"], choices=instance_attributes),
     )
 
     module = AnsibleAWSModule(

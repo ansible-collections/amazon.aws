@@ -14,6 +14,9 @@
       availability_zone: '{{ subnet_b_az }}'
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+      user_data: |
+        packages:
+          - httpd
       instance_type: "{{ ec2_instance_type }}"
       wait: false
 
@@ -23,6 +26,7 @@
         "tag:Name": "{{ ec2_instance_name }}"
       include_attributes:
         - instanceType
+        - userData
     register: _instance_info
 
   - assert:
@@ -30,3 +34,4 @@
         - _instance_info.instances | length > 0
         - '"attributes" in _instance_info.instances[0]'
         - _instance_info.instances[0].attributes.instance_type.value == ec2_instance_type
+        - _instance_info.instances[0].attributes.user_data.value != ''
