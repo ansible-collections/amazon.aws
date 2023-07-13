@@ -35,7 +35,63 @@
       name: testcgw
     register: cgw
 
-  - name: create vpn connection, with customer gateway
+  - name: create transit gateway
+    ec2_transit_gateway:
+      description: "Transit Gateway for vpn attachment"
+    register: tgw
+
+  - name: create vpn connection, with customer gateway, vpn_gateway_id and transit_gateway
+    ec2_vpc_vpn:
+      customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+      vpn_gateway_id: '{{ vgw.vgw.id }}'
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: present
+    register: result
+    ignore_errors: true
+
+  - name: assert creation of vpn failed
+    assert:
+      that:
+        - result is failed
+        - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
+
+
+  - name: create vpn connection, with customer gateway and transit_gateway
+    ec2_vpc_vpn:
+      customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: present
+    register: tgw_vpn
+
+  - name: Store ID of VPN
+    set_fact:
+      vpn_id: '{{ tgw_vpn.vpn_connection_id }}'
+
+  # ============================================================
+  - name: test success with no parameters
+    ec2_vpc_vpn_info:
+    register: result
+
+  - name: assert success with no parameters
+    assert:
+      that:
+        - 'result.changed == false'
+        - 'result.vpn_connections != []'
+  # ============================================================
+
+  - name: Delete vpn created with transit gateway
+    ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  # ============================================================
+
+  - name: create vpn connection, with customer gateway and vpn gateway
     ec2_vpc_vpn:
       customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
       vpn_gateway_id: '{{ vgw.vgw.id }}'
@@ -47,6 +103,7 @@
       vpn_id: '{{ vpn.vpn_connection_id }}'
 
   # ============================================================
+
   - name: test success with no parameters
     ec2_vpc_vpn_info:
     register: result
@@ -162,4 +219,10 @@
     retries: 10
     delay: 3
     until: result is not failed
+    ignore_errors: true
+
+  - name: delete transit gateway
+    ec2_transit_gateway:
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: absent
     ignore_errors: true
