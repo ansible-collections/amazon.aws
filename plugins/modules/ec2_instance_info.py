@@ -39,12 +39,26 @@ options:
   include_attributes:
     description:
       - Describes the specified attributes of the returned instances.
-      - See U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/describe_instance_attribute.html) for valid values.
     required: false
     type: list
     elements: str
-    aliases:
-      - attributes
+    choices:
+    - instanceType
+    - kernel
+    - ramdisk
+    - userData
+    - disableApiTermination
+    - instanceInitiatedShutdownBehavior
+    - rootDeviceName
+    - blockDeviceMapping
+    - productCodes
+    - sourceDestCheck
+    - groupSet
+    - ebsOptimized
+    - sriovNetSupport
+    - enclaveOptions
+    - disableApiStop
+    aliases: ['attributes']
     version_added: 6.3.0
 
 extends_documentation_fragment:
@@ -530,7 +544,7 @@ instances:
                         'value': True
                     }
                 }
-            version_added: 6.1.0
+            version_added: 6.3.0
 """
 
 import datetime
@@ -607,11 +621,28 @@ def describe_instance_attributes(connection, instance_id, attributes):
 
 
 def main():
+    instance_attributes = [
+        "instanceType",
+        "kernel",
+        "ramdisk",
+        "userData",
+        "disableApiTermination",
+        "instanceInitiatedShutdownBehavior",
+        "rootDeviceName",
+        "blockDeviceMapping",
+        "productCodes",
+        "sourceDestCheck",
+        "groupSet",
+        "ebsOptimized",
+        "sriovNetSupport",
+        "enclaveOptions",
+        "disableApiStop",
+    ]
     argument_spec = dict(
         minimum_uptime=dict(required=False, type="int", default=None, aliases=["uptime"]),
         instance_ids=dict(default=[], type="list", elements="str"),
         filters=dict(default={}, type="dict"),
-        include_attributes=dict(type="list", elements="str", aliases=["attributes"]),
+        include_attributes=dict(type="list", elements="str", aliases=["attributes"], choices=instance_attributes),
     )
 
     module = AnsibleAWSModule(
