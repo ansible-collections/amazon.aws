@@ -56,7 +56,6 @@ options:
     - groupSet
     - ebsOptimized
     - sriovNetSupport
-    - enaSupport
     - enclaveOptions
     - disableApiStop
     aliases: ['attributes']
@@ -636,7 +635,6 @@ def main():
         "groupSet",
         "ebsOptimized",
         "sriovNetSupport",
-        "enaSupport",
         "enclaveOptions",
         "disableApiStop",
     ]
