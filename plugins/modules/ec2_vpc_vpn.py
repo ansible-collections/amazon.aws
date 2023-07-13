@@ -35,6 +35,7 @@ options:
   vpn_gateway_id:
     description:
       - The ID of the virtual private gateway.
+      - Mutually exclusive with I(transit_gateway_id).
     type: str
   vpn_connection_id:
     description:
@@ -46,6 +47,12 @@ options:
     default: False
     type: bool
     required: false
+  transit_gateway_id:
+    description:
+      - The ID of the transit gateway.
+      - Mutually exclusive with I(vpn_gateway_id).
+    type: str
+    version_added: 6.2.0
   tunnel_options:
     description:
       - An optional list object containing no more than two dict members, each of which may contain I(TunnelInsideCidr)
@@ -139,10 +146,16 @@ EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
-- name: create a VPN connection
+- name: create a VPN connection with vpn_gateway_id
   community.aws.ec2_vpc_vpn:
     state: present
     vpn_gateway_id: vgw-XXXXXXXX
+    customer_gateway_id: cgw-XXXXXXXX
+
+- name: Attach a vpn connection to transit gateway
+  community.aws.ec2_vpc_vpn:
+    state: present
+    transit_gateway_id: tgw-XXXXXXXX
     customer_gateway_id: cgw-XXXXXXXX
 
 - name: modify VPN connection tags
@@ -231,6 +244,12 @@ vpn_gateway_id:
   returned: I(state=present)
   sample:
     vpn_gateway_id: vgw-cb0ae2a2
+transit_gateway_id:
+  description: The transit gateway id to which the vpn connection can be attached.
+  type: str
+  returned: I(state=present)
+  sample:
+    transit_gateway_id: tgw-cb0ae2a2
 options:
   description: The VPN connection options (currently only containing static_routes_only).
   type: complex
@@ -421,6 +440,7 @@ def create_filter(module_params, provided_filters):
     param_to_filter = {
         "customer_gateway_id": "customer-gateway-id",
         "vpn_gateway_id": "vpn-gateway-id",
+        "transit_gateway_id": "transit-gateway-id",
         "vpn_connection_id": "vpn-connection-id",
     }
 
@@ -505,6 +525,7 @@ def create_connection(
     customer_gateway_id,
     static_only,
     vpn_gateway_id,
+    transit_gateway_id,
     connection_type,
     max_attempts,
     delay,
@@ -524,17 +545,21 @@ def create_connection(
         if t_opt:
             options["TunnelOptions"] = t_opt
 
-    if not (customer_gateway_id and vpn_gateway_id):
+    if not (customer_gateway_id and (vpn_gateway_id or transit_gateway_id)):
         raise VPNConnectionException(
             msg=(
                 "No matching connection was found. To create a new connection you must provide "
-                "both vpn_gateway_id and customer_gateway_id."
+                "customer_gateway_id and one of either transit_gateway_id or vpn_gateway_id."
             )
         )
+    vpn_connection_params = {"Type": connection_type, "CustomerGatewayId": customer_gateway_id, "Options": options}
+    if vpn_gateway_id:
+        vpn_connection_params["VpnGatewayId"] = vpn_gateway_id
+    if transit_gateway_id:
+        vpn_connection_params["TransitGatewayId"] = transit_gateway_id
+
     try:
-        vpn = connection.create_vpn_connection(
-            Type=connection_type, CustomerGatewayId=customer_gateway_id, VpnGatewayId=vpn_gateway_id, Options=options
-        )
+        vpn = connection.create_vpn_connection(**vpn_connection_params)
         connection.get_waiter("vpn_connection_available").wait(
             VpnConnectionIds=[vpn["VpnConnection"]["VpnConnectionId"]],
             WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
@@ -674,6 +699,7 @@ def get_check_mode_results(connection, module_params, vpn_connection_id=None, cu
         "customer_gateway_configuration": "",
         "customer_gateway_id": module_params.get("customer_gateway_id"),
         "vpn_gateway_id": module_params.get("vpn_gateway_id"),
+        "transit_gateway_id": module_params.get("transit_gateway_id"),
         "options": {"static_routes_only": module_params.get("static_only")},
         "routes": [module_params.get("routes")],
     }
@@ -752,6 +778,7 @@ def ensure_present(connection, module_params, check_mode=False):
             customer_gateway_id=module_params.get("customer_gateway_id"),
             static_only=module_params.get("static_only"),
             vpn_gateway_id=module_params.get("vpn_gateway_id"),
+            transit_gateway_id=module_params.get("transit_gateway_id"),
             connection_type=module_params.get("connection_type"),
             tunnel_options=module_params.get("tunnel_options"),
             max_attempts=max_attempts,
@@ -797,6 +824,7 @@ def main():
         vpn_gateway_id=dict(type="str"),
         tags=dict(type="dict", aliases=["resource_tags"]),
         connection_type=dict(default="ipsec.1", type="str"),
+        transit_gateway_id=dict(type="str"),
         tunnel_options=dict(no_log=True, type="list", default=[], elements="dict"),
         static_only=dict(default=False, type="bool"),
         customer_gateway_id=dict(type="str"),
@@ -807,7 +835,15 @@ def main():
         wait_timeout=dict(type="int", default=600),
         delay=dict(type="int", default=15),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    mutually_exclusive = [
+        ["vpn_gateway_id", "transit_gateway_id"],
+    ]
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+    )
     connection = module.client("ec2", retry_decorator=VPNRetry.jittered_backoff(retries=10))
 
     state = module.params.get("state")
