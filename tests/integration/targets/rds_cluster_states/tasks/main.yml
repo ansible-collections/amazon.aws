@@ -28,7 +28,6 @@
         state: present
         engine: aurora-postgresql
         engine_mode: provisioned
-        db_cluster_instance_class: '{{ db_cluster_instance_class }}'
         username: '{{ username }}'
         password: '{{ password }}'
       register: _result_create_source_db_cluster
@@ -116,12 +115,12 @@
       amazon.aws.rds_cluster:
         cluster_id: '{{ cluster_id }}'
         state: started
-      register: started_cluster
+      register: check_started_cluster
       check_mode: yes
 
     - assert:
         that:
-        - started_cluster.changed
+        - check_started_cluster.changed
     
     - name: Start db clusters
       amazon.aws.rds_cluster:
@@ -153,90 +152,92 @@
     - assert:
         that:
         - not started_cluster.changed
+
+    # ------------------------------------------------------------------------------------------
+    # Give errors for MySql DB cluster
+    - name: Ensure the resource doesn't exist
+      rds_cluster:
+        id: '{{ mysql_cluster_id }}'
+        state: absent
+        engine: '{{ mysql_engine }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        skip_final_snapshot: true
+      register: _result_delete_mysql_db_cluster
   
+    - assert:
+        that:
+        - not _result_delete_mysql_db_cluster.changed
+      ignore_errors: yes
+    
+    - name: Create an MySql DB cluster
+      rds_cluster:
+        id: '{{ mysql_cluster_id }}'
+        state: present
+        engine: '{{ mysql_engine }}'
+        engine_mode: provisioned
+        allocated_storage: '{{ mysql_allocated_storage }}'
+        iops: '{{ mysql_iops }}'
+        db_cluster_instance_class: '{{ mysql_db_cluster_instance_class }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+      ignore_errors: yes
+      register: mysql_cluster
+
+    - debug:
+        var: mysql_cluster
+
+    - assert:
+        that:
+        - mysql_cluster.changed
+        - "'allocated_storage' in mysql_cluster"
+        - mysql_cluster.allocated_storage == 100
+        - "'cluster_create_time' in mysql_cluster"
+        - mysql_cluster.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in mysql_cluster"
+        - mysql_cluster.db_cluster_identifier == "{{ mysql_cluster_id }}"
+        - "'db_cluster_parameter_group' in mysql_cluster"
+        - "'db_cluster_resource_id' in mysql_cluster"
+        - "'endpoint' in mysql_cluster"
+        - "'engine' in mysql_cluster"
+        - mysql_cluster.engine == "{{ mysql_engine }}"
+        - "'engine_mode' in mysql_cluster"
+        - mysql_cluster.engine_mode == "provisioned"
+        - "'engine_version' in mysql_cluster"
+        - "'master_username' in mysql_cluster"
+        - mysql_cluster.master_username == "{{ username }}"
+        - "'port' in mysql_cluster"
+        - "'status' in mysql_cluster"
+        - mysql_cluster.status == "available"
+        - "'tags' in mysql_cluster"
+        - "'vpc_security_groups' in mysql_cluster"
+      
+
+    - name: Stop MySql DB cluster
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ mysql_cluster_id }}'
+        state: stopped
+      register: mysql_cluster
+      ignore_errors: true
+
+    - assert:
+        that:
+        - mysql_cluster is failed
+        - mysql_cluster.msg == "Only aurora clusters can use the state stopped"
+
+  always:
     # ------------------------------------------------------------------------------------------
     # Cleanup starts here
-  always:
-    - name: Delete db cluster without creating a final snapshot
+    - name: Delete MySql db cluster without creating a final snapshot
+      rds_cluster:
+        state: absent
+        cluster_id: '{{ mysql_cluster_id }}'
+        skip_final_snapshot: true
+      ignore_errors: true
+
+    - name: Delete Aurora-PostgreSql db cluster without creating a final snapshot
       rds_cluster:
         state: absent
         cluster_id: '{{ cluster_id }}'
         skip_final_snapshot: true
       ignore_errors: true
-
- #   # ------------------------------------------------------------------------------------------
-  #   # Give erros for Postgres DB cluster
-  #   - name: Ensure the resource doesn't exist
-  #     rds_cluster:
-  #       id: PostgresCluster
-  #       state: absent
-  #       engine: postgres
-  #       username: '{{ username }}'
-  #       password: '{{ password }}'
-  #       skip_final_snapshot: true
-  #     register: _result_delete_db_cluster
-  
-  #   - assert:
-  #       that:
-  #       - not _result_delete_db_cluster.changed
-  #     ignore_errors: yes
-    
-  #   - name: Create an Postgres DB cluster
-  #     rds_cluster:
-  #       id: PostgresCluster
-  #       state: present
-  #       engine: postgres
-  #       engine_mode: provisioned
-  #       allocated_storage: 1
-  #       iops: 1000
-  #       db_cluster_instance_class: '{{ db_cluster_instance_class }}'
-  #       username: 'PostgresCluster'
-  #       password: '{{ password }}'
-  #     register: postgres_cluster
-
-
-  #   - assert:
-  #       that:
-  #       - postgres_cluster.changed
-  #       - "'allocated_storage' in postgres_cluster"
-  #       - postgres_cluster.allocated_storage == 1
-  #       - "'cluster_create_time' in postgres_cluster"
-  #       - postgres_cluster.copy_tags_to_snapshot == false
-  #       - "'db_cluster_arn' in postgres_cluster"
-  #       - postgres_cluster.db_cluster_identifier == "PostgresCluster"
-  #       - "'db_cluster_parameter_group' in postgres_cluster"
-  #       - "'db_cluster_resource_id' in postgres_cluster"
-  #       - "'endpoint' in postgres_cluster"
-  #       - "'engine' in postgres_cluster"
-  #       - postgres_cluster.engine == "postgres"
-  #       - "'engine_mode' in postgres_cluster"
-  #       - postgres_cluster.engine_mode == "provisioned"
-  #       - "'engine_version' in postgres_cluster"
-  #       - "'master_username' in postgres_cluster"
-  #       - postgres_cluster.master_username == "{{ username }}"
-  #       - "'port' in postgres_cluster"
-  #       - "'status' in postgres_cluster"
-  #       - postgres_cluster.status == "available"
-  #       - "'tags' in postgres_cluster"
-  #       - "'vpc_security_groups' in postgres_cluster"
-      
-
-  #   - name: Stop Postgres DB cluster
-  #     amazon.aws.rds_cluster:
-  #       cluster_id: PostgresCluster
-  #       state: stopped
-  #     register: postgres_cluster
-  #     ignore_errors: true
-
-  #   - assert:
-  #       that:
-  #       - postgres_cluster is failed
-  #       - postgres_cluster.msg == "Only aurora clusters can use the state started or stopped"
-
-  # always:
-  #   - name: Delete db cluster without creating a final snapshot
-  #     rds_cluster:
-  #       state: absent
-  #       cluster_id: postgres_cluster
-  #       skip_final_snapshot: true
-  #     ignore_errors: true
