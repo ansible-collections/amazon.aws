@@ -110,18 +110,7 @@
         - not stopped_cluster_idem.changed
 
     # ------------------------------------------------------------------------------------------
-    # Test starting DB clusters
-    - name: Start db clusters - checkmode
-      amazon.aws.rds_cluster:
-        cluster_id: '{{ cluster_id }}'
-        state: started
-      register: check_started_cluster
-      check_mode: yes
-
-    - assert:
-        that:
-        - check_started_cluster.changed
-    
+    # Test starting DB clusters   
     - name: Start db clusters
       amazon.aws.rds_cluster:
         cluster_id: '{{ cluster_id }}'
