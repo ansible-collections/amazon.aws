@@ -184,9 +184,6 @@
       ignore_errors: yes
       register: mysql_cluster
 
-    - debug:
-        var: mysql_cluster
-
     - assert:
         that:
         - mysql_cluster.changed
