@@ -1,0 +1,76 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "Make instance in the testing subnet created in the test VPC"
+    ec2_instance:
+      state: present
+      name: "{{ ec2_instance_name }}"
+      image_id: "{{ ec2_ami_id }}"
+      availability_zone: '{{ subnet_b_az }}'
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      user_data: "{{ ec2_instance_user_data }}"
+      instance_type: "{{ ec2_instance_type }}"
+      wait: false
+
+  - name: "Gather {{ ec2_instance_name }} info"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ ec2_instance_name }}"
+      include_attributes:
+        - instanceType
+        - kernel
+        - ramdisk
+        - userData
+        - disableApiTermination
+        - instanceInitiatedShutdownBehavior
+        - rootDeviceName
+        - blockDeviceMapping
+        - productCodes
+        - sourceDestCheck
+        - groupSet
+        - ebsOptimized
+        - sriovNetSupport
+        - enclaveOptions
+    register: _instance_info
+
+  - name: Validate that returned value contains required attributes
+    assert:
+      that:
+        - _instance_info.instances | length > 0
+        - '"attributes" in _instance_info.instances[0]'
+        # instance type
+        - _instance_info.instances[0].attributes.instance_type.value == ec2_instance_type
+        # User data
+        - _instance_info.instances[0].attributes.user_data.value | b64decode == ec2_instance_user_data
+        # kernel
+        - '"kernel_id" in _instance_info.instances[0].attributes'
+        # Ram disk
+        - '"ramdisk_id" in _instance_info.instances[0].attributes'
+        # Disable API termination
+        - not (_instance_info.instances[0].attributes.disable_api_termination.value | bool)
+        # Instance Initiated Shutdown Behavior
+        - '"instance_initiated_shutdown_behavior" in _instance_info.instances[0].attributes'
+        # Root Device Name
+        - _instance_info.instances[0].attributes.root_device_name.value == "/dev/sda1"
+        # Block Device Mapping
+        - '"block_device_mappings" in _instance_info.instances[0].attributes'
+        - _instance_info.instances[0].attributes.block_device_mappings[0].device_name == "/dev/sda1"
+        - '"ebs" in _instance_info.instances[0].attributes.block_device_mappings[0]'
+        # Product Codes
+        - '"product_codes" in _instance_info.instances[0].attributes'
+        # Source Dest Check
+        - _instance_info.instances[0].attributes.source_dest_check.value | bool
+        # GroupSet
+        - '"groups" in _instance_info.instances[0].attributes'
+        # Ebs Optimized
+        - not (_instance_info.instances[0].attributes.ebs_optimized.value | bool)
+        # Sriov Net Support
+        - '"sriov_net_support" in _instance_info.instances[0].attributes'
+        # Enclave Options
+        - not (_instance_info.instances[0].attributes.enclave_options.enabled | bool)
