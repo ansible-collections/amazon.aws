@@ -60,5 +60,9 @@ jobs:
             {
               "ansible-version": "devel",
               "python-version": "3.8"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
             }
           ]
