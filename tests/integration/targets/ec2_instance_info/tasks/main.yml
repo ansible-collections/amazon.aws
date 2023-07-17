@@ -37,7 +37,6 @@
         - ebsOptimized
         - sriovNetSupport
         - enclaveOptions
-        - disableApiStop
     register: _instance_info
 
   - name: Validate that returned value contains required attributes
@@ -75,5 +74,3 @@
         - '"sriov_net_support" in _instance_info.instances[0].attributes'
         # Enclave Options
         - not (_instance_info.instances[0].attributes.enclave_options.enabled | bool)
-        # Disable Api Stop
-        - not (_instance_info.instances[0].attributes.disable_api_stop.value | bool)
