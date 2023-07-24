@@ -688,7 +688,7 @@ vpc_security_groups:
       type: str
       sample: sg-12345678
 """
-
+import q
 
 try:
     import botocore
@@ -906,7 +906,10 @@ def get_rds_method_attribute_name(cluster):
     method_name = None
     method_options_name = None
 
-    if state == "absent":
+    if module.params["global_cluster_identifier"]:
+        method_name = "create_global_cluster"
+        method_options_name = "get_create_options"
+    elif state == "absent":
         if cluster and cluster["Status"] not in ["deleting", "deleted"]:
             method_name = "delete_db_cluster"
             method_options_name = "get_delete_options"
@@ -1025,7 +1028,12 @@ def changing_cluster_options(modify_params, current_cluster):
 def ensure_present(cluster, parameters, method_name, method_options_name):
     changed = False
 
-    if not cluster:
+    if module.params["global_cluster_identifier"]:
+        modify_options = {}
+        modify_options["GlobalClusterIdentifier"] = module.params["global_cluster_identifier"]
+        modify_options["SourceDBClusterIdentifier"] = module.params["source_db_cluster_identifier"]
+        call_method(client, module, method_name, modify_options)
+    elif not cluster:
         if parameters.get("Tags") is not None:
             parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
         call_method(client, module, method_name, eval(method_options_name)(parameters))
@@ -1188,7 +1196,7 @@ def main():
                 # Fall to default value
                 if not module.params.get("storage_type"):
                     module.params["storage_type"] = "io1"
-
+    
     module.params["db_cluster_identifier"] = module.params["db_cluster_identifier"].lower()
     cluster = get_cluster(module.params["db_cluster_identifier"])
 

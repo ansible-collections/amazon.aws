@@ -35,6 +35,7 @@ cluster_method_names = [
     "remove_tags_from_resource",
     "list_tags_for_resource",
     "promote_read_replica_db_cluster",
+    "create_global_cluster",
 ]
 instance_method_names = [
     "create_db_instance",
