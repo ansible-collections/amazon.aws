@@ -104,6 +104,11 @@ options:
       - If set, allows to create volume in an Outpost.
     type: str
     version_added: 3.1.0
+  wait_for_modify_volume_complete:
+    description:
+      - Wait for volume modification to complete
+    type: bool
+    version_added: 6.3.0
 author:
   - "Lester Wade (@lwade)"
 notes:
@@ -441,13 +446,19 @@ def update_volume(module, ec2_conn, volume):
 
             if module.params.get("wait_for_modify_volume_complete"):
                 mod_state = ""
-                _max_attempts = 100
-                _sleep_secs = 10
+                _max_attempts = 200
+                _sleep_secs = 30
                 _attempt = 0
                 while mod_state != "completed":
                     _attempt += 1
                     mod_response = ec2_conn.describe_volumes_modifications(VolumeIds=[volume["volume_id"]])
                     mod_state = mod_response.get("VolumesModifications")[0].get("ModificationState")
+
+                    if mod_state == "failed":
+                        module.fail_json(
+                            msg=f"Volume {volume['volume_id']} modification has failed."
+                        )
+
                     # this can take a long time, depending on how much bigger the requested volume size is
                     if _attempt > _max_attempts:
                         module.fail_json(
