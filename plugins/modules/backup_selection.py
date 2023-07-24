@@ -50,7 +50,7 @@ options:
         condition_type:
             description:
             - An operation applied to a key-value pair used to assign resources to your backup plan.
-            - Condition only supports C(string_equals).
+            - Condition only supports C(STRINGEQUALS).
             type: str
         condition_key:
             description:
