@@ -108,6 +108,7 @@ options:
     description:
       - Wait for volume modification to complete
     type: bool
+    default: false
     version_added: 6.3.0
 author:
   - "Lester Wade (@lwade)"
