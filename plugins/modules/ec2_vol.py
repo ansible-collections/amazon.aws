@@ -455,9 +455,7 @@ def update_volume(module, ec2_conn, volume):
                     mod_state = mod_response.get("VolumesModifications")[0].get("ModificationState")
 
                     if mod_state == "failed":
-                        module.fail_json(
-                            msg=f"Volume {volume['volume_id']} modification has failed."
-                        )
+                        module.fail_json(msg=f"Volume {volume['volume_id']} modification has failed.")
 
                     # this can take a long time, depending on how much bigger the requested volume size is
                     if _attempt > _max_attempts:
@@ -741,7 +739,7 @@ def main():
         outpost_arn=dict(type="str"),
         purge_tags=dict(type="bool", default=True),
         multi_attach=dict(type="bool"),
-        wait_for_modify_volume_complete=dict(default=False, type="bool")
+        wait_for_modify_volume_complete=dict(default=False, type="bool"),
     )
 
     module = AnsibleAWSModule(
@@ -768,7 +766,6 @@ def main():
     multi_attach = module.params.get("multi_attach")
     modify_volume = module.params.get("modify_volume")
     wait_for_modify_volume_complete = module.params.get("wait_for_modify_volume_complete")
-
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == "present":
