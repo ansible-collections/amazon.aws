@@ -51,6 +51,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -67,6 +68,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -91,6 +93,7 @@
           - result.key.tags['CamelCase'] == 'CamelCaseValue'
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
+          - result.key.private_key == '/tmp/my_key'
 
     - name: Gather info about the key pair
       ec2_key_info:
@@ -116,6 +119,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -132,6 +136,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -143,6 +148,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -158,6 +164,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -207,6 +214,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -222,6 +230,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -253,6 +262,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -268,6 +278,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -295,6 +306,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -310,6 +322,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
+        path: "/tmp/my_key"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -338,6 +351,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
+        path: "/tmp/my_key"
       register: result
       check_mode: true
 
@@ -350,6 +364,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
+        path: "/tmp/my_key"
       register: result
 
     - name: assert removing an existent key
@@ -365,6 +380,7 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
+        path: "/tmp/my_key"
       register: result
 
     - name: assert state=present with key_material
@@ -401,6 +417,7 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
+        path: "/tmp/my_key"
       register: result
 
     - name: assert state=present with key_material
@@ -424,6 +441,7 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ another_key_material }}'
         force: no
+        path: "/tmp/my_key"
       register: result
 
     - name: assert force=no with another_key_material (expect changed=false)
@@ -438,6 +456,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_material: '{{ another_key_material }}'
+        path: "/tmp/my_key"
       register: result
 
     - name: assert updating a key pair using another_key_material (expect changed=True)
@@ -451,6 +470,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
+        path: "/tmp/my_key"
       register: result
 
     - name: assert state=absent with key_material (expect changed=true)
@@ -465,6 +485,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: ed25519
+        path: "/tmp/my_key"
       register: result
 
     - name: assert that task succeed
@@ -472,11 +493,13 @@
         that:
           - 'result.changed'
           - 'result.key.type == "ed25519"'
+          - 'result.key.private_key == "/tmp/my_key"'
 
     - name: Update key pair type from ED25519 to RSA
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: rsa
+        path: "/tmp/my_key"
       register: result
 
     - name: assert that task succeed
@@ -484,6 +507,7 @@
         that:
           - 'result.changed'
           - 'result.key.type == "rsa"'
+          - 'result.key.private_key == "/tmp/my_key"'
 
   always:
 
@@ -492,3 +516,4 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
+        path: "/tmp/my_key"
