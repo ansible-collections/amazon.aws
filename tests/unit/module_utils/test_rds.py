@@ -183,6 +183,36 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             ),
         ),
         (
+            "start_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="start_db_cluster",
+                    waiter="cluster_available",
+                    operation_description="start DB cluster",
+                    resource="cluster",
+                    retry_codes=["InvalidDBClusterState"],
+                )
+            ),
+        ),
+        (
+            "stop_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="stop_db_cluster",
+                    waiter="cluster_stopped",
+                    operation_description="stop DB cluster",
+                    resource="cluster",
+                    retry_codes=["InvalidDBClusterState"],
+                )
+            ),
+        ),
+        (
             "fake_method",
             {"wait": False},
             *expected(

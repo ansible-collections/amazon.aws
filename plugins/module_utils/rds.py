@@ -104,6 +104,8 @@ def get_rds_method_attribute(method_name, module):
         resource = "cluster"
         if method_name == "delete_db_cluster":
             waiter = "cluster_deleted"
+        elif method_name == "stop_db_cluster":
+            waiter = "cluster_stopped"
         else:
             waiter = "cluster_available"
         # Handle retry codes
