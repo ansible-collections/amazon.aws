@@ -24,7 +24,10 @@ author:
 options:
   # General module options
     state:
-        description: Whether the snapshot should exist or not.
+        description: 
+          - Whether the snapshot should exist or not.
+          - C(started) and C(stopped) can only be used with aurora clusters
+          - Support for C(started) and C(stopped) was added in release 6.3.0.
         choices: ['present', 'absent', 'started', 'stopped']
         default: 'present'
         type: str
