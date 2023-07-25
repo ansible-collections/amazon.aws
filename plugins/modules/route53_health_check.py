@@ -591,6 +591,9 @@ def main():
 
     args_mutually_exclusive = [
         ["health_check_id", "health_check_name"],
+        ["child_health_checks", "ip_address"],
+        ["child_health_checks", "port"],
+        ["child_health_checks", "fqdn"],
     ]
 
     global module
@@ -620,18 +623,6 @@ def main():
     purge_tags = module.params.get("purge_tags")
     child_health_checks_in = module.params.get("child_health_checks")
     health_threshold_in = module.params.get("health_threshold")
-
-    # Throw an exception if the input parameters for a calculated health check are invalid
-    if type_in == "CALCULATED":
-        msg = "When using type == CALCULATED, the input parameters should not contain"
-        if ip_addr_in:
-            msg += " ip address,"
-        if port_in:
-            msg += " port,"
-        if fqdn_in:
-            msg += " fqdn,"
-        if msg != "When using type == CALCULATED, the input parameters should not contain":
-            module.fail_json(msg=(msg[: len(msg) - 1] + "."))
 
     # Default port
     if port_in is None:

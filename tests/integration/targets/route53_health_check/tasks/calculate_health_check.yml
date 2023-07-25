@@ -31,7 +31,7 @@
       assert:
         that:
         - error_create_calculated is failed
-        - error_create_calculated.msg == "When using type == CALCULATED, the input parameters should not contain ip address, port, fqdn."
+        - "error_create_calculated.msg == 'parameters are mutually exclusive: child_health_checks|ip_address, child_health_checks|port, child_health_checks|fqdn'"
 
     - name: 'Create Calculated Health Check - check_mode'
       route53_health_check:
