@@ -5,9 +5,6 @@
 
 """Provide version object to compare version numbers."""
 
-# Once we drop support for Ansible 2.9, ansible-base 2.10, and ansible-core 2.11, we can
-# remove the _version.py file, and replace the following import by
-#
-#     from ansible.module_utils.compat.version import LooseVersion
-
-from ._version import LooseVersion  # pylint: disable=unused-import
+# This should be directly imported by modules, rather than importing from here.
+# The import is being kept for backwards compatibility.
+from ansible.module_utils.compat.version import LooseVersion  # pylint: disable=unused-import

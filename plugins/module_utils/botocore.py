@@ -47,6 +47,13 @@ except ImportError:
     BOTO3_IMP_ERR = traceback.format_exc()
     HAS_BOTO3 = False
 
+try:
+    from packaging.version import Version
+
+    HAS_PACKAGING = True
+except ImportError:
+    HAS_PACKAGING = False
+
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__
 from ansible.module_utils.basic import missing_required_lib
@@ -55,7 +62,6 @@ from ansible.module_utils.six import text_type
 
 from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
-from .version import LooseVersion
 from .common import get_collection_info
 
 MINIMUM_BOTOCORE_VERSION = "1.25.0"
@@ -444,6 +450,10 @@ def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=
 
     supported = True
 
+    if not HAS_PACKAGING:
+        if warn:
+            warn("packaging.version Python module not installed, unable to check AWS SDK versions")
+        return True
     if not botocore_at_least(botocore_version):
         supported = False
         if warn:
@@ -456,6 +466,12 @@ def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=
     return supported
 
 
+def _version_at_least(a, b):
+    if not HAS_PACKAGING:
+        return True
+    return Version(a) >= Version(b)
+
+
 def boto3_at_least(desired):
     """Check if the available boto3 version is greater than or equal to a desired version.
 
@@ -465,7 +481,7 @@ def boto3_at_least(desired):
             module.fail_json(msg="Boto3 can't deal with EC2 IPv6 addresses before version 1.4.4.")
     """
     existing = gather_sdk_versions()
-    return LooseVersion(existing["boto3_version"]) >= LooseVersion(desired)
+    return _version_at_least(existing["boto3_version"], desired)
 
 
 def botocore_at_least(desired):
@@ -479,4 +495,4 @@ def botocore_at_least(desired):
                         'To wait until Service X resources are fully available, update botocore.')
     """
     existing = gather_sdk_versions()
-    return LooseVersion(existing["botocore_version"]) >= LooseVersion(desired)
+    return _version_at_least(existing["botocore_version"], desired)
