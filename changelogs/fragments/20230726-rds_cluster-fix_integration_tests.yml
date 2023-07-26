@@ -1,0 +1,2 @@
+trivial:
+  - "Use ``include_tasks`` rather than ``include`` since it was removed from ansible-core."
