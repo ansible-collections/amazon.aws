@@ -54,6 +54,7 @@ options:
           - An array of MetricDataQuery structures that enable
             you to create an alarm based on the result of a metric math expression.
         type: list
+        default: []
         required: false
         default: []
         version_added: "5.5.0"

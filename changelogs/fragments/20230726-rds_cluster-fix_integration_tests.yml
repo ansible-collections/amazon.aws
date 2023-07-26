@@ -1,2 +1,4 @@
 trivial:
   - "Use ``include_tasks`` rather than ``include`` since it was removed from ansible-core."
+  - "cloudwatch_metric_alarm - fix ``dimensions`` argument mismatch. Argument ``dimensions`` in argument_spec defines default as (None) but documentation defines default as ({})."
+  - "cloudwatch_metric_alarm - fix ``metrics`` argument mismatch.Argument ``metrics`` in argument_spec defines default as ([]) but documentation defines default as (None)."
