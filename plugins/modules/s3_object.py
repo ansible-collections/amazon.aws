@@ -920,6 +920,8 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
         return {}
     except is_boto3_error_code(("NoSuchTagSet", "NoSuchTagSetError")):
         return {}
+    except botocore.exceptions.ClientError:
+        return {}
     return boto3_tag_list_to_ansible_dict(current_tags)
 
 
