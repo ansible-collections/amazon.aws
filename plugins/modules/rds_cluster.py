@@ -24,7 +24,7 @@ author:
 options:
   # General module options
     state:
-        description: 
+        description:
           - Whether the snapshot should exist or not.
           - C(started) and C(stopped) can only be used with aurora clusters
           - Support for C(started) and C(stopped) was added in release 6.3.0.
@@ -867,7 +867,7 @@ def get_restore_s3_options(params_dict):
 def get_restore_snapshot_options(params_dict):
     options = [
         "AvailabilityZones",
-        "BacktrackWindow",
+        "BacktrackWindoc",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "DatabaseName",

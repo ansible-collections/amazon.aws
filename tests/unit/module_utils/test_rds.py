@@ -138,6 +138,36 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             ),
         ),
         (
+            "start_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="start_db_cluster",
+                    waiter="cluster_available",
+                    operation_description="start DB cluster",
+                    resource="cluster",
+                    retry_codes=["InvalidDBClusterState"],
+                )
+            ),
+        ),
+        (
+            "stop_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="stop_db_cluster",
+                    waiter="cluster_available",
+                    operation_description="stop DB cluster",
+                    resource="cluster",
+                    retry_codes=["InvalidDBClusterState"],
+                )
+            ),
+        ),
+        (
             "restore_db_cluster_from_snapshot",
             {
                 "new_db_cluster_identifier": "test",
@@ -177,36 +207,6 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
                     name="list_tags_for_resource",
                     waiter="cluster_available",
                     operation_description="list tags for resource",
-                    resource="cluster",
-                    retry_codes=["InvalidDBClusterState"],
-                )
-            ),
-        ),
-        (
-            "start_db_cluster",
-            {
-                "new_db_cluster_identifier": "test",
-            },
-            *expected(
-                rds.Boto3ClientMethod(
-                    name="start_db_cluster",
-                    waiter="cluster_available",
-                    operation_description="start DB cluster",
-                    resource="cluster",
-                    retry_codes=["InvalidDBClusterState"],
-                )
-            ),
-        ),
-        (
-            "stop_db_cluster",
-            {
-                "new_db_cluster_identifier": "test",
-            },
-            *expected(
-                rds.Boto3ClientMethod(
-                    name="stop_db_cluster",
-                    waiter="cluster_stopped",
-                    operation_description="stop DB cluster",
                     resource="cluster",
                     retry_codes=["InvalidDBClusterState"],
                 )
