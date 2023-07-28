@@ -45,9 +45,9 @@ options:
       - The type of health check that you want to create, which indicates how
         Amazon Route 53 determines whether an endpoint is healthy.
       - Once health_check is created, type can not be changed.
+      - The CALCULATED choice was added in 6.3.0.
     choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP', 'CALCULATED' ]
     type: str
-    version_added: 6.3.0
   child_health_checks:
     description:
       - The child health checks used for a calculated health check.
