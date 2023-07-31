@@ -771,6 +771,11 @@ def get_create_options(params_dict):
         "DomainIAMRoleName",
         "EnableGlobalWriteForwarding",
         "GlobalClusterIdentifier",
+        "AllocatedStorage",
+        "DBClusterInstanceClass",
+        "StorageType",
+        "Iops",
+        "EngineMode",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -800,6 +805,11 @@ def get_modify_options(params_dict, force_update_password):
         "EnableGlobalWriteForwarding",
         "Domain",
         "DomainIAMRoleName",
+        "AllocatedStorage",
+        "DBClusterInstanceClass",
+        "StorageType",
+        "Iops",
+        "EngineMode",
     ]
     modify_options = dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
     if not force_update_password:
@@ -1029,6 +1039,7 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
     if not cluster:
         if parameters.get("Tags") is not None:
             parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
+
         call_method(client, module, method_name, eval(method_options_name)(parameters))
         changed = True
     else:
@@ -1215,7 +1226,6 @@ def main():
         )
 
     parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
-
     changed = False
     method_name, method_options_name = get_rds_method_attribute_name(cluster)
 
