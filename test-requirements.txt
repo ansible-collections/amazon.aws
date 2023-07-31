@@ -8,7 +8,7 @@ pytest
 pytest-forked
 pytest-mock
 pytest-xdist
-pytest-ansible-units ; python_version > '3.8'
+pytest-ansible-units ; python_version >= '3.8'
 
 # Needed for ansible.utils.ipaddr in tests
 netaddr
