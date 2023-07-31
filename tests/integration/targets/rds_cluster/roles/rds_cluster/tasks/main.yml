@@ -7,4 +7,4 @@
       security_token: '{{ security_token | default(omit) }}'
 
   block:
-  - include: ./test_{{ inventory_hostname }}.yml
+  - include_tasks: ./test_{{ inventory_hostname }}.yml
