@@ -772,6 +772,7 @@ def get_create_options(params_dict):
         "Domain",
         "DomainIAMRoleName",
         "EnableGlobalWriteForwarding",
+        "GlobalClusterIdentifier",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
