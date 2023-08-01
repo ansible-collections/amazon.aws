@@ -1,2 +1,0 @@
-bugfixes:
-  - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation (https://github.com/ansible-collections/amazon.aws/pull/1663)."

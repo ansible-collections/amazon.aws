@@ -1,6 +1,6 @@
 namespace: amazon
 name: aws
-version: 5.5.2
+version: 5.5.3
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)
