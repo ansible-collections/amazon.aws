@@ -1,0 +1,156 @@
+---
+- block:
+    # Create Health Check =================================================================
+    - name: 'Create Health Check with name'
+      amazon.aws.route53_health_check:
+        state: present
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+      register: create_result
+
+    # Create and Update  ===================================================================
+    - name: 'Create Invalid Parameter Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: CALCULATED
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      ignore_errors: true
+      register: error_create_calculated
+
+    - name: 'Check result - Create Invalid Parameter Calculated Health Check'
+      ansible.builtin.assert:
+        that:
+        - error_create_calculated is failed
+        - "error_create_calculated.msg == 'parameters are mutually exclusive: child_health_checks|ip_address, child_health_checks|port, child_health_checks|fqdn'"
+
+    - name: 'Create Calculated Health Check - check_mode'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: check_create_calculated
+      check_mode: true
+
+    - name: 'Check result - Calculated Health Check'
+      ansible.builtin.assert:
+        that:
+        - check_create_calculated is not failed
+        - check_create_calculated is changed
+
+    - name: 'Create Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: create_calculated
+
+    - name: 'Check result - Calculated Health Check'
+      ansible.builtin.assert:
+        that:
+        - create_calculated is not failed
+        - create_calculated is changed
+
+    - name: 'Check result - Create Calculated Health Check - idempotency'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 1
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: create_idem
+
+    - name: 'Check result - Calculated Health Check - idempotency'
+      ansible.builtin.assert:
+        that:
+        - create_idem is not failed
+        - create_idem is not changed
+
+    - name: 'Update Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 2
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: check_updated_calculated
+      check_mode: true
+
+    - name: 'Check result - Update Calculated Health Check - check_mode'
+      ansible.builtin.assert:
+        that:
+        - check_updated_calculated is not failed
+        - check_updated_calculated is changed
+
+    - name: 'Update Calculated Health Check'
+      route53_health_check:
+        health_check_name: "calculated_health_check"
+        use_unique_names: true
+        type: CALCULATED
+        health_threshold: 2
+        child_health_checks: '{{ create_result.health_check.id }}'
+      register: updated_calculated
+
+    - name: 'Check result - Update Calculated Health Check'
+      ansible.builtin.assert:
+        that:
+        - updated_calculated is not failed
+        - updated_calculated is changed
+
+  # Deleting Calculated Health Check ======================================================
+    - name: 'Delete Calculated Health Check'
+      amazon.aws.route53_health_check:
+        state: absent
+        health_check_id: '{{ create_calculated.health_check.id }}'
+      register: deleted_calculated
+
+    - name: 'Check if Calculated Health Check can be deleted'
+      ansible.builtin.assert:
+        that:
+        - deleted_calculated is not failed
+        - deleted_calculated is changed
+
+    - name: 'Delete HTTP health check with use_unique_names'
+      amazon.aws.route53_health_check:
+        state: absent
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+        ip_address: '{{ ip_address }}'
+        port: '{{ port }}'
+        type: '{{ type_http }}'
+        resource_path: '{{ resource_path }}'
+        use_unique_names: true
+        fqdn: '{{ fqdn }}'
+      register: delete_result
+
+    - name: 'Check if HTTP health check with use_unique_names can be deleted'
+      ansible.builtin.assert:
+        that:
+          - delete_result is changed
+          - delete_result is not failed
+
+  always:
+  # Cleanup starts here =================================================================
+    - name: 'Delete Calculated Health Check'
+      amazon.aws.route53_health_check:
+        state: absent
+        health_check_id: '{{ create_calculated.health_check.id }}'
+      ignore_errors: true
+
+    - name: 'Delete HTTP health check with use_unique_names'
+      amazon.aws.route53_health_check:
+        state: absent
+        name: '{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations'
+      ignore_errors: true
