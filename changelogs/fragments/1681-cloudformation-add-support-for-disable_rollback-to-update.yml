@@ -1,0 +1,2 @@
+minor_changes:
+- cloudformation - Add support for `disable_rollback` to update stack operation. (https://github.com/ansible-collections/amazon.aws/issues/1681).

@@ -384,7 +384,7 @@ def create_stack(module, stack_params, cfn, events_limit):
             msg="Either 'template', 'template_body' or 'template_url' is required when the stack does not exist."
         )
 
-    # 'DisableRollback', 'TimeoutInMinutes', 'EnableTerminationProtection' and
+    # 'TimeoutInMinutes', 'EnableTerminationProtection' and
     # 'OnFailure' only apply on creation, not update.
     if module.params.get("on_create_failure") is not None:
         stack_params["OnFailure"] = module.params["on_create_failure"]
@@ -482,6 +482,8 @@ def update_stack(module, stack_params, cfn, events_limit):
 
     if module.params["stack_policy_on_update_body"] is not None:
         stack_params["StackPolicyDuringUpdateBody"] = module.params["stack_policy_on_update_body"]
+
+    stack_params["DisableRollback"] = module.params["disable_rollback"]
 
     # if the state is present and the stack already exists, we try to update it.
     # AWS will tell us if the stack template and parameters are the same and
