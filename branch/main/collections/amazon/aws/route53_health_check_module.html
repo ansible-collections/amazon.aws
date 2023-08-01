@@ -217,6 +217,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-child_health_checks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-child-health-checks"><strong>child_health_checks</strong></p>
+<a class="ansibleOptionLink" href="#parameter-child_health_checks" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The child health checks used for a calculated health check.</p>
+<p>This parameter takes in the child health checks ids.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -229,7 +238,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-disabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-disabled"><strong>disabled</strong></p>
 <a class="ansibleOptionLink" href="#parameter-disabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><span class="ansible-option-versionadded">added in community.aws 2.1.0</span></p>
@@ -244,7 +253,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -258,7 +267,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-failure_threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-failure-threshold"><strong>failure_threshold</strong></p>
 <a class="ansibleOptionLink" href="#parameter-failure_threshold" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -279,14 +288,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-fqdn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-fqdn"><strong>fqdn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-fqdn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Domain name of the endpoint to check. Either this or <em>ip_address</em> has to be provided. When both are given the <em>fqdn</em> is used in the <code class="docutils literal notranslate"><span class="pre">Host:</span></code> header of the HTTP request.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-health_check_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-id"><span id="ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-id"></span><strong>health_check_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-health_check_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: id</span></p>
@@ -297,7 +306,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>If provided, a health check can be updated or deleted based on the ID as unique identifier.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-health_check_name"></div>
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-name"><span id="ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-name"></span><strong>health_check_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-health_check_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: name</span></p>
@@ -306,6 +315,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the Health Check.</p>
 <p>Used together with <em>use_unique_names</em> to set/make use of <em>health_check_name</em> as a unique identifier.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-health_threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-health-threshold"><strong>health_threshold</strong></p>
+<a class="ansibleOptionLink" href="#parameter-health_threshold" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.3.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The minimum number of healthy child health checks for a calculated health check to be considered healthy.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -470,6 +488,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>The type of health check that you want to create, which indicates how Amazon Route 53 determines whether an endpoint is healthy.</p>
 <p>Once health_check is created, type can not be changed.</p>
+<p>The CALCULATED choice was added in 6.3.0.</p>
 <p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;HTTP&quot;</span></code></p></li>
@@ -477,6 +496,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;HTTP_STR_MATCH&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;HTTPS_STR_MATCH&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;TCP&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;CALCULATED&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
