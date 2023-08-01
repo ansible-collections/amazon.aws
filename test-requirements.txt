@@ -15,4 +15,4 @@ netaddr
 # Sometimes needed where we don't have features we need in modules
 awscli
 # Used for comparing SSH Public keys to the Amazon fingerprints
-pycrypto
+cryptography
