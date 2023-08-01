@@ -53,6 +53,10 @@ jobs:
               "ansible-version": "milestone",
               "python-version": "3.8"
             },
+             {
+              "ansible-version": "milestone",
+              "python-version": "3.9"
+            },
             {
               "ansible-version": "devel",
               "python-version": "3.7"
@@ -60,5 +64,9 @@ jobs:
             {
               "ansible-version": "devel",
               "python-version": "3.8"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
             }
           ]
