@@ -31,7 +31,7 @@ options:
         choices: ['present', 'absent', 'started', 'stopped']
         default: 'present'
         type: str
-        version_added: 6.3.0
+        
     creation_source:
         description: Which source to use if creating from a template (an existing cluster, S3 bucket, or snapshot).
         choices: ['snapshot', 's3', 'cluster']
