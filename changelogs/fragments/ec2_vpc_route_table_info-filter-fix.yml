@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_vpc_route_table_info - default filters to empty dictionary (https://github.com/ansible-collections/amazon.aws/issues/1668).
