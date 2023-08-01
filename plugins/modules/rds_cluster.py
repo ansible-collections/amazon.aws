@@ -867,7 +867,7 @@ def get_restore_s3_options(params_dict):
 def get_restore_snapshot_options(params_dict):
     options = [
         "AvailabilityZones",
-        "BacktrackWindoc",
+        "BacktrackWindow",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "DatabaseName",
