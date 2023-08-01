@@ -1,0 +1,211 @@
+---
+- name: Test API gateway creation using lookup=tag
+  vars:
+    api_name: "{{ api_names[0] }}"
+  block:
+    - name: Define API gateway configuration
+      set_fact:
+        apigateway_swagger_text: "{{ lookup('template', 'minimal-swagger-api.yml.j2') }}"
+
+    # Test: create API gateway using check_mode = true
+    - name: Create API gateway (check_mode=true)
+      community.aws.api_gateway:
+        name: "{{ api_name }}"
+        swagger_text: "{{ apigateway_swagger_text }}"
+      check_mode: true
+      register: __create_check_mode
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure using check_mode=true, no API gateway was created
+      assert:
+        that:
+          - __create_check_mode is changed
+          - gateways.rest_apis | selectattr('name', 'equalto', api_name) | list | length == 0
+
+    # Test: create new API gateway using name and tags
+    - name: Create new API gateway
+      community.aws.api_gateway:
+        name: "{{ api_name }}"
+        swagger_text: "{{ apigateway_swagger_text }}"
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+      register: __create
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure new API was created
+      assert:
+        that:
+          - __create is changed
+          - gateways.rest_apis | selectattr('name', 'equalto', api_name) | list | length == 1
+
+    # Test: create API gateway idempotency (task reported changed but no new API created)
+    - name: Create same API gateway once again
+      community.aws.api_gateway:
+        name: "{{ api_name }}"
+        swagger_text: "{{ apigateway_swagger_text }}"
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure no new API was created
+      assert:
+        that:
+          - gateways.rest_apis | selectattr('name', 'equalto', api_name) | list | length == 1
+
+    # Test: create new API using existing name but different tags (new API gateway should be created)
+    - name: Create another API gateway with the same name but different tags
+      community.aws.api_gateway:
+        name: "{{ api_name }}"
+        swagger_text: "{{ apigateway_swagger_text }}"
+        lookup: tag
+        tags: "{{ resource_tags[1] }}"
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure new API was created
+      assert:
+        that:
+          - gateways.rest_apis | selectattr('name', 'equalto', api_name) | list | length == 2
+
+  rescue:
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Delete remaining API gateway
+      community.aws.api_gateway:
+        api_id: '{{ item }}'
+        state: absent
+      ignore_errors: true
+      with_items: "{{ gateways.rest_apis | selectattr('name', 'equalto', api_name) | map(attribute='id') | list }}"
+
+- name: Test API gateway deletion
+  block:
+    - name: "Create new API gateway name={{ api_name }}"
+      community.aws.api_gateway:
+        name: "{{ api_name }}"
+        swagger_text: "{{ lookup('template', 'minimal-swagger-api.yml.j2') }}"
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+      vars:
+        api_name: "{{ api_names[1] }}"
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure new API was created
+      assert:
+        that:
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[1]) | list | length == 1
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[0]) | list | length == 2
+
+    # Test: Delete with lookup=tag (conflict), should failed
+    - name: Delete API gateway
+      community.aws.api_gateway:
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+        state: absent
+      register: __delete_conflict
+      ignore_errors: true
+
+    - name: Ensure task failed
+      assert:
+        that:
+          - __delete_conflict is failed
+          - '__delete_conflict.msg == "Tags provided do not identify a unique API gateway"'
+    
+    # Test: Delete with name only (no api_id)
+    - name: Create same API gateway once again
+      community.aws.api_gateway:
+        name: "{{ api_names[1] }}"
+        state: absent
+      register: __delete_missing_params
+      ignore_errors: true
+
+    - name: Ensure task failed
+      assert:
+        that:
+          - __delete_missing_params is failed
+          - '__delete_missing_params.msg == "API gateway id must be supplied to delete API gateway or provided tag with lookup=tag to identify API gateway id."'
+
+    # Test: Delete (check_mode)
+    - name: Delete API gateway - check mode
+      community.aws.api_gateway:
+        name: "{{ api_names[1] }}"
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+        state: absent
+      register: __delete_check_mode
+      check_mode: true
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure running in check mode, API was not deleted.
+      assert:
+        that:
+          - __delete_check_mode is changed
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[1]) | list | length == 1
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[0]) | list | length == 2
+
+    # Test: Delete using name and API gateway
+    - name: Delete API gateway using name and lookup=tag
+      community.aws.api_gateway:
+        name: "{{ api_names[1] }}"
+        lookup: tag
+        tags: "{{ resource_tags[0] }}"
+        state: absent
+      register: __delete
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure matching API gateway was deleted
+      assert:
+        that:
+          - __delete is changed
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[1]) | list | length == 0
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[0]) | list | length == 2
+
+    # Test: Delete using api_id
+    - name: Delete API gateway using api_id
+      community.aws.api_gateway:
+        api_id: "{{ gateways.rest_apis | selectattr('name', 'equalto', api_names[0]) | map(attribute='id') | first }}"
+        state: absent
+      register: __delete
+
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Ensure matching API gateway was deleted
+      assert:
+        that:
+          - __delete is changed
+          - gateways.rest_apis | selectattr('name', 'equalto', api_names[0]) | list | length == 1
+
+  always:
+    - name: List existing API gateway
+      community.aws.api_gateway_info:
+      register: gateways
+
+    - name: Delete remaining API gateway
+      community.aws.api_gateway:
+        api_id: '{{ item }}'
+        state: absent
+      ignore_errors: true
+      with_items: "{{ gateways.rest_apis | selectattr('name', 'in', api_names) | map(attribute='id') | list }}"

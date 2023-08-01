@@ -1,0 +1,91 @@
+---
+- name: Test API gateway tagging
+  vars:
+    api_name: "api-{{ resource_prefix }}-tagging"
+    apigateway_tags:
+      resource_prefix: "{{ resource_prefix }}"
+      collection: community.aws
+    new_tag:
+      resource_type: REST
+  block:
+    - name: Define API gateway configuration
+      set_fact:
+        apigateway_swagger_text: "{{ lookup('template', 'minimal-swagger-api.yml.j2') }}"
+
+    - name: Create API gateway
+      community.aws.api_gateway:
+        swagger_text: "{{ apigateway_swagger_text }}"
+        tags: "{{ apigateway_tags }}"
+      register: __api_gateway_create
+
+    - name: Assert resource was created with expected tags
+      assert:
+        that:
+          - __api_gateway_create.configure_response.tags == apigateway_tags
+
+    - name: Define API gateway id
+      ansible.builtin.set_fact:
+        apigateway_id: "{{ __api_gateway_create.api_id }}"
+
+    # Update tags purge_tags=false and check_mode
+    - name: Update tags using check_mode
+      community.aws.api_gateway:
+        api_id: "{{ apigateway_id }}"
+        tags: "{{ apigateway_tags | combine(new_tag) }}"
+        purge_tags: false
+      check_mode: true
+
+    - name: Get API Gateway
+      community.aws.api_gateway_info:
+        ids:
+          - "{{ apigateway_id }}"
+      register: __api_gateway_info
+
+    - name: Ensure tags were not changed
+      assert:
+        that:
+          - __api_gateway_info.rest_apis.0.tags == apigateway_tags
+
+    # Update tags purge_tags=false
+    - name: Update tags
+      community.aws.api_gateway:
+        api_id: "{{ apigateway_id }}"
+        tags: "{{ apigateway_tags | combine(new_tag) }}"
+        purge_tags: false
+
+    - name: Get API Gateway
+      community.aws.api_gateway_info:
+        ids:
+          - "{{ apigateway_id }}"
+      register: __api_gateway_info
+
+    - name: Ensure tags were not changed
+      assert:
+        that:
+          - __api_gateway_info.rest_apis.0.tags == apigateway_tags | combine(new_tag)
+
+    # Update tags purge_tags=true
+    - name: Update tags
+      community.aws.api_gateway:
+        api_id: "{{ apigateway_id }}"
+        tags: "{{ new_tag }}"
+      register: __update_api_gateway
+
+    - name: Get api gateway
+      community.aws.api_gateway_info:
+        ids:
+          - "{{ apigateway_id }}"
+      register: __api_gateway_info
+
+    - name: Ensure tags were not changed
+      assert:
+        that:
+          - __update_api_gateway is changed
+          - __api_gateway_info.rest_apis.0.tags == new_tag
+
+  always:
+    - name: Delete API Gateway
+      community.aws.api_gateway:
+        api_id: "{{ apigateway_id }}"
+        state: absent
+      ignore_errors: true

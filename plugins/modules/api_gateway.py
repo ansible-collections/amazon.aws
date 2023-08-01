@@ -98,17 +98,31 @@ options:
     choices: ['EDGE', 'REGIONAL', 'PRIVATE']
     type: str
     default: EDGE
+  name:
+    description:
+      - The name of the RestApi.
+    type: str
+    version_added: 6.2.0
+  lookup:
+    description:
+      - Look up API gateway by either I(tags) (and I(name) if supplied) or by I(api_id).
+      - If I(lookup=tag) and I(tags) is not specified then no lookup for an existing API gateway
+        is performed and a new API gateway will be created.
+      - When using I(lookup=tag), multiple matches being found will result in a failure and no changes will be made.
+      - To change the tags of a API gateway use I(lookup=id).
+    default: tag
+    choices: [ 'tag', 'id' ]
+    type: str
+    version_added: 6.2.0
 author:
   - 'Michael De La Rue (@mikedlr)'
 notes:
-  - A future version of this module will probably use tags or another
-    ID so that an API can be created only once.
-  - As an early work around an intermediate version will probably do
-    the same using a tag embedded in the API name.
+  - 'Tags are used to uniquely identify API gateway when the I(api_id) is not supplied. version_added=6.2.0'
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
   - amazon.aws.boto3
+  - amazon.aws.tags
 """
 
 EXAMPLES = r"""
@@ -140,6 +154,14 @@ EXAMPLES = r"""
     cache_size: '6.1'
     canary_settings: { percentTraffic: 50.0, deploymentId: '123', useStageCache: True }
     state: present
+
+- name: Delete API gateway
+  amazon.aws.api_gateway:
+    name: ansible-rest-api
+    tags:
+      automation: ansible
+    lookup: tags
+    state: absent
 """
 
 RETURN = r"""
@@ -178,6 +200,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 def main():
@@ -195,13 +219,17 @@ def main():
         stage_canary_settings=dict(type="dict", default={}),
         tracing_enabled=dict(type="bool", default=False),
         endpoint_type=dict(type="str", default="EDGE", choices=["EDGE", "REGIONAL", "PRIVATE"]),
+        name=dict(type="str"),
+        lookup=dict(type="str", choices=["tag", "id"], default="tag"),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(default=True, type="bool"),
     )
 
     mutually_exclusive = [["swagger_file", "swagger_dict", "swagger_text"]]  # noqa: F841
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=False,
+        supports_check_mode=True,
         mutually_exclusive=mutually_exclusive,
     )
 
@@ -211,6 +239,9 @@ def main():
     swagger_dict = module.params.get("swagger_dict")
     swagger_text = module.params.get("swagger_text")
     endpoint_type = module.params.get("endpoint_type")
+    name = module.params.get("name")
+    tags = module.params.get("tags")
+    lookup = module.params.get("lookup")
 
     client = module.client("apigateway")
 
@@ -221,12 +252,47 @@ def main():
 
     if state == "present":
         if api_id is None:
-            api_id = create_empty_api(module, client, endpoint_type)
-        api_data = get_api_definitions(
-            module, swagger_file=swagger_file, swagger_dict=swagger_dict, swagger_text=swagger_text
-        )
-        conf_res, dep_res = ensure_api_in_correct_state(module, client, api_id, api_data)
+            # lookup API gateway using tags
+            if tags and lookup == "tag":
+                rest_api = get_api_by_tags(client, module, name, tags)
+                if rest_api:
+                    api_id = rest_api["id"]
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Create/update operation skipped - running in check mode.")
+        if api_id is None:
+            api_data = get_api_definitions(
+                module, swagger_file=swagger_file, swagger_dict=swagger_dict, swagger_text=swagger_text
+            )
+            # create new API gateway as non were provided and/or found using lookup=tag
+            api_id = create_empty_api(module, client, name, endpoint_type, tags)
+            conf_res, dep_res = ensure_api_in_correct_state(module, client, api_id, api_data)
+        tags = module.params.get("tags")
+        purge_tags = module.params.get("purge_tags")
+        if tags:
+            if not conf_res:
+                conf_res = get_rest_api(module, client, api_id=api_id)
+            tag_changed, tag_result = ensure_apigateway_tags(
+                module, client, api_id=api_id, current_tags=conf_res.get("tags"), new_tags=tags, purge_tags=purge_tags
+            )
+            if tag_changed:
+                changed |= tag_changed
+                conf_res = tag_result
     if state == "absent":
+        if api_id is None:
+            if lookup != "tag" or not tags:
+                module.fail_json(
+                    msg="API gateway id must be supplied to delete API gateway or provided tag with lookup=tag to identify API gateway id."
+                )
+            rest_api = get_api_by_tags(client, module, name, tags)
+            if not rest_api:
+                module.exit_json(changed=False, msg="No API gateway identified with tags provided")
+            api_id = rest_api["id"]
+        elif not describe_api(client, module, api_id):
+            module.exit_json(changed=False, msg="API gateway id '{0}' does not exist.".format(api_id))
+
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Delete operation skipped - running in check mode.", api_id=api_id)
+
         del_res = delete_rest_api(module, client, api_id)
 
     exit_args = {"changed": changed, "api_id": api_id}
@@ -239,6 +305,24 @@ def main():
         exit_args["delete_response"] = camel_dict_to_snake_dict(del_res)
 
     module.exit_json(**exit_args)
+
+
+def ensure_apigateway_tags(module, client, api_id, current_tags, new_tags, purge_tags):
+    changed = False
+    tag_result = {}
+    tags_to_set, tags_to_delete = compare_aws_tags(current_tags, new_tags, purge_tags)
+    if tags_to_set or tags_to_delete:
+        changed = True
+        apigateway_arn = f"arn:aws:apigateway:{module.region}::/restapis/{api_id}"
+        # Remove tags from Resource
+        if tags_to_delete:
+            client.untag_resource(resourceArn=apigateway_arn, tagKeys=tags_to_delete)
+        # add new tags to resource
+        if tags_to_set:
+            client.tag_resource(resourceArn=apigateway_arn, tags=tags_to_set)
+        # Describe API gateway
+        tag_result = get_rest_api(module, client, api_id=api_id)
+    return changed, tag_result
 
 
 def get_api_definitions(module, swagger_file=None, swagger_dict=None, swagger_text=None):
@@ -260,7 +344,16 @@ def get_api_definitions(module, swagger_file=None, swagger_dict=None, swagger_te
     return apidata
 
 
-def create_empty_api(module, client, endpoint_type):
+def get_rest_api(module, client, api_id):
+    try:
+        response = client.get_rest_api(restApiId=api_id)
+        response.pop("ResponseMetadata", None)
+        return response
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=f"failed to get REST API with api_id={api_id}")
+
+
+def create_empty_api(module, client, name, endpoint_type, tags):
     """
     creates a new empty API ready to be configured. The description is
     temporarily set to show the API as incomplete but should be
@@ -268,7 +361,8 @@ def create_empty_api(module, client, endpoint_type):
     """
     desc = "Incomplete API creation by ansible api_gateway module"
     try:
-        awsret = create_api(client, name="ansible-temp-api", description=desc, endpoint_type=endpoint_type)
+        rest_api_name = name or "ansible-temp-api"
+        awsret = create_api(client, name=rest_api_name, description=desc, endpoint_type=endpoint_type, tags=tags)
     except (botocore.exceptions.ClientError, botocore.exceptions.EndpointConnectionError) as e:
         module.fail_json_aws(e, msg="creating API")
     return awsret["id"]
@@ -298,6 +392,7 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
     configure_response = None
     try:
         configure_response = configure_api(client, api_id, api_data=api_data)
+        configure_response.pop("ResponseMetadata", None)
     except (botocore.exceptions.ClientError, botocore.exceptions.EndpointConnectionError) as e:
         module.fail_json_aws(e, msg=f"configuring API {api_id}")
 
@@ -307,6 +402,7 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
     if stage:
         try:
             deploy_response = create_deployment(client, api_id, **module.params)
+            deploy_response.pop("ResponseMetadata", None)
         except (botocore.exceptions.ClientError, botocore.exceptions.EndpointConnectionError) as e:
             msg = f"deploying api {api_id} to stage {stage}"
             module.fail_json_aws(e, msg)
@@ -314,14 +410,38 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
     return configure_response, deploy_response
 
 
+def get_api_by_tags(client, module, name, tags):
+    count = 0
+    result = None
+    for api in list_apis(client):
+        if name and api["name"] != name:
+            continue
+        api_tags = api.get("tags", {})
+        if all((tag_key in api_tags and api_tags[tag_key] == tag_value for tag_key, tag_value in tags.items())):
+            result = api
+            count += 1
+
+    if count > 1:
+        args = "Tags"
+        if name:
+            args += " and name"
+        module.fail_json(msg="{0} provided do not identify a unique API gateway".format(args))
+    return result
+
+
 retry_params = {"retries": 10, "delay": 10, "catch_extra_error_codes": ["TooManyRequestsException"]}
 
 
 @AWSRetry.jittered_backoff(**retry_params)
-def create_api(client, name=None, description=None, endpoint_type=None):
-    return client.create_rest_api(
-        name="ansible-temp-api", description=description, endpointConfiguration={"types": [endpoint_type]}
-    )
+def create_api(client, name, description=None, endpoint_type=None, tags=None):
+    params = {"name": name}
+    if description:
+        params["description"] = description
+    if endpoint_type:
+        params["endpointConfiguration"] = {"types": [endpoint_type]}
+    if tags:
+        params["tags"] = tags
+    return client.create_rest_api(**params)
 
 
 @AWSRetry.jittered_backoff(**retry_params)
@@ -361,6 +481,27 @@ def create_deployment(client, rest_api_id, **params):
         )
 
     return result
+
+
+@AWSRetry.jittered_backoff(**retry_params)
+def list_apis(client):
+    paginator = client.get_paginator("get_rest_apis")
+    return paginator.paginate().build_full_result().get("items", [])
+
+
+@AWSRetry.jittered_backoff(**retry_params)
+def describe_api(client, module, rest_api_id):
+    try:
+        response = client.get_rest_api(restApiId=rest_api_id)
+        response.pop("ResponseMetadata")
+    except is_boto3_error_code("ResourceNotFoundException"):
+        response = {}
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Trying to get Rest API '{0}'.".format(rest_api_id))
+    return response
 
 
 if __name__ == "__main__":

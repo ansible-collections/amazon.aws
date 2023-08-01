@@ -1,0 +1,9 @@
+---
+api_names:
+  - "ansible-api-{{ resource_prefix }}-1"
+  - "ansible-api-{{ resource_prefix }}-2"
+resource_tags:
+  - gateway_name: "ansible-api-{{ resource_prefix }}"
+    ansible_test: "{{ resource_prefix }}-1"
+  - gateway_name: "ansible-api-{{ resource_prefix }}"
+    ansible_test: "{{ resource_prefix }}-2"

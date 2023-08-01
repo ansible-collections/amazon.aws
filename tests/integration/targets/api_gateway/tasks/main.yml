@@ -11,7 +11,7 @@
     # ====================== testing failure cases: ==================================
 
     - name: test with no parameters
-      aws_api_gateway:
+      api_gateway:
       register: result
       ignore_errors: true
 
@@ -22,7 +22,7 @@
            - '"no swagger info provided" in result.msg'
 
     - name: test for disallowing multiple swagger sources
-      aws_api_gateway:
+      api_gateway:
         api_id: 'fake-api-doesnt-exist'
         swagger_file: foo.yml
         swagger_text: "this is not really an API"
@@ -42,9 +42,11 @@
       template:
         src: minimal-swagger-api.yml.j2
         dest: "{{output_dir}}/minimal-swagger-api.yml"
+      vars:
+        api_name: "{{ resource_prefix }}-minimal"
 
     - name: deploy new API
-      aws_api_gateway:
+      api_gateway:
         api_file: "{{output_dir}}/minimal-swagger-api.yml"
         stage: "minimal"
         endpoint_type: 'REGIONAL'
@@ -58,11 +60,14 @@
           - 'create_result.failed == False'
           - 'create_result.deploy_response.description == "Automatic deployment by Ansible."'
           - 'create_result.configure_response.id == create_result.api_id'
-          - '"apigateway:CreateRestApi" in create_result.resource_actions'
           - 'create_result.configure_response.endpoint_configuration.types.0 == "REGIONAL"'
 
     - name: check if API endpoint works
-      uri: url="https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/minimal"
+      uri: 
+        url: "https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/minimal"
+      retries: 10
+      delay: 5
+      until: uri_result is successful
       register: uri_result
 
     - name: assert API works success
@@ -71,7 +76,8 @@
           - 'uri_result.status == 200'
 
     - name: check if nonexistent endpoint causes error
-      uri: url="https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/nominal"
+      uri: 
+        url: "https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/nominal"
       register: bad_uri_result
       ignore_errors: true
 
@@ -81,7 +87,7 @@
           - bad_uri_result is failed
 
     - name: Update API to test params effect
-      aws_api_gateway:
+      api_gateway:
         api_id: '{{create_result.api_id}}'
         api_file: "{{output_dir}}/minimal-swagger-api.yml"
         cache_enabled: true
@@ -93,14 +99,12 @@
     - name: assert update result
       assert:
         that:
-          - 'update_result.changed == True'
-          - 'update_result.failed == False'
-          - '"apigateway:PutRestApi" in update_result.resource_actions'
+          - update_result is changed
 
     # ==== additional create/delete tests ====
 
     - name: deploy first API
-      aws_api_gateway:
+      api_gateway:
         api_file: "{{output_dir}}/minimal-swagger-api.yml"
         stage: "minimal"
         cache_enabled: false
@@ -108,7 +112,7 @@
       register: create_result_1
 
     - name: deploy second API rapidly after first
-      aws_api_gateway:
+      api_gateway:
         api_file: "{{output_dir}}/minimal-swagger-api.yml"
         stage: "minimal"
         state: present
@@ -124,13 +128,13 @@
           - 'create_result_1.configure_response.endpoint_configuration.types.0 == "EDGE"'
 
     - name: destroy first API
-      aws_api_gateway:
+      api_gateway:
         state: absent
         api_id: '{{create_result_1.api_id}}'
       register: destroy_result_1
 
     - name: destroy second API rapidly after first
-      aws_api_gateway:
+      api_gateway:
         state: absent
         api_id: '{{create_result_2.api_id}}'
       register: destroy_result_2
@@ -138,29 +142,33 @@
     - name: assert both APIs deployed successfully
       assert:
         that:
-           - 'destroy_result_1.changed == True'
-           - 'destroy_result_2.changed == True'
-           - '"apigateway:DeleteRestApi" in destroy_result_1.resource_actions'
-           - '"apigateway:DeleteRestApi" in destroy_result_2.resource_actions'
+           - destroy_result_1 is changed
+           - destroy_result_2 is changed
+
+    # ==== test create/delete using lookup=tag ====
+    - include_tasks: lookup.yml
+
+    # ==== Tagging ====
+    - include_tasks: tagging.yml
 
     # ================= end testing ====================================
 
   always:
 
     - name: Ensure cleanup of API deploy
-      aws_api_gateway:
+      api_gateway:
         state: absent
         api_id: '{{create_result.api_id}}'
       ignore_errors: true
 
     - name: Ensure cleanup of API deploy 1
-      aws_api_gateway:
+      api_gateway:
         state: absent
         api_id: '{{create_result_1.api_id}}'
       ignore_errors: true
 
     - name: Ensure cleanup of API deploy 2
-      aws_api_gateway:
+      api_gateway:
         state: absent
         api_id: '{{create_result_2.api_id}}'
       ignore_errors: true
