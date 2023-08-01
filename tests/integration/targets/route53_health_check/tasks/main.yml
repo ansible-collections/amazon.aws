@@ -41,6 +41,9 @@
   - name: Run tests for update and delete health check by ID
     include_tasks: update_delete_by_id.yml
 
+  - name: Run tests for create, update, and delete calculated health check
+    include_tasks: calculate_health_check.yml
+
   # Minimum possible definition
   - name: 'Create a TCP health check - check_mode'
     route53_health_check:
