@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_vol - added ``wait_for_modify_volume_complete`` option (https://github.com/ansible-collections/amazon.aws/pull/1558).

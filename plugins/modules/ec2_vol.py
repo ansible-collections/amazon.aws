@@ -104,11 +104,17 @@ options:
       - If set, allows to create volume in an Outpost.
     type: str
     version_added: 3.1.0
-  wait_for_modify_volume_complete:
+  wait:
     description:
-      - Wait for volume modification to complete
+      - Wait for volume modification to complete.
     type: bool
     default: false
+    version_added: 6.3.0
+  wait_timeout:
+    description:
+      - How long before wait gives up, in seconds.
+    type: int
+    default: 900
     version_added: 6.3.0
 author:
   - "Lester Wade (@lwade)"
@@ -445,25 +451,25 @@ def update_volume(module, ec2_conn, volume):
             volume["multi_attach_enabled"] = response.get("VolumeModification").get("TargetMultiAttachEnabled")
             volume["throughput"] = response.get("VolumeModification").get("TargetThroughput")
 
-            if module.params.get("wait_for_modify_volume_complete"):
+            if module.params.get("wait"):
                 mod_state = ""
-                _max_attempts = 200
-                _sleep_secs = 30
-                _attempt = 0
-                while mod_state != "completed":
-                    _attempt += 1
+                _wait_till = module.params.get("wait_timeout") + time.time()
+                while _wait_till > time.time():
                     mod_response = ec2_conn.describe_volumes_modifications(VolumeIds=[volume["volume_id"]])
                     mod_state = mod_response.get("VolumesModifications")[0].get("ModificationState")
+
+                    if mod_state == "completed":
+                        break
 
                     if mod_state == "failed":
                         module.fail_json(msg=f"Volume {volume['volume_id']} modification has failed.")
 
-                    # this can take a long time, depending on how much bigger the requested volume size is
-                    if _attempt > _max_attempts:
-                        module.fail_json(
-                            msg=f"Volume {volume['volume_id']} modification state has not reached 'completed' after {_max_attempts * _sleep_secs} seconds."
-                        )
-                    time.sleep(_sleep_secs)
+                    time.sleep(30)
+
+                else:
+                    module.fail_json(
+                        msg=f"Volume {volume['volume_id']} modification state has not reached 'completed' after {module.params.get('wait_timeout')} seconds."
+                    )
 
     return volume, changed
 
@@ -740,7 +746,8 @@ def main():
         outpost_arn=dict(type="str"),
         purge_tags=dict(type="bool", default=True),
         multi_attach=dict(type="bool"),
-        wait_for_modify_volume_complete=dict(default=False, type="bool"),
+        wait=dict(default=False, type="bool"),
+        wait_timeout=dict(type="int", default=900),
     )
 
     module = AnsibleAWSModule(
@@ -766,7 +773,7 @@ def main():
     throughput = module.params.get("throughput")
     multi_attach = module.params.get("multi_attach")
     modify_volume = module.params.get("modify_volume")
-    wait_for_modify_volume_complete = module.params.get("wait_for_modify_volume_complete")
+    wait = module.params.get("wait")
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == "present":
@@ -798,8 +805,8 @@ def main():
     if multi_attach is True and volume_type not in ("io1", "io2"):
         module.fail_json(msg="multi_attach is only supported for io1 and io2 volumes.")
 
-    if wait_for_modify_volume_complete is True and modify_volume is False:
-        module.fail_json(msg="wait_for_modify_volume_complete does nothing if modify_volume is False.")
+    if wait is True and modify_volume is False:
+        module.fail_json(msg="wait does nothing if modify_volume is False.")
 
     # Set changed flag
     changed = False
