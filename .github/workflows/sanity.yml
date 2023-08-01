@@ -1,0 +1,72 @@
+---
+name: sanity tests
+
+on: [workflow_call]  # allow this workflow to be called from other workflows
+
+jobs:
+  sanity:
+    uses: ansible-network/github_actions/.github/workflows/sanity.yml@main
+    with:
+      matrix_include: "[]"
+      matrix_exclude: >-
+          [
+            {
+              "ansible-version": "stable-2.9"
+            },
+            {
+              "ansible-version": "stable-2.12",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.12",
+              "python-version": "3.11"
+            },
+            {
+              "ansible-version": "stable-2.13",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.13",
+              "python-version": "3.11"
+            },
+            {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "stable-2.15",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "stable-2.15",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.7"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.8"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
+            }
+          ]
