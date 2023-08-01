@@ -20,6 +20,7 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeRouteTables.html) for possible filters.
     type: dict
+    default: {}
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -260,7 +261,7 @@ def list_ec2_vpc_route_tables(connection, module):
 
 def main():
     argument_spec = dict(
-        filters=dict(default=None, type="dict"),
+        filters=dict(default={}, type="dict"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
