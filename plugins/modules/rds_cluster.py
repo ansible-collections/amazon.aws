@@ -24,8 +24,11 @@ author:
 options:
   # General module options
     state:
-        description: Whether the snapshot should exist or not.
-        choices: ['present', 'absent']
+        description:
+          - Whether the snapshot should exist or not.
+          - C(started) and C(stopped) can only be used with aurora clusters
+          - Support for C(started) and C(stopped) was added in release 6.3.0.
+        choices: ['present', 'absent', 'started', 'stopped']
         default: 'present'
         type: str
     creation_source:
@@ -689,7 +692,6 @@ vpc_security_groups:
       sample: sg-12345678
 """
 
-
 try:
     import botocore
 except ImportError:
@@ -921,6 +923,14 @@ def get_rds_method_attribute_name(cluster):
         if cluster and cluster["Status"] not in ["deleting", "deleted"]:
             method_name = "delete_db_cluster"
             method_options_name = "get_delete_options"
+    elif state == "started":
+        if cluster and cluster["Status"] not in ["starting", "started", "available"]:
+            method_name = "start_db_cluster"
+            method_options_name = "get_modify_options"
+    elif state == "stopped":
+        if cluster and cluster["Status"] not in ["stopping", "stopped"]:
+            method_name = "stop_db_cluster"
+            method_options_name = "get_modify_options"
     else:
         if cluster:
             method_name = "modify_db_cluster"
@@ -1030,6 +1040,16 @@ def changing_cluster_options(modify_params, current_cluster):
         if apply_immediately is not None:
             changing_params["ApplyImmediately"] = apply_immediately
 
+    if module.params["state"] == "started":
+        if current_cluster["Engine"] in ["mysql", "postgres"]:
+            module.fail_json("Only aurora clusters can use the state started")
+        changing_params["DBClusterIdentifier"] = db_cluster_id
+
+    if module.params["state"] == "stopped":
+        if current_cluster["Engine"] in ["mysql", "postgres"]:
+            module.fail_json("Only aurora clusters can use the state stopped")
+        changing_params["DBClusterIdentifier"] = db_cluster_id
+
     return changing_params
 
 
@@ -1087,7 +1107,7 @@ def main():
     global client
 
     arg_spec = dict(
-        state=dict(choices=["present", "absent"], default="present"),
+        state=dict(choices=["present", "absent", "started", "stopped"], default="present"),
         creation_source=dict(type="str", choices=["snapshot", "s3", "cluster"]),
         force_update_password=dict(type="bool", default=False),
         promote=dict(type="bool", default=False),
