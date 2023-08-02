@@ -1760,7 +1760,7 @@ releases:
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
         (https://github.com/ansible-collections/amazon.aws/pull/1663)."
-      release_summary: 'This release contains a few bugfixes.'
+      release_summary: 'This release contains a few bugfixes for rds_cluster.'
     fragments:
     - 20230713-rds_cluster-fix_params_passage.yml
     - 20230725-rds_cluster-fix.yml
