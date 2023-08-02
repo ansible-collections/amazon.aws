@@ -1764,4 +1764,4 @@ releases:
     fragments:
     - 20230713-rds_cluster-fix_params_passage.yml
     - 20230725-rds_cluster-fix.yml
-    release_date: '2023-08-01'
+    release_date: '2023-08-02'
