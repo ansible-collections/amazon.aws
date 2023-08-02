@@ -244,6 +244,12 @@ set:
       returned: always
       type: str
       sample: foo.bar.com.
+wait_id:
+  description:
+    - The wait ID for the applied change. Can be used to wait for the change to propagate later on when I(wait=false).
+  type: str
+  returned: when changed
+  version_added: 5.6.0
 """
 
 EXAMPLES = r"""
@@ -766,6 +772,7 @@ def main():
         else:
             command = command_in.upper()
 
+    wait_id = None
     if not module.check_mode:
         try:
             change_resource_record_sets = route53.change_resource_record_sets(
@@ -773,6 +780,7 @@ def main():
                 HostedZoneId=zone_id,
                 ChangeBatch=dict(Changes=[dict(Action=command, ResourceRecordSet=resource_record_set)]),
             )
+            wait_id = change_resource_record_sets["ChangeInfo"]["Id"]
 
             if wait_in:
                 waiter = get_waiter(route53, "resource_record_sets_changed")
@@ -801,6 +809,7 @@ def main():
 
     module.exit_json(
         changed=True,
+        wait_id=wait_id,
         diff=dict(
             before=formatted_aws,
             after=formatted_record if command_in != "delete" else {},
