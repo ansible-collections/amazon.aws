@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>amazon.aws.ec2_metadata_facts module – Gathers facts (instance metadata) about remote hosts within EC2 &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="amazon.aws.ec2_security_group module – Maintain an EC2 security group" href="ec2_security_group_module.html" />
+    <link rel="prev" title="amazon.aws.ec2_key module – Create or delete an EC2 key pair" href="ec2_key_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Amazon.Aws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#changelog">Changelog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">amazon.aws.ec2_metadata_facts module – Gathers facts (instance metadata) about remote hosts within EC2</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_metadata_facts.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-amazon-aws-ec2-metadata-facts-module"></span><section id="amazon-aws-ec2-metadata-facts-module-gathers-facts-instance-metadata-about-remote-hosts-within-ec2">
+<h1>amazon.aws.ec2_metadata_facts module – Gathers facts (instance metadata) about remote hosts within EC2<a class="headerlink" href="#amazon-aws-ec2-metadata-facts-module-gathers-facts-instance-metadata-about-remote-hosts-within-ec2" title="Permalink to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 5.5.3).</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_metadata_facts</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id4">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id5">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id6">Examples</a></p></li>
+<li><p><a class="reference internal" href="#returned-facts" id="id7">Returned Facts</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>This module fetches data from the instance metadata endpoint in EC2 as per <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html</a>.</p></li>
+<li><p>The module must be called from within the EC2 instance itself.</p></li>
+<li><p>The module is configured to utilize the session oriented Instance Metadata Service v2 (IMDSv2) <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html</a>.</p></li>
+<li><p>If the HttpEndpoint parameter <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters</a> is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.</p></li>
+</ul>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Parameters to filter on ec2_metadata_facts may be added later.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gather EC2 metadata facts</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_metadata_facts</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">debug</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">t1.micro&quot;</span>
+<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible_ec2_instance_type == &quot;t1.micro&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="returned-facts">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Returned Facts</a><a class="headerlink" href="#returned-facts" title="Permalink to this heading"></a></h2>
+<p>Facts returned by this module are added/updated in the <code class="docutils literal notranslate"><span class="pre">hostvars</span></code> host facts and can be referenced by name just like any other host fact. They do not need to be registered in order to use them.</p>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ami_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ami-id"><strong>ansible_ec2_ami_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ami_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AMI ID used to launch the instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ami-XXXXXXXX&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ami_launch_index"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ami-launch-index"><strong>ansible_ec2_ami_launch_index</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ami_launch_index" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If you started more than one instance at the same time, this value indicates the order in which the instance was launched.</p>
+<p>The value of the first instance launched is 0.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;0&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ami_manifest_path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ami-manifest-path"><strong>ansible_ec2_ami_manifest_path</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ami_manifest_path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The path to the AMI manifest file in Amazon S3.</p>
+<p>If you used an Amazon EBS-backed AMI to launch the instance, the returned result is unknown.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;(unknown)&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ancestor_ami_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ancestor-ami-ids"><strong>ansible_ec2_ancestor_ami_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ancestor_ami_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AMI IDs of any instances that were rebundled to create this AMI.</p>
+<p>This value will only exist if the AMI manifest file contained an ancestor-amis key.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;(unknown)&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_block_device_mapping_ami"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-block-device-mapping-ami"><strong>ansible_ec2_block_device_mapping_ami</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_block_device_mapping_ami" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtual device that contains the root/boot file system.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sda1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_block_device_mapping_ebsN"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-block-device-mapping-ebsn"><strong>ansible_ec2_block_device_mapping_ebsN</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_block_device_mapping_ebsN" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtual devices associated with Amazon EBS volumes, if any are present.</p>
+<p>Amazon EBS volumes are only available in metadata if they were present at launch time or when the instance was last started.</p>
+<p>The N indicates the index of the Amazon EBS volume (such as ebs1 or ebs2).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/xvdb&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_block_device_mapping_ephemeralN"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-block-device-mapping-ephemeraln"><strong>ansible_ec2_block_device_mapping_ephemeralN</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_block_device_mapping_ephemeralN" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtual devices associated with ephemeral devices, if any are present. The N indicates the index of the ephemeral volume.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/xvdc&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_block_device_mapping_root"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-block-device-mapping-root"><strong>ansible_ec2_block_device_mapping_root</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_block_device_mapping_root" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtual devices or partitions associated with the root devices, or partitions on the virtual device, where the root (/ or C) file system is associated with the given instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sda1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_block_device_mapping_swap"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-block-device-mapping-swap"><strong>ansible_ec2_block_device_mapping_swap</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_block_device_mapping_swap" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtual devices associated with swap. Not always present.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sda2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_fws_instance_monitoring"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-fws-instance-monitoring"><strong>ansible_ec2_fws_instance_monitoring</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_fws_instance_monitoring" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Value showing whether the customer has enabled detailed one-minute monitoring in CloudWatch.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;enabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-hostname"><strong>ansible_ec2_hostname</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 DNS hostname of the instance.</p>
+<p>In cases where multiple network interfaces are present, this refers to the eth0 device (the device for which the device number is 0).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-0-0-1.ec2.internal&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-info"><strong>ansible_ec2_iam_info</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If there is an IAM role associated with the instance, contains information about the last time the instance profile was updated, including the instance’s LastUpdated date, InstanceProfileArn, and InstanceProfileId. Otherwise, not present.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info/InstanceProfileArn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-info-instanceprofilearn"><strong>InstanceProfileArn</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info/InstanceProfileArn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the InstanceProfile associated with the Instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info/InstanceProfileId"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-info-instanceprofileid"><strong>InstanceProfileId</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info/InstanceProfileId" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Id of the InstanceProfile associated with the Instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info/LastUpdated"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-info-lastupdated"><strong>LastUpdated</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info/LastUpdated" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The last time which InstanceProfile is associated with the Instance changed.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info_instanceprofilearn"></div><p class="ansible-option-title" id="id1"><strong>ansible_ec2_iam_info_instanceprofilearn</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info_instanceprofilearn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IAM instance profile ARN.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:instance-profile/role_name&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info_instanceprofileid"></div><p class="ansible-option-title" id="id2"><strong>ansible_ec2_iam_info_instanceprofileid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info_instanceprofileid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM instance profile ID.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_info_lastupdated"></div><p class="ansible-option-title" id="id3"><strong>ansible_ec2_iam_info_lastupdated</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_info_lastupdated" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM info last updated time.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-05-12T02:42:27Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_instance_profile_role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-instance-profile-role"><strong>ansible_ec2_iam_instance_profile_role</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_instance_profile_role" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM instance role.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;role_name&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name"><strong>ansible_ec2_iam_security_credentials_role_name</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If there is an IAM role associated with the instance, role-name is the name of the role, and role-name contains the temporary security credentials associated with the role. Otherwise, not present.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_accesskeyid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-accesskeyid"><strong>ansible_ec2_iam_security_credentials_role_name_accesskeyid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_accesskeyid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role access key ID.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-code"><strong>ansible_ec2_iam_security_credentials_role_name_code</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_code" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM code.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Success&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_expiration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-expiration"><strong>ansible_ec2_iam_security_credentials_role_name_expiration</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_expiration" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role credentials expiration time.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-05-12T09:11:41Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_lastupdated"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-lastupdated"><strong>ansible_ec2_iam_security_credentials_role_name_lastupdated</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_lastupdated" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role last updated time.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-05-12T02:40:44Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_secretaccesskey"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-secretaccesskey"><strong>ansible_ec2_iam_security_credentials_role_name_secretaccesskey</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_secretaccesskey" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role secret access key.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-token"><strong>ansible_ec2_iam_security_credentials_role_name_token</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_token" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role token.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-iam-security-credentials-role-name-type"><strong>ansible_ec2_iam_security_credentials_role_name_type</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_iam_security_credentials_role_name_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IAM role type.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AWS-HMAC&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_action"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-action"><strong>ansible_ec2_instance_action</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_action" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Notifies the instance that it should reboot in preparation for bundling.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;none&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-id"><strong>ansible_ec2_instance_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of this instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;i-XXXXXXXXXXXXXXXXX&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document"><strong>ansible_ec2_instance_identity_document</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>JSON containing instance attributes, such as instance-id, private IP address, etc.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_accountid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-accountid"><strong>ansible_ec2_instance_identity_document_accountid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_accountid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_architecture"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-architecture"><strong>ansible_ec2_instance_identity_document_architecture</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_architecture" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Instance system architecture.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_availabilityzone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-availabilityzone"><strong>ansible_ec2_instance_identity_document_availabilityzone</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_availabilityzone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Availability Zone in which the instance launched.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_billingproducts"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-billingproducts"><strong>ansible_ec2_instance_identity_document_billingproducts</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_billingproducts" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Billing products for this instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_devpayproductcodes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-devpayproductcodes"><strong>ansible_ec2_instance_identity_document_devpayproductcodes</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_devpayproductcodes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Product codes for the launched AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_imageid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-imageid"><strong>ansible_ec2_instance_identity_document_imageid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_imageid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AMI ID used to launch the instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ami-01234567&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_instanceid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-instanceid"><strong>ansible_ec2_instance_identity_document_instanceid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_instanceid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of this instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;i-0123456789abcdef0&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_instancetype"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-instancetype"><strong>ansible_ec2_instance_identity_document_instancetype</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_instancetype" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The type of instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;m4.large&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_kernelid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-kernelid"><strong>ansible_ec2_instance_identity_document_kernelid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_kernelid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the kernel launched with this instance, if applicable.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_pendingtime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-pendingtime"><strong>ansible_ec2_instance_identity_document_pendingtime</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_pendingtime" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The instance pending time.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-05-11T20:51:20Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_privateip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-privateip"><strong>ansible_ec2_instance_identity_document_privateip</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_privateip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 address of the instance.</p>
+<p>In cases where multiple network interfaces are present, this refers to the eth0 device (the device for which the device number is 0).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_ramdiskid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-ramdiskid"><strong>ansible_ec2_instance_identity_document_ramdiskid</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_ramdiskid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the RAM disk specified at launch time, if applicable.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-region"><strong>ansible_ec2_instance_identity_document_region</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Region in which the instance launched.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_document_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-document-version"><strong>ansible_ec2_instance_identity_document_version</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_document_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Identity document version.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2010-08-31&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_pkcs7"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-pkcs7"><strong>ansible_ec2_instance_identity_pkcs7</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_pkcs7" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Used to verify the document’s authenticity and content against the signature.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_rsa2048"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-rsa2048"><strong>ansible_ec2_instance_identity_rsa2048</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_rsa2048" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Used to verify the document’s authenticity and content against the signature.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_identity_signature"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-identity-signature"><strong>ansible_ec2_instance_identity_signature</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_identity_signature" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Data that can be used by other parties to verify its origin and authenticity.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_life_cycle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-life-cycle"><strong>ansible_ec2_instance_life_cycle</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_life_cycle" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The purchasing option of the instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;on-demand&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_tags_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-tags-keys"><strong>ansible_ec2_instance_tags_keys</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_tags_keys" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The list of tags keys of the instance.</p>
+<p>Returns empty list if access to tags (InstanceMetadataTags) in instance metadata is not enabled.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;tagKey1&quot;,</span> <span class="pre">&quot;tag_key2&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_instance_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-instance-type"><strong>ansible_ec2_instance_type</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_instance_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The type of the instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;m4.large&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_local_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-local-hostname"><strong>ansible_ec2_local_hostname</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_local_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 DNS hostname of the instance.</p>
+<p>In cases where multiple network interfaces are present, this refers to the eth0 device (the device for which the device number is 0).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-0-0-1.ec2.internal&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_local_ipv4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-local-ipv4"><strong>ansible_ec2_local_ipv4</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_local_ipv4" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 address of the instance.</p>
+<p>In cases where multiple network interfaces are present, this refers to the eth0 device (the device for which the device number is 0).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_mac"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-mac"><strong>ansible_ec2_mac</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_mac" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The instance’s media access control (MAC) address.</p>
+<p>In cases where multiple network interfaces are present, this refers to the eth0 device (the device for which the device number is 0).</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:11:22:33:44:55&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_metrics_vhostmd"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-metrics-vhostmd"><strong>ansible_ec2_metrics_vhostmd</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_metrics_vhostmd" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Metrics; no longer available.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_device_number"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-device-number"><strong>ansible_ec2_network_interfaces_macs_mac_address_device_number</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_device_number" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The unique device number associated with that interface. The device number corresponds to the device name; for example, a device-number of 2 is for the eth2 device.</p>
+<p>This category corresponds to the DeviceIndex and device-index fields that are used by the Amazon EC2 API and the EC2 commands for the AWS CLI.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;0&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-interface-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_interface_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The elastic network interface ID.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-12345678&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-ipv4-associations-ip-address"><strong>ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 addresses that are associated with each public-ip address and assigned to that interface.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv6s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-ipv6s"><strong>ansible_ec2_network_interfaces_macs_mac_address_ipv6s</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_ipv6s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv6 addresses associated with the interface. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-local-hostname"><strong>ansible_ec2_network_interfaces_macs_mac_address_local_hostname</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The interface’s local hostname.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-local-ipv4s"><strong>ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The private IPv4 addresses associated with the interface.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_mac"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-mac"><strong>ansible_ec2_network_interfaces_macs_mac_address_mac</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_mac" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The instance’s MAC address.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:11:22:33:44:55&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-owner-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_owner_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the owner of the network interface.</p>
+<p>In multiple-interface environments, an interface can be attached by a third party, such as Elastic Load Balancing.</p>
+<p>Traffic on an interface is always billed to the interface owner.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-public-hostname"><strong>ansible_ec2_network_interfaces_macs_mac_address_public_hostname</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The interface’s public DNS (IPv4). If the instance is in a VPC, this category is only returned if the enableDnsHostnames attribute is set to true.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-1-2-3-4.compute-1.amazonaws.com&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-public-ipv4s"><strong>ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Elastic IP addresses associated with the interface. There may be multiple IPv4 addresses on an instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1.2.3.4&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_group_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-security-group-ids"><strong>ansible_ec2_network_interfaces_macs_mac_address_security_group_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_group_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IDs of the security groups to which the network interface belongs. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sg-01234567,sg-01234568&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-security-groups"><strong>ansible_ec2_network_interfaces_macs_mac_address_security_groups</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Security groups to which the network interface belongs. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;secgroup1,secgroup2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the subnet in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-01234567&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-ipv4-cidr-block"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv4 CIDR block of the subnet in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.1.0/24&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-subnet-ipv6-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv6 CIDR block of the subnet in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-id"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the VPC in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0123456&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv4-cidr-block"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv4 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.0/16&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv4-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv4 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.0/16&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-network-interfaces-macs-mac-address-vpc-ipv6-cidr-blocks"><strong>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv6 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_placement_availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-placement-availability-zone"><strong>ansible_ec2_placement_availability_zone</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_placement_availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Availability Zone in which the instance launched.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_placement_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-placement-region"><strong>ansible_ec2_placement_region</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_placement_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Region in which the instance launched.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_product_codes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-product-codes"><strong>ansible_ec2_product_codes</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_product_codes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Product codes associated with the instance, if any.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aw0evgkw8e5c1q413zgy5pjce&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-profile"><strong>ansible_ec2_profile</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_profile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>EC2 instance hardware profile.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default-hvm&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_hostname"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-hostname"><strong>ansible_ec2_public_hostname</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_hostname" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The instance’s public DNS. If the instance is in a VPC, this category is only returned if the enableDnsHostnames attribute is set to true.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-1-2-3-4.compute-1.amazonaws.com&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_ipv4"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-ipv4"><strong>ansible_ec2_public_ipv4</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_ipv4" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The public IPv4 address. If an Elastic IP address is associated with the instance, the value returned is the Elastic IP address.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1.2.3.4&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_public_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-public-key"><strong>ansible_ec2_public_key</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_public_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Public key. Only available if supplied at instance launch time.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_ramdisk_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-ramdisk-id"><strong>ansible_ec2_ramdisk_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_ramdisk_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the RAM disk specified at launch time, if applicable.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_reservation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-reservation-id"><strong>ansible_ec2_reservation_id</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_reservation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the reservation.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;r-0123456789abcdef0&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-security-groups"><strong>ansible_ec2_security_groups</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The names of the security groups applied to the instance. After launch, you can only change the security groups of instances running in a VPC.</p>
+<p>Such changes are reflected here and in network/interfaces/macs/mac/security-groups.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;securitygroup1,securitygroup2&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_services_domain"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-services-domain"><strong>ansible_ec2_services_domain</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_services_domain" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The domain for AWS resources for the region; for example, amazonaws.com for us-east-1.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;amazonaws.com&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_services_partition"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-services-partition"><strong>ansible_ec2_services_partition</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_services_partition" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The partition that the resource is in. For standard AWS regions, the partition is aws.</p>
+<p>If you have resources in other partitions, the partition is aws-partitionname.</p>
+<p>For example, the partition for resources in the China (Beijing) region is aws-cn.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aws&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_spot_termination_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-spot-termination-time"><strong>ansible_ec2_spot_termination_time</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_spot_termination_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The approximate time, in UTC, that the operating system for your Spot instance will receive the shutdown signal.</p>
+<p>This item is present and contains a time value only if the Spot instance has been marked for termination by Amazon EC2.</p>
+<p>The termination-time item is not set to a time if you terminated the Spot instance yourself.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-01-05T18:02:00Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ansible_facts/ansible_ec2_user_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-return-ansible-facts-ansible-ec2-user-data"><strong>ansible_ec2_user_data</strong></p>
+<a class="ansibleOptionLink" href="#return-ansible_facts/ansible_ec2_user_data" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The instance user data.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> success</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;#!/bin/bash&quot;</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Silviu Dicu (&#64;silviud)</p></li>
+<li><p>Vinay Dandekar (&#64;roadmapper)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading"></a></h3>
+<p class="ansible-links">
+  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
+  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
+  <a href="./#communication-for-amazon-aws" aria-role="button" target="_blank">Communication</a>
+</p></section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ec2_key_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_key module – Create or delete an EC2 key pair" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec2_security_group_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_security_group module – Maintain an EC2 security group" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>

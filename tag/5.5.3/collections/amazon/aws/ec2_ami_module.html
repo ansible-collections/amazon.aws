@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>amazon.aws.ec2_ami module – Create or destroy an image (AMI) in EC2 &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" href="ec2_ami_info_module.html" />
+    <link rel="prev" title="amazon.aws.cloudwatchlogs_log_group_metric_filter module – Manage CloudWatch log group metric filter" href="cloudwatchlogs_log_group_metric_filter_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Amazon.Aws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#changelog">Changelog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">amazon.aws.ec2_ami module – Create or destroy an image (AMI) in EC2</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_ami.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-amazon-aws-ec2-ami-module"></span><section id="amazon-aws-ec2-ami-module-create-or-destroy-an-image-ami-in-ec2">
+<h1>amazon.aws.ec2_ami module – Create or destroy an image (AMI) in EC2<a class="headerlink" href="#amazon-aws-ec2-ami-module-create-or-destroy-an-image-ami-in-ec2" title="Permalink to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 5.5.3).</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_ami</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Registers or deregisters EC2 images.</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-amazon-aws-ec2-ami-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>python &gt;= 3.6</p></li>
+<li><p>boto3 &gt;= 1.18.0</p></li>
+<li><p>botocore &gt;= 1.21.0</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-access-key"></span><strong>access_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS access key ID.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variables may also be used in decreasing order of preference.  Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>access_key</em> will always fall back to the environment variables if set.</p>
+<p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-architecture"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-architecture"><strong>architecture</strong></p>
+<a class="ansibleOptionLink" href="#parameter-architecture" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The target architecture of the image to register.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_CA_BUNDLE</span></code> environment variable may also be used.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-config"><strong>aws_config</strong></p>
+<a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
+<p>Parameters can be found in the AWS documentation <a class="reference external" href="https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config">https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-billing_products"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-billing-products"><strong>billing_products</strong></p>
+<a class="ansibleOptionLink" href="#parameter-billing_products" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of valid billing codes. To be used with valid accounts by AWS Marketplace vendors.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-boot_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-boot-mode"><strong>boot_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-boot_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The boot mode of the AMI.</p>
+<p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;legacy-bios&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;uefi&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Use a <code class="docutils literal notranslate"><span class="pre">botocore.endpoint</span></code> logger to parse the unique (rather than total) <code class="docutils literal notranslate"><span class="pre">&quot;resource:action&quot;</span></code> API calls made during a task, outputing the set to the resource_actions key in the task results. Use the <code class="docutils literal notranslate"><span class="pre">aws_resource_action</span></code> callback to output to total list made during a playbook.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ANSIBLE_DEBUG_BOTOCORE_LOGS</span></code> environment variable may also be used.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-delete_snapshot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-delete-snapshot"><strong>delete_snapshot</strong></p>
+<a class="ansibleOptionLink" href="#parameter-delete_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Delete snapshots when deregistering the AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Human-readable string describing the contents and purpose of the AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping"><strong>device_mapping</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>List of device hashes/dictionaries with custom configurations (same block-device-mapping parameters).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/delete_on_termination"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-delete-on-termination"><strong>delete_on_termination</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/delete_on_termination" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the device should be automatically deleted when the Instance is terminated.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/device_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-device-name"><strong>device_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/device_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The device name. For example <code class="docutils literal notranslate"><span class="pre">/dev/sda</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-encrypted"><strong>encrypted</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/encrypted" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the volume should be encrypted.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/iops"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-iops"><strong>iops</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/iops" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using an <code class="docutils literal notranslate"><span class="pre">io1</span></code> <em>volume_type</em> this sets the number of IOPS provisioned for the volume.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/no_device"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-no-device"><strong>no_device</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/no_device" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Suppresses the specified device included in the block device mapping of the AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/snapshot_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-snapshot-id"><strong>snapshot_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/snapshot_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Snapshot.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/virtual_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-virtual-name"><strong>virtual_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/virtual_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The virtual name for the device.</p>
+<p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html</a>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/volume_size"></div>
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-volume-size"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-size"></span><strong>volume_size</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/volume_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: size</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The size of the volume (in GiB).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-device_mapping/volume_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-volume-type"><strong>volume_type</strong></p>
+<a class="ansibleOptionLink" href="#parameter-device_mapping/volume_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The volume type.  Defaults to <code class="docutils literal notranslate"><span class="pre">gp2</span></code> when not set.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The  <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
+<p>The <em>ec2_url</em> and <em>s3_url</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-enhanced_networking"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-enhanced-networking"><strong>enhanced_networking</strong></p>
+<a class="ansibleOptionLink" href="#parameter-enhanced_networking" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A boolean representing whether enhanced networking with ENA is enabled or not.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-image_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-image-id"><strong>image_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-image_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Image ID to be deregistered.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-image_location"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-image-location"><strong>image_location</strong></p>
+<a class="ansibleOptionLink" href="#parameter-image_location" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The S3 location of an image to use for the AMI.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-instance-id"><strong>instance_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-instance_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Instance ID to create the AMI from.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-kernel_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-kernel-id"><strong>kernel_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-kernel_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The target kernel id of the image to register.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-launch_permissions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions"><strong>launch_permissions</strong></p>
+<a class="ansibleOptionLink" href="#parameter-launch_permissions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Users and groups that should be able to launch the AMI.</p>
+<p>Expects dictionary with a key of <code class="docutils literal notranslate"><span class="pre">user_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">group_names</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">user_ids</span></code> should be a list of account IDs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">group_name</span></code> should be a list of groups, <code class="docutils literal notranslate"><span class="pre">all</span></code> is the only acceptable value currently.</p>
+<p>You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The name of the new AMI.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-no_reboot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-no-reboot"><strong>no_reboot</strong></p>
+<a class="ansibleOptionLink" href="#parameter-no_reboot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the responsibility of maintaining file system integrity is left to the owner of the instance.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A named AWS profile to use for authentication.</p>
+<p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable may also be used.  Prior to release 6.0.0 the <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable will be ignored if any of <em>access_key</em>, <em>secret_key</em>, or <em>session_token</em> are passed.  After release 6.0.0 <em>profile</em> will always fall back to the <code class="docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code> environment variable if set.</p>
+<p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-purge-tags"><strong>purge_tags</strong></p>
+<a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
+<p>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</p>
+<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ramdisk_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-ramdisk-id"><strong>ramdisk_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ramdisk_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID of the RAM disk.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-region"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The AWS region to use.</p>
+<p>For global services such as IAM, Route53 and CloudFront, <em>region</em> is ignored.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_REGION</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variables may also be used.</p>
+<p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ec2_region</span></code> alias has been deprecated and will be removed in a release after 2024-12-01</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-root_device_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-root-device-name"><strong>root_device_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-root_device_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The root device name of the image to register.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS secret access key.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>, or <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variables may also be used in decreasing order of preference.  Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>secret_key</em> will always fall back to the environment variables if set.</p>
+<p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
+<p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-session-token"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-access-token"></span><strong>session_token</strong></p>
+<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AWS STS session token for use with temporary credentials.</p>
+<p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code> environment variables may also be used in decreasing order of preference. Prior to release 6.0.0 these environment variables will be ignored if the <em>profile</em> parameter is passed.  After release 6.0.0 <em>session_token</em> will always fall back to the environment variables if set.</p>
+<p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
+<p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
+<p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-sriov_net_support"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-sriov-net-support"><strong>sriov_net_support</strong></p>
+<a class="ansibleOptionLink" href="#parameter-sriov_net_support" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set to simple to enable enhanced networking with the Intel 82599 Virtual Function interface for the AMI and any instances that you launch from the AMI.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Register or deregister an AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-tags"></div>
+<div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-tags"><span id="ansible-collections-amazon-aws-ec2-ami-module-parameter-resource-tags"></span><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary representing the tags to be applied to the resource.</p>
+<p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-tpm_support"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-tpm-support"><strong>tpm_support</strong></p>
+<a class="ansibleOptionLink" href="#parameter-tpm_support" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set to v2.0 to enable Trusted Platform Module (TPM) support.</p>
+<p>If the image is configured for NitroTPM support, the value is v2.0 .</p>
+<p>Requires <em>boot_mode</em> to be set to ‘uefi’.</p>
+<p>Requires an instance type that is compatible with Nitro.</p>
+<p>Requires minimum botocore version 1.26.0.</p>
+<p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html</a>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-uefi_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-uefi-data"><strong>uefi_data</strong></p>
+<a class="ansibleOptionLink" href="#parameter-uefi_data" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 5.5.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Base64 representation of the non-volatile UEFI variable store.</p>
+<p>Requires minimum botocore version 1.26.0.</p>
+<p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html</a>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>When set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, SSL certificates will not be validated for communication with the AWS APIs.</p>
+<p>Setting <em>validate_certs=false</em> is strongly discouraged, as an alternative, consider setting <em>aws_ca_bundle</em> instead.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-virtualization_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-virtualization-type"><strong>virtualization_type</strong></p>
+<a class="ansibleOptionLink" href="#parameter-virtualization_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The virtualization type of the image to register.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;hvm&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-wait"><strong>wait</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Wait for the AMI to be in state ‘available’ before returning.</p>
+<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wait_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-wait-timeout"><strong>wait_timeout</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>How long before wait gives up, in seconds.</p>
+<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1200</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Basic AMI Creation</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-xxxxxx</span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">      </span><span class="nt">Service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TestService</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Basic AMI Creation, without waiting</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-xxxxxx</span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AMI Registration from EBS Snapshot</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+<span class="w">    </span><span class="nt">virtualization_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hvm</span>
+<span class="w">    </span><span class="nt">root_device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/xvda</span>
+<span class="w">    </span><span class="nt">device_mapping</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/xvda</span>
+<span class="w">        </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">        </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-xxxxxxxx</span>
+<span class="w">        </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AMI Creation, with a custom root-device size and another EBS attached</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-xxxxxx</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">    </span><span class="nt">device_mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">          </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">XXX</span>
+<span class="w">          </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">          </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb</span>
+<span class="w">          </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YYY</span>
+<span class="w">          </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">          </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AMI Creation, excluding a volume attached at /dev/sdb</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-xxxxxx</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">    </span><span class="nt">device_mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">          </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">XXX</span>
+<span class="w">          </span><span class="nt">delete_on_termination</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">          </span><span class="nt">volume_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp2</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sdb</span>
+<span class="w">          </span><span class="nt">no_device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AMI Creation with boot_mode and tpm_support</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newtest</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+<span class="w">    </span><span class="nt">virtualization_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hvm</span>
+<span class="w">    </span><span class="nt">root_device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">    </span><span class="nt">device_mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
+<span class="w">          </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">snapshot_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="w">    </span><span class="nt">boot_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uefi</span>
+<span class="w">    </span><span class="nt">uefi_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_file.bin</span>
+<span class="w">    </span><span class="nt">tpm_support</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v2.0</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deregister/Delete AMI (keep associated snapshots)</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">delete_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deregister AMI (delete associated snapshots too)</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">delete_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update AMI Launch Permissions, making it public</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">group_names</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;all&#39;</span><span class="p p-Indicator">]</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow AMI to be launched by another account</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">user_ids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;123456789012&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-architecture"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-architecture"><strong>architecture</strong></p>
+<a class="ansibleOptionLink" href="#return-architecture" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Architecture of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-block_device_mapping"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-block-device-mapping"><strong>block_device_mapping</strong></p>
+<a class="ansibleOptionLink" href="#return-block_device_mapping" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Block device mapping associated with image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;/dev/sda1&quot;:</span> <span class="pre">{&quot;delete_on_termination&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;encrypted&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;size&quot;:</span> <span class="pre">10,</span> <span class="pre">&quot;snapshot_id&quot;:</span> <span class="pre">&quot;snap-1a03b80e7&quot;,</span> <span class="pre">&quot;volume_type&quot;:</span> <span class="pre">&quot;standard&quot;}}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-creationDate"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-creationdate"><strong>creationDate</strong></p>
+<a class="ansibleOptionLink" href="#return-creationDate" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Creation date of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-10-15T22:43:44.000Z&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Description of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-server&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-hypervisor"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-hypervisor"><strong>hypervisor</strong></p>
+<a class="ansibleOptionLink" href="#return-hypervisor" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Type of hypervisor.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;xen&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-image_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-image-id"><strong>image_id</strong></p>
+<a class="ansibleOptionLink" href="#return-image_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>ID of the image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ami-1234abcd&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-is_public"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-is-public"><strong>is_public</strong></p>
+<a class="ansibleOptionLink" href="#return-is_public" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether image is public.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-launch_permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-launch-permission"><strong>launch_permission</strong></p>
+<a class="ansibleOptionLink" href="#return-launch_permission" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Permissions allowing other accounts to access the AMI.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;group&quot;:</span> <span class="pre">&quot;all&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-location"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-location"><strong>location</strong></p>
+<a class="ansibleOptionLink" href="#return-location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Location of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012/nat-server&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>AMI name of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-server&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ownerId"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-ownerid"><strong>ownerId</strong></p>
+<a class="ansibleOptionLink" href="#return-ownerId" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Owner of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;123456789012&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-platform"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-platform"><strong>platform</strong></p>
+<a class="ansibleOptionLink" href="#return-platform" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Platform of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-root_device_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-root-device-name"><strong>root_device_name</strong></p>
+<a class="ansibleOptionLink" href="#return-root_device_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Root device name of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sda1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-root_device_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-root-device-type"><strong>root_device_type</strong></p>
+<a class="ansibleOptionLink" href="#return-root_device_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Root device type of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ebs&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-snapshots_deleted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-snapshots-deleted"><strong>snapshots_deleted</strong></p>
+<a class="ansibleOptionLink" href="#return-snapshots_deleted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of snapshot ids deleted after deregistering image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> after AMI is deregistered, if <em>delete_snapshot=true</em></p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;snap-fbcccb8f&quot;,</span> <span class="pre">&quot;snap-cfe7cdb4&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>State of image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary of tags assigned to image.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Env&quot;:</span> <span class="pre">&quot;devel&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;nat-server&quot;}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-virtualization_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-return-virtualization-type"><strong>virtualization_type</strong></p>
+<a class="ansibleOptionLink" href="#return-virtualization_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Image virtualization type.</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when AMI is created or already exists</p>
+<p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;hvm&quot;</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Evan Duffield (&#64;scicoin-project)</p></li>
+<li><p>Constantin Bugneac (&#64;Constantin07)</p></li>
+<li><p>Ross Williams (&#64;gunzy83)</p></li>
+<li><p>Willem van Ketwich (&#64;wilvk)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading"></a></h3>
+<p class="ansible-links">
+  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
+  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
+  <a href="./#communication-for-amazon-aws" aria-role="button" target="_blank">Communication</a>
+</p></section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cloudwatchlogs_log_group_metric_filter_module.html" class="btn btn-neutral float-left" title="amazon.aws.cloudwatchlogs_log_group_metric_filter module – Manage CloudWatch log group metric filter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec2_ami_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
