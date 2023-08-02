@@ -1,0 +1,11 @@
+cluster_id: ansible-test-cluster-{{ tiny_prefix }}
+username: testrdsusername
+password: test-rds_password
+engine: aurora
+db_cluster_instance_class: db.r5.large
+
+mysql_cluster_id: ansible-test-mysql-cluster-{{ tiny_prefix }}
+mysql_engine: mysql
+mysql_allocated_storage: 100
+mysql_iops: 1000
+mysql_db_cluster_instance_class: db.m5d.large

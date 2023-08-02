@@ -1,0 +1,240 @@
+- module_defaults:
+    group/aws:
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Create DB cluster
+    - name: Ensure the resource doesn't exist
+      rds_cluster:
+        id: '{{ cluster_id }}'
+        state: absent
+        engine: '{{ engine}}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        skip_final_snapshot: true
+      register: _result_delete_db_cluster
+
+    - assert:
+        that:
+        - not _result_delete_db_cluster.changed
+      ignore_errors: yes
+
+    - name: Create an Aurora-PostgreSQL DB cluster
+      rds_cluster:
+        id: '{{ cluster_id }}'
+        state: present
+        engine: aurora-postgresql
+        engine_mode: provisioned
+        username: '{{ username }}'
+        password: '{{ password }}'
+      register: _result_create_source_db_cluster
+
+    - assert:
+        that:
+        - _result_create_source_db_cluster.changed
+        - "'allocated_storage' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.allocated_storage == 1
+        - "'cluster_create_time' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.db_cluster_identifier == '{{ cluster_id }}'
+        - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
+        - "'db_cluster_resource_id' in _result_create_source_db_cluster"
+        - "'endpoint' in _result_create_source_db_cluster"
+        - "'engine' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.engine == "aurora-postgresql"
+        - "'engine_mode' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.engine_mode == "provisioned"
+        - "'engine_version' in _result_create_source_db_cluster"
+        - "'master_username' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.master_username == "{{ username }}"
+        - "'port' in _result_create_source_db_cluster"
+        - "'status' in _result_create_source_db_cluster"
+        - _result_create_source_db_cluster.status == "available"
+        - "'tags' in _result_create_source_db_cluster"
+        - "'vpc_security_groups' in _result_create_source_db_cluster"
+
+    # ------------------------------------------------------------------------------------------
+    # Test stopping db clusters
+    - name: Stop db clusters - checkmode
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: stopped
+      register: check_stopped_cluster
+      check_mode: yes
+
+    - assert:
+        that:
+        - check_stopped_cluster.changed
+
+    - name: Stop db clusters
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: stopped
+      register: stopped_cluster
+
+    - assert:
+        that:
+        - stopped_cluster.changed
+    
+    - name: Wait until db clusters state is stopped
+      amazon.aws.rds_cluster_info:
+        cluster_id: '{{ cluster_id }}'
+      register: stopped_cluster_info
+      retries: 30
+      delay: 60
+      until: stopped_cluster_info.clusters[0].status == "stopped"
+
+    - name: Stop db clusters (idempotence) - checkmode
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: stopped
+      register: check_stopped_cluster_idem
+      check_mode: yes
+
+    - assert:
+        that:
+        - not check_stopped_cluster_idem.changed
+
+    - name: Stop db clusters (idempotence)
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: stopped
+      register: stopped_cluster_idem
+
+    - assert:
+        that:
+        - not stopped_cluster_idem.changed
+
+    # ------------------------------------------------------------------------------------------
+    # Test starting DB clusters
+    - name: Start db clusters - checkmode
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: started
+      register: check_started_cluster
+      check_mode: yes
+
+    - assert:
+        that:
+        - check_started_cluster.changed
+    
+    - name: Start db clusters
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: started
+      register: started_cluster
+
+    - assert:
+        that:
+        - started_cluster.changed
+    
+    - name: Start db clusters (idempotence) - checkmode
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: started
+      register: check_started_cluster
+      check_mode: yes
+
+    - assert:
+        that:
+        - not check_started_cluster.changed
+
+    - name: Start db clusters
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ cluster_id }}'
+        state: started
+      register: started_cluster
+
+    - assert:
+        that:
+        - not started_cluster.changed
+
+    # ------------------------------------------------------------------------------------------
+    # Give errors for MySql DB cluster
+    - name: Ensure the resource doesn't exist
+      rds_cluster:
+        id: '{{ mysql_cluster_id }}'
+        state: absent
+        engine: '{{ mysql_engine }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        skip_final_snapshot: true
+      register: _result_delete_mysql_db_cluster
+  
+    - assert:
+        that:
+        - not _result_delete_mysql_db_cluster.changed
+      ignore_errors: yes
+    
+    - name: Create an MySql DB cluster
+      rds_cluster:
+        id: '{{ mysql_cluster_id }}'
+        state: present
+        engine: '{{ mysql_engine }}'
+        engine_mode: provisioned
+        allocated_storage: '{{ mysql_allocated_storage }}'
+        iops: '{{ mysql_iops }}'
+        db_cluster_instance_class: '{{ mysql_db_cluster_instance_class }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+      ignore_errors: yes
+      register: mysql_cluster
+
+    - assert:
+        that:
+        - mysql_cluster.changed
+        - "'allocated_storage' in mysql_cluster"
+        - mysql_cluster.allocated_storage == 100
+        - "'cluster_create_time' in mysql_cluster"
+        - mysql_cluster.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in mysql_cluster"
+        - mysql_cluster.db_cluster_identifier == "{{ mysql_cluster_id }}"
+        - "'db_cluster_parameter_group' in mysql_cluster"
+        - "'db_cluster_resource_id' in mysql_cluster"
+        - "'endpoint' in mysql_cluster"
+        - "'engine' in mysql_cluster"
+        - mysql_cluster.engine == "{{ mysql_engine }}"
+        - "'engine_mode' in mysql_cluster"
+        - mysql_cluster.engine_mode == "provisioned"
+        - "'engine_version' in mysql_cluster"
+        - "'master_username' in mysql_cluster"
+        - mysql_cluster.master_username == "{{ username }}"
+        - "'port' in mysql_cluster"
+        - "'status' in mysql_cluster"
+        - mysql_cluster.status == "available"
+        - "'tags' in mysql_cluster"
+        - "'vpc_security_groups' in mysql_cluster"
+      
+
+    - name: Stop MySql DB cluster
+      amazon.aws.rds_cluster:
+        cluster_id: '{{ mysql_cluster_id }}'
+        state: stopped
+      register: mysql_cluster
+      ignore_errors: true
+
+    - assert:
+        that:
+        - mysql_cluster is failed
+        - mysql_cluster.msg == "Only aurora clusters can use the state stopped"
+
+  always:
+    # ------------------------------------------------------------------------------------------
+    # Cleanup starts here
+    - name: Delete MySql db cluster without creating a final snapshot
+      rds_cluster:
+        state: absent
+        cluster_id: '{{ mysql_cluster_id }}'
+        skip_final_snapshot: true
+      ignore_errors: true
+
+    - name: Delete Aurora-PostgreSql db cluster without creating a final snapshot
+      rds_cluster:
+        state: absent
+        cluster_id: '{{ cluster_id }}'
+        skip_final_snapshot: true
+      ignore_errors: true
