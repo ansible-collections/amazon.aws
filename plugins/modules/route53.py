@@ -249,7 +249,7 @@ wait_id:
     - The wait ID for the applied change. Can be used to wait for the change to propagate later on when I(wait=false).
   type: str
   returned: when changed
-  version_added: 5.6.0
+  version_added: 6.3.0
 """
 
 EXAMPLES = r"""
