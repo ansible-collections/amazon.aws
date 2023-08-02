@@ -105,6 +105,8 @@
       that:
       - qdn is not failed
       - qdn is changed
+      - "'wait_id' in qdn"
+      - qdn.wait_id is string
 
   - name: Get A record using "get" method of route53 module
     route53:
@@ -191,6 +193,7 @@
       that:
       - non_qdn is not failed
       - non_qdn is not changed
+      - "'wait_id' not in non_qdn"
 
   - name: Create A record using zone ID
     route53:
@@ -705,6 +708,8 @@
       - create_geo_continent_check_mode is changed
       - create_geo_continent_check_mode is not failed
       - '"route53:ChangeResourceRecordSets" not in create_geo_continent_check_mode.resource_actions'
+      - '"wait_id" in create_geo_continent_check_mode'
+      - create_geo_continent_check_mode.wait_id is none
 
   - name: Create a record with geo_location - continent_code
     route53:

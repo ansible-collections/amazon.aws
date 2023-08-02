@@ -1,0 +1,2 @@
+minor_changes:
+  - "route53 - add a ``wait_id`` return value when a change is done (https://github.com/ansible-collections/amazon.aws/pull/1683)."
