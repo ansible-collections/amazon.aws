@@ -76,53 +76,53 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # lookup sample:
 - name: lookup ssm parameter store in the current region
-  debug: msg="{{ lookup('aws_ssm', 'Hello' ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello' ) }}"
 
 - name: lookup ssm parameter store in specified region
-  debug: msg="{{ lookup('aws_ssm', 'Hello', region='us-east-2' ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', region='us-east-2' ) }}"
 
 - name: lookup ssm parameter store without decryption
-  debug: msg="{{ lookup('aws_ssm', 'Hello', decrypt=False ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=False ) }}"
 
 - name: lookup ssm parameter store using a specified aws profile
-  debug: msg="{{ lookup('aws_ssm', 'Hello', aws_profile='myprofile' ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_profile='myprofile' ) }}"
 
 - name: lookup ssm parameter store using explicit aws credentials
-  debug: msg="{{ lookup('aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}"
 
 - name: lookup ssm parameter store with all options
-  debug: msg="{{ lookup('aws_ssm', 'Hello', decrypt=false, region='us-east-2', aws_profile='myprofile') }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', aws_profile='myprofile') }}"
 
 - name: lookup ssm parameter and fail if missing
-  debug: msg="{{ lookup('aws_ssm', 'missing-parameter') }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter') }}"
 
 - name: lookup a key which doesn't exist, returning a default ('root')
-  debug: msg="{{ lookup('aws_ssm', 'AdminID', on_missing="skip") | default('root', true) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'AdminID', on_missing="skip") | default('root', true) }}"
 
 - name: lookup a key which doesn't exist failing to store it in a fact
   set_fact:
-    temp_secret: "{{ lookup('aws_ssm', '/NoAccess/hiddensecret') }}"
+    temp_secret: "{{ lookup('amazon.aws.aws_ssm', '/NoAccess/hiddensecret') }}"
   ignore_errors: true
 
 - name: show fact default to "access failed" if we don't have access
   debug: msg="{{ 'the secret was:' ~ temp_secret | default('could not access secret') }}"
 
 - name: return a dictionary of ssm parameters from a hierarchy path
-  debug: msg="{{ lookup('aws_ssm', '/PATH/to/params', region='ap-southeast-2', bypath=true, recursive=true ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', bypath=true, recursive=true ) }}"
 
 - name: return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/param)
-  debug: msg="{{ lookup('aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
 
 - name: Iterate over a parameter hierarchy (one iteration per parameter)
   debug: msg='Key contains {{ item.key }} , with value {{ item.value }}'
-  loop: '{{ lookup("aws_ssm", "/demo/", region="ap-southeast-2", bypath=True) | dict2items }}'
+  loop: "{{ lookup('amazon.aws.aws_ssm', '/demo/', region='ap-southeast-2', bypath=True) | dict2items }}"
 
 - name: Iterate over multiple paths as dictionaries (one iteration per path)
   debug: msg='Path contains {{ item }}'
-  loop: '{{ lookup("aws_ssm", "/demo/", "/demo1/", bypath=True)}}'
+  loop: "{{ lookup('amazon.aws.aws_ssm', '/demo/', '/demo1/', bypath=True)}}"
 
 - name: lookup ssm parameter warn if access is denied
-  debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
 """
 
 try:
