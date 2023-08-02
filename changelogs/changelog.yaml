@@ -1744,7 +1744,7 @@ releases:
       - lambda_execute - Fixes to the stack trace output, where it does not contain
         spaces between each character. The module had incorrectly always outputted
         extra spaces between each character. (https://github.com/ansible-collections/amazon.aws/pull/1615)
-      release_summary: 'This release brings few bugfixes.'
+      release_summary: 'This release brings a few bugfixes.'
     fragments:
     - 1589-return_false_when_no_change..yml
     - 1615-no_formatted_with_extra_space.yml
