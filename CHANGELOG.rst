@@ -11,7 +11,7 @@ v5.5.3
 Release Summary
 ---------------
 
-This release contains a few bugfixes.
+This release contains a few bugfixes for rds_cluster.
 
 Bugfixes
 --------
