@@ -647,9 +647,15 @@ class UpdateImage:
         desired_users = set(str(user_id) for user_id in launch_permissions.get("user_ids", []))
         current_groups = set(permission["Group"] for permission in current_permissions if "Group" in permission)
         desired_groups = set(launch_permissions.get("group_names", []))
-        current_org_arns = set(permission["OrganizationArn"] for permission in current_permissions if "OrganizationArn" in permission)
+        current_org_arns = set(
+            permission["OrganizationArn"] for permission in current_permissions if "OrganizationArn" in permission
+        )
         desired_org_arns = set(str(org_arn) for org_arn in launch_permissions.get("org_arns", []))
-        current_org_unit_arns = set(permission["OrganizationalUnitArn"] for permission in current_permissions if "OrganizationalUnitArn" in permission)
+        current_org_unit_arns = set(
+            permission["OrganizationalUnitArn"]
+            for permission in current_permissions
+            if "OrganizationalUnitArn" in permission
+        )
         desired_org_unit_arns = set(str(org_unit_arn) for org_unit_arn in launch_permissions.get("org_unit_arns", []))
 
         to_add_users = desired_users - current_users
@@ -661,21 +667,19 @@ class UpdateImage:
         to_add_org_unit_arns = desired_org_unit_arns - current_org_unit_arns
         to_remove_org_unit_arns = current_org_unit_arns - desired_org_unit_arns
 
-        to_add = [dict(Group=group) for group in sorted(to_add_groups)] + [
-            dict(UserId=user_id) for user_id in sorted(to_add_users)
-        ] + [
-            dict(OrganizationArn=org_arn) for org_arn in sorted(to_add_org_arns)
-        ] + [
-            dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_add_org_unit_arns)
-        ]
+        to_add = (
+            [dict(Group=group) for group in sorted(to_add_groups)]
+            + [dict(UserId=user_id) for user_id in sorted(to_add_users)]
+            + [dict(OrganizationArn=org_arn) for org_arn in sorted(to_add_org_arns)]
+            + [dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_add_org_unit_arns)]
+        )
 
-        to_remove = [dict(Group=group) for group in sorted(to_remove_groups)] + [
-            dict(UserId=user_id) for user_id in sorted(to_remove_users)
-        ] + [
-            dict(OrganizationArn=org_arn) for org_arn in sorted(to_remove_org_arns)
-        ] + [
-            dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_remove_org_unit_arns)
-        ]
+        to_remove = (
+            [dict(Group=group) for group in sorted(to_remove_groups)]
+            + [dict(UserId=user_id) for user_id in sorted(to_remove_users)]
+            + [dict(OrganizationArn=org_arn) for org_arn in sorted(to_remove_org_arns)]
+            + [dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_remove_org_unit_arns)]
+        )
 
         if not (to_add or to_remove):
             return False
