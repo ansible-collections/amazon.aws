@@ -88,7 +88,7 @@ EXAMPLES = r"""
   debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_profile='myprofile' ) }}"
 
 - name: lookup ssm parameter store using explicit aws credentials
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}" # noqa: E501
 
 - name: lookup ssm parameter store with all options
   debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', aws_profile='myprofile') }}"
