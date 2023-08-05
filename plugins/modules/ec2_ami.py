@@ -122,9 +122,9 @@ options:
           - C(org_arns)
           - C(org_unit_arns)
       - C(user_ids) should be a list of account IDs.
-      - C(group_name) should be a list of groups, C(all) is the only acceptable value currently.
-      - C(org_arn) should be Amazon Resource Name (ARN) of an organization.
-      - C(org_unit_arn) should be Amazon Resource Name (ARN) of an organizational unit (OU).
+      - C(group_names) should be a list of groups, C(all) is the only acceptable value currently.
+      - C(org_arns) should be a list of Amazon Resource Name (ARN) of an organization.
+      - C(org_unit_arns) should be a list of Amazon Resource Name (ARN) of an organizational unit (OU).
       - You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).
     type: dict
   image_location:
