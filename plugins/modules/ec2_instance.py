@@ -360,7 +360,7 @@ options:
         version_added: 4.0.0
         type: str
         description:
-          - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
+          - Whether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
           - Requires botocore >= 1.21.29
         choices: [enabled, disabled]
         default: 'disabled'
@@ -368,7 +368,7 @@ options:
         version_added: 4.0.0
         type: str
         description:
-          - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
+          - Whether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
           - Requires botocore >= 1.23.30
         choices: [enabled, disabled]
         default: 'disabled'
