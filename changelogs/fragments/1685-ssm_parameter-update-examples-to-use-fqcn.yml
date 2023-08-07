@@ -1,0 +1,2 @@
+trivial:
+  - ssm_parameter - Update documentation examples to use FQCN (https://github.com/ansible-collections/amazon.aws/pull/1685).
