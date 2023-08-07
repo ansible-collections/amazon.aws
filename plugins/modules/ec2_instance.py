@@ -360,14 +360,14 @@ options:
         version_added: 4.0.0
         type: str
         description:
-          - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
+          - Whether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
         version_added: 4.0.0
         type: str
         description:
-          - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
+          - Whether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
         choices: [enabled, disabled]
         default: 'disabled'
 
