@@ -1,0 +1,55 @@
+name: "Ansible GitHub Release Logs"
+author: "Mark Chappell (tremble)"
+branding:
+  icon: "git-branch"
+  color: "gray-dark"
+description: "Generate Changelog entries for a GitHub release"
+
+inputs:
+  release:
+    description: "The release version to publish"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Prepare release environment
+      run: |
+        pip install rst-to-myst[sphinx]
+        pip install antsibull-changelog
+      shell: bash
+
+    - name: Checkout current ref
+      uses: actions/checkout@master
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Generate release log (RST)
+      run: |
+        antsibull-changelog generate -vvv --output changelog-release.rst --only-latest "${INPUT_RELEASE}"
+      shell: bash
+      env:
+        INPUT_RELEASE: ${{ inputs.release }}
+
+    - name: Upload RST release log
+      uses: actions/upload-artifact@v3
+      with:
+        name: changelog-rst
+        path: changelog-release.rst
+
+    - name: Convert release log (MD)
+      run: |
+        rst2myst convert changelog-release.rst
+        sed -i 's/^#/###/' changelog-release.md
+      shell: bash
+
+    - name: Upload MD release log
+      uses: actions/upload-artifact@v3
+      with:
+        name: changelog-md
+        path: changelog-release.md

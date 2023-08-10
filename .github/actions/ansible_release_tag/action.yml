@@ -1,0 +1,41 @@
+name: "Ansible GitHub Release"
+author: "Mark Chappell (tremble)"
+branding:
+  icon: "git-branch"
+  color: "gray-dark"
+description: "Publish GitHub releases from an action"
+
+inputs:
+  release:
+    description: "The release version to publish"
+    required: true
+
+  collection-name:
+    description: "The name of the collection"
+    required: true
+
+
+runs:
+  using: composite
+  steps:
+
+    - name: Checkout current ref
+      uses: actions/checkout@master
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Download MD release log
+      uses: actions/download-artifact@v3
+      with:
+        name: changelog-md
+
+    - name: Create Release
+      run: |
+        ls
+        cat changelog-release.md
+        gh release create "${RELEASE}" --verify-tag  -t "${COLLECTION_NAME} ${RELEASE}" -F changelog-release.md
+      shell: bash
+      env:
+        COLLECTION_NAME: ${{ inputs.collection-name }}
+        RELEASE: ${{ inputs.release }}
+        GH_TOKEN: ${{ github.token }}
