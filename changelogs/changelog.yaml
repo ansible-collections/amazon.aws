@@ -1816,7 +1816,7 @@ releases:
         ``Iops``, and ``EngineMode`` to the list of parameters that can be passed
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
-        (https://github.com/ansible-collections/amazon.aws/pull/1663)."
+        (https://github.com/ansible-collections/amazon.aws/pull/1663).
       release_summary: 'This release contains a few bugfixes for rds_cluster.'
     fragments:
     - 20230713-rds_cluster-fix_params_passage.yml
@@ -2216,7 +2216,7 @@ releases:
       - module_utils.acm - fixes list_certificates returning only RSA_2048 certificates
         (https://github.com/ansible-collections/amazon.aws/issues/1567).
       - rds_instance - add support for CACertificateIdentifier to create/update rds
-        instance (https://github.com/ansible-collections/amazon.aws/pull/1459)."
+        instance (https://github.com/ansible-collections/amazon.aws/pull/1459).
       deprecated_features:
       - s3_object - support for passing object keys with a leading ``/`` has been
         deprecated and will be removed in a release after 2025-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1549).
@@ -2305,7 +2305,7 @@ releases:
         ``Iops``, and ``EngineMode`` to the list of parameters that can be passed
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
-        (https://github.com/ansible-collections/amazon.aws/pull/1663)."
+        (https://github.com/ansible-collections/amazon.aws/pull/1663).
       minor_changes:
       - rds_cluster - add support for another ``state`` choice called ``started``.
         This starts the rds cluster (https://github.com/ansible-collections/amazon.aws/pull/1647/files).
