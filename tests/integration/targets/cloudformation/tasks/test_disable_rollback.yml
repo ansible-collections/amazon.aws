@@ -1,0 +1,53 @@
+---
+- name: Run cloudformation tests for `disable_rollback` parameter
+  block:
+    - name: create a cloudformation stack (disable_rollback=true) (check mode)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_test }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      check_mode: yes
+
+    - name: check task return attributes
+      assert:
+        that:
+          - cf_stack.changed
+          - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
+
+    - name: create a cloudformation stack (disable_rollback=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_test }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name_disable_rollback_test }}"
+      register: stack_info
+
+    - name: assert stack info
+      assert:
+        that:
+          - "'cloudformation' in stack_info"
+          - "stack_info.cloudformation | length == 1"
+          - "stack_info.cloudformation[stack_name_disable_rollback_test].stack_description.disable_rollback == true"
+
+  always:
+
+    - name: delete stack
+      cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_test }}"
+        state: absent
+      ignore_errors: true

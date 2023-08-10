@@ -1,4 +1,5 @@
 stack_name: "{{ resource_prefix }}"
+stack_name_disable_rollback_test: "{{ resource_prefix }}-drb-test"
 
 availability_zone: '{{ ec2_availability_zone_names[0] }}'
 
