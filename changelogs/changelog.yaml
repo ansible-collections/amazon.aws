@@ -1756,6 +1756,72 @@ releases:
       name: lambda_layer_info
       namespace: ''
     release_date: '2023-05-04'
+  5.5.1:
+    changes:
+      bugfixes:
+      - autoscaling_group - fix ValidationError when describing an autoscaling group
+        that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - autoscaling_group_info - fix ValidationError when describing an autoscaling
+        group that has more than 20 target groups attached to it by breaking the request
+        into chunks (https://github.com/ansible-collections/amazon.aws/pull/1593).
+      - aws_account_attribute - raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_secret -  raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_service_ip_ranges raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - aws_ssm - raise correct ``AnsibleLookupError`` rather than ``AnsibleError``
+        (https://github.com/ansible-collections/amazon.aws/issues/1528).
+      - ec2_instance - fix check_mode issue when adding network interfaces (https://github.com/ansible-collections/amazon.aws/issues/1403).
+      - elb_application_lb - fix missing attributes on creation of ALB. The ``create_or_update_alb()``
+        was including ALB-specific attributes when updating an existing ALB but not
+        when creating a new ALB (https://github.com/ansible-collections/amazon.aws/issues/1510).
+      release_summary: 'This release brings few bugfixes.
+
+        '
+    fragments:
+    - 1510-elb_application_lb-fix-alb-specific-attributes-not-added-on-create.yml
+    - 1528-lookup-error.yml
+    - 1578-rds-instance-docs.yml
+    - 1593-autoscaling_group_info-20-target-groups-per-call.yml
+    - ec2_instance-eni-attach-idempotency.yml
+    - endpoint.yml
+    - release-summary.yml
+    - test-reqs.yml
+    release_date: '2023-06-07'
+  5.5.2:
+    changes:
+      bugfixes:
+      - cloudwatchevent_rule - Fixes changed status to report False when no change has been made. The module
+        had incorrectly always reported a change. (https://github.com/ansible-collections/amazon.aws/pull/1589)
+      - lambda_execute - Fixes to the stack trace output, where it does not contain spaces between
+        each character. The module had incorrectly always outputted extra spaces between
+        each character. (https://github.com/ansible-collections/amazon.aws/pull/1615)
+      - ec2_vpc_nat_gateway - fixes to nat gateway so that when the user creates a
+        private NAT gateway, an Elastic IP address should not be allocated. The module
+        had inncorrectly always allocate elastic IP address when creating private
+        nat gateway (https://github.com/ansible-collections/amazon.aws/pull/1632).
+    fragments:
+    - 1589-return_false_when_no_change..yml
+    - 1615-no_formatted_with_extra_space.yml
+    - 1632-changes-to-no-allocate-eip-when-connectivity_type=private.yml
+    - 20230627-ci-fixup.yml
+    - 20230704-add_github_workflow.yml
+    release_date: '2023-07-05'
+  5.5.3:
+    changes:
+      bugfixes:
+      - rds_cluster - Add ``AllocatedStorage``, ``DBClusterInstanceClass``, ``StorageType``,
+        ``Iops``, and ``EngineMode`` to the list of parameters that can be passed
+        when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
+      - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
+        (https://github.com/ansible-collections/amazon.aws/pull/1663).
+      release_summary: 'This release contains a few bugfixes for rds_cluster.'
+    fragments:
+    - 20230713-rds_cluster-fix_params_passage.yml
+    - 20230725-rds_cluster-fix.yml
+    release_date: '2023-08-02'
   6.0.0:
     changes:
       breaking_changes:
@@ -2150,7 +2216,7 @@ releases:
       - module_utils.acm - fixes list_certificates returning only RSA_2048 certificates
         (https://github.com/ansible-collections/amazon.aws/issues/1567).
       - rds_instance - add support for CACertificateIdentifier to create/update rds
-        instance (https://github.com/ansible-collections/amazon.aws/pull/1459)."
+        instance (https://github.com/ansible-collections/amazon.aws/pull/1459).
       deprecated_features:
       - s3_object - support for passing object keys with a leading ``/`` has been
         deprecated and will be removed in a release after 2025-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1549).
@@ -2239,7 +2305,7 @@ releases:
         ``Iops``, and ``EngineMode`` to the list of parameters that can be passed
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
-        (https://github.com/ansible-collections/amazon.aws/pull/1663)."
+        (https://github.com/ansible-collections/amazon.aws/pull/1663).
       minor_changes:
       - rds_cluster - add support for another ``state`` choice called ``started``.
         This starts the rds cluster (https://github.com/ansible-collections/amazon.aws/pull/1647/files).
