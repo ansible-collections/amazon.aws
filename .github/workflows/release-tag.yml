@@ -1,0 +1,32 @@
+name: Generate GitHub Release
+concurrency:
+  group: release-${{ github.head_ref }}
+  cancel-in-progress: true
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  generate-release-log:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Release Log
+        uses: ansible-collections/amazon.aws/.github/actions/ansible_release_log@main
+        with:
+          release: ${{ github.ref_name }}
+
+  perform-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs:
+      - generate-release-log
+    steps:
+      - name: Generate Release
+        uses: ansible-collections/amazon.aws/.github/actions/ansible_release_tag@main
+        with:
+          release: ${{ github.ref_name }}
+          collection-name: amazon.aws
