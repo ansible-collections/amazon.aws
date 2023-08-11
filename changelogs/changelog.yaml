@@ -297,6 +297,21 @@ releases:
     - 57-aws_ec2-support-for-templates.yml
     - ignore_212.yml
     release_date: '2021-04-27'
+  1.5.1:
+    changes:
+      bugfixes:
+      - ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no
+        new  disk is being attached.  The module incorrectly reported that no change
+        had  occurred even when disks had been modified (iops, throughput, type, etc.).
+        (https://github.com/ansible-collections/amazon.aws/issues/482).
+      - ec2_vol - fix iops setting and enforce iops/throughput parameters usage (https://github.com/ansible-collections/amazon.aws/pull/334)
+      minor_changes:
+      - ec2_instance - remove unnecessary raise when exiting with a failure (https://github.com/ansible-collections/amazon.aws/pull/460).
+    fragments:
+    - 334-ec2_vol-iops-and-throughput-issues.yaml
+    - 460-pylint.yml
+    - 486-ec2_vol_fixed_returned_changed_var.yml
+    release_date: '2021-09-09'
   2.0.0:
     changes:
       breaking_changes:
@@ -622,6 +637,27 @@ releases:
     - 691-ec2_vpc_igw-fix-null-igw-error.yml
     - 695-ec2_vpc_igw-fix-nonetype-with-paginator.yml
     release_date: '2022-03-22'
+  2.3.0:
+    changes:
+      bugfixes:
+      - aws_account_attribute lookup plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_ec2 inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_rds inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_resource_actions callback plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_secret lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_service_ip_ranges lookup plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_ssm lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - ec2_instance - ec2_instance module broken in Python 3.8 - dict keys modified
+        during iteration (https://github.com/ansible-collections/amazon.aws/issues/709).
+      - module.utils.s3 - Update validate_bucket_name minimum length to 3 (https://github.com/ansible-collections/amazon.aws/pull/802).
+    fragments:
+    - 709-ec_2_instance-python-3-8-compatibility.yml
+    - 802-update-s3-module_util-validate_bucket_name-to-accept-3-character-bucket-name.yml
+    - validate-plugins.yml
+    release_date: '2022-05-25'
   3.0.0:
     changes:
       breaking_changes:
@@ -819,6 +855,8 @@ releases:
     release_date: '2022-05-26'
   3.3.1:
     release_date: '2022-06-22'
+    changes:
+      release_summary: Various minor documentation fixes.
   3.4.0:
     changes:
       bugfixes:

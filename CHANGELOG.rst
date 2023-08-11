@@ -865,6 +865,11 @@ Bugfixes
 v3.3.1
 ======
 
+Release Summary
+---------------
+
+Various minor documentation fixes.
+
 v3.3.0
 ======
 
@@ -991,6 +996,22 @@ Deprecated Features
 -------------------
 
 - module_utils - support for the original AWS SDK ``boto`` has been deprecated in favour of the ``boto3``/``botocore`` SDK. All ``boto`` based modules have either been deprecated or migrated to ``botocore``, and the remaining support code in module_utils will be removed in release 4.0.0 of the amazon.aws collection. Any modules outside of the amazon.aws and community.aws collections based on the ``boto`` library will need to be migrated to the ``boto3``/``botocore`` libraries (https://github.com/ansible-collections/amazon.aws/pull/575).
+
+v2.3.0
+======
+
+Bugfixes
+--------
+
+- aws_account_attribute lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_ec2 inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_rds inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_resource_actions callback plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_secret lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_service_ip_ranges lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- aws_ssm lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+- ec2_instance - ec2_instance module broken in Python 3.8 - dict keys modified during iteration (https://github.com/ansible-collections/amazon.aws/issues/709).
+- module.utils.s3 - Update validate_bucket_name minimum length to 3 (https://github.com/ansible-collections/amazon.aws/pull/802).
 
 v2.2.0
 ======
@@ -1162,6 +1183,20 @@ New Modules
 
 - ec2_spot_instance - request, stop, reboot or cancel spot instance
 - ec2_spot_instance_info - Gather information about ec2 spot instance requests
+
+v1.5.1
+======
+
+Minor Changes
+-------------
+
+- ec2_instance - remove unnecessary raise when exiting with a failure (https://github.com/ansible-collections/amazon.aws/pull/460).
+
+Bugfixes
+--------
+
+- ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no new  disk is being attached.  The module incorrectly reported that no change had  occurred even when disks had been modified (iops, throughput, type, etc.). (https://github.com/ansible-collections/amazon.aws/issues/482).
+- ec2_vol - fix iops setting and enforce iops/throughput parameters usage (https://github.com/ansible-collections/amazon.aws/pull/334)
 
 v1.5.0
 ======
