@@ -50,16 +50,16 @@ def _get_events(events: list[dict], last_event_ids: list) -> list:
     event_time = None
     event_ids = []
     result = []
-    for e in events:
+    for event in events:
         # skip last event
-        if last_event_ids and e["EventId"] in last_event_ids:
+        if last_event_ids and event["EventId"] in last_event_ids:
             continue
-        if event_time is None or event_time < e["EventTime"]:
-            event_time = e["EventTime"]
-            event_ids = [e["EventId"]]
-        elif event_time == e["EventTime"]:
-            event_ids.append(e["EventId"])
-        result.append(e)
+        if event_time is None or event_time < event["EventTime"]:
+            event_time = event["EventTime"]
+            event_ids = [event["EventId"]]
+        elif event_time == event["EventTime"]:
+            event_ids.append(event["EventId"])
+        result.append(event)
     return result, event_time, event_ids
 
 
@@ -81,9 +81,9 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
     session = get_session()
     params = {}
-    for k, v in ARGS_MAPPING.items():
-        if args.get(k) is not None:
-            params[v] = args.get(k)
+    for key, value in ARGS_MAPPING.items():
+        if args.get(key) is not None:
+            params[value] = args.get(key)
 
     params["StartTime"] = datetime.utcnow()  # noqa: DTZ003
 

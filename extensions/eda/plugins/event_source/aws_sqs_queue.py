@@ -49,7 +49,8 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                 err.response["Error"]["Code"]
                 == "AWS.SimpleQueueService.NonExistentQueue"
             ):
-                raise ValueError("Queue %s does not exist" % queue_name) from None
+                msg = f"Queue {queue_name} does not exist"
+                raise ValueError(msg) from None
             raise
 
         queue_url = response["QueueUrl"]
@@ -103,7 +104,7 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    """MockQueue if running directly."""
+    # MockQueue if running directly
 
     class MockQueue:
         """A fake queue."""
