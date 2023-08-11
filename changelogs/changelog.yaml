@@ -297,6 +297,21 @@ releases:
     - 57-aws_ec2-support-for-templates.yml
     - ignore_212.yml
     release_date: '2021-04-27'
+  1.5.1:
+    changes:
+      bugfixes:
+      - ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no
+        new  disk is being attached.  The module incorrectly reported that no change
+        had  occurred even when disks had been modified (iops, throughput, type, etc.).
+        (https://github.com/ansible-collections/amazon.aws/issues/482).
+      - ec2_vol - fix iops setting and enforce iops/throughput parameters usage (https://github.com/ansible-collections/amazon.aws/pull/334)
+      minor_changes:
+      - ec2_instance - remove unnecessary raise when exiting with a failure (https://github.com/ansible-collections/amazon.aws/pull/460).
+    fragments:
+    - 334-ec2_vol-iops-and-throughput-issues.yaml
+    - 460-pylint.yml
+    - 486-ec2_vol_fixed_returned_changed_var.yml
+    release_date: '2021-09-09'
   2.0.0:
     changes:
       breaking_changes:
@@ -622,6 +637,27 @@ releases:
     - 691-ec2_vpc_igw-fix-null-igw-error.yml
     - 695-ec2_vpc_igw-fix-nonetype-with-paginator.yml
     release_date: '2022-03-22'
+  2.3.0:
+    changes:
+      bugfixes:
+      - aws_account_attribute lookup plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_ec2 inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_rds inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_resource_actions callback plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_secret lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_service_ip_ranges lookup plugin - fix linting errors in documentation
+        data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - aws_ssm lookup plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
+      - ec2_instance - ec2_instance module broken in Python 3.8 - dict keys modified
+        during iteration (https://github.com/ansible-collections/amazon.aws/issues/709).
+      - module.utils.s3 - Update validate_bucket_name minimum length to 3 (https://github.com/ansible-collections/amazon.aws/pull/802).
+    fragments:
+    - 709-ec_2_instance-python-3-8-compatibility.yml
+    - 802-update-s3-module_util-validate_bucket_name-to-accept-3-character-bucket-name.yml
+    - validate-plugins.yml
+    release_date: '2022-05-25'
   3.0.0:
     changes:
       breaking_changes:
@@ -819,6 +855,8 @@ releases:
     release_date: '2022-05-26'
   3.3.1:
     release_date: '2022-06-22'
+    changes:
+      release_summary: Various minor documentation fixes.
   3.4.0:
     changes:
       bugfixes:
@@ -1903,9 +1941,8 @@ releases:
       - ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).
       - ec2_vpc_subnet - retry fetching subnet details after creation if the first
         attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).
-      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query
-        ssm inventory information for configured EC2 instances and populate hostvars
-        (https://github.com/ansible-collections/amazon.aws/issues/704).
+      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query ssm
+        inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
       - inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory_aws_ec2 integration tests - replace local module ``test_get_ssm_inventory``
@@ -2151,7 +2188,7 @@ releases:
       - module_utils.acm - fixes list_certificates returning only RSA_2048 certificates
         (https://github.com/ansible-collections/amazon.aws/issues/1567).
       - rds_instance - add support for CACertificateIdentifier to create/update rds
-        instance (https://github.com/ansible-collections/amazon.aws/pull/1459)."
+        instance (https://github.com/ansible-collections/amazon.aws/pull/1459).
       deprecated_features:
       - s3_object - support for passing object keys with a leading ``/`` has been
         deprecated and will be removed in a release after 2025-12-01 (https://github.com/ansible-collections/amazon.aws/pull/1549).
@@ -2240,7 +2277,7 @@ releases:
         ``Iops``, and ``EngineMode`` to the list of parameters that can be passed
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
-        (https://github.com/ansible-collections/amazon.aws/pull/1663)."
+        (https://github.com/ansible-collections/amazon.aws/pull/1663).
       minor_changes:
       - rds_cluster - add support for another ``state`` choice called ``started``.
         This starts the rds cluster (https://github.com/ansible-collections/amazon.aws/pull/1647/files).
