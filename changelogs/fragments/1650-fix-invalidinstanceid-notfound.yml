@@ -1,0 +1,3 @@
+---
+bugfixes:
+  ec2_instance - retry API call if we get `InvalidGroup.NotFound` error.

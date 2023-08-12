@@ -1443,13 +1443,7 @@ def diff_instance_and_params(instance, params, skip=None):
             continue
 
         try:
-            value = AWSRetry.jittered_backoff(
-                        catch_extra_error_codes=["InvalidInstanceID.NotFound"],
-                    )(client.describe_instance_attribute)(
-                            aws_retry=True,
-                            Attribute=mapping.attribute_name,
-                            InstanceId=id_
-                    )
+            value = client.describe_instance_attribute(aws_retry=True, Attribute=mapping.attribute_name, InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg=f"Could not describe attribute {mapping.attribute_name} for instance {id_}")
         if value[mapping.instance_key]["Value"] != params.get(mapping.param_key):
@@ -1462,13 +1456,7 @@ def diff_instance_and_params(instance, params, skip=None):
 
     if params.get("security_group") or params.get("security_groups"):
         try:
-            value = AWSRetry.jittered_backoff(
-                        catch_extra_error_codes=["InvalidInstanceID.NotFound"],
-                    )(client.describe_instance_attribute)(
-                            aws_retry=True,
-                            Attribute="groupSet",
-                            InstanceId=id_
-                    )
+            value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg=f"Could not describe attribute groupSet for instance {id_}")
         # managing security groups
@@ -1962,12 +1950,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         for ins in instances:
             # Wait for instances to exist (don't check state)
             try:
-                AWSRetry.jittered_backoff(
-                    catch_extra_error_codes=["InvalidInstanceID.NotFound"],
-                )(client.describe_instance_status)(
-                    InstanceIds=[ins["InstanceId"]],
-                    IncludeAllInstances=True,
-                )
+                client.describe_instance_status(InstanceIds=[ins["InstanceId"]], IncludeAllInstances=True)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
             changes = diff_instance_and_params(ins, module.params, skip=["UserData", "EbsOptimized"])
@@ -2177,6 +2160,7 @@ def main():
         catch_extra_error_codes=[
             "IncorrectState",
             "InsuffienctInstanceCapacity",
+            "InvalidInstanceID.NotFound",
         ]
     )
     client = module.client("ec2", retry_decorator=retry_decorator)
