@@ -31,13 +31,17 @@ Example:
 
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from aiobotocore.client import BaseClient
 from aiobotocore.session import get_session
+
+if TYPE_CHECKING:
+    from aiobotocore.client import BaseClient
 
 
 def _cloudtrail_event_to_dict(event: dict) -> dict:
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     class MockQueue:
         """A fake queue."""
 
-        async def put(self: "MockQueue", event: dict) -> None:
+        async def put(self: MockQueue, event: dict) -> None:
             """Print the event."""
             print(event)  # noqa: T201
 
