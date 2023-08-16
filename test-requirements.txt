@@ -4,6 +4,7 @@ boto3
 coverage==4.5.4
 placebo
 mock
+libselinux-python3
 pytest
 pytest-forked
 pytest-mock
