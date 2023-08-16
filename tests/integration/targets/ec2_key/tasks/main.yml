@@ -9,6 +9,10 @@
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
   block:
+    - name: Create temporary file to store key data in
+      tempfile:
+        suffix: .pem
+      register: _private_key_file
 
     # ============================================================
     - name: test with no parameters
@@ -51,7 +55,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -68,7 +72,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -93,7 +97,13 @@
           - result.key.tags['CamelCase'] == 'CamelCaseValue'
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
-          - result.key.private_key == '/tmp/my_key'
+          - result.key.private_key == _private_key_file.path
+
+    - name: assert private data were saved into file
+      stat:
+        path: '{{ _private_key_file.path }}'
+      register: testfile
+      failed_when: (not testfile.stat.exists) or (testfile.stat.size == 0)
 
     - name: Gather info about the key pair
       ec2_key_info:
@@ -119,7 +129,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -136,7 +146,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -148,7 +158,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -164,7 +174,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -214,7 +224,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -230,7 +240,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -262,7 +272,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -278,7 +288,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -306,7 +316,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -322,7 +332,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -351,7 +361,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
       check_mode: true
 
@@ -360,11 +370,24 @@
         that:
            - result is changed
 
+    - name: assert using check_mode did not removed key pair
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name }}'
+      register: keys
+      failed_when: keys.keypairs | length == 0
+
+    - name: assert that private key file was not deleted
+      stat:
+        path: "{{ _private_key_file.path }}"
+      register: testfile
+      failed_when: not testfile.stat.exists
+
     - name: test removing an existent key
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert removing an existent key
@@ -374,13 +397,26 @@
            - '"key" in result'
            - result.key == None
 
+    - name: assert that key pair was removed
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name }}'
+      register: keys
+      failed_when: keys.keypairs | length > 0
+
+    - name: assert that private key file was deleted
+      stat:
+        path: "{{ _private_key_file.path }}"
+      register: testfile
+      failed_when: testfile.stat.exists
+
     # ============================================================
     - name: test state=present with key_material
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert state=present with key_material
@@ -417,7 +453,7 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert state=present with key_material
@@ -441,7 +477,6 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ another_key_material }}'
         force: no
-        path: "/tmp/my_key"
       register: result
 
     - name: assert force=no with another_key_material (expect changed=false)
@@ -456,7 +491,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_material: '{{ another_key_material }}'
-        path: "/tmp/my_key"
       register: result
 
     - name: assert updating a key pair using another_key_material (expect changed=True)
@@ -470,7 +504,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "/tmp/my_key"
       register: result
 
     - name: assert state=absent with key_material (expect changed=true)
@@ -485,7 +518,7 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: ed25519
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert that task succeed
@@ -493,13 +526,13 @@
         that:
           - 'result.changed'
           - 'result.key.type == "ed25519"'
-          - 'result.key.private_key == "/tmp/my_key"'
+          - 'result.key.private_key == _private_key_file.path'
 
     - name: Update key pair type from ED25519 to RSA
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: rsa
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert that task succeed
@@ -507,7 +540,7 @@
         that:
           - 'result.changed'
           - 'result.key.type == "rsa"'
-          - 'result.key.private_key == "/tmp/my_key"'
+          - 'result.key.private_key == _private_key_file.path'
 
   always:
 
@@ -516,4 +549,10 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "/tmp/my_key"
+        path: "{{ _private_key_file.path }}"
+
+    - name: Delete the temporary file
+      file:
+        path: '{{ _private_key_file.path }}'
+        state: absent
+      ignore_errors: true

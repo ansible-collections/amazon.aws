@@ -10,6 +10,7 @@ from unittest.mock import ANY
 from unittest.mock import mock_open
 
 import botocore
+import copy
 
 from ansible.module_utils._text import to_bytes
 
@@ -369,7 +370,9 @@ def test_update_key_pair_by_key_material_update_needed(
 
     expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair updated"}
 
-    result = ec2_key.update_key_pair_by_key_material(module.check_mode, ec2_client, name, key, key_material, tag_spec, path)
+    result = ec2_key.update_key_pair_by_key_material(
+        module.check_mode, ec2_client, name, key, key_material, tag_spec, path
+    )
 
     assert result == expected_result
     assert m_get_key_fingerprint.call_count == 1
@@ -379,7 +382,7 @@ def test_update_key_pair_by_key_material_update_needed(
     m_get_key_fingerprint.assert_called_with(module.check_mode, ec2_client, key_material, path)
     m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, path, finish_task=False)
     m__import_key_pair.assert_called_with(ec2_client, name, key_material, tag_spec)
-    m_extract_key_data.assert_called_with(key)
+    m_extract_key_data.assert_called_with(key, path=path)
 
 
 @patch(module_name + ".extract_key_data")
@@ -415,7 +418,7 @@ def test_update_key_pair_by_key_material_key_exists(m_get_key_fingerprint, m_ext
     )
 
     m_get_key_fingerprint.assert_called_once_with(check_mode, ec2_client, key_material, path)
-    m_extract_key_data.assert_called_once_with(key)
+    m_extract_key_data.assert_called_once_with(key, path=path)
 
 
 @patch(module_name + ".extract_key_data")
@@ -579,14 +582,15 @@ def test_handle_existing_key_pair_else(m_extract_key_data):
     assert m_extract_key_data.call_count == 1
 
 
+@pytest.mark.parametrize("path_exists", [True, False])
 @patch(module_name + "._delete_key_pair")
 @patch(module_name + ".find_key_pair")
-def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair):
+def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair, path_exists, tmp_path):
     module = MagicMock()
     ec2_client = MagicMock()
 
     name = "my_keypair"
-    path = "/tmp/my_key"
+    path = tmp_path / "private_key_data.pem"
     module.check_mode = False
 
     m_find_key_pair.return_value = {
@@ -602,15 +606,36 @@ def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair):
         ],
     }
 
-    expected_result = {"changed": True, "key": None, "msg": "key deleted"}
+    if path_exists:
+        expected_result = {"changed": True, "key": None, "msg": "key deleted"}
+        path.write_text(
+            "-----BEGIN RSA PRIVATE KEY-----"
+            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
+            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
+            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
+            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
+            "-----END RSA PRIVATE KEY-----"
+        )
+    else:
+        expected_result = {
+            "changed": True,
+            "key": None,
+            "msg": "key deleted from AWS but not found on filesystem at {0}".format(str(path)),
+        }
 
-    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name, path)
+    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name, str(path))
 
     assert m_find_key_pair.call_count == 1
     m_find_key_pair.assert_called_with(ec2_client, name)
     assert m_delete_key_pair.call_count == 1
     m_delete_key_pair.assert_called_with(ec2_client, name)
+    print(f"Expected => {expected_result}")
+    print(f"Actual => {result}")
     assert result == expected_result
+
+    if path_exists:
+        # validate that function deleted the private data file
+        assert not path.exists()
 
 
 @patch(module_name + "._delete_key_pair")
@@ -620,7 +645,7 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
     ec2_client = MagicMock()
 
     name = "my_keypair"
-    path = "/tmp/my_keypair"
+    path = "non_existing_file_path"
     module.check_mode = False
 
     m_find_key_pair.return_value = None
@@ -635,19 +660,26 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
     assert result == expected_result
 
 
-def test__write_private_key():
+def test__write_private_key(tmp_path):
     key_data = {
         "name": "my_keypair",
         "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
         "id": "key-043046ef2a9a80b56",
         "tags": {},
         "type": "rsa",
-        "private_key": "ABCDEFGH"
+        "private_key": "ABCDEFGH",
     }
-    path = "/tmp/id_rsa_key"
-    file_write = mock_open()
-## TODO basically this whole test
-#    assert file_write.called_with(path, key_data['private_key'])
+    path = tmp_path / "id_rsa_key"
+    saved_key_data = copy.deepcopy(key_data)
+    result = ec2_key._write_private_key(key_data, str(path))
+
+    for key, data in result.items():
+        if key == "private_key":
+            assert data == str(path)
+        else:
+            assert data == saved_key_data[key]
+
+    assert path.read_text() == saved_key_data["private_key"]
 
 
 @patch(module_name + ".AnsibleAWSModule")

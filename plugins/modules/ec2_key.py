@@ -50,7 +50,7 @@ options:
   path:
     description:
       - Name of the file containing the generated private key.
-      - Required when I(state=present).
+      - Required when I(state=present) and I(key_material) is not provided.
     type: path
     version_added: 7.0.0
 notes:
@@ -103,7 +103,6 @@ EXAMPLES = r"""
     name: my_existing_keypair
     key_material: 'ssh-rsa AAAAxyz...== me@example.com'
     force: false
-    path: /tmp/aws_ssh_rsa
 
 - name: remove key pair on AWS by name
   amazon.aws.ec2_key:
@@ -217,7 +216,7 @@ def extract_key_data(key, key_type=None, path=None):
     }
 
     # Write the private key to disk and replace the value with the file path
-    if data['private_key'] is not None:
+    if data["private_key"] is not None:
         data = _write_private_key(data, path)
     return scrub_none_parameters(data)
 
@@ -278,12 +277,12 @@ def _write_private_key(key_data, path):
     in logs or task output.
     """
     try:
-        with open(path, 'w') as f:
-            f.write(key_data['private_key'])
+        with open(path, "w") as f:
+            f.write(key_data["private_key"])
     except (IOError, OSError) as e:
         raise Ec2KeyFailure(e, "Could not save private key to specified path. Private key is irretrievable.")
 
-    key_data['private_key'] = path
+    key_data["private_key"] = path
     return key_data
 
 
@@ -316,7 +315,7 @@ def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_mater
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
         msg = "key pair updated"
         changed = True
-    key_data = extract_key_data(key, path)
+    key_data = extract_key_data(key, path=path)
     return {"changed": changed, "key": key_data, "msg": msg}
 
 
@@ -344,6 +343,7 @@ def delete_key_pair(check_mode, ec2_client, name, path, finish_task=True):
         result = {"changed": True, "key": None, "msg": "key deleted"}
     elif not key:
         result = {"key": None, "msg": "key did not exist"}
+        return result
     else:
         _delete_key_pair(ec2_client, name)
         if not finish_task:
@@ -351,12 +351,12 @@ def delete_key_pair(check_mode, ec2_client, name, path, finish_task=True):
         result = {"changed": True, "key": None, "msg": "key deleted"}
 
     # If keypair path on disk was provided, remove the files if they exist
-    if path is not None:
+    if not check_mode and path is not None:
         try:
             if os.path.exists(path):
                 os.remove(path)
             else:
-                result["msg"] = "key deleted from AWS but not found on filesystem at [0]".format(path)
+                result["msg"] = "key deleted from AWS but not found on filesystem at {0}".format(path)
         except (IOError, OSError) as e:
             raise Ec2KeyFailure(e, "Unable to delete local private key")
 
@@ -380,7 +380,7 @@ def handle_existing_key_pair_update(module, ec2_client, name, key):
         changed = False
         changed |= ensure_ec2_tags(ec2_client, module, key["KeyPairId"], tags=tags, purge_tags=purge_tags)
         key = find_key_pair(ec2_client, name)
-        key_data = extract_key_data(key, path)
+        key_data = extract_key_data(key, path=path)
         result = {"changed": changed, "key": key_data, "msg": "key pair already exists"}
     return result
 
@@ -394,13 +394,12 @@ def main():
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
         key_type=dict(type="str", choices=["rsa", "ed25519"]),
-        path=dict(type='path', required=False),
+        path=dict(type="path", required=False),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[["key_material", "key_type"]],
-        required_if=[("state", "present", ["path"])],
         supports_check_mode=True,
     )
 
@@ -417,9 +416,11 @@ def main():
 
     try:
         if state == "absent":
-            result = delete_key_pair(module, ec2_client, name, path)
+            result = delete_key_pair(module.check_mode, ec2_client, name, path)
 
         elif state == "present":
+            if key_material is None and path is None:
+                module.fail_json("required one of 'path', 'key_material' when state is present.")
             # check if key already exists
             key = find_key_pair(ec2_client, name)
             if key:
