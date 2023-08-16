@@ -161,6 +161,7 @@ EXAMPLES = r"""
     purge_create_vol_permission: true
     user_ids:
       - '123456789012'
+      - '098765432109'
 
 - name: Replace (purge existing) snapshot createVolmePermission annd add user IDs
   amazon.aws.ec2_snapshot:
