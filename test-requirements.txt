@@ -9,6 +9,8 @@ pytest-forked
 pytest-mock
 pytest-xdist
 pytest-ansible
+cython<3.0.0
+--no-build-isolation pyyaml==6.0
 
 # Needed for ansible.utils.ipaddr in tests
 netaddr
