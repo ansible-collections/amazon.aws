@@ -58,8 +58,8 @@ from .retries import AWSRetry
 from .version import LooseVersion
 from .common import get_collection_info
 
-MINIMUM_BOTOCORE_VERSION = "1.25.0"
-MINIMUM_BOTO3_VERSION = "1.22.0"
+MINIMUM_BOTOCORE_VERSION = "1.31.4"
+MINIMUM_BOTO3_VERSION = "1.28.3"
 
 
 def _get_user_agent_string():
