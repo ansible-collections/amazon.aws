@@ -6,6 +6,8 @@ botocore
 netaddr
 virtualenv
 # Sometimes needed where we don't have features we need in modules
-awscli
+Cython<3.0
+pyyaml<6
+awscli --global-option="--break-system-packages"
 # Used for comparing SSH Public keys to the Amazon fingerprints
 cryptography
