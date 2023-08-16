@@ -9,12 +9,10 @@ pytest-forked
 pytest-mock
 pytest-xdist
 pytest-ansible
-cython<3.0.0
-pyyaml==5.4.1 --global-option="--no-build-isolation"
 
 # Needed for ansible.utils.ipaddr in tests
 netaddr
 # Sometimes needed where we don't have features we need in modules
-awscli
+awscli --global-option="--no-build-isolation"
 # Used for comparing SSH Public keys to the Amazon fingerprints
 cryptography
