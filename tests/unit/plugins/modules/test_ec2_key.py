@@ -7,7 +7,6 @@ import pytest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 from unittest.mock import ANY
-from unittest.mock import mock_open
 
 import botocore
 import copy
