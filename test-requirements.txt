@@ -10,7 +10,7 @@ pytest-mock
 pytest-xdist
 pytest-ansible
 cython<3.0.0
---no-build-isolation pyyaml==6.0
+pyyaml==5.4.1 --global-option="--no-build-isolation"
 
 # Needed for ansible.utils.ipaddr in tests
 netaddr
