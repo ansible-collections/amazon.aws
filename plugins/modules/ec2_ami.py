@@ -115,18 +115,31 @@ options:
     type: bool
   launch_permissions:
     description:
-      - Users and groups that should be able to launch the AMI.
-      - Expects dictionary with key of any of following
-          - C(user_ids)
-          - C(group_names)
-          - C(org_arns)
-          - C(org_unit_arns)
-      - C(user_ids) should be a list of account IDs.
-      - C(group_names) should be a list of groups, C(all) is the only acceptable value currently.
-      - C(org_arns) should be a list of Amazon Resource Name (ARN) of an organization.
-      - C(org_unit_arns) should be a list of Amazon Resource Name (ARN) of an organizational unit (OU).
+      - Launch permissions for the AMI.
       - You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).
+    required: false
     type: dict
+    suboptions:
+      user_ids:
+        description: List of account IDs.
+        type: list
+        elements: str
+        required: false
+      group_names:
+        description: List of group names.
+        type: list
+        elements: str
+        required: false
+      org_arns:
+        description: List of The Amazon Resource Name(s) (ARN) of organization(s).
+        type: list
+        elements: str
+        required: false
+      org_unit_arns:
+        description: List of The Amazon Resource Name(s) (ARN) of an organizational unit(s) (OU).
+        type: list
+        elements: str
+        required: false
   image_location:
     description:
       - The S3 location of an image to use for the AMI.
@@ -728,6 +741,10 @@ class UpdateImage:
     def do(cls, module, connection, image_id):
         """Entry point to update an image"""
         launch_permissions = module.params.get("launch_permissions")
+        # remove any keys with value=None
+        if launch_permissions:
+          launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
+
         image = get_image_by_id(connection, image_id)
         if image is None:
             raise Ec2AmiFailure(f"Image {image_id} does not exist")
@@ -782,7 +799,8 @@ class CreateImage:
     def set_launch_permissions(connection, launch_permissions, image_id):
         if not launch_permissions:
             return
-
+        # remove any keys with value=None
+        launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
         try:
             params = {"Attribute": "LaunchPermission", "ImageId": image_id, "LaunchPermission": {"Add": []}}
             for group_name in launch_permissions.get("group_names", []):
@@ -936,7 +954,15 @@ def main():
         image_location={},
         instance_id={},
         kernel_id={},
-        launch_permissions={"type": "dict"},
+        launch_permissions=dict(
+            type="dict",
+            options=dict(
+                user_ids=dict(type="list", elements='str'),
+                group_names=dict(type="list", elements='str'),
+                org_arns=dict(type="list", elements='str'),
+                org_unit_arns=dict(type="list", elements='str')
+            ),
+        ),
         name={},
         no_reboot={"default": False, "type": "bool"},
         purge_tags={"type": "bool", "default": True},
