@@ -89,7 +89,7 @@ def test_extract_key_data_describe_key_pairs():
     }
 
     key_type = "rsa"
-    path = MagicMock()
+    file_name = MagicMock()
     expected_result = {
         "name": "my_keypair",
         "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
@@ -98,7 +98,7 @@ def test_extract_key_data_describe_key_pairs():
         "type": "rsa",
     }
 
-    result = ec2_key.extract_key_data(key, key_type, path)
+    result = ec2_key.extract_key_data(key, key_type, file_name)
 
     assert result == expected_result
 
@@ -111,7 +111,7 @@ def test_extract_key_data_create_key_pair():
     }
 
     key_type = "rsa"
-    path = MagicMock()
+    file_name = MagicMock()
     expected_result = {
         "name": "my_keypair",
         "fingerprint": "11:12:13:14:bb:26:85:b2:e8:39:27:bc:ee:aa:ff:ee:dd:cc:bb:aa",
@@ -120,7 +120,7 @@ def test_extract_key_data_create_key_pair():
         "type": "rsa",
     }
 
-    result = ec2_key.extract_key_data(key, key_type, path)
+    result = ec2_key.extract_key_data(key, key_type, file_name)
 
     assert result == expected_result
 
@@ -131,7 +131,7 @@ def test_extract_key_data_create_key_pair():
 def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pair):
     module = MagicMock()
     ec2_client = MagicMock()
-    path = MagicMock()
+    file_name = MagicMock()
 
     m_find_key_pair.return_value = None
 
@@ -147,7 +147,7 @@ def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pa
 
     key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
 
-    result = ec2_key.get_key_fingerprint(module, ec2_client, key_material, path)
+    result = ec2_key.get_key_fingerprint(module, ec2_client, key_material)
 
     assert result == expected_result
     assert m_find_key_pair.call_count == 1
@@ -247,7 +247,7 @@ def test_create_new_key_pair_key_material(m_import_key_pair, m_extract_key_data)
     key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
     key_type = "rsa"
     tags = None
-    path = MagicMock()
+    file_name = MagicMock()
     module.check_mode = False
 
     m_import_key_pair.return_value = {
@@ -266,7 +266,7 @@ def test_create_new_key_pair_key_material(m_import_key_pair, m_extract_key_data)
 
     expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair created"}
 
-    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, path, module.check_mode)
+    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, file_name, module.check_mode)
 
     assert result == expected_result
     assert m_import_key_pair.call_count == 1
@@ -283,8 +283,8 @@ def test_create_new_key_pair_no_key_material(m_create_key_pair, m_extract_key_da
     key_type = "rsa"
     key_material = None
     tags = None
-    path = MagicMock()
-    # TODO. path=sth
+    file_name = MagicMock()
+    # TODO. file_name=sth
     module.check_mode = False
 
     m_create_key_pair.return_value = {
@@ -303,7 +303,7 @@ def test_create_new_key_pair_no_key_material(m_create_key_pair, m_extract_key_da
 
     expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair created"}
 
-    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, path, module.check_mode)
+    result = ec2_key.create_new_key_pair(ec2_client, name, key_material, key_type, tags, file_name, module.check_mode)
 
     assert result == expected_result
     assert m_create_key_pair.call_count == 1
@@ -349,7 +349,6 @@ def test_update_key_pair_by_key_material_update_needed(
         "KeyPairId": "key-043046ef2a9a80b56",
         "Tags": {},
     }
-    path = MagicMock()
     module.check_mode = False
 
     m_get_key_fingerprint.return_value = "d7:ff:a6:63:18:64:9c:57:a1:ee:ca:a4:ad:c2:81:62"
@@ -369,19 +368,17 @@ def test_update_key_pair_by_key_material_update_needed(
 
     expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair updated"}
 
-    result = ec2_key.update_key_pair_by_key_material(
-        module.check_mode, ec2_client, name, key, key_material, tag_spec, path
-    )
+    result = ec2_key.update_key_pair_by_key_material(module.check_mode, ec2_client, name, key, key_material, tag_spec)
 
     assert result == expected_result
     assert m_get_key_fingerprint.call_count == 1
     assert m_delete_key_pair.call_count == 1
     assert m__import_key_pair.call_count == 1
     assert m_extract_key_data.call_count == 1
-    m_get_key_fingerprint.assert_called_with(module.check_mode, ec2_client, key_material, path)
-    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, path, finish_task=False)
+    m_get_key_fingerprint.assert_called_with(module.check_mode, ec2_client, key_material)
+    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, finish_task=False)
     m__import_key_pair.assert_called_with(ec2_client, name, key_material, tag_spec)
-    m_extract_key_data.assert_called_with(key, path=path)
+    m_extract_key_data.assert_called_with(key)
 
 
 @patch(module_name + ".extract_key_data")
@@ -400,7 +397,6 @@ def test_update_key_pair_by_key_material_key_exists(m_get_key_fingerprint, m_ext
         "KeyPairId": key_id,
         "Tags": {},
     }
-    path = MagicMock()
     check_mode = False
     m_get_key_fingerprint.return_value = key_fingerprint
     m_extract_key_data.return_value = {
@@ -413,11 +409,11 @@ def test_update_key_pair_by_key_material_key_exists(m_get_key_fingerprint, m_ext
     expected_result = {"changed": False, "key": m_extract_key_data.return_value, "msg": "key pair already exists"}
 
     assert expected_result == ec2_key.update_key_pair_by_key_material(
-        check_mode, ec2_client, key_name, key, key_material, tag_spec, path
+        check_mode, ec2_client, key_name, key, key_material, tag_spec
     )
 
-    m_get_key_fingerprint.assert_called_once_with(check_mode, ec2_client, key_material, path)
-    m_extract_key_data.assert_called_once_with(key, path=path)
+    m_get_key_fingerprint.assert_called_once_with(check_mode, ec2_client, key_material)
+    m_extract_key_data.assert_called_once_with(key)
 
 
 @patch(module_name + ".extract_key_data")
@@ -430,7 +426,7 @@ def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_
     name = "my_keypair"
     key_type = "rsa"
     tag_spec = None
-    path = MagicMock()
+    file_name = MagicMock()
     module.check_mode = False
 
     m_delete_key_pair.return_value = None
@@ -451,15 +447,15 @@ def test_update_key_pair_by_key_type_update_needed(m_delete_key_pair, m__create_
 
     expected_result = {"changed": True, "key": m_extract_key_data.return_value, "msg": "key pair updated"}
 
-    result = ec2_key.update_key_pair_by_key_type(module.check_mode, ec2_client, name, key_type, tag_spec, path)
+    result = ec2_key.update_key_pair_by_key_type(module.check_mode, ec2_client, name, key_type, tag_spec, file_name)
 
     assert result == expected_result
     assert m_delete_key_pair.call_count == 1
     assert m__create_key_pair.call_count == 1
     assert m_extract_key_data.call_count == 1
-    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, path, finish_task=False)
+    m_delete_key_pair.assert_called_with(module.check_mode, ec2_client, name, finish_task=False)
     m__create_key_pair.assert_called_with(ec2_client, name, tag_spec, key_type)
-    m_extract_key_data.assert_called_with(m__create_key_pair.return_value, key_type, path)
+    m_extract_key_data.assert_called_with(m__create_key_pair.return_value, key_type, file_name)
 
 
 @patch(module_name + ".update_key_pair_by_key_material")
@@ -581,15 +577,14 @@ def test_handle_existing_key_pair_else(m_extract_key_data):
     assert m_extract_key_data.call_count == 1
 
 
-@pytest.mark.parametrize("path_exists", [True, False])
 @patch(module_name + "._delete_key_pair")
 @patch(module_name + ".find_key_pair")
-def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair, path_exists, tmp_path):
+def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair, tmp_path):
     module = MagicMock()
     ec2_client = MagicMock()
 
     name = "my_keypair"
-    path = tmp_path / "private_key_data.pem"
+    file_name = tmp_path / "private_key_data.pem"
     module.check_mode = False
 
     m_find_key_pair.return_value = {
@@ -605,36 +600,13 @@ def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair, path_exi
         ],
     }
 
-    if path_exists:
-        expected_result = {"changed": True, "key": None, "msg": "key deleted"}
-        path.write_text(
-            "-----BEGIN RSA PRIVATE KEY-----"
-            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
-            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
-            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
-            "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn"
-            "-----END RSA PRIVATE KEY-----"
-        )
-    else:
-        expected_result = {
-            "changed": True,
-            "key": None,
-            "msg": "key deleted from AWS but not found on filesystem at {0}".format(str(path)),
-        }
-
-    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name, str(path))
+    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name)
 
     assert m_find_key_pair.call_count == 1
     m_find_key_pair.assert_called_with(ec2_client, name)
     assert m_delete_key_pair.call_count == 1
     m_delete_key_pair.assert_called_with(ec2_client, name)
-    print(f"Expected => {expected_result}")
-    print(f"Actual => {result}")
-    assert result == expected_result
-
-    if path_exists:
-        # validate that function deleted the private data file
-        assert not path.exists()
+    assert result == {"changed": True, "key": None, "msg": "key deleted"}
 
 
 @patch(module_name + "._delete_key_pair")
@@ -644,14 +616,14 @@ def test_delete_key_pair_key_not_exist(m_find_key_pair, m_delete_key_pair):
     ec2_client = MagicMock()
 
     name = "my_keypair"
-    path = "non_existing_file_path"
+    file_name = "non_existing_file_path"
     module.check_mode = False
 
     m_find_key_pair.return_value = None
 
     expected_result = {"key": None, "msg": "key did not exist"}
 
-    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name, path)
+    result = ec2_key.delete_key_pair(module.check_mode, ec2_client, name, file_name)
 
     assert m_find_key_pair.call_count == 1
     m_find_key_pair.assert_called_with(ec2_client, name)
@@ -668,17 +640,13 @@ def test__write_private_key(tmp_path):
         "type": "rsa",
         "private_key": "ABCDEFGH",
     }
-    path = tmp_path / "id_rsa_key"
+    file_name = tmp_path / "id_rsa_key"
     saved_key_data = copy.deepcopy(key_data)
-    result = ec2_key._write_private_key(key_data, str(path))
+    result = ec2_key._write_private_key(key_data, str(file_name))
 
-    for key, data in result.items():
-        if key == "private_key":
-            assert data == str(path)
-        else:
-            assert data == saved_key_data[key]
-
-    assert path.read_text() == saved_key_data["private_key"]
+    assert "private_key" not in result.keys()
+    del saved_key_data["private_key"]
+    assert saved_key_data == result
 
 
 @patch(module_name + ".AnsibleAWSModule")

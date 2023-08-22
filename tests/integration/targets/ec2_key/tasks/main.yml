@@ -9,10 +9,15 @@
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
   block:
-    - name: Create temporary file to store key data in
+    - name: Create temporary directory
       tempfile:
-        suffix: .pem
-      register: _private_key_file
+        suffix: .private_key
+        state: directory
+      register: _tmpdir
+
+    - name: Define file name where to save private key
+      ansible.builtin.set_fact:
+        priv_key_file_name: "{{ _tmpdir.path }}/aws_ssh_rsa"
 
     # ============================================================
     - name: test with no parameters
@@ -51,11 +56,12 @@
           - 'not result.changed'
 
     # ============================================================
+    # Test: create new key by AWS (key_material not provided)
+    # ============================================================
     - name: test creating a new key pair (check_mode)
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -68,11 +74,17 @@
         that:
            - result is changed
 
+    - name: assert that key pair was not created
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name }}'
+      register: aws_keypair
+      failed_when: aws_keypair.keypairs | length > 0
+
     - name: test creating a new key pair
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -97,13 +109,13 @@
           - result.key.tags['CamelCase'] == 'CamelCaseValue'
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
-          - result.key.private_key == _private_key_file.path
 
-    - name: assert private data were saved into file
-      stat:
-        path: '{{ _private_key_file.path }}'
-      register: testfile
-      failed_when: (not testfile.stat.exists) or (testfile.stat.size == 0)
+    - name: assert that key pair was created
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name }}'
+      register: aws_keypair
+      failed_when: aws_keypair.keypairs | length == 0
 
     - name: Gather info about the key pair
       ec2_key_info:
@@ -129,7 +141,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
@@ -146,19 +157,138 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           snake_case: 'a_snake_case_value'
           CamelCase: 'CamelCaseValue'
           "spaced key": 'Spaced value'
       register: result
 
+    - name: assert re-creating the same key
+      assert:
+        that:
+           - result is not changed
+
+    # ============================================================
+    # Test: create new key by AWS (key_material not provided)
+    # and save private_key into file name
+    # ============================================================
+    - name: Delete existing file name
+      ansible.builtin.file:
+        state: absent
+        path: "{{ priv_key_file_name }}"
+
+    - name: test creating a new key pair (check_mode)
+      ec2_key:
+        name: '{{ ec2_key_name_rsa }}'
+        state: present
+        file_name: "{{ priv_key_file_name }}"
+        tags:
+          snake_case: 'a_snake_case_value'
+          CamelCase: 'CamelCaseValue'
+          "spaced key": 'Spaced value'
+      register: result
+      check_mode: true
+      no_log: true
+
+    - name: assert creating a new key pair
+      assert:
+        that:
+           - result is changed
+
+    - name: assert that key pair was not created
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name_rsa }}'
+      register: aws_keypair
+      failed_when: aws_keypair.keypairs | length > 0
+
+    - name: assert that private key was not saved
+      ansible.builtin.stat:
+        path: "{{ priv_key_file_name }}"
+      register: result
+      failed_when: result.stat.exists
+
+    - name: test creating a new key pair
+      ec2_key:
+        name: '{{ ec2_key_name_rsa }}'
+        state: present
+        file_name: "{{ priv_key_file_name }}"
+        tags:
+          snake_case: 'a_snake_case_value'
+          CamelCase: 'CamelCaseValue'
+          "spaced key": 'Spaced value'
+      register: result
+
+    - name: assert creating a new key pair
+      assert:
+        that:
+          - result is changed
+          - '"key" in result'
+          - '"name" in result.key'
+          - '"fingerprint" in result.key'
+          - '"private_key" not in result.key'
+          - '"id" in result.key'
+          - '"tags" in result.key'
+          - result.key.name == ec2_key_name_rsa
+          - result.key.id.startswith('key-')
+          - '"snake_case" in result.key.tags'
+          - result.key.tags['snake_case'] == 'a_snake_case_value'
+          - '"CamelCase" in result.key.tags'
+          - result.key.tags['CamelCase'] == 'CamelCaseValue'
+          - '"spaced key" in result.key.tags'
+          - result.key.tags['spaced key'] == 'Spaced value'
+
+    - name: assert that key pair was created
+      ec2_key_info:
+        names:
+          - '{{ ec2_key_name_rsa }}'
+      register: aws_keypair
+      failed_when: aws_keypair.keypairs | length == 0
+
+    - name: assert that private key was saved into file
+      ansible.builtin.stat:
+        path: "{{ priv_key_file_name }}"
+      register: result
+      failed_when: (not result.stat.exists) or (result.stat.size == 0)
+
+    - name: 'test re-"creating" the same key (check_mode)'
+      ec2_key:
+        name: '{{ ec2_key_name_rsa }}'
+        state: present
+        file_name: "{{ priv_key_file_name }}"
+        tags:
+          snake_case: 'a_snake_case_value'
+          CamelCase: 'CamelCaseValue'
+          "spaced key": 'Spaced value'
+      register: result
+      check_mode: true
+
+    - name: assert re-creating the same key
+      assert:
+        that:
+           - result is not changed
+
+    - name: 'test re-"creating" the same key'
+      ec2_key:
+        name: '{{ ec2_key_name_rsa }}'
+        state: present
+        file_name: "{{ priv_key_file_name }}"
+        tags:
+          snake_case: 'a_snake_case_value'
+          CamelCase: 'CamelCaseValue'
+          "spaced key": 'Spaced value'
+      register: result
+
+    - name: assert re-creating the same key
+      assert:
+        that:
+           - result is not changed
+
     # ============================================================
     - name: test updating tags without purge (check mode)
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -174,7 +304,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -224,7 +353,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -240,7 +368,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: false
@@ -272,7 +399,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -288,7 +414,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -316,7 +441,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -332,7 +456,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: present
-        path: "{{ _private_key_file.path }}"
         tags:
           newKey: 'Another value'
         purge_tags: true
@@ -361,7 +484,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "{{ _private_key_file.path }}"
       register: result
       check_mode: true
 
@@ -377,17 +499,10 @@
       register: keys
       failed_when: keys.keypairs | length == 0
 
-    - name: assert that private key file was not deleted
-      stat:
-        path: "{{ _private_key_file.path }}"
-      register: testfile
-      failed_when: not testfile.stat.exists
-
     - name: test removing an existent key
       ec2_key:
         name: '{{ ec2_key_name }}'
         state: absent
-        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert removing an existent key
@@ -404,19 +519,12 @@
       register: keys
       failed_when: keys.keypairs | length > 0
 
-    - name: assert that private key file was deleted
-      stat:
-        path: "{{ _private_key_file.path }}"
-      register: testfile
-      failed_when: testfile.stat.exists
-
     # ============================================================
     - name: test state=present with key_material
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
-        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert state=present with key_material
@@ -453,7 +561,6 @@
         name: '{{ ec2_key_name }}'
         key_material: '{{ key_material }}'
         state: present
-        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert state=present with key_material
@@ -518,7 +625,6 @@
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: ed25519
-        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert that task succeed
@@ -526,13 +632,11 @@
         that:
           - 'result.changed'
           - 'result.key.type == "ed25519"'
-          - 'result.key.private_key == _private_key_file.path'
 
     - name: Update key pair type from ED25519 to RSA
       ec2_key:
         name: '{{ ec2_key_name }}'
         key_type: rsa
-        path: "{{ _private_key_file.path }}"
       register: result
 
     - name: assert that task succeed
@@ -540,19 +644,20 @@
         that:
           - 'result.changed'
           - 'result.key.type == "rsa"'
-          - 'result.key.private_key == _private_key_file.path'
 
   always:
 
     # ============================================================
     - name: Always delete the key we might create
       ec2_key:
-        name: '{{ ec2_key_name }}'
+        name: '{{ item }}'
         state: absent
-        path: "{{ _private_key_file.path }}"
+      with_items:
+        - '{{ ec2_key_name }}'
+        - '{{ ec2_key_name_rsa }}'
 
-    - name: Delete the temporary file
+    - name: Delete the temporary directory
       file:
-        path: '{{ _private_key_file.path }}'
+        path: '{{ _tmpdir.path }}'
         state: absent
       ignore_errors: true
