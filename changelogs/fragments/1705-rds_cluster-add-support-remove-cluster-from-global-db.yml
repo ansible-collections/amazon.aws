@@ -1,0 +1,2 @@
+minor_changes:
+- rds_cluster - Add support for removing cluster from global db (https://github.com/ansible-collections/amazon.aws/pull/1705).
