@@ -14,11 +14,11 @@
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="amazon.aws.autoscaling_group module – Create or delete AWS AutoScaling Groups (ASGs)" href="../autoscaling_group_module.html" />
@@ -135,7 +135,7 @@
            <div itemprop="articleBody">
              
   <section id="dynamic-inventory-plugin">
-<span id="ansible-collections-amazon-aws-docsite-dynamic-inventory"></span><h1>Dynamic Inventory Plugin<a class="headerlink" href="#dynamic-inventory-plugin" title="Permalink to this heading"></a></h1>
+<span id="ansible-collections-amazon-aws-docsite-dynamic-inventory"></span><h1>Dynamic Inventory Plugin<a class="headerlink" href="#dynamic-inventory-plugin" title="Link to this heading"></a></h1>
 <p>A dynamic inventory plugin allows users to point at data sources to compile the inventory of hosts that Ansible uses to target tasks, either via the <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">/path/to/file</span></code> and/or <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">'host1,</span> <span class="pre">host2'</span></code> command line parameters or from other configuration sources.</p>
 <p>When using Ansible with AWS, inventory file maintenance will be a hectic task as AWS frequently changes IPs, autoscaling instances, and more.
 Once your AWS EC2 hosts are spun up, you’ll probably want to talk to them again.
@@ -147,7 +147,7 @@ It gives the EC2 instance details dynamically to manage the AWS infrastructure.<
 <p>To start using the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin (a YAML configuration file that ends with <code class="docutils literal notranslate"><span class="pre">aws_ec2.(yml|yaml)</span></code>, e.g., <code class="docutils literal notranslate"><span class="pre">demo.aws_ec2.yml</span></code>), then add <code class="docutils literal notranslate"><span class="pre">plugin:</span> <span class="pre">amazon.aws.aws_ec2</span></code>. Use the fully qualified name if the plugin is in a collection.</p>
 </section>
 <section id="authentication">
-<span id="ansible-collections-amazon-aws-docsite-using-inventory-plugin"></span><h1>Authentication<a class="headerlink" href="#authentication" title="Permalink to this heading"></a></h1>
+<span id="ansible-collections-amazon-aws-docsite-using-inventory-plugin"></span><h1>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h1>
 <p>If your Ansible controller is not in AWS, authentication is handled by either
 specifying your access and secret key as ENV variables or inventory plugin arguments.</p>
 <p>For environment variables:</p>
@@ -200,7 +200,7 @@ You should still provide AWS credentials with enough privilege to perform the As
 </div>
 </section>
 <section id="minimal-example">
-<h1>Minimal Example<a class="headerlink" href="#minimal-example" title="Permalink to this heading"></a></h1>
+<h1>Minimal Example<a class="headerlink" href="#minimal-example" title="Link to this heading"></a></h1>
 <p>Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
@@ -221,10 +221,10 @@ You should still provide AWS credentials with enough privilege to perform the As
 </div>
 </section>
 <section id="allowed-options">
-<h1>Allowed Options<a class="headerlink" href="#allowed-options" title="Permalink to this heading"></a></h1>
+<h1>Allowed Options<a class="headerlink" href="#allowed-options" title="Link to this heading"></a></h1>
 <p>Some of the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin options are explained in detail below. For a full list see <a class="reference external" href="https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3">the plugin documentation</a>.</p>
 <section id="hostnames">
-<h2><code class="docutils literal notranslate"><span class="pre">hostnames</span></code><a class="headerlink" href="#hostnames" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">hostnames</span></code><a class="headerlink" href="#hostnames" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">hostnames</span></code> option provides different settings to choose how the hostname will be displayed.</p>
 <p>Some examples are shown below:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">hostnames</span><span class="p">:</span>
@@ -263,7 +263,7 @@ You may want to get all the potential matches in your inventory, this also impli
 duplicated entries. To switch to this behavior, set the <code class="docutils literal notranslate"><span class="pre">allow_duplicated_hosts</span></code> configuration key to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </section>
 <section id="keyed-groups">
-<h2><code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code><a class="headerlink" href="#keyed-groups" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code><a class="headerlink" href="#keyed-groups" title="Link to this heading"></a></h2>
 <p>You can create dynamic groups using host variables with the <code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code> option. <code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code> comes in a prefix and a key format.
 The prefix will be the name of the host group that is to be concatenated with the key.</p>
 <p>Some examples are shown below:</p>
@@ -321,7 +321,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 </div>
 </section>
 <section id="groups">
-<h2><code class="docutils literal notranslate"><span class="pre">groups</span></code><a class="headerlink" href="#groups" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">groups</span></code><a class="headerlink" href="#groups" title="Link to this heading"></a></h2>
 <p>It is also possible to create groups using the <code class="docutils literal notranslate"><span class="pre">groups</span></code> option.</p>
 <p>Some examples are shown below:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">groups</span><span class="p">:</span>
@@ -336,7 +336,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 </div>
 </section>
 <section id="compose">
-<h2><code class="docutils literal notranslate"><span class="pre">compose</span></code><a class="headerlink" href="#compose" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">compose</span></code><a class="headerlink" href="#compose" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">compose</span></code> creates and modifies host variables from Jinja2 expressions.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compose</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># This sets the ansible_host variable to connect with the private IP address without changing the hostname.</span>
@@ -370,7 +370,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 </div>
 </section>
 <section id="include-filters-and-exclude-filters">
-<h2><code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code><a class="headerlink" href="#include-filters-and-exclude-filters" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code><a class="headerlink" href="#include-filters-and-exclude-filters" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code> options give you the ability to compose the inventory with several queries (see <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">available filters</a>).</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">include_filters</span><span class="p">:</span>
 <span class="c1"># This includes everything in the inventory that has the following tags.</span>
@@ -387,7 +387,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 </div>
 </section>
 <section id="filters">
-<h2><code class="docutils literal notranslate"><span class="pre">filters</span></code><a class="headerlink" href="#filters" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">filters</span></code><a class="headerlink" href="#filters" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">filters</span></code> are used to filter out AWS EC2 instances based on conditions (see <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">available filters</a>).</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># This selects only running instances with tag `Environment` tag set to `dev`.</span>
@@ -409,7 +409,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 </div>
 </section>
 <section id="use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization">
-<h2><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code><a class="headerlink" href="#use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code><a class="headerlink" href="#use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> exposes the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script when it’s True.</p>
 <p>By default the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.</p>
 <p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s replace_dash_in_groups option is set to False.
@@ -481,7 +481,7 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 </div>
 </section>
 <section id="hostvars-prefix-and-hostvars-suffix">
-<h2><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_suffix</span></code><a class="headerlink" href="#hostvars-prefix-and-hostvars-suffix" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_suffix</span></code><a class="headerlink" href="#hostvars-prefix-and-hostvars-suffix" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_sufix</span></code> allow to set up a prefix and suffix for host variables.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
@@ -541,17 +541,17 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 </div>
 </section>
 <section id="strict-and-strict-permissions">
-<h2><code class="docutils literal notranslate"><span class="pre">strict</span></code> and <code class="docutils literal notranslate"><span class="pre">strict_permissions</span></code><a class="headerlink" href="#strict-and-strict-permissions" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">strict</span></code> and <code class="docutils literal notranslate"><span class="pre">strict_permissions</span></code><a class="headerlink" href="#strict-and-strict-permissions" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">strict:</span> <span class="pre">False</span></code> will skip instead of producing an error if there are missing facts.</p>
 <p><code class="docutils literal notranslate"><span class="pre">strict_permissions:</span> <span class="pre">False</span></code> will ignore 403 errors rather than failing.</p>
 </section>
 <section id="use-ssm-inventory">
-<h2><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code><a class="headerlink" href="#use-ssm-inventory" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code><a class="headerlink" href="#use-ssm-inventory" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory:</span> <span class="pre">True</span></code> enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars. By leveraging the SSM inventory data, the <code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code> option provides additional details and attributes about the EC2 instances in your inventory.
 These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.</p>
 </section>
 <section id="cache">
-<h2><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Permalink to this heading"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> inventory plugin support caching can use the general settings for the fact cache defined in the <code class="docutils literal notranslate"><span class="pre">ansible.cfg</span></code> file’s <code class="docutils literal notranslate"><span class="pre">[defaults]</span></code> section or define inventory-specific settings in the <code class="docutils literal notranslate"><span class="pre">[inventory]</span></code> section.
 You can can define plugin-specific cache settings in the config file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
@@ -580,7 +580,7 @@ You can can define plugin-specific cache settings in the config file:</p>
 </section>
 </section>
 <section id="complex-example">
-<h1>Complex Example<a class="headerlink" href="#complex-example" title="Permalink to this heading"></a></h1>
+<h1>Complex Example<a class="headerlink" href="#complex-example" title="Link to this heading"></a></h1>
 <p>Here is an <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> complex example utilizing some of the previously listed options:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
@@ -633,7 +633,7 @@ You can can define plugin-specific cache settings in the config file:</p>
 </div>
 </section>
 <section id="using-dynamic-inventory-inside-playbook">
-<h1>Using Dynamic Inventory Inside Playbook<a class="headerlink" href="#using-dynamic-inventory-inside-playbook" title="Permalink to this heading"></a></h1>
+<h1>Using Dynamic Inventory Inside Playbook<a class="headerlink" href="#using-dynamic-inventory-inside-playbook" title="Link to this heading"></a></h1>
 <p>If you want to use dynamic inventory inside the playbook, you just need to mention the group name in the hosts variable as shown below.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ansible Test Playbook</span>

@@ -14,11 +14,11 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.s3_bucket module – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID" href="s3_bucket_module.html" />
@@ -137,7 +137,7 @@
            <div itemprop="articleBody">
              
   <span class="target" id="ansible-collections-amazon-aws-route53-zone-module"></span><section id="amazon-aws-route53-zone-module-add-or-delete-route53-zones">
-<h1>amazon.aws.route53_zone module – add or delete Route53 zones<a class="headerlink" href="#amazon-aws-route53-zone-module-add-or-delete-route53-zones" title="Permalink to this heading"></a></h1>
+<h1>amazon.aws.route53_zone module – add or delete Route53 zones<a class="headerlink" href="#amazon-aws-route53-zone-module-add-or-delete-route53-zones" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 7.0.0-dev0).</p>
@@ -158,14 +158,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </nav>
 <section id="synopsis">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Creates and deletes Route53 private and public zones.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-route53-zone-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-route53-zone-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -174,7 +174,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </section>
 <section id="parameters">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
 <table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -424,7 +424,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </table>
 </section>
 <section id="notes">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -435,7 +435,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create a public zone</span>
 <span class="w">  </span><span class="nt">amazon.aws.route53_zone</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.com</span>
@@ -487,7 +487,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div>
 </section>
 <section id="return-values">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
 <p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
 <table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
@@ -598,13 +598,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </tbody>
 </table>
 <section id="authors">
-<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Christopher Troup (&#64;minichate)</p></li>
 </ul>
 </section>
 <section id="collection-links">
-<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading"></a></h3>
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
 <p class="ansible-links">
   <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
   <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
