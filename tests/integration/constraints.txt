@@ -5,3 +5,7 @@ botocore==1.25.0
 # AWS CLI has `botocore==` dependencies, provide the one that matches botocore
 # to avoid needing to download over a years worth of awscli wheels.
 awscli==1.23.0
+
+# AWS CLI depends on PyYAML <5.5,>=3.10; the latest PyYAML release in that range, 5.4.1, fails to install.
+# Use a version in that range that is known to work (https://github.com/yaml/pyyaml/issues/736)
+PyYAML==5.3.1
