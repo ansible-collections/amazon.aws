@@ -110,6 +110,9 @@
       action: lambda:InvokeFunction
       principal: apigateway.amazonaws.com
       source_arn: arn:aws:execute-api:{{ aws_region }}:{{ aws_caller_info.account }}:*/*
+  - name: Wait for permissions to propagate
+    ansible.builtin.pause:
+      seconds: 5
   - name: check API works with execute permissions
     uri:
       url: https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/lambdabased/mini/Mr_Ansible_Tester
