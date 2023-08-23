@@ -105,7 +105,6 @@ options:
         type: str
     db_cluster_arn:
         description: The Amazon Resource Name (ARN) for the DB cluster.
-        returned: always
         type: str
     db_cluster_identifier:
         description:
@@ -1135,7 +1134,6 @@ def handle_remove_from_global_db(module):
         module.fail_json_aws(e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}.")
 
     module.exit_json(changed=changed, msg=f"Successfully removed cluster {db_cluster_id} from global DB cluster {global_cluster_id}")
-
 
 
 def main():
