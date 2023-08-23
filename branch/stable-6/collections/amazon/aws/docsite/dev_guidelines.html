@@ -14,11 +14,11 @@
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Dynamic Inventory Plugin" href="aws_ec2_guide.html" />
@@ -135,7 +135,7 @@
            <div itemprop="articleBody">
              
   <section id="guidelines-for-ansible-amazon-aws-module-development">
-<span id="ansible-collections-amazon-aws-docsite-dev-guide-intro"></span><h1>Guidelines for Ansible Amazon AWS module development<a class="headerlink" href="#guidelines-for-ansible-amazon-aws-module-development" title="Permalink to this heading"></a></h1>
+<span id="ansible-collections-amazon-aws-docsite-dev-guide-intro"></span><h1>Guidelines for Ansible Amazon AWS module development<a class="headerlink" href="#guidelines-for-ansible-amazon-aws-module-development" title="Link to this heading"></a></h1>
 <p>The Ansible AWS collection (on <a class="reference external" href="https://galaxy.ansible.com/community/aws">Galaxy</a>, source code <a class="reference external" href="https://github.com/ansible-collections/community.aws">repository</a>) is maintained by the Ansible AWS Working Group.  For further information see the <a class="reference external" href="https://github.com/ansible/community/wiki/aws">AWS working group community page</a>. If you are planning to contribute AWS modules to Ansible then getting in touch with the working group is a good way to start, especially because a similar module may already be under development.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -222,14 +222,14 @@
 </ul>
 </nav>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-docsite-dev-python"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-python"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <section id="python-compatibility">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Python Compatibility</a><a class="headerlink" href="#python-compatibility" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Python Compatibility</a><a class="headerlink" href="#python-compatibility" title="Link to this heading"></a></h3>
 <p>AWS content in Ansible 2.9 and 1.x collection releases supported Python 2.7 and newer.</p>
 <p>Starting with the 2.0 releases of both collections, Python 2.7 support will be ended in accordance with AWS’ <a class="reference external" href="https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-python-2-7-in-aws-sdk-for-python-and-aws-cli-v1/">end of Python 2.7 support</a>.  Contributions to both collections that target the 2.0 or later collection releases can be written to support Python 3.6+ syntax.</p>
 </section>
 <section id="sdk-version-support">
-<h3><a class="toc-backref" href="#id5" role="doc-backlink">SDK Version Support</a><a class="headerlink" href="#sdk-version-support" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">SDK Version Support</a><a class="headerlink" href="#sdk-version-support" title="Link to this heading"></a></h3>
 <p>Starting with the 2.0 releases of both collections, it is generally the policy to support the versions of botocore and boto3 that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).</p>
 <p>Features and functionality that require newer versions of the SDK can be contributed provided they are noted in the module documentation:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">DOCUMENTATION = &#39;&#39;&#39;</span>
@@ -256,15 +256,15 @@
 </section>
 </section>
 <section id="maintaining-existing-modules">
-<span id="ansible-collections-amazon-aws-docsite-dev-module-maint"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Maintaining existing modules</a><a class="headerlink" href="#maintaining-existing-modules" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-module-maint"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Maintaining existing modules</a><a class="headerlink" href="#maintaining-existing-modules" title="Link to this heading"></a></h2>
 <section id="changelogs">
-<h3><a class="toc-backref" href="#id7" role="doc-backlink">Changelogs</a><a class="headerlink" href="#changelogs" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Changelogs</a><a class="headerlink" href="#changelogs" title="Link to this heading"></a></h3>
 <p>A changelog fragment must be added to any PR that changes functionality or fixes
 a bug.  More information about changelog fragments can be found in the
 <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/community/development_process.html#community-changelogs" title="(in Ansible vdevel)"><code class="xref any docutils literal notranslate"><span class="pre">Making</span> <span class="pre">your</span> <span class="pre">PR</span> <span class="pre">merge-worthy</span> <span class="pre">section</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Ansible</span> <span class="pre">Development</span> <span class="pre">Cycle</span> <span class="pre">documentation</span></code></a></p>
 </section>
 <section id="breaking-changes">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink">Breaking Changes</a><a class="headerlink" href="#breaking-changes" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Breaking Changes</a><a class="headerlink" href="#breaking-changes" title="Link to this heading"></a></h3>
 <p>Changes that are likely to break existing playbooks using the AWS collections should be
 avoided, should only be made in a major release, and where practical should be
 preceeded by a deprecation cycle of at least 1 full major release.  Deprecations
@@ -279,7 +279,7 @@ may be backported to the stable branches.</p>
 - Changing or removing an existing return value.</p>
 </section>
 <section id="adding-new-features">
-<h3><a class="toc-backref" href="#id9" role="doc-backlink">Adding new features</a><a class="headerlink" href="#adding-new-features" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Adding new features</a><a class="headerlink" href="#adding-new-features" title="Link to this heading"></a></h3>
 <p>Try to keep backward compatibility with versions of boto3/botocore that are at least a year old.
 This means that if you want to implement functionality that uses a new feature of boto3/botocore,
 it should only fail if that feature is explicitly used, with a message stating the missing feature
@@ -296,7 +296,7 @@ used by boto3)</p>
 </div>
 </section>
 <section id="release-policy-and-backporting-merged-prs">
-<span id="ansible-collections-amazon-aws-docsite-dev-backports"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Release policy and backporting merged PRs</a><a class="headerlink" href="#release-policy-and-backporting-merged-prs" title="Permalink to this heading"></a></h3>
+<span id="ansible-collections-amazon-aws-docsite-dev-backports"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Release policy and backporting merged PRs</a><a class="headerlink" href="#release-policy-and-backporting-merged-prs" title="Link to this heading"></a></h3>
 <p>All amazon.aws and community.aws PRs must be merged to the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch first.  After a PR has
 been accepted and merged to the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch they can be backported to the stable branches.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">main</span></code> branch is a staging location for the next major version (X+1) of the collections and
@@ -314,7 +314,7 @@ PR has been merged the patchback bot will attempt to automatically create a back
 </section>
 </section>
 <section id="creating-new-aws-modules">
-<span id="ansible-collections-amazon-aws-docsite-dev-module-create"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Creating new AWS modules</a><a class="headerlink" href="#creating-new-aws-modules" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-module-create"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Creating new AWS modules</a><a class="headerlink" href="#creating-new-aws-modules" title="Link to this heading"></a></h2>
 <p>When writing a new module it is important to think about the scope of the module.  In general, try
 to do one thing and do it well.</p>
 <p>Where the Amazon APIs provide a distinction between dependent resources, such as S3 buckets and S3
@@ -328,7 +328,7 @@ rules on the security group, this would be contrary to what users of the module 
 <p>There is no hard and fast right answer, but it’s important to think about it, and Amazon have often
 done this work for you when designing their APIs.</p>
 <section id="naming-your-module">
-<h3><a class="toc-backref" href="#id12" role="doc-backlink">Naming your module</a><a class="headerlink" href="#naming-your-module" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Naming your module</a><a class="headerlink" href="#naming-your-module" title="Link to this heading"></a></h3>
 <p>Module names should include the name of the resource being managed and be prefixed with the AWS API
 that the module is based on.  Where examples of a prefix don’t already exist a good rule of thumb is
 to use whatever client name you use with boto3 as a starting point.</p>
@@ -353,14 +353,14 @@ connects to EC2 but provides global information about the regions enabled in an 
 services.</p>
 </section>
 <section id="use-boto3-and-ansibleawsmodule">
-<h3><a class="toc-backref" href="#id13" role="doc-backlink">Use boto3 and AnsibleAWSModule</a><a class="headerlink" href="#use-boto3-and-ansibleawsmodule" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Use boto3 and AnsibleAWSModule</a><a class="headerlink" href="#use-boto3-and-ansibleawsmodule" title="Link to this heading"></a></h3>
 <p>All new AWS modules must use boto3/botocore and <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code> greatly simplifies exception handling and library
 management, reducing the amount of boilerplate code.  If you cannot
 use <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code> as a base, you must document the reason and request an exception to this rule.</p>
 </section>
 <section id="importing-botocore-and-boto3">
-<h3><a class="toc-backref" href="#id14" role="doc-backlink">Importing botocore and boto3</a><a class="headerlink" href="#importing-botocore-and-boto3" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Importing botocore and boto3</a><a class="headerlink" href="#importing-botocore-and-boto3" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore</span></code> module
 automatically imports boto3 and botocore.  If boto3 is missing from the system then the variable
 <code class="docutils literal notranslate"><span class="pre">HAS_BOTO3</span></code> will be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  Normally, this means that modules don’t need to import
@@ -389,7 +389,7 @@ as the module does that check:</p>
 </div>
 </section>
 <section id="supporting-module-defaults">
-<h3><a class="toc-backref" href="#id15" role="doc-backlink">Supporting Module Defaults</a><a class="headerlink" href="#supporting-module-defaults" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Supporting Module Defaults</a><a class="headerlink" href="#supporting-module-defaults" title="Link to this heading"></a></h3>
 <p>The existing AWS modules support using <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks_module_defaults.html#module-defaults" title="(in Ansible vdevel)"><span class="xref std std-ref">module_defaults</span></a> for common
 authentication parameters.  To do the same for your new module, add an entry for it in
 <code class="docutils literal notranslate"><span class="pre">meta/runtime.yml</span></code>.  These entries take the form of:</p>
@@ -401,7 +401,7 @@ authentication parameters.  To do the same for your new module, add an entry for
 </div>
 </section>
 <section id="module-behavior">
-<h3><a class="toc-backref" href="#id16" role="doc-backlink">Module behavior</a><a class="headerlink" href="#module-behavior" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Module behavior</a><a class="headerlink" href="#module-behavior" title="Link to this heading"></a></h3>
 <p>To reduce the chance of breaking changes occurring when new features are added,
 the module should avoid modifying the resource attribute when a parameter is
 not explicitly set in a task.</p>
@@ -415,7 +415,7 @@ section for an example with <code class="docutils literal notranslate"><span cla
 </section>
 </section>
 <section id="connecting-to-aws">
-<span id="ansible-collections-amazon-aws-docsite-dev-module-connection"></span><h2><a class="toc-backref" href="#id17" role="doc-backlink">Connecting to AWS</a><a class="headerlink" href="#connecting-to-aws" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-module-connection"></span><h2><a class="toc-backref" href="#id17" role="doc-backlink">Connecting to AWS</a><a class="headerlink" href="#connecting-to-aws" title="Link to this heading"></a></h2>
 <p>AnsibleAWSModule provides the <code class="docutils literal notranslate"><span class="pre">resource</span></code> and <code class="docutils literal notranslate"><span class="pre">client</span></code> helper methods for obtaining boto3 connections.
 These handle some of the more esoteric connection options, such as security tokens and boto profiles.</p>
 <p>If using the basic AnsibleModule then you should use <code class="docutils literal notranslate"><span class="pre">get_aws_connection_info</span></code> and then <code class="docutils literal notranslate"><span class="pre">boto3_conn</span></code>
@@ -443,7 +443,7 @@ See exception handling:</p>
 </pre></div>
 </div>
 <section id="common-documentation-fragments-for-connection-parameters">
-<h3><a class="toc-backref" href="#id18" role="doc-backlink">Common Documentation Fragments for Connection Parameters</a><a class="headerlink" href="#common-documentation-fragments-for-connection-parameters" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">Common Documentation Fragments for Connection Parameters</a><a class="headerlink" href="#common-documentation-fragments-for-connection-parameters" title="Link to this heading"></a></h3>
 <p>There are four <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/dev_guide/developing_modules_documenting.html#module-docs-fragments" title="(in Ansible vdevel)"><span class="xref std std-ref">common documentation fragments</span></a>
 that should be included into almost all AWS modules:</p>
 <ul class="simple">
@@ -487,7 +487,7 @@ and that the more esoteric connection options are documented. For example:</p>
 </section>
 </section>
 <section id="handling-exceptions">
-<span id="ansible-collections-amazon-aws-docsite-dev-exceptions"></span><h2><a class="toc-backref" href="#id19" role="doc-backlink">Handling exceptions</a><a class="headerlink" href="#handling-exceptions" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-exceptions"></span><h2><a class="toc-backref" href="#id19" role="doc-backlink">Handling exceptions</a><a class="headerlink" href="#handling-exceptions" title="Link to this heading"></a></h2>
 <p>You should wrap any boto3 or botocore call in a try block. If an exception is thrown, then there
 are a number of possibilities for handling it.</p>
 <ul class="simple">
@@ -503,7 +503,7 @@ are a number of possibilities for handling it.</p>
 </ul>
 <p>For more information on botocore exception handling see the <a class="reference external" href="https://botocore.readthedocs.io/en/latest/client_upgrades.html#error-handling">botocore error documentation</a>.</p>
 <section id="using-is-boto3-error-code">
-<h3><a class="toc-backref" href="#id20" role="doc-backlink">Using is_boto3_error_code</a><a class="headerlink" href="#using-is-boto3-error-code" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Using is_boto3_error_code</a><a class="headerlink" href="#using-is-boto3-error-code" title="Link to this heading"></a></h3>
 <p>To use <code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.is_boto3_error_code</span></code> to catch a single
 AWS error code, call it in place of <code class="docutils literal notranslate"><span class="pre">ClientError</span></code> in your except clauses. In
 this example, <em>only</em> the <code class="docutils literal notranslate"><span class="pre">InvalidGroup.NotFound</span></code> error code will be caught here,
@@ -517,7 +517,7 @@ and any other error will be raised for handling elsewhere in the program.</p>
 </div>
 </section>
 <section id="using-fail-json-aws">
-<h3><a class="toc-backref" href="#id21" role="doc-backlink">Using fail_json_aws()</a><a class="headerlink" href="#using-fail-json-aws" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Using fail_json_aws()</a><a class="headerlink" href="#using-fail-json-aws" title="Link to this heading"></a></h3>
 <p>In the AnsibleAWSModule there is a special method, <code class="docutils literal notranslate"><span class="pre">module.fail_json_aws()</span></code> for nice reporting of
 exceptions.  Call this on your exception and it will report the error together with a traceback for
 use in Ansible verbose mode.</p>
@@ -554,7 +554,7 @@ expect anything other than botocore exceptions you should test everything works 
 </div>
 </section>
 <section id="using-fail-json-and-avoiding-ansibleawsmodule">
-<h3><a class="toc-backref" href="#id22" role="doc-backlink">using fail_json() and avoiding AnsibleAWSModule</a><a class="headerlink" href="#using-fail-json-and-avoiding-ansibleawsmodule" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">using fail_json() and avoiding AnsibleAWSModule</a><a class="headerlink" href="#using-fail-json-and-avoiding-ansibleawsmodule" title="Link to this heading"></a></h3>
 <p>Boto3 provides lots of useful information when an exception is thrown so pass this to the user
 along with the message.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible_collections.amazon.aws.plugins.module_utils.botocore</span> <span class="kn">import</span> <span class="n">HAS_BOTO3</span>
@@ -597,7 +597,7 @@ work with python3</p>
 </section>
 </section>
 <section id="api-throttling-rate-limiting-and-pagination">
-<span id="ansible-collections-amazon-aws-docsite-dev-ratelimits"></span><h2><a class="toc-backref" href="#id23" role="doc-backlink">API throttling (rate limiting) and pagination</a><a class="headerlink" href="#api-throttling-rate-limiting-and-pagination" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-ratelimits"></span><h2><a class="toc-backref" href="#id23" role="doc-backlink">API throttling (rate limiting) and pagination</a><a class="headerlink" href="#api-throttling-rate-limiting-and-pagination" title="Link to this heading"></a></h2>
 <p>For methods that return a lot of results, boto3 often provides
 <a class="reference external" href="https://boto3.readthedocs.io/en/latest/guide/paginators.html">paginators</a>. If the method
 you’re calling has <code class="docutils literal notranslate"><span class="pre">NextToken</span></code> or <code class="docutils literal notranslate"><span class="pre">Marker</span></code> parameters, you should probably
@@ -674,7 +674,7 @@ the <code class="docutils literal notranslate"><span class="pre">cloudformation<
 </dl>
 </section>
 <section id="returning-values">
-<span id="ansible-collections-amazon-aws-docsite-dev-return"></span><h2><a class="toc-backref" href="#id24" role="doc-backlink">Returning Values</a><a class="headerlink" href="#returning-values" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-return"></span><h2><a class="toc-backref" href="#id24" role="doc-backlink">Returning Values</a><a class="headerlink" href="#returning-values" title="Link to this heading"></a></h2>
 <p>When you make a call using boto3, you will probably get back some useful information that you
 should return in the module.  As well as information related to the call itself, you will also have
 some response metadata.  It is OK to return this to the user as well as they may find it useful.</p>
@@ -699,7 +699,7 @@ of a dict.  This is particularly useful for tags, where keys are case-sensitive.
 should be a sensible approximation of the resource name.  For example, <code class="docutils literal notranslate"><span class="pre">volume</span></code> for <code class="docutils literal notranslate"><span class="pre">ec2_vol</span></code>,
 <code class="docutils literal notranslate"><span class="pre">volumes</span></code> for <code class="docutils literal notranslate"><span class="pre">ec2_vol_info</span></code>.</p>
 <section id="tags">
-<h3><a class="toc-backref" href="#id25" role="doc-backlink">Tags</a><a class="headerlink" href="#tags" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Tags</a><a class="headerlink" href="#tags" title="Link to this heading"></a></h3>
 <p>Tags should be returned as a dictionary of key: value pairs, with each key being the tag’s
 key and value being the tag’s value.  It should be noted, however, that boto3 often returns tags
 as a list of dictionaries.</p>
@@ -722,7 +722,7 @@ from boto3’s returned tag list to the desired dictionary of tags to be returne
 </div>
 </section>
 <section id="info-modules">
-<h3><a class="toc-backref" href="#id26" role="doc-backlink">Info modules</a><a class="headerlink" href="#info-modules" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id26" role="doc-backlink">Info modules</a><a class="headerlink" href="#info-modules" title="Link to this heading"></a></h3>
 <p>Info modules that can return information on multiple resources should return a list of
 dictionaries, with each dictionary containing information about that particular resource
 (i.e. <code class="docutils literal notranslate"><span class="pre">security_groups</span></code> in <code class="docutils literal notranslate"><span class="pre">ec2_group_info</span></code>).</p>
@@ -775,7 +775,7 @@ match either the parameter name itself, or an alias of that parameter.</p>
 </div>
 </section>
 <section id="deprecating-return-values">
-<h3><a class="toc-backref" href="#id27" role="doc-backlink">Deprecating return values</a><a class="headerlink" href="#deprecating-return-values" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id27" role="doc-backlink">Deprecating return values</a><a class="headerlink" href="#deprecating-return-values" title="Link to this heading"></a></h3>
 <p>If changes need to be made to current return values, the new/”correct” keys should be
 returned <strong>in addition to</strong> the existing keys to preserve compability with existing
 playbooks. A deprecation should be added to the return values being replaced, initially
@@ -789,7 +789,7 @@ placed at least 2 years out, on the 1st of a month.</p>
 </section>
 </section>
 <section id="dealing-with-iam-json-policy">
-<span id="ansible-collections-amazon-aws-docsite-dev-policies"></span><h2><a class="toc-backref" href="#id28" role="doc-backlink">Dealing with IAM JSON policy</a><a class="headerlink" href="#dealing-with-iam-json-policy" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-policies"></span><h2><a class="toc-backref" href="#id28" role="doc-backlink">Dealing with IAM JSON policy</a><a class="headerlink" href="#dealing-with-iam-json-policy" title="Link to this heading"></a></h2>
 <p>If your module accepts IAM JSON policies then set the type to ‘json’ in the module spec. For
 example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">argument_spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -824,7 +824,7 @@ and returns True if they are different.</p>
 </div>
 </section>
 <section id="dealing-with-tags">
-<span id="ansible-collections-amazon-aws-docsite-dev-tags"></span><h2><a class="toc-backref" href="#id29" role="doc-backlink">Dealing with tags</a><a class="headerlink" href="#dealing-with-tags" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-tags"></span><h2><a class="toc-backref" href="#id29" role="doc-backlink">Dealing with tags</a><a class="headerlink" href="#dealing-with-tags" title="Link to this heading"></a></h2>
 <p>AWS has a concept of resource tags. Usually the boto3 API has separate calls
 for tagging and untagging a resource.  For example, the EC2 API has
 <code class="docutils literal notranslate"><span class="pre">create_tags</span></code> and <code class="docutils literal notranslate"><span class="pre">delete_tags</span></code> calls.</p>
@@ -853,11 +853,11 @@ for more detail.</p>
 included when adding tagging support.</p>
 </section>
 <section id="helper-functions">
-<span id="ansible-collections-amazon-aws-docsite-dev-helpers"></span><h2><a class="toc-backref" href="#id30" role="doc-backlink">Helper functions</a><a class="headerlink" href="#helper-functions" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-helpers"></span><h2><a class="toc-backref" href="#id30" role="doc-backlink">Helper functions</a><a class="headerlink" href="#helper-functions" title="Link to this heading"></a></h2>
 <p>Along with the connection functions in Ansible ec2.py module_utils, there are some other useful
 functions detailed below.</p>
 <section id="camel-dict-to-snake-dict">
-<h3><a class="toc-backref" href="#id31" role="doc-backlink">camel_dict_to_snake_dict</a><a class="headerlink" href="#camel-dict-to-snake-dict" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id31" role="doc-backlink">camel_dict_to_snake_dict</a><a class="headerlink" href="#camel-dict-to-snake-dict" title="Link to this heading"></a></h3>
 <p>boto3 returns results in a dict.  The keys of the dict are in CamelCase format. In keeping with
 Ansible format, this function will convert the keys to snake_case.</p>
 <p><code class="docutils literal notranslate"><span class="pre">camel_dict_to_snake_dict</span></code> takes an optional parameter called <code class="docutils literal notranslate"><span class="pre">ignore_list</span></code> which is a list of
@@ -868,23 +868,23 @@ which would then be converted by <code class="docutils literal notranslate"><spa
 Passing <code class="docutils literal notranslate"><span class="pre">reversible=True</span></code> converts HTTPEndpoint to <code class="docutils literal notranslate"><span class="pre">h_t_t_p_endpoint</span></code> which converts back to <code class="docutils literal notranslate"><span class="pre">HTTPEndpoint</span></code>.</p>
 </section>
 <section id="snake-dict-to-camel-dict">
-<h3><a class="toc-backref" href="#id32" role="doc-backlink">snake_dict_to_camel_dict</a><a class="headerlink" href="#snake-dict-to-camel-dict" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id32" role="doc-backlink">snake_dict_to_camel_dict</a><a class="headerlink" href="#snake-dict-to-camel-dict" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">snake_dict_to_camel_dict</span></code> converts snake cased keys to camel case. By default, because it was
 first introduced for ECS purposes, this converts to dromedaryCase. An optional
 parameter called <code class="docutils literal notranslate"><span class="pre">capitalize_first</span></code>, which defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, can be used to convert to CamelCase.</p>
 </section>
 <section id="ansible-dict-to-boto3-filter-list">
-<h3><a class="toc-backref" href="#id33" role="doc-backlink">ansible_dict_to_boto3_filter_list</a><a class="headerlink" href="#ansible-dict-to-boto3-filter-list" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id33" role="doc-backlink">ansible_dict_to_boto3_filter_list</a><a class="headerlink" href="#ansible-dict-to-boto3-filter-list" title="Link to this heading"></a></h3>
 <p>Converts a an Ansible list of filters to a boto3 friendly list of dicts.  This is useful for any
 boto3 <code class="docutils literal notranslate"><span class="pre">_facts</span></code> modules.</p>
 </section>
 <section id="boto-exception">
-<h3><a class="toc-backref" href="#id34" role="doc-backlink">boto_exception</a><a class="headerlink" href="#boto-exception" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id34" role="doc-backlink">boto_exception</a><a class="headerlink" href="#boto-exception" title="Link to this heading"></a></h3>
 <p>Pass an exception returned from boto or boto3, and this function will consistently get the message from the exception.</p>
 <p>Deprecated: use <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code>’s <code class="docutils literal notranslate"><span class="pre">fail_json_aws</span></code> instead.</p>
 </section>
 <section id="boto3-tag-list-to-ansible-dict">
-<h3><a class="toc-backref" href="#id35" role="doc-backlink">boto3_tag_list_to_ansible_dict</a><a class="headerlink" href="#boto3-tag-list-to-ansible-dict" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id35" role="doc-backlink">boto3_tag_list_to_ansible_dict</a><a class="headerlink" href="#boto3-tag-list-to-ansible-dict" title="Link to this heading"></a></h3>
 <p>Converts a boto3 tag list to an Ansible dict. Boto3 returns tags as a list of dicts containing keys
 called ‘Key’ and ‘Value’ by default.  This key names can be overridden when calling the function.
 For example, if you have already camel_cased your list of tags you may want to pass lowercase key
@@ -893,25 +893,25 @@ names instead, in other words, ‘key’ and ‘value’.</p>
 value is the tag value.</p>
 </section>
 <section id="ansible-dict-to-boto3-tag-list">
-<h3><a class="toc-backref" href="#id36" role="doc-backlink">ansible_dict_to_boto3_tag_list</a><a class="headerlink" href="#ansible-dict-to-boto3-tag-list" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id36" role="doc-backlink">ansible_dict_to_boto3_tag_list</a><a class="headerlink" href="#ansible-dict-to-boto3-tag-list" title="Link to this heading"></a></h3>
 <p>Opposite of above. Converts an Ansible dict to a boto3 tag list of dicts. You can again override
 the key names used if ‘Key’ and ‘Value’ is not suitable.</p>
 </section>
 <section id="get-ec2-security-group-ids-from-names">
-<h3><a class="toc-backref" href="#id37" role="doc-backlink">get_ec2_security_group_ids_from_names</a><a class="headerlink" href="#get-ec2-security-group-ids-from-names" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id37" role="doc-backlink">get_ec2_security_group_ids_from_names</a><a class="headerlink" href="#get-ec2-security-group-ids-from-names" title="Link to this heading"></a></h3>
 <p>Pass this function a list of security group names or combination of security group names and IDs
 and this function will return a list of IDs.  You should also pass the VPC ID if known because
 security group names are not necessarily unique across VPCs.</p>
 </section>
 <section id="compare-policies">
-<h3><a class="toc-backref" href="#id38" role="doc-backlink">compare_policies</a><a class="headerlink" href="#compare-policies" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id38" role="doc-backlink">compare_policies</a><a class="headerlink" href="#compare-policies" title="Link to this heading"></a></h3>
 <p>Pass two dicts of policies to check if there are any meaningful differences and returns true
 if there are. This recursively sorts the dicts and makes them hashable before comparison.</p>
 <p>This method should be used any time policies are being compared so that a change in order
 doesn’t result in unnecessary changes.</p>
 </section>
 <section id="compare-aws-tags">
-<h3><a class="toc-backref" href="#id39" role="doc-backlink">compare_aws_tags</a><a class="headerlink" href="#compare-aws-tags" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id39" role="doc-backlink">compare_aws_tags</a><a class="headerlink" href="#compare-aws-tags" title="Link to this heading"></a></h3>
 <p>Pass two dicts of tags and an optional purge parameter and this function will return a dict
 containing key pairs you need to modify and a list of tag key names that you need to remove.  Purge
 is True by default.  If purge is False then any existing tags will not be modified.</p>
@@ -923,7 +923,7 @@ without modification for some (Lambda) and others may need modification before u
 </section>
 </section>
 <section id="integration-tests-for-aws-modules">
-<span id="ansible-collections-amazon-aws-docsite-dev-tests"></span><h2><a class="toc-backref" href="#id40" role="doc-backlink">Integration Tests for AWS Modules</a><a class="headerlink" href="#integration-tests-for-aws-modules" title="Permalink to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-docsite-dev-tests"></span><h2><a class="toc-backref" href="#id40" role="doc-backlink">Integration Tests for AWS Modules</a><a class="headerlink" href="#integration-tests-for-aws-modules" title="Link to this heading"></a></h2>
 <p>All new AWS modules should include integration tests to ensure that any changes in AWS APIs that
 affect the module are detected. At a minimum this should cover the key API calls and check the
 documented return values are present in the module result.</p>
@@ -937,7 +937,7 @@ continuous integration build.</p>
 <p>Tests for new modules should be added to the <code class="docutils literal notranslate"><span class="pre">cloud/aws</span></code> group. In general just copy
 an existing aliases file such as the <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/blob/master/tests/integration/targets/aws_s3/aliases">aws_s3 tests aliases file</a>.</p>
 <section id="custom-sdk-versions-for-integration-tests">
-<h3><a class="toc-backref" href="#id41" role="doc-backlink">Custom SDK versions for Integration Tests</a><a class="headerlink" href="#custom-sdk-versions-for-integration-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id41" role="doc-backlink">Custom SDK versions for Integration Tests</a><a class="headerlink" href="#custom-sdk-versions-for-integration-tests" title="Link to this heading"></a></h3>
 <p>By default integration tests will run against the earliest supported version of
 the AWS SDK.  The current supported versions can be found in
 <code class="docutils literal notranslate"><span class="pre">tests/integration/constraints.txt</span></code> and should not be updated.  Where a module
@@ -952,7 +952,7 @@ the <code class="docutils literal notranslate"><span class="pre">meta/main.yml</
 </div>
 </section>
 <section id="creating-ec2-instances-in-integration-tests">
-<h3><a class="toc-backref" href="#id42" role="doc-backlink">Creating EC2 instances in Integration Tests</a><a class="headerlink" href="#creating-ec2-instances-in-integration-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id42" role="doc-backlink">Creating EC2 instances in Integration Tests</a><a class="headerlink" href="#creating-ec2-instances-in-integration-tests" title="Link to this heading"></a></h3>
 <p>When started, the integration tests will be passed <code class="docutils literal notranslate"><span class="pre">aws_region</span></code> as an extra var.
 Any resources created should be created in in this region, this includes EC2
 instances.  Since AMIs are region specific there is a role which can be
@@ -982,7 +982,7 @@ dependency in the <code class="docutils literal notranslate"><span class="pre">m
 role and the fact it provides to chose an AMI to use.</p>
 </section>
 <section id="resource-naming-in-integration-tests">
-<h3><a class="toc-backref" href="#id43" role="doc-backlink">Resource naming in Integration Tests</a><a class="headerlink" href="#resource-naming-in-integration-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id43" role="doc-backlink">Resource naming in Integration Tests</a><a class="headerlink" href="#resource-naming-in-integration-tests" title="Link to this heading"></a></h3>
 <p>AWS has a range of limitations for the name of resources.  Where possible,
 resource names should include a string which makes the resource names unique
 to the test.</p>
@@ -991,7 +991,7 @@ helpful extra vars: <code class="docutils literal notranslate"><span class="pre"
 test set, and should generally used as part of the name.  <code class="docutils literal notranslate"><span class="pre">resource_prefix</span></code> will generate a prefix based on the host the test is being run on.  Sometimes this may result in a resource name that exceeds the character limit allowed by AWS.  In these cases, <code class="docutils literal notranslate"><span class="pre">tiny_prefix</span></code> will provide a 12-character randomly generated prefix.</p>
 </section>
 <section id="aws-credentials-for-integration-tests">
-<h3><a class="toc-backref" href="#id44" role="doc-backlink">AWS Credentials for Integration Tests</a><a class="headerlink" href="#aws-credentials-for-integration-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id44" role="doc-backlink">AWS Credentials for Integration Tests</a><a class="headerlink" href="#aws-credentials-for-integration-tests" title="Link to this heading"></a></h3>
 <p>The testing framework handles running the test with appropriate AWS credentials, these are made available
 to your test in the following variables:</p>
 <ul class="simple">
@@ -1023,7 +1023,7 @@ for every call, it’s preferable to use <a class="reference external" href="htt
 </div>
 </section>
 <section id="aws-permissions-for-integration-tests">
-<h3><a class="toc-backref" href="#id45" role="doc-backlink">AWS Permissions for Integration Tests</a><a class="headerlink" href="#aws-permissions-for-integration-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id45" role="doc-backlink">AWS Permissions for Integration Tests</a><a class="headerlink" href="#aws-permissions-for-integration-tests" title="Link to this heading"></a></h3>
 <p>As explained in the <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/dev_guide/testing_integration.html#testing-integration" title="(in Ansible vdevel)"><span class="xref std std-ref">Integration Test guide</span></a>
 there are defined IAM policies in <a class="reference external" href="https://github.com/mattclay/aws-terminator">mattclay/aws-terminator</a> that contain the necessary permissions
 to run the AWS integration test.</p>
@@ -1083,7 +1083,7 @@ run the tests.</p>
 <li><p>Open a pull request proposing the minimum required policy to the <a class="reference external" href="https://github.com/mattclay/aws-terminator/tree/master/aws/policy">CI policies</a>.</p></li>
 </ol>
 <section id="troubleshooting-iam-policies">
-<h4><a class="toc-backref" href="#id46" role="doc-backlink">Troubleshooting IAM policies</a><a class="headerlink" href="#troubleshooting-iam-policies" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id46" role="doc-backlink">Troubleshooting IAM policies</a><a class="headerlink" href="#troubleshooting-iam-policies" title="Link to this heading"></a></h4>
 <ul class="simple">
 <li><p>When you make changes to a policy, wait a few minutes for the policy to update before re-running the tests.</p></li>
 <li><p>Use the <a class="reference external" href="https://policysim.aws.amazon.com/">policy simulator</a> to verify that each action (limited by resource when applicable) in your policy is allowed.</p></li>
@@ -1097,7 +1097,7 @@ run the tests.</p>
 </ul>
 </section>
 <section id="unsupported-integration-tests">
-<h4><a class="toc-backref" href="#id47" role="doc-backlink">Unsupported Integration tests</a><a class="headerlink" href="#unsupported-integration-tests" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id47" role="doc-backlink">Unsupported Integration tests</a><a class="headerlink" href="#unsupported-integration-tests" title="Link to this heading"></a></h4>
 <p>There are a limited number of reasons why it may not be practical to run integration
 tests for a module within CI.  Where these apply you should add the keyword
 <code class="docutils literal notranslate"><span class="pre">unsupported</span></code> to the aliases file in <code class="docutils literal notranslate"><span class="pre">test/integration/targets/MODULE_NAME/aliases</span></code>.</p>
@@ -1116,14 +1116,14 @@ someone performing a PR review or writing a patch.</p>
 </section>
 </section>
 <section id="unit-tests-for-aws-plugins">
-<h2><a class="toc-backref" href="#id48" role="doc-backlink">Unit-tests for AWS plugins</a><a class="headerlink" href="#unit-tests-for-aws-plugins" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id48" role="doc-backlink">Unit-tests for AWS plugins</a><a class="headerlink" href="#unit-tests-for-aws-plugins" title="Link to this heading"></a></h2>
 <section id="why-do-we-need-unit-tests-when-we-ve-got-functional-tests">
-<h3><a class="toc-backref" href="#id49" role="doc-backlink">Why do we need unit-tests when we’ve got functional tests</a><a class="headerlink" href="#why-do-we-need-unit-tests-when-we-ve-got-functional-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id49" role="doc-backlink">Why do we need unit-tests when we’ve got functional tests</a><a class="headerlink" href="#why-do-we-need-unit-tests-when-we-ve-got-functional-tests" title="Link to this heading"></a></h3>
 <p>Unit-tests are much faster and more suitable to test corner cases. They also don’t depend on a third party service
 and thus, a failure is less likely to be a false positive.</p>
 </section>
 <section id="how-to-keep-my-code-simple">
-<h3><a class="toc-backref" href="#id50" role="doc-backlink">How to keep my code simple?</a><a class="headerlink" href="#how-to-keep-my-code-simple" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id50" role="doc-backlink">How to keep my code simple?</a><a class="headerlink" href="#how-to-keep-my-code-simple" title="Link to this heading"></a></h3>
 <p>Ideally, you should break up your code in tiny functions. Each function should have a limited number of parameters
 and a low amount of cross dependencies with the rest of the code (low coupling):</p>
 <ul class="simple">
@@ -1138,7 +1138,7 @@ Pass the parameter directly to your function. By doing so, you’re explicit abo
 </ul>
 </section>
 <section id="unit-tests-guidelines">
-<h3><a class="toc-backref" href="#id51" role="doc-backlink">Unit-tests guidelines</a><a class="headerlink" href="#unit-tests-guidelines" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id51" role="doc-backlink">Unit-tests guidelines</a><a class="headerlink" href="#unit-tests-guidelines" title="Link to this heading"></a></h3>
 <p>Ideally, all the <code class="docutils literal notranslate"><span class="pre">module_utils</span></code> should be covered by unit-tests. However we acknowledge that writing unit-tests may
 be challenging and we also accept contribution with no unit-test. Generally speaking, unit-tests are recommended and likely to speed up the PR reviews.</p>
 <ul class="simple">
@@ -1151,7 +1151,7 @@ be challenging and we also accept contribution with no unit-test. Generally spea
 <p>Pytest is well documented and you will find some example in its <a class="reference external" href="https://docs.pytest.org/en/latest/how-to/index.html">how-to guides</a></p>
 </section>
 <section id="how-to-run-my-unit-tests">
-<h3><a class="toc-backref" href="#id52" role="doc-backlink">How to run my unit-tests</a><a class="headerlink" href="#how-to-run-my-unit-tests" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id52" role="doc-backlink">How to run my unit-tests</a><a class="headerlink" href="#how-to-run-my-unit-tests" title="Link to this heading"></a></h3>
 <p>In our CI, the testing is done by <code class="docutils literal notranslate"><span class="pre">ansible-test</span></code>. You can run the tests locally with the following command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ansible-test<span class="w"> </span>units<span class="w"> </span>--docker
 </pre></div>

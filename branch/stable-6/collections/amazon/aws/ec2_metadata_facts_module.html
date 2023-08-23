@@ -14,11 +14,11 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_security_group module – Maintain an EC2 security group" href="ec2_security_group_module.html" />
@@ -137,7 +137,7 @@
            <div itemprop="articleBody">
              
   <span class="target" id="ansible-collections-amazon-aws-ec2-metadata-facts-module"></span><section id="amazon-aws-ec2-metadata-facts-module-gathers-facts-instance-metadata-about-remote-hosts-within-ec2">
-<h1>amazon.aws.ec2_metadata_facts module – Gathers facts (instance metadata) about remote hosts within EC2<a class="headerlink" href="#amazon-aws-ec2-metadata-facts-module-gathers-facts-instance-metadata-about-remote-hosts-within-ec2" title="Permalink to this heading"></a></h1>
+<h1>amazon.aws.ec2_metadata_facts module – Gathers facts (instance metadata) about remote hosts within EC2<a class="headerlink" href="#amazon-aws-ec2-metadata-facts-module-gathers-facts-instance-metadata-about-remote-hosts-within-ec2" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 6.3.0).</p>
@@ -154,7 +154,7 @@
 </ul>
 </nav>
 <section id="synopsis">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>This module fetches data from the instance metadata endpoint in EC2 as per <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html</a>.</p></li>
 <li><p>The module must be called from within the EC2 instance itself.</p></li>
@@ -163,7 +163,7 @@
 </ul>
 </section>
 <section id="notes">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -172,7 +172,7 @@
 </div>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gather EC2 metadata facts</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_metadata_facts</span><span class="p">:</span>
 
@@ -183,7 +183,7 @@
 </div>
 </section>
 <section id="returned-facts">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Returned Facts</a><a class="headerlink" href="#returned-facts" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Returned Facts</a><a class="headerlink" href="#returned-facts" title="Link to this heading"></a></h2>
 <p>Facts returned by this module are added/updated in the <code class="docutils literal notranslate"><span class="pre">hostvars</span></code> host facts and can be referenced by name just like any other host fact. They do not need to be registered in order to use them.</p>
 <table class="ansible-option-table docutils align-default" style="width: 100%">
 <thead>
@@ -994,14 +994,14 @@
 </tbody>
 </table>
 <section id="authors">
-<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h3>
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Silviu Dicu (&#64;silviud)</p></li>
 <li><p>Vinay Dandekar (&#64;roadmapper)</p></li>
 </ul>
 </section>
 <section id="collection-links">
-<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading"></a></h3>
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
 <p class="ansible-links">
   <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
   <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
