@@ -1118,7 +1118,6 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
 
 
 def handle_remove_from_global_db(module):
-
     changed = False
     global_cluster_id = module.params.get("global_cluster_identifier")
     db_cluster_id = module.params.get("db_cluster_identifier")
@@ -1131,9 +1130,13 @@ def handle_remove_from_global_db(module):
         client.remove_from_global_cluster(DbClusterIdentifier=db_cluster_arn, GlobalClusterIdentifier=global_cluster_id)
         changed = True
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}.")
+        module.fail_json_aws(
+            e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
+        )
 
-    module.exit_json(changed=changed, msg=f"Successfully removed cluster {db_cluster_id} from global DB cluster {global_cluster_id}")
+    module.exit_json(
+        changed=changed, msg=f"Successfully removed cluster {db_cluster_id} from global DB cluster {global_cluster_id}"
+    )
 
 
 def main():
@@ -1159,7 +1162,7 @@ def main():
         backup_retention_period=dict(type="int", default=1),
         character_set_name=dict(),
         database_name=dict(aliases=["db_name"]),
-        db_cluster_arn=dict(type='str'),
+        db_cluster_arn=dict(type="str"),
         db_cluster_identifier=dict(required=True, aliases=["cluster_id", "id", "cluster_name"]),
         db_cluster_parameter_group_name=dict(),
         db_subnet_group_name=dict(),
@@ -1189,7 +1192,7 @@ def main():
         port=dict(type="int"),
         preferred_backup_window=dict(aliases=["backup_window"]),
         preferred_maintenance_window=dict(aliases=["maintenance_window"]),
-        remove_from_global_db=dict(type='bool'),
+        remove_from_global_db=dict(type="bool"),
         replication_source_identifier=dict(aliases=["replication_src_id"]),
         restore_to_time=dict(),
         restore_type=dict(choices=["full-copy", "copy-on-write"]),
