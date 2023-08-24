@@ -4,7 +4,16 @@
       access_key: '{{ aws_access_key }}'
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
+    group/amazon.cloud.aws:
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
   block:
+
+  - name: Run tests for testing remove cluster from global db
+    import_tasks: remove_from_global_db.yaml
+
   - name: Ensure the resource doesn't exist
     rds_cluster:
       id: '{{ cluster_id }}'

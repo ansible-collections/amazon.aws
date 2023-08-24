@@ -1,0 +1,93 @@
+---
+- name: Run tests for testing remove cluster from global db
+  block:
+
+    - name: Create rds global database
+      amazon.cloud.rds_global_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        region:  "{{ aws_region }}"
+        state: present
+      register: create_global_result
+
+    - name: Create a primary cluster for global database
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      register: create_primary_result
+
+    - name: Get primary cluster info
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+      register: primary_cluster_info_result
+
+    - name: Get global db info
+      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that primary cluster is a part of global db
+      assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn == primary_cluster_info_result.db_cluster_arn
+
+    - name: Remove primary cluster from global db
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: '{{ test_global_cluster_name }}'
+        db_cluster_identifier: '{{ test_primary_cluster_name }}'
+        db_cluster_arn: "{{ primary_cluster_info_result.db_cluster_arn }}"
+        remove_from_global_db: true
+
+    - name: Get global db info
+      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that primary cluster is NOT a part of global db
+      assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
+
+  always:
+    - name: Delete primary cluster
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        region:  "{{ aws_region }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        skip_final_snapshot: true
+        state: absent
+      ignore_errors: true
+
+    - name: Delete global db
+      amazon.cloud.rds_global_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        state: absent
+      ignore_errors: true
