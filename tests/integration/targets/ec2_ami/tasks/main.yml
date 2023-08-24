@@ -732,7 +732,7 @@
     - name: assert that launch permissions have changed
       assert:
         that:
-          - "permissions_create_result.changed"
+          - "permissions_update_result.changed"
           - "'organization_arn' in permissions_info_result.images[0].launch_permissions[0]"
           - "permissions_info_result.images[0].launch_permissions[0]['organization_arn'] == 'arn:aws:organizations::123456789012:organization/o-123ab4cdef'"
           - "'organizational_unit_arn' in permissions_info_result.images[0].launch_permissions[1]"
