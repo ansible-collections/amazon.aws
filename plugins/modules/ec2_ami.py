@@ -743,7 +743,7 @@ class UpdateImage:
         launch_permissions = module.params.get("launch_permissions")
         # remove any keys with value=None
         if launch_permissions:
-          launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
+            launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
 
         image = get_image_by_id(connection, image_id)
         if image is None:
