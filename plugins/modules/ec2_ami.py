@@ -957,10 +957,10 @@ def main():
         launch_permissions=dict(
             type="dict",
             options=dict(
-                user_ids=dict(type="list", elements='str'),
-                group_names=dict(type="list", elements='str'),
-                org_arns=dict(type="list", elements='str'),
-                org_unit_arns=dict(type="list", elements='str')
+                user_ids=dict(type="list", elements="str"),
+                group_names=dict(type="list", elements="str"),
+                org_arns=dict(type="list", elements="str"),
+                org_unit_arns=dict(type="list", elements="str"),
             ),
         ),
         name={},
