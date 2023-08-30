@@ -1,9 +1,9 @@
 - name: set connection information for AWS modules and run tests
   module_defaults:
     group/aws:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   collections:
     - community.general

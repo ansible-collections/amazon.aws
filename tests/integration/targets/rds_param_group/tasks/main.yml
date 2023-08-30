@@ -14,9 +14,9 @@
 - name: rds_option_group tests
   module_defaults:
     group/aws:
-      ec2_access_key: '{{ aws_access_key }}'
-      ec2_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
       region: '{{ ec2_region }}'
   block:
 

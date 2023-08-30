@@ -7,9 +7,9 @@
 
   - name: test without specifying required module options
     autoscaling_group:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
     ignore_errors: true
     register: result
   - name: assert name is a required module option
