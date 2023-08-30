@@ -404,6 +404,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
+<li><p>For security reasons, this module should be used with <strong>no_log=true</strong> and (register) functionalities when creating new key pair without providing key_material.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -414,8 +415,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create a new EC2 key pair, returns generated private key</span>
+<span class="w">  </span><span class="c1"># use no_log to avoid private key being displayed into output</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
+<span class="w">  </span><span class="nt">no_log</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2_key_pair</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create key pair using provided key_material</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
