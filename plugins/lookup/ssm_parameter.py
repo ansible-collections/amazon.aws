@@ -85,13 +85,13 @@ EXAMPLES = r"""
   debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=False ) }}"
 
 - name: lookup ssm parameter store using a specified aws profile
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_profile='myprofile' ) }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', profile='myprofile' ) }}"
 
 - name: lookup ssm parameter store using explicit aws credentials
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}" # noqa: E501
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', access_key=my_aws_access_key, secret_key=my_aws_secret_key, session_token=my_session_token ) }}" # noqa: E501
 
 - name: lookup ssm parameter store with all options
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', aws_profile='myprofile') }}"
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', profile='myprofile') }}"
 
 - name: lookup ssm parameter and fail if missing
   debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter') }}"

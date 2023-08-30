@@ -3,9 +3,9 @@
     # As a lookup plugin we don't have access to module_defaults
     connection_args:
       region: "{{ aws_region }}"
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      aws_security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
   no_log: True
 
 - name: 'aws_ssm lookup plugin integration tests'
@@ -14,9 +14,9 @@
   - community.aws
   module_defaults:
     group/aws:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   vars:
     skip: 'skip'

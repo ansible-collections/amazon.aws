@@ -157,9 +157,9 @@ regions:
 # Example using filters, ignoring permission errors, and specifying the hostname precedence
 plugin: amazon.aws.aws_ec2
 # The values for profile, access key, secret key and token can be hardcoded like:
-boto_profile: aws_profile
+profile: aws_profile
 # or you could use Jinja as:
-# boto_profile: "{{ lookup('env', 'AWS_PROFILE') | default('aws_profile', true) }}"
+# profile: "{{ lookup('env', 'AWS_PROFILE') | default('aws_profile', true) }}"
 # Populate inventory with instances in these regions
 regions:
   - us-east-1
@@ -243,7 +243,7 @@ exclude_filters:
 
 # Example using groups to assign the running hosts to a group based on vpc_id
 plugin: amazon.aws.aws_ec2
-boto_profile: aws_profile
+profile: aws_profile
 # Populate inventory with instances in these regions
 regions:
   - us-east-2

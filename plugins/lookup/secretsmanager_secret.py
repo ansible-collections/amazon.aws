@@ -105,8 +105,8 @@ EXAMPLES = r"""
    # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
  - name: lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
    debug: >
-    msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, aws_profile=aws_profile,
-    aws_access_key=aws_access_key, aws_secret_key=aws_secret_key, nested=true) }}"
+    msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, profile=aws_profile,
+    access_key=aws_access_key, secret_key=aws_secret_key, nested=true) }}"
    # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
    # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
    # Region is the AWS region where the AWS secret is stored.
