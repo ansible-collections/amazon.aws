@@ -91,9 +91,9 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         event_time = None
         event_ids = []
         while True:
-            events = await _get_cloudtrail_events(client, params)
             if event_time is not None:
                 params["StartTime"] = event_time
+            events = await _get_cloudtrail_events(client, params)
 
             events, c_event_time, c_event_ids = _get_events(events, event_ids)
             for event in events:
