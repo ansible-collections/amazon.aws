@@ -53,6 +53,8 @@ options:
     version_added: 3.1.0
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
+    when creating new key pair without providing key_material.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -68,8 +70,11 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a new EC2 key pair, returns generated private key
+  # use no_log to avoid private key being displayed into output
   amazon.aws.ec2_key:
     name: my_keypair
+  no_log: true
+  register: aws_ec2_key_pair
 
 - name: create key pair using provided key_material
   amazon.aws.ec2_key:
