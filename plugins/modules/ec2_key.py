@@ -54,7 +54,7 @@ options:
       - The file is written out on the 'host' side rather than the 'controller' side.
       - Ignored when I(state=absent) or I(key_material) is provided.
     type: path
-    version_added: 7.0.0
+    version_added: 6.4.0
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
   - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
@@ -162,6 +162,7 @@ key:
 """
 
 import uuid
+import os
 
 try:
     import botocore
@@ -271,8 +272,9 @@ def _write_private_key(key_data, file_name):
     from the ouput. This ensures we don't expose the key data in logs or task output.
     """
     try:
-        with open(file_name, "w") as f:
-            f.write(key_data["private_key"])
+        file = os.open(file_name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.write(file, key_data["private_key"].encode("utf-8"))
+        os.close(file)
     except (IOError, OSError) as e:
         raise Ec2KeyFailure(e, "Could not save private key to specified path. Private key is irretrievable.")
 

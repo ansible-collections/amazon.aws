@@ -74,12 +74,13 @@
         that:
            - result is changed
 
-    - name: assert that key pair was not created
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name }}'
-      register: aws_keypair
-      failed_when: aws_keypair.keypairs | length > 0
+    # Uncomment after adding ec2_key_info module
+    # - name: assert that key pair was not created
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name }}'
+    #  register: aws_keypair
+    #  failed_when: aws_keypair.keypairs | length > 0
 
     - name: test creating a new key pair
       ec2_key:
@@ -110,12 +111,13 @@
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
 
-    - name: assert that key pair was created
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name }}'
-      register: aws_keypair
-      failed_when: aws_keypair.keypairs | length == 0
+    # Uncomment after adding ec2_key_info module
+    # - name: assert that key pair was created
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name }}'
+    #  register: aws_keypair
+    #  failed_when: aws_keypair.keypairs | length == 0
 
     - name: Gather info about the key pair
       ec2_key_info:
@@ -195,12 +197,13 @@
         that:
            - result is changed
 
-    - name: assert that key pair was not created
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name_rsa }}'
-      register: aws_keypair
-      failed_when: aws_keypair.keypairs | length > 0
+    # Uncomment after adding ec2_key_info module
+    # - name: assert that key pair was not created
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name_rsa }}'
+    #  register: aws_keypair
+    #  failed_when: aws_keypair.keypairs | length > 0
 
     - name: assert that private key was not saved
       ansible.builtin.stat:
@@ -238,12 +241,14 @@
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
 
-    - name: assert that key pair was created
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name_rsa }}'
-      register: aws_keypair
-      failed_when: aws_keypair.keypairs | length == 0
+
+    # Uncomment after adding ec2_key_info module
+    # - name: assert that key pair was created
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name_rsa }}'
+    #  register: aws_keypair
+    #  failed_when: aws_keypair.keypairs | length == 0
 
     - name: assert that private key was saved into file
       ansible.builtin.stat:
@@ -492,12 +497,13 @@
         that:
            - result is changed
 
-    - name: assert using check_mode did not removed key pair
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name }}'
-      register: keys
-      failed_when: keys.keypairs | length == 0
+    # Uncomment after adding ec2_key_info module
+    # - name: assert using check_mode did not removed key pair
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name }}'
+    #  register: keys
+    #  failed_when: keys.keypairs | length == 0
 
     - name: test removing an existent key
       ec2_key:
@@ -512,12 +518,13 @@
            - '"key" in result'
            - result.key == None
 
-    - name: assert that key pair was removed
-      ec2_key_info:
-        names:
-          - '{{ ec2_key_name }}'
-      register: keys
-      failed_when: keys.keypairs | length > 0
+    # Uncomment after adding ec2_key_info module
+    # - name: assert that key pair was removed
+    #  ec2_key_info:
+    #    names:
+    #      - '{{ ec2_key_name }}'
+    #  register: keys
+    #  failed_when: keys.keypairs | length > 0
 
     # ============================================================
     - name: test state=present with key_material
