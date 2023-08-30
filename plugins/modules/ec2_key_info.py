@@ -10,7 +10,7 @@ module: ec2_key_info
 version_added: 6.4.0
 short_description: Gather information about EC2 key pairs in AWS
 description:
-    - Gather information about EC2 key pairs in AWS
+    - Gather information about EC2 key pairs in AWS.
 author:
   - Aubin Bikouo (@abikouo)
 options:
@@ -102,7 +102,7 @@ keypairs:
             type: str
             sample: "2023-08-16T10:13:33.025000+00:00"
         tags:
-            description: a dictionary representing the tags attached to the key pair
+            description: A dictionary representing the tags attached to the key pair.
             returned: always
             type: dict
             sample: '{"my_key": "my value"}'
@@ -146,7 +146,7 @@ def list_ec2_key_pairs(connection, module):
     except is_boto3_error_code("InvalidKeyPair.NotFound"):
         result = {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to list ec2 instances")
+        module.fail_json_aws(e, msg="Failed to list EC2 key pairs")
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_keys = [camel_dict_to_snake_dict(key) for key in result.get("KeyPairs", [])]
