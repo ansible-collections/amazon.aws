@@ -4,9 +4,9 @@
 - module_defaults:
     group/aws:
         region: "{{ aws_region }}"
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token | default(omit) }}"
+        access_key: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        session_token: "{{ security_token | default(omit) }}"
   collections:
     - amazon.aws
   block:
@@ -39,9 +39,9 @@
     # ============================================================
     - name: test with no parameters
       sts_assume_role:
-        aws_access_key: '{{ omit }}'
-        aws_secret_key: '{{ omit }}'
-        security_token: '{{ omit }}'
+        access_key: '{{ omit }}'
+        secret_key: '{{ omit }}'
+        session_token: '{{ omit }}'
       register: result
       ignore_errors: true
 
@@ -248,9 +248,9 @@
     # ============================================================
     - name: test that assumed credentials have IAM read-only access
       iam_role:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
+        access_key: "{{ assumed_role.sts_creds.access_key }}"
+        secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+        session_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "{{ iam_role_name }}"
         assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
         create_instance_profile: False
@@ -267,9 +267,9 @@
     # ============================================================
     - name: test assumed role with unprivileged action
       iam_role:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
+        access_key: "{{ assumed_role.sts_creds.access_key }}"
+        secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+        session_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "{{ iam_role_name }}-new"
         assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
         state: present

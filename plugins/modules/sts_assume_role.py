@@ -49,7 +49,8 @@ options:
       - The value provided by the MFA device, if the trust policy of the role being assumed requires MFA.
     type: str
 notes:
-  - In order to use the assumed role in a following playbook task you must pass the access_key, access_secret and access_token.
+  - In order to use the assumed role in a following playbook task you must pass the I(access_key),
+    I(secret_key) and I(session_token) parameters to modules that should use the assumed credentials.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -80,19 +81,19 @@ changed:
 """
 
 EXAMPLES = r"""
-# Note: These examples do not set authentication details, see the AWS Guide for details.
-
 # Assume an existing role (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
 - community.aws.sts_assume_role:
+    access_key: AKIA1EXAMPLE1EXAMPLE
+    secret_key: 123456789abcdefghijklmnopqrstuvwxyzABCDE
     role_arn: "arn:aws:iam::123456789012:role/someRole"
     role_session_name: "someRoleSession"
   register: assumed_role
 
 # Use the assumed role above to tag an instance in account 123456789012
 - amazon.aws.ec2_tag:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    access_key: "{{ assumed_role.sts_creds.access_key }}"
+    secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    session_token: "{{ assumed_role.sts_creds.session_token }}"
     resource: i-xyzxyz01
     state: present
     tags:
