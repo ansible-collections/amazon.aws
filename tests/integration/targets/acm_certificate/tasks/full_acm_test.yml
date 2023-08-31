@@ -2,9 +2,9 @@
   module_defaults:
     group/aws:
       aws_region: '{{ aws_region }}'
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
   block:
   - name: list certs
     aws_acm_info: null
