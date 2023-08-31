@@ -311,6 +311,7 @@ options:
     remove_from_global_db:
         description:
           - If set to true, the cluster will be removed from global DB.
+          - Parameters global_cluster_identifier, db_cluster_identifier must be specified when I(remove_from_global_db=true).
         type: bool
         required: False
     replication_source_identifier:
@@ -472,12 +473,21 @@ EXAMPLES = r"""
     state: present
     db_instance_class: 'db.t3.medium'
 
-- name: Remove a cluster from global DB
+- name: Remove a cluster from global DB (do not delete)
   amazon.aws.rds_cluster:
     db_cluster_identifier: '{{ cluster_id }}'
     global_cluster_identifier: '{{ global_cluster_id }}'
-    db_cluster_arn: arn:aws:rds:us-east-1:123456789000:cluster:my-test-cluster
     remove_from_global_db: true
+
+- name: Remove a cluster from global DB and Delete without creating a final snapshot
+  amazon.aws.rds_cluster:
+    engine: aurora
+    password: "{{ password }}"
+    username: "{{ username }}"
+    cluster_id: "{{ cluster_id }}"
+    skip_final_snapshot: true
+    remove_from_global_db: true
+    state: absent
 """
 
 RETURN = r"""
@@ -706,6 +716,8 @@ vpc_security_groups:
       type: str
       sample: sg-12345678
 """
+
+import time
 
 try:
     import botocore
@@ -1117,26 +1129,27 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
     return changed
 
 
-def handle_remove_from_global_db(module):
-    changed = False
+def handle_remove_from_global_db(module, cluster):
     global_cluster_id = module.params.get("global_cluster_identifier")
     db_cluster_id = module.params.get("db_cluster_identifier")
-    db_cluster_arn = module.params.get("db_cluster_arn")
+    db_cluster_arn = cluster["DBClusterArn"]
 
     if module.check_mode:
-        module.exit_json(changed=True, msg="Would have removed the db cluster from global db.")
+        return True
 
     try:
         client.remove_from_global_cluster(DbClusterIdentifier=db_cluster_arn, GlobalClusterIdentifier=global_cluster_id)
-        changed = True
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(
             e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
         )
 
-    module.exit_json(
-        changed=changed, msg=f"Successfully removed cluster {db_cluster_id} from global DB cluster {global_cluster_id}"
-    )
+    # this is needed as even though we have wait_for_cluster_status, it takes a few seconds
+    # for cluster to change status from 'available' to 'promoting'
+    time.sleep(15)
+    wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
+
+    return True
 
 
 def main():
@@ -1244,9 +1257,6 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
-    if module.params.get("remove_from_global_db"):
-        handle_remove_from_global_db(module)
-
     if module.params.get("engine") and module.params["engine"] in ("mysql", "postgres"):
         module.require_botocore_at_least("1.23.44", reason="to use mysql and postgres engines")
         if module.params["state"] == "present":
@@ -1287,8 +1297,12 @@ def main():
             msg="skip_final_snapshot is False but all of the following are missing: final_snapshot_identifier"
         )
 
-    parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     changed = False
+
+    if module.params.get("remove_from_global_db"):
+        changed = handle_remove_from_global_db(module, cluster)
+
+    parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     method_name, method_options_name = get_rds_method_attribute_name(cluster)
 
     if method_name:
