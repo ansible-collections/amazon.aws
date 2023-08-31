@@ -4,9 +4,9 @@
 - name: Run aws_api_gateway_domain module integration tests
   module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
   # NOTE: To make tests work set TLS ARN in defaults/main.yml to an existing and
