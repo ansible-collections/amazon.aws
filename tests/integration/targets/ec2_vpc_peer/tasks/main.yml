@@ -4,9 +4,9 @@
     - amazon.aws
   module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
   - name: get ARN of calling user
