@@ -17,7 +17,7 @@
       access_key: '{{ aws_access_key }}'
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
-      region: '{{ ec2_region }}'
+      region: '{{ aws_region }}'
   block:
 
     # ============================================================

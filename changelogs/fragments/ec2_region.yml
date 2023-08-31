@@ -1,0 +1,2 @@
+trivial:
+- tweak integration tests to use aws_region rather than ec2_region.
