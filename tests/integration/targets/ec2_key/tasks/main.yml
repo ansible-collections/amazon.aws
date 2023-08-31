@@ -92,6 +92,23 @@
           - '"spaced key" in result.key.tags'
           - result.key.tags['spaced key'] == 'Spaced value'
 
+    - name: Gather info about the key pair
+      ec2_key_info:
+        names: '{{ ec2_key_name }}'
+      register: key_info
+
+    - name: assert the gathered key info
+      assert:
+        that:
+          - key_info.keypairs[0].key_name == ec2_key_name
+          - key_info.keypairs[0].key_pair_id.startswith('key-')
+          - '"snake_case" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['snake_case'] == 'a_snake_case_value'
+          - '"CamelCase" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['CamelCase'] == 'CamelCaseValue'
+          - '"spaced key" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['spaced key'] == 'Spaced value'
+
     - set_fact:
         key_id_1: '{{ result.key.id }}'
 
@@ -166,6 +183,25 @@
           - result.key.tags['spaced key'] == 'Spaced value'
           - '"newKey" in result.key.tags'
           - result.key.tags['newKey'] == 'Another value'
+
+    - name: Gather info about the updated tags
+      ec2_key_info:
+        names: '{{ ec2_key_name }}'
+      register: key_info
+
+    - name: assert the gathered key info
+      assert:
+        that:
+          - key_info.keypairs[0].key_name == ec2_key_name
+          - key_info.keypairs[0].key_pair_id == key_id_1
+          - '"snake_case" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['snake_case'] == 'a_snake_case_value'
+          - '"CamelCase" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['CamelCase'] == 'CamelCaseValue'
+          - '"spaced key" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['spaced key'] == 'Spaced value'
+          - '"newKey" in key_info.keypairs[0].tags'
+          - key_info.keypairs[0].tags['newKey'] == 'Another value'
 
     - name: test updating tags without purge - idempotency (check mode)
       ec2_key:
@@ -344,6 +380,21 @@
           - 'result.key.name == "{{ec2_key_name}}"'
           - 'result.key.fingerprint == "{{fingerprint}}"'
 
+    - name: Gather key info with fingerprint
+      ec2_key_info:
+        filters:
+          fingerprint: "{{ fingerprint }}"
+      register: key_info
+
+    - name: assert gathered key info
+      assert:
+        that:
+          - '"key_fingerprint" in key_info.keypairs[0]'
+          - '"private_key" not in key_info.keypairs[0]'
+          - '"key_pair_id" in key_info.keypairs[0]'
+          - '"tags" in key_info.keypairs[0]'
+          - 'key_info.keypairs[0].key_name == "{{ec2_key_name}}"'
+          - 'key_info.keypairs[0].key_fingerprint == "{{fingerprint}}"'
     # ============================================================
     - name: test state=present with key_material (idempotency)
       ec2_key:

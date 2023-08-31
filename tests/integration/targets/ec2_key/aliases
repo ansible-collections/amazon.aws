@@ -3,3 +3,4 @@
 # Zuul nodes
 # https://github.com/ansible-collections/amazon.aws/issues/428
 cloud/aws
+ec2_key_info
