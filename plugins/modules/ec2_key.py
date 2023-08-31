@@ -58,7 +58,7 @@ options:
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
   - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
-    when creating new key pair without providing key_material.
+    when creating new key pair without providing I(key_material).
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -148,7 +148,7 @@ key:
       sample: '{"my_key": "my value"}'
     private_key:
       description: private key of a newly created keypair
-      returned: when a new keypair is created by AWS (key_material is not provided) and I(file_name) is not provided.
+      returned: when a new keypair is created by AWS (I(key_material) is not provided) and I(file_name) is not provided.
       type: str
       sample: '-----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKC...
