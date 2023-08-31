@@ -726,4 +726,4 @@
     iam_user:
       name: '{{ test_user }}'
       state: absent
-    ignore_errors: yes
+    ignore_errors: true
