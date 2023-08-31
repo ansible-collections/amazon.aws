@@ -369,7 +369,7 @@
 
   - name: Gather information about any running instance with Name ending with "-test-enf_cnt"
     ec2_instance_info:
-      region: "{{ ec2_region }}"
+      region: "{{ aws_region }}"
       filters:
         "tag:Name": "*-test-enf_cnt"
         instance-state-name: [ "running"]
