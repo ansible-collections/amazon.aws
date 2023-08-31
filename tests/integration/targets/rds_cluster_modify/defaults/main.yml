@@ -22,5 +22,10 @@ test_global_cluster_name: ansible-test-global-{{ tiny_prefix }}
 
 # Primary cluster parameters ================================
 test_primary_cluster_name: ansible-test-primary-{{ tiny_prefix }}
-test_primary_cluster_region: us-east-1
+test_primary_cluster_region: us-west-2
 test_primary_cluster_instance_name: ansible-test-instance-primary-{{ tiny_prefix }}
+
+# Replica cluster parameters ================================
+test_replica_cluster_name: ansible-test-replica-{{ tiny_prefix }}
+test_replica_cluster_region: eu-north-1
+test_replica_cluster_instance_name: ansible-test-instance-replica-{{ tiny_prefix }}
