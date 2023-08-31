@@ -165,15 +165,15 @@ output:
     changed: false
     invocation:
       module_args:
-        aws_access_key: ~
-        aws_secret_key: ~
+        access_key: ~
+        secret_key: ~
         bid_percentage: ~
         compute_environment_name: <name>
         compute_environment_state: ENABLED
         compute_resource_type: EC2
         desiredv_cpus: 0
         ec2_key_pair: ~
-        ec2_url: ~
+        endpoint_url: ~
         image_id: ~
         instance_role: "arn:aws:iam::..."
         instance_types:

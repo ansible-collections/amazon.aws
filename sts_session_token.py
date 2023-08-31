@@ -8,7 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: sts_session_token
 version_added: 1.0.0
-short_description: Obtain a session token from the AWS Security Token Service
+short_description: obtain a session token from the AWS Security Token Service
 description:
   - Obtain a session token from the AWS Security Token Service.
 author:
@@ -29,7 +29,8 @@ options:
       - The value provided by the MFA device, if the trust policy of the user requires MFA.
     type: str
 notes:
-  - In order to use the session token in a following playbook task you must pass the I(access_key), I(access_secret) and I(access_token).
+  - In order to use the session token in a following playbook task you must pass the I(access_key),
+    I(secret_key) and I(session_token) parameters to modules that should use the session credentials.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -42,7 +43,7 @@ sts_creds:
     returned: always
     type: list
     sample:
-      access_key: ASXXXXXXXXXXXXXXXXXX
+      access_key: ASIAXXXXXXXXXXXXXXXX
       expiration: "2016-04-08T11:59:47+00:00"
       secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       session_token: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -59,14 +60,16 @@ EXAMPLES = r"""
 # (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html)
 - name: Get a session token
   community.aws.sts_session_token:
+    access_key: AKIA1EXAMPLE1EXAMPLE
+    secret_key: 123456789abcdefghijklmnopqrstuvwxyzABCDE
     duration_seconds: 3600
   register: session_credentials
 
 - name: Use the session token obtained above to tag an instance in account 123456789012
   amazon.aws.ec2_tag:
-    aws_access_key: "{{ session_credentials.sts_creds.access_key }}"
-    aws_secret_key: "{{ session_credentials.sts_creds.secret_key }}"
-    security_token: "{{ session_credentials.sts_creds.session_token }}"
+    access_key: "{{ session_credentials.sts_creds.access_key }}"
+    secret_key: "{{ session_credentials.sts_creds.secret_key }}"
+    session_token: "{{ session_credentials.sts_creds.session_token }}"
     resource: i-xyzxyz01
     state: present
     tags:

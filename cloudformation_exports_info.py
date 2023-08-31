@@ -19,10 +19,9 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
+# Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Get Exports
-  community.aws.cloudformation_exports_info:
-    profile: 'my_aws_profile'
-    region: 'my_region'
+  community.aws.cloudformation_exports_info: {}
   register: cf_exports
 - ansible.builtin.debug:
     msg: "{{ cf_exports }}"

@@ -103,8 +103,7 @@ extends_documentation_fragment:
 RETURN = r""" # """
 
 EXAMPLES = r"""
-# Note: None of these examples set aws_access_key, aws_secret_key, or region.
-# It is assumed that their matching environment variables are set.
+# Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Basic example
   community.aws.elasticache:
