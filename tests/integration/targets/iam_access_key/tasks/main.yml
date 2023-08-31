@@ -2,9 +2,9 @@
 - name: AWS AuthN details
   module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   collections:
     - amazon.aws
@@ -548,9 +548,9 @@
 
   - name: Test GetCallerIdentity - Key 2
     aws_caller_info:
-      aws_access_key: "{{ create_key_2.access_key.access_key_id }}"
-      aws_secret_key: "{{ create_key_2.secret_access_key }}"
-      security_token: "{{ omit }}"
+      access_key: "{{ create_key_2.access_key.access_key_id }}"
+      secret_key: "{{ create_key_2.secret_access_key }}"
+      session_token: "{{ omit }}"
     register: caller_identity_2
 
   - assert:
@@ -560,9 +560,9 @@
 
   - name: Test GetCallerIdentity - Key 1 (gone)
     aws_caller_info:
-      aws_access_key: "{{ create_key_1.access_key.access_key_id }}"
-      aws_secret_key: "{{ create_key_1.secret_access_key }}"
-      security_token: "{{ omit }}"
+      access_key: "{{ create_key_1.access_key.access_key_id }}"
+      secret_key: "{{ create_key_1.secret_access_key }}"
+      session_token: "{{ omit }}"
     register: caller_identity_1
     ignore_errors: true
 
@@ -573,9 +573,9 @@
 
   - name: Test GetCallerIdentity - Key 3 (disabled)
     aws_caller_info:
-      aws_access_key: "{{ create_key_3.access_key.access_key_id }}"
-      aws_secret_key: "{{ create_key_3.secret_access_key }}"
-      security_token: "{{ omit }}"
+      access_key: "{{ create_key_3.access_key.access_key_id }}"
+      secret_key: "{{ create_key_3.secret_access_key }}"
+      session_token: "{{ omit }}"
     register: caller_identity_3
     ignore_errors: true
 
