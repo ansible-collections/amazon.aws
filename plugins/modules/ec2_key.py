@@ -47,10 +47,18 @@ options:
       - rsa
       - ed25519
     version_added: 3.1.0
+  file_name:
+    description:
+      - Name of the file where the generated private key will be saved.
+      - When provided, the I(key.private_key) attribute will be removed from the return value.
+      - The file is written out on the 'host' side rather than the 'controller' side.
+      - Ignored when I(state=absent) or I(key_material) is provided.
+    type: path
+    version_added: 6.4.0
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
   - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
-    when creating new key pair without providing key_material.
+    when creating new key pair without providing I(key_material).
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -82,10 +90,11 @@ EXAMPLES = r"""
     name: my_keypair
     key_material: "{{ lookup('file', '/path/to/public_key/id_rsa.pub') }}"
 
-- name: Create ED25519 key pair
+- name: Create ED25519 key pair and save private key into a file
   amazon.aws.ec2_key:
     name: my_keypair
     key_type: ed25519
+    file_name: /tmp/aws_ssh_rsa
 
 # try creating a key pair with the name of an already existing keypair
 # but don't overwrite it even if the key is different (force=false)
@@ -95,7 +104,7 @@ EXAMPLES = r"""
     key_material: 'ssh-rsa AAAAxyz...== me@example.com'
     force: false
 
-- name: remove key pair by name
+- name: remove key pair from AWS by name
   amazon.aws.ec2_key:
     name: my_keypair
     state: absent
@@ -139,7 +148,7 @@ key:
       sample: '{"my_key": "my value"}'
     private_key:
       description: private key of a newly created keypair
-      returned: when a new keypair is created by AWS (key_material is not provided)
+      returned: when a new keypair is created by AWS (I(key_material) is not provided) and I(file_name) is not provided.
       type: str
       sample: '-----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKC...
@@ -153,6 +162,7 @@ key:
 """
 
 import uuid
+import os
 
 try:
     import botocore
@@ -189,7 +199,7 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
     return key
 
 
-def extract_key_data(key, key_type=None):
+def extract_key_data(key, key_type=None, file_name=None):
     data = {
         "name": key["KeyName"],
         "fingerprint": key["KeyFingerprint"],
@@ -201,6 +211,9 @@ def extract_key_data(key, key_type=None):
         "type": key.get("KeyType") or key_type,
     }
 
+    # Write the private key to disk and remove it from the return value
+    if file_name and data["private_key"] is not None:
+        data = _write_private_key(data, file_name)
     return scrub_none_parameters(data)
 
 
@@ -253,7 +266,23 @@ def _create_key_pair(ec2_client, name, tag_spec, key_type):
     return key
 
 
-def create_new_key_pair(ec2_client, name, key_material, key_type, tags, check_mode):
+def _write_private_key(key_data, file_name):
+    """
+    Write the private key data to the specified file, and remove 'private_key'
+    from the ouput. This ensures we don't expose the key data in logs or task output.
+    """
+    try:
+        file = os.open(file_name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.write(file, key_data["private_key"].encode("utf-8"))
+        os.close(file)
+    except (IOError, OSError) as e:
+        raise Ec2KeyFailure(e, "Could not save private key to specified path. Private key is irretrievable.")
+
+    del key_data["private_key"]
+    return key_data
+
+
+def create_new_key_pair(ec2_client, name, key_material, key_type, tags, file_name, check_mode):
     """
     key does not exist, we create new key
     """
@@ -265,7 +294,7 @@ def create_new_key_pair(ec2_client, name, key_material, key_type, tags, check_mo
         key = _import_key_pair(ec2_client, name, key_material, tag_spec)
     else:
         key = _create_key_pair(ec2_client, name, tag_spec, key_type)
-    key_data = extract_key_data(key, key_type)
+    key_data = extract_key_data(key, key_type, file_name)
 
     result = {"changed": True, "key": key_data, "msg": "key pair created"}
     return result
@@ -286,13 +315,13 @@ def update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_mater
     return {"changed": changed, "key": key_data, "msg": msg}
 
 
-def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec):
+def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec, file_name):
     if check_mode:
         return {"changed": True, "key": None, "msg": "key pair updated"}
     else:
         delete_key_pair(check_mode, ec2_client, name, finish_task=False)
         key = _create_key_pair(ec2_client, name, tag_spec, key_type)
-        key_data = extract_key_data(key, key_type)
+        key_data = extract_key_data(key, key_type, file_name)
         return {"changed": True, "key": key_data, "msg": "key pair updated"}
 
 
@@ -310,6 +339,7 @@ def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
         result = {"changed": True, "key": None, "msg": "key deleted"}
     elif not key:
         result = {"key": None, "msg": "key did not exist"}
+        return result
     else:
         _delete_key_pair(ec2_client, name)
         if not finish_task:
@@ -327,15 +357,16 @@ def handle_existing_key_pair_update(module, ec2_client, name, key):
     purge_tags = module.params.get("purge_tags")
     tag_spec = boto3_tag_specifications(tags, ["key-pair"])
     check_mode = module.check_mode
+    file_name = module.params.get("file_name")
     if key_material and force:
         result = update_key_pair_by_key_material(check_mode, ec2_client, name, key, key_material, tag_spec)
     elif key_type and key_type != key["KeyType"]:
-        result = update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec)
+        result = update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec, file_name)
     else:
         changed = False
         changed |= ensure_ec2_tags(ec2_client, module, key["KeyPairId"], tags=tags, purge_tags=purge_tags)
         key = find_key_pair(ec2_client, name)
-        key_data = extract_key_data(key)
+        key_data = extract_key_data(key, file_name=file_name)
         result = {"changed": changed, "key": key_data, "msg": "key pair already exists"}
     return result
 
@@ -349,10 +380,13 @@ def main():
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
         key_type=dict(type="str", choices=["rsa", "ed25519"]),
+        file_name=dict(type="path", required=False),
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, mutually_exclusive=[["key_material", "key_type"]], supports_check_mode=True
+        argument_spec=argument_spec,
+        mutually_exclusive=[["key_material", "key_type"]],
+        supports_check_mode=True,
     )
 
     ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
@@ -362,6 +396,7 @@ def main():
     key_material = module.params.get("key_material")
     key_type = module.params.get("key_type")
     tags = module.params.get("tags")
+    file_name = module.params.get("file_name")
 
     result = {}
 
@@ -375,7 +410,9 @@ def main():
             if key:
                 result = handle_existing_key_pair_update(module, ec2_client, name, key)
             else:
-                result = create_new_key_pair(ec2_client, name, key_material, key_type, tags, module.check_mode)
+                result = create_new_key_pair(
+                    ec2_client, name, key_material, key_type, tags, file_name, module.check_mode
+                )
 
     except Ec2KeyFailure as e:
         if e.original_e:
