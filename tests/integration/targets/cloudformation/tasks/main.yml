@@ -25,6 +25,10 @@
         az: "{{ availability_zone }}"
       register: testing_subnet
 
+    # ==== Cloudformation tests with disable_rollback ====================
+
+    - import_tasks: test_disable_rollback.yml
+
     # ==== Cloudformation tests ===============================================
 
     # 1. Basic stack creation (check mode, actual run and idempotency)

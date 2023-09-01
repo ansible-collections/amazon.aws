@@ -1,4 +1,6 @@
 stack_name: "{{ resource_prefix }}"
+stack_name_disable_rollback_true: "{{ resource_prefix }}-drb-true"
+stack_name_disable_rollback_false: "{{ resource_prefix }}-drb-false"
 
 availability_zone: '{{ ec2_availability_zone_names[0] }}'
 
