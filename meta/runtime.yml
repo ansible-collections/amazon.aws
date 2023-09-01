@@ -102,6 +102,7 @@ action_groups:
   - s3_bucket
   - s3_object
   - s3_object_info
+  - rds_export_task
 plugin_routing:
   action:
     aws_s3:

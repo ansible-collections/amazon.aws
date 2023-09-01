@@ -1,0 +1,201 @@
+---
+- name: rds_export_task tests
+  collections:
+    - amazon.aws
+    - community.aws
+
+  module_defaults:
+    group/aws:
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+
+  block:
+    - name: Create an IAM role
+      iam_role:
+        name: "{{ rds_role_name }}"
+        assume_role_policy_document: "{{ lookup('file','files/policy.json') }}"
+        state: present
+      register: _result_create_iam_role
+
+    - assert:
+        that:
+        - _result_create_iam_role is changed
+
+    - name: Create a key
+      aws_kms:
+        alias: '{{kms_key_alias }}'
+        tags:
+          ansible-test: '{{ resource_prefix }}'
+      register: _result_create_key
+
+    - name: Create an S3 bucket
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+      register: _result_create_s3_bucket
+
+    - assert:
+        that:
+        - _result_create_s3_bucket is success
+        - _result_create_s3_bucket is changed
+        - _result_create_s3_bucket.name == '{{ bucket_name }}'
+
+    - name: Enable aws:kms encryption with KMS key
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        encryption: "aws:kms"
+        encryption_key_id: "{{ _result_create_key.key_arn }}"
+      register: _result_s3_bucket
+
+    - assert:
+        that:
+        - _result_s3_bucket.changed
+        - _result_s3_bucket.encryption
+        - _result_s3_bucket.encryption.SSEAlgorithm == 'aws:kms'
+
+    - name: Create a source mariadb instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: "{{ engine}}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: _result_create_instance
+
+    - assert:
+        that:
+        - _result_create_instance.changed
+        - _result_create_instance.db_instance_identifier == "{{ instance_id }}"
+
+    - name: Get all RDS snapshots for the existing instance
+      rds_snapshot_info:
+        db_instance_identifier: "{{ instance_id }}"
+      register: _result_instance_snapshot_info
+
+    - assert:
+        that:
+        - _result_instance_snapshot_info is successful
+        - _result_instance_snapshot_info.snapshots | length == 1
+
+    - name: Take a snapshot of the existing RDS instance
+      rds_instance_snapshot:
+        state: present
+        db_instance_identifier: "{{ instance_id }}"
+        db_snapshot_identifier: "{{ snapshot_id }}"
+        wait: true
+      register: _result_instance_snapshot
+
+    - assert:
+        that:
+        - _result_instance_snapshot.changed
+
+    - name: Export snapshot to S3 (CHECK_MODE)
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        source_arn: "{{ _result_instance_snapshot.db_snapshot_arn }}"
+        s3_bucket_name: "{{ bucket_name }}"
+        iam_role_arn: "{{ _result_create_iam_role.arn }}"
+        kms_key_id: "{{ _result_create_key.key_arn }}"
+        state: present
+      check_mode: true
+      register: _result_export_task
+
+    - name: Export snapshot to S3 - idempotence (CHECK_MODE)
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        source_arn: "{{ _result_instance_snapshot.db_snapshot_arn }}"
+        s3_bucket_name: "{{ bucket_name }}"
+        iam_role_arn: "{{ _result_create_iam_role.arn }}"
+        kms_key_id: "{{ _result_create_key.key_arn }}"
+        state: present
+      check_mode: true
+      register: _result_export_task
+
+    - name: Export snapshot to S3
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        source_arn: "{{ _result_instance_snapshot.db_snapshot_arn }}"
+        s3_bucket_name: "{{ bucket_name }}"
+        iam_role_arn: "{{ _result_create_iam_role.arn }}"
+        kms_key_id: "{{ _result_create_key.key_arn }}"
+        state: present
+      register: _result_export_task
+
+    - name: Export snapshot to S3 - idempotence
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        source_arn: "{{ _result_instance_snapshot.db_snapshot_arn }}"
+        s3_bucket_name: "{{ bucket_name }}"
+        iam_role_arn: "{{ _result_create_iam_role.arn }}"
+        kms_key_id: "{{ _result_create_key.key_arn }}"
+      register: _result_export_task
+
+    - name: Delete an export task (CHECK_MODE)
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        state: absent
+      check_mode: true
+      register: _result_delete
+
+    - name: Delete an export task - idempotence
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        state: absent
+      check_mode: true
+      register: _result_delete
+
+    - name: Delete an export task
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        state: absent
+      register: _result_delete
+
+    - name: Delete an export task - idempotence
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        state: absent
+      register: _result_delete
+
+  always:
+    - name: Delete an export task
+      rds_export_task:
+        export_task_id: "{{ export_task_id }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete the existing DB instance snapshot
+      rds_instance_snapshot:
+        state: absent
+        db_snapshot_identifier: "{{ snapshot_id }}"
+      ignore_errors: true
+
+    - name: Delete the existing RDS instance without creating a final snapshot
+      rds_instance:
+        state: absent
+        instance_id: "{{ instance_id }}"
+        skip_final_snapshot: true
+      ignore_errors: true
+
+    - name: Delete S3 bucket
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: absent
+      ignore_errors: true
+
+    - name: Delete the kms kms_key_alias
+      aws_kms:
+        state: absent
+        alias: '{{ kms_key_alias }}'
+      ignore_errors: true
+
+    - name: Delete the IAM role
+      iam_role:
+        name: '{{ role_name }}'
+        state: absent
+      ignore_errors: true
