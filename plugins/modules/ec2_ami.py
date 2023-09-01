@@ -135,11 +135,13 @@ options:
         type: list
         elements: str
         required: false
+        version_added: 6.4.0
       org_unit_arns:
         description: List of The Amazon Resource Name(s) (ARN) of an organizational unit(s) (OU).
         type: list
         elements: str
         required: false
+        version_added: 6.4.0
   image_location:
     description:
       - The S3 location of an image to use for the AMI.
