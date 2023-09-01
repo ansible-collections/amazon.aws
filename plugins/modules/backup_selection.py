@@ -236,45 +236,19 @@ def check_for_update(current_selection, backup_selection_data, iam_role_arn):
     if current_selection[0].get("IamRoleArn", None) != iam_role_arn:
         update_needed = True
 
-    fields_to_check = [
-        {
-            "field_name": "Resources",
-            "field_value_from_aws": json.dumps(current_selection[0].get("Resources", None), sort_keys=True),
-            "field_value": json.dumps(backup_selection_data.get("Resources", []), sort_keys=True),
-        },
-        {
-            "field_name": "ListOfTags",
-            "field_value_from_aws": json.dumps(current_selection[0].get("ListOfTags", None), sort_keys=True),
-            "field_value": json.dumps(backup_selection_data.get("ListOfTags", []), sort_keys=True),
-        },
-        {
-            "field_name": "NotResources",
-            "field_value_from_aws": json.dumps(current_selection[0].get("NotResources", None), sort_keys=True),
-            "field_value": json.dumps(backup_selection_data.get("NotResources", []), sort_keys=True),
-        },
-        {
-            "field_name": "Conditions",
-            "field_value_from_aws": json.dumps(current_selection[0].get("Conditions", None), sort_keys=True),
-            "field_value": json.dumps(backup_selection_data.get("Conditions", []), sort_keys=True),
-        },
-    ]
-    for field_to_check in fields_to_check:
-        if field_to_check["field_value_from_aws"] != field_to_check["field_value"]:
-            if (
-                field_to_check["field_name"] != "Conditions"
-                and field_to_check["field_value_from_aws"] != "[]"
-                and field_to_check["field_value"] != "null"
-            ):
-                # advanced settings to be updated
+    fields_to_check = ["Resources", "ListOfTags", "NotResources", "Conditions"]
+    for field_name in fields_to_check:
+        field_value_from_aws = json.dumps(current_selection[0].get(field_name, []), sort_keys=True)
+        new_field_value = json.dumps(backup_selection_data.get(field_name, []), sort_keys=True)
+        if new_field_value != field_value_from_aws:
+            if field_name != "Conditions":
                 update_needed = True
-            if (
-                field_to_check["field_name"] == "Conditions"
-                and field_to_check["field_value_from_aws"]
-                != '{"StringEquals": [], "StringLike": [], "StringNotEquals": [], "StringNotLike": []}'
-                and field_to_check["field_value"] != "null"
+            elif not (  # Check that Conditions values are not both empty
+                field_value_from_aws
+                == '{"StringEquals": [], "StringLike": [], "StringNotEquals": [], "StringNotLike": []}'  # Default AWS Conditions return value
+                and new_field_value == "[]"
             ):
                 update_needed = True
-
     return update_needed
 
 
@@ -359,6 +333,7 @@ def main():
     results = {"changed": False, "exists": False, "backup_selection": {}}
 
     current_selection = get_selection_details(module, client, backup_plan_name, backup_selection_name)
+    results["current_selection"] = current_selection
 
     if state == "present":
         # build data specified by user
