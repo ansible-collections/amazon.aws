@@ -211,13 +211,11 @@ RETURN = r"""
   encrypted:
     description:
       - Specifies whether the destination AMI of the imported image should be encrypted.
-      - The default KMS key for EBS is used unless you specify a non-default KMS key using I(kms_key_id).
     type: bool
   hypervisor:
     description:
       - The target hypervisor platform.
     default: str
-    choices: ["xen"]
   wait:
     description:
       - Wait for operation to complete before returning.
@@ -240,7 +238,6 @@ RETURN = r"""
     description:
       - The operating system of the virtual machine.
     type: str
-    choices: ["Windows", "Linux"]
   role_name:
     description:
       - The name of the role to use when not using the default role, 'vmimport'.
@@ -250,7 +247,6 @@ RETURN = r"""
     type: dict
 """
 
-import datetime
 
 try:
     import botocore
@@ -258,19 +254,10 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_import_image_tasks(**params):
-    try:
-        paginator = client.get_paginator("describe_import_image_tasks")
-        return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg"Failed to describe the import image")
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_import_image_result
 
 
 def absent():
@@ -291,7 +278,7 @@ def absent():
     if module.params.get("cancel_reason")
         params["CancelReason"] = module.params["cancel_reason"]
 
-    import_image_info = _describe_import_image_tasks(**filters)
+    import_image_info = helper_describe_import_image_tasks(client, module, **filters)
 
     if import_image_info:
         params["ImportTaskId"] = import_image_info["ImportTaskId"]
@@ -301,14 +288,12 @@ def absent():
 
         try:
             import_image_info = client.cancel_import_task(aws_retry=True, **params)
-            import_image_info["Tags"] = boto3_tag_list_to_ansible_dict(import_image_info["Tags"])
-            result["import_image"] = camel_dict_to_snake_dict(import_image_info)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg"Failed to import the image")
     else:
         module.exit_json(changed=False, msg="The specified import task does not exist or it cannot be cancelled")
 
-    module.exit_json(changed=True, **result)
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, result))
 
 
 def present():
@@ -346,33 +331,29 @@ def present():
     params["TagSpecifications"] = boto3_tag_specifications(tags, ["import-image-task"])
 
     wait = module.params.get("wait")
-    result = {"import_image": {}}
 
     filters = {
         "Filters": [
             {"Name": "name", "Values": [module.params["task_name"]]}
-            {"Name": "task-state", "Values": ["completed", "active"]}
+            {"Name": "task-state", "Values": ["completed", "active", "deleting"]}
         ]
     }
-    import_image_info = _describe_import_image_tasks(**filters)
+    import_image_info = helper_describe_import_image_tasks(client, module, **filters)
 
     if import_image_info:
         # Import tasks cannot be modified
-        module.exit_json(changed=False, msg="An import task with the specified name already exists", **camel_dict_to_snake_dict(import_image_info))
+        module.exit_json(changed=False, msg="An import task with the specified name already exists", **ensure_ec2_import_image_result(module, result))
     else:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created the import task if not in check mode")
 
         try:
             client.import_image(aws_retry=True, **params)
-            import_image_info = _describe_import_image_tasks(**filters)
-            import_image_info["Tags"] = boto3_tag_list_to_ansible_dict(import_image_info["Tags"])
-            result["import_image"] = camel_dict_to_snake_dict(import_image_info)
-            result["import_image"]["task_name"] = module.params["task_name"]
+            import_image_info = helper_describe_import_image_tasks(client, module, **filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg"Failed to import the image")
 
-    module.exit_json(changed=True, **result)
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, result))
 
 
 def main():

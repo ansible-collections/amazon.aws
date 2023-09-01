@@ -303,3 +303,22 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
+
+
+@AWSRetry.jittered_backoff(retries=10)
+def helper_describe_import_image_tasks(client, module, **params):
+    try:
+        paginator = client.get_paginator("describe_import_image_tasks")
+        return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe the import image")
+
+
+def ensure_result(module, import_image_info):
+    result = {"import_image": {}}
+
+    import_image_info["Tags"] = boto3_tag_list_to_ansible_dict(import_image_info["Tags"])
+    result["import_image"] = camel_dict_to_snake_dict(import_image_info)
+    result["import_image"]["task_name"] = module.params["task_name"]
+
+    return result
