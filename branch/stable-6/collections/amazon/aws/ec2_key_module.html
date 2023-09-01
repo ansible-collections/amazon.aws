@@ -242,6 +242,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-file_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-file-name"><strong>file_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-file_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.4.0</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the file where the generated private key will be saved.</p>
+<p>When provided, the <em>key.private_key</em> attribute will be removed from the return value.</p>
+<p>The file is written out on the ‘host’ side rather than the ‘controller’ side.</p>
+<p>Ignored when <em>state=absent</em> or <em>key_material</em> is provided.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-force"><strong>force</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -253,14 +264,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-key_material"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-key-material"><strong>key_material</strong></p>
 <a class="ansibleOptionLink" href="#parameter-key_material" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Public key material.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-key_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-key-type"><strong>key_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-key_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
@@ -276,14 +287,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the key pair.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-key-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -295,7 +306,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -309,7 +320,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-key-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-key-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -324,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -341,7 +352,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -359,7 +370,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -371,7 +382,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-tags"><span id="ansible-collections-amazon-aws-ec2-key-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -381,7 +392,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -403,7 +414,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
-<li><p>For security reasons, this module should be used with <strong>no_log=true</strong> and (register) functionalities when creating new key pair without providing key_material.</p></li>
+<li><p>For security reasons, this module should be used with <strong>no_log=true</strong> and (register) functionalities when creating new key pair without providing <em>key_material</em>.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -430,10 +441,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
 <span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span> <span class="s1">&#39;/path/to/public_key/id_rsa.pub&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create ED25519 key pair</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create ED25519 key pair and save private key into a file</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
 <span class="w">    </span><span class="nt">key_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ed25519</span>
+<span class="w">    </span><span class="nt">file_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/aws_ssh_rsa</span>
 
 <span class="c1"># try creating a key pair with the name of an already existing keypair</span>
 <span class="c1"># but don&#39;t overwrite it even if the key is different (force=false)</span>
@@ -443,7 +455,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ssh-rsa</span><span class="nv"> </span><span class="s">AAAAxyz...==</span><span class="nv"> </span><span class="s">me@example.com&#39;</span>
 <span class="w">    </span><span class="nt">force</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove key pair by name</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove key pair from AWS by name</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
@@ -509,7 +521,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <a class="ansibleOptionLink" href="#return-key/private_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>private key of a newly created keypair</p>
-<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when a new keypair is created by AWS (key_material is not provided)</p>
+<p class="ansible-option-line"><span class="ansible-option-returned-bold">Returned:</span> when a new keypair is created by AWS (<em>key_material</em> is not provided) and <em>file_name</em> is not provided.</p>
 <p class="ansible-option-line ansible-option-sample"><span class="ansible-option-sample-bold">Sample:</span> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;-----BEGIN</span> <span class="pre">RSA</span> <span class="pre">PRIVATE</span> <span class="pre">KEY-----</span> <span class="pre">MIIEowIBAAKC...</span> <span class="pre">-----END</span> <span class="pre">RSA</span> <span class="pre">PRIVATE</span> <span class="pre">KEY-----&quot;</span></code></p>
 </div></td>
 </tr>
