@@ -430,6 +430,16 @@ EXAMPLES = r"""
         ebs:
           snapshot_id: snap-1234567890
 
+- name: Create EC2 instance with termination protection turned on 
+    amazon.aws.ec2_instance:
+      name: "my-ec2-instance"
+      vpc_subnet_id: subnet-5calable
+      instance_type: t3.small
+      image_id: ami-123456
+      termination_protection: yes
+      wait: yes
+      count: 1
+
 - name: start an instance with a cpu_options
   amazon.aws.ec2_instance:
     name: "public-cpuoption-instance"
