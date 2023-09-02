@@ -48,6 +48,17 @@ EXAMPLES = r"""
     function_name: myFunction
   register: my_function_details
 
+# List AWS Lambda Functions in a specific region 
+- name: List AWS Lambda Functions
+  tasks:
+    - name: List Lambda Functions
+      amazon.aws.lambda_info:
+        region: us-east-1
+      register: lambda_functions
+    - name: Display Lambda Functions
+      debug:
+        var: lambda_functions.functions  
+
 # List all versions of a function
 - name: List function versions
   amazon.aws.lambda_info:
