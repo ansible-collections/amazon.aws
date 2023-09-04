@@ -1,0 +1,218 @@
+---
+- name: Run cloudformation tests for `disable_rollback` parameter
+  block:
+
+    # disable rollback to true
+    - name: create a cloudformation stack (disable_rollback=true) (check mode)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_true }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      check_mode: yes
+
+    - name: check task return attributes
+      assert:
+        that:
+          - cf_stack.changed
+          - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
+
+    - name: create a cloudformation stack (disable_rollback=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_true }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name_disable_rollback_true }}"
+      register: stack_info
+
+    - name: assert stack info
+      assert:
+        that:
+          - "'cloudformation' in stack_info"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_disable_rollback_true].stack_description.disable_rollback == true
+
+    # disable rollback to false
+    - name: create a cloudformation stack (disable_rollback=false) (check mode)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_false }}"
+        state: present
+        disable_rollback: false
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      check_mode: yes
+
+    - name: check task return attributes
+      assert:
+        that:
+          - cf_stack.changed
+          - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
+
+    - name: create a cloudformation stack (disable_rollback=false)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_disable_rollback_false }}"
+        state: present
+        disable_rollback: false
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name_disable_rollback_false }}"
+      register: stack_info
+
+    - name: assert stack info
+      assert:
+        that:
+          - "'cloudformation' in stack_info"
+          - "stack_info.cloudformation | length == 1"
+          - "stack_info.cloudformation[stack_name_disable_rollback_false].stack_description.disable_rollback == false"
+
+    # disable rollback not set
+    - name: create a cloudformation stack (disable_rollback not set) (check mode)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      check_mode: yes
+
+    - name: check task return attributes
+      assert:
+        that:
+          - cf_stack.changed
+          - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
+
+    - name: create a cloudformation stack (disable_rollback not set)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name }}"
+      register: stack_info
+
+    - name: assert stack info
+      assert:
+        that:
+          - "'cloudformation' in stack_info"
+          - "stack_info.cloudformation | length == 1"
+          - "stack_info.cloudformation[stack_name].stack_description.disable_rollback == false"
+
+    # =============================================================================================
+    # Test Scenario
+    # 1. create a cloudformation stack
+    # 2. try update, FAILED by providing wrong ami id (disable_rollback=true, do not delete failed stack)
+    # 3. Fix the ami id, retry update, fails as disable_rollback=False
+    # 4. Try (3) with disable_rollback=true, update completes
+    # =============================================================================================
+
+    - name: Create a cloudformation stack
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}-failtest"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        disable_rollback: false
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      ignore_errors: true
+
+    - name:  Update the cloudformation stack with wrong ami (fails, does not delete failed as disable_rollback=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}-failtest"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        disable_rollback: true
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}1" # wrong ami provided
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      ignore_errors: true
+
+    # update stack by correcting AMI ID
+    - name: Fix the AMI ID and retry updating the cloudformation stack (fails with disable_rollback=false)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}-failtest"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        disable_rollback: false
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+      ignore_errors: true
+
+    - name: Fix the AMI ID and retry updating the cloudformation stack (passes with disable_rollback=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name }}-failtest"
+        state: present
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        disable_rollback: true
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name }}-failtest"
+      register: stack_info
+
+    - name: Assert that update was successful
+      assert:
+        that:
+          - cf_stack.changed
+          - cf_stack.output == "Stack UPDATE complete"
+          - stack_info.cloudformation["{{ stack_name }}-failtest"].stack_description.stack_status == "UPDATE_COMPLETE"
+
+  always:
+
+    - name: delete stack
+      cloudformation:
+        stack_name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      with_items:
+        - "{{ stack_name_disable_rollback_true }}"
+        - "{{ stack_name_disable_rollback_false }}"
+        - "{{ stack_name }}-failtest"
+        - "{{ stack_name }}"
