@@ -422,11 +422,38 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <div class="ansibleOptionAnchor" id="parameter-launch_permissions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions"><strong>launch_permissions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_permissions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Users and groups that should be able to launch the AMI.</p>
-<p>Expects dictionary with a key of <code class="docutils literal notranslate"><span class="pre">user_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">group_names</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">user_ids</span></code> should be a list of account IDs.</p>
-<p><code class="docutils literal notranslate"><span class="pre">group_name</span></code> should be a list of groups, <code class="docutils literal notranslate"><span class="pre">all</span></code> is the only acceptable value currently.</p>
+<td><div class="ansible-option-cell"><p>Launch permissions for the AMI.</p>
 <p>You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-launch_permissions/group_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions-group-names"><strong>group_names</strong></p>
+<a class="ansibleOptionLink" href="#parameter-launch_permissions/group_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of group names.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-launch_permissions/org_arns"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions-org-arns"><strong>org_arns</strong></p>
+<a class="ansibleOptionLink" href="#parameter-launch_permissions/org_arns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.4.0</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of The Amazon Resource Name(s) (ARN) of organization(s).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-launch_permissions/org_unit_arns"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions-org-unit-arns"><strong>org_unit_arns</strong></p>
+<a class="ansibleOptionLink" href="#parameter-launch_permissions/org_unit_arns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><span class="ansible-option-versionadded">added in amazon.aws 6.4.0</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of The Amazon Resource Name(s) (ARN) of an organizational unit(s) (OU).</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-launch_permissions/user_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-launch-permissions-user-ids"><strong>user_ids</strong></p>
+<a class="ansibleOptionLink" href="#parameter-launch_permissions/user_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of account IDs.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -744,6 +771,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">user_ids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;123456789012&#39;</span><span class="p p-Indicator">]</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update AMI Launch Permissions, share AMI across an Organization and Organizational Units</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">org_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;arn:aws:organizations::123456789012:organization/o-123ab4cdef&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">org_unit_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5example&#39;</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
 </section>
