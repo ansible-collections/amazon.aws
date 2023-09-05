@@ -310,10 +310,11 @@ options:
         type: str
     remove_from_global_db:
         description:
-          - If set to true, the cluster will be removed from global DB.
-          - Parameters global_cluster_identifier, db_cluster_identifier must be specified when I(remove_from_global_db=true).
+          - If set to C(true), the cluster will be removed from global DB.
+          - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
         type: bool
         required: False
+        version_added: 6.5.0
     replication_source_identifier:
         description:
           - The Amazon Resource Name (ARN) of the source DB instance or DB cluster if this DB cluster is created as a Read Replica.
@@ -1300,7 +1301,8 @@ def main():
     changed = False
 
     if module.params.get("remove_from_global_db"):
-        changed = handle_remove_from_global_db(module, cluster)
+        if module.params.get("engine") in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+            changed = handle_remove_from_global_db(module, cluster)
 
     parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     method_name, method_options_name = get_rds_method_attribute_name(cluster)
