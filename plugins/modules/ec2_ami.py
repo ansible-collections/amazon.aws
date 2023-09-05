@@ -115,12 +115,33 @@ options:
     type: bool
   launch_permissions:
     description:
-      - Users and groups that should be able to launch the AMI.
-      - Expects dictionary with a key of C(user_ids) and/or C(group_names).
-      - C(user_ids) should be a list of account IDs.
-      - C(group_name) should be a list of groups, C(all) is the only acceptable value currently.
+      - Launch permissions for the AMI.
       - You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).
+    required: false
     type: dict
+    suboptions:
+      user_ids:
+        description: List of account IDs.
+        type: list
+        elements: str
+        required: false
+      group_names:
+        description: List of group names.
+        type: list
+        elements: str
+        required: false
+      org_arns:
+        description: List of The Amazon Resource Name(s) (ARN) of organization(s).
+        type: list
+        elements: str
+        required: false
+        version_added: 6.4.0
+      org_unit_arns:
+        description: List of The Amazon Resource Name(s) (ARN) of an organizational unit(s) (OU).
+        type: list
+        elements: str
+        required: false
+        version_added: 6.4.0
   image_location:
     description:
       - The S3 location of an image to use for the AMI.
@@ -279,6 +300,14 @@ EXAMPLES = r"""
     state: present
     launch_permissions:
       user_ids: ['123456789012']
+
+- name: Update AMI Launch Permissions, share AMI across an Organization and Organizational Units
+  amazon.aws.ec2_ami:
+    image_id: "{{ instance.image_id }}"
+    state: present
+    launch_permissions:
+      org_arns: ['arn:aws:organizations::123456789012:organization/o-123ab4cdef']
+      org_unit_arns: ['arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5example']
 """
 
 RETURN = r"""
@@ -633,18 +662,39 @@ class UpdateImage:
         desired_users = set(str(user_id) for user_id in launch_permissions.get("user_ids", []))
         current_groups = set(permission["Group"] for permission in current_permissions if "Group" in permission)
         desired_groups = set(launch_permissions.get("group_names", []))
+        current_org_arns = set(
+            permission["OrganizationArn"] for permission in current_permissions if "OrganizationArn" in permission
+        )
+        desired_org_arns = set(str(org_arn) for org_arn in launch_permissions.get("org_arns", []))
+        current_org_unit_arns = set(
+            permission["OrganizationalUnitArn"]
+            for permission in current_permissions
+            if "OrganizationalUnitArn" in permission
+        )
+        desired_org_unit_arns = set(str(org_unit_arn) for org_unit_arn in launch_permissions.get("org_unit_arns", []))
 
         to_add_users = desired_users - current_users
         to_remove_users = current_users - desired_users
         to_add_groups = desired_groups - current_groups
         to_remove_groups = current_groups - desired_groups
+        to_add_org_arns = desired_org_arns - current_org_arns
+        to_remove_org_arns = current_org_arns - desired_org_arns
+        to_add_org_unit_arns = desired_org_unit_arns - current_org_unit_arns
+        to_remove_org_unit_arns = current_org_unit_arns - desired_org_unit_arns
 
-        to_add = [dict(Group=group) for group in sorted(to_add_groups)] + [
-            dict(UserId=user_id) for user_id in sorted(to_add_users)
-        ]
-        to_remove = [dict(Group=group) for group in sorted(to_remove_groups)] + [
-            dict(UserId=user_id) for user_id in sorted(to_remove_users)
-        ]
+        to_add = (
+            [dict(Group=group) for group in sorted(to_add_groups)]
+            + [dict(UserId=user_id) for user_id in sorted(to_add_users)]
+            + [dict(OrganizationArn=org_arn) for org_arn in sorted(to_add_org_arns)]
+            + [dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_add_org_unit_arns)]
+        )
+
+        to_remove = (
+            [dict(Group=group) for group in sorted(to_remove_groups)]
+            + [dict(UserId=user_id) for user_id in sorted(to_remove_users)]
+            + [dict(OrganizationArn=org_arn) for org_arn in sorted(to_remove_org_arns)]
+            + [dict(OrganizationalUnitArn=org_unit_arn) for org_unit_arn in sorted(to_remove_org_unit_arns)]
+        )
 
         if not (to_add or to_remove):
             return False
@@ -693,6 +743,10 @@ class UpdateImage:
     def do(cls, module, connection, image_id):
         """Entry point to update an image"""
         launch_permissions = module.params.get("launch_permissions")
+        # remove any keys with value=None
+        if launch_permissions:
+            launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
+
         image = get_image_by_id(connection, image_id)
         if image is None:
             raise Ec2AmiFailure(f"Image {image_id} does not exist")
@@ -747,13 +801,18 @@ class CreateImage:
     def set_launch_permissions(connection, launch_permissions, image_id):
         if not launch_permissions:
             return
-
+        # remove any keys with value=None
+        launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
         try:
             params = {"Attribute": "LaunchPermission", "ImageId": image_id, "LaunchPermission": {"Add": []}}
             for group_name in launch_permissions.get("group_names", []):
                 params["LaunchPermission"]["Add"].append(dict(Group=group_name))
             for user_id in launch_permissions.get("user_ids", []):
                 params["LaunchPermission"]["Add"].append(dict(UserId=str(user_id)))
+            for org_arn in launch_permissions.get("org_arns", []):
+                params["LaunchPermission"]["Add"].append(dict(OrganizationArn=org_arn))
+            for org_unit_arn in launch_permissions.get("org_unit_arns", []):
+                params["LaunchPermission"]["Add"].append(dict(OrganizationalUnitArn=org_unit_arn))
             if params["LaunchPermission"]["Add"]:
                 connection.modify_image_attribute(aws_retry=True, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -897,7 +956,15 @@ def main():
         image_location={},
         instance_id={},
         kernel_id={},
-        launch_permissions={"type": "dict"},
+        launch_permissions=dict(
+            type="dict",
+            options=dict(
+                user_ids=dict(type="list", elements="str"),
+                group_names=dict(type="list", elements="str"),
+                org_arns=dict(type="list", elements="str"),
+                org_unit_arns=dict(type="list", elements="str"),
+            ),
+        ),
         name={},
         no_reboot={"default": False, "type": "bool"},
         purge_tags={"type": "bool", "default": True},

@@ -697,6 +697,48 @@
           - ami_facts_result_boot_tpm.images[0].boot_mode == 'uefi'
           - ami_facts_result_boot_tpm.images[0].tpm_support == 'v2.0'
 
+    # === Test modify launch permissions org_arns and org_unit_arns=========================
+
+    - name: create an image from the instance
+      ec2_ami:
+        instance_id: '{{ ec2_instance_id }}'
+        state: present
+        name: '{{ ec2_ami_name }}_permissions'
+        description: '{{ ec2_ami_description }}'
+        tags:
+          Name: '{{ ec2_ami_name }}_permissions'
+        wait: yes
+        root_device_name: '{{ ec2_ami_root_disk }}'
+      register: permissions_create_result
+
+    - name: modify the AMI launch permissions
+      ec2_ami:
+        state: present
+        image_id: '{{ permissions_create_result.image_id }}'
+        name: '{{ ec2_ami_name }}_permissions'
+        tags:
+          Name: '{{ ec2_ami_name }}_permissions'
+        launch_permissions:
+          org_arns: ['arn:aws:organizations::123456789012:organization/o-123ab4cdef']
+          org_unit_arns: ['arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld']
+      register: permissions_update_result
+
+    - name: Get ami info
+      amazon.aws.ec2_ami_info:
+        image_ids: '{{ permissions_create_result.image_id }}'
+        describe_image_attributes: true
+      register: permissions_info_result
+
+    - name: assert that launch permissions have changed
+      assert:
+        that:
+          - "permissions_update_result.changed"
+          - "'organization_arn' in permissions_info_result.images[0].launch_permissions[0]"
+          - "permissions_info_result.images[0].launch_permissions[0]['organization_arn'] == 'arn:aws:organizations::123456789012:organization/o-123ab4cdef'"
+          - "'organizational_unit_arn' in permissions_info_result.images[0].launch_permissions[1]"
+          - "permissions_info_result.images[0].launch_permissions[1]['organizational_unit_arn'] == 'arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld'"
+
+
     # ============================================================
 
   always:
@@ -734,6 +776,14 @@
       ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_no_device_false_image_id }}"
+        wait: yes
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id }}"
+        name: '{{ ec2_ami_name }}_permissions'
         wait: yes
       ignore_errors: yes
 
