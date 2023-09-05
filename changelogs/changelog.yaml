@@ -854,9 +854,9 @@ releases:
     - validate-plugins.yml
     release_date: '2022-05-26'
   3.3.1:
-    release_date: '2022-06-22'
     changes:
       release_summary: Various minor documentation fixes.
+    release_date: '2022-06-22'
   3.4.0:
     changes:
       bugfixes:
@@ -1941,8 +1941,9 @@ releases:
       - ec2_vpc_route_table - add support for Carrier Gateway entry (https://github.com/ansible-collections/amazon.aws/pull/926).
       - ec2_vpc_subnet - retry fetching subnet details after creation if the first
         attempt fails (https://github.com/ansible-collections/amazon.aws/pull/1526).
-      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query ssm
-        inventory information for configured EC2 instances and populate hostvars (https://github.com/ansible-collections/amazon.aws/issues/704).
+      - inventory aws ec2 - add parameter ``use_ssm_inventory`` allowing to query
+        ssm inventory information for configured EC2 instances and populate hostvars
+        (https://github.com/ansible-collections/amazon.aws/issues/704).
       - inventory plugins - refactor cache handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory plugins - refactor file verification handling (https://github.com/ansible-collections/amazon.aws/pull/1285).
       - inventory_aws_ec2 integration tests - replace local module ``test_get_ssm_inventory``
@@ -2304,3 +2305,28 @@ releases:
     - ec2_vpc_route_table_info-filter-fix.yml
     - release_summary.yml
     release_date: '2023-08-03'
+  6.4.0:
+    changes:
+      bugfixes:
+      - backup_selection - ensures that updating an existing selection will add new
+        ``Conditions`` if there previously were not any (https://github.com/ansible-collections/amazon.aws/pull/1701).
+      minor_changes:
+      - cloudformation - Add support for ``disable_rollback`` to update stack operation
+        (https://github.com/ansible-collections/amazon.aws/issues/1681).
+      - ec2_key - add support for new parameter ``file_name`` to save private key
+        in when new key is created by AWS. When this option is provided the generated
+        private key will be removed from the module return (https://github.com/ansible-collections/amazon.aws/pull/1704).
+      release_summary: This release brings a new module named ``amazon.aws.ec2_key_info``,
+        some documentation improvements, new features and bugfixes.
+    fragments:
+    - 1681-cloudformation-add-support-for-disable_rollback-to-update.yml
+    - 1685-ssm_parameter-update-examples-to-use-fqcn.yml
+    - 1701-backup-selection-bugfix.yml
+    - doc_update_for_keypair_nolog.yml
+    - ec2_key-fix-security-vulnerability.yml
+    - release_summary.yml
+    modules:
+    - description: Gather information about EC2 key pairs in AWS
+      name: ec2_key_info
+      namespace: ''
+    release_date: '2023-09-05'
