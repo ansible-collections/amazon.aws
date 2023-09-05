@@ -136,6 +136,13 @@ EXAMPLES = r"""
     tags:
       Env: Prod
 
+- name: Add IAM User to Group
+  amazon.aws.iam_user:
+    name: user-1
+    groups:
+      - group-1
+
+
 - name: Delete the user
   amazon.aws.iam_user:
     name: testuser1
