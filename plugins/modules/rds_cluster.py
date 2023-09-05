@@ -1148,7 +1148,9 @@ def handle_remove_from_global_db(module, cluster):
     # this is needed as even though we have wait_for_cluster_status, it takes a few seconds
     # for cluster to change status from 'available' to 'promoting'
     time.sleep(15)
-    wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
+
+    if module.params.get('wait'):
+      wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
 
     return True
 
