@@ -267,15 +267,15 @@ def absent():
 
     filters = {
         "Filters": [
-            {"Name": "name", "Values": [module.params["task_name"]]}
-            {"Name": "task-state", "Values": ["active"]}
+            {"Name": "name", "Values": [module.params["task_name"]]},
+            {"Name": "task-state", "Values": ["active"]},
         ]
     }
 
     result = {"import_image": {}}
     params = {}
 
-    if module.params.get("cancel_reason")
+    if module.params.get("cancel_reason"):
         params["CancelReason"] = module.params["cancel_reason"]
 
     import_image_info = helper_describe_import_image_tasks(client, module, **filters)
@@ -289,7 +289,7 @@ def absent():
         try:
             import_image_info = client.cancel_import_task(aws_retry=True, **params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg"Failed to import the image")
+            module.fail_json_aws(e, msg="Failed to import the image")
     else:
         module.exit_json(changed=False, msg="The specified import task does not exist or it cannot be cancelled")
 
@@ -334,15 +334,19 @@ def present():
 
     filters = {
         "Filters": [
-            {"Name": "name", "Values": [module.params["task_name"]]}
-            {"Name": "task-state", "Values": ["completed", "active", "deleting"]}
+            {"Name": "name", "Values": [module.params["task_name"]]},
+            {"Name": "task-state", "Values": ["completed", "active", "deleting"]},
         ]
     }
     import_image_info = helper_describe_import_image_tasks(client, module, **filters)
 
     if import_image_info:
         # Import tasks cannot be modified
-        module.exit_json(changed=False, msg="An import task with the specified name already exists", **ensure_ec2_import_image_result(module, result))
+        module.exit_json(
+            changed=False,
+            msg="An import task with the specified name already exists",
+            **ensure_ec2_import_image_result(module, result),
+        )
     else:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created the import task if not in check mode")
@@ -351,9 +355,9 @@ def present():
             client.import_image(aws_retry=True, **params)
             import_image_info = helper_describe_import_image_tasks(client, module, **filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg"Failed to import the image")
+            module.fail_json_aws(e, msg="Failed to import the image")
 
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, result))
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, import_image_info))
 
 
 def main():

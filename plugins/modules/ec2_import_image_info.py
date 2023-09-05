@@ -169,6 +169,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_import_image_result
 
@@ -184,13 +185,13 @@ def main():
     client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
     params = {
-        "Filters": smodule.params["filters"],
+        "Filters": module.params["filters"],
         "ImportTaskIds": module.params["import_task_ids"],
     }
 
     import_image_info = helper_describe_import_image_tasks(client, module, **params)
 
-    module.exit_json(import_image=**ensure_ec2_import_image_result(result))
+    module.exit_json(import_image=ensure_ec2_import_image_result(import_image_info))
 
 
 if __name__ == "__main__":

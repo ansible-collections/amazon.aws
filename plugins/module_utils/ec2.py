@@ -314,7 +314,7 @@ def helper_describe_import_image_tasks(client, module, **params):
         module.fail_json_aws(e, msg="Failed to describe the import image")
 
 
-def ensure_result(module, import_image_info):
+def ensure_ec2_import_image_result(module, import_image_info):
     result = {"import_image": {}}
 
     import_image_info["Tags"] = boto3_tag_list_to_ansible_dict(import_image_info["Tags"])
