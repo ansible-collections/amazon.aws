@@ -4,9 +4,7 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
 DOCUMENTATION = r"""
----
 module: ec2_vpc_endpoint_service
 short_description: create, delete VPC endpoint service
 version_added: 6.1.0
@@ -15,9 +13,26 @@ description:
   - For more information see the AWS documentation for VPC endpoint services
     U(https://docs.aws.amazon.com/vpc/latest/privatelink/what-is-privatelink.html).
 options:
+  service_id:
+    description:
+      - The ID of the service.
+    required: false
+    type: str
   acceptance_required:
     description:
       - Indicates whether requests from service consumers to create an endpoint to your service must be accepted manually.
+      - Default value is set by AWS (false)
+    required: false
+    type: bool
+  permissions:
+    description:
+      -  IAM ARNs that can make use of the service
+    required: false
+    elements: str
+    type: list
+  purge_permissions:
+    description:
+    - Purge existing permissions
     required: false
     default: false
     type: bool
@@ -25,11 +40,13 @@ options:
     description:
       - The Amazon Resource Names (ARNs) of the Gateway Load Balancers.
     required: false
+    elements: str
     type: list
   network_load_balancer_arns:
     description:
       -  The Amazon Resource Names (ARNs) of the Network Load Balancers.
     required: false
+    elements: str
     type: list
   private_dns_name:
     description:
@@ -39,28 +56,18 @@ options:
   supported_ip_address_types:
     description:
       -  The supported IP address types.
-    choices: ['ipv4', 'ipv6'].
+    choices: ['ipv4', 'ipv6']
     required: false
     type: list
-  service_id:
-    description:
-      - The ID of the service.
-    required: false
-    type: str
+    elements: str
   state:
     description:
-      - Create, delete a VPC endpoint service
+      - C(present) to ensure resource is created.
+      - C(absent) to remove resource.
     required: false
     default: present
-    choices: ['present', 'absent']
+    choices: [ "present", "absent" ]
     type: str
-  permissions:
-    description:
-     - The list of Amazon Resource Names (ARN) of the principals having access to the service. Permissions are granted to the principals in this list.
-     - To grant permissions to all principals, specify an asterisk (*).
-    required: false
-    default: []
-    tyoe: list
 notes: []
 author:
   - Kristof Imre Szabo (@krisek)
@@ -102,7 +109,7 @@ endpoint_service:
             description:
             - Indicates whether requests from other Amazon Web Services accounts to create an endpoint to the service must first be accepted.
             returned: always
-            tpye: bool
+            type: bool
             sample:
         availability_zones:
             description: The Availability Zones in which the service is available.
@@ -121,14 +128,16 @@ endpoint_service:
             description: The Amazon Resource Names (ARNs) of the Network Load Balancers for the service.
             returned: if network load balancers are backing the service
             type: list
+            elements: str
         gateway_load_balancer_arns:
             description: The Amazon Resource Names (ARNs) of the Gateway Load Balancers for the service.
             returned: if gateway load balancers are backing the service
             type: list
+            elements: str
         private_dns_name_configuration:
             description: Information about the endpoint service private DNS name configuration.
             returned: always
-            tpye: dict
+            type: dict
         service_id:
             description: The ID of the service.
             returned: always
@@ -136,23 +145,25 @@ endpoint_service:
         service_name:
             description: The name of the service.
             returned: always
-            tpye: str
+            type: str
         service_state:
             description: The service state.
             returned: always
-            tpye: str
+            type: str
         service_type:
             description: The type of service. Describes the type of service for a VPC endpoint.
             returned: always
-            tpye: dict
+            type: dict
         supported_ip_address_types:
             description: The supported IP address types.
             returned: always
             type: list
+            elements: str
         permissions:
             description: The list of Amazon Resource Names (ARN) of the principals having access to the service.
             returned: always
             type: list
+            elements: str
         tags:
             description: Tags of the endpoint service.
             returned: always
@@ -175,22 +186,21 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-try:
-    from botocore.exceptions import ClientError, BotoCoreError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 ARGUMENT_SPEC = dict(
     state=dict(type="str", choices=["present", "absent"], default="present"),
     private_dns_name=dict(required=False, type="str"),
-    supported_ip_address_types=dict(required=False, type="list", default=["ipv4"], choices=["ipv4", "ipv6"]),
-    gateway_load_balancer_arns=dict(required=False, type="list", default=[]),
-    network_load_balancer_arns=dict(required=False, type="list", default=[]),
-    permissions=dict(required=False, type="list", default=[]),
+    supported_ip_address_types=dict(
+        required=False, type="list", default=None, choices=["ipv4", "ipv6"], elements="str"
+    ),
+    gateway_load_balancer_arns=dict(required=False, type="list", default=None, elements="str"),
+    network_load_balancer_arns=dict(required=False, type="list", default=None, elements="str"),
+    permissions=dict(required=False, type="list", default=None, elements="str"),
     purge_permissions=dict(default=False, type="bool"),
     tags=dict(required=False, type="dict", aliases=["resource_tags"]),
-    acceptance_required=dict(default=False, type="bool"),
+    purge_tags=dict(type="bool", default=True),
+    acceptance_required=dict(default=None, type="bool"),
     service_id=dict(required=False, type="str"),
 )
 
@@ -199,6 +209,8 @@ REQUIRED_IF = [
 ]
 
 SUPPORTS_CHECK_MODE = True
+
+field_defaults = {"supported_ip_address_types": ["ipv4"]}
 
 
 def format_client_params(
@@ -229,9 +241,7 @@ def format_client_params(
 
     if operation == "create":  # Add create-specific params
         if tags:
-            params["TagSpecifications"] = [
-                {"ResourceType": "vpc-endpoint-service", "Tags": ansible_dict_to_boto3_tag_list(tags)}
-            ]
+            params["TagSpecifications"] = boto3_tag_specifications(tags, ["vpc-endpoint-service"])
 
     elif operation == "update":  # Add update-specific params
         params["ServiceId"] = service_id
@@ -243,8 +253,8 @@ def create_vpc_endpoint_service(module: AnsibleAWSModule, client, create_params:
     try:
         response = client.create_vpc_endpoint_service_configuration(**create_params)
     except (
-        BotoCoreError,
-        ClientError,
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
     ) as err:
         module.fail_json_aws(err, msg="Failed to create vpc  endpoint service {err}")
     return response
@@ -254,8 +264,8 @@ def modify_vpc_endpoint_service(module: AnsibleAWSModule, client, modify_params:
     try:
         response = client.modify_vpc_endpoint_service_configuration(**modify_params)
     except (
-        BotoCoreError,
-        ClientError,
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
     ) as err:
         module.fail_json_aws(err, msg="Failed to modify vpc endpoint service {err}")
     return response
@@ -265,8 +275,8 @@ def delete_vpc_endpoint_service(module: AnsibleAWSModule, client, service_id) ->
     try:
         response = client.delete_vpc_endpoint_service_configurations(ServiceIds=[service_id])
     except (
-        BotoCoreError,
-        ClientError,
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
     ) as err:
         module.fail_json_aws(err, msg="Failed to delete endpoint service {err}")
     return response
@@ -278,14 +288,17 @@ def get_vpc_endpoint_service_details(module: AnsibleAWSModule, client, endpoint_
     for page in paginator.paginate():
         service_configurations.extend(page["ServiceConfigurations"])
 
-    endpoint_service_nlba = set(endpoint_service.get("network_load_balancer_arns", []))
-    endpoint_service_glba = set(endpoint_service.get("gateway_load_balancer_arns", []))
+    endpoint_service_nlba = endpoint_service.get("network_load_balancer_arns", [])
+    endpoint_service_nlba = [] if endpoint_service_nlba is None else endpoint_service_nlba
+
+    endpoint_service_glba = endpoint_service.get("gateway_load_balancer_arns", [])
+    endpoint_service_glba = [] if endpoint_service_glba is None else endpoint_service_glba
 
     for service_configuration in service_configurations:
         if (
             not endpoint_service["service_id"]
-            and set(service_configuration.get("NetworkLoadBalancerArns", [])) == endpoint_service_nlba
-            and set(service_configuration.get("GatewayLoadBalancerArns", [])) == endpoint_service_glba
+            and set(service_configuration.get("NetworkLoadBalancerArns", [])) == set(endpoint_service_nlba)
+            and set(service_configuration.get("GatewayLoadBalancerArns", [])) == set(endpoint_service_glba)
         ):
             return camel_dict_to_snake_dict(service_configuration)
 
@@ -340,17 +353,27 @@ def vpc_endpoint_update_needed(existing_endpoint_configuration: dict, new_endpoi
     #
 
     for field in ["supported_ip_address_types", "network_load_balancer_arns", "gateway_load_balancer_arns"]:
-        # double protection -- maybe not needed
-        if existing_endpoint_configuration.get(field, []) is None:
-            existing_endpoint_configuration[field] = []
+        field_default = field_defaults.get(field, [])
+
+        existing_endpoint_configuration[field] = (
+            field_default
+            if existing_endpoint_configuration.get(field, field_default) is None
+            else existing_endpoint_configuration.get(field, field_default)
+        )
+
+        new_endpoint_configuration[field] = (
+            field_default
+            if new_endpoint_configuration[field] is None
+            else new_endpoint_configuration.get(field, field_default)
+        )
 
         update_endpoint_configuration[f"remove_{field}"] = list(
-            set(existing_endpoint_configuration.get(field, [])) - set(new_endpoint_configuration[field])
+            set(existing_endpoint_configuration.get(field, field_default)) - set(new_endpoint_configuration[field])
         )
 
         update_endpoint_configuration[f"add_{field}"] = list(
-            set(existing_endpoint_configuration.get(field, [])).symmetric_difference(
-                set(new_endpoint_configuration.get(field, []))
+            set(existing_endpoint_configuration.get(field, field_default)).symmetric_difference(
+                set(new_endpoint_configuration.get(field, field_default))
             )
             - set(update_endpoint_configuration[f"remove_{field}"])
         )
@@ -403,8 +426,8 @@ def modify_vpc_endpoint_service_permissions(module: AnsibleAWSModule, client, pe
     try:
         response = client.modify_vpc_endpoint_service_permissions(**permission_params)
     except (
-        BotoCoreError,
-        ClientError,
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
     ) as err:
         module.fail_json_aws(err, msg="Failed to modify permissions {err}")
     return response
@@ -504,6 +527,18 @@ def main():
                     )
                     response_permissions = modify_vpc_endpoint_service_permissions(module, client, client_params)
                     result["changed"] = True
+
+            # tag changes
+            if module.params.get("tags"):
+                if not module.check_mode:
+                    result["changed"] |= ensure_ec2_tags(
+                        client,
+                        module,
+                        service_id,
+                        resource_type="vpc-endpoint-service",
+                        tags=module.params.get("tags"),
+                        purge_tags=module.params.get("purge_tags"),
+                    )
 
             # now we see what we have done
             resulting_endpoint_service = get_vpc_endpoint_service_details(module, client, existing_endpoint_service)
