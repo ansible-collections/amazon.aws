@@ -312,6 +312,8 @@ options:
         description:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
+          - When performing other modifications along with I(remove_grom_global_db=true), make sure to have I(wait=true) as DB cluster
+            isn't available for modification while promoting.
         type: bool
         required: False
         version_added: 6.5.0
@@ -488,6 +490,7 @@ EXAMPLES = r"""
     cluster_id: "{{ cluster_id }}"
     skip_final_snapshot: true
     remove_from_global_db: true
+    wait: true
     state: absent
 """
 
@@ -717,8 +720,6 @@ vpc_security_groups:
       type: str
       sample: sg-12345678
 """
-
-import time
 
 try:
     import botocore
@@ -1145,12 +1146,12 @@ def handle_remove_from_global_db(module, cluster):
             e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
         )
 
-    # this is needed as even though we have wait_for_cluster_status, it takes a few seconds
-    # for cluster to change status from 'available' to 'promoting'
-    time.sleep(15)
+    # wait for cluster to change status from 'available' to 'promoting'
+    wait_for_cluster_status(client, module, db_cluster_id, "db_cluster_promoting")
 
-    if module.params.get('wait'):
-      wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
+    # if wait=true, wait for db cluster remove from global db operation to complete
+    if module.params.get("wait"):
+        wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
 
     return True
 
@@ -1303,7 +1304,7 @@ def main():
     changed = False
 
     if module.params.get("remove_from_global_db"):
-        if module.params.get("engine") in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+        if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
             changed = handle_remove_from_global_db(module, cluster)
 
     parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
