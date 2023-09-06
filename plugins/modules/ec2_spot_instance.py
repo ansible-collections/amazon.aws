@@ -13,6 +13,7 @@ description:
     - Creates or cancels spot instance requests.
 author:
   - Sri Rachana Achyuthuni (@srirachanaachyuthuni)
+  - Aditya Putta (@theputta)
 options:
   zone_group:
     description:
@@ -337,6 +338,14 @@ EXAMPLES = r"""
   amazon.aws.ec2_spot_instance:
     spot_instance_request_ids: ['sir-12345678', 'sir-abcdefgh']
     state: absent
+
+- name: Modify Spot Instance Tags
+  amazon.aws.ec2_spot_instance_tags:
+    instance_id: id-12345678
+    tags:
+      - key: Name
+        value: SpotInstance-xyz
+  register: modified_instance_tags    
 """
 
 RETURN = r"""
