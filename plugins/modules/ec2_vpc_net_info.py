@@ -41,6 +41,16 @@ EXAMPLES = r"""
 - amazon.aws.ec2_vpc_net_info:
     vpc_ids: vpc-00112233
 
+# Retrieve Information for a Specific Subnet
+- amazon.aws.ec2_vpc_net_info:
+    subnet_ids:
+      - subnet-123
+  register: specific_subnet_info
+
+- debug:
+    var: specific_subnet_info
+    
+
 # Gather information about any VPC with a tag key Name and value Example
 - amazon.aws.ec2_vpc_net_info:
     filters:
