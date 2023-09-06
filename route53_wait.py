@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: route53_wait
-version_added: 6.2.0
+version_added: 6.3.0
 short_description: wait for changes in Amazons Route 53 DNS service to propagate
 description:
   - When using M(amazon.aws.route53) with I(wait=false), this module allows to wait for the
