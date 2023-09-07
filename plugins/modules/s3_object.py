@@ -278,6 +278,14 @@ EXAMPLES = r"""
     src: /usr/local/myfile.txt
     mode: put
 
+- name: Upload a Directory to S3 Bucket
+  amazon.aws.s3_object:
+    bucket: mybucket
+    object: /my/desired/
+    src: /path/to/local/directory/
+    mode: put
+    recursive: yes
+
 - name: PUT operation from a rendered template
   amazon.aws.s3_object:
     bucket: mybucket
