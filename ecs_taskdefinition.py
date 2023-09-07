@@ -627,6 +627,27 @@ options:
             expression:
                 description: A cluster query language expression to apply to the constraint.
                 type: str
+    runtime_platform:
+        version_added: 6.4.0
+        description:
+            - runtime platform configuration for the task
+        required: false
+        type: dict
+        default: {
+                    "operatingSystemFamily": "LINUX",
+                    "cpuArchitecture": "X86_64"
+                }
+        suboptions:
+            cpuArchitecture:
+                description: The CPU Architecture type to be used by the task
+                type: str
+                required: false
+                choices: ['X86_64', 'ARM64']
+            operatingSystemFamily:
+                description: OS type to be used by the task
+                type: str
+                required: false
+                choices: ['LINUX', 'WINDOWS_SERVER_2019_FULL', 'WINDOWS_SERVER_2019_CORE', 'WINDOWS_SERVER_2022_FULL', 'WINDOWS_SERVER_2022_CORE']
 extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
@@ -813,6 +834,7 @@ class EcsTaskManager:
         cpu,
         memory,
         placement_constraints,
+        runtime_platform,
     ):
         validated_containers = []
 
@@ -873,6 +895,8 @@ class EcsTaskManager:
             params["executionRoleArn"] = execution_role_arn
         if placement_constraints:
             params["placementConstraints"] = placement_constraints
+        if runtime_platform:
+            params["runtimePlatform"] = runtime_platform
 
         try:
             response = self.ecs.register_task_definition(aws_retry=True, **params)
@@ -938,6 +962,24 @@ def main():
             type="list",
             elements="dict",
             options=dict(type=dict(type="str"), expression=dict(type="str")),
+        ),
+        runtime_platform=dict(
+            required=False,
+            default={"operatingSystemFamily": "LINUX", "cpuArchitecture": "X86_64"},
+            type="dict",
+            options=dict(
+                cpuArchitecture=dict(required=False, choices=["X86_64", "ARM64"]),
+                operatingSystemFamily=dict(
+                    required=False,
+                    choices=[
+                        "LINUX",
+                        "WINDOWS_SERVER_2019_FULL",
+                        "WINDOWS_SERVER_2019_CORE",
+                        "WINDOWS_SERVER_2022_FULL",
+                        "WINDOWS_SERVER_2022_CORE",
+                    ],
+                ),
+            ),
         ),
     )
 
@@ -1157,6 +1199,7 @@ def main():
                     module.params["cpu"],
                     module.params["memory"],
                     module.params["placement_constraints"],
+                    module.params["runtime_platform"],
                 )
             results["changed"] = True
 
