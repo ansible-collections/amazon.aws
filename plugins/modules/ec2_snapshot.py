@@ -116,12 +116,11 @@ EXAMPLES = r"""
     volume_id: vol-abcdef12
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
 
- # Create an Encrypted EBS Snapshot
- - amazon.aws.ec2_snapshot:
+# Create an Encrypted EBS Snapshot
+- amazon.aws.ec2_snapshot:
     description: "Encrypted snapshot"
     volume_id: "vol-01236789abcdef0"
     encrypted: yes
-   register: encrypted_snapshot   
 
 # Snapshot of volume mounted on device_name attached to instance_id
 - amazon.aws.ec2_snapshot:
