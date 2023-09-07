@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Inventory Plugin &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="amazon.aws.autoscaling_group module – Create or delete AWS AutoScaling Groups (ASGs)" href="../autoscaling_group_module.html" />
+    <link rel="prev" title="Guidelines for Ansible Amazon AWS module development" href="dev_guidelines.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">Collections in the Amazon Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">Amazon.Aws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#communication">Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#changelog">Changelog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#scenario-guide">Scenario Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-development-guidelines">Module Development Guidelines</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#dynamic-inventory-plugin-guide">Dynamic Inventory Plugin Guide</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collections in the Amazon Namespace</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Amazon.Aws</a></li>
+      <li class="breadcrumb-item active">Dynamic Inventory Plugin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="dynamic-inventory-plugin">
+<span id="ansible-collections-amazon-aws-docsite-dynamic-inventory"></span><h1>Dynamic Inventory Plugin<a class="headerlink" href="#dynamic-inventory-plugin" title="Link to this heading"></a></h1>
+<p>A dynamic inventory plugin allows users to point at data sources to compile the inventory of hosts that Ansible uses to target tasks, either via the <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">/path/to/file</span></code> and/or <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">'host1,</span> <span class="pre">host2'</span></code> command line parameters or from other configuration sources.</p>
+<p>When using Ansible with AWS, inventory file maintenance will be a hectic task as AWS frequently changes IPs, autoscaling instances, and more.
+Once your AWS EC2 hosts are spun up, you’ll probably want to talk to them again.
+With a cloud setup, it’s best not to maintain a static list of cloud hostnames in text files.
+Rather, the best way to handle this is to use the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin makes API calls to AWS to get a list of inventory hosts from Amazon Web Services EC2 in the run time.
+It gives the EC2 instance details dynamically to manage the AWS infrastructure.</p>
+<p>The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.</p>
+<p>To start using the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin (a YAML configuration file that ends with <code class="docutils literal notranslate"><span class="pre">aws_ec2.(yml|yaml)</span></code>, e.g., <code class="docutils literal notranslate"><span class="pre">demo.aws_ec2.yml</span></code>), then add <code class="docutils literal notranslate"><span class="pre">plugin:</span> <span class="pre">amazon.aws.aws_ec2</span></code>. Use the fully qualified name if the plugin is in a collection.</p>
+</section>
+<section id="authentication">
+<span id="ansible-collections-amazon-aws-docsite-using-inventory-plugin"></span><h1>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h1>
+<p>If your Ansible controller is not in AWS, authentication is handled by either
+specifying your access and secret key as ENV variables or inventory plugin arguments.</p>
+<p>For environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s1">&#39;AK123&#39;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s1">&#39;abc123&#39;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variable can also be used, but is only supported for backward compatibility.
+The <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> is a replacement for <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code> and it is only needed when you are using temporary credentials.</p>
+<p>Or you can set <code class="docutils literal notranslate"><span class="pre">aws_access_key</span></code>, <code class="docutils literal notranslate"><span class="pre">aws_secret_key</span></code>, and <code class="docutils literal notranslate"><span class="pre">security_token</span></code> inside the inventory configuration file.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+
+<span class="c1"># The access key for your AWS account.</span>
+<span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;YOUR-AWS-ACCESS-KEY-HERE&gt;</span>
+<span class="c1"># The secret access key for your AWS account.</span>
+<span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;YOUR-AWS-SECRET-KEY-HERE&gt;</span>
+</pre></div>
+</div>
+<p>If you use different credentials for different tools or applications, you can use profiles.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">profile</span></code> argument is mutually exclusive with the <code class="docutils literal notranslate"><span class="pre">aws_access_key</span></code>, <code class="docutils literal notranslate"><span class="pre">aws_secret_key</span></code> and <code class="docutils literal notranslate"><span class="pre">security_token</span></code> options.
+When no credentials are explicitly provided then the AWS SDK (boto3) which Ansible uses will fall back to its configuration files (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>).
+The shared credentials file has a default location of <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>.
+You can change the location of the shared credentials file by setting the <code class="docutils literal notranslate"><span class="pre">AWS_SHARED_CREDENTIALS_FILE</span></code> environment variable.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+
+<span class="c1"># Attach the default AWS profile</span>
+<span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+
+<span class="c1"># You could use Jinja2 to attach the AWS profile from the environment variable.</span>
+<span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">lookup(&#39;env&#39;,</span><span class="nv"> </span><span class="s">&#39;AWS_PROFILE&#39;)</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(&#39;dev-profile&#39;,</span><span class="nv"> </span><span class="s">true)</span><span class="nv"> </span><span class="s">}}&quot;</span>
+</pre></div>
+</div>
+<p>You can also set your AWS profile as an ENV variable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s1">&#39;test-profile&#39;</span>
+</pre></div>
+</div>
+<p>If your Ansible controller is running on an EC2 instance with an assigned IAM Role, the credential may be omitted.
+See the documentation for the controller <a class="reference external" href="https://docs.ansible.com/ansible-tower/latest/html/userguide/inventories.html#ug-source-ec2">for more details</a>.</p>
+<p>You can also use the ARN of the IAM role to assume to perform the inventory lookup.
+This can be useful for connecting across different accounts, or to limit user access.
+To do so, you should specify the <code class="docutils literal notranslate"><span class="pre">iam_role_arn</span></code>.
+You should still provide AWS credentials with enough privilege to perform the AssumeRole action.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+
+<span class="nt">iam_role_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::1234567890:role/assumed-ansible</span>
+</pre></div>
+</div>
+</section>
+<section id="minimal-example">
+<h1>Minimal Example<a class="headerlink" href="#minimal-example" title="Link to this heading"></a></h1>
+<p>Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+
+<span class="c1"># This sets the region. If empty (the default) default this will include all regions, except possibly</span>
+<span class="c1"># restricted ones like us-gov-west-1 and cn-north-1.</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+</pre></div>
+</div>
+<p>After providing any required options, you can view the populated inventory with <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--graph</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>@all:
+ |--@aws_ec2:
+ |  |--ip-10-210-0-189.ec2.internal
+ |  |--ip-10-210-0-195.ec2.internal
+ |--@ungrouped:
+</pre></div>
+</div>
+</section>
+<section id="allowed-options">
+<h1>Allowed Options<a class="headerlink" href="#allowed-options" title="Link to this heading"></a></h1>
+<p>Some of the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> dynamic inventory plugin options are explained in detail below. For a full list see <a class="reference external" href="https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3">the plugin documentation</a>.</p>
+<section id="hostnames">
+<h2><code class="docutils literal notranslate"><span class="pre">hostnames</span></code><a class="headerlink" href="#hostnames" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">hostnames</span></code> option provides different settings to choose how the hostname will be displayed.</p>
+<p>Some examples are shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">hostnames</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># This option allows displaying the public ip addresses.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip-address</span>
+
+<span class="w">  </span><span class="c1"># This option allows displaying the private ip addresses using `tag:Name` as a prefix.</span>
+<span class="w">  </span><span class="c1"># `name` can be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;private-ip-address&#39;</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_&#39;</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Name&#39;</span>
+
+<span class="w">  </span><span class="c1"># Using literal values for hostname</span>
+<span class="w">  </span><span class="c1"># # Hostname will be aws-test_literal</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;test_literal&#39;</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws&#39;</span>
+
+<span class="w">  </span><span class="c1"># To use tags as hostnames use the syntax `tag:Name=Value` to use the hostname `Name_Value`, or</span>
+<span class="w">  </span><span class="c1"># `tag:Name` to use the value of the Name tag. If value provided does not exist in the above options,</span>
+<span class="w">  </span><span class="c1"># it will be used as a literal string.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Tag1=Test1,Tag2=Test2&#39;</span>
+
+<span class="w">  </span><span class="c1"># Use dns-name attribute as hostname</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns-name</span>
+
+<span class="w">  </span><span class="c1"># You can also specify a list in order of precedence for hostname variables.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip-address</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns-name</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private-ip-address</span>
+</pre></div>
+</div>
+<p>By default, the inventory will only return the first match one of the <code class="docutils literal notranslate"><span class="pre">hostnames</span></code> entries.
+You may want to get all the potential matches in your inventory, this also implies you will get
+duplicated entries. To switch to this behavior, set the <code class="docutils literal notranslate"><span class="pre">allow_duplicated_hosts</span></code> configuration key to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</section>
+<section id="keyed-groups">
+<h2><code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code><a class="headerlink" href="#keyed-groups" title="Link to this heading"></a></h2>
+<p>You can create dynamic groups using host variables with the <code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code> option. <code class="docutils literal notranslate"><span class="pre">keyed_groups</span></code> comes in a prefix and a key format.
+The prefix will be the name of the host group that is to be concatenated with the key.</p>
+<p>Some examples are shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">keyed_groups</span><span class="p">:</span>
+<span class="c1"># This creates host groups based on architecture.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arch</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">architecture</span>
+
+<span class="c1"># This creates host groups based on `x86_64` architecture.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arch</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">architecture</span>
+<span class="w">  </span><span class="nt">value</span><span class="p">:</span>
+<span class="w">      </span><span class="s">&#39;x86_64&#39;</span>
+
+<span class="c1"># This creates host groups based on availability zone.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">az</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.availability_zone</span>
+
+<span class="c1"># If the EC2 tag Name had the value `redhat` the tag variable would be: `tag_Name_redhat`.</span>
+<span class="c1"># Similarly, if a tag existed for an AWS EC2 instance as `Applications` with the value of `nodejs` the</span>
+<span class="c1"># variable would be: `tag_Applications_nodejs`.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+
+<span class="c1"># This creates host groups using instance_type, e.g., `instance_type_z3_tiny`.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
+
+<span class="c1"># This creates host groups using security_groups id, e.g., `security_groups_sg_abcd1234` group for each security group.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups|json_query(&quot;[].group_id&quot;)&#39;</span>
+<span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups&#39;</span>
+
+<span class="c1"># This creates a host group for each value of the Application tag.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Application</span>
+<span class="w">  </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
+
+<span class="c1"># This creates a host group per region e.g., `aws_region_us_east_2`.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.region</span>
+<span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_region</span>
+
+<span class="c1"># This creates host groups based on the value of a custom tag `Role` and adds them to a metagroup called `project`.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags[&#39;Role&#39;]</span>
+<span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
+<span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;project&quot;</span>
+
+<span class="c1"># This creates a common parent group for all EC2 availability zones.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.availability_zone</span>
+<span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all_ec2_zones</span>
+
+<span class="c1"># This creates a group per distro (distro_CentOS, distro_Debian) and assigns the hosts that have matching values to it,</span>
+<span class="c1"># using the default separator &quot;_&quot;.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">distro</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible_distribution</span>
+</pre></div>
+</div>
+</section>
+<section id="groups">
+<h2><code class="docutils literal notranslate"><span class="pre">groups</span></code><a class="headerlink" href="#groups" title="Link to this heading"></a></h2>
+<p>It is also possible to create groups using the <code class="docutils literal notranslate"><span class="pre">groups</span></code> option.</p>
+<p>Some examples are shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># This created two groups - `Production` and `PreProduction` based on tags</span>
+<span class="w">  </span><span class="c1"># These conditionals are expressed using Jinja2 syntax.</span>
+<span class="w">  </span><span class="nt">redhat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;Production&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
+<span class="w">  </span><span class="nt">ubuntu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;PreProduction&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
+
+<span class="w">  </span><span class="c1"># This created a libvpc group based on specific condition on `vpc_id`.</span>
+<span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="compose">
+<h2><code class="docutils literal notranslate"><span class="pre">compose</span></code><a class="headerlink" href="#compose" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">compose</span></code> creates and modifies host variables from Jinja2 expressions.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compose</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># This sets the ansible_host variable to connect with the private IP address without changing the hostname.</span>
+<span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
+
+<span class="w">  </span><span class="c1"># This sets location_vars variable as a dictionary with location as a key.</span>
+<span class="w">  </span><span class="nt">location_vars</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;east_coast&quot;</span>
+<span class="w">    </span><span class="nt">server_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ansible_hostname</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">regex_replace</span><span class="nv"> </span><span class="s">(&#39;(.{6})(.{2}).*&#39;,</span><span class="nv"> </span><span class="s">&#39;\\2&#39;)&quot;</span>
+
+<span class="w">  </span><span class="c1"># This sets location variable.</span>
+<span class="w">  </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;east_coast&#39;&quot;</span>
+
+<span class="w">  </span><span class="c1"># This lets you connect over SSM to the instance id.</span>
+<span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_id</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;community.aws.aws_ssm&#39;</span>
+
+<span class="w">  </span><span class="c1"># This defines combinations of host servers, IP addresses, and related SSH private keys.</span>
+<span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
+<span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">centos</span>
+<span class="w">  </span><span class="nt">ansible_ssh_private_key_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/private_key_file</span>
+
+<span class="w">  </span><span class="c1"># This sets the ec2_security_group_ids variable.</span>
+<span class="w">  </span><span class="nt">ec2_security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_groups | map(attribute=&#39;group_id&#39;) | list |  join(&#39;,&#39;)</span>
+
+<span class="w">  </span><span class="c1"># Host variables that are strings need to be wrapped with two sets of quotes.</span>
+<span class="w">  </span><span class="c1"># See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;community.aws.aws_ssm&quot;&#39;</span>
+<span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;ssm-user&quot;&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="include-filters-and-exclude-filters">
+<h2><code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code><a class="headerlink" href="#include-filters-and-exclude-filters" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code> options give you the ability to compose the inventory with several queries (see <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">available filters</a>).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">include_filters</span><span class="p">:</span>
+<span class="c1"># This includes everything in the inventory that has the following tags.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Project</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;planets&#39;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Environment</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;demo&#39;</span>
+
+<span class="c1"># This excludes everything from the inventory that has the following tag:Name.</span>
+<span class="nt">exclude_filters</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}_3&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="filters">
+<h2><code class="docutils literal notranslate"><span class="pre">filters</span></code><a class="headerlink" href="#filters" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">filters</span></code> are used to filter out AWS EC2 instances based on conditions (see <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">available filters</a>).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># This selects only running instances with tag `Environment` tag set to `dev`.</span>
+<span class="w">  </span><span class="nt">tag:Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">  </span><span class="nt">instance-state-name </span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">running</span>
+
+<span class="w">  </span><span class="c1"># This selects only instances with tag `Environment` tag set to `dev` and `qa` and specific security group id.</span>
+<span class="w">  </span><span class="nt">tag:Environment</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qa</span>
+<span class="w">  </span><span class="nt">instance.group-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-xxxxxxxx</span>
+
+<span class="w">  </span><span class="c1"># This selects only instances with tag `Name` fulfilling specific conditions.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev-*</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">share-resource</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hotfix</span>
+</pre></div>
+</div>
+</section>
+<section id="use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization">
+<h2><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code><a class="headerlink" href="#use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> exposes the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script when it’s True.</p>
+<p>By default the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.</p>
+<p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s replace_dash_in_groups option is set to False.
+To replicate behavior of replace_dash_in_groups = True with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.</p>
+<p>For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.</p>
+<p>This is not the default as such names break certain functionality as not all characters are valid Python identifiers which group names end up being used as.</p>
+<p>The use of this feature is discouraged and we advise to migrate to the new tags structure.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="nt">filters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-*&#39;</span>
+<span class="nt">hostnames</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
+<span class="nt">use_contrib_script_compatible_sanitization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">use_contrib_script_compatible_ec2_tag_keys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
+<p>After providing any required options, you can view the populated inventory with <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--list</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  &quot;_meta&quot;: {
+      &quot;hostvars&quot;: {
+          &quot;instance-01&quot;: {
+              &quot;aws_ami_launch_index_ec2&quot;: 0,
+              &quot;aws_architecture_ec2&quot;: &quot;x86_64&quot;,
+              ...
+              &quot;ebs_optimized&quot;: false,
+              &quot;ec2_tag_Environment&quot;: &quot;dev&quot;,
+              &quot;ec2_tag_Name&quot;: &quot;instance-01&quot;,
+              &quot;ec2_tag_Tag1&quot;: &quot;Test1&quot;,
+              &quot;ec2_tag_Tag2&quot;: &quot;Test2&quot;,
+              &quot;ena_support&quot;: true,
+              &quot;enclave_options&quot;: {
+                  &quot;enabled&quot;: false
+              },
+              ...
+          },
+          &quot;instance-02&quot;: {
+            ...
+            &quot;ebs_optimized&quot;: false,
+            &quot;ec2_tag_Environment&quot;: &quot;dev&quot;,
+            &quot;ec2_tag_Name&quot;: &quot;instance-02&quot;,
+            &quot;ec2_tag_Tag1&quot;: &quot;Test3&quot;,
+            &quot;ec2_tag_Tag2&quot;: &quot;Test4&quot;,
+            &quot;ena_support&quot;: true,
+            &quot;enclave_options&quot;: {
+                &quot;enabled&quot;: false
+            },
+            ...
+          }
+      }
+  },
+  all&quot;: {
+        &quot;children&quot;: [
+            &quot;aws_ec2&quot;,
+            &quot;ungrouped&quot;
+        ]
+    },
+    &quot;aws_ec2&quot;: {
+        &quot;hosts&quot;: [
+            &quot;instance-01&quot;,
+            &quot;instance-02&quot;
+        ]
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="hostvars-prefix-and-hostvars-suffix">
+<h2><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_suffix</span></code><a class="headerlink" href="#hostvars-prefix-and-hostvars-suffix" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_sufix</span></code> allow to set up a prefix and suffix for host variables.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="nt">filters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-*&#39;</span>
+<span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws_&#39;</span>
+<span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_ec2&#39;</span>
+<span class="nt">hostnames</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
+</pre></div>
+</div>
+<p>Now the output of <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--list</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  &quot;_meta&quot;: {
+      &quot;hostvars&quot;: {
+          &quot;instance-01&quot;: {
+              &quot;aws_ami_launch_index_ec2&quot;: 0,
+              &quot;aws_architecture_ec2&quot;: &quot;x86_64&quot;,
+              &quot;aws_block_device_mappings_ec2&quot;: [
+                  {
+                      &quot;device_name&quot;: &quot;/dev/sda1&quot;,
+                      &quot;ebs&quot;: {
+                          &quot;attach_time&quot;: &quot;2022-06-27T09:04:57+00:00&quot;,
+                          &quot;delete_on_termination&quot;: true,
+                          &quot;status&quot;: &quot;attached&quot;,
+                          &quot;volume_id&quot;: &quot;vol-06e065bca44e6eae5&quot;
+                      }
+                  }
+              ],
+              &quot;aws_capacity_reservation_specification_ec2&quot;: {
+                  &quot;capacity_reservation_preference&quot;: &quot;open&quot;
+              }
+              ...,
+          },
+          &quot;instance-02&quot;: {
+            ...,
+          }
+      }
+  },
+  all&quot;: {
+        &quot;children&quot;: [
+            &quot;aws_ec2&quot;,
+            &quot;ungrouped&quot;
+        ]
+    },
+    &quot;aws_ec2&quot;: {
+        &quot;hosts&quot;: [
+            &quot;instance-01&quot;,
+            &quot;instance-02&quot;
+        ]
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="strict-and-strict-permissions">
+<h2><code class="docutils literal notranslate"><span class="pre">strict</span></code> and <code class="docutils literal notranslate"><span class="pre">strict_permissions</span></code><a class="headerlink" href="#strict-and-strict-permissions" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">strict:</span> <span class="pre">False</span></code> will skip instead of producing an error if there are missing facts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">strict_permissions:</span> <span class="pre">False</span></code> will ignore 403 errors rather than failing.</p>
+</section>
+<section id="cache">
+<h2><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> inventory plugin support caching can use the general settings for the fact cache defined in the <code class="docutils literal notranslate"><span class="pre">ansible.cfg</span></code> file’s <code class="docutils literal notranslate"><span class="pre">[defaults]</span></code> section or define inventory-specific settings in the <code class="docutils literal notranslate"><span class="pre">[inventory]</span></code> section.
+You can can define plugin-specific cache settings in the config file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="c1"># This enables cache.</span>
+<span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="c1"># Plugin to be used.</span>
+<span class="nt">cache_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jsonfile</span>
+<span class="nt">cache_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7200</span>
+<span class="c1"># Location where files are stored in the cache.</span>
+<span class="nt">cache_connection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/aws_inventory</span>
+<span class="nt">cache_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+</pre></div>
+</div>
+<p>Here is an example of setting inventory caching with some fact caching defaults for the cache plugin used and the timeout in an <code class="docutils literal notranslate"><span class="pre">ansible.cfg</span></code> file:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ansible.builtin.jsonfile</span>
+<span class="na">fact_caching_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/tmp/ansible_facts</span>
+<span class="na">cache_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3600</span>
+
+<span class="k">[inventory]</span>
+<span class="na">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">yes</span>
+<span class="na">cache_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/tmp/ansible_inventory</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="complex-example">
+<h1>Complex Example<a class="headerlink" href="#complex-example" title="Link to this heading"></a></h1>
+<p>Here is an <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> complex example utilizing some of the previously listed options:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
+<span class="nt">keyed_groups</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># add hosts to tag_Name_value groups for each aws_ec2 host&#39;s tags.Name variable.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Name</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_Name_</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="nt">groups</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># add hosts to the group dev if any of the dictionary&#39;s keys or values is the word &#39;dev&#39;.</span>
+<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;dev&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">(tags|list)&quot;</span>
+<span class="nt">filters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-01&#39;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-03&#39;</span>
+<span class="nt">include_filters</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-02&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-04&#39;</span>
+<span class="nt">exclude_filters</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-03&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-04&#39;</span>
+<span class="nt">hostnames</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># You can also specify a list in order of precedence for hostname variables.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip-address</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns-name</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private-ip-address</span>
+<span class="nt">compose</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># This sets the `ansible_host` variable to connect with the private IP address without changing the hostname.</span>
+<span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
+</pre></div>
+</div>
+<p>If a host does not have the variables in the configuration above (i.e. <code class="docutils literal notranslate"><span class="pre">tags.Name</span></code>, <code class="docutils literal notranslate"><span class="pre">tags</span></code>, <code class="docutils literal notranslate"><span class="pre">private_ip_address</span></code>), the host will not be added to groups other than those that the inventory plugin creates and the <code class="docutils literal notranslate"><span class="pre">ansible_host</span></code> host variable will not be modified.</p>
+<p>Now the output of <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--graph</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>@all:
+|--@aws_ec2:
+|  |--instance-01
+|  |--instance-02
+|--@tag_Name_instance_01:
+|  |--instance-01
+|--@tag_Name_instance_02:
+|  |--instance-02
+|--@ungrouped:
+</pre></div>
+</div>
+</section>
+<section id="using-dynamic-inventory-inside-playbook">
+<h1>Using Dynamic Inventory Inside Playbook<a class="headerlink" href="#using-dynamic-inventory-inside-playbook" title="Link to this heading"></a></h1>
+<p>If you want to use dynamic inventory inside the playbook, you just need to mention the group name in the hosts variable as shown below.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ansible Test Playbook</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_Name_instance_02</span>
+
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run Shell Command</span>
+<span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo &quot;Hello World&quot;</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dev_guidelines.html" class="btn btn-neutral float-left" title="Guidelines for Ansible Amazon AWS module development" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../autoscaling_group_module.html" class="btn btn-neutral float-right" title="amazon.aws.autoscaling_group module – Create or delete AWS AutoScaling Groups (ASGs)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
