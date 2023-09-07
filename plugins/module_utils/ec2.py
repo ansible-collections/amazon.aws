@@ -315,10 +315,11 @@ def helper_describe_import_image_tasks(client, module, **params):
 
 
 def ensure_ec2_import_image_result(module, import_image_info):
-    result = {"import_image": {}}
+    result = {"import_image": []}
 
-    import_image_info["Tags"] = boto3_tag_list_to_ansible_dict(import_image_info["Tags"])
-    result["import_image"] = camel_dict_to_snake_dict(import_image_info)
-    result["import_image"]["task_name"] = module.params["task_name"]
+    if import_image_info:
+        for image in import_image_info:
+            image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
+            result["import_image"].append(camel_dict_to_snake_dict(image, ignore_list=['Tags']))
 
     return result

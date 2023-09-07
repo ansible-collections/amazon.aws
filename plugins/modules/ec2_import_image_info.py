@@ -181,17 +181,17 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-
     client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    params = {}
 
-    params = {
-        "Filters": module.params["filters"],
-        "ImportTaskIds": module.params["import_task_ids"],
-    }
+    if module.params.get("filters"):
+      params["Filters"] = module.params["filters"]
+    if module.params.get("import_task_ids"):
+      params["ImportTaskIds"] = module.params["import_task_ids"]
 
     import_image_info = helper_describe_import_image_tasks(client, module, **params)
 
-    module.exit_json(import_image=ensure_ec2_import_image_result(import_image_info))
+    module.exit_json(**ensure_ec2_import_image_result(module, import_image_info))
 
 
 if __name__ == "__main__":

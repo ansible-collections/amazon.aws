@@ -258,6 +258,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_import_image_result
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 
 def absent():
@@ -267,7 +268,7 @@ def absent():
 
     filters = {
         "Filters": [
-            {"Name": "name", "Values": [module.params["task_name"]]},
+            {"Name": "tag:Name", "Values": [module.params["task_name"]]},
             {"Name": "task-state", "Values": ["active"]},
         ]
     }
@@ -293,7 +294,7 @@ def absent():
     else:
         module.exit_json(changed=False, msg="The specified import task does not exist or it cannot be cancelled")
 
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, result))
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, import_image_info))
 
 
 def present():
@@ -304,11 +305,11 @@ def present():
     if module.params.get("architecture"):
         params["Architecture"] = module.params["architecture"]
     if module.params.get("client_data"):
-        params["ClientData"] = module.params["client_data"]
+        params["ClientData"] = snake_dict_to_camel_dict(module.params["client_data"], capitalize_first=True)
     if module.params.get("description"):
         params["Description"] = module.params["description"]
     if module.params.get("disk_containers"):
-        params["DiskContainers"] = module.params["disk_containers"]
+        params["DiskContainers"] = snake_dict_to_camel_dict(module.params["disk_containers"], capitalize_first=True)
     if module.params.get("encrypted"):
         params["Encrypted"] = module.params["encrypted"]
     if module.params.get("hypervisor"):
@@ -322,7 +323,7 @@ def present():
     if module.params.get("role_name"):
         params["RoleName"] = module.params["role_name"]
     if module.params.get("license_specifications"):
-        params["LicenseSpecifications"] = module.params["license_specifications"]
+        params["LicenseSpecifications"] = snake_dict_to_camel_dict(module.params["license_specifications"], capitalize_first=True)
     if module.params.get("usage_operation"):
         params["UsageOperation"] = module.params["usage_operation"]
     if module.params.get("boot_mode"):
@@ -334,18 +335,18 @@ def present():
 
     filters = {
         "Filters": [
-            {"Name": "name", "Values": [module.params["task_name"]]},
+            {"Name": "tag:Name", "Values": [module.params["task_name"]]},
             {"Name": "task-state", "Values": ["completed", "active", "deleting"]},
         ]
     }
     import_image_info = helper_describe_import_image_tasks(client, module, **filters)
 
     if import_image_info:
-        # Import tasks cannot be modified
+        import_image_info[0]["TaskName"] = module.params["task_name"]
         module.exit_json(
             changed=False,
             msg="An import task with the specified name already exists",
-            **ensure_ec2_import_image_result(module, result),
+            **ensure_ec2_import_image_result(module, import_image_info),
         )
     else:
         if module.check_mode:
@@ -354,6 +355,7 @@ def present():
         try:
             client.import_image(aws_retry=True, **params)
             import_image_info = helper_describe_import_image_tasks(client, module, **filters)
+            import_image_info[0]["TaskName"] = module.params["task_name"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to import the image")
 
