@@ -181,6 +181,14 @@ EXAMPLES = r"""
     tags:
       Stack: "ansible-cloudformation"
 
+# Update a CloudFormation Stack:
+- name: Update CloudFormation Stack
+  amazon.aws.cloudformation:
+    stack_name: my-stack
+    template: stack-template.yml
+    state: present
+  register: stack_update_result
+
 # Basic role example
 - name: create a stack, specify role that cloudformation assumes
   amazon.aws.cloudformation:
