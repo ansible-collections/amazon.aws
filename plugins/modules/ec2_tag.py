@@ -61,6 +61,22 @@ EXAMPLES = r"""
       Name: ubervol
       env: prod
 
+- name: Update EC2 Instance Tags Based on Conditions
+    amazon.aws.ec2_tag:
+      resource: i-xxxxx  
+      region: us-east-1  
+      tags:
+          - key: Environment
+            value: Production
+            state: present
+          - key: CostCenter
+            value: Finance
+            state: present
+      condition:
+          key: Name
+          value: LinuxOS
+      state: present
+
 - name: Ensure all volumes are tagged
   amazon.aws.ec2_tag:
     region:  eu-west-1
