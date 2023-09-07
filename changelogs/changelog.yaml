@@ -1744,7 +1744,7 @@ releases:
       - lambda_execute - Fixes to the stack trace output, where it does not contain
         spaces between each character. The module had incorrectly always outputted
         extra spaces between each character. (https://github.com/ansible-collections/amazon.aws/pull/1615)
-      release_summary: 'This release brings a few bugfixes.'
+      release_summary: This release brings a few bugfixes.
     fragments:
     - 1589-return_false_when_no_change..yml
     - 1615-no_formatted_with_extra_space.yml
@@ -1760,8 +1760,17 @@ releases:
         when creating or modifying a Multi-AZ RDS cluster (https://github.com/ansible-collections/amazon.aws/pull/1657).
       - rds_cluster - Allow to pass GlobalClusterIdentifier to rds cluster on creation
         (https://github.com/ansible-collections/amazon.aws/pull/1663)."
-      release_summary: 'This release contains a few bugfixes for rds_cluster.'
+      release_summary: This release contains a few bugfixes for rds_cluster.
     fragments:
     - 20230713-rds_cluster-fix_params_passage.yml
     - 20230725-rds_cluster-fix.yml
     release_date: '2023-08-02'
+  5.5.4:
+    changes:
+      security_fixes:
+      - ec2_key - Update documentation to recommend using the module with ``no_log`` and ``register`` to avoid logging the private key (https://github.com/ansible-collections/amazon.aws/pull/1704).
+      release_summary: This release contains documentation updates including updated documentation relating to secure use of the ec2_key module.
+    fragments:
+    - 1685-ssm_parameter-update-examples-to-use-fqcn.yml
+    - doc_update_for_keypair_nolog.yml
+    release_date: '2023-09-07'

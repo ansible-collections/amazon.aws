@@ -5,6 +5,19 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v5.5.4
+======
+
+Release Summary
+---------------
+
+This release contains documentation updates including updated documentation relating to secure use of the ec2_key module.
+
+Security Fixes
+--------------
+
+- ec2_key - Update documentation to recommend using the module with ``no_log`` and ``register`` to avoid logging the private key (https://github.com/ansible-collections/amazon.aws/pull/1704).
+
 v5.5.3
 ======
 
