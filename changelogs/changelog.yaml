@@ -1773,4 +1773,4 @@ releases:
     fragments:
     - 1685-ssm_parameter-update-examples-to-use-fqcn.yml
     - doc_update_for_keypair_nolog.yml
-    release_date: '2023-09-06'
+    release_date: '2023-09-07'
