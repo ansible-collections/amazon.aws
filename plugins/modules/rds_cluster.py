@@ -103,9 +103,6 @@ options:
         aliases:
           - db_name
         type: str
-    db_cluster_arn:
-        description: The Amazon Resource Name (ARN) for the DB cluster.
-        type: str
     db_cluster_identifier:
         description:
           - The DB cluster (lowercase) identifier. The identifier must contain from 1 to 63 letters, numbers, or
@@ -1181,7 +1178,6 @@ def main():
         backup_retention_period=dict(type="int", default=1),
         character_set_name=dict(),
         database_name=dict(aliases=["db_name"]),
-        db_cluster_arn=dict(type="str"),
         db_cluster_identifier=dict(required=True, aliases=["cluster_id", "id", "cluster_name"]),
         db_cluster_parameter_group_name=dict(),
         db_subnet_group_name=dict(),

@@ -2,7 +2,7 @@
 - name: Run tests for testing remove cluster from global db
   block:
 
-    # # Create global db -------------------------------------------------------------------------------
+    # Create global db -------------------------------------------------------------------------------
 
     - name: Create rds global database
       amazon.cloud.rds_global_cluster:
@@ -148,17 +148,16 @@
     - name: convert it to an object
       set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
-    - debug: var=global_cluster_info
+
     - name: Assert that replica cluster is NOT a part of global db
       assert:
         that:
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 1
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn != replica_cluster_info_result.db_cluster_arn
 
-
     # Test delete on replica cluster as NOT a part of global db----------------------------------------------------------------
 
-    - name: Delete DB cluster without final snapshot (fails as its a part of global db)
+    - name: Delete replica cluster
       amazon.aws.rds_cluster:
         db_cluster_identifier: "{{ test_replica_cluster_name }}"
         global_cluster_identifier: "{{ test_global_cluster_name }}"
@@ -167,12 +166,11 @@
         state: absent
       register: delete_replica_cluster_result
 
-    - name: Assert that deletion failed due to cluster being part of global db
+    - name: Assert that replica cluster deletion succeeded
       assert:
         that:
           - delete_replica_cluster_result is not failed
-          - delete_replica_cluster_result is changed changed
-
+          - delete_replica_cluster_result is changed
 
     # Test remove primary cluster from global db------------------------------------------------------------
     - name: Remove primary cluster from global db
@@ -198,7 +196,7 @@
     - name: Assert that primary cluster is NOT a part of global db
       assert:
         that:
-          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
+           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
 
   # Cleanup starts------------------------------------------------------------
 
