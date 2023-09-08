@@ -312,7 +312,7 @@ options:
         description:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
-          - When performing other modifications along with I(remove_grom_global_db=true), make sure to have I(wait=true) as DB cluster
+          - When performing other modifications along with I(remove_grom_global_db=true), must set I(wait=true) as DB cluster
             isn't available for modification while promoting.
         type: bool
         required: False
@@ -1146,8 +1146,10 @@ def handle_remove_from_global_db(module, cluster):
             e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
         )
 
-    # wait for cluster to change status from 'available' to 'promoting'
-    wait_for_cluster_status(client, module, db_cluster_id, "db_cluster_promoting")
+    # for replica cluster - wait for cluster to change status from 'available' to 'promoting'
+    # only replica/secondary clusters have "GlobalWriteForwardingStatus" field
+    if "GlobalWriteForwardingStatus" in cluster:
+        wait_for_cluster_status(client, module, db_cluster_id, "db_cluster_promoting")
 
     # if wait=true, wait for db cluster remove from global db operation to complete
     if module.params.get("wait"):
