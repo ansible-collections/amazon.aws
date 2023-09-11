@@ -14,7 +14,7 @@ new_password: test-rds_password-new
 new_db_parameter_group_name: ansible-test-db-parameter-group-{{ tiny_prefix }}-new
 
 test_engine: aurora-mysql
-test_engine_version: 5.7
+test_engine_version: 8.0
 test_instance_class: db.r5.large
 
 # Global cluster parameters ================================
