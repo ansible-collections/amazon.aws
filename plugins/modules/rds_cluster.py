@@ -309,7 +309,7 @@ options:
         description:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
-          - When performing other modifications along with I(remove_grom_global_db=true), must set I(wait=true) as DB cluster
+          - When performing other modifications along with I(remove_from_global_db=true),, must set I(wait=true) as DB cluster
             isn't available for modification while promoting.
         type: bool
         required: False
@@ -1244,6 +1244,7 @@ def main():
         required_if=[
             ["creation_source", "snapshot", ["snapshot_identifier", "engine"]],
             ["creation_source", "s3", required_by_s3_creation_source],
+            ["remove_from_global_db", True, ["global_cluster_identifier", "db_cluster_identifier"]],
         ],
         mutually_exclusive=[
             ["s3_bucket_name", "source_db_cluster_identifier", "snapshot_identifier"],
