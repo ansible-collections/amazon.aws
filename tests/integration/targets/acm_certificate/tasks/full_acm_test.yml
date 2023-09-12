@@ -7,10 +7,10 @@
       session_token: '{{ security_token | default(omit) }}'
   block:
   - name: list certs
-    aws_acm_info: null
+    acm_certificate_info: null
     register: list_all
   - name: list certs with check mode
-    aws_acm_info: null
+    acm_certificate_info: null
     register: list_all_check
     check_mode: yes # read-only task, should work the same as with no
   - name: check certificate listing worked
@@ -20,12 +20,12 @@
         - list_all_check.certificates is defined
         - list_all.certificates == list_all_check.certificates
   - name: ensure absent cert which doesn't exist - first time
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item.name }}'
       state: absent
     with_items: '{{ local_certs }}'
   - name: ensure absent cert which doesn't exist - second time
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item[0].name }}'
       state: absent
     check_mode: '{{ item[1] }}'
@@ -39,7 +39,7 @@
         - not item.changed
     with_items: "{{ absent_start_two.results }}"
   - name: list cert which shouldn't exist
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ item.name }}'
     register: list_tag
@@ -75,7 +75,7 @@
       privatekey_path: '{{ item.priv_key }}'
       selfsigned_digest: sha256
   - name: upload certificate with check mode
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item.name }}'
       certificate: '{{ lookup(''file'', item.cert ) }}'
       private_key: '{{ lookup(''file'', item.priv_key ) }}'
@@ -84,7 +84,7 @@
     register: upload_check
     with_items: '{{ local_certs }}'
   - name: check whether cert was uploaded in check mode
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ item.name }}'
     register: list_after_check_mode_upload
@@ -96,7 +96,7 @@
         - upload_check.changed
         - (item.certificates | length) == 0
   - name: upload certificates first time
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item.name }}'
       certificate: '{{ lookup(''file'', item.cert ) }}'
       private_key: '{{ lookup(''file'', item.priv_key ) }}'
@@ -119,7 +119,7 @@
       original_cert: '{{ item.item }}'
       prev_task: '{{ item }}'
   - name: fetch data about cert just uploaded, by ARN
-    aws_acm_info:
+    acm_certificate_info:
       certificate_arn: '{{ item.certificate.arn }}'
     register: fetch_after_up
     with_items: '{{ upload.results }}'
@@ -138,7 +138,7 @@
       upload_result: '{{ item.item }}'
       original_cert: '{{ item.item.item }}'
   - name: fetch data about cert just uploaded, by name
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ original_cert.name }}'
     register: fetch_after_up_name
@@ -161,7 +161,7 @@
       upload_result: '{{ item.item }}'
       original_cert: '{{ item.item.item }}'
   - name: fetch data about cert just uploaded, by domain name
-    aws_acm_info:
+    acm_certificate_info:
       domain_name: '{{ original_cert.domain }}'
     register: fetch_after_up_domain
     with_items: '{{ upload.results }}'
@@ -182,7 +182,7 @@
       upload_result: '{{ item.item }}'
       original_cert: '{{ item.item.item }}'
   - name: upload certificates again, check not changed
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item.name }}'
       certificate: '{{ lookup(''file'', item.cert ) }}'
       private_key: '{{ lookup(''file'', item.priv_key ) }}'
@@ -191,7 +191,7 @@
     with_items: '{{ local_certs }}'
     failed_when: upload2.changed
   - name: update first cert with body of the second, first time, check mode
-    aws_acm:
+    acm_certificate:
       state: present
       name_tag: '{{ local_certs[0].name }}'
       certificate: '{{ lookup(''file'', local_certs[1].cert ) }}'
@@ -203,7 +203,7 @@
       that:
         - overwrite_check.changed
   - name: check previous tasks did not change real cert
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[0].name }}'
     register: fetch_after_overwrite_check
@@ -217,7 +217,7 @@
       - '''Name'' in fetch_after_overwrite_check.certificates[0].tags'
       - fetch_after_overwrite_check.certificates[0].tags['Name'] == local_certs[0].name
   - name: update first cert with body of the second, first real time
-    aws_acm:
+    acm_certificate:
       state: present
       name_tag: '{{ local_certs[0].name }}'
       certificate: '{{ lookup(''file'', local_certs[1].cert ) }}'
@@ -232,7 +232,7 @@
       - overwrite.certificate.domain_name == local_certs[1].domain
       - overwrite.changed
   - name: check update was sucessfull
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[0].name }}'
     register: fetch_after_overwrite
@@ -246,7 +246,7 @@
       - '''Name'' in fetch_after_overwrite.certificates[0].tags'
       - fetch_after_overwrite.certificates[0].tags['Name'] == local_certs[0].name
   - name: fetch other cert
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[1].name }}'
     register: check_after_overwrite
@@ -260,7 +260,7 @@
       - '''Name'' in check_after_overwrite.certificates[0].tags'
       - check_after_overwrite.certificates[0].tags['Name'] == local_certs[1].name
   - name: update first cert with body of the second again
-    aws_acm:
+    acm_certificate:
       state: present
       name_tag: '{{ local_certs[0].name }}'
       certificate: '{{ lookup(''file'', local_certs[1].cert ) }}'
@@ -275,7 +275,7 @@
       - overwrite2.certificate.domain_name == local_certs[1].domain
       - not overwrite2.changed
   - name: delete certs 1 and 2 in check mode
-    aws_acm:
+    acm_certificate:
       state: absent
       domain_name: '{{ local_certs[1].domain }}'
     check_mode: yes
@@ -285,7 +285,7 @@
       that:
         - delete_both_check.changed
   - name: fetch info for certs 1 and 2
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[item].name }}'
     register: check_del_one_check
@@ -298,7 +298,7 @@
       that:
         - (item.certificates | length) == 1
   - name: delete certs 1 and 2 real
-    aws_acm:
+    acm_certificate:
       state: absent
       domain_name: '{{ local_certs[1].domain }}'
     register: delete_both
@@ -310,7 +310,7 @@
       - upload.results[0].certificate.arn in delete_both.arns
       - delete_both.changed
   - name: fetch info for certs 1 and 2
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[item].name }}'
     register: check_del_one
@@ -327,7 +327,7 @@
     assert:
       that: (item.certificates | length) == 0
   - name: check cert 3
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[2].name }}'
     register: check_del_one_remain
@@ -336,7 +336,7 @@
       that:
         - (check_del_one_remain.certificates | length) == 1
   - name: delete cert 3
-    aws_acm:
+    acm_certificate:
       state: absent
       domain_name: '{{ local_certs[2].domain }}'
     register: delete_third
@@ -348,13 +348,13 @@
       - delete_third.arns[0] == upload.results[2].certificate.arn
       - delete_third.changed
   - name: check cert 3 was deleted
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ local_certs[2].name }}'
     register: check_del_three
     failed_when: check_del_three.certificates | length != 0
   - name: delete cert 3 again
-    aws_acm:
+    acm_certificate:
       state: absent
       domain_name: '{{ local_certs[2].domain }}'
     register: delete_third
@@ -365,7 +365,7 @@
       - delete_third.arns | length == 0
       - not delete_third.changed
   - name: delete cert 3 again, check mode
-    aws_acm:
+    acm_certificate:
       state: absent
       domain_name: '{{ local_certs[2].domain }}'
     check_mode: yes
@@ -415,7 +415,7 @@
       root_certificates:
       - '{{ local_certs[item.ca].cert }}'
   - name: upload chained cert, first chain, first time
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ chained_cert.name }}'
       certificate: '{{ lookup(''file'', chained_cert.chains[0].cert ) }}'
       certificate_chain: '{{ chains.results[0].complete_chain | join(''
@@ -426,7 +426,7 @@
     register: upload_chain
     failed_when: not upload_chain.changed
   - name: fetch chain of cert we just uploaded
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ chained_cert.name }}'
     register: check_chain
@@ -440,7 +440,7 @@
       - (check_chain.certificates[0].certificate_chain | replace( ' ', '' ) | replace( '\n', '')) == ( chains.results[0].complete_chain | join( '\n' ) | replace( ' ', '' ) | replace( '\n', '') )
       - (check_chain.certificates[0].certificate | replace( ' ', '' ) | replace( '\n', '')) == ( lookup('file', chained_cert.chains[0].cert ) | replace( ' ', '' ) | replace( '\n', '') )
   - name: upload chained cert again, check not changed
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ chained_cert.name }}'
       certificate: '{{ lookup(''file'', chained_cert.chains[0].cert ) }}'
       certificate_chain: '{{ chains.results[0].complete_chain | join(''
@@ -455,7 +455,7 @@
       - upload_chain_2.certificate.arn == upload_chain.certificate.arn
       - not upload_chain_2.changed
   - name: upload chained cert, different chain
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ chained_cert.name }}'
       certificate: '{{ lookup(''file'', chained_cert.chains[1].cert ) }}'
       certificate_chain: '{{ chains.results[1].complete_chain | join(''
@@ -470,7 +470,7 @@
       - upload_chain_3.changed
       - upload_chain_3.certificate.arn == upload_chain.certificate.arn
   - name: fetch info about chain of cert we just updated
-    aws_acm_info:
+    acm_certificate_info:
       tags:
         Name: '{{ chained_cert.name }}'
     register: check_chain_2
@@ -480,7 +480,7 @@
       - (check_chain_2.certificates[0].certificate_chain | replace( ' ', '' ) | replace( '\n', '')) == ( chains.results[1].complete_chain | join( '\n' ) | replace( ' ', '' ) | replace( '\n', '') )
       - (check_chain_2.certificates[0].certificate | replace( ' ', '' ) | replace( '\n', '')) == ( lookup('file', chained_cert.chains[1].cert ) | replace( ' ', '' ) | replace( '\n', '') )
   - name: delete chained cert
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ chained_cert.name }}'
       state: absent
     register: delete_chain_3
@@ -491,13 +491,13 @@
       - upload_chain.certificate.arn in delete_chain_3.arns
   always:
   - name: delete first bunch of certificates
-    aws_acm:
+    acm_certificate:
       name_tag: '{{ item.name }}'
       state: absent
     with_items: '{{ local_certs }}'
     ignore_errors: true
   - name: delete chained cert
-    aws_acm:
+    acm_certificate:
       state: absent
       name_tag: '{{ chained_cert.name }}'
     ignore_errors: true
