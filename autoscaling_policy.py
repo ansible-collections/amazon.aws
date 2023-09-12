@@ -223,7 +223,7 @@ EXAMPLES = r"""
     asg_name: "application-asg"
 
 - name: create TargetTracking predefined policy
-  ec2_scaling_policy:
+  community.aws.autoscaling_policy:
     name: "predefined-policy-1"
     policy_type: TargetTrackingScaling
     target_tracking_config:
@@ -234,7 +234,7 @@ EXAMPLES = r"""
   register: result
 
 - name: create TargetTracking predefined policy with resource_label
-  ec2_scaling_policy:
+  community.aws.autoscaling_policy:
     name: "predefined-policy-1"
     policy_type: TargetTrackingScaling
     target_tracking_config:
@@ -246,7 +246,7 @@ EXAMPLES = r"""
   register: result
 
 - name: create TargetTrackingScaling custom policy
-  ec2_scaling_policy:
+  community.aws.autoscaling_policy:
     name: "custom-policy-1"
     policy_type: TargetTrackingScaling
     target_tracking_config:

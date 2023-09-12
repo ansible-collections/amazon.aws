@@ -165,10 +165,10 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: "Get AWS storage gateway information"
-  community.aws.aws_sgw_info:
+  community.aws.storagegateway_info:
 
 - name: "Get AWS storage gateway information for region eu-west-3"
-  community.aws.aws_sgw_info:
+  community.aws.storagegateway_info:
     region: eu-west-3
 """
 

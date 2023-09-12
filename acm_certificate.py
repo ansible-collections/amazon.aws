@@ -167,14 +167,14 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 
 - name: upload a self-signed certificate
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     certificate: "{{ lookup('file', 'cert.pem' ) }}"
     privateKey: "{{ lookup('file', 'key.pem' ) }}"
     name_tag: my_cert # to be applied through an AWS tag as  "Name":"my_cert"
     region: ap-southeast-2 # AWS region
 
 - name: create/update a certificate with a chain
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     certificate: "{{ lookup('file', 'cert.pem' ) }}"
     private_key: "{{ lookup('file', 'key.pem' ) }}"
     name_tag: my_cert
@@ -188,25 +188,25 @@ EXAMPLES = r"""
     var: cert_create.certificate.arn
 
 - name: delete the cert we just created
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     name_tag: my_cert
     state: absent
     region: ap-southeast-2
 
 - name: delete a certificate with a particular ARN
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     certificate_arn: "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
     state: absent
     region: ap-southeast-2
 
 - name: delete all certificates with a particular domain name
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     domain_name: acm.ansible.com
     state: absent
     region: ap-southeast-2
 
 - name: add tags to an existing certificate with a particular ARN
-  community.aws.aws_acm:
+  community.aws.acm_certificate:
     certificate_arn: "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
     tags:
       Name: my_certificate
