@@ -48,7 +48,7 @@
       - "{{ testing_subnet_b.subnet.id }}"
 
 - name: create a security group with the vpc
-  ec2_group:
+  ec2_security_group:
     name: "{{ resource_prefix }}-sg"
     description: a security group for ansible tests
     vpc_id: "{{ testing_vpc.vpc.id }}"
