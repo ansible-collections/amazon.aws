@@ -48,19 +48,19 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: obtain all ACM certificates
-  community.aws.aws_acm_info:
+  community.aws.acm_certificate_info:
 
 - name: obtain all information for a single ACM certificate
-  community.aws.aws_acm_info:
+  community.aws.acm_certificate_info:
     domain_name: "*.example_com"
 
 - name: obtain all certificates pending validation
-  community.aws.aws_acm_info:
+  community.aws.acm_certificate_info:
     statuses:
     - PENDING_VALIDATION
 
 - name: obtain all certificates with tag Name=foo and myTag=bar
-  community.aws.aws_acm_info:
+  community.aws.acm_certificate_info:
     tags:
       Name: foo
       myTag: bar
@@ -68,7 +68,7 @@ EXAMPLES = r"""
 
 # The output is still a list of certificates, just one item long.
 - name: obtain information about a certificate with a particular ARN
-  community.aws.aws_acm_info:
+  community.aws.acm_certificate_info:
     certificate_arn:  "arn:aws:acm:ap-southeast-2:123456789012:certificate/abcdeabc-abcd-1234-4321-abcdeabcde12"
 
 """
