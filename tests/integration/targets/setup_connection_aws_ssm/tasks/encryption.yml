@@ -1,7 +1,7 @@
 ---
 ## Task file for setup/teardown AWS resources for aws_ssm integration testing
 - name: create a KMS key
-  aws_kms:
+  kms_key:
     alias: '{{ kms_key_name }}'
     grants:
     - name: SSM-Agent-Access

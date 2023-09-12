@@ -73,7 +73,7 @@
       when: iam_role_vars_file.stat.exists == true
 
     - name: Delete the KMS key
-      aws_kms:
+      kms_key:
         state: absent
         alias: '{{ kms_key_name }}'
 
