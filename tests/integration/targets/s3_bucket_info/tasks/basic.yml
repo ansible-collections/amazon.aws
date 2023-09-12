@@ -1,6 +1,6 @@
 ---
 - name: Get simple S3 bucket list
-  aws_s3_bucket_info:
+  s3_bucket_info:
   register: bucket_list
 
 - name: Assert result.changed == False and bucket list was retrieved
@@ -10,7 +10,7 @@
       - bucket_list.buckets
 
 - name: Get complex S3 bucket list
-  aws_s3_bucket_info:
+  s3_bucket_info:
     name_filter: "{{ name_pattern }}"
     bucket_facts:
       bucket_accelerate_configuration: true
