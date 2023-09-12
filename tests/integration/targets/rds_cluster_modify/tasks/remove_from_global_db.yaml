@@ -19,6 +19,7 @@
       amazon.aws.rds_cluster:
         global_cluster_identifier: "{{ test_global_cluster_name }}"
         db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        region: "{{ test_primary_cluster_region }}"
         engine: "{{ test_engine }}"
         engine_version: "{{ test_engine_version }}"
         username: "{{ username }}"
@@ -34,9 +35,9 @@
         db_instance_class: "{{ test_instance_class }}"
 
     - name: Get primary cluster info
-      amazon.aws.rds_cluster:
-        global_cluster_identifier: "{{ test_global_cluster_name }}"
+      amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        region: "{{ test_primary_cluster_region }}"
       register: primary_cluster_info_result
 
     - name: Get global db info
@@ -55,7 +56,7 @@
     - name: Assert that primary cluster is a part of global db
       assert:
         that:
-          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn == primary_cluster_info_result.db_cluster_arn
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn == primary_cluster_info_result.clusters[0].db_cluster_arn
 
     # Create replica cluster -------------------------------------------------------------------------------
 
@@ -64,13 +65,12 @@
         global_cluster_identifier: "{{ test_global_cluster_name }}"
         db_cluster_identifier: "{{ test_replica_cluster_name }}"
         engine: "{{ test_engine }}"
-        engine_version: "{{ test_engine_version }}"
+        engine_version: "{{ global_cluster_info.GlobalClusters[0].EngineVersion }}" # replica cluster engine version needs to be exact same as global db engine version
         region: "{{ test_replica_cluster_region }}"
       register: create_replica_result
 
     - name: Get replica cluster info
-      amazon.aws.rds_cluster:
-        global_cluster_identifier: "{{ test_global_cluster_name }}"
+      amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ test_replica_cluster_name }}"
         region: "{{ test_replica_cluster_region }}"
       register: replica_cluster_info_result
@@ -91,7 +91,7 @@
     - name: Assert that replica cluster is a part of global db
       assert:
         that:
-          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[1].DBClusterArn == replica_cluster_info_result.db_cluster_arn
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[1].DBClusterArn == replica_cluster_info_result.clusters[0].db_cluster_arn
 
     # Test delete on replica cluster part of global db----------------------------------------------------------------
 
@@ -125,7 +125,7 @@
       register: modify_port_result
 
     - name: Get replica cluster info
-      amazon.aws.rds_cluster:
+      amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ test_replica_cluster_name }}"
         region: "{{ test_replica_cluster_region }}"
       register: replica_cluster_info_result
@@ -134,7 +134,7 @@
         that:
           - modify_port_result is not failed
           - modify_port_result is changed
-          - replica_cluster_info_result.port == 3389
+          - replica_cluster_info_result.clusters[0].port == 3389
 
     - name: Get global db info
       command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
@@ -153,7 +153,7 @@
       assert:
         that:
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 1
-          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn != replica_cluster_info_result.db_cluster_arn
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn != replica_cluster_info_result.clusters[0].db_cluster_arn
 
     # Test delete on replica cluster as NOT a part of global db----------------------------------------------------------------
 
@@ -177,7 +177,7 @@
       amazon.aws.rds_cluster:
         global_cluster_identifier: '{{ test_global_cluster_name }}'
         db_cluster_identifier: '{{ test_primary_cluster_name }}'
-        db_cluster_arn: "{{ primary_cluster_info_result.db_cluster_arn }}"
+        region: "{{ test_primary_cluster_region }}"
         remove_from_global_db: true
 
     - name: Get global db info
