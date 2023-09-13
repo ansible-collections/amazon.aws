@@ -489,6 +489,15 @@ EXAMPLES = r"""
     remove_from_global_db: true
     wait: true
     state: absent
+
+- name: Remove replica DB cluster from global DB and modify cluster port
+  amazon.aws.rds_cluster:
+    db_cluster_identifier: "{{ replica_cluster_name }}"
+    global_cluster_identifier: "{{ global_cluster_name }}"
+    remove_from_global_db: true
+    state: present
+    port: 3389
+    region: "{{ replica_cluster_region }}"
 """
 
 RETURN = r"""
