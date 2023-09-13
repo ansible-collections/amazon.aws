@@ -65,19 +65,19 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a group
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     state: present
 
 - name: Create a group and attach a managed policy using its ARN
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     managed_policies:
       - arn:aws:iam::aws:policy/AmazonSNSFullAccess
     state: present
 
 - name: Create a group with users as members and attach a managed policy using its ARN
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     managed_policies:
       - arn:aws:iam::aws:policy/AmazonSNSFullAccess
@@ -87,13 +87,13 @@ EXAMPLES = r"""
     state: present
 
 - name: Remove all managed policies from an existing group with an empty list
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     state: present
     purge_policies: true
 
 - name: Remove all group members from an existing group
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     managed_policies:
       - arn:aws:iam::aws:policy/AmazonSNSFullAccess
@@ -101,7 +101,7 @@ EXAMPLES = r"""
     state: present
 
 - name: Delete the group
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: testgroup1
     state: absent
 
