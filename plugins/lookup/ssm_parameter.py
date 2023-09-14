@@ -45,14 +45,14 @@ options:
     type: boolean
   shortnames:
     description: 
-      - Indicates whether to return the name only without path if using a parameter hierarchy.
-      - The I(shortnames) and I(droppath) options are mutually exclusive.
+        - Indicates whether to return the name only without path if using a parameter hierarchy.
+        - The I(shortnames) and I(droppath) options are mutually exclusive.
     default: false
     type: boolean
   droppath:
     description: 
-      - Indicates whether to return the parameter name with the searched parameter heirarchy removed.
-      - The I(shortnames) and I(droppath) options are mutually exclusive.
+        - Indicates whether to return the parameter name with the searched parameter heirarchy removed.
+        - The I(shortnames) and I(droppath) options are mutually exclusive.
     default: false
     type: boolean
   on_missing:
