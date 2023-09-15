@@ -166,7 +166,7 @@
       - lookup_value[path_name_b] == path_value_b
       - path_name_c in lookup_value
       - lookup_value[path_name_c] == path_value_c
-      - lookup_value | length == 3
+      - lookup_value | length == 4
 
   - name: Lookup a keys using bypath and shortname
     set_fact:
