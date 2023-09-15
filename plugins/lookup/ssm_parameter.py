@@ -210,7 +210,7 @@ class LookupModule(AWSLookupBase):
                         x["Name"] = x["Name"][x["Name"].rfind("/") + 1:]  # fmt: skip
 
                 if self.get_option("droppath"):
-                    for x in paramlist
+                    for x in paramlist:
                         x["Name"] = x["Name"].replace(ssm_dict["Path"], "")
 
                 display.vvvv(f"AWS_ssm path lookup returned: {to_native(paramlist)}")
