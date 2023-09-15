@@ -1,0 +1,65 @@
+---
+- name: "Remove IAM Role (CHECK MODE)"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  check_mode: yes
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
+
+- name: "iam_role_info after deleting role in check mode"
+  iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+
+- assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+
+- name: "Remove IAM Role"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
+
+- name: "iam_role_info after deleting role"
+  iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
+
+- name: "Remove IAM Role (should be gone already) - check mode"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
+- name: "Remove IAM Role (should be gone already)"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is not changed

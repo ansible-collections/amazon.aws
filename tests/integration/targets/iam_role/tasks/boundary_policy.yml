@@ -1,0 +1,94 @@
+---
+- name: "Create minimal role with no boundary policy"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: "Configure Boundary Policy (CHECK MODE)"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+    boundary: "{{ boundary_policy }}"
+  check_mode: yes
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
+
+- name: "Configure Boundary Policy"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+    boundary: "{{ boundary_policy }}"
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: "Configure Boundary Policy (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+    boundary: "{{ boundary_policy }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
+- name: "Configure Boundary Policy (no change)"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+    boundary: "{{ boundary_policy }}"
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: "iam_role_info after adding boundary policy"
+  iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+
+- assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - 'role_info.iam_roles[0].arn.startswith("arn")'
+      - 'role_info.iam_roles[0].arn.endswith("role/" + test_role )'
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 0
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - role_info.iam_roles[0].path == '/'
+      - role_info.iam_roles[0].permissions_boundary.permissions_boundary_arn == boundary_policy
+      - role_info.iam_roles[0].permissions_boundary.permissions_boundary_type == 'Policy'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+
+- name: "Remove IAM Role"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is changed
