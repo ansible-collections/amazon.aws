@@ -23,7 +23,7 @@ options:
   managed_policies:
     description:
       - A list of managed policy ARNs or friendly names to attach to the role.
-      - To embed an inline policy, use M(community.aws.iam_policy).
+      - To embed an inline policy, use M(amazon.aws.iam_policy).
     required: false
     type: list
     elements: str
