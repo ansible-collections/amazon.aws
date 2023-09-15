@@ -107,6 +107,7 @@
       - 'iam_role.iam_role.arn.endswith("role/" + test_role )'
       - '"assume_role_policy_document" in iam_role.iam_role'
       - '"assume_role_policy_document_raw" in iam_role.iam_role'
+      - iam_role.iam_role.assume_role_policy_document == assume_deny_policy
       - iam_role.iam_role.assume_role_policy_document_raw == assume_deny_policy
       - iam_role.iam_role.attached_policies | length == 0
       - iam_role.iam_role.max_session_duration == 3600
@@ -152,6 +153,7 @@
       - '"assume_role_policy_document_raw" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
       - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].assume_role_policy_document == assume_deny_policy
       - role_info.iam_roles[0].assume_role_policy_document_raw == assume_deny_policy
       - role_info.iam_roles[0].inline_policies | length == 0
       - role_info.iam_roles[0].instance_profiles | length == 0
@@ -212,6 +214,7 @@
       - 'iam_role.iam_role.arn.endswith("role" + test_path + test_role )'
       # Would be nice to test the contents...
       - '"assume_role_policy_document" in iam_role.iam_role'
+      - '"assume_role_policy_document_raw" in iam_role.iam_role'
       - iam_role.iam_role.attached_policies | length == 0
       - iam_role.iam_role.max_session_duration == 3600
       - iam_role.iam_role.path == '{{ test_path }}'
@@ -253,6 +256,7 @@
       - 'role_info.iam_roles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )'
       - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"assume_role_policy_document_raw" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
       - '"description" not in role_info.iam_roles[0]'
       - role_info.iam_roles[0].inline_policies | length == 0
@@ -280,6 +284,7 @@
       - 'role_info.iam_roles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )'
       - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"assume_role_policy_document_raw" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
       - '"description" not in role_info.iam_roles[0]'
       - role_info.iam_roles[0].inline_policies | length == 0
@@ -347,6 +352,7 @@
       - 'iam_role.iam_role.arn.endswith("role/" + test_role )'
       # Would be nice to test the contents...
       - '"assume_role_policy_document" in iam_role.iam_role'
+      - '"assume_role_policy_document_raw" in iam_role.iam_role'
       - iam_role.iam_role.attached_policies | length == 0
       - iam_role.iam_role.max_session_duration == 3600
       - iam_role.iam_role.path == '/'
@@ -388,6 +394,7 @@
       - 'role_info.iam_roles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].arn.endswith("role/" + test_role )'
       - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"assume_role_policy_document_raw" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
       - '"description" not in role_info.iam_roles[0]'
       - role_info.iam_roles[0].inline_policies | length == 0
