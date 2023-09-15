@@ -32,10 +32,15 @@
     path_shortname_b: 'keyTwo'
     path_name_c: '{{ path_name }}/Nested/Key'
     path_shortname_c: 'Key'
+    path_droppath_name_c: '/Nested/Key'
+    path_name_d: '{{ path_name }}/AnotherNested/Key'
+    path_shortname_d: 'Key'
+    path_droppath_name_c: '/AnotherNested/Key'
     path_description: 'This is somewhere to store a set of keys'
     path_value_a: 'value_one'
     path_value_b: 'valueTwo'
     path_value_c: 'Value Three'
+    path_value_d: 'value-four'
     missing_name: '{{ path_name }}/IDoNotExist'
   block:
 
@@ -132,6 +137,12 @@
       description: '{{ path_description }}'
       value: '{{ path_value_c }}'
 
+  - name: Create nested key/value pair in aws parameter store (4)
+    ssm_parameter:
+      name: '{{ path_name_d }}'
+      description: '{{ path_description }}'
+      value: '{{ path_value_d }}'
+
   # ============================================================
   - name: Lookup a keys using bypath
     set_fact:
@@ -180,6 +191,22 @@
       - path_shortname_c in lookup_value
       - lookup_value[path_shortname_c] == path_value_c
       - lookup_value | length == 3
+
+
+  - name: Lookup a keys using bypath and recursive and shortname
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, droppath=True, wantlist=True, **connection_args ) | first }}"
+  - assert:
+      that:
+      - path_shortname_a in lookup_value
+      - lookup_value[path_shortname_a] == path_value_a
+      - path_shortname_b in lookup_value
+      - lookup_value[path_shortname_b] == path_value_b
+      - path_droppath_name_c in lookup_value
+      - lookup_value[path_droppath_name_c] == path_value_c
+      - path_droppath_name_d in lookup_value
+      - lookup_value[path_droppath_name_d] == path_value_d
+      - lookup_value | length == 4
 
   # ============================================================
 
