@@ -123,7 +123,7 @@ EXAMPLES = r"""
 - name: return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/params/foo/bar/param)
   debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
 
-- name: return a dictionary of ssm parameters from a hierarchy path with the search path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)
+- name: return a dictionary of ssm parameters from a hierarchy path with the heirarchy path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)
   debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', droppath=true, bypath=true, recursive=true ) }}"
 
 - name: Iterate over a parameter hierarchy (one iteration per parameter)
