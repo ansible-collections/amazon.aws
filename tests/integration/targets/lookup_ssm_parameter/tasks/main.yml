@@ -144,7 +144,8 @@
         description: '{{ path_description }}'
         value: '{{ path_value_d }}'
 
-  # ============================================================
+    # ============================================================
+
     - name: Lookup a keys using bypath
       ansible.builtin.set_fact:
         lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args ) | first }}"
@@ -167,8 +168,8 @@
           - lookup_value[path_name_b] == path_value_b
           - path_name_c in lookup_value
           - lookup_value[path_name_c] == path_value_c
-          - path_name_d in lookup_value[0]
-          - lookup_value[0][path_name_d] == path_value_d
+          - path_name_d in lookup_value
+          - lookup_value[path_name_d] == path_value_d
           - lookup_value | length == 4
 
     - name: Lookup a keys using bypath and shortname
@@ -210,8 +211,7 @@
           - lookup_value[path_droppath_name_d] == path_value_d
           - lookup_value | length == 4
 
-  # ============================================================
-
+    # ============================================================
 
     - name: Explicitly lookup two keys
       ansible.builtin.set_fact:
