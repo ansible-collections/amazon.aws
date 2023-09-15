@@ -184,7 +184,7 @@ class LookupModule(AWSLookupBase):
                 f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
             )
 
-        if shortnames && droppath:
+        if shortnames and droppath:
             raise AnsibleLookupError(
               "shortnames and droppath are mutually exclusive. They cannot both be set to true."
             )
