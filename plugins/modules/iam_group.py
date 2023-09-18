@@ -7,10 +7,11 @@
 DOCUMENTATION = r"""
 ---
 module: iam_group
-version_added: 1.0.0
+version_added: 7.0.0
 short_description: Manage AWS IAM groups
 description:
   - Manage AWS IAM groups.
+  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Nick Aslanidis (@naslanidis)
   - Maksym Postument (@infectsoldier)
