@@ -1,0 +1,119 @@
+---
+# Tests for iam_role and iam_role_info
+#
+# Tests:
+# - Minimal Role creation
+# - Role deletion
+# - Fetching a specific role
+# - Creating roles w/ and w/o instance profiles
+# - Creating roles w/ a path
+# - Updating Max Session Duration
+# - Updating Description
+# - Managing list of managed policies
+# - Managing list of inline policies (for testing _info)
+# - Managing boundary policy
+#
+# Notes:
+# - Only tests *documented* return values ( RESULT.iam_role )
+# - There are some known timing issues with boto3 returning before actions
+#   complete in the case of problems with "changed" status it's worth enabling
+#   the standard_pauses and paranoid_pauses options as a first step in debugging
+
+
+- name: "Setup AWS connection info"
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+    iam_role:
+      assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+  collections:
+    - amazon.aws
+    - community.general
+  block:
+    - set_fact:
+        assume_deny_policy: '{{ lookup("file", "deny-assume.json") | from_json }}'
+    # ===================================================================
+    # Parameter Checks
+    - include_tasks: parameter_checks.yml
+
+    # ===================================================================
+    # Supplemental resource pre-creation
+    - name: "Create Safe IAM Managed Policy"
+      iam_managed_policy:
+        state: present
+        policy_name: "{{ custom_policy_name }}"
+        policy_description: "A safe (deny-all) managed policy"
+        policy: "{{ lookup('file', 'deny-all.json') }}"
+      register: create_managed_policy
+
+    - assert:
+        that:
+          - create_managed_policy is succeeded
+
+    # ===================================================================
+    # Rapid Role Creation and deletion
+    - include_tasks: creation_deletion.yml
+
+    # ===================================================================
+    # Max Session Duration Manipulation
+    - include_tasks: max_session_update.yml
+
+    # ===================================================================
+    # Description Manipulation
+    - include_tasks: description_update.yml
+
+    # ===================================================================
+    # Tag Manipulation
+    - include_tasks: tags_update.yml
+
+    # ===================================================================
+    # Policy Manipulation
+    - include_tasks: policy_update.yml
+
+    # ===================================================================
+    # Inline Policy (test _info behavior)
+    - include_tasks: inline_policy_update.yml
+
+    # ===================================================================
+    # Role Removal
+    - include_tasks: role_removal.yml
+
+    # ===================================================================
+    # Boundary Policy (requires create_instance_profile: no)
+    - include_tasks: boundary_policy.yml
+
+    # ===================================================================
+    # Complex role Creation
+    - include_tasks: complex_role_creation.yml
+
+  always:
+    # ===================================================================
+    # Cleanup
+
+    - name: "Remove IAM Role"
+      iam_role:
+        state: absent
+        name: "{{ test_role }}"
+        delete_instance_profile: yes
+      ignore_errors: true
+
+    - name: "Remove IAM Role (with path)"
+      iam_role:
+        state: absent
+        name: "{{ test_role }}"
+        path: "{{ test_path }}"
+        delete_instance_profile: yes
+      ignore_errors: true
+
+    - name: "iam_role_info after Role deletion"
+      iam_role_info:
+        name: "{{ test_role }}"
+      ignore_errors: true
+
+    - name: "Remove test managed policy"
+      iam_managed_policy:
+        state: absent
+        policy_name: "{{ custom_policy_name }}"

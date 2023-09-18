@@ -34,15 +34,15 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: find all existing IAM roles
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
   register: result
 
 - name: describe a single role
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: MyIAMRole
 
 - name: describe all roles matching a path prefix
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     path_prefix: /application/path
 """
 
@@ -59,10 +59,7 @@ iam_roles:
       sample: arn:aws:iam::123456789012:role/AnsibleTestRole
     assume_role_policy_document:
       description:
-        - The policy that grants an entity permission to assume the role
-        - |
-          Note: the case of keys in this dictionary are currently converted from CamelCase to
-          snake_case.  In a release after 2023-12-01 this behaviour will change.
+        - The policy that grants an entity permission to assume the role.
       returned: always
       type: dict
     assume_role_policy_document_raw:
@@ -163,7 +160,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 @AWSRetry.jittered_backoff()
@@ -188,6 +185,18 @@ def list_iam_attached_role_policies_with_backoff(client, role_name):
 def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
     paginator = client.get_paginator("list_instance_profiles_for_role")
     return paginator.paginate(RoleName=role_name).build_full_result()["InstanceProfiles"]
+
+
+def get_role(module, client, name):
+    try:
+        return [client.get_role(RoleName=name, aws_retry=True)["Role"]]
+    except is_boto3_error_code("NoSuchEntity"):
+        return []
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
 
 
 def describe_iam_role(module, client, role):
@@ -216,15 +225,7 @@ def describe_iam_roles(module, client):
     name = module.params["name"]
     path_prefix = module.params["path_prefix"]
     if name:
-        try:
-            roles = [client.get_role(RoleName=name, aws_retry=True)["Role"]]
-        except is_boto3_error_code("NoSuchEntity"):
-            return []
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
+        roles = get_role(module, client, name)
     else:
         params = dict()
         if path_prefix:
@@ -243,15 +244,18 @@ def describe_iam_roles(module, client):
 def normalize_profile(profile):
     new_profile = camel_dict_to_snake_dict(profile)
     if profile.get("Roles"):
-        profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
+        new_profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
+        del new_profile["Roles"]
     return new_profile
 
 
 def normalize_role(role):
-    new_role = camel_dict_to_snake_dict(role, ignore_list=["tags"])
-    new_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument")
+    new_role = camel_dict_to_snake_dict(role, ignore_list=["tags", "AssumeRolePolicyDocument"])
+    new_role["assume_role_policy_document"] = role.pop("AssumeRolePolicyDocument", {})
+    new_role["assume_role_policy_document_raw"] = new_role["assume_role_policy_document"]
     if role.get("InstanceProfiles"):
-        role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
+        new_role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
+        del new_role["InstanceProfiles"]
     return new_role
 
 
@@ -271,15 +275,6 @@ def main():
     )
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-
-    module.deprecate(
-        "In a release after 2023-12-01 the contents of assume_role_policy_document "
-        "will no longer be converted from CamelCase to snake_case.  The "
-        ".assume_role_policy_document_raw return value already returns the "
-        "policy document in this future format.",
-        date="2023-12-01",
-        collection_name="community.aws",
-    )
 
     module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
 
