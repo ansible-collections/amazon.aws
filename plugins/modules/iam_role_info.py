@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: iam_role_info
-version_added: 1.0.0
+version_added: 7.0.0
 short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.
@@ -66,7 +66,6 @@ iam_roles:
       description: The policy document describing what can assume the role.
       returned: always
       type: dict
-      version_added: 5.3.0
     create_date:
       description: Date IAM role was created.
       returned: always
@@ -187,6 +186,18 @@ def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
     return paginator.paginate(RoleName=role_name).build_full_result()["InstanceProfiles"]
 
 
+def get_role(module, client, name):
+    try:
+        return [client.get_role(RoleName=name, aws_retry=True)["Role"]]
+    except is_boto3_error_code("NoSuchEntity"):
+        return []
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
+
+
 def describe_iam_role(module, client, role):
     name = role["RoleName"]
     try:
@@ -213,15 +224,7 @@ def describe_iam_roles(module, client):
     name = module.params["name"]
     path_prefix = module.params["path_prefix"]
     if name:
-        try:
-            roles = [client.get_role(RoleName=name, aws_retry=True)["Role"]]
-        except is_boto3_error_code("NoSuchEntity"):
-            return []
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
+        roles = get_role(module, client, name)
     else:
         params = dict()
         if path_prefix:
@@ -240,16 +243,18 @@ def describe_iam_roles(module, client):
 def normalize_profile(profile):
     new_profile = camel_dict_to_snake_dict(profile)
     if profile.get("Roles"):
-        profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
+        new_profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
+        del new_profile["Roles"]
     return new_profile
 
 
 def normalize_role(role):
     new_role = camel_dict_to_snake_dict(role, ignore_list=["tags", "AssumeRolePolicyDocument"])
-    new_role["assume_role_policy_document"] = role.get("AssumeRolePolicyDocument", {})
+    new_role["assume_role_policy_document"] = role.pop("AssumeRolePolicyDocument", {})
     new_role["assume_role_policy_document_raw"] = new_role["assume_role_policy_document"]
     if role.get("InstanceProfiles"):
-        role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
+        new_role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
+        del new_role["InstanceProfiles"]
     return new_role
 
 

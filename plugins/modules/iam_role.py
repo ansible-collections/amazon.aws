@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: iam_role
-version_added: 1.0.0
+version_added: 7.0.0
 short_description: Manage AWS IAM roles
 description:
   - Manage AWS IAM roles.
@@ -180,7 +180,6 @@ iam_role:
             description: the policy that grants an entity permission to assume the role
             type: dict
             returned: always
-            version_added: 5.3.0
             sample: {
                         'Statement': [
                             {
@@ -238,6 +237,17 @@ def _list_policies(client):
     return paginator.paginate().build_full_result()["Policies"]
 
 
+def _wait_iam_role(client, role_name, wait_timeout):
+    delay = min(wait_timeout, 5)
+    max_attempts = wait_timeout // delay
+
+    waiter = client.get_waiter("role_exists")
+    waiter.wait(
+        WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
+        RoleName=role_name,
+    )
+
+
 def wait_iam_exists(module, client):
     if module.check_mode:
         return
@@ -247,15 +257,8 @@ def wait_iam_exists(module, client):
     role_name = module.params.get("name")
     wait_timeout = module.params.get("wait_timeout")
 
-    delay = min(wait_timeout, 5)
-    max_attempts = wait_timeout // delay
-
     try:
-        waiter = client.get_waiter("role_exists")
-        waiter.wait(
-            WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
-            RoleName=role_name,
-        )
+        _wait_iam_role(client, role_name, wait_timeout)
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(e, msg="Timeout while waiting on IAM role creation")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -532,14 +535,56 @@ def create_or_update_role(module, client):
     module.exit_json(changed=changed, iam_role=camel_role)
 
 
+def list_instance_profiles_for_role(module, client, name):
+    try:
+        return client.list_instance_profiles_for_role(RoleName=name, aws_retry=True)["InstanceProfiles"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=f"Unable to list instance profiles for role {name}")
+
+
+def delete_instance_profile(module, client, name):
+    try:
+        client.delete_instance_profile(InstanceProfileName=name, aws_retry=True)
+    except is_boto3_error_code("NoSuchEntityException"):
+        pass
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg=f"Unable to remove instance profile {name}")
+
+
+def remove_role_from_instance_profile(module, client, role_name, profile_name):
+    try:
+        client.remove_role_from_instance_profile(aws_retry=True, InstanceProfileName=profile_name, RoleName=role_name)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=f"Unable to remove role {role_name} from instance profile {profile_name}")
+
+
+def create_instance_profile(module, client, name, path):
+    try:
+        client.create_instance_profile(InstanceProfileName=name, Path=path, aws_retry=True)
+    except is_boto3_error_code("EntityAlreadyExists"):
+        # If the profile already exists, no problem, move on.
+        # Implies someone's changing things at the same time...
+        return False
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg=f"Unable to create instance profile for role {name}")
+
+
+def add_role_to_instance_profile(module, client, name):
+    try:
+        client.add_role_to_instance_profile(InstanceProfileName=name, RoleName=name, aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=f"Unable to attach role {name} to instance profile {name}")
+
+
 def create_instance_profiles(module, client, role_name, path):
     # Fetch existing Profiles
-    try:
-        instance_profiles = client.list_instance_profiles_for_role(RoleName=role_name, aws_retry=True)[
-            "InstanceProfiles"
-        ]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Unable to list instance profiles for role {role_name}")
+    instance_profiles = list_instance_profiles_for_role(module, client, role_name)
 
     # Profile already exists
     if any(p["InstanceProfileName"] == role_name for p in instance_profiles):
@@ -549,58 +594,26 @@ def create_instance_profiles(module, client, role_name, path):
         return True
 
     # Make sure an instance profile is created
-    try:
-        client.create_instance_profile(InstanceProfileName=role_name, Path=path, aws_retry=True)
-    except is_boto3_error_code("EntityAlreadyExists"):
-        # If the profile already exists, no problem, move on.
-        # Implies someone's changing things at the same time...
-        return False
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Unable to create instance profile for role {role_name}")
+    create_instance_profile(module, client, role_name, path)
 
     # And attach the role to the profile
-    try:
-        client.add_role_to_instance_profile(InstanceProfileName=role_name, RoleName=role_name, aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Unable to attach role {role_name} to instance profile {role_name}")
+    add_role_to_instance_profile(module, client, role_name)
 
     return True
 
 
 def remove_instance_profiles(module, client, role_name):
-    delete_profiles = module.params.get("delete_instance_profile")
+    if not module.check_mode:
+        delete_profiles = module.params.get("delete_instance_profile")
+        instance_profiles = list_instance_profiles_for_role(module, client, role_name)
 
-    try:
-        instance_profiles = client.list_instance_profiles_for_role(aws_retry=True, RoleName=role_name)[
-            "InstanceProfiles"
-        ]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Unable to list instance profiles for role {role_name}")
-
-    # Remove the role from the instance profile(s)
-    for profile in instance_profiles:
-        profile_name = profile["InstanceProfileName"]
-        try:
-            if not module.check_mode:
-                client.remove_role_from_instance_profile(
-                    aws_retry=True, InstanceProfileName=profile_name, RoleName=role_name
-                )
-                if profile_name == role_name:
-                    if delete_profiles:
-                        try:
-                            client.delete_instance_profile(InstanceProfileName=profile_name, aws_retry=True)
-                        except is_boto3_error_code("NoSuchEntityException"):
-                            pass
-                        except (
-                            botocore.exceptions.ClientError,
-                            botocore.exceptions.BotoCoreError,
-                        ) as e:  # pylint: disable=duplicate-except
-                            module.fail_json_aws(e, msg=f"Unable to remove instance profile {profile_name}")
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Unable to remove role {role_name} from instance profile {profile_name}")
+        # Remove the role from the instance profile(s)
+        for profile in instance_profiles:
+            profile_name = profile["InstanceProfileName"]
+            remove_role_from_instance_profile(module, client, role_name, profile_name)
+            if profile_name == role_name:
+                if delete_profiles:
+                    delete_instance_profile(module, client, profile_name)
 
 
 def destroy_role(module, client):
