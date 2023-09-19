@@ -23,10 +23,11 @@
 - name: "Setup AWS connection info"
   module_defaults:
     group/aws:
-      access_key: "{{ aws_access_key }}"
-      secret_key: "{{ aws_secret_key }}"
-      session_token: "{{ security_token | default(omit) }}"
-      region: "{{ aws_region }}"
+      # access_key: "{{ aws_access_key }}"
+      # secret_key: "{{ aws_secret_key }}"
+      # session_token: "{{ security_token | default(omit) }}"
+      # region: "{{ aws_region }}"
+      aws_profile: ansible
     iam_role:
       assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
   collections:

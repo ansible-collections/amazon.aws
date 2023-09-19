@@ -134,7 +134,7 @@ def test_describe_iam_role_with_iam_policies_error(
 @patch(mod_normalize_role)
 @patch(mod_camel_dict_to_snake_dict)
 def test_normalize_profile(m_camel_dict_to_snake_dict, m_normalize_role):
-    m_camel_dict_to_snake_dict.side_effect = lambda x: x
+    m_camel_dict_to_snake_dict.side_effect = lambda x: {k.lower(): d for k,d in x.items()}
     m_normalize_role.side_effect = lambda x: {"RoleName": x}
 
     profile = {"Roles": ["role-1", "role-2"]}
@@ -147,7 +147,7 @@ def test_normalize_profile(m_camel_dict_to_snake_dict, m_normalize_role):
 @patch(mod_normalize_profile)
 @patch(mod_camel_dict_to_snake_dict)
 def test_normalize_role(m_camel_dict_to_snake_dict, m_normalize_profile):
-    m_camel_dict_to_snake_dict.side_effect = lambda x, **kwargs: x
+    m_camel_dict_to_snake_dict.side_effect = lambda x, **kwargs: {k.lower() if k not in kwargs.get("ignore_list") else k: d for k,d in x.items()}
     m_normalize_profile.side_effect = lambda x: x
 
     role_policy_document = {
@@ -167,9 +167,14 @@ def test_normalize_role(m_camel_dict_to_snake_dict, m_normalize_profile):
         ],
     }
     expected = {
+        "AssumeRolePolicyDocument": role_policy_document,
         "assume_role_policy_document": role_policy_document,
         "assume_role_policy_document_raw": role_policy_document,
         "tags": role_tags,
+        "instanceprofiles": [
+            "profile-1",
+            "profile-2",
+        ],
         "instance_profiles": [
             "profile-1",
             "profile-2",

@@ -246,17 +246,15 @@ def normalize_profile(profile):
     new_profile = camel_dict_to_snake_dict(profile)
     if profile.get("Roles"):
         new_profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
-        del new_profile["Roles"]
     return new_profile
 
 
 def normalize_role(role):
     new_role = camel_dict_to_snake_dict(role, ignore_list=["tags", "AssumeRolePolicyDocument"])
-    new_role["assume_role_policy_document"] = role.pop("AssumeRolePolicyDocument", {})
+    new_role["assume_role_policy_document"] = role.get("AssumeRolePolicyDocument", {})
     new_role["assume_role_policy_document_raw"] = new_role["assume_role_policy_document"]
     if role.get("InstanceProfiles"):
         new_role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
-        del new_role["InstanceProfiles"]
     return new_role
 
 
