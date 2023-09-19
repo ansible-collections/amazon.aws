@@ -309,8 +309,6 @@ options:
         description:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
-          - When performing other modifications along with I(remove_from_global_db=true),, must set I(wait=true) as DB cluster
-            isn't available for modification while promoting.
         type: bool
         required: False
         version_added: 6.5.0
@@ -490,14 +488,24 @@ EXAMPLES = r"""
     wait: true
     state: absent
 
-- name: Remove replica DB cluster from global DB and modify cluster port
+- name: Update cluster port and WAIT for remove secondary DB cluster from global DB to complete
   amazon.aws.rds_cluster:
-    db_cluster_identifier: "{{ replica_cluster_name }}"
+    db_cluster_identifier: "{{ secondary_cluster_name }}"
     global_cluster_identifier: "{{ global_cluster_name }}"
     remove_from_global_db: true
     state: present
     port: 3389
-    region: "{{ replica_cluster_region }}"
+    region: "{{ secondary_cluster_region }}"
+
+- name: Update cluster port and DO NOT WAIT for remove secondary DB cluster from global DB to complete
+  amazon.aws.rds_cluster:
+    db_cluster_identifier: "{{ secondary_cluster_name }}"
+    global_cluster_identifier: "{{ global_cluster_name }}"
+    remove_from_global_db: true
+    state: present
+    port: 3389
+    region: "{{ secondary_cluster_region }}"
+    wait: false
 """
 
 RETURN = r"""
@@ -1311,15 +1319,15 @@ def main():
 
     changed = False
 
-    if module.params.get("remove_from_global_db"):
-        if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
-            changed = handle_remove_from_global_db(module, cluster)
-
     parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     method_name, method_options_name = get_rds_method_attribute_name(cluster)
 
     if method_name:
         if method_name == "delete_db_cluster":
+            if module.params.get("remove_from_global_db"):
+              if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+                  changed = handle_remove_from_global_db(module, cluster)
+
             call_method(client, module, method_name, eval(method_options_name)(parameters))
             changed = True
         else:
@@ -1329,6 +1337,10 @@ def main():
         cluster_id = module.params["new_db_cluster_identifier"]
     else:
         cluster_id = module.params["db_cluster_identifier"]
+
+    if module.params.get("remove_from_global_db"):
+        if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+            changed = handle_remove_from_global_db(module, cluster)
 
     result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 
