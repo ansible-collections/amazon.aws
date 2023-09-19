@@ -7,11 +7,11 @@
 DOCUMENTATION = r"""
 ---
 module: iam_role_info
-version_added: 7.0.0
+version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.
-    - This module was originally added to C(community.aws) in release 1.0.0.
 author:
     - "Will Thames (@willthames)"
 options:
