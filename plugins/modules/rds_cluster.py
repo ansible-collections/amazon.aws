@@ -1338,7 +1338,7 @@ def main():
     else:
         cluster_id = module.params["db_cluster_identifier"]
 
-    if module.params.get("remove_from_global_db"):
+    if cluster and module.params.get("remove_from_global_db"):
         if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
             changed = handle_remove_from_global_db(module, cluster)
 
