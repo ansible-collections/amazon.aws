@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_role
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Manage AWS IAM roles
 description:
   - Manage AWS IAM roles.
@@ -45,7 +46,7 @@ options:
     description:
       - A list of managed policy ARNs, managed policy ARNs or friendly names.
       - To remove all policies set I(purge_polices=true) and I(managed_policies=[None]).
-      - To embed an inline policy, use M(community.aws.iam_policy).
+      - To embed an inline policy, use M(amazon.aws.iam_policy).
     aliases: ['managed_policy']
     type: list
     elements: str
@@ -100,7 +101,7 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a role with description and tags
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     description: This is My New Role
@@ -108,20 +109,20 @@ EXAMPLES = r"""
       env: dev
 
 - name: "Create a role and attach a managed policy called 'PowerUserAccess'"
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     managed_policies:
       - arn:aws:iam::aws:policy/PowerUserAccess
 
 - name: Keep the role created above but remove all managed policies
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     managed_policies: []
 
 - name: Delete the role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file', 'policy.json') }}"
     state: absent
@@ -232,7 +233,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 @AWSRetry.jittered_backoff()
@@ -732,7 +733,7 @@ def main():
         "All return values other than iam_role and changed have been deprecated and "
         "will be removed in a release after 2023-12-01.",
         date="2023-12-01",
-        collection_name="community.aws",
+        collection_name="amazon.aws",
     )
 
     module.deprecate(
@@ -741,7 +742,7 @@ def main():
         "iam_role.assume_role_policy_document_raw return value already returns the "
         "policy document in this future format.",
         date="2023-12-01",
-        collection_name="community.aws",
+        collection_name="amazon.aws",
     )
 
     if module.params.get("boundary"):

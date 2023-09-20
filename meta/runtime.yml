@@ -72,6 +72,8 @@ action_groups:
     - iam_instance_profile_info
     - iam_policy
     - iam_policy_info
+    - iam_role
+    - iam_role_info
     - iam_user
     - iam_user_info
     - kms_key

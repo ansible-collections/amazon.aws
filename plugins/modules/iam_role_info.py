@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_role_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.
@@ -34,15 +35,15 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: find all existing IAM roles
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
   register: result
 
 - name: describe a single role
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: MyIAMRole
 
 - name: describe all roles matching a path prefix
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     path_prefix: /application/path
 """
 
@@ -163,7 +164,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 @AWSRetry.jittered_backoff()
@@ -278,7 +279,7 @@ def main():
         ".assume_role_policy_document_raw return value already returns the "
         "policy document in this future format.",
         date="2023-12-01",
-        collection_name="community.aws",
+        collection_name="amazon.aws",
     )
 
     module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
