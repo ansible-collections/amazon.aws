@@ -1324,7 +1324,7 @@ def main():
 
     if method_name:
         if method_name == "delete_db_cluster":
-            if module.params.get("remove_from_global_db"):
+            if cluster and module.params.get("remove_from_global_db"):
                 if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
                     changed = handle_remove_from_global_db(module, cluster)
 
