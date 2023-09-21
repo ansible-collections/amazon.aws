@@ -1340,7 +1340,9 @@ def main():
 
     if cluster and module.params.get("remove_from_global_db"):
         if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
-            changed = handle_remove_from_global_db(module, cluster)
+            if changed:
+                wait_for_cluster_status(client, module, cluster_id, "cluster_available")
+        changed |= handle_remove_from_global_db(module, cluster)
 
     result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 
