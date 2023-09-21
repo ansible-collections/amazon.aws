@@ -41,7 +41,7 @@ EXAMPLES = r"""
     disk_containers:
       - format: raw
         user_bucket:
-            s3_bucket: "clone-vm-s3-bucket",
+            s3_bucket: "clone-vm-s3-bucket"
             s3_key: "clone-vm-s3-bucket/ubuntu-vm-clone.raw"
 
 - name: Cncel Import image
