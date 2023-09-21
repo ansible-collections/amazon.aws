@@ -25,7 +25,7 @@ options:
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImportImageTasks.html) for possible filters.
     type: list
     elements: dict
-    default: {}
+    default: []
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -34,135 +34,133 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-- name: Import image
-  amazon.aws.ec2_import_image:
-    state: present
-    task_name: "clone-vm-import-image"
-    disk_containers:
-      - format: raw
-        user_bucket:
-            s3_bucket: "clone-vm-s3-bucket"
-            s3_key: "clone-vm-s3-bucket/ubuntu-vm-clone.raw"
-
-- name: Cncel Import image
-  amazon.aws.ec2_import_image:
-    state: absent
-    task_name: "clone-vm-import-image"
+- name: Check status of import image
+  amazon.aws.ec2_import_image_info:
+    filters:
+      - Name: "tag:Name"
+        Values: ["clone-vm-import-image"]
+      - Name: "task-state"
+        Values: ["completed", "active"]
 """
 
 RETURN = r"""
-  task_name:
+import_image:
+  description: A list of EC2 import tasks.
+  returned: always
+  type: complex
+  contains:
+    task_name:
+      description:
+        - The name of the EC2 image import task.
+      type: str
+    architecture:
+      description:
+        - The architecture of the virtual machine.
+      type: str
+    image_id:
+      description:
+        - The ID of the Amazon Machine Image (AMI) created by the import task.
+      type: str
+    import_task_id:
+      description:
+        - The task ID of the import image task.
+      type: str
+    progress:
+      description:
+        - The progress of the task.
+      type: str
+    snapshot_details:
+      description:
+        - Describes the snapshot created from the imported disk.
+      type: dict
+      contains:
+          description:
+              description:
+              - A description for the snapshot.
+              type: str
+          device_name:
+              description:
+              - The block device mapping for the snapshot.
+              type: str
+          disk_image_size:
+              description:
+              - The size of the disk in the snapshot, in GiB.
+              type: float
+          format:
+              description:
+              - The format of the disk image from which the snapshot is created.
+              type: str
+          progress:
+              description:
+              - The percentage of progress for the task.
+              type: str
+          snapshot_id:
+              description:
+              - The snapshot ID of the disk being imported.
+              type: str
+          status:
+              description:
+              - A brief status of the snapshot creation.
+              type: str
+          status_message:
+              description:
+              - A detailed status message for the snapshot creation.
+              type: str
+          url:
+              description:
+              - The URL used to access the disk image.
+              type: str
+          user_bucket:
+              description:
+              - The Amazon S3 bucket for the disk image.
+              type: dict
+    status:
+      description:
+        - A brief status of the task.
+      type: str
+    status_message:
+      description:
+        - A detailed status message of the import task.
+      type: str
+    license_specifications:
+      description:
+        - The ARNs of the license configurations.
+      type: dict
+    usage_operation:
+      description:
+        - The usage operation value.
+      type: dict
     description:
-      - The name of the EC2 image import task.
-    type: str
-  architecture:
-    description:
-      - The architecture of the virtual machine.
-    type: str
-  image_id:
-    description:
-      - The ID of the Amazon Machine Image (AMI) created by the import task.
-    type: str
-  import_task_id:
-    description:
-      - The task ID of the import image task.
-    type: str
-  progress:
-    description:
-      - The progress of the task.
-    type: str
-  snapshot_details:
-    description:
-      - Describes the snapshot created from the imported disk.
-    type: dict
-    suboptions:
-        description:
-            description:
-            - A description for the snapshot.
-            type: str
-        device_name:
-            description:
-            - The block device mapping for the snapshot.
-            type: str
-        disk_image_size:
-            description:
-            - The size of the disk in the snapshot, in GiB.
-            type: float
-        format:
-            description:
-            - The format of the disk image from which the snapshot is created.
-            type: str
-        progress:
-            description:
-            - The percentage of progress for the task.
-            type: str
-        snapshot_id:
-            description:
-            - The snapshot ID of the disk being imported.
-            type: str
-        status:
-            description:
-            - A brief status of the snapshot creation.
-            type: str
-        status_message:
-            description:
-            - A detailed status message for the snapshot creation.
-            type: str
-        url:
-            description:
-            - The URL used to access the disk image.
-            type: str
-        user_bucket:
-            description:
-            - The Amazon S3 bucket for the disk image.
-            type: dict
-  status:
-    description:
-      - A brief status of the task.
-    type: str
-  status_message:
-    description:
-      - A detailed status message of the import task.
-    type: str
-  license_specifications:
-    description:
-      - The ARNs of the license configurations.
-    type: dict
-  usage_operation:
-    description:
-      - The usage operation value.
-    type: dict
-  description:
-    description:
-      - A description string for the import image task.
-    type: str
-  encrypted:
-    description:
-      - Specifies whether the destination AMI of the imported image should be encrypted.
-    type: bool
-  hypervisor:
-    description:
-      - The target hypervisor platform.
-    default: str
-  kms_key_id:
-    description:
-      - The identifier for the symmetric KMS key that was used to create the encrypted AMI.
-    type: str
-  license_type:
-    description:
-      - The license type to be used for the Amazon Machine Image (AMI) after importing.
-    type: str
-  platform:
-    description:
-      - The operating system of the virtual machine.
-    type: str
-  role_name:
-    description:
-      - The name of the role to use when not using the default role, 'vmimport'.
-  tags:
-    description:
-      - The tags to apply to the import image task during creation.
-    type: dict
+      description:
+        - A description string for the import image task.
+      type: str
+    encrypted:
+      description:
+        - Specifies whether the destination AMI of the imported image should be encrypted.
+      type: bool
+    hypervisor:
+      description:
+        - The target hypervisor platform.
+      default: str
+    kms_key_id:
+      description:
+        - The identifier for the symmetric KMS key that was used to create the encrypted AMI.
+      type: str
+    license_type:
+      description:
+        - The license type to be used for the Amazon Machine Image (AMI) after importing.
+      type: str
+    platform:
+      description:
+        - The operating system of the virtual machine.
+      type: str
+    role_name:
+      description:
+        - The name of the role to use when not using the default role, 'vmimport'.
+    tags:
+      description:
+        - The tags to apply to the import image task during creation.
+      type: dict
 """
 
 import copy
