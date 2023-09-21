@@ -70,16 +70,6 @@ options:
       - The target hypervisor platform.
     default: str
     choices: ["xen"]
-  wait:
-    description:
-      - Wait for operation to complete before returning.
-    default: false
-    type: bool
-  wait_timeout:
-    description:
-      - How many seconds to wait for an operation to complete before timing out.
-    default: 320
-    type: int
   kms_key_id:
     description:
       - An identifier for the symmetric KMS key to use when creating the encrypted AMI.
@@ -119,7 +109,13 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-
+- name: Check status of import image
+  amazon.aws.ec2_import_image_info:
+    filters:
+      - Name: "tag:Name"
+        Values: ["clone-vm-import-image"]
+      - Name: "task-state"
+        Values: ["completed", "active"]
 """
 
 RETURN = r"""
@@ -247,6 +243,7 @@ RETURN = r"""
     type: dict
 """
 
+import copy
 
 try:
     import botocore
@@ -257,11 +254,21 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_import_image_result
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
-def absent():
+def ensure_ec2_import_image_result(import_image_info):
+    result = {"import_image": {}}
+    if import_image_info:
+        image = copy.deepcopy(import_image_info[0])
+        image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
+        result["import_image"] = camel_dict_to_snake_dict(image, ignore_list=["Tags"])
+    return result
+
+
+def absent(client, module):
     """
     Cancel an in-process import virtual machine
     """
@@ -273,7 +280,6 @@ def absent():
         ]
     }
 
-    result = {"import_image": {}}
     params = {}
 
     if module.params.get("cancel_reason"):
@@ -282,22 +288,27 @@ def absent():
     import_image_info = helper_describe_import_image_tasks(client, module, **filters)
 
     if import_image_info:
-        params["ImportTaskId"] = import_image_info["ImportTaskId"]
+        params["ImportTaskId"] = import_image_info[0]["ImportTaskId"]
+        import_image_info[0]["TaskName"] = module.params["task_name"]
 
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have cancelled the import task if not in check mode")
 
         try:
-            import_image_info = client.cancel_import_task(aws_retry=True, **params)
+            client.cancel_import_task(aws_retry=True, **params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to import the image")
     else:
-        module.exit_json(changed=False, msg="The specified import task does not exist or it cannot be cancelled")
+        module.exit_json(
+            changed=False,
+            msg="The specified import task does not exist or it cannot be cancelled",
+            **{"import_image": {}},
+        )
 
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, import_image_info))
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(import_image_info))
 
 
-def present():
+def present(client, module):
     params = {}
     tags = module.params.get("tags") or {}
     tags.update({"Name": module.params["task_name"]})
@@ -323,7 +334,9 @@ def present():
     if module.params.get("role_name"):
         params["RoleName"] = module.params["role_name"]
     if module.params.get("license_specifications"):
-        params["LicenseSpecifications"] = snake_dict_to_camel_dict(module.params["license_specifications"], capitalize_first=True)
+        params["LicenseSpecifications"] = snake_dict_to_camel_dict(
+            module.params["license_specifications"], capitalize_first=True
+        )
     if module.params.get("usage_operation"):
         params["UsageOperation"] = module.params["usage_operation"]
     if module.params.get("boot_mode"):
@@ -346,7 +359,7 @@ def present():
         module.exit_json(
             changed=False,
             msg="An import task with the specified name already exists",
-            **ensure_ec2_import_image_result(module, import_image_info),
+            **ensure_ec2_import_image_result(import_image_info),
         )
     else:
         if module.check_mode:
@@ -359,13 +372,10 @@ def present():
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to import the image")
 
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(module, import_image_info))
+    module.exit_json(changed=True, **ensure_ec2_import_image_result(import_image_info))
 
 
 def main():
-    global client
-    global module
-
     argument_spec = dict(
         architecture=dict(type="str"),
         client_data=dict(type="dict"),
@@ -406,9 +416,9 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if state == "present":
-        present()
+        present(client, module)
     else:
-        absent()
+        absent(client, module)
 
 
 if __name__ == "__main__":

@@ -312,14 +312,3 @@ def helper_describe_import_image_tasks(client, module, **params):
         return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe the import image")
-
-
-def ensure_ec2_import_image_result(module, import_image_info):
-    result = {"import_image": []}
-
-    if import_image_info:
-        for image in import_image_info:
-            image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
-            result["import_image"].append(camel_dict_to_snake_dict(image, ignore_list=['Tags']))
-
-    return result

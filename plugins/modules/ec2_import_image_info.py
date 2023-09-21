@@ -34,7 +34,20 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
+- name: Import image
+  amazon.aws.ec2_import_image:
+    state: present
+    task_name: "clone-vm-import-image"
+    disk_containers:
+      - format: raw
+        user_bucket:
+            s3_bucket: "clone-vm-s3-bucket",
+            s3_key: "clone-vm-s3-bucket/ubuntu-vm-clone.raw"
 
+- name: Cncel Import image
+  amazon.aws.ec2_import_image:
+    state: absent
+    task_name: "clone-vm-import-image"
 """
 
 RETURN = r"""
@@ -131,16 +144,6 @@ RETURN = r"""
     description:
       - The target hypervisor platform.
     default: str
-  wait:
-    description:
-      - Wait for operation to complete before returning.
-    default: false
-    type: bool
-  wait_timeout:
-    description:
-      - How many seconds to wait for an operation to complete before timing out.
-    default: 320
-    type: int
   kms_key_id:
     description:
       - The identifier for the symmetric KMS key that was used to create the encrypted AMI.
@@ -162,16 +165,28 @@ RETURN = r"""
     type: dict
 """
 
+import copy
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_import_image_result
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+
+def ensure_ec2_import_image_result(import_image_info):
+    result = {"import_image": []}
+    if import_image_info:
+        for image in import_image_info:
+            image = copy.deepcopy(import_image_info[0])
+            image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
+            result["import_image"].append(camel_dict_to_snake_dict(image, ignore_list=["Tags"]))
+    return result
 
 
 def main():
@@ -185,13 +200,13 @@ def main():
     params = {}
 
     if module.params.get("filters"):
-      params["Filters"] = module.params["filters"]
+        params["Filters"] = module.params["filters"]
     if module.params.get("import_task_ids"):
-      params["ImportTaskIds"] = module.params["import_task_ids"]
+        params["ImportTaskIds"] = module.params["import_task_ids"]
 
     import_image_info = helper_describe_import_image_tasks(client, module, **params)
 
-    module.exit_json(**ensure_ec2_import_image_result(module, import_image_info))
+    module.exit_json(**ensure_ec2_import_image_result(import_image_info))
 
 
 if __name__ == "__main__":
