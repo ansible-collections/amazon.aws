@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_managed_policy
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Manage User Managed IAM policies
 description:
   - Allows creating and removing managed IAM policies
