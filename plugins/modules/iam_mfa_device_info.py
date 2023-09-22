@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_mfa_device_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: List the MFA (Multi-Factor Authentication) devices registered for a user
 description:
   - List the MFA (Multi-Factor Authentication) devices registered for a user
