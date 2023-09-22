@@ -70,6 +70,7 @@ action_groups:
     - execute_lambda
     - iam_instance_profile
     - iam_instance_profile_info
+    - iam_managed_policy
     - iam_policy
     - iam_policy_info
     - iam_user
