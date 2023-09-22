@@ -34,7 +34,7 @@ options:
     description:
       - The client-specific data.
     type: dict
-    contains:
+    suboptions:
         comment:
             description:
             - A user-defined comment about the disk upload.
@@ -68,7 +68,7 @@ options:
   hypervisor:
     description:
       - The target hypervisor platform.
-    default: str
+    type: str
     choices: ["xen"]
   kms_key_id:
     description:
@@ -155,7 +155,7 @@ import_image:
       description:
         - Describes the snapshot created from the imported disk.
       type: dict
-      suboptions:
+      contains:
           description:
               description:
               - A description for the snapshot.
@@ -223,17 +223,7 @@ import_image:
     hypervisor:
       description:
         - The target hypervisor platform.
-      default: str
-    wait:
-      description:
-        - Wait for operation to complete before returning.
-      default: false
-      type: bool
-    wait_timeout:
-      description:
-        - How many seconds to wait for an operation to complete before timing out.
-      default: 320
-      type: int
+      type: str
     kms_key_id:
       description:
         - The identifier for the symmetric KMS key that was used to create the encrypted AMI.
@@ -353,10 +343,7 @@ def present(client, module):
         params["UsageOperation"] = module.params["usage_operation"]
     if module.params.get("boot_mode"):
         params["BootMode"] = module.params.get("boot_mode")
-
     params["TagSpecifications"] = boto3_tag_specifications(tags, ["import-image-task"])
-
-    wait = module.params.get("wait")
 
     filters = {
         "Filters": [
@@ -395,8 +382,6 @@ def main():
         disk_containers=dict(type="list", elements="dict"),
         encrypted=dict(type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
-        wait=dict(type="bool", default=False),
-        wait_timeout=dict(type="int", default=320, required=False),
         hypervisor=dict(type="str", choices=["xen"]),
         kms_key_id=dict(type="str"),
         license_type=dict(type="str", no_log=False),

@@ -141,7 +141,7 @@ import_image:
     hypervisor:
       description:
         - The target hypervisor platform.
-      default: str
+      type: str
     kms_key_id:
       description:
         - The identifier for the symmetric KMS key that was used to create the encrypted AMI.
