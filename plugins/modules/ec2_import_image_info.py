@@ -25,7 +25,6 @@ options:
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImportImageTasks.html) for possible filters.
     type: list
     elements: dict
-    default: []
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -157,6 +156,7 @@ import_image:
     role_name:
       description:
         - The name of the role to use when not using the default role, 'vmimport'.
+      type: str
     tags:
       description:
         - The tags to apply to the import image task during creation.
@@ -164,11 +164,6 @@ import_image:
 """
 
 import copy
-
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry

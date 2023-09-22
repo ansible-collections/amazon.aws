@@ -25,6 +25,7 @@ options:
     description:
       - The name of the EC2 image import task.
     type: str
+    aliases: ["name"]
   architecture:
     description:
       - The architecture of the virtual machine.
@@ -95,10 +96,24 @@ options:
       - The ARNs of the license configurations.
     type: list
     elements: dict
+  boot_mode:
+    description:
+      - The boot mode of the virtual machine.
+    type: str
+    choices: ["legacy-bios", "uefi"]
+  cancel_reason:
+    description:
+      - The reason for canceling the task.
+    type: str
+  usage_operation:
+    description:
+      - The usage operation value.
+    type: str
   tags:
     description:
       - The tags to apply to the import image task during creation.
     type: dict
+    aliases: ["resource_tags"]
 author:
   - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
@@ -239,6 +254,7 @@ import_image:
     role_name:
       description:
         - The name of the role to use when not using the default role, 'vmimport'.
+      type: str
     tags:
       description:
         - The tags to apply to the import image task during creation.
@@ -376,7 +392,7 @@ def present(client, module):
 
 def main():
     argument_spec = dict(
-        architecture=dict(type="str"),
+        architecture=dict(type="str", choices=["i386", "x86_64"]),
         client_data=dict(type="dict"),
         description=dict(type="str"),
         disk_containers=dict(type="list", elements="dict"),
@@ -386,7 +402,6 @@ def main():
         kms_key_id=dict(type="str"),
         license_type=dict(type="str", no_log=False),
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
-        purge_tags=dict(default=True, type="bool"),
         platform=dict(type="str", choices=["Windows", "Linux"]),
         role_name=dict(type="str"),
         license_specifications=dict(type="list", elements="dict"),
