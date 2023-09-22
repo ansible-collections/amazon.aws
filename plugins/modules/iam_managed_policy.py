@@ -54,7 +54,7 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Create a policy
 - name: Create IAM Managed Policy
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy_description: "A Helpful managed policy"
     policy: "{{ lookup('template', 'managed_policy.json.j2') }}"
@@ -62,14 +62,14 @@ EXAMPLES = r"""
 
 # Update a policy with a new default version
 - name: Update an IAM Managed Policy with new default version
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: "{{ lookup('file', 'managed_policy_update.json') }}"
     state: present
 
 # Update a policy with a new non default version
 - name: Update an IAM Managed Policy with a non default version
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy:
       Version: "2012-10-17"
@@ -82,7 +82,7 @@ EXAMPLES = r"""
 
 # Update a policy and make it the only version and the default version
 - name: Update an IAM Managed Policy with default version as the only version
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: |
       {
@@ -98,7 +98,7 @@ EXAMPLES = r"""
 
 # Remove a policy
 - name: Remove an existing IAM Managed Policy
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     state: absent
 """
