@@ -44,7 +44,7 @@ EXAMPLES = r"""
 
 # more details: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADevices.html
 - name: List MFA devices
-  community.aws.iam_mfa_device_info:
+  amazon.aws.iam_mfa_device_info:
   register: mfa_devices
 
 # more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
