@@ -137,7 +137,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
