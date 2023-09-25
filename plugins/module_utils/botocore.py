@@ -64,8 +64,8 @@ from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
 from .common import get_collection_info
 
-MINIMUM_BOTOCORE_VERSION = "1.25.0"
-MINIMUM_BOTO3_VERSION = "1.22.0"
+MINIMUM_BOTOCORE_VERSION = "1.29.0"
+MINIMUM_BOTO3_VERSION = "1.26.0"
 
 
 def _get_user_agent_string():
