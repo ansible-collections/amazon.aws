@@ -1055,17 +1055,13 @@ def get_options_with_changing_values(client, module, parameters):
             parameters["Iops"] = new_iops
 
     if instance.get("StorageType") == "gp3":
-        if module.botocore_at_least("1.29.0"):
-            GP3_THROUGHPUT = True
-            current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
-                "StorageThroughput", instance["StorageThroughput"]
-            )
-            new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
-            if new_storage_throughput != current_storage_throughput:
-                parameters["StorageThroughput"] = new_storage_throughput
-        else:
-            GP3_THROUGHPUT = False
-            module.warn("gp3 volumes require botocore >= 1.29.0. storage_throughput will be ignored.")
+        GP3_THROUGHPUT = True
+        current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
+            "StorageThroughput", instance["StorageThroughput"]
+        )
+        new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
+        if new_storage_throughput != current_storage_throughput:
+            parameters["StorageThroughput"] = new_storage_throughput
 
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         # when you just change from gp2 to gp3, you may not add the iops parameter

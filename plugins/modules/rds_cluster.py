@@ -1206,7 +1206,6 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if module.params.get("engine") and module.params["engine"] in ("mysql", "postgres"):
-        module.require_botocore_at_least("1.23.44", reason="to use mysql and postgres engines")
         if module.params["state"] == "present":
             if not (
                 module.params.get("allocated_storage")

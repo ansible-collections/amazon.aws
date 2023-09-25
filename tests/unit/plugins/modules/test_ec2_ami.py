@@ -137,11 +137,11 @@ def test_validate_params():
 
     module = MagicMock()
     ec2_ami.validate_params(module, tpm_support=True)
-    assert module.require_botocore_at_least.call_count == 1
+    assert module.require_botocore_at_least.call_count == 0
 
     module = MagicMock()
     ec2_ami.validate_params(module, tpm_support=True, boot_mode="legacy-bios")
-    assert module.require_botocore_at_least.call_count == 1
+    assert module.require_botocore_at_least.call_count == 0
     module.fail_json.assert_any_call("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     module = MagicMock()
