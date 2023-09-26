@@ -1,0 +1,2 @@
+bugfixes:
+- elb_application_lb_info - ensure all API queries use the retry decorator (https://github.com/ansible-collections/amazon.aws/issues/1767).
