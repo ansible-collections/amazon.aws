@@ -548,8 +548,8 @@ rds_data = {
     "version": 2,
     "waiters": {
         "DBClusterPromoting": {
-            "delay": 2,
-            "maxAttempts": 30,
+            "delay": 5,
+            "maxAttempts": 60,
             "operation": "DescribeDBClusters",
             "acceptors": [
                 {
