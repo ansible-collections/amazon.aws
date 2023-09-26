@@ -1333,16 +1333,16 @@ def main():
         else:
             changed |= ensure_present(cluster, parameters, method_name, method_options_name)
 
-            if cluster and module.params.get("remove_from_global_db"):
-                if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
-                    if changed:
-                        wait_for_cluster_status(client, module, cluster_id, "cluster_available")
-                changed |= handle_remove_from_global_db(module, cluster)
-
     if not module.check_mode and module.params["new_db_cluster_identifier"] and module.params["apply_immediately"]:
         cluster_id = module.params["new_db_cluster_identifier"]
     else:
         cluster_id = module.params["db_cluster_identifier"]
+
+    if cluster_id and get_cluster(cluster_id) and module.params.get("remove_from_global_db"):
+        if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+            if changed:
+                wait_for_cluster_status(client, module, cluster_id, "cluster_available")
+        changed |= handle_remove_from_global_db(module, cluster)
 
     result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 
