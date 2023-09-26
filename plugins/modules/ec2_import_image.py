@@ -26,6 +26,7 @@ options:
       - The name of the EC2 image import task.
     type: str
     aliases: ["name"]
+    required: true
   architecture:
     description:
       - The architecture of the virtual machine.
@@ -408,16 +409,12 @@ def main():
         usage_operation=dict(type="str"),
         boot_mode=dict(type="str", choices=["legacy-bios", "uefi"]),
         cancel_reason=dict(type="str"),
-        task_name=dict(type="str", aliases=["name"]),
+        task_name=dict(type="str", aliases=["name"], required=True),
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        required_if=[
-            ["state", "absent", ["task_name"]],
-            ["state", "present", ["task_name"]],
-        ],
     )
 
     state = module.params.get("state")
