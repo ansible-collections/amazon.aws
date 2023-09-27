@@ -5,6 +5,12 @@
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
   block:
+
+  # Disabled: Below tests require use of more than 1 region, not supported by CI at the moment
+  # Tests have been ran, tested, and verified locally on us-west-2 (primary), eu-north-1 (replica)
+  # - name: Run tests for testing remove cluster from global db
+  #   import_tasks: remove_from_global_db.yaml
+
   - name: Ensure the resource doesn't exist
     rds_cluster:
       id: '{{ cluster_id }}'

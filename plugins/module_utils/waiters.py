@@ -547,6 +547,19 @@ elbv2_data = {
 rds_data = {
     "version": 2,
     "waiters": {
+        "DBClusterPromoting": {
+            "delay": 5,
+            "maxAttempts": 60,
+            "operation": "DescribeDBClusters",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBClusters[].Status",
+                    "expected": "promoting",
+                },
+            ],
+        },
         "DBInstanceStopped": {
             "delay": 20,
             "maxAttempts": 60,
@@ -910,6 +923,11 @@ waiters_by_name = {
         "load_balancers_deleted",
         elbv2_model("LoadBalancersDeleted"),
         core_waiter.NormalizedOperationMethod(elbv2.describe_load_balancers),
+    ),
+    ("RDS", "db_cluster_promoting"): lambda rds: core_waiter.Waiter(
+        "db_cluster_promoting",
+        rds_model("DBClusterPromoting"),
+        core_waiter.NormalizedOperationMethod(rds.describe_db_clusters),
     ),
     ("RDS", "db_instance_stopped"): lambda rds: core_waiter.Waiter(
         "db_instance_stopped",
