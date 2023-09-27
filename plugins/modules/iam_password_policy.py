@@ -79,7 +79,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Password policy for AWS account
-  community.aws.iam_password_policy:
+  amazon.aws.iam_password_policy:
     state: present
     min_pw_length: 8
     require_symbols: false
