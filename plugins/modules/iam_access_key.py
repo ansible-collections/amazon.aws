@@ -52,7 +52,9 @@ options:
     required: false
     type: bool
     default: false
-
+notes:
+  - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
+    when creating new access key.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -66,6 +68,7 @@ EXAMPLES = r"""
   amazon.aws.iam_access_key:
     user_name: example_user
     state: present
+    no_log: true
 
 - name: Delete the access_key
   amazon.aws.iam_access_key:
