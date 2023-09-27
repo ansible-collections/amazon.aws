@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_password_policy
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Update an IAM Password Policy
 description:
   - Module updates an IAM Password Policy on a given AWS account
