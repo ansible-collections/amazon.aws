@@ -5,6 +5,7 @@
 
 import random
 from datetime import datetime
+
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry

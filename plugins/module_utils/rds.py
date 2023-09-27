@@ -7,7 +7,9 @@ from collections import namedtuple
 from time import sleep
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError, WaiterError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass
 
