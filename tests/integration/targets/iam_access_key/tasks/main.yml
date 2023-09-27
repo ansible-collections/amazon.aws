@@ -1,14 +1,12 @@
----
 - name: AWS AuthN details
   module_defaults:
     group/aws:
-      access_key: "{{ aws_access_key }}"
-      secret_key: "{{ aws_secret_key }}"
-      session_token: "{{ security_token | default(omit) }}"
-      region: "{{ aws_region }}"
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   collections:
-    - amazon.aws
-    - community.aws
+  - community.aws
   block:
   # ==================================================================================
   # Preparation
@@ -21,7 +19,6 @@
       name: '{{ test_user }}'
       state: present
     register: iam_user
-
   - assert:
       that:
       - iam_user is successful
@@ -33,7 +30,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -48,7 +44,6 @@
       state: present
     register: create_key_1
     check_mode: true
-
   - assert:
       that:
       - create_key_1 is successful
@@ -59,7 +54,6 @@
       user_name: '{{ test_user }}'
       state: present
     register: create_key_1
-
   - assert:
       that:
       - create_key_1 is successful
@@ -78,7 +72,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -94,16 +87,12 @@
       - access_key_1.status == 'Active'
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
-
-  # ==================================================================================
-
   - name: Create a second key (check_mode)
     iam_access_key:
       user_name: '{{ test_user }}'
       state: present
     register: create_key_2
     check_mode: true
-
   - assert:
       that:
       - create_key_2 is successful
@@ -114,7 +103,6 @@
       user_name: '{{ test_user }}'
       state: present
     register: create_key_2
-
   - assert:
       that:
       - create_key_2 is successful
@@ -133,7 +121,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -158,32 +145,12 @@
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
       access_key_2: '{{ access_key_info.access_keys[1] }}'
-
-  # ==================================================================================
-
-  # We don't block the attempt to create a third access key - should AWS change
-  # the limits this will "JustWork".
-
-  # - name: Create a third key (check_mode)
-  #   iam_access_key:
-  #     user_name: '{{ test_user }}'
-  #     state: present
-  #   register: create_key_3
-  #   ignore_errors: True
-  #   check_mode: true
-
-  # - assert:
-  #     that:
-  #     - create_key_3 is successful
-  #     - create_key_3 is changed
-
   - name: Create a third key without rotation
     iam_access_key:
       user_name: '{{ test_user }}'
       state: present
     register: create_key_3
-    ignore_errors: True
-
+    ignore_errors: true
   - assert:
       that:
       # If Amazon update the limits we may need to change the expectation here.
@@ -193,7 +160,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -218,9 +184,6 @@
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
       access_key_2: '{{ access_key_info.access_keys[1] }}'
-
-  # ==================================================================================
-
   - name: Create a third key - rotation enabled (check_mode)
     iam_access_key:
       user_name: '{{ test_user }}'
@@ -228,7 +191,6 @@
       rotate_keys: true
     register: create_key_3
     check_mode: true
-
   - assert:
       that:
       - create_key_3 is successful
@@ -242,7 +204,6 @@
       state: present
       rotate_keys: true
     register: create_key_3
-
   - assert:
       that:
       - create_key_3 is successful
@@ -262,7 +223,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -287,17 +247,13 @@
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
       access_key_2: '{{ access_key_info.access_keys[1] }}'
-
-  # ==================================================================================
-
   - name: Disable third key (check_mode)
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: disable_key
     check_mode: true
-
   - assert:
       that:
       - disable_key is successful
@@ -307,9 +263,8 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: disable_key
-
   - assert:
       that:
       - disable_key is successful
@@ -328,10 +283,9 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: disable_key
     check_mode: true
-
   - assert:
       that:
       - disable_key is successful
@@ -341,9 +295,8 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: disable_key
-
   - assert:
       that:
       - disable_key is successful
@@ -362,7 +315,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -387,16 +339,12 @@
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
       access_key_2: '{{ access_key_info.access_keys[1] }}'
-
-  # ==================================================================================
-
   - name: Touch third key - no change (check_mode)
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
     register: touch_key
     check_mode: true
-
   - assert:
       that:
       - touch_key is successful
@@ -407,7 +355,6 @@
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
     register: touch_key
-
   - assert:
       that:
       - touch_key is successful
@@ -428,10 +375,9 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: True
+      enabled: true
     register: enable_key
     check_mode: true
-
   - assert:
       that:
       - enable_key is successful
@@ -441,9 +387,8 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: True
+      enabled: true
     register: enable_key
-
   - assert:
       that:
       - enable_key is successful
@@ -462,10 +407,9 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: True
+      enabled: true
     register: enable_key
     check_mode: true
-
   - assert:
       that:
       - enable_key is successful
@@ -475,9 +419,8 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: True
+      enabled: true
     register: enable_key
-
   - assert:
       that:
       - enable_key is successful
@@ -500,7 +443,6 @@
       id: '{{ create_key_3.access_key.access_key_id }}'
     register: touch_key
     check_mode: true
-
   - assert:
       that:
       - touch_key is successful
@@ -511,7 +453,6 @@
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
     register: touch_key
-
   - assert:
       that:
       - touch_key is successful
@@ -532,9 +473,8 @@
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_3.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: redisable_key
-
   - assert:
       that:
       - redisable_key is successful
@@ -543,16 +483,12 @@
 
   - pause:
       seconds: 10
-
-  # ==================================================================================
-
   - name: Test GetCallerIdentity - Key 2
     aws_caller_info:
-      access_key: "{{ create_key_2.access_key.access_key_id }}"
-      secret_key: "{{ create_key_2.secret_access_key }}"
-      session_token: "{{ omit }}"
+      access_key: '{{ create_key_2.access_key.access_key_id }}'
+      secret_key: '{{ create_key_2.secret_access_key }}'
+      session_token: '{{ omit }}'
     register: caller_identity_2
-
   - assert:
       that:
       - caller_identity_2 is successful
@@ -560,12 +496,11 @@
 
   - name: Test GetCallerIdentity - Key 1 (gone)
     aws_caller_info:
-      access_key: "{{ create_key_1.access_key.access_key_id }}"
-      secret_key: "{{ create_key_1.secret_access_key }}"
-      session_token: "{{ omit }}"
+      access_key: '{{ create_key_1.access_key.access_key_id }}'
+      secret_key: '{{ create_key_1.secret_access_key }}'
+      session_token: '{{ omit }}'
     register: caller_identity_1
     ignore_errors: true
-
   - assert:
       that:
       - caller_identity_1 is failed
@@ -573,12 +508,11 @@
 
   - name: Test GetCallerIdentity - Key 3 (disabled)
     aws_caller_info:
-      access_key: "{{ create_key_3.access_key.access_key_id }}"
-      secret_key: "{{ create_key_3.secret_access_key }}"
-      session_token: "{{ omit }}"
+      access_key: '{{ create_key_3.access_key.access_key_id }}'
+      secret_key: '{{ create_key_3.secret_access_key }}'
+      session_token: '{{ omit }}'
     register: caller_identity_3
     ignore_errors: true
-
   - assert:
       that:
       - caller_identity_3 is failed
@@ -593,7 +527,6 @@
       state: absent
     register: delete_active_key
     check_mode: true
-
   - assert:
       that:
       - delete_active_key is successful
@@ -605,7 +538,6 @@
       id: '{{ create_key_2.access_key.access_key_id }}'
       state: absent
     register: delete_active_key
-
   - assert:
       that:
       - delete_active_key is successful
@@ -618,7 +550,6 @@
       state: absent
     register: delete_active_key
     check_mode: true
-
   - assert:
       that:
       - delete_active_key is successful
@@ -630,7 +561,6 @@
       id: '{{ create_key_2.access_key.access_key_id }}'
       state: absent
     register: delete_active_key
-
   - assert:
       that:
       - delete_active_key is successful
@@ -645,7 +575,6 @@
       state: absent
     register: delete_inactive_key
     check_mode: true
-
   - assert:
       that:
       - delete_inactive_key is successful
@@ -657,7 +586,6 @@
       id: '{{ create_key_3.access_key.access_key_id }}'
       state: absent
     register: delete_inactive_key
-
   - assert:
       that:
       - delete_inactive_key is successful
@@ -670,7 +598,6 @@
       state: absent
     register: delete_inactive_key
     check_mode: true
-
   - assert:
       that:
       - delete_inactive_key is successful
@@ -682,7 +609,6 @@
       id: '{{ create_key_3.access_key.access_key_id }}'
       state: absent
     register: delete_inactive_key
-
   - assert:
       that:
       - delete_inactive_key is successful
@@ -694,7 +620,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -710,7 +635,6 @@
       enabled: false
     register: create_key_4
     check_mode: true
-
   - assert:
       that:
       - create_key_4 is successful
@@ -722,7 +646,6 @@
       state: present
       enabled: false
     register: create_key_4
-
   - assert:
       that:
       - create_key_4 is successful
@@ -741,7 +664,6 @@
     iam_access_key_info:
       user_name: '{{ test_user }}'
     register: access_key_info
-
   - assert:
       that:
       - access_key_info is successful
@@ -757,16 +679,12 @@
       - access_key_1.status == 'Inactive'
     vars:
       access_key_1: '{{ access_key_info.access_keys[0] }}'
-
-  # We already tested the idempotency of disabling keys, use this to verify that
-  # the key is disabled
   - name: Disable new key
     iam_access_key:
       user_name: '{{ test_user }}'
       id: '{{ create_key_4.access_key.access_key_id }}'
-      enabled: False
+      enabled: false
     register: disable_new_key
-
   - assert:
       that:
       - disable_new_key is successful
@@ -782,7 +700,6 @@
       id: '{{ create_key_4.access_key.access_key_id }}'
       state: absent
     register: delete_new_key
-
   - assert:
       that:
       - delete_new_key is successful
@@ -793,7 +710,6 @@
       name: '{{ test_user }}'
       state: absent
     register: delete_user
-
   - assert:
       that:
       - delete_user is successful
