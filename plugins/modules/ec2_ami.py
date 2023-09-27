@@ -558,10 +558,6 @@ def validate_params(
     if not (image_id or name):
         module.fail_json("one of the following is required: name, image_id")
 
-    if tpm_support or uefi_data:
-        module.require_botocore_at_least(
-            "1.26.0", reason="required for ec2.register_image with tpm_support or uefi_data"
-        )
     if tpm_support and boot_mode != "uefi":
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
