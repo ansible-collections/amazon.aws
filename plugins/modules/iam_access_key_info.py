@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_access_key_info
 version_added: 2.1.0
+version_added_collection: community.aws
 short_description: fetch information about AWS IAM User access keys
 description:
   - 'Fetches information AWS IAM user access keys.'

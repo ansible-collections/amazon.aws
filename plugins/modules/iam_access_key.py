@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_access_key
 version_added: 2.1.0
+version_added_collection: community.aws
 short_description: Manage AWS IAM User access keys
 description:
   - Manage AWS IAM user access keys.
