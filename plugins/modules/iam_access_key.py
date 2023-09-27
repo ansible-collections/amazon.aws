@@ -62,12 +62,12 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a new access key
-  community.aws.iam_access_key:
+  amazon.aws.iam_access_key:
     user_name: example_user
     state: present
 
 - name: Delete the access_key
-  community.aws.iam_access_key:
+  amazon.aws.iam_access_key:
     user_name: example_user
     id: AKIA1EXAMPLE1EXAMPLE
     state: absent

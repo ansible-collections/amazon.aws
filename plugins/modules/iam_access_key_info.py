@@ -32,7 +32,7 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Fetch Access keys for a user
-  community.aws.iam_access_key_info:
+  amazon.aws.iam_access_key_info:
     user_name: example_user
 """
 
