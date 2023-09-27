@@ -2,6 +2,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<meta content="2.4.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ssm_parameter lookup – gets the value for a SSM parameter or all parameters under a path &mdash; Ansible collections  documentation</title>
@@ -141,6 +142,8 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This lookup plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 7.0.0-dev0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this lookup plugin,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-ssm-parameter-lookup-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
@@ -171,15 +174,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ssm-para
 <p>The below requirements are needed on the local controller node that executes this lookup.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.22.0</p></li>
-<li><p>botocore &gt;= 1.25.0</p></li>
+<li><p>boto3 &gt;= 1.26.0</p></li>
+<li><p>botocore &gt;= 1.29.0</p></li>
 </ul>
 </section>
 <section id="keyword-parameters">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Keyword parameters</a><a class="headerlink" href="#keyword-parameters" title="Link to this heading"></a></h2>
 <p>This describes keyword parameters of the lookup. These are the values <code class="docutils literal notranslate"><span class="pre">key1=value1</span></code>, <code class="docutils literal notranslate"><span class="pre">key2=value2</span></code> and so on in the following
 examples: <code class="docutils literal notranslate"><span class="pre">lookup('amazon.aws.ssm_parameter',</span> <span class="pre">key1=value1,</span> <span class="pre">key2=value2,</span> <span class="pre">...)</span></code> and <code class="docutils literal notranslate"><span class="pre">query('amazon.aws.ssm_parameter',</span> <span class="pre">key1=value1,</span> <span class="pre">key2=value2,</span> <span class="pre">...)</span></code></p>
-<table class="ansible-option-table docutils align-default" style="width: 100%">
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Comments</p></th>
@@ -199,7 +202,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY_ID"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code></a></p></li>
@@ -216,9 +219,9 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-bypath" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A boolean to indicate whether the parameter is provided as a hierarchy.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -228,10 +231,10 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-decrypt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A boolean to indicate whether to decrypt the parameter.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -244,7 +247,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </div></td>
 <td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
 <p>The <em>endpoint</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_URL</span></code></a></p>
@@ -258,15 +261,15 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-on_denied"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-on-denied"><strong>on_denied</strong></p>
 <a class="ansibleOptionLink" href="#parameter-on_denied" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.0.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Action to take if access to the SSM parameter is denied.</p>
 <p><code class="docutils literal notranslate"><span class="pre">error</span></code> will raise a fatal error when access to the SSM parameter is denied.</p>
 <p><code class="docutils literal notranslate"><span class="pre">skip</span></code> will silently ignore the denied SSM parameter.</p>
 <p><code class="docutils literal notranslate"><span class="pre">warn</span></code> will skip over the denied SSM parameter but issue a warning.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;error&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;skip&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;warn&quot;</span></code></p></li>
 </ul>
@@ -275,15 +278,15 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-on_missing"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-on-missing"><strong>on_missing</strong></p>
 <a class="ansibleOptionLink" href="#parameter-on_missing" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 2.0.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Action to take if the SSM parameter is missing.</p>
 <p><code class="docutils literal notranslate"><span class="pre">error</span></code> will raise a fatal error when the SSM parameter is missing.</p>
 <p><code class="docutils literal notranslate"><span class="pre">skip</span></code> will silently ignore the missing SSM parameter.</p>
 <p><code class="docutils literal notranslate"><span class="pre">warn</span></code> will skip over the missing SSM parameter but issue a warning.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;error&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;skip&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;warn&quot;</span></code></p></li>
 </ul>
@@ -300,7 +303,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 <p>The <em>boto_profile</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
 <li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_PROFILE</span></code></a></p></li>
@@ -312,9 +315,9 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-recursive" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A boolean to indicate whether to retrieve all parameters within a hierarchy.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -328,7 +331,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS region to use.</p>
 <p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-8"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_REGION</span></code></a></p>
@@ -352,7 +355,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-10"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
@@ -378,7 +381,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
 <p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-12"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-13"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECURITY_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code></a></p>
@@ -399,9 +402,9 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-shortnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether to return the name only without path if using a parameter hierarchy.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -486,11 +489,12 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </section>
 <section id="collection-links">
 <h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
-<p class="ansible-links">
-  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
-  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
-  <a href="./#communication-for-amazon-aws" aria-role="button" target="_blank">Communication</a>
-</p></section>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/amazon.aws" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+<li><span><a class="reference internal" href="index.html#communication-for-amazon-aws"><span class="std std-ref">Communication</span></a></span></li>
+</ul>
+</section>
 </section>
 </section>
 

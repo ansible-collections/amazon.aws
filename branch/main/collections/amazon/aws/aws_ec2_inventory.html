@@ -2,6 +2,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<meta content="2.4.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_ec2 inventory – EC2 inventory source &mdash; Ansible collections  documentation</title>
@@ -141,6 +142,8 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This inventory plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/amazon/aws">amazon.aws collection</a> (version 7.0.0-dev0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this inventory plugin,
 see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
@@ -167,13 +170,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>The below requirements are needed on the local controller node that executes this inventory.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.22.0</p></li>
-<li><p>botocore &gt;= 1.25.0</p></li>
+<li><p>boto3 &gt;= 1.26.0</p></li>
+<li><p>botocore &gt;= 1.29.0</p></li>
 </ul>
 </section>
 <section id="parameters">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
-<table class="ansible-option-table docutils align-default" style="width: 100%">
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Comments</p></th>
@@ -193,7 +196,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY_ID"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code></a></p></li>
@@ -208,13 +211,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-allow_duplicated_hosts"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-allow-duplicated-hosts"><strong>allow_duplicated_hosts</strong></p>
 <a class="ansibleOptionLink" href="#parameter-allow_duplicated_hosts" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 5.0.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 5.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>By default, the first name that matches an entry of the <em>hostnames</em> list is returned.</p>
 <p>Turn this flag on if you don’t mind having duplicated entries in the inventory and you want to get all the hostnames that match.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -234,12 +237,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-cache" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Toggle to enable/disable the caching of the inventory’s source data, requires a cache plugin setup to work.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
@@ -256,7 +259,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-cache_connection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Cache connection data or path, read cache plugin documentation for specifics.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
@@ -278,8 +281,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-cache_plugin" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Cache plugin to use for the inventory’s source data.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;memory&quot;</span></code></p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;memory&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
@@ -301,8 +304,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-cache_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Prefix to use for cache plugin files/tables</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;ansible_inventory_&quot;</span></code></p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;ansible_inventory_&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">default</span><span class="p p-Indicator">]</span>
@@ -331,8 +334,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-cache_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Cache duration in seconds</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3600</span></code></p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3600</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
@@ -354,7 +357,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-compose" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Create vars from jinja2 expressions.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -366,7 +369,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
 <p>The <em>endpoint</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-12"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-13"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_URL</span></code></a></p>
@@ -380,13 +383,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-exclude_filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-exclude-filters"><strong>exclude_filters</strong></p>
 <a class="ansibleOptionLink" href="#parameter-exclude_filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of filters. Any instances matching one of the filters are excluded from the result.</p>
 <p>The filters from <code class="docutils literal notranslate"><span class="pre">exclude_filters</span></code> take priority over the <code class="docutils literal notranslate"><span class="pre">include_filters</span></code> and <code class="docutils literal notranslate"><span class="pre">filters</span></code> keys</p>
 <p>Available filters are listed here <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
 <p>Every entry in this list triggers a search query. As such, from a performance point of view, it’s better to keep the list as short as possible.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -395,7 +398,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary of filter value pairs.</p>
 <p>Available filters are listed here <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -403,7 +406,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Add hosts to group based on Jinja2 conditionals.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -415,7 +418,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>Can be one of the options specified in <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
 <p>If value provided does not exist in the above options, it will be used as a literal string.</p>
 <p>To use tags as hostnames use the syntax <a class="reference external" href="tag:Name=Value">tag:Name=Value</a> to use the hostname Name_Value, or <a class="reference external" href="tag:Name">tag:Name</a> to use the value of the Name tag.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -431,7 +434,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Prefix to prepend to <em>name</em>. Same options as <em>name</em>.</p>
 <p>If <em>prefix</em> is specified, final hostname will be <em>prefix</em> +  <em>separator</em> + <em>name</em>.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -439,13 +442,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-hostnames/separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Value to separate <em>prefix</em> and <em>name</em> when <em>prefix</em> is specified.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostvars-prefix"><strong>hostvars_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 3.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The prefix for host variables names coming from AWS.</p>
 </div></td>
@@ -453,7 +456,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hostvars_suffix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-hostvars-suffix"><strong>hostvars_suffix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hostvars_suffix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 3.1.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 3.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The suffix for host variables names coming from AWS.</p>
 </div></td>
@@ -465,9 +468,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <td><div class="ansible-option-cell"><p>Add two additional API calls for every instance to include ‘persistent’ and ‘events’ host variables.</p>
 <p>Spot instances may be persistent and instances may have associated events.</p>
 <p>The <em>include_extra_api_calls</em> option had been deprecated and will be removed in release 6.0.0.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -475,12 +478,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-include_filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-include-filters"><strong>include_filters</strong></p>
 <a class="ansibleOptionLink" href="#parameter-include_filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of filters. Any instances matching at least one of the filters are included in the result.</p>
 <p>Available filters are listed here <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
 <p>Every entry in this list triggers a search query. As such, from a performance point of view, it’s better to keep the list as short as possible.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -488,13 +491,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Add hosts to group based on the values of a variable.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/default_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-default-value"><strong>default_value</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/default_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-<p><span class="ansible-option-versionadded">added in ansible-core 2.12</span></p>
+<p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is an empty string.</p>
 <p>This option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">trailing_separator</span></code>.</p>
@@ -519,7 +522,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A keyed group name will start with this prefix</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -527,27 +530,27 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>separator used to build the keyed group name</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/trailing_separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-trailing-separator"><strong>trailing_separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in ansible-core 2.12</span></p>
+<p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <em>False</em> to omit the <code class="docutils literal notranslate"><span class="pre">separator</span></code> after the host variable when the value is an empty string.</p>
 <p>This option is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">default_value</span></code>.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-leading_separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-leading-separator"><strong>leading_separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-leading_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in ansible-core 2.11</span></p>
+<p><em class="ansible-option-versionadded">added in ansible-core 2.11</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use in conjunction with keyed_groups.</p>
 <p>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</p>
@@ -555,10 +558,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>Set this option to False to omit the leading underscore (or other separator) if no prefix is given.</p>
 <p>If the group name is derived from a mapping the separator is still used to concatenate the items.</p>
 <p>To not use a separator in the group name at all, set the separator for the keyed group to an empty string instead.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
@@ -573,7 +576,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 <p>The <em>boto_profile</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
 <li><p>Environment variable: <span class="target" id="index-14"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-15"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_PROFILE</span></code></a></p></li>
@@ -589,7 +592,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS region to use.</p>
 <p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-16"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-17"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_REGION</span></code></a></p>
@@ -606,7 +609,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of regions in which to describe EC2 instances.</p>
 <p>If empty (the default) default this will include all regions, except possibly restricted ones like us-gov-west-1 and cn-north-1.</p>
-<p class="ansible-option-line"><span class="ansible-option-default-bold">Default:</span> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -622,7 +625,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 <p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-18"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-19"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
@@ -648,7 +651,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
 <p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-21"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-22"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECURITY_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code></a></p>
@@ -670,9 +673,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code> make invalid entries a fatal error, otherwise skip and continue.</p>
 <p>Since it is possible to use facts in the expressions they might not always be available and we ignore those errors by default.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -683,23 +686,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 <td><div class="ansible-option-cell"><p>By default if a 403 (Forbidden) error code is encountered this plugin will fail.</p>
 <p>You can set this option to False in the inventory config file which will allow 403 errors to be gracefully skipped.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">true</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_contrib_script_compatible_ec2_tag_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-contrib-script-compatible-ec2-tag-keys"><strong>use_contrib_script_compatible_ec2_tag_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_contrib_script_compatible_ec2_tag_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 1.5.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.</p>
 <p>The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -711,9 +714,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <td><div class="ansible-option-cell"><p>By default this plugin is using a general group name sanitization to create safe and usable group names for use in Ansible. This option allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s ``replace_dash_in_groups`` option is set to ``False``. To replicate behavior of ``replace_dash_in_groups = True`` with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.</p>
 <p>For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.</p>
 <p>This is not the default as such names break certain functionality as not all characters are valid Python identifiers which group names end up being used as.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -721,15 +724,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-extra-vars"><strong>use_extra_vars</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in ansible-core 2.11</span></p>
+<p><em class="ansible-option-versionadded">added in ansible-core 2.11</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Merge extra vars into the available variables for composition (highest precedence).</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
-<p class="ansible-option-line"><span class="ansible-option-configuration">Configuration:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory_plugins</span><span class="p p-Indicator">]</span>
@@ -744,13 +747,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_ssm_inventory"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-ssm-inventory"><strong>use_ssm_inventory</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_ssm_inventory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-<p><span class="ansible-option-versionadded">added in amazon.aws 6.0.0</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars.</p>
 <p>By leveraging the SSM inventory data, the <em>use_ssm_inventory</em> option provides additional details and attributes about the EC2 instances in your inventory. These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.</p>
-<p class="ansible-option-line"><span class="ansible-option-choices">Choices:</span></p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><span class="pre">false</span></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -900,11 +903,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </section>
 <section id="collection-links">
 <h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
-<p class="ansible-links">
-  <a href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" aria-role="button" target="_blank" rel="noopener external">Issue Tracker</a>
-  <a href="https://github.com/ansible-collections/amazon.aws" aria-role="button" target="_blank" rel="noopener external">Repository (Sources)</a>
-  <a href="./#communication-for-amazon-aws" aria-role="button" target="_blank">Communication</a>
-</p></section>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/amazon.aws" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+<li><span><a class="reference internal" href="index.html#communication-for-amazon-aws"><span class="std std-ref">Communication</span></a></span></li>
+</ul>
+</section>
 </section>
 </section>
 
