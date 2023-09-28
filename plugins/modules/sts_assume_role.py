@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: sts_assume_role
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Assume a role using AWS Security Token Service and obtain temporary credentials
 description:
   - Assume a role using AWS Security Token Service and obtain temporary credentials.
@@ -82,7 +83,7 @@ changed:
 
 EXAMPLES = r"""
 # Assume an existing role (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
-- community.aws.sts_assume_role:
+- amazon.aws.sts_assume_role:
     access_key: AKIA1EXAMPLE1EXAMPLE
     secret_key: 123456789abcdefghijklmnopqrstuvwxyzABCDE
     role_arn: "arn:aws:iam::123456789012:role/someRole"
@@ -109,7 +110,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def _parse_response(response):
