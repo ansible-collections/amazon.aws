@@ -783,9 +783,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="c1"># Example using filters, ignoring permission errors, and specifying the hostname precedence</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="c1"># The values for profile, access key, secret key and token can be hardcoded like:</span>
-<span class="nt">boto_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
+<span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
 <span class="c1"># or you could use Jinja as:</span>
-<span class="c1"># boto_profile: &quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;env&#39;</span><span class="o">,</span> <span class="s1">&#39;AWS_PROFILE&#39;</span><span class="o">)</span> <span class="o">|</span> <span class="nf">default</span><span class="o">(</span><span class="s1">&#39;aws_profile&#39;</span><span class="o">,</span> <span class="kp">true</span><span class="o">)</span> <span class="cp">}}</span><span class="c1">&quot;</span>
+<span class="c1"># profile: &quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;env&#39;</span><span class="o">,</span> <span class="s1">&#39;AWS_PROFILE&#39;</span><span class="o">)</span> <span class="o">|</span> <span class="nf">default</span><span class="o">(</span><span class="s1">&#39;aws_profile&#39;</span><span class="o">,</span> <span class="kp">true</span><span class="o">)</span> <span class="cp">}}</span><span class="c1">&quot;</span>
 <span class="c1"># Populate inventory with instances in these regions</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
@@ -869,7 +869,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 
 <span class="c1"># Example using groups to assign the running hosts to a group based on vpc_id</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
-<span class="nt">boto_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
+<span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
 <span class="c1"># Populate inventory with instances in these regions</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
