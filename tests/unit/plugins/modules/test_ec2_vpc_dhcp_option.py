@@ -5,12 +5,12 @@
 
 from unittest.mock import patch
 
+from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
+from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+
 # Magic...  Incorrectly identified by pylint as unused
 # pylint: disable-next=unused-import
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
-
-from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
-from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase
 
 test_module_params = {
     "domain_name": "us-west-2.compute.internal",

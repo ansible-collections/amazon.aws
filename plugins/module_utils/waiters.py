@@ -12,7 +12,6 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 
-
 ec2_data = {
     "version": 2,
     "waiters": {

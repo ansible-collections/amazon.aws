@@ -8,10 +8,11 @@ try:
 except ImportError:
     pass
 
-import pytest
 from unittest.mock import MagicMock
-from unittest.mock import sentinel
 from unittest.mock import call
+from unittest.mock import sentinel
+
+import pytest
 
 import ansible_collections.amazon.aws.plugins.plugin_utils.botocore as utils_botocore
 
