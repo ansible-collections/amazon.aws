@@ -33,12 +33,14 @@ options:
     required: false
     type: bool
     default: true
+    version_added: 7.0.0
   include_listeners:
     description:
       - Whether or not to include load balancer listeners in the response.
     required: false
     type: bool
     default: true
+    version_added: 7.0.0
   include_listener_rules:
     description:
       - Whether or not to include load balancer listener rules in the response.
@@ -46,6 +48,7 @@ options:
     required: false
     type: bool
     default: true
+    version_added: 7.0.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
