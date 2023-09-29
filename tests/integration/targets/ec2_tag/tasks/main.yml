@@ -2,9 +2,9 @@
 # tasks file for test_ec2_tag
 - module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
     - name: Create an EC2 volume so we have something to tag

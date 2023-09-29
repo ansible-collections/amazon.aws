@@ -1,16 +1,16 @@
 ---
 - module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
   - name: "create t3.nano instance"
     ec2_instance:
       state: 'running'
       name: "{{ resource_prefix }}-test-uptime"
-      region: "{{ ec2_region }}"
+      region: "{{ aws_region }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
@@ -32,7 +32,7 @@
 
   - name: "check using uptime 100 hours - should find nothing"
     ec2_instance_info:
-      region: "{{ ec2_region }}"
+      region: "{{ aws_region }}"
       uptime: 6000
       filters:
         instance-state-name: [ "running"]
@@ -51,7 +51,7 @@
 
   - name: "check using uptime 1 minute"
     ec2_instance_info:
-      region: "{{ ec2_region }}"
+      region: "{{ aws_region }}"
       uptime: 1
       filters:
         instance-state-name: [ "running"]

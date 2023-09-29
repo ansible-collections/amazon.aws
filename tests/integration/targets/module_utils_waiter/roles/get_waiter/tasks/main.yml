@@ -4,7 +4,7 @@
       region: '{{ aws_region }}'
       access_key: '{{ aws_access_key }}'
       secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
+      session_token: '{{ security_token | default(omit) }}'
   block:
   - name: 'Attempt to get a waiter (no retry decorator)'
     example_module:

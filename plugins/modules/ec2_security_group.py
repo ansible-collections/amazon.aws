@@ -285,13 +285,13 @@ notes:
 """
 
 EXAMPLES = r"""
+# Note: These examples do not set authentication details, see the AWS Guide for details.
+
 - name: example using security group rule descriptions
   amazon.aws.ec2_security_group:
     name: "{{ name }}"
     description: sg with rule descriptions
     vpc_id: vpc-xxxxxxxx
-    profile: "{{ aws_profile }}"
-    region: us-east-1
     rules:
       - proto: tcp
         ports:
@@ -304,8 +304,6 @@ EXAMPLES = r"""
     name: "{{ name }}"
     description: sg for ICMP
     vpc_id: vpc-xxxxxxxx
-    profile: "{{ aws_profile }}"
-    region: us-east-1
     rules:
       - proto: icmp
         icmp_type: 3
@@ -317,9 +315,6 @@ EXAMPLES = r"""
     name: example
     description: an example EC2 group
     vpc_id: 12345
-    region: eu-west-1
-    aws_secret_key: SECRET
-    aws_access_key: ACCESS
     rules:
       - proto: tcp
         from_port: 80
@@ -377,7 +372,6 @@ EXAMPLES = r"""
     name: example2
     description: an example2 EC2 group
     vpc_id: 12345
-    region: eu-west-1
     rules:
       # 'ports' rule keyword was introduced in version 2.4. It accepts a single
       # port value or a list of values including ranges (from_port-to_port).
@@ -414,7 +408,6 @@ EXAMPLES = r"""
 
 - name: "Delete group by its id"
   amazon.aws.ec2_security_group:
-    region: eu-west-1
     group_id: sg-33b4ee5b
     state: absent
 """
