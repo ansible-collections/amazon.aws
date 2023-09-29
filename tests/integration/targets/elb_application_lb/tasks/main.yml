@@ -1413,7 +1413,7 @@
       - alb_info.load_balancers | selectattr('routing_http_xff_client_port_enabled', 'defined') | length > 0
       - alb_info.load_balancers | selectattr('waf_fail_open_enabled', 'defined') | length > 0
       - alb_info.load_balancers | selectattr('listeners', 'defined') | length > 0
-      - alb_info.load_balancers | map(attribute='listeners') | selectattr('rules', 'defined') | length > 0
+      - alb_info.load_balancers | map(attribute='listeners') | flatten | selectattr('rules', 'defined') | length > 0
 
   - name: Get ALB application info excluding attributes
     elb_application_lb_info:
@@ -1459,7 +1459,7 @@
   - assert:
       that:
       - alb_info.load_balancers | selectattr('listeners', 'defined') | length > 0
-      - alb_info.load_balancers | map(attribute='listeners') | selectattr('rules', 'defined') | length == 0
+      - alb_info.load_balancers | map(attribute='listeners') | flatten | selectattr('rules', 'defined') | length == 0
 
   - name: Get ALB application minimal info
     elb_application_lb_info:
