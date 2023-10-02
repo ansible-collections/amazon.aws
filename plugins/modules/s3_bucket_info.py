@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: s3_bucket_info
 version_added: 1.0.0
+version_added_collection: community.aws
 author:
   - "Gerben Geijteman (@hyperized)"
 short_description: Lists S3 buckets in AWS
