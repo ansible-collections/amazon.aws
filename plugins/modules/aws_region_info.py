@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: aws_region_info
 short_description: Gather information about AWS regions
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Gather information about AWS regions.
 author:
