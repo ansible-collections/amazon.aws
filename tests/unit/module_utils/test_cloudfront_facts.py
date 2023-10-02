@@ -13,13 +13,13 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import (
-    CloudFrontFactsServiceManager,
-    CloudFrontFactsServiceManagerFailure,
-    cloudfront_facts_keyed_list_helper,
-)
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock
+from unittest.mock import call
+from unittest.mock import patch
 
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import CloudFrontFactsServiceManagerFailure
+from ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts import cloudfront_facts_keyed_list_helper
 
 MODULE_NAME = "ansible_collections.amazon.aws.plugins.module_utils.cloudfront_facts"
 MOCK_CLOUDFRONT_FACTS_KEYED_LIST_HELPER = MODULE_NAME + ".cloudfront_facts_keyed_list_helper"

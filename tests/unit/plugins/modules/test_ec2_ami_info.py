@@ -3,10 +3,15 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from unittest.mock import MagicMock, patch, ANY, call
+from unittest.mock import ANY
+from unittest.mock import MagicMock
+from unittest.mock import call
+from unittest.mock import patch
+
 import botocore.exceptions
 import pytest
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_ami_info
 
