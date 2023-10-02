@@ -121,11 +121,11 @@ EXAMPLES = r"""
 # Note: Only AWS S3 is currently supported
 
 # Lists all S3 buckets
-- community.aws.s3_bucket_info:
+- amazon.aws.s3_bucket_info:
   register: result
 
 # Retrieve detailed bucket information
-- community.aws.s3_bucket_info:
+- amazon.aws.s3_bucket_info:
     # Show only buckets with name matching
     name_filter: your.testing
     # Choose facts to retrieve
