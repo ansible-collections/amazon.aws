@@ -1,3 +1,0 @@
-release_summary: |
-  This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
-  It includes minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
