@@ -13,10 +13,15 @@ description:
     - Manage an AWS VPC Internet gateway
 author: Robert Estelle (@erydo)
 options:
+  internet_gateway_id:
+    description:
+      - The ID of Internet Gateway to manage.
+    required: false
+    type: str
   vpc_id:
     description:
-      - The VPC ID for the VPC in which to manage the Internet Gateway.
-    required: true
+      - The VPC ID for the VPC to attach (when state=present) or that is attached the Internet Gateway to manage.
+    required: false
     type: str
   state:
     description:
@@ -25,6 +30,7 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 notes:
+- I(internet_gateway_id) or I(vpc_id) must be supplied. Both can be supplied if managing an existing gateway.
 - Support for I(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -58,6 +64,20 @@ EXAMPLES = r"""
     state: absent
     vpc_id: vpc-abcdefgh
   register: vpc_igw_delete
+
+- name: Delete Internet gateway with gateway id
+  amazon.aws.ec2_vpc_igw:
+    state: absent
+    internet_gateway_id: igw-abcdefgh
+  register: vpc_igw_delete
+
+- name: Delete Internet gateway ensuring attached VPC is correct
+  amazon.aws.ec2_vpc_igw:
+    state: absent
+    internet_gateway_id: igw-abcdefgh
+    vpc_id: vpc-abcdefgh
+  register: vpc_igw_delete
+
 """
 
 RETURN = r"""
@@ -117,6 +137,7 @@ class AnsibleEc2Igw:
         self._check_mode = self._module.check_mode
 
     def process(self):
+        internet_gateway_id = self._module.params.get("internet_gateway_id")
         vpc_id = self._module.params.get("vpc_id")
         state = self._module.params.get("state", "present")
         tags = self._module.params.get("tags")
@@ -125,7 +146,7 @@ class AnsibleEc2Igw:
         if state == "present":
             self.ensure_igw_present(vpc_id, tags, purge_tags)
         elif state == "absent":
-            self.ensure_igw_absent(vpc_id)
+            self.ensure_igw_absent(vpc_id, internet_gateway_id)
 
     def get_matching_igw(self, vpc_id, gateway_id=None):
         """
@@ -136,11 +157,11 @@ class AnsibleEc2Igw:
             Returns:
                 igw (dict): dict of igw found, None if none found
         """
-        filters = ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})
         try:
             # If we know the gateway_id, use it to avoid bugs with using filters
             # See https://github.com/ansible-collections/amazon.aws/pull/766
             if not gateway_id:
+                filters = ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})
                 igws = describe_igws_with_backoff(self._connection, Filters=filters)
             else:
                 igws = describe_igws_with_backoff(self._connection, InternetGatewayIds=[gateway_id])
@@ -163,10 +184,18 @@ class AnsibleEc2Igw:
             "vpc_id": vpc_id,
         }
 
-    def ensure_igw_absent(self, vpc_id):
-        igw = self.get_matching_igw(vpc_id)
+    def ensure_igw_absent(self, vpc_id, igw_id):
+        igw = self.get_matching_igw(vpc_id, gateway_id=igw_id)
         if igw is None:
             return self._results
+
+        igw_vpc_id = ""
+
+        if len(igw["attachments"]) > 0:
+            igw_vpc_id = igw["attachments"][0]["vpc_id"]
+
+        if vpc_id and (igw_vpc_id != vpc_id):
+            self._module.fail_json(msg=f"Supplied VPC ({vpc_id}) does not match found VPC ({igw_vpc_id}), aborting")
 
         if self._check_mode:
             self._results["changed"] = True
@@ -174,9 +203,10 @@ class AnsibleEc2Igw:
 
         try:
             self._results["changed"] = True
-            self._connection.detach_internet_gateway(
-                aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=vpc_id
-            )
+            if igw_vpc_id:
+                self._connection.detach_internet_gateway(
+                    aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=igw_vpc_id
+                )
             self._connection.delete_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="Unable to delete Internet Gateway")
@@ -234,16 +264,16 @@ class AnsibleEc2Igw:
 
 def main():
     argument_spec = dict(
-        vpc_id=dict(required=True),
+        internet_gateway_id=dict(),
+        vpc_id=dict(),
         state=dict(default="present", choices=["present", "absent"]),
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=True, type="bool"),
     )
 
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True,
-    )
+    required_one_of = [("internet_gateway_id", "vpc_id")]
+
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_one_of=required_one_of)
     results = dict(changed=False)
     igw_manager = AnsibleEc2Igw(module=module, results=results)
     igw_manager.process()

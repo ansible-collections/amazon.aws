@@ -534,6 +534,128 @@
       that:
       - vpc_igw_delete is not changed
 
+  # ============================================================
+  - name: Create new internet gateway for removal by igw id tests
+    ec2_vpc_igw:
+      state: present
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: new_internet_gateway_result
+      
+  - name: Test state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+    register: vpc_igw_delete
+    check_mode: true
+
+  - name: Assert state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Test state=absent when supplying only a gateway id (expected chaged=true)
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+    register: vpc_igw_delete
+
+  - name: Assert state=absent when supplying only a gateway id (expected chaged=true)
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Fetch removed IGW by ID
+    ec2_vpc_igw_info:
+      internet_gateway_ids: '{{ igw_id }}'
+    register: igw_info
+    ignore_errors: true
+
+  - name: Check IGW does not exist
+    assert:
+      that:
+        # Deliberate choice not to change bevahiour when searching by ID
+      - igw_info is failed
+
+  # ============================================================
+  - name: Create new internet gateway for removal by igw id and vpc id tests
+    ec2_vpc_igw:
+      state: present
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: new_internet_gateway_result
+      
+  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: vpc_igw_delete
+    check_mode: true
+
+  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true)
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: vpc_igw_delete
+
+  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true)
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Fetch removed IGW by ID
+    ec2_vpc_igw_info:
+      internet_gateway_ids: '{{ igw_id }}'
+    register: igw_info
+    ignore_errors: true
+
+  - name: Check IGW does not exist
+    assert:
+      that:
+        # Deliberate choice not to change bevahiour when searching by ID
+      - igw_info is failed
+
+  # ============================================================
+  - name: Create new internet gateway for removal by igw id and wrong vpc id tests
+    ec2_vpc_igw:
+      state: present
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: new_internet_gateway_result
+      
+  - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      vpc_id: 'vpc-xxxxxxxxx'
+    register: vpc_igw_delete
+    check_mode: true
+    ignore_errors: true
+
+  - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
+    assert:
+      that:
+        - vpc_igw_delete is failed
+        - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
+
+  - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure)
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      vpc_id: 'vpc-xxxxxxxxx'
+    register: vpc_igw_delete
+    ignore_errors: true
+
+  - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure)
+    assert:
+      that:
+        - vpc_igw_delete is failed
+        - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
+
   always:
     # ============================================================
   - name: Tidy up IGW
