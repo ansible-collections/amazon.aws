@@ -5,6 +5,27 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.5.0
+======
+
+Release Summary
+---------------
+
+This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
+It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
+
+
+Minor Changes
+-------------
+
+- ec2_ami - add support for ``org_arns`` and ``org_unit_arns`` in launch_permissions (https://github.com/ansible-collections/amazon.aws/pull/1690).
+- elb_application_lb_info - drop redundant ``describe_load_balancers`` call fetching ``ip_address_type`` (https://github.com/ansible-collections/amazon.aws/pull/1768).
+
+Bugfixes
+--------
+
+- elb_application_lb_info - ensure all API queries use the retry decorator (https://github.com/ansible-collections/amazon.aws/issues/1767).
+
 v6.4.0
 ======
 
