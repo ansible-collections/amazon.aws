@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: ec2_import_image_info
-version_added: 6.5.0
+version_added: 7.0.0
 short_description: Gather information about import virtual machine tasks
 description:
   - Displays details about an import virtual machine tasks that are already created.
@@ -165,11 +165,12 @@ import_image:
 
 import copy
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 def ensure_ec2_import_image_result(import_image_info):

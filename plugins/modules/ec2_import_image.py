@@ -8,7 +8,7 @@
 DOCUMENTATION = r"""
 ---
 module: ec2_import_image
-version_added: 6.5.0
+version_added: 7.0.0
 short_description: Manage AWS EC2 import image tasks
 description:
   - Import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).
@@ -37,22 +37,22 @@ options:
       - The client-specific data.
     type: dict
     suboptions:
-        comment:
-            description:
-            - A user-defined comment about the disk upload.
-            type: str
-        upload_end:
-            description:
-            - The time that the disk upload ends.
-            type: str
-        upload_size:
-            description:
-            - The size of the uploaded disk image, in GiB.
-            type: float
-        upload_start:
-            description:
-            - The time that the disk upload starts.
-            type: str
+      comment:
+        description:
+          - A user-defined comment about the disk upload.
+        type: str
+      upload_end:
+        description:
+          - The time that the disk upload ends.
+        type: str
+      upload_size:
+        description:
+          - The size of the uploaded disk image, in GiB.
+        type: float
+      upload_start:
+        description:
+          - The time that the disk upload starts.
+        type: str
   description:
     description:
       - A description string for the import image task.
@@ -62,6 +62,42 @@ options:
       - Information about the disk containers.
     type: list
     elements: dict
+    suboptions:
+      description:
+        description:
+          - The description of the disk image.
+        type: str
+      device_name:
+        description:
+          - The block device mapping for the disk.
+        type: str
+      format:
+        description:
+          - The format of the disk image being imported.
+        type: str
+        choices: ["OVA", "ova", "VHD", "vhd", "VHDX", "vhdx", "VMDK", "vmdk", "RAW", "raw"]
+      snapshot_id:
+        description:
+          - The ID of the EBS snapshot to be used for importing the snapshot.
+        type: str
+      url:
+        description:
+          - The URL to the Amazon S3-based disk image being imported.
+            The URL can either be a https URL (https://..) or an Amazon S3 URL (s3://..).
+        type: str
+      user_bucket:
+          description:
+          - The S3 bucket for the disk image.
+          type: dict
+          suboptions:
+            s3_bucket:
+              description:
+                - The name of the Amazon S3 bucket where the disk image is located.
+              type: str
+            s3_key:
+              description:
+                - The file name of the disk image.
+              type: str
   encrypted:
     description:
       - Specifies whether the destination AMI of the imported image should be encrypted.
@@ -97,6 +133,11 @@ options:
       - The ARNs of the license configurations.
     type: list
     elements: dict
+    suboptions:
+      license_configuration_arn:
+        description:
+          - The ARN of a license configuration.
+        type: str
   boot_mode:
     description:
       - The boot mode of the virtual machine.
@@ -172,46 +213,46 @@ import_image:
         - Describes the snapshot created from the imported disk.
       type: dict
       contains:
+        description:
           description:
-              description:
-              - A description for the snapshot.
-              type: str
-          device_name:
-              description:
-              - The block device mapping for the snapshot.
-              type: str
-          disk_image_size:
-              description:
-              - The size of the disk in the snapshot, in GiB.
-              type: float
-          format:
-              description:
-              - The format of the disk image from which the snapshot is created.
-              type: str
-          progress:
-              description:
-              - The percentage of progress for the task.
-              type: str
-          snapshot_id:
-              description:
-              - The snapshot ID of the disk being imported.
-              type: str
-          status:
-              description:
-              - A brief status of the snapshot creation.
-              type: str
-          status_message:
-              description:
-              - A detailed status message for the snapshot creation.
-              type: str
-          url:
-              description:
-              - The URL used to access the disk image.
-              type: str
-          user_bucket:
-              description:
-              - The Amazon S3 bucket for the disk image.
-              type: dict
+            - A description for the snapshot.
+          type: str
+        device_name:
+          description:
+            - The block device mapping for the snapshot.
+          type: str
+        disk_image_size:
+          description:
+            - The size of the disk in the snapshot, in GiB.
+          type: float
+        format:
+          description:
+            - The format of the disk image from which the snapshot is created.
+          type: str
+        progress:
+          description:
+            - The percentage of progress for the task.
+          type: str
+        snapshot_id:
+          description:
+            - The snapshot ID of the disk being imported.
+          type: str
+        status:
+          description:
+            - A brief status of the snapshot creation.
+          type: str
+        status_message:
+          description:
+            - A detailed status message for the snapshot creation.
+          type: str
+        url:
+          description:
+            - The URL used to access the disk image.
+          type: str
+        user_bucket:
+          description:
+            - The Amazon S3 bucket for the disk image.
+          type: dict
     status:
       description:
         - A brief status of the task.
@@ -269,13 +310,14 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 
 def ensure_ec2_import_image_result(import_image_info):
@@ -394,9 +436,23 @@ def present(client, module):
 def main():
     argument_spec = dict(
         architecture=dict(type="str", choices=["i386", "x86_64"]),
-        client_data=dict(type="dict"),
+        client_data=dict(
+            type="dict",
+            options=dict(
+                comment=dict(type="str"),
+                upload_end=dict(type="str"),
+                upload_size=dict(type="float"),
+                upload_start=dict(type="str"),
+            ),
+        ),
         description=dict(type="str"),
-        disk_containers=dict(type="list", elements="dict"),
+        license_specifications=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                license_configuration_arn=dict(type="str"),
+            ),
+        ),
         encrypted=dict(type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
         hypervisor=dict(type="str", choices=["xen"]),
@@ -405,7 +461,26 @@ def main():
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         platform=dict(type="str", choices=["Windows", "Linux"]),
         role_name=dict(type="str"),
-        license_specifications=dict(type="list", elements="dict"),
+        disk_containers=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                description=dict(type="str"),
+                device_name=dict(type="str"),
+                format=dict(
+                    type="str", choices=["OVA", "ova", "VHD", "vhd", "VHDX", "vhdx", "VMDK", "vmdk", "RAW", "raw"]
+                ),
+                snapshot_id=dict(type="str"),
+                url=dict(type="str"),
+                user_bucket=dict(
+                    type="dict",
+                    options=dict(
+                        s3_bucket=dict(type="str"),
+                        s3_key=dict(type="str", no_log=True),
+                    ),
+                ),
+            ),
+        ),
         usage_operation=dict(type="str"),
         boot_mode=dict(type="str", choices=["legacy-bios", "uefi"]),
         cancel_reason=dict(type="str"),
