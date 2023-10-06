@@ -9,10 +9,10 @@ action_groups:
     - aws_s3
     - backup_plan
     - backup_plan_info
-    - backup_selection
-    - backup_selection_info
     - backup_tag
     - backup_tag_info
+    - backup_selection
+    - backup_selection_info
     - backup_vault
     - backup_vault_info
     - cloudformation
@@ -20,12 +20,12 @@ action_groups:
     - cloudtrail
     - cloudtrail_info
     - cloudwatch_metric_alarm
-    - cloudwatch_metric_alarm_info
     - cloudwatchevent_rule
     - cloudwatchevent_rule
     - cloudwatchlogs_log_group
     - cloudwatchlogs_log_group_info
     - cloudwatchlogs_log_group_metric_filter
+    - cloudwatch_metric_alarm_info
     - ec2_ami
     - ec2_ami_info
     - ec2_eip
@@ -68,7 +68,6 @@ action_groups:
     - elb_application_lb_info
     - elb_classic_lb
     - execute_lambda
-    - iam_group
     - iam_instance_profile
     - iam_instance_profile_info
     - iam_policy

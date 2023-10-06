@@ -1,7 +1,0 @@
-# reason: missing-policy
-# It should be possible to test iam_groups by limiting which policies can be
-# attached to the groups as well as which users can be added to the groups.
-# Careful review is needed prior to adding this to the main CI.
-unsupported
-
-cloud/aws

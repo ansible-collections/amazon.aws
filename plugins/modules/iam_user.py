@@ -11,7 +11,7 @@ version_added: 5.0.0
 short_description: Manage AWS IAM users
 description:
   - A module to manage AWS IAM users.
-  - The module does not manage groups that users belong to, groups memberships can be managed using M(amazon.aws.iam_group).
+  - The module does not manage groups that users belong to, groups memberships can be managed using M(community.aws.iam_group).
   - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Josh Souza (@joshsouza)
@@ -102,7 +102,7 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Note: This module does not allow management of groups that users belong to.
-#       Groups should manage their membership directly using amazon.aws.iam_group,
+#       Groups should manage their membership directly using community.aws.iam_group,
 #       as users belong to them.
 
 - name: Create a user
