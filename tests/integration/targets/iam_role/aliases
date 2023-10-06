@@ -1,9 +1,0 @@
-# reason: missing-policy
-# It should be possible to test iam_role by limiting which policies can be
-# attached to the roles.
-# Careful review is needed prior to adding this to the main CI.
-unsupported
-
-cloud/aws
-
-iam_role_info
