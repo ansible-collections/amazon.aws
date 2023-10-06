@@ -12,7 +12,7 @@ short_description: Manage inline IAM policies for users, groups, and roles
 description:
   - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
   - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
-    M(amazon.aws.iam_group) and M(community.aws.iam_managed_policy)
+    M(community.aws.iam_group) and M(community.aws.iam_managed_policy)
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   iam_type:
@@ -61,7 +61,7 @@ EXAMPLES = r"""
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
-  amazon.aws.iam_group:
+  community.aws.iam_group:
     name: "{{ item }}"
     state: present
   loop:
