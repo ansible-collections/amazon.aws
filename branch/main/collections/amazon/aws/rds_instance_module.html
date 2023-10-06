@@ -1131,7 +1131,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 
 <span class="c1"># Add IAM role to db instance</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create IAM policy</span>
-<span class="w">  </span><span class="nt">community.aws.iam_managed_policy</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-policy&quot;</span>
 <span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span><span class="s1">&#39;files/policy.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
