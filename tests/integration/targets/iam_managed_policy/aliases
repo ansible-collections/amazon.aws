@@ -1,6 +1,0 @@
-# reason: missing-policy
-# It's not possible to control what permissions are granted to a policy.
-# This makes securely testing iam_policy very difficult
-unsupported
-
-cloud/aws

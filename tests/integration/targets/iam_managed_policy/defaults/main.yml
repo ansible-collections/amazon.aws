@@ -1,2 +1,0 @@
----
-policy_name: "{{ resource_prefix }}-policy"

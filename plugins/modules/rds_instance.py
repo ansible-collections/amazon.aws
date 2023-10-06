@@ -500,7 +500,7 @@ EXAMPLES = r"""
 
 # Add IAM role to db instance
 - name: Create IAM policy
-  amazon.aws.iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "my-policy"
     policy: "{{ lookup('file','files/policy.json') }}"
     state: present
