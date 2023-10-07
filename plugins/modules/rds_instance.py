@@ -500,7 +500,7 @@ EXAMPLES = r"""
 
 # Add IAM role to db instance
 - name: Create IAM policy
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "my-policy"
     policy: "{{ lookup('file','files/policy.json') }}"
     state: present
@@ -871,13 +871,10 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
@@ -886,7 +883,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_id
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
-
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 valid_engines = [
     "aurora",
@@ -1055,17 +1054,13 @@ def get_options_with_changing_values(client, module, parameters):
             parameters["Iops"] = new_iops
 
     if instance.get("StorageType") == "gp3":
-        if module.botocore_at_least("1.29.0"):
-            GP3_THROUGHPUT = True
-            current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
-                "StorageThroughput", instance["StorageThroughput"]
-            )
-            new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
-            if new_storage_throughput != current_storage_throughput:
-                parameters["StorageThroughput"] = new_storage_throughput
-        else:
-            GP3_THROUGHPUT = False
-            module.warn("gp3 volumes require botocore >= 1.29.0. storage_throughput will be ignored.")
+        GP3_THROUGHPUT = True
+        current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
+            "StorageThroughput", instance["StorageThroughput"]
+        )
+        new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
+        if new_storage_throughput != current_storage_throughput:
+            parameters["StorageThroughput"] = new_storage_throughput
 
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         # when you just change from gp2 to gp3, you may not add the iops parameter

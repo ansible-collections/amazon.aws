@@ -26,7 +26,7 @@
 
   - name: lookup missing secret (skip)
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=skip, **connection_args) }}"
+      missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_missing=skip, **connection_args) }}"
 
   - name: assert that missing_secret is defined
     assert:
@@ -36,7 +36,7 @@
 
   - name: lookup missing secret (warn)
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=warn, **connection_args) }}"
+      missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_missing=warn, **connection_args) }}"
 
   - name: assert that missing_secret is defined
     assert:
@@ -46,7 +46,7 @@
 
   - name: lookup missing secret (error)
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, **connection_args) }}"
+      missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
     ignore_errors: True
     register: get_missing_secret
 
@@ -56,7 +56,7 @@
         - get_missing_secret is failed
 
   - name: create secret "{{ secret_name }}"
-    aws_secret:
+    secretsmanager_secret:
       name: "{{ secret_name }}"
       secret: "{{ secret_value }}"
       tags:
@@ -65,7 +65,7 @@
 
   - name: read secret value
     set_fact:
-      look_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, **connection_args) }}"
+      look_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
 
   - name: assert that secret was successfully retrieved
     assert:
@@ -73,14 +73,14 @@
         - look_secret == secret_value
 
   - name: delete secret
-    aws_secret:
+    secretsmanager_secret:
       name: "{{ secret_name }}"
       state: absent
       recovery_window: 7
 
   - name: lookup deleted secret (skip)
     set_fact:
-      deleted_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_deleted=skip, **connection_args) }}"
+      deleted_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_deleted=skip, **connection_args) }}"
 
   - name: assert that deleted_secret is defined
     assert:
@@ -90,7 +90,7 @@
 
   - name: lookup deleted secret (warn)
     set_fact:
-      deleted_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_deleted=warn, **connection_args) }}"
+      deleted_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_deleted=warn, **connection_args) }}"
 
   - name: assert that deleted_secret is defined
     assert:
@@ -100,7 +100,7 @@
 
   - name: lookup deleted secret (error)
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, **connection_args) }}"
+      missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
     ignore_errors: True
     register: get_deleted_secret
 
@@ -113,7 +113,7 @@
 
   # delete secret created
   - name: delete secret
-    aws_secret:
+    secretsmanager_secret:
       name: "{{ secret_name }}"
       state: absent
       recovery_window: 0

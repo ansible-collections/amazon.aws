@@ -523,9 +523,10 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 # Split out paginator to allow for the backoff decorator to function

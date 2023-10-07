@@ -16,7 +16,8 @@ Common Amazon Certificate Manager facts shared between modules
 """
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass
 

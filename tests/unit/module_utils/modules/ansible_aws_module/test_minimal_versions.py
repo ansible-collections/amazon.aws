@@ -3,13 +3,14 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from pprint import pprint
-import pytest
 import json
+from pprint import pprint
+
+import pytest
 
 try:
-    import botocore
     import boto3
+    import botocore
 except ImportError:
     pass
 
@@ -25,10 +26,10 @@ class TestMinimalVersionTestSuite:
     # Prepare some data for use in our testing
     # ========================================================
     def setup_method(self):
-        self.MINIMAL_BOTO3 = "1.22.0"
-        self.MINIMAL_BOTOCORE = "1.25.0"
-        self.OLD_BOTO3 = "1.21.999"
-        self.OLD_BOTOCORE = "1.24.999"
+        self.MINIMAL_BOTO3 = "1.26.0"
+        self.MINIMAL_BOTOCORE = "1.29.0"
+        self.OLD_BOTO3 = "1.25.999"
+        self.OLD_BOTOCORE = "1.28.999"
 
     # ========================================================
     #   Test we don't warn when using valid versions

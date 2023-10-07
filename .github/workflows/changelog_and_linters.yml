@@ -7,4 +7,7 @@ jobs:
   changelog:
     uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
   linters:
-    uses: ansible-network/github_actions/.github/workflows/tox-linters.yml@main
+    uses: ansible-network/github_actions/.github/workflows/tox.yml@main
+    with:
+      envname: ""
+      labelname: "lint"

@@ -3,16 +3,17 @@
 
 import json
 import sys
-from io import BytesIO
 import warnings
+from io import BytesIO
 
 import pytest
 
 import ansible.module_utils.basic
 import ansible.module_utils.common
-from ansible.module_utils.six import PY3, string_types
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common._collections_compat import MutableMapping
+from ansible.module_utils.six import PY3
+from ansible.module_utils.six import string_types
 
 
 @pytest.fixture
