@@ -214,8 +214,6 @@ def main():
 
     backup_client = module.client("backup")
 
-    module.require_botocore_at_least("1.25.13", reason="to list restore jobs info")
-
     request_args = build_request_args(
         account_id=module.params["account_id"],
         status=module.params["status"],
