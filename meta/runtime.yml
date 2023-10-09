@@ -6,6 +6,7 @@ action_groups:
     - autoscaling_group_info
     - aws_az_info
     - aws_caller_info
+    - aws_region_info
     - aws_s3
     - aws_s3_bucket_info
     - backup_plan
