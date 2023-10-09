@@ -7,6 +7,7 @@ action_groups:
     - aws_az_info
     - aws_caller_info
     - aws_s3
+    - aws_s3_bucket_info
     - backup_plan
     - backup_plan_info
     - backup_selection
@@ -107,6 +108,7 @@ action_groups:
     - route53_info
     - route53_zone
     - s3_bucket
+    - s3_bucket_info
     - s3_object
     - s3_object_info
     - sts_assume_role
@@ -124,6 +126,9 @@ plugin_routing:
     aws_s3:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.s3_object
+    aws_s3_bucket_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.s3_bucket_info
     ec2_asg:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.autoscaling_group
