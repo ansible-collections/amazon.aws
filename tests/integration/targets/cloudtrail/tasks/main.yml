@@ -1336,7 +1336,7 @@
 
   # Assume role to a role with Denied access to KMS
 
-  - community.aws.sts_assume_role:
+  - amazon.aws.sts_assume_role:
       role_arn: '{{ output_cloudwatch_no_kms_role.arn }}'
       role_session_name: "cloudtrailNoKms"
       region: '{{ aws_region }}'
