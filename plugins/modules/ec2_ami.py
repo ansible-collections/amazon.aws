@@ -135,13 +135,13 @@ options:
         type: list
         elements: str
         required: false
-        version_added: 6.4.0
+        version_added: 6.5.0
       org_unit_arns:
         description: List of The Amazon Resource Name(s) (ARN) of an organizational unit(s) (OU).
         type: list
         elements: str
         required: false
-        version_added: 6.4.0
+        version_added: 6.5.0
   image_location:
     description:
       - The S3 location of an image to use for the AMI.
@@ -427,11 +427,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
@@ -558,10 +558,6 @@ def validate_params(
     if not (image_id or name):
         module.fail_json("one of the following is required: name, image_id")
 
-    if tpm_support or uefi_data:
-        module.require_botocore_at_least(
-            "1.26.0", reason="required for ec2.register_image with tpm_support or uefi_data"
-        )
     if tpm_support and boot_mode != "uefi":
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 

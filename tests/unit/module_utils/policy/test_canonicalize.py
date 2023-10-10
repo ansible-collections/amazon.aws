@@ -5,8 +5,8 @@
 
 from unittest.mock import sentinel
 
-from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_root_arn
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_policy_dict_item
+from ansible_collections.amazon.aws.plugins.module_utils.policy import _canonify_root_arn
 from ansible_collections.amazon.aws.plugins.module_utils.policy import _tuplify_list
 
 

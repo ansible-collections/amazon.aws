@@ -389,22 +389,24 @@ configuration:
 
 import base64
 import hashlib
-import traceback
 import re
+import traceback
 from collections import Counter
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass  # protected by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 
 
 def get_current_function(connection, function_name, qualifier=None):

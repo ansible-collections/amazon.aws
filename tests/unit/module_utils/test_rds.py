@@ -4,8 +4,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import sys
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 if sys.version_info < (3, 7):
     pytest.skip("contextlib.nullcontext was introduced in Python 3.7", allow_module_level=True)

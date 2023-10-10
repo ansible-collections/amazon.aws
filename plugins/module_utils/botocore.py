@@ -60,12 +60,12 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
 
+from .common import get_collection_info
 from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
-from .common import get_collection_info
 
-MINIMUM_BOTOCORE_VERSION = "1.25.0"
-MINIMUM_BOTO3_VERSION = "1.22.0"
+MINIMUM_BOTOCORE_VERSION = "1.29.0"
+MINIMUM_BOTO3_VERSION = "1.26.0"
 
 
 def _get_user_agent_string():
@@ -412,6 +412,7 @@ def enable_placebo(session):
         pill.record()
     if "_ANSIBLE_PLACEBO_REPLAY" in os.environ:
         import shutil
+
         import placebo
 
         existing_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
