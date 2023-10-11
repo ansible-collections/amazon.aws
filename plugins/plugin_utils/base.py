@@ -8,11 +8,10 @@ from ansible.module_utils.basic import to_native
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import check_sdk_version_supported
+from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 from ansible_collections.amazon.aws.plugins.plugin_utils.botocore import boto3_conn
 from ansible_collections.amazon.aws.plugins.plugin_utils.botocore import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.plugin_utils.botocore import get_aws_region
-
-from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 
 display = Display()
 

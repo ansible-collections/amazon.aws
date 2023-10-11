@@ -4,10 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from copy import deepcopy
-import pytest
 from unittest.mock import MagicMock
-from unittest.mock import sentinel
 from unittest.mock import call
+from unittest.mock import sentinel
+
+import pytest
 
 try:
     import botocore

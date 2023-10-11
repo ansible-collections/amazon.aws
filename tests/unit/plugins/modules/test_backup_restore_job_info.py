@@ -3,11 +3,13 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+import pytest
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.modules import backup_restore_job_info
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.backup_restore_job_info"

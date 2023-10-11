@@ -7,7 +7,9 @@ from collections import namedtuple
 from time import sleep
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError, WaiterError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass
 
@@ -123,6 +125,8 @@ def get_rds_method_attribute(method_name, module):
             waiter = "role_disassociated"
         elif method_name == "promote_read_replica":
             waiter = "read_replica_promoted"
+        elif method_name == "db_cluster_promoting":
+            waiter = "db_cluster_promoting"
         else:
             waiter = "db_instance_available"
         # Handle retry codes

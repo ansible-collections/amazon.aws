@@ -3,9 +3,10 @@
 
 import gzip
 import io
-import pytest
 from unittest.mock import MagicMock
 from unittest.mock import patch
+
+import pytest
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_metadata_facts
 

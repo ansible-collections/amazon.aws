@@ -1,15 +1,15 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import copy
 import datetime
-from dateutil.tz import tzutc
-import pytest
+from unittest.mock import ANY
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from unittest.mock import ANY
 
 import botocore
-import copy
+import pytest
+from dateutil.tz import tzutc
 
 from ansible.module_utils._text import to_bytes
 

@@ -26,8 +26,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
 
   - name: 'List available AZs in current Region - check_mode'
     aws_az_info:
@@ -49,8 +48,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
 
 
   # Be specific - aws_region isn't guaranteed to be any specific value
@@ -74,8 +72,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
       - first_az.group_name.startswith('us-east-1')
       - first_az.network_border_group.startswith('us-east-1')
       - first_az.region_name == 'us-east-1'
@@ -83,8 +80,7 @@
       - not first_az.zone_id == "use1-az"
       - first_az.zone_name.startswith('us-east-1')
       - not first_az.zone_name == 'us-east-1'
-      # botocore >= 1.17.18
-      #- first_az.zone_type == 'availability-zone'
+      - first_az.zone_type == 'availability-zone'
 
   - name: 'Filter Available AZs in us-west-2 using - ("zone-name")'
     aws_az_info:
@@ -109,8 +105,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
       - first_az.group_name == 'us-west-2'
       - first_az.network_border_group == 'us-west-2'
       - first_az.region_name == 'us-west-2'
@@ -118,8 +113,7 @@
       - first_az.zone_id.startswith('usw2-az')
       - not first_az.zone_id == 'usw2-az'
       - first_az.zone_name == 'us-west-2c'
-      # botocore >= 1.17.18
-      #- first_az.zone_type == 'availability-zone'
+      - first_az.zone_type == 'availability-zone'
 
   - name: 'Filter Available AZs in eu-central-1 using _ ("zone_name")'
     aws_az_info:
@@ -144,8 +138,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
       - first_az.group_name == 'eu-central-1'
       - first_az.network_border_group == 'eu-central-1'
       - first_az.region_name == 'eu-central-1'
@@ -153,8 +146,7 @@
       - first_az.zone_id.startswith('euc1-az')
       - not first_az.zone_id == "euc1-az"
       - first_az.zone_name == 'eu-central-1b'
-      # botocore >= 1.17.18
-      #- first_az.zone_type == 'availability-zone'
+      - first_az.zone_type == 'availability-zone'
 
   - name: 'Filter Available AZs in eu-west-2 using _ and - ("zone_name" and "zone-name") : _ wins '
     aws_az_info:
@@ -180,8 +172,7 @@
       - '"state" in first_az'
       - '"zone_id" in first_az'
       - '"zone_name" in first_az'
-      # botocore >= 1.17.18
-      #- '"zone_type" in first_az'
+      - '"zone_type" in first_az'
       - first_az.group_name == 'eu-west-2'
       - first_az.network_border_group == 'eu-west-2'
       - first_az.region_name == 'eu-west-2'
@@ -189,5 +180,4 @@
       - first_az.zone_id.startswith('euw2-az')
       - not first_az.zone_id == "euw2-az"
       - first_az.zone_name == 'eu-west-2c'
-      # botocore >= 1.17.18
-      #- first_az.zone_type == 'availability-zone'
+      - first_az.zone_type == 'availability-zone'

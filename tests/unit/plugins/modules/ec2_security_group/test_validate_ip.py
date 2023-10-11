@@ -3,10 +3,11 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
+import warnings
 from unittest.mock import MagicMock
 from unittest.mock import sentinel
-import warnings
+
+import pytest
 
 import ansible_collections.amazon.aws.plugins.modules.ec2_security_group as ec2_security_group_module
 

@@ -11,6 +11,7 @@ ssh-keygen -f id_rsa.pub -e -m PKCS8 | openssl pkey -pubin -outform DER | openss
 
 import hashlib
 import sys
+
 from cryptography.hazmat.primitives import serialization
 
 if len(sys.argv) == 0:

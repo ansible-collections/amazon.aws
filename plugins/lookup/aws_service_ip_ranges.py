@@ -46,12 +46,12 @@ _raw:
 import json
 
 from ansible.errors import AnsibleLookupError
+from ansible.module_utils._text import to_native
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.urllib.error import URLError
-from ansible.module_utils._text import to_native
 from ansible.module_utils.urls import ConnectionError
-from ansible.module_utils.urls import open_url
 from ansible.module_utils.urls import SSLValidationError
+from ansible.module_utils.urls import open_url
 from ansible.plugins.lookup import LookupBase
 
 

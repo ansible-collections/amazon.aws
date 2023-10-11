@@ -12,7 +12,7 @@ short_description: Manage inline IAM policies for users, groups, and roles
 description:
   - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
   - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
-    M(community.aws.iam_group) and M(community.aws.iam_managed_policy)
+    M(amazon.aws.iam_group) and M(community.aws.iam_managed_policy)
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   iam_type:
@@ -61,7 +61,7 @@ EXAMPLES = r"""
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
-  community.aws.iam_group:
+  amazon.aws.iam_group:
     name: "{{ item }}"
     state: present
   loop:
@@ -102,15 +102,17 @@ policy_names:
 import json
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass
 
 from ansible.module_utils.six import string_types
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 class PolicyError(Exception):

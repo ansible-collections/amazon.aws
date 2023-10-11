@@ -5,6 +5,30 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.4.0
+======
+
+Release Summary
+---------------
+
+This release brings a new module named ``amazon.aws.ec2_key_info``, some documentation improvements, new features and bugfixes.
+
+Minor Changes
+-------------
+
+- cloudformation - Add support for ``disable_rollback`` to update stack operation (https://github.com/ansible-collections/amazon.aws/issues/1681).
+- ec2_key - add support for new parameter ``file_name`` to save private key in when new key is created by AWS. When this option is provided the generated private key will be removed from the module return (https://github.com/ansible-collections/amazon.aws/pull/1704).
+
+Bugfixes
+--------
+
+- backup_selection - ensures that updating an existing selection will add new ``Conditions`` if there previously were not any (https://github.com/ansible-collections/amazon.aws/pull/1701).
+
+New Modules
+-----------
+
+- ec2_key_info - Gather information about EC2 key pairs in AWS
+
 v6.3.0
 ======
 

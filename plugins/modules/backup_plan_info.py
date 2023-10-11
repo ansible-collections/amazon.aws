@@ -105,9 +105,9 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
 
 
 def get_backup_plan_detail(client, module):
