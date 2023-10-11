@@ -6,7 +6,9 @@ action_groups:
     - autoscaling_group_info
     - aws_az_info
     - aws_caller_info
+    - aws_region_info
     - aws_s3
+    - aws_s3_bucket_info
     - backup_plan
     - backup_plan_info
     - backup_selection
@@ -68,10 +70,14 @@ action_groups:
     - elb_application_lb_info
     - elb_classic_lb
     - execute_lambda
+    - iam_access_key
+    - iam_access_key_info
     - iam_group
     - iam_instance_profile
     - iam_instance_profile_info
     - iam_managed_policy
+    - iam_mfa_device_info
+    - iam_password_policy
     - iam_policy
     - iam_policy_info
     - iam_role
@@ -104,8 +110,10 @@ action_groups:
     - route53_info
     - route53_zone
     - s3_bucket
+    - s3_bucket_info
     - s3_object
     - s3_object_info
+    - sts_assume_role
 plugin_routing:
   action:
     aws_s3:
@@ -120,6 +128,9 @@ plugin_routing:
     aws_s3:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.s3_object
+    aws_s3_bucket_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.s3_bucket_info
     ec2_asg:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.autoscaling_group
