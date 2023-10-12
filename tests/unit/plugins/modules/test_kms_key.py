@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 from ansible_collections.amazon.aws.plugins.modules import kms_key
 
-
 module_name = "ansible_collections.amazon.aws.plugins.modules.kms_key"
 key_details = {
     "KeyMetadata": {

@@ -1,0 +1,8 @@
+# reason: missing-policy
+# IAM Password Policies configure account-wide settings, this makes then
+# difficult to safely test
+# reason: serial
+# Only one password policy can be configured per account
+unsupported
+
+cloud/aws
