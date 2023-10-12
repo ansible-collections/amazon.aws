@@ -54,6 +54,11 @@ EXAMPLES = r"""
     tags:
       environment: dev
       Name: default
+      
+- name: enable debug logging
+  amazon.aws.backup_vault:
+    debug_botocore_endpoint_logs: true
+
 
 """
 
