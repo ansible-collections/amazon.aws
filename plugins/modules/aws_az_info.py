@@ -39,6 +39,12 @@ EXAMPLES = r"""
   amazon.aws.aws_az_info:
     filters:
       zone-name: eu-west-1a
+
+- name: Gather information in a availability zones based on their state, such as "available"
+  amazon.aws.aws_az_info:
+    region: us-east-1
+    filters:
+      state: available
 """
 
 RETURN = r"""
