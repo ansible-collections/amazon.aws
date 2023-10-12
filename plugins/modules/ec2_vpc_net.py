@@ -110,6 +110,11 @@ EXAMPLES = r"""
     ipv6_cidr: True
     region: us-east-1
     tenancy: dedicated
+
+- name: Delete an existing VPC
+  amazon.aws.ec2_vpc_net:
+    vpc_id: vpc-01234-abcdef
+    state: absent
 """
 
 RETURN = r"""
