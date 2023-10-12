@@ -18,12 +18,13 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
-import pytest
 import random
 import string
 from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
+
+import pytest
 
 try:
     import botocore
@@ -32,17 +33,15 @@ except ImportError:
     pass
 
 from ansible.errors import AnsibleError
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.inventory.aws_rds import (
-    InventoryModule,
-    _find_hosts_with_valid_statuses,
-    _get_rds_hostname,
-    _add_tags_for_rds_hosts,
-    _describe_db_clusters,
-    _describe_db_instances,
-    ansible_dict_to_boto3_filter_list,
-)
 
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import InventoryModule
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _add_tags_for_rds_hosts
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _describe_db_clusters
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _describe_db_instances
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _find_hosts_with_valid_statuses
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _get_rds_hostname
+from ansible_collections.amazon.aws.plugins.inventory.aws_rds import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_aws_rds.py requires the python modules 'boto3' and 'botocore'")
