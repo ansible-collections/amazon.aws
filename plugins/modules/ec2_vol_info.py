@@ -45,6 +45,11 @@ EXAMPLES = r"""
 - amazon.aws.ec2_vol_info:
     filters:
       attachment.status: attached
+      
+# Gather information about volumes that are "in-use"
+  amazon.aws.ec2_vol_info:
+    filters:
+      status: in-use
 
 # Gather information about all volumes related to an EC2 Instance
 # register information to `volumes` variable
