@@ -39,8 +39,6 @@
       tags: '{{ tags_create }}'
     register: _result_create_source_db_cluster
     check_mode: True
-    vars:
-      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - assert:
       that:
@@ -60,8 +58,6 @@
       wait: true
       tags: '{{ tags_create }}'
     register: _result_create_source_db_cluster
-    vars:
-      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - assert:
       that:

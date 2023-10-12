@@ -185,13 +185,15 @@ tags:
 """
 
 import time
+
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 

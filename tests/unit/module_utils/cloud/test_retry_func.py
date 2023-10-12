@@ -3,10 +3,11 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
 import sys
 from unittest.mock import Mock
 from unittest.mock import sentinel
+
+import pytest
 
 import ansible_collections.amazon.aws.plugins.module_utils.cloud as cloud_utils
 

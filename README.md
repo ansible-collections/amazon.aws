@@ -1,5 +1,5 @@
 # Amazon AWS Collection
-The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible cloud team.
+The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible cloud team.
 
 AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
 
@@ -13,19 +13,33 @@ Use amazon.aws 4.x.y if you are using Ansible 2.9 or Ansible Core 2.10.
 
 This collection depends on the AWS SDK for Python (Boto3 and Botocore).  Due to the
 [AWS SDK Python Support Policy](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
-this collection requires Python 3.6 or greater.
+this collection requires Python 3.7 or greater.
 
-Amazon have also announced the end of support for
-[Python less than 3.7](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
-As such support for Python less than 3.7 by this collection has been deprecated and will be removed in release 7.0.0.
-Additionally, support for Python less than 3.8 is expected to be removed in a release after 2024-12-01 based on currently
-available schedules.
+Amazon have also announced the planned end of support for
+[Python less than 3.8](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
+As such support for Python less than 3.8 will be removed in a release after 2024-12-01.
+
+<!---
+### End of Support by Python Versions:
+
+| Python Version | AWS SDK | Collection |
+| -------------- | -------- | ---------- |
+| 2.7 | July 2021 | Release 2.0.0 (September 2021) |
+| 3.4 | February 2021 | Release 1.0.0 (June 2020) |
+| 3.5 | February 2021 | Release 2.0.0 (September 2021) |
+| 3.6 | May 2022 | Release 7.0.0 (November 2023) |
+| 3.7 | December 2023 | *After December 2024* |
+| 3.8 | April 2025 | *After April 2026* |
+| 3.9 | April 2026 | *After April 2027* |
+| 3.10 | April 2027 | *After April 2028* |
+| 3.11 | April 2028 | *After April 2029* |
+--->
 
 ## AWS SDK version compatibility
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
-Version 6.0.0 of this collection supports `boto3 >= 1.22.0` and `botocore >= 1.25.0`
+Version 7.0.0 of this collection supports `boto3 >= 1.26.0` and `botocore >= 1.29.0`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 

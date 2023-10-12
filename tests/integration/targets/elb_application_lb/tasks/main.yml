@@ -1395,6 +1395,94 @@
       that:
       - alb_info.load_balancers[0].security_groups[0] == sec_group2.group_id
 
+  - name: Get ALB application info without skipping anything
+    elb_application_lb_info:
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('access_logs_s3_bucket', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_prefix', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('deletion_protection_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('idle_timeout_timeout_seconds', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('load_balancing_cross_zone_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('routing_http2_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('routing_http_desync_mitigation_mode', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('routing_http_drop_invalid_header_fields_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('routing_http_x_amzn_tls_version_and_cipher_suite_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('routing_http_xff_client_port_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('waf_fail_open_enabled', 'defined') | length > 0
+      - alb_info.load_balancers | selectattr('listeners', 'defined') | length > 0
+      - alb_info.load_balancers | map(attribute='listeners') | flatten | selectattr('rules', 'defined') | length > 0
+
+  - name: Get ALB application info excluding attributes
+    elb_application_lb_info:
+      include_attributes: false
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('access_logs_s3_bucket', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_prefix', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('deletion_protection_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('idle_timeout_timeout_seconds', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('load_balancing_cross_zone_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http2_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_desync_mitigation_mode', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_drop_invalid_header_fields_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_x_amzn_tls_version_and_cipher_suite_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_xff_client_port_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('waf_fail_open_enabled', 'defined') | length == 0
+
+  - name: Get ALB application info without listeners, but with rules
+    elb_application_lb_info:
+      include_listeners: false
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('listeners', 'defined') | length > 0
+      - alb_info.load_balancers[0].listeners | length > 0
+
+  - name: Get ALB application info without listeners or rules
+    elb_application_lb_info:
+      include_listeners: false
+      include_listener_rules: false
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('listeners', 'defined') | length == 0
+
+  - name: Get ALB application info without listener rules
+    elb_application_lb_info:
+      include_listener_rules: false
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('listeners', 'defined') | length > 0
+      - alb_info.load_balancers | map(attribute='listeners') | flatten | selectattr('rules', 'defined') | length == 0
+
+  - name: Get ALB application minimal info
+    elb_application_lb_info:
+      include_attributes: false
+      include_listeners: false
+      include_listener_rules: false
+    register: alb_info
+  - assert:
+      that:
+      - alb_info.load_balancers | selectattr('access_logs_s3_bucket', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('access_logs_s3_prefix', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('deletion_protection_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('idle_timeout_timeout_seconds', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('load_balancing_cross_zone_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http2_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_desync_mitigation_mode', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_drop_invalid_header_fields_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_x_amzn_tls_version_and_cipher_suite_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('routing_http_xff_client_port_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('waf_fail_open_enabled', 'defined') | length == 0
+      - alb_info.load_balancers | selectattr('listeners', 'defined') | length == 0
+
     # ------------------------------------------------------------------------------------------
 
   - name: Delete an ALB - check_mode

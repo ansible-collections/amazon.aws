@@ -960,9 +960,9 @@ instances:
             sample: vpc-0011223344
 """
 
-from collections import namedtuple
 import time
 import uuid
+from collections import namedtuple
 
 try:
     import botocore

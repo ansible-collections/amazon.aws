@@ -2,8 +2,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from unittest.mock import MagicMock
-from unittest.mock import patch
 from unittest.mock import call
+from unittest.mock import patch
 
 import pytest
 
@@ -137,11 +137,11 @@ def test_validate_params():
 
     module = MagicMock()
     ec2_ami.validate_params(module, tpm_support=True)
-    assert module.require_botocore_at_least.call_count == 1
+    assert module.require_botocore_at_least.call_count == 0
 
     module = MagicMock()
     ec2_ami.validate_params(module, tpm_support=True, boot_mode="legacy-bios")
-    assert module.require_botocore_at_least.call_count == 1
+    assert module.require_botocore_at_least.call_count == 0
     module.fail_json.assert_any_call("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 
     module = MagicMock()

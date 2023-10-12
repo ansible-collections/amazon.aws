@@ -28,8 +28,8 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from ansible.module_utils.six import string_types
 from ansible.module_utils.six import integer_types
+from ansible.module_utils.six import string_types
 
 
 def ansible_dict_to_boto3_filter_list(filters_dict):

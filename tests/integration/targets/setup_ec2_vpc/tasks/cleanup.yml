@@ -18,7 +18,7 @@
       register: remaining_enis
 
     - name: '(VPC Cleanup) Retrieve security group info based on VPC ID'
-      ec2_group_info:
+      ec2_security_group_info:
         filters:
           vpc-id: '{{ vpc_id }}'
       register: remaining_groups

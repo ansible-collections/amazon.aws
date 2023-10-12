@@ -4,11 +4,12 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
+
 import pytest
 
 try:
-    import botocore
     import boto3
+    import botocore
 except ImportError:
     pass
 

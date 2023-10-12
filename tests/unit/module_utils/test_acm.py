@@ -5,10 +5,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-import pytest
 import random
-from unittest.mock import MagicMock
 from unittest.mock import ANY
+from unittest.mock import MagicMock
+
+import pytest
 
 try:
     import botocore
@@ -16,8 +17,8 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager, acm_catch_boto_exception
-
+from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.acm import acm_catch_boto_exception
 
 MODULE_NAME = "ansible_collections.amazon.aws.plugins.module_utils.acm"
 

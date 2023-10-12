@@ -17,8 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+from unittest.mock import MagicMock
+from unittest.mock import call
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
 
 try:
     import botocore
@@ -27,13 +30,12 @@ except ImportError:
     pass
 
 from ansible.errors import AnsibleError
-from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import (
-    InventoryModule,
-    _get_tag_hostname,
-    _prepare_host_vars,
-    _compile_values,
-    _get_boto_attr_chain,
-)
+
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _compile_values
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
 
 
 @pytest.fixture()

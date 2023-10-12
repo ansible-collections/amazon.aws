@@ -12,8 +12,8 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_is_boto3_error_message.py requires the python modules 'boto3' and 'botocore'")

@@ -440,10 +440,10 @@ import socket
 import time
 import zlib
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
-from ansible.module_utils.urls import fetch_url
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.six.moves.urllib.parse import quote
+from ansible.module_utils.urls import fetch_url
 
 socket.setdefaulttimeout(5)
 

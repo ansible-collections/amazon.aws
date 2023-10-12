@@ -2,5 +2,5 @@
 # - tests/unit/constraints.txt
 # - tests/integration/constraints.txt
 # - tests/integration/targets/setup_botocore_pip
-botocore>=1.25.0
-boto3>=1.22.0
+botocore>=1.29.0
+boto3>=1.26.0

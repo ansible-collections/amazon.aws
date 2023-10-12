@@ -1,2 +1,0 @@
-bugfixes:
-  - backup_selection - ensures that updating an existing selection will add new ``Conditions`` if there previously were not any (https://github.com/ansible-collections/amazon.aws/pull/1701).

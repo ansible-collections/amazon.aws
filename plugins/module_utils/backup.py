@@ -10,6 +10,7 @@ except ImportError:
     pass  # Handled by HAS_BOTO3
 
 from typing import Union
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 

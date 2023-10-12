@@ -1,10 +1,11 @@
+---
 namespace: amazon
 name: aws
 version: 7.0.0-dev0
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)
-description: null
+description: A variety of Ansible content to help automate the management of AWS services.
 license_file: COPYING
 tags: [amazon, aws, cloud]
 repository: https://github.com/ansible-collections/amazon.aws
