@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_server_certificate_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Retrieve the information of a server certificate
 description:
   - Retrieve the attributes of a server certificate.

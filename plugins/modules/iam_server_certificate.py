@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: iam_server_certificate
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Manage IAM server certificates for use on ELBs and CloudFront
 description:
   - Allows for the management of IAM server certificates.
