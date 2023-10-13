@@ -26,12 +26,12 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Retrieve server certificate
-  community.aws.iam_server_certificate_info:
+  amazon.aws.iam_server_certificate_info:
     name: production-cert
   register: server_cert
 
 - name: Fail if the server certificate name was not found
-  community.aws.iam_server_certificate_info:
+  amazon.aws.iam_server_certificate_info:
     name: production-cert
   register: server_cert
   failed_when: "{{ server_cert.results | length == 0 }}"

@@ -71,7 +71,7 @@ RETURN = r""" # """
 
 EXAMPLES = r"""
 - name: Basic server certificate upload from local file
-  community.aws.iam_server_certificate:
+  amazon.aws.iam_server_certificate:
     name: very_ssl
     state: present
     cert: "{{ lookup('file', 'path/to/cert') }}"
@@ -79,7 +79,7 @@ EXAMPLES = r"""
     cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
 - name: Server certificate upload using key string
-  community.aws.iam_server_certificate:
+  amazon.aws.iam_server_certificate:
     name: very_ssl
     state: present
     path: "/a/cert/path/"
@@ -88,7 +88,7 @@ EXAMPLES = r"""
     cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
 - name: Basic rename of existing certificate
-  community.aws.iam_server_certificate:
+  amazon.aws.iam_server_certificate:
     name: very_ssl
     new_name: new_very_ssl
     state: present
