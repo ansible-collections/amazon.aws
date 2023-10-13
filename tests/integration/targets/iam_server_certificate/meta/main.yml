@@ -1,2 +1,2 @@
 dependencies:
-  - setup_remote_tmp_dir
+- setup_remote_tmp_dir

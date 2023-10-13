@@ -1,4 +1,3 @@
----
 # iam_server_certificate integration tests
 #
 # Note:
@@ -22,7 +21,6 @@
     iam_server_certificate: {}
     ignore_errors: true
     register: no_args
-
   - assert:
       that:
       - no_args is failed
@@ -30,15 +28,11 @@
 
   ################################################
 
-  - include_tasks: 'generate-certs.yml'
-
-  ################################################
-
+  - include_tasks: generate-certs.yml
   - set_fact:
       cert_a_data: '{{ lookup("file", path_cert_a) }}'
       cert_b_data: '{{ lookup("file", path_cert_b) }}'
       chain_cert_data: '{{ lookup("file", path_intermediate_cert) }}'
-
   - name: Create Certificate - check_mode
     iam_server_certificate:
       name: '{{ cert_name }}'
@@ -47,7 +41,6 @@
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
     check_mode: true
-
   - name: check result - Create Certificate - check_mode
     assert:
       that:
@@ -61,7 +54,6 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
-
   - name: check result - Create Certificate
     assert:
       that:
@@ -87,7 +79,6 @@
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
     check_mode: true
-
   - name: check result - Create Certificate - idempotency
     assert:
       that:
@@ -101,7 +92,6 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
-
   - name: check result - Create Certificate - idempotency
     assert:
       that:
@@ -130,7 +120,6 @@
     register: update_cert
     ignore_errors: true
     check_mode: true
-
   - name: check result - Update Certificate - check_mode
     assert:
       that:
@@ -144,7 +133,6 @@
       cert: '{{ cert_b_data }}'
     register: update_cert
     ignore_errors: true
-
   - name: check result - Update Certificate
     assert:
       that:
@@ -159,7 +147,6 @@
     register: update_cert
     ignore_errors: true
     check_mode: true
-
   - name: check result - Update Chaining Certificate - check_mode
     assert:
       that:
@@ -173,7 +160,6 @@
       cert_chain: '{{ chain_cert_data }}'
     register: update_cert
     ignore_errors: true
-
   - name: check result - Update Chaining Certificate
     assert:
       that:
@@ -192,7 +178,6 @@
       state: absent
     register: delete_cert
     check_mode: true
-
   - name: check result - Delete certificate - check_mode
     assert:
       that:
@@ -204,7 +189,6 @@
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
-
   - name: check result - Delete certificate
     assert:
       that:
@@ -217,7 +201,6 @@
       state: absent
     register: delete_cert
     check_mode: true
-
   - name: check result - Delete certificate - check_mode
     assert:
       that:
@@ -229,7 +212,6 @@
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
-
   - name: check result - Delete certificate
     assert:
       that:
@@ -245,10 +227,9 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/ansible-test-example/'
+      path: /ansible-test-example/
     register: create_cert
     check_mode: true
-
   - name: check result - Create Certificate with Chain and path - check_mode
     assert:
       that:
@@ -262,9 +243,8 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/ansible-test-example/'
+      path: /ansible-test-example/
     register: create_cert
-
   - name: check result - Create Certificate with Chain and path
     assert:
       that:
@@ -289,10 +269,9 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/ansible-test-example/'
+      path: /ansible-test-example/
     register: create_cert
     check_mode: true
-
   - name: check result - Create Certificate with Chain and path - idempotency - check_mode
     assert:
       that:
@@ -306,9 +285,8 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       cert_chain: '{{ chain_cert_data }}'
-      path: '/ansible-test-example/'
+      path: /ansible-test-example/
     register: create_cert
-
   - name: check result - Create Certificate with Chain and path - idempotency
     assert:
       that:
@@ -337,7 +315,6 @@
       dup_ok: false
     register: create_duplicate
     ignore_errors: true
-
   - name: check result - Create Certificate with identical cert - check_mode
     assert:
       that:
@@ -352,7 +329,6 @@
       dup_ok: false
     register: create_duplicate
     ignore_errors: true
-
   - name: check result - Create Certificate with identical cert
     assert:
       that:
@@ -368,7 +344,6 @@
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
     check_mode: true
-
   - name: check result - Create Certificate with forced identical cert - check_mode
     assert:
       that:
@@ -382,7 +357,6 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
-
   - name: check result - Create Certificate with forced identical cert
     assert:
       that:
@@ -408,8 +382,8 @@
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
     check_mode: true
-
-  - name: check result - Create Certificate with forced identical cert - idempotency - check_mode
+  - name: check result - Create Certificate with forced identical cert - idempotency
+      - check_mode
     assert:
       that:
       - create_duplicate is successful
@@ -422,7 +396,6 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
-
   - name: check result - Create Certificate with forced identical cert - idempotency
     assert:
       that:
@@ -446,11 +419,10 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/ansible-test-example/'
-      new_path: '/ansible-test-path/'
+      path: /ansible-test-example/
+      new_path: /ansible-test-path/
     register: update_path
     check_mode: true
-
   - name: check result - Update certificate path - check_mode
     assert:
       that:
@@ -461,10 +433,9 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/ansible-test-example/'
-      new_path: '/ansible-test-path/'
+      path: /ansible-test-example/
+      new_path: /ansible-test-path/
     register: update_path
-
   - name: check result - Update certificate path
     assert:
       that:
@@ -486,30 +457,28 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/ansible-test-example/'
-      new_path: '/ansible-test-path/'
+      path: /ansible-test-example/
+      new_path: /ansible-test-path/
     register: update_path
     check_mode: true
-
   - name: check result - Update certificate path - idempotency - check_mode
     assert:
-     that:
-     - update_path is successful
-     - update_path is not changed
+      that:
+      - update_path is successful
+      - update_path is not changed
 
   - name: Update certificate path - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      path: '/ansible-test-example/'
-      new_path: '/ansible-test-path/'
+      path: /ansible-test-example/
+      new_path: /ansible-test-path/
     register: update_path
-
   - name: check result - Update certificate path - idempotency
     assert:
-     that:
-     - update_path is successful
-     - update_path is not changed
+      that:
+      - update_path is successful
+      - update_path is not changed
 
   ################################################
 
@@ -520,7 +489,6 @@
       state: present
     register: update_name
     check_mode: true
-
   - name: check result - Update certificate name - check_mode
     assert:
       that:
@@ -533,7 +501,6 @@
       new_name: '{{ cert_name }}-renamed'
       state: present
     register: update_name
-
   - name: check result - Update certificate name
     assert:
       that:
@@ -558,7 +525,6 @@
       state: present
     register: update_name
     check_mode: true
-
   - name: check result - Update certificate name - idempotency - check_mode
     assert:
       that:
@@ -571,7 +537,6 @@
       new_name: '{{ cert_name }}-renamed'
       state: present
     register: update_name
-
   - name: check result - Update certificate name - idempotency
     assert:
       that:

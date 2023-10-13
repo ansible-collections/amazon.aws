@@ -1,2 +1,1 @@
----
-cert_name: 'ansible-test-{{ tiny_prefix }}'
+cert_name: ansible-test-{{ tiny_prefix }}
