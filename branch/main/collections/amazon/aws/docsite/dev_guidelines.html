@@ -219,6 +219,7 @@
 <li><p><a class="reference internal" href="#how-to-run-my-unit-tests" id="id52">How to run my unit-tests</a></p></li>
 </ul>
 </li>
+<li><p><a class="reference internal" href="#code-formatting" id="id53">Code formatting</a></p></li>
 </ul>
 </nav>
 <section id="requirements">
@@ -1161,6 +1162,25 @@ be challenging and we also accept contribution with no unit-test. Generally spea
 </pre></div>
 </div>
 </section>
+</section>
+<section id="code-formatting">
+<h2><a class="toc-backref" href="#id53" role="doc-backlink">Code formatting</a><a class="headerlink" href="#code-formatting" title="Link to this heading"></a></h2>
+<p>To improve the consistency of our code we use a number of formatters and linters.  These tools can
+be run locally by using tox:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>tox<span class="w"> </span>-m<span class="w"> </span>format
+</pre></div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>tox<span class="w"> </span>-m<span class="w"> </span>lint
+</pre></div>
+</div>
+<p>More information about each of the tools we use can be found on their websites:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://black.readthedocs.io/en/stable/">black</a> - opinionated code formatter.</p></li>
+<li><p><a class="reference external" href="https://pycqa.github.io/isort/">isort</a> - groups and sorts imports.</p></li>
+<li><p><a class="reference external" href="https://github.com/ikamensh/flynt">flynt</a> - encourages the use of f-strings over alternatives such as concatination, <code class="docutils literal notranslate"><span class="pre">%</span></code>, <code class="docutils literal notranslate"><span class="pre">str.format()</span></code>, and <code class="docutils literal notranslate"><span class="pre">string.Template</span></code>.</p></li>
+<li><p><a class="reference external" href="https://flake8.pycqa.org/en/latest/">flake8</a> - encourages following the PEP8 recommendations.</p></li>
+<li><p><a class="reference external" href="https://pylint.readthedocs.io/en/latest/">pylint</a> - a static code anaylsys tool.</p></li>
+</ul>
 </section>
 </section>
 
