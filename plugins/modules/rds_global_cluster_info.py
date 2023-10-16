@@ -181,7 +181,9 @@ def cluster_info(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Couldn't get Global cluster information.")
 
-    return dict(changed=False, global_clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result])
+    return dict(
+        changed=False, global_clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result]
+    )
 
 
 def main():
