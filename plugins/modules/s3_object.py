@@ -1381,9 +1381,9 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
             changed |= updated
             number_keys_updated += 1 if updated else 0
 
-        msg = "object(s) from buckets '{0}' and '{1}' are the same.".format(src_bucket, s3_vars["bucket"])
+        msg = f"object(s) from buckets '{src_bucket}' and '{s3_vars['bucket']}' are the same."
         if number_keys_updated:
-            msg = "{0} copied into bucket '{1}'".format(number_keys_updated, s3_vars["bucket"])
+            msg = f"{number_keys_updated} copied into bucket '{s3_vars['bucket']}'"
         module.exit_json(changed=changed, msg=msg)
     else:
         # copy single object from source bucket into destination bucket
