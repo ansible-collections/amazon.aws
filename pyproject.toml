@@ -36,3 +36,6 @@ known_ansible_community_aws = ["ansible_collections.community.aws"]
 
 [tool.flynt]
 transform-joins = true
+exclude = [
+    "ec2_metadata_facts",
+]
