@@ -14,13 +14,15 @@ description:
 author: Robert Estelle (@erydo)
 options:
   internet_gateway_id:
+    version_added: 7.0.0
     description:
       - The ID of Internet Gateway to manage.
     required: false
     type: str
   vpc_id:
     description:
-      - The VPC ID for the VPC to attach (when state=present) or that is attached the Internet Gateway to manage.
+      - The VPC ID for the VPC to attach (when state=present)
+      - VPC ID can also be provided to find the internet gateway to manage that the VPC is attached to
     required: false
     type: str
   state:
@@ -29,8 +31,22 @@ options:
     default: present
     choices: [ 'present', 'absent' ]
     type: str
+  force_attach:
+    version_added: 7.0.0
+    description:
+      - Force attaching VPC to I(vpc_id).
+      - Setting this option to true will detach an existing VPC attachment and attach to the supplied I(vpc_id).
+      - Ignored when I(state=absent).
+      - I(vpc_id) must be specified when I(force_attach) is true
+    default: false
+    type: bool
+  detach_vpc:
+    version_added: 7.0.0
+    description:
+      - Remove attached VPC from gateway
+    default: false
+    type: bool
 notes:
-- I(internet_gateway_id) or I(vpc_id) must be supplied. Both can be supplied if managing an existing gateway.
 - Support for I(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -59,7 +75,20 @@ EXAMPLES = r"""
         Tag2: tag2
   register: igw
 
-- name: Delete Internet gateway
+- name: Create a detached gateway
+  amazon.aws.ec2_vpc_igw:
+    state: present
+  register: igw
+
+- name: Change the VPC the gateway is attached to
+  amazon.aws.ec2_vpc_igw:
+    internet_gateway_id: igw-abcdefgh
+    vpc_id: vpc-stuvwxyz
+    force_attach: true
+    state: present
+  register: igw
+
+- name: Delete Internet gateway using the attached vpc id
   amazon.aws.ec2_vpc_igw:
     state: absent
     vpc_id: vpc-abcdefgh
@@ -129,6 +158,11 @@ def describe_igws_with_backoff(connection, **params):
     return paginator.paginate(**params).build_full_result()["InternetGateways"]
 
 
+def describe_vpcs_with_backoff(connection, **params):
+    paginator = connection.get_paginator("describe_vpcs")
+    return paginator.paginate(**params).build_full_result()["Vpcs"]
+
+
 class AnsibleEc2Igw:
     def __init__(self, module, results):
         self._module = module
@@ -142,11 +176,13 @@ class AnsibleEc2Igw:
         state = self._module.params.get("state", "present")
         tags = self._module.params.get("tags")
         purge_tags = self._module.params.get("purge_tags")
+        force_attach = self._module.params.get("force_attach")
+        detach_vpc = self._module.params.get("detach_vpc")
 
         if state == "present":
-            self.ensure_igw_present(vpc_id, tags, purge_tags)
+            self.ensure_igw_present(internet_gateway_id, vpc_id, tags, purge_tags, force_attach, detach_vpc)
         elif state == "absent":
-            self.ensure_igw_absent(vpc_id, internet_gateway_id)
+            self.ensure_igw_absent(internet_gateway_id, vpc_id)
 
     def get_matching_igw(self, vpc_id, gateway_id=None):
         """
@@ -176,6 +212,30 @@ class AnsibleEc2Igw:
 
         return igw
 
+    def get_matching_vpc(self, vpc_id):
+        """
+        Returns the virtual private cloud found.
+            Parameters:
+                vpc_id (str): VPC ID
+            Returns:
+                vpc (dict): dict of vpc found, None if none found
+        """
+        try:
+            vpcs = describe_vpcs_with_backoff(self._connection, VpcIds=[vpc_id])
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            # self._module.fail_json(msg=f"{str(e)}")
+            if "InvalidVpcID.NotFound" in str(e):
+                self._module.fail_json(msg=f"VPC with Id {vpc_id} not found, aborting")
+            self._module.fail_json_aws(e)
+
+        vpc = None
+        if len(vpcs) > 1:
+            self._module.fail_json(msg=f"EC2 returned more than one VPC for {vpc_id}, aborting")
+        elif vpcs:
+            vpc = camel_dict_to_snake_dict(vpcs[0])
+
+        return vpc
+
     @staticmethod
     def get_igw_info(igw, vpc_id):
         return {
@@ -184,7 +244,27 @@ class AnsibleEc2Igw:
             "vpc_id": vpc_id,
         }
 
-    def ensure_igw_absent(self, vpc_id, igw_id):
+    def detach_vpc(self, igw_id, vpc_id):
+        try:
+            self._connection.detach_internet_gateway(aws_retry=True, InternetGatewayId=igw_id, VpcId=vpc_id)
+
+            self._results["changed"] = True
+        except botocore.exceptions.WaiterError as e:
+            self._module.fail_json_aws(e, msg="Unable to detach VPC.")
+
+    def attach_vpc(self, igw_id, vpc_id):
+        try:
+            self._connection.attach_internet_gateway(aws_retry=True, InternetGatewayId=igw_id, VpcId=vpc_id)
+
+            # Ensure the gateway is attached before proceeding
+            waiter = get_waiter(self._connection, "internet_gateway_attached")
+            waiter.wait(InternetGatewayIds=[igw_id])
+
+            self._results["changed"] = True
+        except botocore.exceptions.WaiterError as e:
+            self._module.fail_json_aws(e, msg="Failed to attach VPC.")
+
+    def ensure_igw_absent(self, igw_id, vpc_id):
         igw = self.get_matching_igw(vpc_id, gateway_id=igw_id)
         if igw is None:
             return self._results
@@ -203,18 +283,23 @@ class AnsibleEc2Igw:
 
         try:
             self._results["changed"] = True
+
             if igw_vpc_id:
-                self._connection.detach_internet_gateway(
-                    aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=igw_vpc_id
-                )
+                self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
+
             self._connection.delete_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="Unable to delete Internet Gateway")
 
         return self._results
 
-    def ensure_igw_present(self, vpc_id, tags, purge_tags):
-        igw = self.get_matching_igw(vpc_id)
+    def ensure_igw_present(self, igw_id, vpc_id, tags, purge_tags, force_attach, detach_vpc):
+        igw = None
+
+        if igw_id:
+            igw = self.get_matching_igw(None, gateway_id=igw_id)
+        elif vpc_id:
+            igw = self.get_matching_igw(vpc_id)
 
         if igw is None:
             if self._check_mode:
@@ -222,26 +307,61 @@ class AnsibleEc2Igw:
                 self._results["gateway_id"] = None
                 return self._results
 
+            if vpc_id:
+                self.get_matching_vpc(vpc_id)
+
             try:
                 response = self._connection.create_internet_gateway(aws_retry=True)
 
                 # Ensure the gateway exists before trying to attach it or add tags
                 waiter = get_waiter(self._connection, "internet_gateway_exists")
                 waiter.wait(InternetGatewayIds=[response["InternetGateway"]["InternetGatewayId"]])
+                self._results["changed"] = True
 
                 igw = camel_dict_to_snake_dict(response["InternetGateway"])
-                self._connection.attach_internet_gateway(
-                    aws_retry=True, InternetGatewayId=igw["internet_gateway_id"], VpcId=vpc_id
-                )
 
-                # Ensure the gateway is attached before proceeding
-                waiter = get_waiter(self._connection, "internet_gateway_attached")
-                waiter.wait(InternetGatewayIds=[igw["internet_gateway_id"]])
-                self._results["changed"] = True
+                if vpc_id:
+                    self.attach_vpc(igw["internet_gateway_id"], vpc_id)
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg="Unable to create Internet Gateway")
+        else:
+            igw_vpc_id = None
+
+            if len(igw["attachments"]) > 0:
+                igw_vpc_id = igw["attachments"][0]["vpc_id"]
+
+                if detach_vpc:
+                    if self._check_mode:
+                        self._results["changed"] = True
+                        self._results["gateway_id"] = igw["internet_gateway_id"]
+                        return self._results
+
+                    self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
+
+                elif igw_vpc_id != vpc_id:
+                    if self._check_mode:
+                        self._results["changed"] = True
+                        self._results["gateway_id"] = igw["internet_gateway_id"]
+                        return self._results
+
+                    if force_attach:
+                        self.get_matching_vpc(vpc_id)
+
+                        self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
+                        self.attach_vpc(igw["internet_gateway_id"], vpc_id)
+                    else:
+                        self._module.fail_json(msg="VPC already attached, but does not match requested VPC.")
+
+            elif vpc_id:
+                if self._check_mode:
+                    self._results["changed"] = True
+                    self._results["gateway_id"] = igw["internet_gateway_id"]
+                    return self._results
+
+                self.get_matching_vpc(vpc_id)
+                self.attach_vpc(igw["internet_gateway_id"], vpc_id)
 
         # Modify tags
         self._results["changed"] |= ensure_ec2_tags(
@@ -269,11 +389,25 @@ def main():
         state=dict(default="present", choices=["present", "absent"]),
         tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         purge_tags=dict(default=True, type="bool"),
+        force_attach=dict(default=False, type="bool"),
+        detach_vpc=dict(default=False, type="bool"),
     )
 
-    required_one_of = [("internet_gateway_id", "vpc_id")]
+    required_if = [
+        ("force_attach", True, ("vpc_id",), False),
+        ("state", "absent", ("internet_gateway_id", "vpc_id"), True),
+        ("detach_vpc", True, ("internet_gateway_id", "vpc_id"), True),
+    ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_one_of=required_one_of)
+    mutually_exclusive = [("force_attach", "detach_vpc")]
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=required_if,
+        mutually_exclusive=mutually_exclusive,
+    )
+
     results = dict(changed=False)
     igw_manager = AnsibleEc2Igw(module=module, results=results)
     igw_manager.process()

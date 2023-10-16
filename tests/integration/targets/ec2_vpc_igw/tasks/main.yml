@@ -40,6 +40,16 @@
       - vpc_result.vpc.tags["Description"] == "Created by ansible-test"
 
   # ============================================================
+  - name: Create a second VPC
+    ec2_vpc_net:
+      name: '{{ vpc_name_2 }}'
+      state: present
+      cidr_block: '{{ vpc_cidr_2 }}'
+      tags:
+        Description: Created by ansible-test
+    register: vpc_2_result
+  
+  # ============================================================
   - name: Search for internet gateway by VPC - no matches
     ec2_vpc_igw_info:
       filters:
@@ -95,6 +105,7 @@
     set_fact:
       igw_id: '{{ vpc_igw_create.gateway_id }}'
       vpc_id: '{{ vpc_result.vpc.id }}'
+      vpc_2_id: '{{ vpc_2_result.vpc.id }}'
 
   - name: Search for internet gateway by VPC
     ec2_vpc_igw_info:
@@ -535,16 +546,35 @@
       - vpc_igw_delete is not changed
 
   # ============================================================
-  - name: Create new internet gateway for removal by igw id tests
+  - name: Create new detached internet gateway - CHECK_MODE
     ec2_vpc_igw:
       state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: new_internet_gateway_result
+    register: detached_igw_result
+    check_mode: true
+
+  - name: Assert creation would happen (expected changed=true) - CHECK_MODE
+    assert:
+      that:
+      - detached_igw_result is changed
+
+  - name: Create new detached internet gateway (expected changed=true)
+    ec2_vpc_igw:
+      state: present
+    register: detached_igw_result
+
+  - name: Assert creation happened (expected changed=true)
+    assert:
+      that:
+      - detached_igw_result is changed
+      - '"gateway_id" in detached_igw_result'
+      - detached_igw_result.gateway_id.startswith("igw-")
+      - not detached_igw_result.vpc_id
       
+  # ============================================================
   - name: Test state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
     ec2_vpc_igw:
       state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
     register: vpc_igw_delete
     check_mode: true
 
@@ -553,10 +583,21 @@
       that:
         - vpc_igw_delete is changed
 
+  - name: Search for IGW by ID
+    ec2_vpc_igw_info:
+      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
+    register: igw_info
+
+  - name: Check that IGW was not deleted in check mode
+    assert:
+      that:
+        - '"internet_gateways" in igw_info'
+        - igw_info.internet_gateways | length == 1
+
   - name: Test state=absent when supplying only a gateway id (expected chaged=true)
     ec2_vpc_igw:
       state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
     register: vpc_igw_delete
 
   - name: Assert state=absent when supplying only a gateway id (expected chaged=true)
@@ -566,7 +607,7 @@
 
   - name: Fetch removed IGW by ID
     ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ igw_id }}'
+      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
     register: igw_info
     ignore_errors: true
 
@@ -577,60 +618,138 @@
       - igw_info is failed
 
   # ============================================================
-  - name: Create new internet gateway for removal by igw id and vpc id tests
+  - name: Create new internet gateway for vpc tests
     ec2_vpc_igw:
       state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: new_internet_gateway_result
+    register: detached_igw_result
       
-  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+  # ============================================================
+  - name: Test attaching VPC to gateway - CHECK_MODE
     ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_id }}'
+    register: attach_vpc_result
     check_mode: true
 
-  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+  - name: Assert that VPC was attached - CHECK_MODE
     assert:
       that:
-        - vpc_igw_delete is changed
+        - attach_vpc_result is changed
 
-  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true)
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
-
-  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true)
-    assert:
-      that:
-        - vpc_igw_delete is changed
-
-  - name: Fetch removed IGW by ID
-    ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ igw_id }}'
-    register: igw_info
-    ignore_errors: true
-
-  - name: Check IGW does not exist
-    assert:
-      that:
-        # Deliberate choice not to change bevahiour when searching by ID
-      - igw_info is failed
-
-  # ============================================================
-  - name: Create new internet gateway for removal by igw id and wrong vpc id tests
+  - name: Test attaching VPC to gateway
     ec2_vpc_igw:
       state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: new_internet_gateway_result
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_id }}'
+    register: attach_vpc_result
+
+  - name: Assert that VPC was attached
+    assert:
+      that:
+        - attach_vpc_result is changed
+        - attach_vpc_result.vpc_id == vpc_id
+        - attach_vpc_result.gateway_id == detached_igw_result.gateway_id
+
+  # ============================================================
+  - name: Test detaching VPC from gateway - CHECK_MODE
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      detach_vpc: true
+    register: detach_vpc_result
+    check_mode: true
+
+  - name: Assert that VPC was detached - CHECK_MODE
+    assert:
+      that:
+        - detach_vpc_result is changed
+
+  - name: Test detaching VPC from gateway
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      detach_vpc: true
+    register: detach_vpc_result
+
+  - name: Assert that VPC was detached
+    assert:
+      that:
+        - detach_vpc_result is changed
+        - not detach_vpc_result.vpc_id
+        - detach_vpc_result.gateway_id == detached_igw_result.gateway_id
+
+  # ============================================================
+  - name: Attach VPC to gateway for VPC change tests
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_id }}'
+
+  # ============================================================
+  - name: Attempt change attached VPC with force_attach=false (default) - CHECK_MODE
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_result.vpc.id }}'
+    register: igw_vpc_changed_result
+    check_mode: true
+
+  - name: Assert VPC changed with force_attach=false (default) - CHECK_MODE
+    assert:
+      that:
+        - igw_vpc_changed_result is changed
+        - vpc_id not in igw_vpc_changed_result
       
+  - name: Attempt change with force_attach=false (default) (expected failure)
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_result.vpc.id }}'
+    register: igw_vpc_changed_result
+    ignore_errors: true
+
+  - name: Assert VPC changed with force_attach=false (default)
+    assert:
+      that:
+        - igw_vpc_changed_result is failed
+        - igw_vpc_changed_result.msg is search('VPC already attached, but does not match requested VPC.')
+
+  # ============================================================
+  - name: Attempt change attached VPC with force_attach=true - CHECK_MODE
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_result.vpc.id }}'
+      force_attach: true
+    register: igw_vpc_changed_result
+    check_mode: true
+
+  - name: Assert VPC changed with force_attach=true - CHECK_MODE
+    assert:
+      that:
+        - igw_vpc_changed_result is changed
+        - vpc_id not in igw_vpc_changed_result
+      
+  - name: Attempt change with force_attach=true
+    ec2_vpc_igw:
+      state: present
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_result.vpc.id }}'
+      force_attach: true
+    register: igw_vpc_changed_result
+
+  - name: Assert VPC changed with force_attach=true
+    assert:
+      that:
+        - igw_vpc_changed_result is changed
+        - igw_vpc_changed_result.vpc_id == vpc_2_id
+
+  # ============================================================
   - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
     ec2_vpc_igw:
       state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
       vpc_id: 'vpc-xxxxxxxxx'
     register: vpc_igw_delete
     check_mode: true
@@ -645,7 +764,7 @@
   - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure)
     ec2_vpc_igw:
       state: absent
-      internet_gateway_id: '{{ new_internet_gateway_result.gateway_id}}'
+      internet_gateway_id: '{{ detached_igw_result.gateway_id}}'
       vpc_id: 'vpc-xxxxxxxxx'
     register: vpc_igw_delete
     ignore_errors: true
@@ -656,6 +775,44 @@
         - vpc_igw_delete is failed
         - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
 
+  # ============================================================
+  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_id }}'
+    register: vpc_igw_delete
+    check_mode: true
+
+  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true)
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+      vpc_id: '{{ vpc_2_id }}'
+    register: vpc_igw_delete
+
+  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true)
+    assert:
+      that:
+        - vpc_igw_delete is changed
+
+  - name: Fetch removed IGW by ID
+    ec2_vpc_igw_info:
+      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
+    register: igw_info
+    ignore_errors: true
+
+  - name: Check IGW does not exist
+    assert:
+      that:
+        # Deliberate choice not to change bevahiour when searching by ID
+      - igw_info is failed
+
   always:
     # ============================================================
   - name: Tidy up IGW
@@ -664,9 +821,28 @@
       vpc_id: '{{ vpc_result.vpc.id }}'
     ignore_errors: true
 
+  - name: Tidy up IGW on second VPC
+    ec2_vpc_igw:
+      state: absent
+      vpc_id: '{{ vpc_2_result.vpc.id }}'
+    ignore_errors: true
+
+  - name: Tidy up detached IGW
+    ec2_vpc_igw:
+      state: absent
+      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
+    ignore_errors: true
+
   - name: Tidy up VPC
     ec2_vpc_net:
       name: '{{ vpc_name }}'
       state: absent
       cidr_block: '{{ vpc_cidr }}'
+    ignore_errors: true
+
+  - name: Tidy up second VPC
+    ec2_vpc_net:
+      name: '{{ vpc_name_2 }}'
+      state: absent
+      cidr_block: '{{ vpc_cidr_2 }}'
     ignore_errors: true
