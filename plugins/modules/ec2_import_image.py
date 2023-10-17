@@ -318,6 +318,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
 def ensure_ec2_import_image_result(import_image_info):
@@ -422,6 +423,8 @@ def present(client, module):
     else:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created the import task if not in check mode")
+
+        params = scrub_none_parameters(params)
 
         try:
             client.import_image(aws_retry=True, **params)
