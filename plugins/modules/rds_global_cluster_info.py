@@ -16,7 +16,7 @@ options:
         description:
           - The user-supplied Global DB cluster identifier.
           - If this parameter is specified, information from only the specific DB cluster is returned.
-          - This parameter isn’t case-sensitive.
+          - This parameter is not case-sensitive.
           - If supplied, must match an existing DBClusterIdentifier.
         type: str
     filters:
@@ -96,7 +96,7 @@ global_clusters:
         - The list of primary and secondary clusters within the global database
           cluster.
         type: list
-        elemets: dict
+        elements: dict
         contains:
             db_cluster_arn:
                 description: The Amazon Resource Name (ARN) for each Aurora DB cluster in the global cluster.
@@ -108,7 +108,8 @@ global_clusters:
                 elements: str
                 sample: arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary
             is_write:
-                description: Indicates whether the Aurora DB cluster is the primary cluster (that is, has read-write capability) for the global cluster with which it is associated.
+                description:
+                - Indicates whether the Aurora DB cluster is the primary cluster for the global cluster with which it is associated.
                 type: bool
                 sample: false
             global_write_forwarding_status:
@@ -117,7 +118,8 @@ global_clusters:
                 sample: disabled
     failover_state:
         description:
-        - A data object containing all properties for the current state of an in-process or pending switchover or failover process for this global cluster (Aurora global database).
+        - A data object containing all properties for the current state of an in-process or
+          pending switchover or failover process for this global cluster (Aurora global database).
         - This object is empty unless the SwitchoverGlobalCluster or FailoverGlobalCluster operation was called on this global cluster.
         type: dict
         contains:
@@ -137,7 +139,7 @@ global_clusters:
             is_data_loss_allowed:
                 description:
                 - Indicates whether the operation is a global switchover or a global failover.
-                - If data loss is allowed, then the operation is a global failover. Otherwise, it’s a switchover.
+                - If data loss is allowed, then the operation is a global failover. Otherwise, it is a switchover.
                 type: bool
                 sample: false
 """
@@ -152,7 +154,6 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
