@@ -242,8 +242,8 @@ arns:
 
 
 import base64
-from copy import deepcopy
 import re  # regex library
+from copy import deepcopy
 
 try:
     import botocore
