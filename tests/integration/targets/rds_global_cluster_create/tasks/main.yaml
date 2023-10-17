@@ -71,20 +71,6 @@
           - global_cluster_info.global_clusters[0].global_cluster_members[1].db_cluster_arn == secondary_cluster_info_result.clusters[0].db_cluster_arn
           - global_cluster_info.global_clusters[0].engine == engine
 
-    - name: Get Global DB information
-      amazon.aws.rds_global_cluster_info:
-        filters:
-          engine: "{{ engine }}"
-        region: "{{ aws_region }}"
-      register: global_cluster_filter_info
-
-    - name: Assert that the filter result is as expected
-      ansible.builtin.assert:
-        that:
-          - global_cluster_info.global_clusters[0] == item
-      when: item.global_cluster_identifier == global_cluster_id
-      loop: "{{ global_cluster_filter_info.global_clusters }}"
-
   always:
     - name: Delete secondary cluster without creating a final snapshot
       amazon.aws.rds_cluster:

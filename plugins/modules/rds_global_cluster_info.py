@@ -7,7 +7,7 @@
 
 DOCUMENTATION = r"""
 module: rds_global_cluster_info
-version_added: 6.6.0
+version_added: 7.0.0
 short_description: Obtain information about Aurora global database clusters
 description:
   - Obtain information about Aurora global database clusters.
@@ -19,11 +19,7 @@ options:
           - This parameter is not case-sensitive.
           - If supplied, must match an existing DBClusterIdentifier.
         type: str
-    filters:
-        description:
-            - A filter that specifies one or more DB clusters to describe.
-              See U(https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_Filter.html).
-        type: dict
+
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
 extends_documentation_fragment:
@@ -42,11 +38,6 @@ EXAMPLES = r"""
     global_cluster_identifier: "{{ cluster_id }}"
   register: _result_global_cluster_info
 
-- name: Get info all DB clusters with specific engine
-  amazon.aws.rds_cluster_info:
-    filters:
-      engine: "aurora-mysql"
-  register: _result_global_cluster_info
 """
 
 RETURN = r"""
@@ -169,13 +160,10 @@ def _describe_global_clusters(client, **params):
 
 def cluster_info(client, module):
     global_cluster_id = module.params.get("global_cluster_identifier")
-    filters = module.params.get("filters")
 
     params = dict()
     if global_cluster_id:
         params["GlobalClusterIdentifier"] = global_cluster_id
-    if filters:
-        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
     try:
         result = _describe_global_clusters(client, **params)
@@ -190,7 +178,6 @@ def cluster_info(client, module):
 def main():
     argument_spec = dict(
         global_cluster_identifier=dict(),
-        filters=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(
