@@ -71,12 +71,26 @@
           - global_cluster_info.global_clusters[0].global_cluster_members[1].db_cluster_arn == secondary_cluster_info_result.clusters[0].db_cluster_arn
           - global_cluster_info.global_clusters[0].engine == engine
 
+    - name: Get Global DB information
+      amazon.aws.rds_global_cluster_info:
+        filters:
+          engine: "{{ engine }}"
+        region: "{{ aws_region }}"
+      register: global_cluster_filter_info
+
+    - name: Assert that the filter result is as expected
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.global_clusters[0] == item
+      when: item.global_cluster_identifier == global_cluster_id
+      loop: "{{ global_cluster_filter_info.global_clusters }}"
+
   always:
     - name: Delete secondary cluster without creating a final snapshot
       amazon.aws.rds_cluster:
         cluster_id: "{{ secondary_cluster_id }}"
         region: "eu-north-1"
-        global_cluster_identifier: "{{  obal_cluster_id }}"
+        global_cluster_identifier: "{{  global_cluster_id }}"
         remove_from_global_db: true
         skip_final_snapshot: True
         state: absent
@@ -84,7 +98,7 @@
 
     - name: Delete instance attached to primary uster
       amazon.aws.rds_instance:
-        db_instance_identifier: "{{  imary_instance_id }}"
+        db_instance_identifier: "{{  primary_instance_id }}"
         region: "{{ aws_region }}"
         skip_final_snapshot: true
         wait: false
@@ -94,16 +108,15 @@
     - name: Delete primary cluster without creating a nal snapshot
       amazon.aws.rds_cluster:
         cluster_id: "{{ primary_cluster_id }}"
-        lobal_cluster_identifier: "{{  obal_cluster_id }}"
+        global_cluster_identifier: "{{  global_cluster_id }}"
         skip_final_snapshot: True
         region: "{{ aws_region }}"
         state: absent
       ignore_errors: true
 
-    - name: Delete DB cluster without creating a final snapshot
-      amazon.aws.rds_cluster:
+    - name: Delete Global DB cluster
+      amazon.cloud.rds_global_cluster:
         state: absent
-        cluster_id: "{{ global_cluster_id }}"
-        skip_final_snapshot: true
+        global_cluster_identifier: "{{ global_cluster_id }}"
         region: "{{ aws_region }}"
       ignore_errors: true

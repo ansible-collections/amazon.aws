@@ -56,7 +56,7 @@ global_clusters:
   type: list
   contains:
     global_cluster_identifier:
-        description: User-supplied global database cluster identifier..
+        description: User-supplied global database cluster identifier.
         type: str
         sample: "ansible-test-global-cluster"
     global_cluster_resource_id:
@@ -125,7 +125,7 @@ global_clusters:
         contains:
             status:
                 description:
-                - The current status of the global cluster. Possible values are as follows
+                - The current status of the global cluster.
                 type: str
                 sample: "pending"
             from_db_cluster_arn:
