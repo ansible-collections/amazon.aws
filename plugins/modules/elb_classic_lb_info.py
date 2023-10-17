@@ -139,7 +139,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
-
 MAX_AWS_RETRIES = 5
 MAX_AWS_DELAY = 5
 
