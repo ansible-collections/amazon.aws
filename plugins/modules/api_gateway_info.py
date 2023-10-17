@@ -118,7 +118,7 @@ def _describe_rest_api(connection, module, rest_api_id):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get Rest API '{0}'.".format(rest_api_id))
+        module.fail_json_aws(e, msg=f"Trying to get Rest API '{rest_api_id}'.")
     return response
 
 

@@ -197,11 +197,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 def main():
@@ -288,7 +288,7 @@ def main():
                 module.exit_json(changed=False, msg="No API gateway identified with tags provided")
             api_id = rest_api["id"]
         elif not describe_api(client, module, api_id):
-            module.exit_json(changed=False, msg="API gateway id '{0}' does not exist.".format(api_id))
+            module.exit_json(changed=False, msg=f"API gateway id '{api_id}' does not exist.")
 
         if module.check_mode:
             module.exit_json(changed=True, msg="Delete operation skipped - running in check mode.", api_id=api_id)
@@ -425,7 +425,7 @@ def get_api_by_tags(client, module, name, tags):
         args = "Tags"
         if name:
             args += " and name"
-        module.fail_json(msg="{0} provided do not identify a unique API gateway".format(args))
+        module.fail_json(msg=f"{args} provided do not identify a unique API gateway")
     return result
 
 
@@ -500,7 +500,7 @@ def describe_api(client, module, rest_api_id):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Trying to get Rest API '{0}'.".format(rest_api_id))
+        module.fail_json_aws(e, msg=f"Trying to get Rest API '{rest_api_id}'.")
     return response
 
 
