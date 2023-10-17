@@ -164,7 +164,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
-
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 PROTOCOL_NUMBERS = {"all": -1, "icmp": 1, "tcp": 6, "udp": 17, "ipv6-icmp": 58}

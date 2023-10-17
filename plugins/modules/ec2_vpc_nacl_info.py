@@ -116,7 +116,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import a
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
-
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 PROTOCOL_NAMES = {"-1": "all", "1": "icmp", "6": "tcp", "17": "udp"}
