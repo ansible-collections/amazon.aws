@@ -82,7 +82,7 @@
         state: absent
       ignore_errors: true
 
-    - name: Delete instance attached to primary uster
+    - name: Delete instance attached to primary cluster
       amazon.aws.rds_instance:
         db_instance_identifier: "{{  primary_instance_id }}"
         region: "{{ aws_region }}"
@@ -91,7 +91,7 @@
         state: absent
       ignore_errors: true
 
-    - name: Delete primary cluster without creating a nal snapshot
+    - name: Delete primary cluster without creating a final snapshot
       amazon.aws.rds_cluster:
         cluster_id: "{{ primary_cluster_id }}"
         global_cluster_identifier: "{{  global_cluster_id }}"

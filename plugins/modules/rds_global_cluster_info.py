@@ -45,6 +45,7 @@ global_clusters:
   description: List of global clusters.
   returned: always
   type: list
+  elements: dict
   contains:
     global_cluster_identifier:
         description: User-supplied global database cluster identifier.
@@ -98,7 +99,7 @@ global_clusters:
                 type: list
                 elements: str
                 sample: arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary
-            is_write:
+            is_writer:
                 description:
                 - Indicates whether the Aurora DB cluster is the primary cluster for the global cluster with which it is associated.
                 type: bool
