@@ -113,7 +113,7 @@ EXAMPLES = r"""
 
 - name: Delete an existing VPC
   amazon.aws.ec2_vpc_net:
-    vpc_id: vpc-01234-abcdef
+    vpc_id: 0123456789abcdef0
     state: absent
 """
 
