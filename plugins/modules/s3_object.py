@@ -957,7 +957,7 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
-    except is_boto3_error_code(("NoSuchTagSet", "NoSuchTagSetError")):
+    except is_boto3_error_code(["NoSuchTagSet", "NoSuchTagSetError"]):
         return {}
     return boto3_tag_list_to_ansible_dict(current_tags)
 
