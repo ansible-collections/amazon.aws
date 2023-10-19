@@ -22,6 +22,8 @@ options:
 
 author:
   - Gomathi Selvi Srinivasan (@GomathiselviS)
+notes:
+  - While developing this module, describe_global_cluster CLI did not yield any tag information. Consequently, the "tags" parameter is not included in this module.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
