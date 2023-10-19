@@ -768,24 +768,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <span class="w">    </span><span class="nt">marker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/0023.txt</span>
 <span class="w">    </span><span class="nt">max_keys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">472</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an empty bucket</span>
-<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
-<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create</span>
-<span class="w">    </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-read</span>
-
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a bucket with key as directory, in the EU region</span>
-<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
-<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/directory/path</span>
-<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eu-west-1</span>
-
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete a bucket and all contents</span>
-<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
-<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete</span>
-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET an object but don&#39;t download if the file checksums match. New in 2.0</span>
 <span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
