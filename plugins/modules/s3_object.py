@@ -330,24 +330,6 @@ EXAMPLES = r"""
     marker: /my/desired/0023.txt
     max_keys: 472
 
-- name: Create an empty bucket
-  amazon.aws.s3_object:
-    bucket: mybucket
-    mode: create
-    permission: public-read
-
-- name: Create a bucket with key as directory, in the EU region
-  amazon.aws.s3_object:
-    bucket: mybucket
-    object: /my/directory/path
-    mode: create
-    region: eu-west-1
-
-- name: Delete a bucket and all contents
-  amazon.aws.s3_object:
-    bucket: mybucket
-    mode: delete
-
 - name: GET an object but don't download if the file checksums match. New in 2.0
   amazon.aws.s3_object:
     bucket: mybucket
