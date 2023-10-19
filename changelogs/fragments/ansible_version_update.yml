@@ -1,0 +1,2 @@
+trivial:
+- update README with Ansible version 2.13 as the minimum supported version.
