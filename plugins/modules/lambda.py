@@ -202,6 +202,13 @@ EXAMPLES = r"""
     - HelloWorld
     - ByeBye
 
+# Enabling AWS X-Ray tracing for a lambda function
+- name: Enable AWS X-Ray Tracing
+  amazon.aws.lambda:
+    name: 'MyFunction'
+    state: present
+    tracing_mode: Active    
+
 # Create Lambda functions with function layers
 - name: looped creation
   amazon.aws.lambda:
