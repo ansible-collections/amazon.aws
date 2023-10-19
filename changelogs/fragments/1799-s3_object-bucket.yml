@@ -1,0 +1,2 @@
+trivial:
+- s3_object - Remove examples for creating/deleting buckets - support removed in 6.0.0.
