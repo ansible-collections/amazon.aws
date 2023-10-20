@@ -100,7 +100,7 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a role with description and tags
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     description: This is My New Role
@@ -108,20 +108,20 @@ EXAMPLES = r"""
       env: dev
 
 - name: "Create a role and attach a managed policy called 'PowerUserAccess'"
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     managed_policies:
       - arn:aws:iam::aws:policy/PowerUserAccess
 
 - name: Keep the role created above but remove all managed policies
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file','policy.json') }}"
     managed_policies: []
 
 - name: Delete the role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file', 'policy.json') }}"
     state: absent

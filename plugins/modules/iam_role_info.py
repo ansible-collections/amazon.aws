@@ -34,15 +34,15 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: find all existing IAM roles
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
   register: result
 
 - name: describe a single role
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: MyIAMRole
 
 - name: describe all roles matching a path prefix
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     path_prefix: /application/path
 """
 
