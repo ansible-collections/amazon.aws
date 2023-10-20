@@ -5,170 +5,153 @@
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
-
   block:
 
     # ====================== testing failure cases: ==================================
 
-    - name: test with no parameters
-      api_gateway:
-      register: result
-      ignore_errors: true
+  - name: test with no parameters
+    api_gateway:
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+      - result.failed
+      - '"no swagger info provided" in result.msg'
 
-    - name: assert failure when called with no parameters
-      assert:
-        that:
-           - 'result.failed'
-           - '"no swagger info provided" in result.msg'
-
-    - name: test for disallowing multiple swagger sources
-      api_gateway:
-        api_id: 'fake-api-doesnt-exist'
-        swagger_file: foo.yml
-        swagger_text: "this is not really an API"
-      register: result
-      ignore_errors: true
-
-    - name: assert failure when called with with minimal parameters but no region
-      assert:
-        that:
-           - 'result.failed'
-           - 'result.msg.startswith("parameters are mutually exclusive")'
+  - name: test for disallowing multiple swagger sources
+    api_gateway:
+      api_id: fake-api-doesnt-exist
+      swagger_file: foo.yml
+      swagger_text: this is not really an API
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with with minimal parameters but no region
+    assert:
+      that:
+      - result.failed
+      - result.msg.startswith("parameters are mutually exclusive")
 
 
     # ====================== regular testing: ===================================
 
-    - name: build API file
-      template:
-        src: minimal-swagger-api.yml.j2
-        dest: "{{output_dir}}/minimal-swagger-api.yml"
-      vars:
-        api_name: "{{ resource_prefix }}-minimal"
+  - name: build API file
+    template:
+      src: minimal-swagger-api.yml.j2
+      dest: '{{output_dir}}/minimal-swagger-api.yml'
+    vars:
+      api_name: '{{ resource_prefix }}-minimal'
+  - name: deploy new API
+    api_gateway:
+      api_file: '{{output_dir}}/minimal-swagger-api.yml'
+      stage: minimal
+      endpoint_type: REGIONAL
+      state: present
+    register: create_result
+  - name: assert deploy new API worked
+    assert:
+      that:
+      - create_result.changed == True
+      - create_result.failed == False
+      - create_result.deploy_response.description == "Automatic deployment by Ansible."
+      - create_result.configure_response.id == create_result.api_id
+      - create_result.configure_response.endpoint_configuration.types.0 == "REGIONAL"
 
-    - name: deploy new API
-      api_gateway:
-        api_file: "{{output_dir}}/minimal-swagger-api.yml"
-        stage: "minimal"
-        endpoint_type: 'REGIONAL'
-        state: present
-      register: create_result
+  - name: check if API endpoint works
+    uri:
+      url: 
+        https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/minimal
+    retries: 10
+    delay: 5
+    until: uri_result is successful
+    register: uri_result
+  - name: assert API works success
+    assert:
+      that:
+      - uri_result.status == 200
 
-    - name: assert deploy new API worked
-      assert:
-        that:
-          - 'create_result.changed == True'
-          - 'create_result.failed == False'
-          - 'create_result.deploy_response.description == "Automatic deployment by Ansible."'
-          - 'create_result.configure_response.id == create_result.api_id'
-          - 'create_result.configure_response.endpoint_configuration.types.0 == "REGIONAL"'
+  - name: check if nonexistent endpoint causes error
+    uri:
+      url: 
+        https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/nominal
+    register: bad_uri_result
+    ignore_errors: true
+  - name: assert
+    assert:
+      that:
+      - bad_uri_result is failed
 
-    - name: check if API endpoint works
-      uri: 
-        url: "https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/minimal"
-      retries: 10
-      delay: 5
-      until: uri_result is successful
-      register: uri_result
-
-    - name: assert API works success
-      assert:
-        that:
-          - 'uri_result.status == 200'
-
-    - name: check if nonexistent endpoint causes error
-      uri: 
-        url: "https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/nominal"
-      register: bad_uri_result
-      ignore_errors: true
-
-    - name: assert
-      assert:
-        that:
-          - bad_uri_result is failed
-
-    - name: Update API to test params effect
-      api_gateway:
-        api_id: '{{create_result.api_id}}'
-        api_file: "{{output_dir}}/minimal-swagger-api.yml"
-        cache_enabled: true
-        cache_size: '1.6'
-        tracing_enabled: true
-        state: present
-      register: update_result
-
-    - name: assert update result
-      assert:
-        that:
-          - update_result is changed
+  - name: Update API to test params effect
+    api_gateway:
+      api_id: '{{create_result.api_id}}'
+      api_file: '{{output_dir}}/minimal-swagger-api.yml'
+      cache_enabled: true
+      cache_size: '1.6'
+      tracing_enabled: true
+      state: present
+    register: update_result
+  - name: assert update result
+    assert:
+      that:
+      - update_result is changed
 
     # ==== additional create/delete tests ====
 
-    - name: deploy first API
-      api_gateway:
-        api_file: "{{output_dir}}/minimal-swagger-api.yml"
-        stage: "minimal"
-        cache_enabled: false
-        state: present
-      register: create_result_1
+  - name: deploy first API
+    api_gateway:
+      api_file: '{{output_dir}}/minimal-swagger-api.yml'
+      stage: minimal
+      cache_enabled: false
+      state: present
+    register: create_result_1
+  - name: deploy second API rapidly after first
+    api_gateway:
+      api_file: '{{output_dir}}/minimal-swagger-api.yml'
+      stage: minimal
+      state: present
+    register: create_result_2
+  - name: assert both APIs deployed successfully
+    assert:
+      that:
+      - create_result_1.changed == True
+      - create_result_2.changed == True
+      - '"api_id" in create_result_1'
+      - '"api_id" in create_result_1'
+      - create_result_1.configure_response.endpoint_configuration.types.0 == "EDGE"
 
-    - name: deploy second API rapidly after first
-      api_gateway:
-        api_file: "{{output_dir}}/minimal-swagger-api.yml"
-        stage: "minimal"
-        state: present
-      register: create_result_2
-
-    - name: assert both APIs deployed successfully
-      assert:
-        that:
-          - 'create_result_1.changed == True'
-          - 'create_result_2.changed == True'
-          - '"api_id" in create_result_1'
-          - '"api_id" in create_result_1'
-          - 'create_result_1.configure_response.endpoint_configuration.types.0 == "EDGE"'
-
-    - name: destroy first API
-      api_gateway:
-        state: absent
-        api_id: '{{create_result_1.api_id}}'
-      register: destroy_result_1
-
-    - name: destroy second API rapidly after first
-      api_gateway:
-        state: absent
-        api_id: '{{create_result_2.api_id}}'
-      register: destroy_result_2
-
-    - name: assert both APIs deployed successfully
-      assert:
-        that:
-           - destroy_result_1 is changed
-           - destroy_result_2 is changed
+  - name: destroy first API
+    api_gateway:
+      state: absent
+      api_id: '{{create_result_1.api_id}}'
+    register: destroy_result_1
+  - name: destroy second API rapidly after first
+    api_gateway:
+      state: absent
+      api_id: '{{create_result_2.api_id}}'
+    register: destroy_result_2
+  - name: assert both APIs deployed successfully
+    assert:
+      that:
+      - destroy_result_1 is changed
+      - destroy_result_2 is changed
 
     # ==== test create/delete using lookup=tag ====
-    - include_tasks: lookup.yml
-
-    # ==== Tagging ====
-    - include_tasks: tagging.yml
-
-    # ================= end testing ====================================
-
+  - include_tasks: lookup.yml
+  - include_tasks: tagging.yml
   always:
 
-    - name: Ensure cleanup of API deploy
-      api_gateway:
-        state: absent
-        api_id: '{{create_result.api_id}}'
-      ignore_errors: true
-
-    - name: Ensure cleanup of API deploy 1
-      api_gateway:
-        state: absent
-        api_id: '{{create_result_1.api_id}}'
-      ignore_errors: true
-
-    - name: Ensure cleanup of API deploy 2
-      api_gateway:
-        state: absent
-        api_id: '{{create_result_2.api_id}}'
-      ignore_errors: true
+  - name: Ensure cleanup of API deploy
+    api_gateway:
+      state: absent
+      api_id: '{{create_result.api_id}}'
+    ignore_errors: true
+  - name: Ensure cleanup of API deploy 1
+    api_gateway:
+      state: absent
+      api_id: '{{create_result_1.api_id}}'
+    ignore_errors: true
+  - name: Ensure cleanup of API deploy 2
+    api_gateway:
+      state: absent
+      api_id: '{{create_result_2.api_id}}'
+    ignore_errors: true
