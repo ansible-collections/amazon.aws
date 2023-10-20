@@ -2165,6 +2165,7 @@ def main():
         catch_extra_error_codes=[
             "IncorrectState",
             "InsuffienctInstanceCapacity",
+            "InvalidInstanceID.NotFound",
         ]
     )
     client = module.client("ec2", retry_decorator=retry_decorator)
