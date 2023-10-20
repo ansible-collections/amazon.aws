@@ -1,0 +1,2 @@
+trivial:
+  - "Revert https://github.com/ansible-collections/amazon.aws/pull/1805 because we are not promoting anymore the ``iam_server_certificate`` and  ``iam_server_certificate_info`` modules."
