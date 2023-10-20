@@ -20,8 +20,10 @@ on:  # yamllint disable-line rule:truthy
       - '*'
 
 jobs:
-  changelog-and-linters:
-    uses: ./.github/workflows/changelog_and_linters.yml  # use the callable changelog-and-linters job to run tests
+  changelog:
+    uses: ./.github/workflows/changelog.yml  # use the callable changelog job to run tests
+  linters:
+    uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
   sanity:
     uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
   units:
@@ -29,7 +31,8 @@ jobs:
   all_green:
     if: ${{ always() }}
     needs:
-      - changelog-and-linters
+      - changelog
+      - linters
       - sanity
       - units
     runs-on: ubuntu-latest
