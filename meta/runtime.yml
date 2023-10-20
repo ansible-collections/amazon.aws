@@ -82,8 +82,6 @@ action_groups:
     - iam_policy_info
     - iam_role
     - iam_role_info
-    - iam_server_certificate
-    - iam_server_certificate_info
     - iam_user
     - iam_user_info
     - kms_key
