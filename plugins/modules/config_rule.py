@@ -90,7 +90,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Create Config Rule for AWS Config
-  community.aws.config_rule:
+  amazon.aws.config_rule:
     name: test_config_rule
     state: present
     description: 'This AWS Config rule checks for public write access on S3 buckets'
