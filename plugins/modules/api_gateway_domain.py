@@ -67,7 +67,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Setup endpoint for a custom domain for your API Gateway HTTP API
-  community.aws.api_gateway_domain:
+  amazon.aws.api_gateway_domain:
     domain_name: myapi.foobar.com
     certificate_arn: 'arn:aws:acm:us-east-1:1231123123:certificate/8bd89412-abc123-xxxxx'
     security_policy: TLS_1_2

@@ -29,11 +29,11 @@ EXAMPLES = r"""
 ---
 # List all API gateway
 - name: List all for a specific function
-  community.aws.api_gateway_info:
+  amazon.aws.api_gateway_info:
 
 # Get information for a specific API gateway
 - name: List all for a specific function
-  community.aws.api_gateway_info:
+  amazon.aws.api_gateway_info:
     ids:
     - 012345678a
     - abcdefghij
