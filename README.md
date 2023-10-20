@@ -13,7 +13,7 @@ This collection depends on the AWS SDK for Python (Boto3 and Botocore).  Due to 
 [AWS SDK Python Support Policy](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
 this collection requires Python 3.7 or greater.
 
-Amazon have also announced the planned end of support for
+Amazon has also announced the planned end of support for
 [Python less than 3.8](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
 As such support for Python less than 3.8 will be removed in a release after 2024-12-01.
 
@@ -109,7 +109,7 @@ You can either call modules by their Fully Qualified Collection Name (FQCN), suc
 We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
 See [CONTRIBUTING.md](https://github.com/ansible-collections/amazon.aws/blob/main/CONTRIBUTING.md) for more details.
 
-This collection is tested using GitHub Actions. To know more on testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/main/CI,md).
+This collection is tested using GitHub Actions. To know more about testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/main/CI,md).
 
 You can also join us on:
 
