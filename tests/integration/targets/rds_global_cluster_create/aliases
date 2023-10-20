@@ -1,0 +1,6 @@
+# Multi region not supported in the CI AWS account
+disabled
+time=20m
+cloud/aws
+rds_cluster
+rds_global_cluster_info
