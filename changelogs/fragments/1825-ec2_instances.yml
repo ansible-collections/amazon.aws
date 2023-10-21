@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_instance - add support for additional `placement` options and `license_specifications` in run instance spec [#1824](https://github.com/ansible-collections/amazon.aws/issues/1824).
