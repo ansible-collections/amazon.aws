@@ -588,7 +588,7 @@ EXAMPLES = r"""
     placement:
       hostresourcegrouparn: arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup
     license_specifications:
-      - license_configuration_arn: arn:aws:license-manager:us-east-1: 123456789012:license-configuration:lic-0123456789
+      - license_configuration_arn: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
     image_id: ami-123456
     tags:
       Environment: Testing
