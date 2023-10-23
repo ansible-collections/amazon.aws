@@ -1,2 +1,0 @@
-minor_changes:
-  - "ec2_ami - add support for ``org_arns`` and ``org_unit_arns`` in launch_permissions (https://github.com/ansible-collections/amazon.aws/pull/1690)."

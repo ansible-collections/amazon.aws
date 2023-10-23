@@ -2396,3 +2396,29 @@ releases:
       name: ec2_key_info
       namespace: ''
     release_date: '2023-09-05'
+  6.5.0:
+    changes:
+      bugfixes:
+      - elb_application_lb_info - ensure all API queries use the retry decorator (https://github.com/ansible-collections/amazon.aws/issues/1767).
+      minor_changes:
+      - ec2_ami - add support for ``org_arns`` and ``org_unit_arns`` in launch_permissions
+        (https://github.com/ansible-collections/amazon.aws/pull/1690).
+      - elb_application_lb_info - drop redundant ``describe_load_balancers`` call
+        fetching ``ip_address_type`` (https://github.com/ansible-collections/amazon.aws/pull/1768).
+      release_summary: 'This release is the last planned minor release of ``amazon.aws``
+        prior to the release of 7.0.0.
+
+        It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info``
+        modules.
+
+        '
+    fragments:
+    - 1690-ec2_ami-add-support-org_arn-orgu_arn.yml
+    - 1714-parameters.yml
+    - 1767-elb_application_lb_info-Throttling.yml
+    - 20230906-galaxy.yml
+    - 20230908-alias-cleanup.yml
+    - 20230911-ec2_ami-release.yml
+    - ec2_region.yml
+    - release-summary.yml
+    release_date: '2023-10-03'
