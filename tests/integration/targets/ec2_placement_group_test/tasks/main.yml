@@ -44,18 +44,3 @@
       that:
       - spread_placement_group.group.spread_domain == 'host'
       - spread_placement_group.group.state == 'present'
-
-  - name: Delete a cluster placement group
-    ansible.aws.ec2_placement_group:
-      group_name: "{{ ec2_placement_group_name }}-cluster"
-      state: absent
-
-  - name: Delete a partition placement group
-    ansible.aws.ec2_placement_group:
-      group_name: "{{ ec2_placement_group_name }}-partition"
-      state: absent
-  
-  - name: Delete a spread placement group
-    ansible.aws.ec2_placement_group:
-      group_name: "{{ ec2_placement_group_name }}-spread"
-      state: absent
