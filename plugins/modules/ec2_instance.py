@@ -361,7 +361,6 @@ options:
         description: The Amazon Resource Name (ARN) of the license configuration.
         type: str
         required: true
-    default: []
   metadata_options:
     description:
       - Modify the metadata options for the instance.
@@ -1391,8 +1390,8 @@ def build_top_level_options(params):
         spec["MetadataOptions"]["InstanceMetadataTags"] = params.get("metadata_options").get("instance_metadata_tags")
     if params.get("license_specifications"):
         spec["LicenseSpecifications"] = []
-        for license in params.get("license_specifications"):
-            spec["LicenseSpecifications"].append({"LicenseConfigurationArn": license.get("license_configuration_arn")})
+        for license_configuration in params.get("license_specifications"):
+            spec["LicenseSpecifications"].append({"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")})
     return spec
 
 
@@ -2177,11 +2176,9 @@ def main():
         launch_template=dict(type="dict"),
         license_specifications=dict(
             type="list",
-            elements=dict(
-                type="dict",
-                options=dict(
-                    license_configuration_arn=dict(type="str", required=True),
-                ),
+            elements="dict",
+            options=dict(
+                license_configuration_arn=dict(type="str", required=True),
             ),
         ),
         key_name=dict(type="str"),
