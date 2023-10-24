@@ -255,11 +255,6 @@ options:
       - Whether to stop or terminate an instance upon shutdown.
     choices: ['stop', 'terminate']
     type: str
-  tenancy:
-    description:
-      - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-    choices: ['dedicated', 'default']
-    type: str
   termination_protection:
     description:
       - Whether to enable termination protection.
@@ -322,10 +317,6 @@ options:
       - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
     aliases: ['instance_role']
-  placement_group:
-    description:
-      - The placement group that needs to be assigned to the instance.
-    type: str
   placement:
     description:
       - The location where the instance launched, if applicable.
@@ -356,9 +347,10 @@ options:
         type: int
         required: false
       tenancy:
-        description: The tenancy of the instance (if the instance is running in a VPC).
+        description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
         type: str
         required: false
+        choices: ['dedicated', 'default']
   license_specifications:
     description:
       - The license specifications to be used for the instance.
@@ -912,7 +904,7 @@ instances:
                     type: str
                     sample: ""
                 tenancy:
-                    description: The tenancy of the instance (if the instance is running in a VPC).
+                    description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
                     returned: always
                     type: str
                     sample: default
@@ -1351,13 +1343,6 @@ def build_top_level_options(params):
         spec["Monitoring"] = {"Enabled": True}
     if params.get("cpu_credit_specification") is not None:
         spec["CreditSpecification"] = {"CpuCredits": params.get("cpu_credit_specification")}
-    if params.get("tenancy") is not None:
-        spec["Placement"] = {"Tenancy": params.get("tenancy")}
-    if params.get("placement_group"):
-        if "Placement" in spec:
-            spec["Placement"]["GroupName"] = str(params.get("placement_group"))
-        else:
-            spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
     if params.get("placement") is not None:
         spec["Placement"] = {}
         if params.get("placement").get("availability_zone") is not None:
@@ -2199,8 +2184,6 @@ def main():
                 threads_per_core=dict(type="int", choices=[1, 2], required=True),
             ),
         ),
-        tenancy=dict(type="str", choices=["dedicated", "default"]),
-        placement_group=dict(type="str"),
         placement=dict(
             type="dict",
             options=dict(
@@ -2208,7 +2191,7 @@ def main():
                 availability_zone=dict(type="str"),
                 group_name=dict(type="str"),
                 host_id=dict(type="str"),
-                host_resource_attr=dict(type="str"),
+                host_resource_group_arn=dict(type="str"),
                 partition_number=dict(type="int"),
                 tenancy=dict(type="str", choices=["dedicated", "default"]),
             ),
@@ -2242,8 +2225,6 @@ def main():
             ["image_id", "image"],
             ["exact_count", "count"],
             ["exact_count", "instance_ids"],
-            ["placement", "placement_group"],
-            ["placement", "tenancy"],
         ],
         supports_check_mode=True,
     )

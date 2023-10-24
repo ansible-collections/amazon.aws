@@ -21,7 +21,7 @@
       wait: true
     register: instance_creation
 
-  - name: "Instance with placement set to host tenancy"
+  - name: "Instance with license specifications""
     assert:
       that:
         - instance_creation is success
