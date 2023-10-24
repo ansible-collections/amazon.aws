@@ -165,7 +165,10 @@ def get_placement_group_by_name(connection, placement_group_name):
             GroupNames=[placement_group_name],
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise Ec2PlacementGroupFailure(f"Error retrieving placement group by {placement_group_name}", e)
+        if is_boto3_error_code(e, "InvalidPlacementGroup.NotFound"):
+            return None
+        else:
+            raise Ec2PlacementGroupFailure(f"Error retrieving placement group by {placement_group_name}", e)
 
     placement_groups = placement_group_response.get("PlacementGroups", [])
     if len(placement_groups) == 0:
