@@ -611,7 +611,7 @@ class InventoryModule(AWSInventoryBase):
 
         return hostname_list
 
-    def _query(self, regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory):
+    def _query_instances(self, regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory):
         """
         :param regions: a list of regions to query
         :param include_filters: a list of boto3 filter dictionaries
@@ -621,6 +621,7 @@ class InventoryModule(AWSInventoryBase):
         """
         instances = []
         ids_to_ignore = []
+
         for filter in exclude_filters:
             for i in self._get_instances_by_region(
                 regions,
@@ -644,7 +645,26 @@ class InventoryModule(AWSInventoryBase):
             for connection, _region in self.all_clients("ssm"):
                 self._add_ssm_information(connection, instances)
 
-        return {"aws_ec2": instances}
+        return instances
+
+    def _query(self, regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory, assume_role_arns):
+        """
+        :param regions: a list of regions to query
+        :param include_filters: a list of boto3 filter dictionaries
+        :param exclude_filters: a list of boto3 filter dictionaries
+        :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+        :param assume_role_arns: list of arns to assume to acquire collective inventory
+
+        """
+
+        if assume_role_arns:
+            instances = []
+            for role in assume_role_arns:
+                super().collective_roles(role)
+                instances.extend(self._query_instances(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory))
+            return {"aws_ec2": instances}
+        else:
+            return {"aws_ec2": self._query_instances(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)}
 
     def _add_ssm_information(self, connection, instances):
         filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
@@ -763,6 +783,7 @@ class InventoryModule(AWSInventoryBase):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
 
         # get user specifications
+        assume_role_arns = self.get_option("assume_role_arns")
         regions = self.get_option("regions")
         include_filters = self.build_include_filters()
         exclude_filters = self.get_option("exclude_filters")
@@ -788,7 +809,7 @@ class InventoryModule(AWSInventoryBase):
         result_was_cached, results = self.get_cached_result(path, cache)
 
         if not result_was_cached:
-            results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)
+            results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory, assume_role_arns)
 
         self._populate(
             results,
