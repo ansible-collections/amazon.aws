@@ -1,0 +1,2 @@
+---
+ec2_placement_group_name: '{{ resource_prefix}}-placement-group'
