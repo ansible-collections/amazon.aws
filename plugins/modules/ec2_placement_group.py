@@ -345,24 +345,17 @@ def main():
 
     connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
 
-    CHECK_MODE_TRUE = True
-    CHECK_MODE_FALSE = False
-    HAS_GROUP_NAME_TRUE = True
-    HAS_GROUP_NAME_FALSE = False
-
-    func_mapping = {
-        CHECK_MODE_TRUE: {
-            HAS_GROUP_NAME_TRUE: {"absent": DeletePlacementGroup.do_check_mode, "present": UpdatePlacementGroup.do},
-            HAS_GROUP_NAME_FALSE: {"present": CreatePlacementGroup.do_check_mode},
-        },
-        CHECK_MODE_FALSE: {
-            HAS_GROUP_NAME_TRUE: {"absent": DeletePlacementGroup.do, "present": UpdatePlacementGroup.do},
-            HAS_GROUP_NAME_FALSE: {"present": CreatePlacementGroup.do},
-        },
-    }
-    func = func_mapping[module.check_mode][bool(module.params.get("group_name"))][module.params["state"]]
     try:
-        func(module, connection, module.params.get("group_name"))
+        if module.params["state"] == "present":
+            placement_group = get_placement_group_by_name(connection, module.params["group_name"])
+            if placement_group is None:
+                CreatePlacementGroup.do_check_mode if module.check_mode else CreatePlacementGroup.do
+            else:
+                UpdatePlacementGroup.do
+
+        elif module.params["state"] == "absent":
+            DeletePlacementGroup.do_check_mode if module.check_mode else DeletePlacementGroup.do
+
     except Ec2PlacementGroupFailure as e:
         if e.original_e:
             module.fail_json_aws(e.original_e, e.message)
