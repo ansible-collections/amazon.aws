@@ -1,0 +1,30 @@
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+  - name: "New instance with license specifications"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-ebs-vols"
+      image_id: "{{ ec2_ami_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      placement:
+        host_resource_group_arn: "{{ ec2_host_resource_group_arn }}"
+      license_specifications:
+        - license_configuration_arn: "{{ ec2_license_configuration_arn }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      instance_type: "{{ ec2_instance_type }}"
+      wait: true
+    register: instance_creation
+
+  - name: "Instance with placement set to host tenancy"
+    assert:
+      that:
+        - instance_creation is success
+        - instance_creation is changed
+        - "'{{ instance_creation.spec.Placement.HostResourceGroupArn }}' == '{{ ec2_host_resource_group_arn }}'"
+        - "'{{ instance_creation.spec.LicenseSpecifications[0].LicenseConfigurationArn }}' == '{{ ec2_license_configuration_arn }}'"
