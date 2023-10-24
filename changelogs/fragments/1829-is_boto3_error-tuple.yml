@@ -1,0 +1,2 @@
+minor_changes:
+- module_uils/botocore - support sets and tuples of errors as well as lists (https://github.com/ansible-collections/amazon.aws/pull/1829).
