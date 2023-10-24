@@ -305,7 +305,7 @@ class CreatePlacementGroup:
         return {k: v for k, v in params.items() if v}
 
     @classmethod
-    def do(cls, module, connection, _group_name):
+    def do(cls, module, connection, group_name):
         """Entry point to create placement group"""
         create_placement_group_parameters = cls.build_create_placement_group_parameters(**module.params)
 
@@ -349,12 +349,22 @@ def main():
         if module.params["state"] == "present":
             placement_group = get_placement_group_by_name(connection, module.params["group_name"])
             if placement_group is None:
-                CreatePlacementGroup.do_check_mode if module.check_mode else CreatePlacementGroup.do
+                CreatePlacementGroup.do_check_mode(
+                    module, connection, module.params["group_name"]
+                ) if module.check_mode else CreatePlacementGroup.do(
+                    module, connection, module.params["group_name"]
+                )
             else:
-                UpdatePlacementGroup.do
+                UpdatePlacementGroup.do(
+                    module, connection, module.params["group_name"]
+                )
 
         elif module.params["state"] == "absent":
-            DeletePlacementGroup.do_check_mode if module.check_mode else DeletePlacementGroup.do
+            DeletePlacementGroup.do_check_mode(
+                module, connection, module.params["group_name"]
+            ) if module.check_mode else DeletePlacementGroup.do(
+                module, connection, module.params["group_name"]
+            )
 
     except Ec2PlacementGroupFailure as e:
         if e.original_e:
