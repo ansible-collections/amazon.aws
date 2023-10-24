@@ -33,7 +33,7 @@
       image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       placement:
-        group_name: "{{ ec2_group_name }}"
+        group_name: "{{ ec2_placement_group_name }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       instance_type: "{{ ec2_instance_type }}"
@@ -45,4 +45,4 @@
       that:
         - instance_creation is success
         - instance_creation is changed
-        - "'{{ instance_creation.spec.Placement.GroupName }}' == '{{ ec2_group_name }}'"
+        - "'{{ instance_creation.spec.Placement.GroupName }}' == '{{ ec2_placement_group_name }}'"
