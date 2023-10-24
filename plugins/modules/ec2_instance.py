@@ -2175,6 +2175,15 @@ def main():
         purge_tags=dict(type="bool", default=True),
         filters=dict(type="dict", default=None),
         launch_template=dict(type="dict"),
+        license_specifications=dict(
+            type="list",
+            elements=dict(
+                type="dict",
+                options=dict(
+                    license_configuration_arn=dict(type="str", required=True),
+                ),
+            ),
+        ),
         key_name=dict(type="str"),
         cpu_credit_specification=dict(type="str", choices=["standard", "unlimited"]),
         cpu_options=dict(
