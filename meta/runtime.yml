@@ -37,6 +37,8 @@ action_groups:
     - ec2_eni_info
     - ec2_group
     - ec2_group_info
+    - ec2_import_image
+    - ec2_import_image_info
     - ec2_instance
     - ec2_instance_info
     - ec2_key
