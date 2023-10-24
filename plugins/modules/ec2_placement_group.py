@@ -198,10 +198,10 @@ def validate_params(
     spread_level=None,
     **_,
 ):
-    if (strategy == 'partition') ^ (partition_count is None):
+    if (strategy == 'partition' and partition_count is None) or (partition_count is not None and strategy != 'partition'):
         module.fail_json("Specify partition count when using partition strategy.")
 
-    elif (strategy == "spread") ^ (spread_level is None):
+    elif (strategy == "spread" and spread_level is None) or (spread_level is not None and strategy != "spread"):
         module.fail_json("You must define a spread level when using spread strategy.")
 
 
