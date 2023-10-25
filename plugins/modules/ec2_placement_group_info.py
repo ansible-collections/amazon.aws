@@ -163,7 +163,7 @@ def list_placement_groups(connection, module, request_args):
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
             raise Ec2PlacementGroupInfoFailure("Error describing placement group", err)
 
-    placement_groups.sort(key=lambda placement_group: placement_group.["group_name"])
+    placement_groups.sort(key=lambda placement_group: placement_group["GroupName"])
 
     return placement_groups
 
