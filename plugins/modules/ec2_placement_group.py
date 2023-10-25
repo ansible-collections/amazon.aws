@@ -286,12 +286,12 @@ class CreatePlacementGroup:
         add_ec2_tags(connection, module, placement_group['GroupArn'], module.params["tags"])
 
     @staticmethod
-    def build_create_placement_group_parameters(**kwargs):
-        group_name = kwargs.get("group_name"),
-        strategy = kwargs.get("strategy")
-        partition_count = kwargs.get("partition_count")
-        tags = kwargs.get("tags")
-        spread_level = kwargs.get("spread_level")
+    def build_create_placement_group_parameters(module_params):
+        group_name = module_params.get("group_name"),
+        strategy = module_params.get("strategy")
+        partition_count = module_params.get("partition_count")
+        tags = module_params.get("tags")
+        spread_level = module_params.get("spread_level")
         
         params = {
             "GroupName": group_name,
@@ -301,20 +301,20 @@ class CreatePlacementGroup:
             "TagSpecifications": boto3_tag_specifications(tags, types=["placement_group"]),
         }
 
-        return {k: v for k, v in params.items() if v}
+        return {k: v for k, v in params.items() if v is not None}
 
     @classmethod
     def do(cls, module, connection, group_name):
         """Entry point to create placement group"""
-        create_placement_group_parameters = cls.build_create_placement_group_parameters(**module.params)
+        params = cls.build_create_placement_group_parameters(module.params)
 
         try:
-            placement_group = connection.create_placement_group(**create_placement_group_parameters)
+            placement_group = connection.create_placement_group(**params)
             group_name = placement_group.get("PlacementGroups")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2PlacementGroupFailure("Error creating placement group", e)
 
-        if "TagSpecifications" not in create_placement_group_parameters:
+        if "TagSpecifications" not in params:
             cls.set_tags(connection, module, module.params.get("tags"), group_name)
 
         module.exit_json(
@@ -334,8 +334,12 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        mutually_exclusive=[
+            ["spread_level", "partition_count"],
+        ],
         required_if=[
-            ["state", "absent", "group_name"],
+            ["state", "absent", ["group_name"]],
+            ["state", "present", ["group_name"]],
         ],
         supports_check_mode=True,
     )
