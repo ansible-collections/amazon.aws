@@ -22,4 +22,4 @@
       that:
         - placement_group_info.placement_groups | length > 0
         - placement_group_info.placement_groups[0].group_name == ec2_placement_group_name
-        - group_id in placement_group_info.placement_groups[0]
+        - group_arn in placement_group_info.placement_groups[0]

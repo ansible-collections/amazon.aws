@@ -73,7 +73,7 @@ EXAMPLES = r"""
     strategy: partition
     partition_count: 2
     tags:
-      Name: paritiontest
+      Name: partitiontest
 
 - nane: Remove group
   amazon.aws.ec2_placement_group:
@@ -333,7 +333,7 @@ def main():
     argument_spec = dict(
         group_name={"type": "str", "required": True},
         strategy={"type": "str", "choices": ["cluster", "partition", "spread"]},
-        parition_count={"type": "int"},
+        partition_count={"type": "int"},
         spread_level={"type": "str", "choices": ["host", "rack"]},
         state={"default": "present", "choices": ["present", "absent"]},
         tags={"type": "dict", "aliases": ["resource_tags"]},
