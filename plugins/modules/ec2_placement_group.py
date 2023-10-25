@@ -30,6 +30,13 @@ options:
       - Determines how placement groups spread instances.
     type: str
     choices: ["host", "rack"]
+  state:
+    description:
+      - Whether to add or create a placement group.
+    required: false
+    default: present
+    choices: ['absent', 'present']
+    type: str
 author:
   - "Mathieu Fortin (@mfortin) <mathieu.fortin@autodesk.com>"
 extends_documentation_fragment:
@@ -147,7 +154,8 @@ def get_placement_group_info(camel_placement_group):
     placement_group = camel_dict_to_snake_dict(camel_placement_group)
     return dict(
         group_name=placement_group.get("group_name"),
-        state=placement_group.get("state"),
+        state='present' if placement_group.get("group_name") else 'absent',
+        placement_group_state=placement_group.get("state"),
         strategy=placement_group.get("strategy"),
         partition_count=placement_group.get("partition_count"),
         group_id=placement_group.get("group_id"),
