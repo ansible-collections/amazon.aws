@@ -244,11 +244,11 @@ class DeletePlacementGroup:
 
 class UpdatePlacementGroup:
     @staticmethod
-    def set_tags(connection, module, group_name, tags, purge_tags):
+    def set_tags(connection, module, group_arn, tags, purge_tags):
         if not tags:
             return False
 
-        return ensure_ec2_tags(connection, module, group_name, tags=tags, purge_tags=purge_tags)
+        return ensure_ec2_tags(connection, module, group_arn, tags=tags, purge_tags=purge_tags)
 
     @classmethod
     def do(cls, module, connection, group_name):
@@ -258,12 +258,12 @@ class UpdatePlacementGroup:
             raise Ec2PlacementGroupFailure(f"Placement group {group_name} does not exist")
 
         changed = False
-        changed |= cls.set_tags(connection, module, placement_group['GroupArn'], module.params["tags"], module.params["purge_tags"])
+        changed |= cls.set_tags(connection, module, placement_group['GroupArn'], module.params["tags"], module.params.get("purge_tags", False))
         
         if changed and module.check_mode:
             module.exit_json(changed=True, msg="Would have updated placement group if not in check mode.")
         elif changed:
-            module.exit_json(msg="Placement group updated.", changed=True, **get_placement_group_info(get_placement_group_by_name(connection, group_name)))
+            module.exit_json(msg="Placement group updated.", changed=True, **get_placement_group_info(placement_group))
         else:
             module.exit_json(msg="Placement group not updated.", changed=False, **get_placement_group_info(placement_group))
 
