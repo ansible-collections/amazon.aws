@@ -28,7 +28,7 @@
         "instance-state-name": "running"
     register: instance_facts
 
-  - name: "Instance with license specifications"
+  - name: "Validate instance with license specifications"
     assert:
       that:
         - instance_creation is success
