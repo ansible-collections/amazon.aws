@@ -31,7 +31,7 @@ options:
       - Filter names and values are case sensitive.
     type: dict
     default: {}
-  author:
+author:
   - "Mathieu Fortin (@mfortin) <mathieu.fortin@autodesk.com>"
 extends_documentation_fragment:
   - amazon.aws.common.modules
