@@ -20,7 +20,7 @@ options:
     default: []
   group_ids:
     description: A name for the placement group.
-    aliases: [ "group_name" ]
+    aliases: [ "group_id" ]
     type: list
     elements: str
     default: []
