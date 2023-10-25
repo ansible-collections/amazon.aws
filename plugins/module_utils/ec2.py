@@ -303,3 +303,12 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
+
+
+@AWSRetry.jittered_backoff(retries=10)
+def helper_describe_import_image_tasks(client, module, **params):
+    try:
+        paginator = client.get_paginator("describe_import_image_tasks")
+        return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe the import image")
