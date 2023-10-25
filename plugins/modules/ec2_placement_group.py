@@ -72,7 +72,6 @@ EXAMPLES = r"""
   amazon.aws.ec2_placement_group:
     group_name: TestGroup
     state: absent
-      
 """
 
 RETURN = r"""
@@ -350,20 +349,20 @@ def main():
             placement_group = get_placement_group_by_name(connection, module.params["group_name"])
             if placement_group is None:
                 CreatePlacementGroup.do_check_mode(
-                    module, connection, module.params["group_name"]
+                    module, connection, module.params
                 ) if module.check_mode else CreatePlacementGroup.do(
-                    module, connection, module.params["group_name"]
+                    module, connection, module.params
                 )
             else:
                 UpdatePlacementGroup.do(
-                    module, connection, module.params["group_name"]
+                    module, connection, module.params
                 )
 
         elif module.params["state"] == "absent":
             DeletePlacementGroup.do_check_mode(
-                module, connection, module.params["group_name"]
+                module, connection, module.params
             ) if module.check_mode else DeletePlacementGroup.do(
-                module, connection, module.params["group_name"]
+                module, connection, module.params
             )
 
     except Ec2PlacementGroupFailure as e:
