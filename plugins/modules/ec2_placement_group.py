@@ -287,7 +287,7 @@ class CreatePlacementGroup:
 
     @staticmethod
     def build_create_placement_group_parameters(module_params):
-        group_name = module_params.get("group_name"),
+        group_name = module_params.get("group_name")
         strategy = module_params.get("strategy")
         partition_count = module_params.get("partition_count")
         tags = module_params.get("tags")
@@ -298,7 +298,7 @@ class CreatePlacementGroup:
             "Strategy": strategy,
             "PartitionCount": partition_count,
             "SpreadLevel": spread_level,
-            "TagSpecifications": boto3_tag_specifications(tags, types=["placement_group"]),
+            "TagSpecifications": boto3_tag_specifications(tags, types=["placement-group"]),
         }
 
         return {k: v for k, v in params.items() if v is not None}
