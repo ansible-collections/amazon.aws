@@ -1,8 +1,22 @@
 ---
-name: changelog and linters
+name: changelog
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-on: [workflow_call]  # allow this workflow to be called from other workflows
-
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - stable-*
+    tags:
+      - '*'
 jobs:
   changelog:
     uses: ansible-network/github_actions/.github/workflows/changelog.yml@main
