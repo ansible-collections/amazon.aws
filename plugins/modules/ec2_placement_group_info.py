@@ -139,13 +139,13 @@ class Ec2PlacementGroupInfoFailure(Exception):
 def build_request_args(filters, group_ids, group_names):
     request_args = dict()
     if group_ids:
-        request_args["GroupIds"] = [str(group_id) for group_id in group_ids],
+        request_args["GroupIds"] = [str(group_id) for group_id in group_ids]
     if group_names:
-        request_args["GroupNames"] = [str(group_name) for group_name in group_names],
+        request_args["GroupNames"] = [str(group_name) for group_name in group_names]
     if filters:
         request_args["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
-    request_args = {k: v for k, v in request_args.items() if v}
+    request_args = {k: v for k, v in request_args.items() if v is not None}
 
     return request_args
 
@@ -157,7 +157,7 @@ def get_placement_groups(connection, request_args):
     return placement_groups
 
 
-def list_placement_groups(connection, module, request_args):
+def list_placement_groups(connection, request_args):
     placement_groups = get_placement_groups(connection, request_args)["PlacementGroups"]
     placement_groups = [camel_dict_to_snake_dict(placement_group) for placement_group in placement_groups]
 
@@ -180,7 +180,7 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
@@ -191,7 +191,7 @@ def main():
         group_names=module.params["group_names"],
     )
 
-    placement_groups = list_placement_groups(connection, module, request_args)
+    placement_groups = list_placement_groups(connection, request_args)
 
     module.exit_json(placement_groups=placement_groups)
 

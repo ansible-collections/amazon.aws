@@ -15,7 +15,7 @@
   - name: Validate cluster placement group
     ansible.builtin.assert:
       that:
-      - cluster_placement_group.group.state == 'present'
+      - cluster_placement_group.state == 'present'
 
   - name: Create a partition placement group
     amazon.aws.ec2_placement_group:
@@ -28,8 +28,8 @@
   - name: Validate partition placement group
     ansible.builtin.assert:
       that:
-      - partition_placement_group.group.partition_count == 2
-      - partition_placement_group.group.state == 'present'
+      - partition_placement_group.partition_count == 2
+      - partition_placement_group.state == 'present'
 
   - name: Create a spread placement group
     amazon.aws.ec2_placement_group:
@@ -42,5 +42,5 @@
   - name: Validate spread placement group
     ansible.builtin.assert:
       that:
-      - spread_placement_group.group.spread_domain == 'host'
-      - spread_placement_group.group.state == 'present'
+      - spread_placement_group.spread_domain == 'host'
+      - spread_placement_group.state == 'present'
