@@ -318,7 +318,6 @@ class CreatePlacementGroup:
 
         try:
             placement_group = connection.create_placement_group(**params)
-            group_name = placement_group.get("PlacementGroups")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise Ec2PlacementGroupFailure("Error creating placement group", e)
 
