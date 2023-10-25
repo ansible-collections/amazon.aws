@@ -65,49 +65,53 @@ EXAMPLES = r"""
 
 RETURN = r"""
 placement_groups:
-  group_name:
-    description: The name of the placement group.
-    returned: When Placement Group is created or already exists
-    type: str
-    sample: "TestGroup"
-  state:
-    description: The state of the placement group.
-    type: str
-    returned: When Placement Group is created or already exists
-    sample: "available"
-  strategy:
-    description: The placement strategy.
-    type: str
-    returned: When Placement Group is created or already exists
-    sample: "cluster"
-  partition_count:
-    description: The number of partitions. Valid only when 'strategy' is set to 'partition'.
-    type: int
-    returned: When Placement Group is created or already exists
-    sample: 2  
-  group_id:
-    description: The ID of the placement group.
-    returned: When Placement Group is created or already exists
-    type: str
-    sample: "pg-1234567890abcdef0"
-  tags:
-    description: A dictionary of tags assigned to image.
-    returned: when AMI is created or already exists
-    type: dict
-    sample: {
-      "Env": "devel",
-      "Name": "cluster-group"
-    }
-  group_arn:
-    description: The ARN of the placement group.
-    returned: When Placement Group is created or already exists
-    type: str
-    sample: "arn:aws:ec2:us-east-1:123456789012:placement-group/my-cluster"
-  spread_level:
-    description: The spread level for the placement group. Only Outpost placement groups can be spread across hosts.
-    returned: When Placement Group is created or already exists
-    type: str
-    sample: "host"
+    description: A list of placement groups.
+    returned: always
+    type: complex
+    contains:
+        group_name:
+            description: The name of the placement group.
+            returned: When Placement Group is created or already exists
+            type: str
+            sample: "TestGroup"
+        state:
+            description: The state of the placement group.
+            type: str
+            returned: When Placement Group is created or already exists
+            sample: "available"
+        strategy:
+            description: The placement strategy.
+            type: str
+            returned: When Placement Group is created or already exists
+            sample: "cluster"
+        partition_count:
+            description: The number of partitions. Valid only when 'strategy' is set to 'partition'.
+            type: int
+            returned: When Placement Group is created or already exists
+            sample: 2  
+        group_id:
+            description: The ID of the placement group.
+            returned: When Placement Group is created or already exists
+            type: str
+            sample: "pg-1234567890abcdef0"
+        tags:
+            description: A dictionary of tags assigned to image.
+            returned: when AMI is created or already exists
+            type: dict
+            sample: {
+                "Env": "devel",
+                "Name": "cluster-group"
+            }
+        group_arn:
+            description: The ARN of the placement group.
+            returned: When Placement Group is created or already exists
+            type: str
+            sample: "arn:aws:ec2:us-east-1:123456789012:placement-group/my-cluster"
+        spread_level:
+            description: The spread level for the placement group. Only Outpost placement groups can be spread across hosts.
+            returned: When Placement Group is created or already exists
+            type: str
+            sample: "host"
 """
 
 import time
