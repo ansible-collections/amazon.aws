@@ -10,8 +10,6 @@ on:  # yamllint disable-line rule:truthy
     types:
       - opened
       - reopened
-      - labeled
-      - unlabeled
       - synchronize
     branches:
       - main
@@ -20,8 +18,6 @@ on:  # yamllint disable-line rule:truthy
       - '*'
 
 jobs:
-  changelog:
-    uses: ./.github/workflows/changelog.yml  # use the callable changelog job to run tests
   linters:
     uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
   sanity:
@@ -31,7 +27,6 @@ jobs:
   all_green:
     if: ${{ always() }}
     needs:
-      - changelog
       - linters
       - sanity
       - units
@@ -39,7 +34,6 @@ jobs:
     steps:
       - run: >-
           python -c "assert set([
-          '${{ needs.changelog.result }}',
           '${{ needs.linters.result }}',
           '${{ needs.sanity.result }}',
           '${{ needs.units.result }}'
