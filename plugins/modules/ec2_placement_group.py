@@ -335,7 +335,7 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[
-            ["state", "absent", ["group_name"]],
+            ["state", "absent", "group_name"],
         ],
         supports_check_mode=True,
     )
@@ -349,20 +349,20 @@ def main():
             placement_group = get_placement_group_by_name(connection, module.params["group_name"])
             if placement_group is None:
                 CreatePlacementGroup.do_check_mode(
-                    module, connection, module.params
+                    module, connection, module.params["group_name"]
                 ) if module.check_mode else CreatePlacementGroup.do(
-                    module, connection, module.params
+                    module, connection, module.params["group_name"]
                 )
             else:
                 UpdatePlacementGroup.do(
-                    module, connection, module.params
+                    module, connection, module.params["group_name"]
                 )
 
         elif module.params["state"] == "absent":
             DeletePlacementGroup.do_check_mode(
-                module, connection, module.params
+                module, connection, module.params["group_name"]
             ) if module.check_mode else DeletePlacementGroup.do(
-                module, connection, module.params
+                module, connection, module.params["group_name"]
             )
 
     except Ec2PlacementGroupFailure as e:
