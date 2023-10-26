@@ -159,17 +159,17 @@ def get_placement_groups(connection, request_args):
 
 def list_placement_groups(connection, request_args):
     placement_groups = get_placement_groups(connection, request_args)["PlacementGroups"]
-    placement_groups = [camel_dict_to_snake_dict(placement_group) for placement_group in placement_groups]
 
-    pg = []
-    for placement_group in placement_groups:
+    camel_placement_groups = []
+    for pg in placement_groups:
         try:
+            placement_group = camel_dict_to_snake_dict(pg)
             placement_group["tags"] = boto3_tag_list_to_ansible_dict(placement_group.get("tags", []))
-            pg.append(placement_group)
+            camel_placement_groups.append(placement_group)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
             raise Ec2PlacementGroupInfoFailure("Error describing placement group", err)
 
-    return pg
+    return camel_placement_groups
 
 def main():
     argument_spec = dict(

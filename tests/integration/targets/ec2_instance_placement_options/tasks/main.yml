@@ -49,7 +49,7 @@
         group_name: "{{ ec2_placement_group_name }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}-2"
-      instance_type: "{{ ec2_instance_type }}"
+      instance_type: "{{ ec2_instance_type_compatible_with_placement_group }}"
       wait: true
     register: instance_creation
 
