@@ -12,6 +12,10 @@
       state: present
     register: cluster_placement_group
 
+  - name: "[DEBUG] Print return information from the previous task"
+    ansible.builtin.debug:
+      var: cluster_placement_group
+
   - name: Validate cluster placement group
     ansible.builtin.assert:
       that:
