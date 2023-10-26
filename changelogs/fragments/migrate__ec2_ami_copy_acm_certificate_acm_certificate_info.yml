@@ -1,0 +1,11 @@
+---
+major_changes:
+  - ec2_ami_copy - The module has been migrated from the ``community.aws`` collection.
+    Playbooks using the Fully Qualified Collection Name for this module should be
+    updated to use ``amazon.aws.ec2_ami_copy``.
+  - acm_certificate - The module has been migrated from the ``community.aws`` collection.
+    Playbooks using the Fully Qualified Collection Name for this module should be
+    updated to use ``amazon.aws.acm_certificate``.
+  - acm_certificate_info - The module has been migrated from the ``community.aws``
+    collection. Playbooks using the Fully Qualified Collection Name for this module
+    should be updated to use ``amazon.aws.acm_certificate_info``.

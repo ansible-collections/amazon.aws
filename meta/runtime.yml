@@ -2,6 +2,8 @@
 requires_ansible: '>=2.13.0'
 action_groups:
   aws:
+    - acm_certificate
+    - acm_certificate_info
     - autoscaling_group
     - autoscaling_group_info
     - aws_az_info
@@ -29,6 +31,7 @@ action_groups:
     - cloudwatchlogs_log_group_info
     - cloudwatchlogs_log_group_metric_filter
     - ec2_ami
+    - ec2_ami_copy
     - ec2_ami_info
     - ec2_eip
     - ec2_eip_info
@@ -98,8 +101,8 @@ action_groups:
     - lambda_policy
     - rds_cluster
     - rds_cluster_info
-    - rds_global_cluster_info
     - rds_cluster_snapshot
+    - rds_global_cluster_info
     - rds_instance
     - rds_instance_info
     - rds_instance_snapshot
@@ -122,6 +125,12 @@ plugin_routing:
     aws_s3:
       redirect: amazon.aws.s3_object
   modules:
+    aws_acm:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.acm_certificate
+    aws_acm_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.acm_certificate_info
     aws_kms:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.kms_key

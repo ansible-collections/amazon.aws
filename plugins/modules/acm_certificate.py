@@ -13,6 +13,7 @@ DOCUMENTATION = r"""
 module: acm_certificate
 short_description: Upload and delete certificates in the AWS Certificate Manager service
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - >
     Import and delete certificates in Amazon Web Service's Certificate
@@ -167,14 +168,14 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 
 - name: upload a self-signed certificate
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     certificate: "{{ lookup('file', 'cert.pem' ) }}"
     privateKey: "{{ lookup('file', 'key.pem' ) }}"
     name_tag: my_cert # to be applied through an AWS tag as  "Name":"my_cert"
     region: ap-southeast-2 # AWS region
 
 - name: create/update a certificate with a chain
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     certificate: "{{ lookup('file', 'cert.pem' ) }}"
     private_key: "{{ lookup('file', 'key.pem' ) }}"
     name_tag: my_cert
@@ -188,25 +189,25 @@ EXAMPLES = r"""
     var: cert_create.certificate.arn
 
 - name: delete the cert we just created
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     name_tag: my_cert
     state: absent
     region: ap-southeast-2
 
 - name: delete a certificate with a particular ARN
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     certificate_arn: "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
     state: absent
     region: ap-southeast-2
 
 - name: delete all certificates with a particular domain name
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     domain_name: acm.ansible.com
     state: absent
     region: ap-southeast-2
 
 - name: add tags to an existing certificate with a particular ARN
-  community.aws.acm_certificate:
+  amazon.aws.acm_certificate:
     certificate_arn: "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
     tags:
       Name: my_certificate
@@ -257,7 +258,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
