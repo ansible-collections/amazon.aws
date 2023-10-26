@@ -10,20 +10,15 @@
       group_name: "{{ ec2_placement_group_name }}"
       strategy: cluster
       state: present
-    register: placement_group
   
   - name: Get placement group info
     amazon.aws.ec2_placement_group_info:
       group_name: "{{ ec2_placement_group_name }}"
     register: placement_group_info
 
-  - name: "[DEBUG] Print return information from the previous task"
-    ansible.builtin.debug:
-      var: placement_group_info
-
   - name: Validate placement group
     ansible.builtin.assert:
       that:
         - placement_group_info.placement_groups | length > 0
         - placement_group_info.placement_groups[0].group_name == ec2_placement_group_name
-        - group_arn in placement_group_info.placement_groups[0]
+        - placement_group_info.placement_groups[0].group_arn is defined

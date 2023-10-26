@@ -36,7 +36,8 @@
   - name: New placement group
     amazon.aws.ec2_placement_group:
       group_name: "{{ ec2_placement_group_name }}"
-      strategy: cluster
+      strategy: partition
+      partition_count: 1
       state: present
 
   - name: "New instance with placement group name"
@@ -49,11 +50,11 @@
         group_name: "{{ ec2_placement_group_name }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}-2"
-      instance_type: "{{ ec2_instance_type_compatible_with_placement_group }}"
+      instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
 
-  - name: "Gather ec2 facts to check dedicated tenancy"
+  - name: "Gather ec2 facts to check placement group options"
     ec2_instance_info:
       filters:
         "tag:TestId": "{{ ec2_instance_tag_TestId }}-2"

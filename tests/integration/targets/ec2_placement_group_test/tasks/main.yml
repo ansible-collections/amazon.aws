@@ -12,16 +12,12 @@
       state: present
     register: cluster_placement_group
 
-  - name: "[DEBUG] Print return information from the previous task"
-    ansible.builtin.debug:
-      var: cluster_placement_group
-
   - name: Validate cluster placement group
     ansible.builtin.assert:
       that:
       - cluster_placement_group.state == 'present'
-      - cluster_placement_group.placement_group_info.strategy == 'cluster'
-      - group_id in cluster_placement_group.placement_group
+      - cluster_placement_group.strategy == 'cluster'
+      - cluster_placement_group.group_id is defined
 
   - name: Create a partition placement group
     amazon.aws.ec2_placement_group:
@@ -35,9 +31,9 @@
     ansible.builtin.assert:
       that:
       - partition_placement_group.state == 'present'
-      - partition_placement_group.placement_group.partition_count == 2
-      - partition_placement_group.placement_group.strategy == 'partition'
-      - group_id in partition_placement_group.placement_group
+      - partition_placement_group.partition_count == 2
+      - partition_placement_group.strategy == 'partition'
+      - partition_placement_group.group_id is defined
 
   - name: Create a spread placement group
     amazon.aws.ec2_placement_group:
@@ -51,6 +47,6 @@
     ansible.builtin.assert:
       that:
       - spread_placement_group.state == 'present'
-      - spread_placement_group.placement_group.spread_domain == 'host'
-      - spread_placement_group.placement_group.strategy == 'spread'
-      - group_id in spread_placement_group.placement_group
+      - spread_placement_group.spread_domain == 'host'
+      - spread_placement_group.strategy == 'spread'
+      - spread_placement_group.group_id is defined
