@@ -47,6 +47,6 @@
     ansible.builtin.assert:
       that:
       - spread_placement_group.state == 'present'
-      - spread_placement_group.spread_domain == 'host'
+      - spread_placement_group.spread_level == 'host'
       - spread_placement_group.strategy == 'spread'
       - spread_placement_group.group_id is defined
