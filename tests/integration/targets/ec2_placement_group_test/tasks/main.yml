@@ -39,7 +39,7 @@
     amazon.aws.ec2_placement_group:
       group_name: "{{ ec2_placement_group_name }}-spread"
       strategy: spread
-      spread_domain: host
+      spread_level: host
       state: present
     register: spread_placement_group
 
