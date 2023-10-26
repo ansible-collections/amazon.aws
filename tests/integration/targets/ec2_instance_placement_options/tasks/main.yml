@@ -10,11 +10,14 @@
       state: running
       name: "{{ resource_prefix }}-test-dedicated-tenancy"
       image_id: "{{ ec2_ami_id }}"
-      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
-      # placement:
-      #   tenancy: "{{ ec2_tenancy }}"
+      placement:
+        tenancy: "{{ ec2_tenancy }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg.group_id }}"
+      network:
+        source_dest_check: false
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
@@ -46,12 +49,15 @@
       state: running
       name: "{{ resource_prefix }}-test-placement-group-name"
       image_id: "{{ ec2_ami_id }}"
-      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
-      # placement:
-      #   group_name: "{{ ec2_placement_group_name }}"
+      placement:
+        group_name: "{{ ec2_placement_group_name }}"
       tags:
         Name: "{{ resource_prefix }}-test-placement-group-name"
         TestId: "{{ ec2_instance_tag_TestId }}"
+      security_groups: "{{ sg.group_id }}"
+      network:
+        source_dest_check: false
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
