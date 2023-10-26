@@ -14,7 +14,7 @@
         tenancy: "{{ ec2_tenancy }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
-      security_group: default
+      # security_group: default
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
@@ -51,7 +51,7 @@
       tags:
         Name: "{{ resource_prefix }}-test-placement-group-name"
         TestId: "{{ ec2_instance_tag_TestId }}"
-      security_group: default
+      # security_group: default
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
