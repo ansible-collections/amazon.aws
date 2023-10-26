@@ -5,34 +5,33 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-  # This can't be tested because of missing permissions
-  # - name: "New instance with dedicated tenancy"
-  #   ec2_instance:
-  #     state: running
-  #     name: "{{ resource_prefix }}-test-dedicated-tenancy"
-  #     image_id: "{{ ec2_ami_id }}"
-  #     vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
-  #     placement:
-  #       tenancy: "{{ ec2_tenancy }}"
-  #     tags:
-  #       TestId: "{{ ec2_instance_tag_TestId }}-1"
-  #     instance_type: "{{ ec2_instance_type }}"
-  #     wait: true
-  #   register: instance_creation
+  - name: "New instance with dedicated tenancy"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-dedicated-tenancy"
+      image_id: "{{ ec2_ami_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      # placement:
+      #   tenancy: "{{ ec2_tenancy }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}-1"
+      instance_type: "{{ ec2_instance_type }}"
+      wait: true
+    register: instance_creation
 
-  # - name: "Gather ec2 facts to check dedicated tenancy"
-  #   ec2_instance_info:
-  #     filters:
-  #       "tag:TestId": "{{ ec2_instance_tag_TestId }}-1"
-  #       "instance-state-name": "running"
-  #   register: instance_facts
+  - name: "Gather ec2 facts to check dedicated tenancy"
+    ec2_instance_info:
+      filters:
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}-1"
+        "instance-state-name": "running"
+    register: instance_facts
 
-  # - name: "Instance with dedicated tenancy"
-  #   assert:
-  #     that:
-  #       - instance_creation is success
-  #       - instance_creation is changed
-  #       - "'{{ instance_facts.instances[0].placement.tenancy }}' == 'dedicated'"
+  - name: "Instance with dedicated tenancy"
+    assert:
+      that:
+        - instance_creation is success
+        - instance_creation is changed
+        - "'{{ instance_facts.instances[0].placement.tenancy }}' == 'dedicated'"
 
   - name: New placement group
     amazon.aws.ec2_placement_group:
@@ -47,8 +46,8 @@
       name: "{{ resource_prefix }}-test-placement-group-name"
       image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
-      placement:
-        group_name: "{{ ec2_placement_group_name }}"
+      # placement:
+      #   group_name: "{{ ec2_placement_group_name }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}-2"
       instance_type: "{{ ec2_instance_type }}"
