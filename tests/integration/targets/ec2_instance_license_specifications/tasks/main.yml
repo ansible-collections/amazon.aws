@@ -22,17 +22,8 @@
     ignore_errors: true
     register: instance_creation
 
-  - name: "Gather ec2 facts to check license specification"
-    ec2_instance_info:
-      filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
-        # "instance-state-name": "running"
-    register: instance_facts
-
   - name: "Validate instance with license specifications"
     assert:
       that:
         - instance_creation is failed
         - '"An instance is associated with one or more unshared license configurations." in instance_creation.msg'
-        - instance_facts.instances[0].placement.host_resource_group_arn == ec2_host_resource_group_arn
-        - instance_facts.instances[0].license_specifications[0].license_configuration_arn == ec2_license_configuration_arn
