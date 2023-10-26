@@ -14,7 +14,7 @@
       # placement:
       #   tenancy: "{{ ec2_tenancy }}"
       tags:
-        TestId: "{{ ec2_instance_tag_TestId }}-1"
+        TestId: "{{ ec2_instance_tag_TestId }}"
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
@@ -22,7 +22,8 @@
   - name: "Gather ec2 facts to check dedicated tenancy"
     ec2_instance_info:
       filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}-1"
+        "tag:Name": "{{ resource_prefix }}-test-dedicated-tenancy"
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
         "instance-state-name": "running"
     register: instance_facts
 
@@ -31,7 +32,7 @@
       that:
         - instance_creation is success
         - instance_creation is changed
-        - "'{{ instance_facts.instances[0].placement.tenancy }}' == 'dedicated'"
+        - instance_facts.instances[0].placement.tenancy == 'dedicated'
 
   - name: New placement group
     amazon.aws.ec2_placement_group:
@@ -49,7 +50,8 @@
       # placement:
       #   group_name: "{{ ec2_placement_group_name }}"
       tags:
-        TestId: "{{ ec2_instance_tag_TestId }}-2"
+        Name: "{{ resource_prefix }}-test-placement-group-name"
+        TestId: "{{ ec2_instance_tag_TestId }}"
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: instance_creation
@@ -57,7 +59,8 @@
   - name: "Gather ec2 facts to check placement group options"
     ec2_instance_info:
       filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}-2"
+        "tag:Name": "{{ resource_prefix }}-test-placement-group-name"
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
         "instance-state-name": "running"
     register: instance_facts
 
@@ -66,4 +69,4 @@
       that:
         - instance_creation is success
         - instance_creation is changed
-        - "'{{ instance_facts.instances[0].placement.group_name }}' == '{{ ec2_placement_group_name }}'"
+        - instance_facts.instances[0].placement.group_name == ec2_placement_group_name
