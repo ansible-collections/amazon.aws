@@ -7,7 +7,7 @@
   block:
   - name: New placement group
     community.aws.ec2_placement_group:
-      group_name: "{{ ec2_placement_group_name }}"
+      name: "{{ ec2_placement_group_name }}"
       strategy: partition
       partition_count: 1
       state: present
