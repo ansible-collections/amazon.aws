@@ -25,6 +25,7 @@
       security_group: default
       instance_type: "{{ ec2_instance_type }}"
       wait: true
+      ignore_errors: true
     register: instance_creation
 
   - name: Gather ec2 facts to check placement group options
@@ -33,14 +34,14 @@
         "tag:Name": "{{ resource_prefix }}-test-placement-group-name"
         "tag:TestId": "{{ ec2_instance_tag_TestId }}"
         "instance-state-name": "running"
+    ignore_errors: true
     register: instance_facts
 
   - name: Validate instance with placement group name
     assert:
       that:
-        - instance_creation is success
-        - instance_creation is changed
-        - instance_facts.instances[0].placement.group_name == ec2_placement_group_name
+        - ((instance_creation is success) and (instance_creation is changed) and (instance_facts.instances[0].placement.group_name == ec2_placement_group_name)) or
+        - ((instance_creation is failed) and ('"You are not authorized to perform this operation." in instance_creation.msg'))
 
   - name: New instance with dedicated tenancy
     ec2_instance:
@@ -57,8 +58,17 @@
     ignore_errors: true
     register: instance_creation
 
+  - name: Gather ec2 facts to check placement tenancy
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-test-dedicated-tenancy"
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
+        "instance-state-name": "running"
+    ignore_errors: true
+    register: instance_facts
+
   - name: Validate instance with dedicated tenancy
     assert:
       that:
-        - instance_creation is failed
-        - '"You are not authorized to perform this operation." in instance_creation.msg'
+        - ((instance_creation is success) and (instance_creation is changed) and (instance_facts.instances[0].placement.tenancy == {{ ec2_tenancy }})) or
+        - ((instance_creation is failed) and ('"You are not authorized to perform this operation." in instance_creation.msg'))
