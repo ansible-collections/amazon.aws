@@ -580,7 +580,7 @@ EXAMPLES = r"""
       foo: bar
 
 # launches a mac instance with HostResourceGroupArn and LicenseSpecifications
-- name: start a mac instance with a host resource group and license configuration
+- name: start a mac instance with a host resource group and license specifications
   amazon.aws.ec2_instance:
     name: "mac-compute-instance"
     key_name: "prod-ssh-key"
@@ -588,7 +588,7 @@ EXAMPLES = r"""
     instance_type: mac1.metal
     security_group: default
     placement:
-      hostresourcegrouparn: arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup
+      host_resource_group_arn: arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup
     license_specifications:
       - license_configuration_arn: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
     image_id: ami-123456
@@ -2237,6 +2237,8 @@ def main():
                 threads_per_core=dict(type="int", choices=[1, 2], required=True),
             ),
         ),
+        tenancy=dict(type="str", choices=["dedicated", "default"]),
+        placement_group=dict(type="str"),
         placement=dict(
             type="dict",
             options=dict(
