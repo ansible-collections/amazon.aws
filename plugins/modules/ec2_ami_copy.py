@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_ami_copy
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: copies AMI between AWS regions, return new image id
 description:
   - Copies AMI from a source region to a destination region. B(Since version 2.3 this module depends on boto3.)
@@ -76,13 +77,13 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Basic AMI Copy
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
 
 - name: AMI copy wait until available
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -91,7 +92,7 @@ EXAMPLES = r"""
   register: image_id
 
 - name: Named AMI copy
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -99,7 +100,7 @@ EXAMPLES = r"""
     description: latest patch
 
 - name: Tagged AMI copy (will not copy the same AMI twice)
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -109,14 +110,14 @@ EXAMPLES = r"""
     tag_equality: true
 
 - name: Encrypted AMI copy
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
     encrypted: true
 
 - name: Encrypted AMI copy with specified key
-  community.aws.ec2_ami_copy:
+  amazon.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -144,7 +145,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def copy_image(module, ec2):

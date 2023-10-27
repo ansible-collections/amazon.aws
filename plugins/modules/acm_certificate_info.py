@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: acm_certificate_info
 short_description: Retrieve certificate information from AWS Certificate Manager service
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Retrieve information for ACM certificates.
   - Note that this will not return information about uploaded keys of size 4096 bits, due to a limitation of the ACM API.
@@ -48,19 +49,19 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: obtain all ACM certificates
-  community.aws.acm_certificate_info:
+  amazon.aws.acm_certificate_info:
 
 - name: obtain all information for a single ACM certificate
-  community.aws.acm_certificate_info:
+  amazon.aws.acm_certificate_info:
     domain_name: "*.example_com"
 
 - name: obtain all certificates pending validation
-  community.aws.acm_certificate_info:
+  amazon.aws.acm_certificate_info:
     statuses:
     - PENDING_VALIDATION
 
 - name: obtain all certificates with tag Name=foo and myTag=bar
-  community.aws.acm_certificate_info:
+  amazon.aws.acm_certificate_info:
     tags:
       Name: foo
       myTag: bar
@@ -68,7 +69,7 @@ EXAMPLES = r"""
 
 # The output is still a list of certificates, just one item long.
 - name: obtain information about a certificate with a particular ARN
-  community.aws.acm_certificate_info:
+  amazon.aws.acm_certificate_info:
     certificate_arn:  "arn:aws:acm:ap-southeast-2:123456789012:certificate/abcdeabc-abcd-1234-4321-abcdeabcde12"
 
 """
@@ -259,7 +260,7 @@ certificates:
 
 from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def main():
