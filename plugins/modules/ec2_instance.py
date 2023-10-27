@@ -255,6 +255,12 @@ options:
       - Whether to stop or terminate an instance upon shutdown.
     choices: ['stop', 'terminate']
     type: str
+  tenancy:
+    description:
+      - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+      - This field is deprecated, used placement instead.
+    choices: ['dedicated', 'default']
+    type: str
   termination_protection:
     description:
       - Whether to enable termination protection.
@@ -317,6 +323,11 @@ options:
       - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
     aliases: ['instance_role']
+  placement_group:
+    description:
+      - The placement group that needs to be assigned to the instance.
+      - This field is deprecated, used placement instead.
+    type: str
   placement:
     description:
       - The location where the instance launched, if applicable.
@@ -1342,6 +1353,13 @@ def build_top_level_options(params):
         spec["Monitoring"] = {"Enabled": True}
     if params.get("cpu_credit_specification") is not None:
         spec["CreditSpecification"] = {"CpuCredits": params.get("cpu_credit_specification")}
+    if params.get("tenancy") is not None:
+        spec["Placement"] = {"Tenancy": params.get("tenancy")}
+    if params.get("placement_group"):
+        if "Placement" in spec:
+            spec["Placement"]["GroupName"] = str(params.get("placement_group"))
+        else:
+            spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
     if params.get("placement") is not None:
         spec["Placement"] = {}
         if params.get("placement").get("availability_zone") is not None:
@@ -2231,6 +2249,8 @@ def main():
             ["image_id", "image"],
             ["exact_count", "count"],
             ["exact_count", "instance_ids"],
+            ["tenancy", "placement"],
+            ["placement_group", "placement"],
         ],
         supports_check_mode=True,
     )

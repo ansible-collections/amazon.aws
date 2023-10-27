@@ -1,6 +1,0 @@
-time=10m
-
-cloud/aws
-
-ec2_placement_group_info
-ec2_placement_group

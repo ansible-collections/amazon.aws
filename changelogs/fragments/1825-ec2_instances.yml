@@ -1,6 +1,3 @@
 minor_changes:
   - ec2_instance - add support for additional `placement` options and `license_specifications` in run instance spec [#1824](https://github.com/ansible-collections/amazon.aws/issues/1824).
-  - ec2_placement_group - add new module to control management of placement groups.
-  - ec2_placement_group_info - add new module to retrieve placement groups details.
-breaking_changes:
-  - ec2_instance - moved `tenancy` and `placement_group` under new `placement` attribute.
+  - ec2_instance - deprecation of `tenancy` and `placement_group` in favor of `placement` attribute.

@@ -43,8 +43,6 @@ action_groups:
     - ec2_instance_info
     - ec2_key
     - ec2_key_info
-    - ec2_placement_group
-    - ec2_placement_group_info
     - ec2_security_group
     - ec2_security_group_info
     - ec2_snapshot
