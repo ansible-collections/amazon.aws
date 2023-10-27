@@ -258,7 +258,7 @@ options:
   tenancy:
     description:
       - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-      - This field is deprecated, used placement instead.
+      - This field is deprecated, use `placement` instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -326,7 +326,7 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
-      - This field is deprecated, used placement instead.
+      - This field is deprecated, use `placement` instead.
     type: str
   placement:
     description:
@@ -720,6 +720,17 @@ instances:
             returned: always
             type: str
             sample: "2017-03-23T22:51:24+00:00"
+        licenses:
+            description: The license configurations for the instance.
+            returned: When license specifications are provided.
+            type: list
+            elements: dict
+            contains:
+                license_configuration_arn:
+                    description: The Amazon Resource Name (ARN) of the license configuration.
+                    returned: always
+                    type: str
+                    sample: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
         monitoring:
             description: The monitoring for the instance.
             returned: always
@@ -903,16 +914,34 @@ instances:
                     returned: always
                     type: str
                     sample: ap-southeast-2a
-                host_resource_group_arn:
-                    description:  The ARN of the host resource group in which the instance is in.
+                affinity:
+                    description: The affinity setting for the instance on the Dedicated Host.
+                    returned: When a placement group is specified.
+                    type: str
+                group_id:
+                    description: The ID of the placement group the instance is in (for cluster compute instances).
                     returned: always
                     type: str
-                    sample: ""
+                    sample: "pg-01234566"
                 group_name:
                     description: The name of the placement group the instance is in (for cluster compute instances).
                     returned: always
                     type: str
-                    sample: ""
+                    sample: "my-placement-group"
+                host_id:
+                    description: The ID of the Dedicated Host on which the instance resides.
+                    returned: always
+                    type: str
+                host_resource_group_arn:
+                    description:  The ARN of the host resource group in which the instance is in.
+                    returned: always
+                    type: str
+                    sample: "arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup"
+                partition_number:
+                    description: The number of the partition the instance is in.
+                    returned: always
+                    type: int
+                    sample: 1
                 tenancy:
                     description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
                     returned: always
