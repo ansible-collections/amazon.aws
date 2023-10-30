@@ -258,7 +258,7 @@ options:
   tenancy:
     description:
       - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-      - This field is deprecated, use `placement` instead.
+      - This field is deprecated, use I(placement) instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -326,7 +326,7 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
-      - This field is deprecated, use `placement` instead.
+      - This field is deprecated, use I(placement) instead.
     type: str
   placement:
     description:
