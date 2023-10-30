@@ -258,6 +258,7 @@ options:
   tenancy:
     description:
       - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -325,7 +326,53 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     type: str
+  placement:
+    description:
+      - The location where the instance launched, if applicable.
+    type: dict
+    version_added: 7.0.0
+    suboptions:
+      affinity:
+        description: The affinity setting for the instance on the Dedicated Host.
+        type: str
+        required: false
+      availability_zone:
+        description: The Availability Zone of the instance.
+        type: str
+        required: false
+      group_name:
+        description: The name of the placement group the instance is in.
+        type: str
+        required: false
+      host_id:
+        description: The ID of the Dedicated Host on which the instance resides.
+        type: str
+        required: false
+      host_resource_group_arn:
+        description: The ARN of the host resource group in which to launch the instances.
+        type: str
+        required: false
+      partition_number:
+        description: The number of the partition the instance is in.
+        type: int
+        required: false
+      tenancy:
+        description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+        type: str
+        required: false
+        choices: ['dedicated', 'default']
+  license_specifications:
+    description:
+      - The license specifications to be used for the instance.
+    type: list
+    elements: dict
+    suboptions:
+      license_configuration_arn:
+        description: The Amazon Resource Name (ARN) of the license configuration.
+        type: str
+        required: true
   metadata_options:
     description:
       - Modify the metadata options for the instance.
@@ -532,6 +579,22 @@ EXAMPLES = r"""
     state: present
     tags:
       foo: bar
+
+# launches a mac instance with HostResourceGroupArn and LicenseSpecifications
+- name: start a mac instance with a host resource group and license specifications
+  amazon.aws.ec2_instance:
+    name: "mac-compute-instance"
+    key_name: "prod-ssh-key"
+    vpc_subnet_id: subnet-5ca1ab1e
+    instance_type: mac1.metal
+    security_group: default
+    placement:
+      host_resource_group_arn: arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup
+    license_specifications:
+      - license_configuration_arn: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
+    image_id: ami-123456
+    tags:
+      Environment: Testing
 """
 
 RETURN = r"""
@@ -658,6 +721,17 @@ instances:
             returned: always
             type: str
             sample: "2017-03-23T22:51:24+00:00"
+        licenses:
+            description: The license configurations for the instance.
+            returned: When license specifications are provided.
+            type: list
+            elements: dict
+            contains:
+                license_configuration_arn:
+                    description: The Amazon Resource Name (ARN) of the license configuration.
+                    returned: always
+                    type: str
+                    sample: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
         monitoring:
             description: The monitoring for the instance.
             returned: always
@@ -841,13 +915,36 @@ instances:
                     returned: always
                     type: str
                     sample: ap-southeast-2a
+                affinity:
+                    description: The affinity setting for the instance on the Dedicated Host.
+                    returned: When a placement group is specified.
+                    type: str
+                group_id:
+                    description: The ID of the placement group the instance is in (for cluster compute instances).
+                    returned: always
+                    type: str
+                    sample: "pg-01234566"
                 group_name:
                     description: The name of the placement group the instance is in (for cluster compute instances).
                     returned: always
                     type: str
-                    sample: ""
+                    sample: "my-placement-group"
+                host_id:
+                    description: The ID of the Dedicated Host on which the instance resides.
+                    returned: always
+                    type: str
+                host_resource_group_arn:
+                    description:  The ARN of the host resource group in which the instance is in.
+                    returned: always
+                    type: str
+                    sample: "arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup"
+                partition_number:
+                    description: The number of the partition the instance is in.
+                    returned: always
+                    type: int
+                    sample: 1
                 tenancy:
-                    description: The tenancy of the instance (if the instance is running in a VPC).
+                    description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
                     returned: always
                     type: str
                     sample: default
@@ -1293,6 +1390,22 @@ def build_top_level_options(params):
             spec["Placement"]["GroupName"] = str(params.get("placement_group"))
         else:
             spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
+    if params.get("placement") is not None:
+        spec["Placement"] = {}
+        if params.get("placement").get("availability_zone") is not None:
+            spec["Placement"]["AvailabilityZone"] = params.get("placement").get("availability_zone")
+        if params.get("placement").get("affinity") is not None:
+            spec["Placement"]["Affinity"] = params.get("placement").get("affinity")
+        if params.get("placement").get("group_name") is not None:
+            spec["Placement"]["GroupName"] = params.get("placement").get("group_name")
+        if params.get("placement").get("host_id") is not None:
+            spec["Placement"]["HostId"] = params.get("placement").get("host_id")
+        if params.get("placement").get("host_resource_group_arn") is not None:
+            spec["Placement"]["HostResourceGroupArn"] = params.get("placement").get("host_resource_group_arn")
+        if params.get("placement").get("partition_number") is not None:
+            spec["Placement"]["PartitionNumber"] = params.get("placement").get("partition_number")
+        if params.get("placement").get("tenancy") is not None:
+            spec["Placement"]["Tenancy"] = params.get("placement").get("tenancy")
     if params.get("ebs_optimized") is not None:
         spec["EbsOptimized"] = params.get("ebs_optimized")
     if params.get("instance_initiated_shutdown_behavior"):
@@ -1323,7 +1436,12 @@ def build_top_level_options(params):
         )
         spec["MetadataOptions"]["HttpProtocolIpv6"] = params.get("metadata_options").get("http_protocol_ipv6")
         spec["MetadataOptions"]["InstanceMetadataTags"] = params.get("metadata_options").get("instance_metadata_tags")
-
+    if params.get("license_specifications"):
+        spec["LicenseSpecifications"] = []
+        for license_configuration in params.get("license_specifications"):
+            spec["LicenseSpecifications"].append(
+                {"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")}
+            )
     return spec
 
 
@@ -2106,6 +2224,13 @@ def main():
         purge_tags=dict(type="bool", default=True),
         filters=dict(type="dict", default=None),
         launch_template=dict(type="dict"),
+        license_specifications=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                license_configuration_arn=dict(type="str", required=True),
+            ),
+        ),
         key_name=dict(type="str"),
         cpu_credit_specification=dict(type="str", choices=["standard", "unlimited"]),
         cpu_options=dict(
@@ -2117,6 +2242,18 @@ def main():
         ),
         tenancy=dict(type="str", choices=["dedicated", "default"]),
         placement_group=dict(type="str"),
+        placement=dict(
+            type="dict",
+            options=dict(
+                affinity=dict(type="str"),
+                availability_zone=dict(type="str"),
+                group_name=dict(type="str"),
+                host_id=dict(type="str"),
+                host_resource_group_arn=dict(type="str"),
+                partition_number=dict(type="int"),
+                tenancy=dict(type="str", choices=["dedicated", "default"]),
+            ),
+        ),
         instance_initiated_shutdown_behavior=dict(type="str", choices=["stop", "terminate"]),
         termination_protection=dict(type="bool"),
         hibernation_options=dict(type="bool", default=False),
@@ -2146,6 +2283,8 @@ def main():
             ["image_id", "image"],
             ["exact_count", "count"],
             ["exact_count", "instance_ids"],
+            ["tenancy", "placement"],
+            ["placement_group", "placement"],
         ],
         supports_check_mode=True,
     )
@@ -2158,6 +2297,20 @@ def main():
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_group")
             if module.params.get("security_groups"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
+
+    if module.params.get("placement_group"):
+        module.deprecate(
+            "The placement_group parameter has been deprecated, please use placement.group_name instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
+
+    if module.params.get("tenancy"):
+        module.deprecate(
+            "The tenancy parameter has been deprecated, please use placement.tenancy instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
 
     state = module.params.get("state")
 
