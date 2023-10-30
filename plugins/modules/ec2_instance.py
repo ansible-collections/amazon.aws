@@ -1439,7 +1439,9 @@ def build_top_level_options(params):
     if params.get("license_specifications"):
         spec["LicenseSpecifications"] = []
         for license_configuration in params.get("license_specifications"):
-            spec["LicenseSpecifications"].append({"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")})
+            spec["LicenseSpecifications"].append(
+                {"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")}
+            )
     return spec
 
 
