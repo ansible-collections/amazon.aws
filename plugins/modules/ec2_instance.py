@@ -258,7 +258,7 @@ options:
   tenancy:
     description:
       - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-      - This field is deprecated, use I(placement) instead.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -326,7 +326,7 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
-      - This field is deprecated, use I(placement) instead.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     type: str
   placement:
     description:
@@ -2294,6 +2294,20 @@ def main():
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_group")
             if module.params.get("security_groups"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
+
+    if module.params.get("placement_group"):
+        module.deprecate(
+            "The placement_group parameter has been deprecated, please use placement.group_name instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
+
+    if module.params.get("tenancy"):
+        module.deprecate(
+            "The tenancy parameter has been deprecated, please use placement.tenancy instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
 
     state = module.params.get("state")
 
