@@ -332,6 +332,7 @@ options:
     description:
       - The location where the instance launched, if applicable.
     type: dict
+    version_added: 7.0.0
     suboptions:
       affinity:
         description: The affinity setting for the instance on the Dedicated Host.
