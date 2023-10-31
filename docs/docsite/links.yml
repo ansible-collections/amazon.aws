@@ -7,7 +7,7 @@
 # functionality for your collection.
 edit_on_github:
   repository: ansible-collections/amazon.aws
-  branch: main
+  branch: stable-7
   # If your collection root (the directory containing galaxy.yml) does not coincide with your
   # repository's root, you have to specify the path to the collection root here. For example,
   # if the collection root is in a subdirectory ansible_collections/community/REPO_NAME

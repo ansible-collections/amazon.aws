@@ -2,7 +2,7 @@
 
 ## AWS Collections
 
-GitHub Actions are used to run the Continuous Integration for amazon.aws collection. The workflows used for the CI can be found [here](https://github.com/ansible-collections/amazon.aws/tree/main/.github/workflows). These workflows include jobs to run the unit tests, integration tests, sanity tests, linters, changelog check and doc related checks. The following table lists the python and ansible versions against which these jobs are run.
+GitHub Actions are used to run the Continuous Integration for amazon.aws collection. The workflows used for the CI can be found [here](https://github.com/ansible-collections/amazon.aws/tree/stable-7/.github/workflows). These workflows include jobs to run the unit tests, integration tests, sanity tests, linters, changelog check and doc related checks. The following table lists the python and ansible versions against which these jobs are run.
 
 | Jobs | Description | Python Versions | Ansible Versions |
 | ------ |-------| ------ | -----------|
