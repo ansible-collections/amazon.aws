@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS collection release process &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/ansible.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/antsibull-minimal.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/rtd-ethical-ads.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=7f41d439"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../../search.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/ansiblefest" target="_blank">AnsibleFest</a></li>
+    <li><a href="https://www.ansible.com/tower" target="_blank">Products</a></li>
+    <li><a href="https://www.ansible.com/community" target="_blank">Community</a></li>
+    <li><a href="https://www.ansible.com/webinars-training" target="_blank">Webinars & Training</a></li>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Collection Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_lookup.html">Index of all Lookup Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">AWS collection release process</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="aws-collection-release-process">
+<span id="ansible-collections-amazon-aws-docsite-collection-release"></span><h1>AWS collection release process<a class="headerlink" href="#aws-collection-release-process" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">amazon.aws</span></code> and <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> collections follow <a class="reference external" href="https://semver.org/">semantic versioning</a>
+with the <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/tree/main">main branch</a> being the
+pre-release or development branch, and separate <code class="docutils literal notranslate"><span class="pre">stable</span></code> branches used to backport patches for
+release in minor and patch releases.  Please make sure you’re familiar with semantic versioning
+prior to preparing a release.</p>
+<ul class="simple">
+<li><p>Patch releases may <strong>only</strong> contain backwards compatible bug fixes.</p></li>
+<li><p>Minor releases must be backwards compatible, but may also include new functionality and
+deprecation announcements.</p></li>
+<li><p>Major releases may also include breaking changes.</p></li>
+</ul>
+<p>Releases to <a class="reference external" href="https://galaxy.ansible.com">Ansible Galaxy</a> are automated through GitHub and Zuul
+integrations.</p>
+<section id="major-releases">
+<h2>Major releases<a class="headerlink" href="#major-releases" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The examples below will be based upon preparing the major release <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>.  At the end of the
+process a new <code class="docutils literal notranslate"><span class="pre">stable-6</span></code> branch will have been created and the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch will be ready for
+use as the <code class="docutils literal notranslate"><span class="pre">7.0.0dev0</span></code> development branch.</p>
+</div>
+<p>The major release process has two phases.</p>
+<ol class="arabic simple">
+<li><p>Preparing the branches</p></li>
+<li><p>Generating the release</p></li>
+</ol>
+<p>Preparing the branches involves creating a new <code class="docutils literal notranslate"><span class="pre">stable</span></code> branch, updating documentation links, and
+bumping the version for the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
+<p>Generating the release involves updating the version information, creating the changelog and
+tagging the release.  This part of the process is identical to performing
+<a class="reference internal" href="#ansible-collections-amazon-aws-docsite-minor-releases"><span class="std std-ref">Minor and Patch releases</span></a>
+and will be covered in that section.</p>
+<section id="pre-flight-checks">
+<h3>Pre-flight checks<a class="headerlink" href="#pre-flight-checks" title="Link to this heading"></a></h3>
+<p>It’s generally advisable to ask in the <a class="reference external" href="https://matrix.to/#/#aws:ansible.com">Ansible + AWS Matrix chat room</a> prior to preparing a release to see if folks have any
+patches that they’d like to get into a release.</p>
+<section id="deprecations">
+<h4>Deprecations<a class="headerlink" href="#deprecations" title="Link to this heading"></a></h4>
+<p>Prior to proceeding with a major release check that no <code class="docutils literal notranslate"><span class="pre">collection-deprecated-version</span></code> or
+<code class="docutils literal notranslate"><span class="pre">ansible-deprecated-date</span></code> entries exist in the
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/tree/main/tests/sanity">sanity test ignore files</a>.</p>
+<p>This generally involves changing a default or dropping support for something, however deprecations
+are used as a warning for breaking changes.  Once a major version has been released breaking changes
+should wait for the next major release before being applied.</p>
+<p>In some cases it may be appropriate to either delay the change (update the deprecation version),
+or abandon the deprecation.</p>
+</section>
+<section id="python-and-aws-sdk-dependencies">
+<h4>Python and AWS SDK dependencies<a class="headerlink" href="#python-and-aws-sdk-dependencies" title="Link to this heading"></a></h4>
+<p>Starting with the 2.0.0 releases of <code class="docutils literal notranslate"><span class="pre">amazon.aws</span></code> and <code class="docutils literal notranslate"><span class="pre">community.aws</span></code>, it is generally the
+collection’s policy to support the minor versions of <code class="docutils literal notranslate"><span class="pre">botocore</span></code> and <code class="docutils literal notranslate"><span class="pre">boto3</span></code> that were released
+12 months prior to the most recent major collection release.  SDK support for Python versions also
+drives which versions of Python the collections support.</p>
+<p>SDK dependencies need to be updated in a number of places, primarily:</p>
+<ul class="simple">
+<li><p>README.md</p></li>
+<li><p>constraints.txt files (for our tests)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTOCORE_VERSION</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTO3_VERSION</span></code></p></li>
+</ul>
+<p>The pull request to update the SDK requirements can also include dropping explicit requirements for a
+minimum <code class="docutils literal notranslate"><span class="pre">boto3</span></code> or <code class="docutils literal notranslate"><span class="pre">botocore</span></code> version in modules.  However, dropping code that maintains
+backwards compatible support for an older SDK version would be a breaking change and must not be
+backported.</p>
+<p>For an example see <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/pull/1342">ansible-collections/amazon.aws#1342</a></p>
+</section>
+</section>
+<section id="preparing-the-branches">
+<h3>Preparing the branches<a class="headerlink" href="#preparing-the-branches" title="Link to this heading"></a></h3>
+<p>Ensure that your local copy of the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch is up to date and contains all planned patches.</p>
+<section id="preparing-a-new-stable-branch">
+<h4>Preparing a new stable branch<a class="headerlink" href="#preparing-a-new-stable-branch" title="Link to this heading"></a></h4>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Zuul will need updating here too.</p>
+<p>As part of the next release cycle please add an entry here about configuring the Zuul sanity jobs
+for the new stable-6 branch.</p>
+</div>
+<p>Create and push a new <code class="docutils literal notranslate"><span class="pre">stable-&lt;major-version&gt;</span></code> branch (for example <code class="docutils literal notranslate"><span class="pre">stable-6</span></code> for release
+<code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>origin
+git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>origin/main
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>stable-6
+git<span class="w"> </span>push<span class="w"> </span>--set-upstream<span class="w"> </span>origin<span class="w"> </span>stable-6
+</pre></div>
+</div>
+<p>Create a pull request against the new branch updating any documentation links from <code class="docutils literal notranslate"><span class="pre">main</span></code> to the
+new <code class="docutils literal notranslate"><span class="pre">stable-&lt;major-version&gt;</span></code> branch.</p>
+<p>For an example pull request see
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/pull/1107">ansible-collections/amazon.aws#1107</a></p>
+</section>
+<section id="updating-main">
+<h4>Updating main<a class="headerlink" href="#updating-main" title="Link to this heading"></a></h4>
+<p>Now that our new major release has been branched, we update the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch so that it’s
+configured as the pre-release development version for the <strong>next</strong> release (for example
+<code class="docutils literal notranslate"><span class="pre">7.0.0-dev0</span></code> if you’re preparing <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>).</p>
+<p>Create a pull request against the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch updating the
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/blob/main/galaxy.yml">galaxy.yml</a> version
+information and the  <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/blob/main/plugins/module_utils/common.py">plugins/module_utils/common.py</a>
+version information to a <code class="docutils literal notranslate"><span class="pre">dev0</span></code> prerelease of the next major release.  This may result in deprecation
+errors from the sanity tests.  Create issues and add entries to the relevant
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/tree/main/tests/sanity">sanity test ignore files</a>.
+(including a link to the issue)</p>
+<p>For an example pull request see
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/pull/1108">ansible-collections/amazon.aws#1108</a></p>
+</section>
+<section id="next-steps">
+<h4>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h4>
+<p>Once these pull requests have been merged there should be a new <code class="docutils literal notranslate"><span class="pre">stable</span></code> branch for the release
+series (for example <code class="docutils literal notranslate"><span class="pre">stable-6</span></code> for all <code class="docutils literal notranslate"><span class="pre">6.x.y</span></code> releases) and the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch should have
+been updated.  After which you can continue the major release process by following the steps for
+<a class="reference internal" href="#ansible-collections-amazon-aws-docsite-minor-releases"><span class="std std-ref">Minor and Patch releases</span></a>.</p>
+</section>
+</section>
+</section>
+<section id="minor-and-patch-releases">
+<span id="ansible-collections-amazon-aws-docsite-minor-releases"></span><h2>Minor and Patch releases<a class="headerlink" href="#minor-and-patch-releases" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The examples below will be based upon preparing the major release <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code> using the <code class="docutils literal notranslate"><span class="pre">stable-6</span></code>
+branch.  While <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code> is a major release, this part of the process is identical for major,
+minor and patch releases.</p>
+</div>
+<p>Ensure that the relevant stable branch (for example <code class="docutils literal notranslate"><span class="pre">stable-6</span></code>) is up to date and includes all
+planned patches.  If you have local copies of both <code class="docutils literal notranslate"><span class="pre">amazon.aws</span></code> and <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> it is
+strongly recommended that you checkout the same branch for both collections.</p>
+<p>Outline of steps for generating a release:</p>
+<ol class="arabic simple">
+<li><p>Create a local branch</p></li>
+<li><p>Update version information</p></li>
+<li><p>Generate the changelog</p></li>
+<li><p>Generate (and merge) the PR</p></li>
+<li><p>Tag the release</p></li>
+<li><p>Announce the release</p></li>
+</ol>
+<section id="create-a-working-branch-for-your-release">
+<h3>Create a working branch for your release<a class="headerlink" href="#create-a-working-branch-for-your-release" title="Link to this heading"></a></h3>
+<p>Checkout the relevant stable branch, and create a local working branch for the release.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>origin
+git<span class="w"> </span>checkout<span class="w"> </span>stable-6
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>origin/stable-6
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>release/6.0.0/prepare
+</pre></div>
+</div>
+</section>
+<section id="update-version-information">
+<h3>Update version information<a class="headerlink" href="#update-version-information" title="Link to this heading"></a></h3>
+<p>We need to update the version information in a couple of places:</p>
+<ul class="simple">
+<li><p>galaxy.yml</p></li>
+<li><p>plugins/module_utils/common.py</p></li>
+</ul>
+<p>In your local clone of the repository, update <code class="docutils literal notranslate"><span class="pre">galaxy.yml</span></code> with the new release version
+information.</p>
+<p><strong>galaxy.yml:</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6.0.0</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+<p><strong>plugins/module_utils/common.py:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AMAZON_AWS_COLLECTION_VERSION</span> <span class="o">=</span> <span class="s2">&quot;6.0.0&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Separately committing each of the changes to your local branch as you go will save you time if
+there are problems with changelog fragments.</p>
+<p>While the sanity tests can pick up invalid YAML and RST, they don’t detect broken links
+prior to the final changelog generation.</p>
+</div>
+</section>
+<section id="generate-the-changelogs">
+<h3>Generate the Changelogs<a class="headerlink" href="#generate-the-changelogs" title="Link to this heading"></a></h3>
+<section id="install-antsibull">
+<h4>Install Antsibull<a class="headerlink" href="#install-antsibull" title="Link to this heading"></a></h4>
+<p>We use <a class="reference external" href="https://github.com/ansible-community/antsibull-changelog">antsibull-changelog</a> to generate
+our changelogs from the fragments, and <a class="reference external" href="https://github.com/ansible-community/antsibull-docs">antsibull-docs</a> to generate the <a class="reference external" href="https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html">rendered documentation.</a></p>
+<p>If you’ve not already installed these tools then you’ll need to do so (this can be done in a virtual
+environment if desired):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>ansible<span class="w"> </span>sphinx-ansible-theme<span class="w"> </span>antsibull-changelog<span class="w"> </span>antsibull-docs
+</pre></div>
+</div>
+</section>
+<section id="add-a-release-summary-changelog-fragment">
+<h4>Add a release_summary changelog fragment<a class="headerlink" href="#add-a-release-summary-changelog-fragment" title="Link to this heading"></a></h4>
+<p>While not strictly necessary it’s preferable to add a release summary that will be added to the
+changelog.  For example, the <a class="reference external" href="https://ansible-collections.github.io/amazon.aws/branch/stable-5/collections/amazon/aws/docsite/CHANGELOG.html#release-summary">release summary for 5.2.0</a></p>
+<p><strong>changelogs/fragments/release-summary.yml:</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">release_summary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">  </span><span class="no">Add a short description highlighting some of the key changes in the release.</span>
+</pre></div>
+</div>
+<p>Commit the release summary to your local branch.</p>
+</section>
+<section id="generate-the-merged-changelog">
+<h4>Generate the merged changelog<a class="headerlink" href="#generate-the-merged-changelog" title="Link to this heading"></a></h4>
+<p>Next we need to generate the merged changelog.  This will automatically delete the used fragments,
+update <code class="docutils literal notranslate"><span class="pre">CHANGELOG.rst</span></code>, <code class="docutils literal notranslate"><span class="pre">changelogs/changelog.yaml</span></code>, and <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> what it changes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>antsibull-changelog<span class="w"> </span>release
+</pre></div>
+</div>
+<p>Commit all of these changes to your local branch.</p>
+</section>
+<section id="create-your-pull-request">
+<h4>Create your Pull Request<a class="headerlink" href="#create-your-pull-request" title="Link to this heading"></a></h4>
+<p>Once everything’s been committed locally you can prepare a pull request.  The pull request should be
+for the relevant <code class="docutils literal notranslate"><span class="pre">stable</span></code> branch and <strong>not</strong> the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
+<p>All tests for the PR should pass prior to merging.  This pull request can be approved and merged as
+usual.</p>
+<p>Because <code class="docutils literal notranslate"><span class="pre">CHANGELOG.rst</span></code> is actually generated from <code class="docutils literal notranslate"><span class="pre">changelogs/changelog.yaml</span></code>, if you need to
+fix issues with a changelog fragment, the easiest option is to revert the final changelog
+generation, fix the original fragment, and re-generate the final changelog (This is why you should
+commit small changes as you go).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Releases for amazon.aws should either be prepared by someone from the Ansible Cloud Content
+team, or be approved by at least one person from the Ansible Cloud Content team.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Prior to triggering the merge for the release pull request, please warn the <a class="reference external" href="https://matrix.to/#/#aws:ansible.com">Ansible + AWS Matrix
+chat room</a> the final tagging (which releases the code to
+<a class="reference external" href="https://galaxy.ansible.com">Ansible Galaxy</a>) should be done using the pull request commit.</p>
+</div>
+</section>
+</section>
+<section id="tag-the-release">
+<h3>Tag the release<a class="headerlink" href="#tag-the-release" title="Link to this heading"></a></h3>
+<p>Pushing the release to <a class="reference external" href="https://galaxy.ansible.com">Ansible Galaxy</a> is performed by Zuul.  When
+a tag is pushed GitHub Zuul will automatically build the relevant artifacts and push them to Galaxy.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>origin
+git<span class="w"> </span>checkout<span class="w"> </span>stable-6
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>origin/stable-6
+git<span class="w"> </span>tag<span class="w"> </span><span class="m">6</span>.0.0
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span><span class="m">6</span>.0.0
+</pre></div>
+</div>
+</section>
+<section id="announce-the-release">
+<h3>Announce the release<a class="headerlink" href="#announce-the-release" title="Link to this heading"></a></h3>
+<section id="bullhorn">
+<h4>Bullhorn<a class="headerlink" href="#bullhorn" title="Link to this heading"></a></h4>
+<p>The Bullhorn is a newsletter for the Ansible developer community.  If you have anything to share
+about what you’ve been up to with Ansible lately, including new collection releases, simply hop
+into <a class="reference external" href="https://matrix.to/#/#social:ansible.com">#social:ansible.com</a> (the Ansible Social room on
+Matrix) and leave a message, tagging newsbot.  Your update will then be included in the next
+edition of the Bullhorn (pending editor approval).</p>
+<p>For more information (and some examples) see the <a class="reference external" href="https://github.com/ansible/community/wiki/News#the-bullhorn">Ansible News Working Group wiki page</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>As part of the next release cycle please add an example here.</p>
+</div>
+</section>
+<section id="update-the-chat-room-topic">
+<h4>Update the chat room topic<a class="headerlink" href="#update-the-chat-room-topic" title="Link to this heading"></a></h4>
+<p>Once the release is available from Ansible Galaxy, the topic should be updated in the
+<a class="reference external" href="https://matrix.to/#/#aws:ansible.com">Ansible + AWS Matrix chat room.</a>  This generally requires
+assistance from a member of Ansible staff.</p>
+</section>
+<section id="create-a-github-release">
+<h4>Create a GitHub “Release”<a class="headerlink" href="#create-a-github-release" title="Link to this heading"></a></h4>
+<p>While the AWS collections are generally distributed via Ansible Galaxy, for visibility we also
+create a GitHub release.  Pushing a tag should automatically do this, however, should the automation
+fail, releases can also be created manually.</p>
+<p>Copy the release notes from the rendered changelog file and generate a GitHub release based upon the
+newly created tag.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ansible-collections/amazon.aws/releases">amazon.aws</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ansible-collections/community.aws/releases">community.aws</a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For more information see: <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository">Managing releases in a repository</a></p>
+</div>
+</section>
+</section>
+</section>
+<section id="cleanup">
+<h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<p>We usually forward-port the changelog entries.  If multiple releases are planned concurrently then
+the changelog entries can be merged into the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch in a single PR.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>origin<span class="w"> </span>--tags
+git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>origin/main
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>release/6.0.0/changelog-to-main
+git<span class="w"> </span>cherry-pick<span class="w"> </span>-n<span class="w"> </span><span class="m">6</span>.0.0
+git<span class="w"> </span>checkout<span class="w"> </span>origin/main<span class="w"> </span>galaxy.yml
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add changelogs from release 6.0.0 to main&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To improve visibility of collection-wide deprecations, such as pending changes to module_utils,
+or deprecated support for a version of Python, the corresponding changelog fragment can be kept in
+the main branch.  This will ensure that there is also a deprecation warning in the next major
+release.
+Keeping a fragment can be done by using git to checkout the original fragment prior to
+commiting and pushing:
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">origin/main</span> <span class="pre">changelogs/fragments/&lt;some</span> <span class="pre">fragment&gt;.yml</span></code></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Any conflicts will need to be resolved prior to commiting.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Be careful not to update galaxy.yml when you’re forward-porting the changelog entries.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
