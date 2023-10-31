@@ -1,3 +1,0 @@
----
-trivial:
-- Replace pytest-ansible-units with pytest-ansible for testing unit tests (https://github.com/ansible-collections/amazon.aws/pull/1553).
