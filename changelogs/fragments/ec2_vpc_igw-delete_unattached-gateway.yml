@@ -1,0 +1,6 @@
+---
+minor_changes:
+  - ec2_vpc_igw - Add ability to delete a vpc internet gateway using the id of the gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
+  - ec2_vpc_igw - Add ability to create an internet gateway without attaching a VPC (https://github.com/ansible-collections/amazon.aws/pull/1786).
+  - ec2_vpc_igw - Add ability to attach/detach VPC to/from internet gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
+  - ec2_vpc_igw - Add ability to change VPC attached to internet gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
