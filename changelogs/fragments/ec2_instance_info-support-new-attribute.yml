@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ec2_instance_info - add new parameter `include_attributes` to describe instance attributes (https://github.com/ansible-collections/amazon.aws/pull/1577).
