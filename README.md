@@ -17,7 +17,6 @@ Amazon has also announced the planned end of support for
 [Python less than 3.8](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
 As such support for Python less than 3.8 will be removed in a release after 2024-12-01.
 
-<!---
 ### End of Support by Python Versions:
 
 | Python Version | AWS SDK | Collection |
@@ -31,7 +30,6 @@ As such support for Python less than 3.8 will be removed in a release after 2024
 | 3.9 | April 2026 | *After April 2027* |
 | 3.10 | April 2027 | *After April 2028* |
 | 3.11 | April 2028 | *After April 2029* |
---->
 
 ## AWS SDK version compatibility
 
