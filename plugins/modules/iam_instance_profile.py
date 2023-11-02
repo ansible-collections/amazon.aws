@@ -48,16 +48,16 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Find all existing IAM instance profiles
-  amazon.aws.iam_instance_profile_info:
+  amazon.aws.iam_instance_profile:
   register: result
 
 - name: Describe a single instance profile
-  amazon.aws.iam_instance_profile_info:
+  amazon.aws.iam_instance_profile:
     name: MyIAMProfile
   register: result
 
 - name: Find all IAM instance profiles starting with /some/path/
-  amazon.aws.iam_instance_profile_info:
+  amazon.aws.iam_instance_profile:
     prefile: /some/path/
   register: result
 """
