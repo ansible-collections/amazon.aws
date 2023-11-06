@@ -1256,7 +1256,7 @@ def main():
             options=dict(
                 min_capacity=dict(type="float"),
                 max_capacity=dict(type="float"),
-                ),
+            ),
         ),
         skip_final_snapshot=dict(type="bool", default=False),
         snapshot_identifier=dict(),
