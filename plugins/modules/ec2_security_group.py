@@ -498,6 +498,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_acco
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -1054,10 +1055,12 @@ def update_rule_descriptions(
     return changed
 
 
-def _create_security_group_with_wait(client, name, description, vpc_id):
-    params = dict(GroupName=name, Description=description)
+def _create_security_group_with_wait(client, name, description, vpc_id, tags):
+    params = dict(GroupName=name, Description=description, Tags=tags)
     if vpc_id:
         params["VpcId"] = vpc_id
+    if tags:
+        params['TagSpecifications'] = boto3_tag_specifications(tags, ['security-group'])
 
     created_group = client.create_security_group(aws_retry=True, **params)
     get_waiter(
@@ -1069,11 +1072,13 @@ def _create_security_group_with_wait(client, name, description, vpc_id):
     return created_group
 
 
-def create_security_group(client, module, name, description, vpc_id):
+def create_security_group(client, module, name, description, vpc_id, tags):
     if not module.check_mode:
         params = dict(GroupName=name, Description=description)
         if vpc_id:
             params["VpcId"] = vpc_id
+        if tags:
+            params['TagSpecifications'] = boto3_tag_specifications(tags, ['security-group'])
         try:
             group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
@@ -1408,7 +1413,7 @@ def ensure_present(module, client, group, groups):
         if module.check_mode:
             return True, None
 
-        group = create_security_group(client, module, name, description, vpc_id)
+        group = create_security_group(client, module, name, description, vpc_id, tags)
         group_created_new = True
         changed = True
 
