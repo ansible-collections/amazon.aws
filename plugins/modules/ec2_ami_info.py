@@ -260,10 +260,10 @@ def get_images(ec2_client, request_args):
     return images
 
 
-def get_image_attribute(ec2_client, image):
+def get_image_attribute(ec2_client, image_id):
     try:
         launch_permissions = ec2_client.describe_image_attribute(
-            aws_retry=True, Attribute="launchPermission", ImageId=image["image_id"]
+            aws_retry=True, Attribute="launchPermission", ImageId=image_id
         )
     except (ClientError, BotoCoreError) as err:
         raise AmiInfoFailure(err, "error describing image attribute")
@@ -276,9 +276,10 @@ def list_ec2_images(ec2_client, module, request_args):
 
     for image in images:
         try:
+            image_id = image["image_id"]
             image["tags"] = boto3_tag_list_to_ansible_dict(image.get("tags", []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = get_image_attribute(ec2_client, image).get("LaunchPermissions", [])
+                launch_permissions = get_image_attribute(ec2_client, image_id).get("LaunchPermissions", [])
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
