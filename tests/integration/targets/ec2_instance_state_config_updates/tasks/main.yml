@@ -57,10 +57,16 @@
           - '"instances" in change_params_result'
           - '"instance_ids" in change_params_result'
           - '"changes" in change_params_result'
-          - change_params_result.instances[0].security_groups[0].group_id == "{{ sg2.group_id }}"
           - change_params_result.changes[0].DisableApiTermination.Value == True
           - change_params_result.changes[1].Groups[0] == "{{ sg2.group_id }}"
 
+    - name: Verify security groups were updated (can take time to complete)
+      amazon.aws.ec2_instance_info:
+        instance_ids: "{{ change_params_result.instance_ids }}"
+      register: changed_sg_info
+      retries: 5
+      until:
+        - changed_sg_info.instances[0].security_groups[0].group_id == "{{ sg2.group_id }}"
 
     - name: Change instance state from running to stopped, and change sg and termination protection
       amazon.aws.ec2_instance:
