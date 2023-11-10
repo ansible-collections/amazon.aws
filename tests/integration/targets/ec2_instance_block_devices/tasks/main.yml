@@ -36,9 +36,10 @@
         that:
           - block_device_instances is not failed
           - block_device_instances is changed
-          - block_device_instances_info.instances[0].block_device_mappings[0]
-          - block_device_instances_info.instances[0].block_device_mappings[1]
-          - block_device_instances_info.instances[0].block_device_mappings[1].device_name == '/dev/sdb'
+          - instance_info.block_device_mappings | length == 2
+          - '"/dev/sdb" in instance_info.block_device_mappings | map(attribute="device_name")'
+      vars:
+        instance_info: "{{ block_device_instances_info.instances[0] }}"
 
     - name: New instance with an extra block device (check mode)
       amazon.aws.ec2_instance:
@@ -108,7 +109,15 @@
         that:
           - block_device_instances_gp3 is not failed
           - block_device_instances_gp3 is changed
-          - block_device_instances_gp3.spec.BlockDeviceMappings[0].DeviceName == '/dev/sdb'
-          - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeType == 'gp3'
-          - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeSize == 20
-          - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.Throughput == 500
+          - instance_info.block_device_mappings | length == 2
+          - '"/dev/sdb" in instance_info.block_device_mappings | map(attribute="device_name")'
+          - block_device_spec | length == 1
+          - '"DeviceName" in block_device_spec[0]'
+          - '"Ebs" in block_device_spec[0]'
+          - block_device_spec[0].DeviceName == "/dev/sdb"
+          - block_device_spec[0].Ebs.VolumeType == "gp3"
+          - block_device_spec[0].Ebs.VolumeSize == 20
+          - block_device_spec[0].Ebs.Throughput == 500
+      vars:
+        instance_info: "{{ block_device_instances_gp3.instances[0] }}"
+        block_device_spec: "{{ block_device_instances_gp3.spec.BlockDeviceMappings }}"
