@@ -467,6 +467,10 @@ def create_metric_alarm(connection, module, params):
         if "TreatMissingData" not in alarm.keys():
             alarm["TreatMissingData"] = "missing"
 
+        # Prevent alarm without dimensions to always return changed
+        if not alarm["Dimensions"]:
+            alarm.pop("Dimensions", None)
+
         # Exclude certain props from change detection
         for key in [
             "ActionsEnabled",
