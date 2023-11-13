@@ -1056,7 +1056,7 @@ def update_rule_descriptions(
 
 
 def _create_security_group_with_wait(client, name, description, vpc_id, tags):
-    params = dict(GroupName=name, Description=description, Tags=tags)
+    params = dict(GroupName=name, Description=description)
     if vpc_id:
         params["VpcId"] = vpc_id
     if tags:
