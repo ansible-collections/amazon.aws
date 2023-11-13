@@ -732,7 +732,7 @@ def _lookup_target_or_fail(client, group_name, vpc_id, groups, msg):
     return "group", (owner_id, group_id, None), False
 
 
-def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
+def _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode):
     owner_id = current_account_id
     # We can't create a group in check mode...
     if check_mode:
@@ -741,7 +741,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     group_name = rule["group_name"]
 
     try:
-        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id)
+        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id, tags)
     except is_boto3_error_code("InvalidGroup.Duplicate"):
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
@@ -762,7 +762,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     return "group", (owner_id, group_id, None), True
 
 
-def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, check_mode):
+def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, check_mode):
     group_name = rule["group_name"]
     owner_id = current_account_id
     if group_name == name:
@@ -798,10 +798,10 @@ def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id,
         )
         return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
 
-    return _create_target_from_rule(client, rule, groups, vpc_id, check_mode)
+    return _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode)
 
 
-def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
+def get_target_from_rule(module, client, rule, name, group, groups, vpc_id, tags):
     """
     Returns tuple of (target_type, target, group_created) after validating rule params.
 
@@ -822,7 +822,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
         if rule.get("group_id"):
             return _target_from_rule_with_group_id(rule, groups)
         if "group_name" in rule:
-            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, module.check_mode)
+            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, module.check_mode)
         if "cidr_ip" in rule:
             return "ipv4", validate_ip(module, rule["cidr_ip"]), False
         if "cidr_ipv6" in rule:
@@ -1440,7 +1440,7 @@ def ensure_present(module, client, group, groups):
             continue
         for rule in new_rules:
             target_type, target, target_group_created = get_target_from_rule(
-                module, client, rule, name, group, groups, vpc_id
+                module, client, rule, name, group, groups, vpc_id, tags
             )
             changed |= target_group_created
 
