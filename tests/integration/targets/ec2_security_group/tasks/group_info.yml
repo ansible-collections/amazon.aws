@@ -18,6 +18,15 @@
           test: '{{ resource_prefix }}_ec2_group_info_module'
       register: group_info_test_setup
 
+    - name: Ensure tags were added without the additional CreateTags/RemoveTags calls
+      assert:
+        that:
+          - group_info_test_setup.tags | length == 1
+          - "'test' in group_info_test_setup.tags"
+          - group_info_test_setup.tags.test == "{{ resource_prefix }}_ec2_group_info_module"
+          - "'ec2:CreateTags' not in group_info_test_setup.resource_actions"
+          - "'ec2:DeleteTags' not in group_info_test_setup.resource_actions"
+
     - name: Create another group for testing group info retrieval below
       ec2_security_group:
         name: '{{ ec2_group_name }}-info-2'
