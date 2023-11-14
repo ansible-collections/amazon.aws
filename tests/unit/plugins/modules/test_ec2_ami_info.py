@@ -94,33 +94,13 @@ def test_get_image_attribute():
         "LaunchPermissions": [{"UserId": "1234567890"}, {"UserId": "0987654321"}],
     }
 
-    image = {
-        "architecture": "x86_64",
-        "blockDeviceMappings": [
-            {
-                "device_name": "/dev/sda1",
-                "ebs": {
-                    "delete_on_termination": "True",
-                    "encrypted": "False",
-                    "snapshot_id": "snap-0f00cba784af62428",
-                    "volume_size": 10,
-                    "volume_Type": "gp2",
-                },
-            }
-        ],
-        "image_id": "ami-1234567890",
-        "image_location": "1234567890/test-ami-uefi-boot",
-        "image_type": "machine",
-        "name": "test-ami-uefi-boot",
-        "owner_id": "1234567890",
-        "platform_details": "Linux/UNIX",
-    }
+    image_id = "ami-1234567890"
 
-    get_image_attribute_result = ec2_ami_info.get_image_attribute(ec2_client, image)
+    get_image_attribute_result = ec2_ami_info.get_image_attribute(ec2_client, image_id)
 
     ec2_client.describe_image_attribute.call_count == 1
     ec2_client.describe_image_attribute.assert_called_with(
-        aws_retry=True, Attribute="launchPermission", ImageId=image["image_id"]
+        aws_retry=True, Attribute="launchPermission", ImageId=image_id
     )
     assert len(get_image_attribute_result["LaunchPermissions"]) == 2
 
@@ -203,7 +183,10 @@ def test_list_ec2_images(m_get_images, m_get_image_attribute):
     m_get_images.assert_called_with(ec2_client, request_args)
 
     assert m_get_image_attribute.call_count == 2
-    assert m_get_image_attribute.has_calls([call(ec2_client, images[0])], [call(ec2_client, images[1])])
+    m_get_image_attribute.assert_has_calls(
+        [call(ec2_client, images[0]["image_id"])],
+        [call(ec2_client, images[1]["image_id"])],
+    )
 
     assert len(list_ec2_images_result) == 2
     assert list_ec2_images_result[0]["image_id"] == "ami-1234567890"
@@ -234,8 +217,8 @@ def test_api_failure_get_images(ec2_client):
 
 
 def test_api_failure_get_image_attribute(ec2_client):
-    image = {"image_id": "ami-1234567890"}
+    image_id = "ami-1234567890"
     ec2_client.describe_image_attribute.side_effect = a_boto_exception()
 
     with pytest.raises(ec2_ami_info.AmiInfoFailure):
-        ec2_ami_info.get_image_attribute(ec2_client, image)
+        ec2_ami_info.get_image_attribute(ec2_client, image_id)
