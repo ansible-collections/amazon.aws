@@ -1060,7 +1060,7 @@ def _create_security_group_with_wait(client, name, description, vpc_id, tags):
     if vpc_id:
         params["VpcId"] = vpc_id
     if tags:
-        params['TagSpecifications'] = boto3_tag_specifications(tags, ['security-group'])
+        params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
 
     created_group = client.create_security_group(aws_retry=True, **params)
     get_waiter(
@@ -1078,7 +1078,7 @@ def create_security_group(client, module, name, description, vpc_id, tags):
         if vpc_id:
             params["VpcId"] = vpc_id
         if tags:
-            params['TagSpecifications'] = boto3_tag_specifications(tags, ['security-group'])
+            params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
         try:
             group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
