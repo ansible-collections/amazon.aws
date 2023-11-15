@@ -43,6 +43,11 @@ EXAMPLES = r"""
   amazon.aws.backup_selection_info:
     backup_plan_name: "{{ backup_plan_name }}"
 
+- name: Gather information about all backup selections in a specific region
+  amazon.aws.backup_selection_info:
+    backup_plan_name: "{{ backup_plan_name }}"
+    region: "us-west-2"  
+
 - name: Gather information about a particular backup selection
   amazon.aws.backup_selection_info:
     backup_plan_name: "{{ backup_plan_name }}"
