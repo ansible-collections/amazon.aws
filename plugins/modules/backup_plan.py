@@ -175,6 +175,19 @@ EXAMPLES = r"""
         schedule_expression: 'cron(0 5 ? * * *)'
         start_window_minutes: 60
         completion_window_minutes: 1440
+        
+- name: Create an AWS Backup plan in us-east-1
+  amazon.aws.backup_plan:
+    state: present
+    backup_plan_name: my_backup_plan
+    rules:
+      - rule_name: daily
+        target_backup_vault_name: "{{ backup_vault_name }}"
+        schedule_expression: 'cron(0 5 ? * * *)'
+        start_window_minutes: 30
+        completion_window_minutes: 1440
+    region: us-east-1
+        
 - name: Delete an AWS Backup plan
   amazon.aws.backup_plan:
     backup_plan_name: elastic
