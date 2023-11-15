@@ -35,6 +35,11 @@ EXAMPLES = r"""
 # Gather information about all backup vaults
 - amazon.aws.backup_vault_info
 
+# Gather information about all backup vaults in a specific region
+  amazon.aws.backup_vault_info:
+    region: "us-west-2"
+
+
 # Gather information about a particular backup vault
 - amazon.aws.backup_vault_info:
     backup vault_names:
