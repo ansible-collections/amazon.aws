@@ -187,8 +187,8 @@ EXAMPLES = r"""
       state: "present"
       region: "us-east-1"
       template: "files/cloudformation-template.yaml"
-      backoff_delay: 300  
-        
+      backoff_delay: 300
+
 # Basic role example
 - name: create a stack, specify role that cloudformation assumes
   amazon.aws.cloudformation:
