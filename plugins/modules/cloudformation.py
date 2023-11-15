@@ -181,6 +181,14 @@ EXAMPLES = r"""
     tags:
       Stack: "ansible-cloudformation"
 
+- name: Re-try the launch of CloudFormation Stack after 5 minutes of failure
+  amazon.aws.cloudformation:
+      stack_name: "my-cloudformation-stack"
+      state: "present"
+      region: "us-east-1"
+      template: "files/cloudformation-template.yaml"
+      backoff_delay: 300  
+        
 # Basic role example
 - name: create a stack, specify role that cloudformation assumes
   amazon.aws.cloudformation:
