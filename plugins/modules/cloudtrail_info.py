@@ -36,6 +36,11 @@ EXAMPLES = r"""
 # Gather information about all trails
 - amazon.aws.cloudtrail_info:
 
+# Gather information about all trails in a specific region
+  amazon.aws.cloudtrail_info:
+    region: "us-east-1"
+
+
 # Gather information about a particular trail
 - amazon.aws.cloudtrail_info:
     trail_names:
