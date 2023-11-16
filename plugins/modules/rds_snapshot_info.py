@@ -63,6 +63,11 @@ EXAMPLES = r"""
     db_snapshot_identifier: snapshot_name
   register: new_database_info
 
+- name: Get information about public RDS snapshots
+  amazon.aws.rds_snapshot_info:
+    snapshot_type: public
+  register: public_snapshots
+
 - name: Get all RDS snapshots for an RDS instance
   amazon.aws.rds_snapshot_info:
     db_instance_identifier: helloworld-rds-master
