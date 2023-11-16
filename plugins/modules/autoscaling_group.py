@@ -421,6 +421,21 @@ EXAMPLES = r"""
       - environment: production
         propagate_at_launch: false
 
+# Create Auto Scaling Group with Cooldown
+
+-  amazon.aws.autoscaling_group:
+    name: my-asg
+    launch_config_name: my-launch-config
+    min_size: 2
+    max_size: 5
+    desired_capacity: 3
+    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    health_check_type: ELB
+    health_check_period: 120
+    default_cooldown: 600  
+    tags:
+      - environment: production
+
 # Basic Configuration with Launch Template using mixed instance policy
 
 - amazon.aws.autoscaling_group:
