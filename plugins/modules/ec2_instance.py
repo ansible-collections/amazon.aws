@@ -373,6 +373,11 @@ options:
         description: The Amazon Resource Name (ARN) of the license configuration.
         type: str
         required: true
+  additional_info:
+    description:
+      - Reserved for Amazon's internal use.
+    type: str
+    version_added: 7.1.0
   metadata_options:
     description:
       - Modify the metadata options for the instance.
@@ -948,6 +953,12 @@ instances:
                     returned: always
                     type: str
                     sample: default
+        additional_info:
+            description: Reserved for Amazon's internal use.
+            returned: always
+            type: str
+            version_added: 7.1.0
+            sample:
         private_dns_name:
             description: The private DNS name.
             returned: always
@@ -1436,6 +1447,8 @@ def build_top_level_options(params):
         )
         spec["MetadataOptions"]["HttpProtocolIpv6"] = params.get("metadata_options").get("http_protocol_ipv6")
         spec["MetadataOptions"]["InstanceMetadataTags"] = params.get("metadata_options").get("instance_metadata_tags")
+    if params.get("additional_info"):
+        spec["AdditionalInfo"] = params.get("additional_info")
     if params.get("license_specifications"):
         spec["LicenseSpecifications"] = []
         for license_configuration in params.get("license_specifications"):
@@ -2271,6 +2284,7 @@ def main():
                 instance_metadata_tags=dict(choices=["disabled", "enabled"], default="disabled"),
             ),
         ),
+        additional_info=dict(type="str"),
     )
     # running/present are synonyms
     # as are terminated/absent
