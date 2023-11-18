@@ -1675,15 +1675,15 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
                 old_instances.append(i)
 
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances,}")
+        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances,}")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances,}")
+    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
+    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
 
     return new_instances, old_instances
 
@@ -1702,15 +1702,15 @@ def get_instances_by_launch_template(props, lt_check, initial_instances):
             else:
                 old_instances.append(i)
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances,}")
+        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances,}")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances,}")
+    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
+    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
 
     return new_instances, old_instances
 
@@ -1775,9 +1775,9 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     instances_to_terminate = list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances)
 
     module.debug(f"new instances needed: {num_new_inst_needed}")
-    module.debug(f"new instances: {*new_instances,}")
-    module.debug(f"old instances: {*old_instances,}")
-    module.debug(f"batch instances: {*instances_to_terminate,}")
+    module.debug(f"new instances: {*new_instances, }")
+    module.debug(f"old instances: {*old_instances, }")
+    module.debug(f"batch instances: {*instances_to_terminate, }")
 
     if num_new_inst_needed == 0:
         decrement_capacity = True

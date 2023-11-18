@@ -1535,11 +1535,11 @@ def main():
         if "amazonaws.com" not in endpoint_url:
             module.fail_json(msg="dualstack only applies to AWS S3")
 
-    if module.params.get("overwrite") not in ("always", "never", "different", "last"):
+    if module.params.get("overwrite") not in ("always", "never", "different", "latest"):
         module.deprecate(
             (
                 "Support for passing values of 'overwrite' other than 'always', 'never', "
-                "'different' or 'last', has been deprecated."
+                "'different' or 'latest', has been deprecated."
             ),
             date="2024-12-01",
             collection_name="amazon.aws",

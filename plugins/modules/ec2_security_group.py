@@ -498,6 +498,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_acco
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -731,7 +732,7 @@ def _lookup_target_or_fail(client, group_name, vpc_id, groups, msg):
     return "group", (owner_id, group_id, None), False
 
 
-def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
+def _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode):
     owner_id = current_account_id
     # We can't create a group in check mode...
     if check_mode:
@@ -740,7 +741,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     group_name = rule["group_name"]
 
     try:
-        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id)
+        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id, tags)
     except is_boto3_error_code("InvalidGroup.Duplicate"):
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
@@ -761,7 +762,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     return "group", (owner_id, group_id, None), True
 
 
-def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, check_mode):
+def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, check_mode):
     group_name = rule["group_name"]
     owner_id = current_account_id
     if group_name == name:
@@ -797,10 +798,10 @@ def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id,
         )
         return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
 
-    return _create_target_from_rule(client, rule, groups, vpc_id, check_mode)
+    return _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode)
 
 
-def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
+def get_target_from_rule(module, client, rule, name, group, groups, vpc_id, tags):
     """
     Returns tuple of (target_type, target, group_created) after validating rule params.
 
@@ -821,7 +822,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
         if rule.get("group_id"):
             return _target_from_rule_with_group_id(rule, groups)
         if "group_name" in rule:
-            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, module.check_mode)
+            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, module.check_mode)
         if "cidr_ip" in rule:
             return "ipv4", validate_ip(module, rule["cidr_ip"]), False
         if "cidr_ipv6" in rule:
@@ -1054,10 +1055,12 @@ def update_rule_descriptions(
     return changed
 
 
-def _create_security_group_with_wait(client, name, description, vpc_id):
+def _create_security_group_with_wait(client, name, description, vpc_id, tags):
     params = dict(GroupName=name, Description=description)
     if vpc_id:
         params["VpcId"] = vpc_id
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
 
     created_group = client.create_security_group(aws_retry=True, **params)
     get_waiter(
@@ -1069,11 +1072,13 @@ def _create_security_group_with_wait(client, name, description, vpc_id):
     return created_group
 
 
-def create_security_group(client, module, name, description, vpc_id):
+def create_security_group(client, module, name, description, vpc_id, tags):
     if not module.check_mode:
         params = dict(GroupName=name, Description=description)
         if vpc_id:
             params["VpcId"] = vpc_id
+        if tags:
+            params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
         try:
             group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
@@ -1408,7 +1413,7 @@ def ensure_present(module, client, group, groups):
         if module.check_mode:
             return True, None
 
-        group = create_security_group(client, module, name, description, vpc_id)
+        group = create_security_group(client, module, name, description, vpc_id, tags)
         group_created_new = True
         changed = True
 
@@ -1435,7 +1440,7 @@ def ensure_present(module, client, group, groups):
             continue
         for rule in new_rules:
             target_type, target, target_group_created = get_target_from_rule(
-                module, client, rule, name, group, groups, vpc_id
+                module, client, rule, name, group, groups, vpc_id, tags
             )
             changed |= target_group_created
 
