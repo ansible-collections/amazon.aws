@@ -420,8 +420,12 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
     return changed
 
 
+def _matching_subnet_filters(vpc_id, cidr):
+    return ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "cidr-block": cidr})
+
+
 def get_matching_subnet(conn, module, vpc_id, cidr):
-    filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "cidr-block": cidr})
+    filters = _matching_subnet_filters(vpc_id, cidr)
     try:
         _subnets = conn.describe_subnets(aws_retry=True, Filters=filters)
         subnets = get_subnet_info(_subnets)
@@ -481,11 +485,11 @@ def ensure_subnet_present(conn, module):
 
     subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
     if not module.check_mode and module.params["wait"]:
-        for _rewait in range(0, 5):
-            if subnet:
-                break
-            time.sleep(2)
-            subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
+        subnet_filter = _matching_subnet_filters(module.params["vpc_id"], module.params["cidr"])
+        handle_waiter(conn, module, "subnet_exists", {"Filters": subnet_filter}, start_time)
+        subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
+        if not subnet:
+            module.fail_json("Failed to describe newly created subnet")
         # GET calls are not monotonic for map_public_ip_on_launch and assign_ipv6_address_on_creation
         # so we only wait for those if necessary just before returning the subnet
         subnet = ensure_final_subnet(conn, module, subnet, start_time)
