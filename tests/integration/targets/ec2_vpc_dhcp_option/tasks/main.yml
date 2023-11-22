@@ -388,20 +388,13 @@
       dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
     register: dhcp_options
     ignore_errors: yes
+    retries: 5
+    until: dhcp_options is failed
+    delay: 5
 
   - assert:
       that:
         - dhcp_options.failed
-        - '"does not exist" in dhcp_options.error.message'
-
-  - name: verify the original set was deleted
-    ec2_vpc_dhcp_option_info:
-      dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
-    register: dhcp_options
-    ignore_errors: yes
-
-  - assert:
-      that:
         - '"does not exist" in dhcp_options.error.message'
 
   - set_fact:
