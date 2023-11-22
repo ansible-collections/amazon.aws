@@ -220,6 +220,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_t
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
@@ -268,7 +269,7 @@ def handle_waiter(conn, module, waiter_name, params, start_time):
         module.fail_json_aws(e, "An exception happened while trying to wait for updates")
 
 
-def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
+def create_subnet(conn, module, vpc_id, cidr, tags, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
     wait = module.params["wait"]
 
     params = dict(VpcId=vpc_id, CidrBlock=cidr)
@@ -278,6 +279,9 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, 
 
     if az:
         params["AvailabilityZone"] = az
+
+    if tags is not None:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="subnet")
 
     if outpost_arn:
         if is_outpost_arn(outpost_arn):
@@ -452,6 +456,7 @@ def ensure_subnet_present(conn, module):
                 module,
                 module.params["vpc_id"],
                 module.params["cidr"],
+                module.params["tags"],
                 ipv6_cidr=module.params["ipv6_cidr"],
                 outpost_arn=module.params["outpost_arn"],
                 az=module.params["az"],
