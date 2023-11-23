@@ -209,3 +209,71 @@ class TestIsBoto3ErrorCode:
         assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
         assert issubclass(returned_exception, Exception)
         assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_tuple__pass__client(self):
+        passed_exception = self._make_denied_exception()
+        returned_exception = is_boto3_error_code(("NotAccessDenied", "AccessDenied"), e=passed_exception)
+        assert isinstance(passed_exception, returned_exception)
+        assert issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ != "NeverEverRaisedException"
+
+        returned_exception = is_boto3_error_code(("AccessDenied", "NotAccessDenied"), e=passed_exception)
+        assert isinstance(passed_exception, returned_exception)
+        assert issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ != "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_tuple__pass__unexpected(self):
+        passed_exception = self._make_unexpected_exception()
+        returned_exception = is_boto3_error_code(("NotAccessDenied", "AccessDenied"), e=passed_exception)
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_tuple__pass__botocore(self):
+        passed_exception = self._make_botocore_exception()
+        returned_exception = is_boto3_error_code(("NotAccessDenied", "AccessDenied"), e=passed_exception)
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_set__pass__client(self):
+        passed_exception = self._make_denied_exception()
+        returned_exception = is_boto3_error_code({"NotAccessDenied", "AccessDenied"}, e=passed_exception)
+        assert isinstance(passed_exception, returned_exception)
+        assert issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ != "NeverEverRaisedException"
+
+        returned_exception = is_boto3_error_code({"AccessDenied", "NotAccessDenied"}, e=passed_exception)
+        assert isinstance(passed_exception, returned_exception)
+        assert issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ != "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_set__pass__unexpected(self):
+        passed_exception = self._make_unexpected_exception()
+        returned_exception = is_boto3_error_code({"NotAccessDenied", "AccessDenied"}, e=passed_exception)
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_code_set__pass__botocore(self):
+        passed_exception = self._make_botocore_exception()
+        returned_exception = is_boto3_error_code({"NotAccessDenied", "AccessDenied"}, e=passed_exception)
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"

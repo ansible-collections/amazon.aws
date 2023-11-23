@@ -335,7 +335,7 @@ def is_boto3_error_code(code, e=None):
         import sys
 
         dummy, e, dummy = sys.exc_info()
-    if not isinstance(code, list):
+    if not isinstance(code, (list, tuple, set)):
         code = [code]
     if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
         return ClientError
