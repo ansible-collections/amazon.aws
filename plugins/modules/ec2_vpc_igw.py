@@ -313,7 +313,7 @@ class AnsibleEc2Igw:
 
             try:
                 create_params = {}
-                if tags is not None:
+                if tags:
                     create_params["TagSpecifications"] = boto3_tag_specifications(tags, types="internet-gateway")
                 response = self._connection.create_internet_gateway(aws_retry=True, **create_params)
 

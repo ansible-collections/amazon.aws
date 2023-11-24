@@ -72,8 +72,6 @@ options:
       - Ignored unless I(wait=True).
     default: 300
     type: int
-  tags:
-    default: {}
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -212,7 +210,6 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
@@ -280,7 +277,7 @@ def create_subnet(conn, module, vpc_id, cidr, tags, ipv6_cidr=None, outpost_arn=
     if az:
         params["AvailabilityZone"] = az
 
-    if tags is not None:
+    if tags:
         params["TagSpecifications"] = boto3_tag_specifications(tags, types="subnet")
 
     if outpost_arn:
@@ -315,6 +312,9 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
         tags=tags,
         retry_codes=["InvalidSubnetID.NotFound"],
     )
+
+    if not changed:
+        return changed
 
     if module.params["wait"] and not module.check_mode:
         # Wait for tags to be updated
@@ -483,10 +483,8 @@ def ensure_subnet_present(conn, module):
         )
         changed = True
 
-    if module.params["tags"] != subnet["tags"]:
-        stringified_tags_dict = dict((to_text(k), to_text(v)) for k, v in module.params["tags"].items())
-        if ensure_tags(conn, module, subnet, stringified_tags_dict, module.params["purge_tags"], start_time):
-            changed = True
+    if ensure_tags(conn, module, subnet, module.params["tags"], module.params["purge_tags"], start_time):
+        changed = True
 
     subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
     if not module.check_mode and module.params["wait"]:
@@ -554,7 +552,7 @@ def main():
         ipv6_cidr=dict(default="", required=False),
         outpost_arn=dict(default="", type="str", required=False),
         state=dict(default="present", choices=["present", "absent"]),
-        tags=dict(default={}, required=False, type="dict", aliases=["resource_tags"]),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         vpc_id=dict(required=True),
         map_public=dict(default=False, required=False, type="bool"),
         assign_instances_ipv6=dict(default=False, required=False, type="bool"),

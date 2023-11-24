@@ -392,7 +392,7 @@ def allocate_address(
         )
 
     params = {"Domain": domain}
-    if tags is not None:
+    if tags:
         params["TagSpecifications"] = boto3_tag_specifications(tags, types="elastic-ip")
 
     try:
@@ -538,7 +538,7 @@ def allocate_address_from_pool(
     if public_ipv4_pool is not None:
         params["PublicIpv4Pool"] = public_ipv4_pool
 
-    if tags is not None:
+    if tags:
         params["TagSpecifications"] = boto3_tag_specifications(tags, types="elastic-ip")
 
     try:
