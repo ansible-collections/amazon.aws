@@ -1,0 +1,2 @@
+minor_changes:
+  - modules/ec2_instance - add support for AdditionalInfo option when creating an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
