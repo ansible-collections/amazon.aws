@@ -71,6 +71,12 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
 
 def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value_key_name="Value"):
     """Convert a flat dict of key:value pairs representing AWS resource tags to a boto3 list of dicts
+
+    Note: booleans are converted to their Capitalized text form ("True" and "False"), this is
+    different to ansible_dict_to_boto3_filter_list because historically we've used "to_text()" and
+    AWS stores tags as strings, whereas for things which are actually booleans in AWS are returned
+    as lowercase strings in filters.
+
     Args:
         tags_dict (dict): Dict representing AWS resource tags.
         tag_name_key_name (str): Value to use as the key for all tag keys (useful because boto3 doesn't always use "Key")
@@ -108,6 +114,11 @@ def _tag_name_to_filter_key(tag_name):
 def ansible_dict_to_tag_filter_dict(tags_dict):
     """Prepends "tag:" to all of the keys (not the values) in a dict
     This is useful when you're then going to build a filter including the tags.
+
+    Note: booleans are converted to their Capitalized text form ("True" and "False"), this is
+    different to ansible_dict_to_boto3_filter_list because historically we've used "to_text()" and
+    AWS stores tags as strings, whereas for things which are actually booleans in AWS are returned
+    as lowercase strings in filters.
 
     Args:
         tags_dict (dict): Dict representing AWS resource tags.
