@@ -655,13 +655,8 @@ def path_check(path):
 
 
 def guess_content_type(src):
-    content_type = None
-    if src:
-        content_type = mimetypes.guess_type(src)[0]
-    if content_type is None:
-        # s3 default content type
-        content_type = "binary/octet-stream"
-    return content_type
+    content_type = mimetypes.guess_type(src)[0] if src else None
+    return content_type if content_type else "binary/octet-stream"
 
 
 def get_extra_params(
