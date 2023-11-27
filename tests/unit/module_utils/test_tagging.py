@@ -60,6 +60,14 @@ class TestTagging:
         assert ansible_dict_to_boto3_tag_list({}) == []
         assert ansible_dict_to_boto3_tag_list(None) == []
 
+    def test_ansible_dict_to_boto3_tag_list_boolean(self):
+        dict_with_bool = dict(boolean=True)
+        list_with_bool = [{"Key": "boolean", "Value": "True"}]
+        assert ansible_dict_to_boto3_tag_list(dict_with_bool) == list_with_bool
+        dict_with_bool = dict(boolean=False)
+        list_with_bool = [{"Key": "boolean", "Value": "False"}]
+        assert ansible_dict_to_boto3_tag_list(dict_with_bool) == list_with_bool
+
     # ========================================================
     #   tagging.boto3_tag_list_to_ansible_dict
     # ========================================================
@@ -138,6 +146,20 @@ class TestTagging:
         assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
         assert new_keys == keys_to_set
+        assert [] == keys_to_unset
+
+    def test_compare_aws_tags_boolean(self):
+        dict_with_bool = dict(boolean=True)
+        dict_with_text_bool = dict(boolean="True")
+        # AWS always returns tag values as strings, so we only test this way around
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool, purge_tags=False)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool, purge_tags=True)
+        assert {} == keys_to_set
         assert [] == keys_to_unset
 
     def test_compare_aws_tags_complex_update(self):
