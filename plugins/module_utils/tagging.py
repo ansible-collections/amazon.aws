@@ -101,6 +101,29 @@ def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value
     return tags_list
 
 
+def _tag_name_to_filter_key(tag_name):
+    return f"tag:{tag_name}"
+
+
+def ansible_dict_to_tag_filter_dict(tags_dict):
+    """Prepends "tag:" to all of the keys (not the values) in a dict
+    This is useful when you're then going to build a filter including the tags.
+
+    Args:
+        tags_dict (dict): Dict representing AWS resource tags.
+
+    Basic Usage:
+        >>> filters = ansible_dict_to_boto3_filter_list(ansible_dict_to_tag_filter_dict(tags))
+
+    Returns:
+        Dict: A dictionary suitable for passing to ansible_dict_to_boto3_filter_list which can
+        also be combined with other common filter parameters.
+    """
+    if not tags_dict:
+        return {}
+    return {_tag_name_to_filter_key(k): to_native(v) for k, v in tags_dict.items()}
+
+
 def boto3_tag_specifications(tags_dict, types=None):
     """Converts a list of resource types and a flat dictionary of key:value pairs representing AWS
     resource tags to a TagSpecification object.

@@ -6,6 +6,7 @@
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_tag_filter_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
@@ -35,6 +36,13 @@ class TestTagging:
             "UpperCamel": "upperCamelValue",
             "Normal case": "Normal Value",
             "lower case": "lower case value",
+        }
+
+        self.tag_filter_dict = {
+            "tag:lowerCamel": "lowerCamelValue",
+            "tag:UpperCamel": "upperCamelValue",
+            "tag:Normal case": "Normal Value",
+            "tag:lower case": "lower case value",
         }
 
         self.tag_minimal_boto3_list = [
@@ -243,3 +251,15 @@ class TestTagging:
         sorted_tag_spec = sorted(tag_specification, key=lambda i: (i["ResourceType"]))
         sorted_expected = sorted(expected_specification, key=lambda i: (i["ResourceType"]))
         assert sorted_tag_spec == sorted_expected
+
+    def test_ansible_dict_to_tag_filter_dict_empty(self):
+        assert ansible_dict_to_tag_filter_dict(None) == {}
+        assert ansible_dict_to_tag_filter_dict({}) == {}
+
+    def test_ansible_dict_to_tag_filter_dict_example(self):
+        assert ansible_dict_to_tag_filter_dict(self.tag_example_dict) == self.tag_filter_dict
+
+    def test_ansible_dict_to_tag_filter_dict_boolean(self):
+        dict_with_bool = {"boolean": True}
+        filter_dict_with_bool = {"tag:boolean": "True"}
+        assert ansible_dict_to_tag_filter_dict(dict_with_bool) == filter_dict_with_bool
