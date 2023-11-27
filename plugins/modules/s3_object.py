@@ -654,7 +654,7 @@ def path_check(path):
         return False
 
 
-def get_content_type(src):
+def guess_content_type(src):
     content_type = None
     if src:
         content_type = mimetypes.guess_type(src)[0]
@@ -747,7 +747,7 @@ def upload_s3file(
                 extra["ACL"] = permissions[0]
 
         if "ContentType" not in extra:
-            extra["ContentType"] = get_content_type(src)
+            extra["ContentType"] = guess_content_type(src)
 
         if src:
             s3.upload_file(aws_retry=True, Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
