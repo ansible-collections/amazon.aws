@@ -216,6 +216,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_a
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_tag_filter_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
@@ -318,7 +319,7 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
 
     if module.params["wait"] and not module.check_mode:
         # Wait for tags to be updated
-        filters = [{"Name": f"tag:{k}", "Values": [v]} for k, v in tags.items()]
+        filters = ansible_dict_to_boto3_filter_list(ansible_dict_to_tag_filter_dict(tags))
         handle_waiter(conn, module, "subnet_exists", {"SubnetIds": [subnet["id"]], "Filters": filters}, start_time)
 
     return changed
