@@ -358,15 +358,16 @@ options:
           min_capacity:
             description:
               - The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
-              - ACU values can be specified in in half-step increments, such as 8, 8.5, 9, and so on.
-              - The smallest possible value is 0.5.
+              - ACU values can be specified in in half-step increments, such as C(8), C(8.5), C(9), and so on.
+              - The smallest possible value is C(0.5).
             type: float
           max_capacity:
             description:
               - The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
-              - ACU values can be specified in in half-step increments, such as 40, 40.5, 41, and so on.
-              - The largest possible value is 128.
+              - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
+              - The largest possible value is C(128).
             type: float
+        version_added: 7.1.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
