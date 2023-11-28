@@ -151,6 +151,8 @@
     assert:
       that:
       - create_public_table.changed
+      - "'ec2:CreateTags' not in create_public_table.resource_actions"
+      - "'ec2:DeleteTags' not in create_public_table.resource_actions"
       - create_public_table.route_table.id.startswith('rtb-')
       - "'Public' in create_public_table.route_table.tags"
       - create_public_table.route_table.tags['Public'] == 'true'

@@ -68,6 +68,8 @@
       assert:
         that:
            - 'vpc_subnet_create'
+           - "'ec2:CreateTags' not in vpc_subnet_create.resource_actions"
+           - "'ec2:DeleteTags' not in vpc_subnet_create.resource_actions"
            - 'vpc_subnet_create.subnet.id.startswith("subnet-")'
            - '"Name" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Name"] == ec2_vpc_subnet_name'
            - '"Description" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Description"] == ec2_vpc_subnet_description'
