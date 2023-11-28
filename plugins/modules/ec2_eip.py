@@ -225,6 +225,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
@@ -342,7 +343,16 @@ def address_is_associated_with_device(ec2, module, address, device_id, is_instan
     return False
 
 
-def allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode, tag_dict=None, public_ipv4_pool=None):
+def allocate_address(
+    ec2,
+    module,
+    domain,
+    reuse_existing_ip_allowed,
+    check_mode,
+    tags,
+    search_tags=None,
+    public_ipv4_pool=None,
+):
     """Allocate a new elastic IP address (when needed) and return it"""
     if not domain:
         domain = "standard"
@@ -351,8 +361,8 @@ def allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode,
         filters = []
         filters.append({"Name": "domain", "Values": [domain]})
 
-        if tag_dict is not None:
-            filters += ansible_dict_to_boto3_filter_list(tag_dict)
+        if search_tags is not None:
+            filters += ansible_dict_to_boto3_filter_list(search_tags)
 
         try:
             all_addresses = ec2.describe_addresses(Filters=filters, aws_retry=True)
@@ -369,12 +379,26 @@ def allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode,
             return unassociated_addresses[0], False
 
     if public_ipv4_pool:
-        return allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool), True
+        return (
+            allocate_address_from_pool(
+                ec2,
+                module,
+                domain,
+                check_mode,
+                public_ipv4_pool,
+                tags,
+            ),
+            True,
+        )
+
+    params = {"Domain": domain}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="elastic-ip")
 
     try:
         if check_mode:
             return None, True
-        result = ec2.allocate_address(Domain=domain, aws_retry=True), True
+        result = ec2.allocate_address(aws_retry=True, **params), True
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't allocate Elastic IP address")
     return result
@@ -434,6 +458,7 @@ def ensure_present(
     reuse_existing_ip_allowed,
     allow_reassociation,
     check_mode,
+    tags,
     is_instance=True,
 ):
     changed = False
@@ -443,7 +468,14 @@ def ensure_present(
         if check_mode:
             return {"changed": True}
 
-        address, changed = allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode)
+        address, changed = allocate_address(
+            ec2,
+            module,
+            domain,
+            reuse_existing_ip_allowed,
+            check_mode,
+            tags,
+        )
 
     if device_id:
         # Allocate an IP for instance since no public_ip was provided
@@ -485,7 +517,14 @@ def ensure_absent(ec2, module, address, device_id, check_mode, is_instance=True)
         return release_address(ec2, module, address, check_mode)
 
 
-def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool):
+def allocate_address_from_pool(
+    ec2,
+    module,
+    domain,
+    check_mode,
+    public_ipv4_pool,
+    tags,
+):
     # type: (EC2Connection, AnsibleAWSModule, str, bool, str) -> Address
     """Overrides botocore's allocate_address function to support BYOIP"""
     if check_mode:
@@ -498,6 +537,9 @@ def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool
 
     if public_ipv4_pool is not None:
         params["PublicIpv4Pool"] = public_ipv4_pool
+
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="elastic-ip")
 
     try:
         result = ec2.allocate_address(aws_retry=True, **params)
@@ -583,7 +625,7 @@ def main():
         module.fail_json(msg=str(e))
 
     # Tags for *searching* for an EIP.
-    tag_dict = generate_tag_dict(module, tag_name, tag_value)
+    search_tags = generate_tag_dict(module, tag_name, tag_value)
 
     try:
         if device_id:
@@ -603,6 +645,7 @@ def main():
                     reuse_existing_ip_allowed,
                     allow_reassociation,
                     module.check_mode,
+                    tags,
                     is_instance=is_instance,
                 )
                 if "allocation_id" not in result:
@@ -617,7 +660,14 @@ def main():
                     }
                 else:
                     address, changed = allocate_address(
-                        ec2, module, domain, reuse_existing_ip_allowed, module.check_mode, tag_dict, public_ipv4_pool
+                        ec2,
+                        module,
+                        domain,
+                        reuse_existing_ip_allowed,
+                        module.check_mode,
+                        tags,
+                        search_tags,
+                        public_ipv4_pool,
                     )
                     if address:
                         result = {

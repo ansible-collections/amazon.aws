@@ -48,7 +48,7 @@
       tags:
         Description: Created by ansible-test
     register: vpc_2_result
-  
+
   # ============================================================
   - name: Search for internet gateway by VPC - no matches
     ec2_vpc_igw_info:
@@ -91,6 +91,8 @@
   - name: Assert creation happened (expected changed=true)
     assert:
       that:
+      - "'ec2:CreateTags' not in vpc_igw_create.resource_actions"
+      - "'ec2:DeleteTags' not in vpc_igw_create.resource_actions"
       - vpc_igw_create is changed
       - vpc_igw_create.gateway_id.startswith("igw-")
       - vpc_igw_create.vpc_id == vpc_result.vpc.id

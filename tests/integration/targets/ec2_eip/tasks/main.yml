@@ -143,6 +143,8 @@
   - assert:
       that:
       - eip is changed
+      - "'ec2:CreateTags' not in eip.resource_actions"
+      - "'ec2:DeleteTags' not in eip.resource_actions"
       - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
       - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
       - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length
