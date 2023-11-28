@@ -916,14 +916,14 @@ class ELBListeners:
             else:
                 modified_listener["DefaultActions"] = new_default_actions
 
-        new_alpn_policy = sorted(new_listener.get("AlpnPolicy", []))
+        new_alpn_policy = new_listener.get("AlpnPolicy")
         if new_alpn_policy:
             if current_listener["Protocol"] == "TLS" and new_listener["Protocol"] == "TLS":
                 current_alpn_policy = current_listener.get("AlpnPolicy")
-                if not current_alpn_policy or sorted(current_alpn_policy) != new_alpn_policy:
-                    modified_listener["AlpnPolicy"] = new_alpn_policy
+                if not current_alpn_policy or current_alpn_policy != new_alpn_policy:
+                    modified_listener["AlpnPolicy"] = [new_alpn_policy]
             elif current_listener["Protocol"] != "TLS" and new_listener["Protocol"] == "TLS":
-                modified_listener["AlpnPolicy"] = new_alpn_policy
+                modified_listener["AlpnPolicy"] = [new_alpn_policy]
 
         if modified_listener:
             return modified_listener

@@ -185,10 +185,9 @@ class TestELBListeners:
     @pytest.mark.parametrize(
         "current_alpn,new_alpn",
         [
-            (None, ["None"]),
-            (None, ["HTTP1Only", "HTTP2Only"]),
-            (["HTTP1Only"], []),
-            (["HTTP1Only", "HTTP2Only"], ["HTTP2Only", "HTTP1Only"]),
+            (None, "None"),
+            (None, "HTTP1Only"),
+            ("HTTP1Only", "HTTP2Only"),
         ],
     )
     def test__compare_listener_alpn_policy(self, current_protocol, current_alpn, new_alpn):
@@ -197,11 +196,9 @@ class TestELBListeners:
         result = None
         if current_protocol != "TLS":
             result = {"Protocol": "TLS"}
-        if new_alpn and any(
-            (current_protocol != "TLS", not current_alpn, current_alpn and sorted(current_alpn) != sorted(new_alpn))
-        ):
+        if new_alpn and any((current_protocol != "TLS", not current_alpn, current_alpn and current_alpn != new_alpn)):
             result = result or {}
-            result["AlpnPolicy"] = sorted(new_alpn)
+            result["AlpnPolicy"] = [new_alpn]
 
         assert result == elbv2.ELBListeners._compare_listener(current_listener, new_listener)
 
