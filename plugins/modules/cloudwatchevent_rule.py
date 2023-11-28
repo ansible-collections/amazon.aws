@@ -203,6 +203,7 @@ def _format_json(json_string):
     except json.decoder.JSONDecodeError:
         return str(json.dumps(json_string))
 
+
 def _validate_json(s):
     try:
         json.loads(s)
@@ -210,9 +211,11 @@ def _validate_json(s):
     except json.JSONDecodeError:
         return False
 
+
 def _snakify(dict):
     """Converts camel case to snake case"""
     return camel_dict_to_snake_dict(dict)
+
 
 class CloudWatchEventRule:
     def __init__(
@@ -351,8 +354,6 @@ class CloudWatchEventRule:
                     target_request["InputTransformer"]["InputPathsMap"] = target["input_transformer"]["input_paths_map"]
             targets_request.append(target_request)
         return targets_request
-
-
 
 
 class CloudWatchEventRuleManager:
