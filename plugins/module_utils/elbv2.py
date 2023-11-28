@@ -769,6 +769,9 @@ class ELBListeners:
                 dict((x, listener_dict[x]) for x in listener_dict if listener_dict[x] is not None)
                 for listener_dict in listeners
             ]
+            # AlpnPolicy is set as str into input but API is expected a list
+            # Transform a single item into a list of one element
+            listeners = self._ensure_listeners_alpn_policy(listeners)
         self.listeners = self._ensure_listeners_default_action_has_arn(listeners)
         self.current_listeners = self._get_elb_listeners()
         self.purge_listeners = module.params.get("purge_listeners")
@@ -798,6 +801,16 @@ class ELBListeners:
             )["Listeners"]
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
+
+    @staticmethod
+    def _ensure_listeners_alpn_policy(listeners):
+        result = []
+        for l in listeners:
+            update_listener = deepcopy(l)
+            if "AlpnPolicy" in l:
+                update_listener["AlpnPolicy"] = [update_listener["AlpnPolicy"]]
+            result.append(update_listener)
+        return result
 
     def _ensure_listeners_default_action_has_arn(self, listeners):
         """
@@ -920,10 +933,10 @@ class ELBListeners:
         if new_alpn_policy:
             if current_listener["Protocol"] == "TLS" and new_listener["Protocol"] == "TLS":
                 current_alpn_policy = current_listener.get("AlpnPolicy")
-                if not current_alpn_policy or current_alpn_policy != new_alpn_policy:
-                    modified_listener["AlpnPolicy"] = [new_alpn_policy]
+                if not current_alpn_policy or current_alpn_policy[0] != new_alpn_policy[0]:
+                    modified_listener["AlpnPolicy"] = new_alpn_policy
             elif current_listener["Protocol"] != "TLS" and new_listener["Protocol"] == "TLS":
-                modified_listener["AlpnPolicy"] = [new_alpn_policy]
+                modified_listener["AlpnPolicy"] = new_alpn_policy
 
         if modified_listener:
             return modified_listener

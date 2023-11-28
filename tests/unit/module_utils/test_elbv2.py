@@ -191,8 +191,8 @@ class TestELBListeners:
         ],
     )
     def test__compare_listener_alpn_policy(self, current_protocol, current_alpn, new_alpn):
-        current_listener = self.createListener(protocol=current_protocol, alpnPolicy=current_alpn)
-        new_listener = self.createListener(protocol="TLS", alpnPolicy=new_alpn)
+        current_listener = self.createListener(protocol=current_protocol, alpnPolicy=[current_alpn])
+        new_listener = self.createListener(protocol="TLS", alpnPolicy=[new_alpn])
         result = None
         if current_protocol != "TLS":
             result = {"Protocol": "TLS"}
@@ -286,3 +286,8 @@ class TestELBListeners:
         if not are_equals:
             expected = {"Port": new_port}
         assert result == expected
+
+    def test_ensure_listeners_alpn_policy(self):
+        listeners = [{"Port": self.DEFAULT_PORT, "AlpnPolicy": "HTTP2Optional"}]
+        expected = [{"Port": self.DEFAULT_PORT, "AlpnPolicy": ["HTTP2Optional"]}]
+        assert expected == elbv2.ELBListeners._ensure_listeners_alpn_policy(listeners)
