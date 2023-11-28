@@ -857,7 +857,8 @@ class ELBListeners:
 
         return listeners_to_add, listeners_to_modify, listeners_to_delete
 
-    def _compare_listener(self, current_listener, new_listener):
+    @staticmethod
+    def _compare_listener(current_listener, new_listener):
         """
         Compare two listeners.
 
@@ -876,43 +877,53 @@ class ELBListeners:
         if current_listener["Protocol"] != new_listener["Protocol"]:
             modified_listener["Protocol"] = new_listener["Protocol"]
 
-        # If Protocol is HTTPS, check additional attributes
-        if current_listener["Protocol"] == "HTTPS" and new_listener["Protocol"] == "HTTPS":
-            # Cert
-            if current_listener["SslPolicy"] != new_listener["SslPolicy"]:
-                modified_listener["SslPolicy"] = new_listener["SslPolicy"]
-            if (
-                current_listener["Certificates"][0]["CertificateArn"]
-                != new_listener["Certificates"][0]["CertificateArn"]
+        # If Protocol is HTTPS or TLS, check additional attributes
+        # SslPolicy
+        new_ssl_policy = new_listener.get("SslPolicy")
+        if new_ssl_policy and new_listener["Protocol"] in ("HTTPS", "TLS"):
+            current_ssl_policy = current_listener.get("SslPolicy")
+            if not current_ssl_policy or (current_ssl_policy and current_ssl_policy != new_ssl_policy):
+                modified_listener["SslPolicy"] = new_ssl_policy
+
+        # Certificates
+        new_certificates = new_listener.get("Certificates")
+        if new_certificates and new_listener["Protocol"] in ("HTTPS", "TLS"):
+            current_certificates = current_listener.get("Certificates")
+            if not current_certificates or (
+                current_certificates
+                and current_certificates[0]["CertificateArn"] != new_certificates[0]["CertificateArn"]
             ):
-                modified_listener["Certificates"] = []
-                modified_listener["Certificates"].append({})
-                modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0][
-                    "CertificateArn"
-                ]
-        elif current_listener["Protocol"] != "HTTPS" and new_listener["Protocol"] == "HTTPS":
-            modified_listener["SslPolicy"] = new_listener["SslPolicy"]
-            modified_listener["Certificates"] = []
-            modified_listener["Certificates"].append({})
-            modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0]["CertificateArn"]
+                modified_listener["Certificates"] = [{"CertificateArn": new_certificates[0]["CertificateArn"]}]
 
         # Default action
 
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
-        if len(current_listener["DefaultActions"]) == len(new_listener["DefaultActions"]):
-            current_actions_sorted = _sort_actions(current_listener["DefaultActions"])
-            new_actions_sorted = _sort_actions(new_listener["DefaultActions"])
+        current_default_actions = current_listener.get("DefaultActions")
+        new_default_actions = new_listener.get("DefaultActions")
+        if new_default_actions:
+            if current_default_actions and len(current_default_actions) == len(new_default_actions):
+                current_actions_sorted = _sort_actions(current_default_actions)
+                new_actions_sorted = _sort_actions(new_default_actions)
 
-            new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
+                new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
-                _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
-            ]:
-                modified_listener["DefaultActions"] = new_listener["DefaultActions"]
-        # If the action lengths are different, then replace with the new actions
-        else:
-            modified_listener["DefaultActions"] = new_listener["DefaultActions"]
+                if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
+                    _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
+                ]:
+                    modified_listener["DefaultActions"] = new_default_actions
+            # If the action lengths are different, then replace with the new actions
+            else:
+                modified_listener["DefaultActions"] = new_default_actions
+
+        new_alpn_policy = sorted(new_listener.get("AlpnPolicy", []))
+        if new_alpn_policy:
+            if current_listener["Protocol"] == "TLS" and new_listener["Protocol"] == "TLS":
+                current_alpn_policy = current_listener.get("AlpnPolicy")
+                if not current_alpn_policy or sorted(current_alpn_policy) != new_alpn_policy:
+                    modified_listener["AlpnPolicy"] = new_alpn_policy
+            elif current_listener["Protocol"] != "TLS" and new_listener["Protocol"] == "TLS":
+                modified_listener["AlpnPolicy"] = new_alpn_policy
 
         if modified_listener:
             return modified_listener
