@@ -68,8 +68,26 @@
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
-        metadata: "Content-Type=text/plain"
         object: delete.txt
+        tags:
+            "lowercase spaced": "hello cruel world"
+            "Title Case": "Hello Cruel World"
+      retries: 3
+      delay: 3
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.msg == "PUT operation complete"
+
+    - name: test putting an object in the bucket with metadata set
+      s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: put
+        src: "{{ remote_tmp_dir }}/upload.txt"
+        metadata: "Content-Type=text/plain"
+        object: delete-meta.txt
         tags:
             "lowercase spaced": "hello cruel world"
             "Title Case": "Hello Cruel World"
