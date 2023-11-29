@@ -81,25 +81,6 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
-    - name: test putting an object in the bucket with metadata set
-      s3_object:
-        bucket: "{{ bucket_name }}"
-        mode: put
-        src: "{{ remote_tmp_dir }}/upload.txt"
-        metadata: "Content-Type=text/plain"
-        object: delete-meta.txt
-        tags:
-            "lowercase spaced": "hello cruel world"
-            "Title Case": "Hello Cruel World"
-      retries: 3
-      delay: 3
-      register: result
-
-    - assert:
-        that:
-          - result is changed
-          - result.msg == "PUT operation complete"
-
     - name: List keys
       amazon.aws.s3_object_info:
         bucket_name: "{{ bucket_name }}"
@@ -476,6 +457,34 @@
         that:
           - "'Object deleted from bucket' in result.msg"
           - result is changed
+
+    - name: test putting an object in the bucket with metadata set
+      s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: put
+        src: "{{ remote_tmp_dir }}/upload.txt"
+        metadata: "Content-Type=text/plain"
+        object: delete_meta.txt
+        tags:
+            "lowercase spaced": "hello cruel world"
+            "Title Case": "Hello Cruel World"
+      retries: 3
+      delay: 3
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.msg == "PUT operation complete"
+
+    - name: test delobj to just delete an object in the bucket
+      s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: delobj
+        object: delete_meta.txt
+      retries: 3
+      delay: 3
+      register: result
 
     - name: test putting an encrypted object in the bucket
       s3_object:
