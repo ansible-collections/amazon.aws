@@ -68,6 +68,7 @@
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
+        metadata: "Content-Type=text/plain"
         object: delete.txt
         tags:
             "lowercase spaced": "hello cruel world"
