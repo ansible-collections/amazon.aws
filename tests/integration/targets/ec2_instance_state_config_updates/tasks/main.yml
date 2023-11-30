@@ -33,7 +33,7 @@
           - '"instances" in create_result'
           - '"instance_ids" in create_result'
           - '"spec" in create_result'
-          - create_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+          - create_result.instances[0].security_groups[0].group_id == sg.group_id
           - create_result.spec.DisableApiTermination == False
 
     - name: Change sg and termination protection while instance is in state running
@@ -58,7 +58,7 @@
           - '"instance_ids" in change_params_result'
           - '"changes" in change_params_result'
           - change_params_result.changes[0].DisableApiTermination.Value == True
-          - change_params_result.changes[1].Groups[0] == "{{ sg2.group_id }}"
+          - change_params_result.changes[1].Groups[0] == sg2.group_id
 
     - name: Verify security groups were updated (can take time to complete)
       amazon.aws.ec2_instance_info:
@@ -91,7 +91,7 @@
           - '"changes" in change_state_params_result'
           - '"stop_success" in change_state_params_result'
           - '"stop_failed" in change_state_params_result'
-          - change_state_params_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+          - change_state_params_result.instances[0].security_groups[0].group_id == sg.group_id
           - change_state_params_result.changes[0].DisableApiTermination.Value == False
 
     - name: Change sg and termination protection while instance is in state stopped
@@ -115,7 +115,7 @@
           - '"instances" in change_params_stopped_result'
           - '"instance_ids" in change_params_stopped_result'
           - '"changes" in change_params_stopped_result'
-          - change_params_stopped_result.instances[0].security_groups[0].group_id == "{{ sg2.group_id }}"
+          - change_params_stopped_result.instances[0].security_groups[0].group_id == sg2.group_id
           - change_params_stopped_result.changes[0].DisableApiTermination.Value == True
 
     - name: Change instance state from stopped to running, and change sg and termination protection
@@ -142,5 +142,5 @@
           - '"changes" in change_params_start_result'
           - '"start_success" in change_params_start_result'
           - '"start_failed" in change_params_start_result'
-          - change_params_start_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
+          - change_params_start_result.instances[0].security_groups[0].group_id == sg.group_id
           - change_params_start_result.changes[0].DisableApiTermination.Value == False

@@ -73,7 +73,7 @@
       - elb_create_result is changed
       - elb_create_result.elb.status == "created"
       - elb_create_result.load_balancer | length == 0
-      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+      - 'elasticloadbalancing:CreateLoadBalancer' not in elb_create_result.resource_actions
 
 - name: Create a classic ELB with https method listeners
   amazon.aws.elb_classic_lb: "{{ elb_definition }}"
@@ -83,7 +83,7 @@
       - elb_create_result is changed
       - elb_create_result.elb.status == "created"
       - elb_create_result.load_balancer | length != 0
-      - "'elasticloadbalancing:CreateLoadBalancer' in {{ elb_create_result.resource_actions }}"
+      - 'elasticloadbalancing:CreateLoadBalancer' in elb_create_result.resource_actions
 
 - name: Create a classic ELB with https method listeners - idempotency - check_mode
   amazon.aws.elb_classic_lb: "{{ elb_definition }}"
@@ -95,7 +95,7 @@
       - elb_create_result.elb.status != "created"
       - elb_create_result.elb.status == "exists"
       - elb_create_result.load_balancer | length != 0
-      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+      - 'elasticloadbalancing:CreateLoadBalancer' not in elb_create_result.resource_actions
 
 - name: Create a classic ELB with https method listeners - idempotency
   amazon.aws.elb_classic_lb: "{{ elb_definition }}"
@@ -106,7 +106,7 @@
       - elb_create_result.elb.status != "created"
       - elb_create_result.elb.status == "exists"
       - elb_create_result.load_balancer | length != 0
-      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+      - 'elasticloadbalancing:CreateLoadBalancer' not in elb_create_result.resource_actions
 
 # Remove ELB and certificate created during this test
 

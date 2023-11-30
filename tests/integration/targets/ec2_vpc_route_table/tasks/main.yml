@@ -157,7 +157,7 @@
       - "'Public' in create_public_table.route_table.tags"
       - create_public_table.route_table.tags['Public'] == 'true'
       - create_public_table.route_table.associations | length == 0
-      - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
+      - create_public_table.route_table.vpc_id == vpc.vpc.id
       - create_public_table.route_table.propagating_vgws | length == 0
       # One route for IPv4, one route for IPv6
       - create_public_table.route_table.routes | length == 2
@@ -190,7 +190,7 @@
       - "'Public' in create_public_table.route_table.tags"
       - create_public_table.route_table.tags['Public'] == 'true'
       - create_public_table.route_table.associations | length == 0
-      - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
+      - create_public_table.route_table.vpc_id == vpc.vpc.id
       - create_public_table.route_table.propagating_vgws | length == 0
       - create_public_table.route_table.routes | length == 2
 
@@ -237,7 +237,7 @@
       # Amazon-provide IPv6 block
       - add_routes.route_table.routes | length == 4
       - add_routes.route_table.associations | length == 0
-      - add_routes.route_table.vpc_id == "{{ vpc.vpc.id }}"
+      - add_routes.route_table.vpc_id == vpc.vpc.id
       - add_routes.route_table.propagating_vgws | length == 0
 
   - name: CHECK MODE - re-add route to public route table
@@ -1013,7 +1013,7 @@
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1057,7 +1057,7 @@
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1099,7 +1099,7 @@
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1138,7 +1138,7 @@
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1175,7 +1175,7 @@
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1219,7 +1219,7 @@
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1261,7 +1261,7 @@
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1308,7 +1308,7 @@
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 2
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1345,7 +1345,7 @@
         - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 2
-        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 

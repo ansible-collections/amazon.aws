@@ -53,10 +53,10 @@
       that:
         - cpu_options_update is success
         - cpu_options_update is not changed
-        - "{{ presented_instance_fact.instances | length }} > 0"
-        - "'{{ presented_instance_fact.instances.0.state.name }}' in ['running','pending']"
-        - "{{ presented_instance_fact.instances.0.cpu_options.core_count }} == 1"
-        - "{{ presented_instance_fact.instances.0.cpu_options.threads_per_core }} == 1"
+        - presented_instance_fact.instances | length > 0
+        - presented_instance_fact.instances.0.state.name in ['running','pending']
+        - presented_instance_fact.instances.0.cpu_options.core_count == 1
+        - presented_instance_fact.instances.0.cpu_options.threads_per_core == 1
 
   - name: "create t3.nano instance with cpu_options(check mode)"
     ec2_instance:
@@ -82,4 +82,4 @@
   - name: "Confirm existence of instance id."
     assert:
       that:
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - checkmode_instance_fact.instances | length == 0

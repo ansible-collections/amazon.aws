@@ -53,8 +53,8 @@
   - assert:
       that:
       - result.changed
-      - result.db_instance_identifier == "{{ instance_id }}"
-      - result.db_snapshot_identifier == "{{ snapshot_id }}"
+      - result.db_instance_identifier == instance_id
+      - result.db_snapshot_identifier == snapshot_id
 
     # ------------------------------------------------------------------------------------------
     # Test restoring db from snapshot
@@ -85,9 +85,9 @@
   - assert:
       that:
       - result.changed
-      - result.db_instance_identifier == "{{ snapshot_id }}"
+      - result.db_instance_identifier == snapshot_id
       - result.tags | length == 2
-      - result.tags.Name == "{{ instance_id }}"
+      - result.tags.Name == instance_id
       - result.tags.Created_by == 'Ansible rds_instance tests'
       - result.db_instance_status == 'available'
 
@@ -117,9 +117,9 @@
   - assert:
       that:
       - not result.changed
-      - result.db_instance_identifier == "{{ snapshot_id }}"
+      - result.db_instance_identifier == snapshot_id
       - result.tags | length == 2
-      - result.tags.Name == "{{ instance_id }}"
+      - result.tags.Name == instance_id
       - result.tags.Created_by == 'Ansible rds_instance tests'
       - result.db_instance_status == 'available'
 

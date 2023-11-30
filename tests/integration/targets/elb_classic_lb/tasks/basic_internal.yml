@@ -234,7 +234,7 @@
       assert:
         that:
           - result is changed
-          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.name == elb_name'
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely
@@ -248,7 +248,7 @@
       assert:
         that:
           - result is changed
-          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.name == elb_name'
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely (idempotency) (check_mode)
@@ -263,7 +263,7 @@
       assert:
         that:
           - result is not changed
-          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.name == elb_name'
           - 'result.elb.status == "gone"'
 
     - name: remove the test load balancer completely (idempotency)
@@ -277,7 +277,7 @@
       assert:
         that:
           - result is not changed
-          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.name == elb_name'
           - 'result.elb.status == "gone"'
 
   always:

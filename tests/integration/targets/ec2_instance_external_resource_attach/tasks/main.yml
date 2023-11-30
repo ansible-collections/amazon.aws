@@ -57,7 +57,7 @@
 
   - assert:
       that:
-        - 'in_test_vpc_instance.instances.0.key_name == "{{ resource_prefix }}_test_key"'
+        - in_test_vpc_instance.instances.0.key_name == resource_prefix+"_test_key"
         - '(in_test_vpc_instance.instances.0.network_interfaces | length) == 1'
 
   - name: "Add a second interface (check_mode=true)"
@@ -90,7 +90,7 @@
   - name: Validate that only 1 ENI is attached to instance as we run using check_mode=true
     assert:
       that:
-        - 'in_test_vpc_instance.instances.0.key_name == "{{ resource_prefix }}_test_key"'
+        - 'in_test_vpc_instance.instances.0.key_name == resource_prefix+"_test_key"'
         - '(in_test_vpc_instance.instances.0.network_interfaces | length) == 1'
 
   - name: "Add a second interface"
@@ -122,7 +122,7 @@
       - name: Validate that only 1 ENI is attached to instance as we run using check_mode=true
         assert:
           that:
-            - 'in_test_vpc_instance.instances.0.key_name == "{{ resource_prefix }}_test_key"'
+            - 'in_test_vpc_instance.instances.0.key_name == resource_prefix+"_test_key"'
             - '(in_test_vpc_instance.instances.0.network_interfaces | length) == 2'
 
     when: add_interface is successful
@@ -157,5 +157,5 @@
   - name: "Confirm existence of instance id."
     assert:
       that:
-        - "{{ presented_instance_fact.instances | length }} > 0"
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - presented_instance_fact.instances | length > 0
+        - checkmode_instance_fact.instances | length == 0

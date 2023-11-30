@@ -26,7 +26,7 @@
   - assert:
       that:
       - _result_create_instance.changed
-      - _result_create_instance.db_instance_identifier == "{{ instance_id }}"
+      - _result_create_instance.db_instance_identifier == instance_id
 
   - name: Get all RDS snapshots for the existing instance
     rds_snapshot_info:
@@ -64,20 +64,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -116,20 +116,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -150,8 +150,8 @@
   - assert:
       that:
       - _result_instance_snapshot_info is successful
-      - _result_instance_snapshot_info.snapshots[0].db_instance_identifier == "{{ instance_id }}"
-      - _result_instance_snapshot_info.snapshots[0].db_snapshot_identifier == "{{ snapshot_id }}"
+      - _result_instance_snapshot_info.snapshots[0].db_instance_identifier == instance_id
+      - _result_instance_snapshot_info.snapshots[0].db_snapshot_identifier == snapshot_id
 
   - name: Take another snapshot of the existing RDS instance
     rds_instance_snapshot:
@@ -167,20 +167,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-b"
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -262,20 +262,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-b"
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -287,7 +287,7 @@
       - _result_instance_snapshot.storage_type == "gp2"
       - "'tags' in _result_instance_snapshot"
       - _result_instance_snapshot.tags | length == 2
-      - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
       - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
       - "'vpc_id' in _result_instance_snapshot"
 
@@ -322,20 +322,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-b"
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -347,7 +347,7 @@
       - _result_instance_snapshot.storage_type == "gp2"
       - "'tags' in _result_instance_snapshot"
       - _result_instance_snapshot.tags | length == 2
-      - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
       - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
       - "'vpc_id' in _result_instance_snapshot"
 
@@ -367,20 +367,20 @@
       - "'availability_zone' in _result_instance_snapshot"
       - "'instance_create_time' in _result_instance_snapshot"
       - "'db_instance_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
+      - _result_instance_snapshot.db_instance_identifier == instance_id
       - "'db_snapshot_identifier' in _result_instance_snapshot"
-      - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-b"
+      - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-b"
       - "'db_snapshot_arn' in _result_instance_snapshot"
       - "'dbi_resource_id' in _result_instance_snapshot"
       - "'encrypted' in _result_instance_snapshot"
       - "'engine' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine == "{{ engine }}"
+      - _result_instance_snapshot.engine == engine
       - "'engine_version' in _result_instance_snapshot"
-      - _result_instance_snapshot.engine_version == "{{ mariadb_engine_version }}"
+      - _result_instance_snapshot.engine_version == mariadb_engine_version
       - "'iam_database_authentication_enabled' in _result_instance_snapshot"
       - "'license_model' in _result_instance_snapshot"
       - "'master_username' in _result_instance_snapshot"
-      - _result_instance_snapshot.master_username == "{{ username }}"
+      - _result_instance_snapshot.master_username == username
       - "'snapshot_create_time' in _result_instance_snapshot"
       - "'snapshot_type' in _result_instance_snapshot"
       - "'status' in _result_instance_snapshot"
@@ -392,9 +392,9 @@
       - _result_instance_snapshot.storage_type == "gp2"
       - "'tags' in _result_instance_snapshot"
       - _result_instance_snapshot.tags | length == 3
-      - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
       - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-      - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
       - "'vpc_id' in _result_instance_snapshot"
 
   - name: Take another snapshot of the existing RDS instance and do not specify any tag to ensure previous tags are not removed
@@ -440,14 +440,14 @@
   - assert:
       that:
         - _result_instance_snapshot.changed
-        - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
-        - _result_instance_snapshot.source_db_snapshot_identifier == "{{ _snapshot_arn }}"
-        - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - _result_instance_snapshot.db_instance_identifier == instance_id
+        - _result_instance_snapshot.source_db_snapshot_identifier == _snapshot_arn
+        - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-copy"
         - "'tags' in _result_instance_snapshot"
         - _result_instance_snapshot.tags | length == 3
-        - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
         - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-        - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+        - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
   - name: Copy a snapshot (idempotence - check mode)
     rds_instance_snapshot:
@@ -473,14 +473,14 @@
   - assert:
       that:
         - not _result_instance_snapshot.changed
-        - _result_instance_snapshot.db_instance_identifier == "{{ instance_id }}"
-        - _result_instance_snapshot.source_db_snapshot_identifier == "{{ _snapshot_arn }}"
-        - _result_instance_snapshot.db_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - _result_instance_snapshot.db_instance_identifier == instance_id
+        - _result_instance_snapshot.source_db_snapshot_identifier == _snapshot_arn
+        - _result_instance_snapshot.db_snapshot_identifier == snapshot_id+"-copy"
         - "'tags' in _result_instance_snapshot"
         - _result_instance_snapshot.tags | length == 3
-        - _result_instance_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
         - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-        - _result_instance_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+        - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
   always:
   - name: Delete the existing DB instance snapshots

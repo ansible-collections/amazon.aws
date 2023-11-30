@@ -154,7 +154,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -163,7 +163,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in new_rds_mysql_option_group"
@@ -200,15 +200,15 @@
       - option_groups_result is successful
       - (option_groups_result.result | length) == 1
       - "'engine_name' in option_groups_list"
-      - option_groups_list.engine_name == "{{ engine_name }}"
+      - option_groups_list.engine_name == engine_name
       - "'major_engine_version' in option_groups_list"
-      - option_groups_list.major_engine_version == "{{ major_engine_version }}"
+      - option_groups_list.major_engine_version == major_engine_version
       - "'option_group_arn' in option_groups_list"
       - "'option_group_description' in option_groups_list"
       - option_groups_list.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in option_groups_list"
-      - option_groups_list.option_group_name == "{{ option_group_name }}"
+      - option_groups_list.option_group_name == option_group_name
       - "'vpc_id' in option_groups_list"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in option_groups_list"
@@ -256,7 +256,7 @@
       that:
       - not new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -265,7 +265,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in new_rds_mysql_option_group"
@@ -313,7 +313,7 @@
       that:
       - not new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -322,7 +322,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in new_rds_mysql_option_group"
@@ -385,7 +385,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -394,7 +394,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in new_rds_mysql_option_group"
@@ -426,15 +426,15 @@
       - option_groups_result is successful
       - (option_groups_result.result | length) == 1
       - "'engine_name' in option_groups_list"
-      - option_groups_list.engine_name == "{{ engine_name }}"
+      - option_groups_list.engine_name == engine_name
       - "'major_engine_version' in option_groups_list"
-      - option_groups_list.major_engine_version == "{{ major_engine_version }}"
+      - option_groups_list.major_engine_version == major_engine_version
       - "'option_group_arn' in option_groups_list"
       - "'option_group_description' in option_groups_list"
       - option_groups_list.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in option_groups_list"
-      - option_groups_list.option_group_name == "{{ option_group_name }}"
+      - option_groups_list.option_group_name == option_group_name
       - "'vpc_id' in option_groups_list"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'options' in option_groups_list"
@@ -483,7 +483,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -492,7 +492,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
@@ -540,7 +540,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -549,13 +549,13 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.tags | length) == 2
-      - new_rds_mysql_option_group.tags["tag_one"] == "{{ option_group_name }} One"
-      - new_rds_mysql_option_group.tags["Tag Two"] == "two {{ option_group_name }}"
+      - new_rds_mysql_option_group.tags["tag_one"] == option_group_name+" One"
+      - new_rds_mysql_option_group.tags["Tag Two"] == "two +option_group_name
       - "'options' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.options | length) > 0
       - "'option_name' in option"
@@ -602,7 +602,7 @@
       that:
       - not new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -611,13 +611,13 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.tags | length) == 2
-      - new_rds_mysql_option_group.tags["tag_one"] == "{{ option_group_name }} One"
-      - new_rds_mysql_option_group.tags["Tag Two"] == "two {{ option_group_name }}"
+      - new_rds_mysql_option_group.tags["tag_one"] == option_group_name+" One"
+      - new_rds_mysql_option_group.tags["Tag Two"] == "two +option_group_name
       - "'options' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.options | length) > 0
       - "'option_name' in option"
@@ -664,7 +664,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -673,13 +673,13 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.tags | length) == 2
-      - new_rds_mysql_option_group.tags["tag_three"] == "{{ option_group_name }} Three"
-      - new_rds_mysql_option_group.tags["Tag Two"] == "two {{ option_group_name }}"
+      - new_rds_mysql_option_group.tags["tag_three"] == option_group_name+" Three"
+      - new_rds_mysql_option_group.tags["Tag Two"] == "two +option_group_name
       - "'options' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.options | length) > 0
       - "'option_name' in option"
@@ -726,7 +726,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -735,14 +735,14 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.tags | length) == 3
-      - new_rds_mysql_option_group.tags["Tag Two"] == "two {{ option_group_name }}"
-      - new_rds_mysql_option_group.tags["tag_one"] == "{{ option_group_name }} One"
-      - new_rds_mysql_option_group.tags["tag_three"] == "{{ option_group_name }} Three"
+      - new_rds_mysql_option_group.tags["Tag Two"] == "two +option_group_name
+      - new_rds_mysql_option_group.tags["tag_one"] == option_group_name+" One"
+      - new_rds_mysql_option_group.tags["tag_three"] == option_group_name+" Three"
       - "'options' in new_rds_mysql_option_group"
       - (new_rds_mysql_option_group.options | length) > 0
       - "'option_name' in option"
@@ -791,7 +791,7 @@
       that:
       - new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -800,7 +800,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"
@@ -851,7 +851,7 @@
       that:
       - not new_rds_mysql_option_group.changed
       - "'engine_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.engine_name == "{{ engine_name }}"
+      - new_rds_mysql_option_group.engine_name == engine_name
       - "'major_engine_version' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.major_engine_version == "{{ major_engine_version
         }}"
@@ -860,7 +860,7 @@
       - new_rds_mysql_option_group.option_group_description == "{{ option_group_description
         }}"
       - "'option_group_name' in new_rds_mysql_option_group"
-      - new_rds_mysql_option_group.option_group_name == "{{ option_group_name }}"
+      - new_rds_mysql_option_group.option_group_name == option_group_name
       - "'vpc_id' in new_rds_mysql_option_group"
       - new_rds_mysql_option_group.vpc_id == vpc_id
       - "'tags' in new_rds_mysql_option_group"

@@ -145,10 +145,10 @@
       that:
       - asg_info_replaced.results[0].desired_capacity == 3
       - asg_info_replaced.results[0].instances | length == 3
-      - "'{{ init_instance_1 }}' not in {{ asg_instance_detach_replace }}"
-      - "'{{ init_instance_2 }}' not in {{ asg_instance_detach_replace }}"
-      - "'{{ detached_instances_info.instances[0].state.name }}' == 'running'"
-      - "'{{ detached_instances_info.instances[1].state.name }}' == 'running'"
+      - init_instance_1 not in asg_instance_detach_replace
+      - init_instance_2  not in asg_instance_detach_replace
+      - detached_instances_info.instances[0].state.name == 'running'
+      - detached_instances_info.instances[1].state.name == 'running'
 
     #----------------------------------------------------------------------
 
@@ -191,11 +191,11 @@
       that:
       - asg_info_decrement.results[0].instances | length == 1
       - asg_info_decrement.results[0].desired_capacity == 1
-      - "'{{ instance_replace_1 }}' not in {{ asg_instance_detach_decrement }}"
-      - "'{{ instance_replace_2 }}' not in {{ asg_instance_detach_decrement }}"
-      - "'{{ detached_instances_info.instances[0].state.name }}' == 'running'"
-      - "'{{ detached_instances_info.instances[1].state.name }}' == 'running'"
-      - "'{{ instance_replace_3 }}' == '{{ instance_detach_decrement }}'"
+      - instance_replace_1 not in asg_instance_detach_decrement
+      - instance_replace_2 not in asg_instance_detach_decrement
+      - detached_instances_info.instances[0].state.name == 'running'
+      - detached_instances_info.instances[1].state.name == 'running'
+      - instance_replace_3 == instance_detach_decrement
 
     #----------------------------------------------------------------------
 

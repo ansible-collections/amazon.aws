@@ -23,7 +23,7 @@
         that:
           - group_info_test_setup.tags | length == 1
           - "'test' in group_info_test_setup.tags"
-          - group_info_test_setup.tags.test == "{{ resource_prefix }}_ec2_group_info_module"
+          - group_info_test_setup.tags.test == resource_prefix+"_ec2_group_info_module"
           - "'ec2:CreateTags' not in group_info_test_setup.resource_actions"
           - "'ec2:DeleteTags' not in group_info_test_setup.resource_actions"
 

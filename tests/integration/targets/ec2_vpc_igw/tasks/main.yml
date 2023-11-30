@@ -36,7 +36,7 @@
       - vpc_result.vpc.state == 'available'
       - '"tags" in vpc_result.vpc'
       - vpc_result.vpc.tags | length == 2
-      - vpc_result.vpc.tags["Name"] == "{{ resource_prefix }}-vpc"
+      - vpc_result.vpc.tags["Name"] == resource_prefix+"-vpc"
       - vpc_result.vpc.tags["Description"] == "Created by ansible-test"
 
   # ============================================================
