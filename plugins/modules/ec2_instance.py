@@ -1563,6 +1563,7 @@ def diff_instance_and_params(instance, params, skip=None):
     param_mappings = [
         ParamMapper("ebs_optimized", "EbsOptimized", "ebsOptimized", value_wrapper),
         ParamMapper("termination_protection", "DisableApiTermination", "disableApiTermination", value_wrapper),
+        ParamMapper('instance_type', 'InstanceType', 'instanceType', value_wrapper)
         # user data is an immutable property
         # ParamMapper('user_data', 'UserData', 'userData', value_wrapper),
     ]
