@@ -107,7 +107,7 @@
 
     - assert:
         that:
-        - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for Auto Scaling group {{ resource_prefix }}-asg' in result.msg"
+        - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for Auto Scaling group ' ~ resource_prefix ~ '-asg' in result.msg"
 
     - name: test starting a refresh with a valid ASG name - check_mode
       autoscaling_instance_refresh:
@@ -323,7 +323,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes|length }} == 0"
+          - output.instance_refreshes | length == 0
 
     - name: test using a real refresh ID
       autoscaling_instance_refresh_info:
@@ -334,7 +334,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes |length }} == 1"
+          - output.instance_refreshes | length == 1
 
     - name: test getting info for an ASG name which doesn't exist
       autoscaling_instance_refresh_info:
@@ -354,7 +354,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes|length }} == 7"
+          - output.instance_refreshes | length == 7
 
     - name: assert that valid message with fake-token is returned
       autoscaling_instance_refresh_info:
@@ -376,7 +376,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes|length }} < 2"
+          - output.instance_refreshes | length < 2
 
     - name: assert that valid message with real-token is returned
       autoscaling_instance_refresh_info:
@@ -387,7 +387,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes|length }} == 7"
+          - output.instance_refreshes | length == 7
 
     - name: test using both real nextToken and max_records=1
       autoscaling_instance_refresh_info:
@@ -399,7 +399,7 @@
 
     - assert:
         that:
-          - "{{ output.instance_refreshes|length }} == 1"
+          - output.instance_refreshes | length == 1
 
   always:
 
