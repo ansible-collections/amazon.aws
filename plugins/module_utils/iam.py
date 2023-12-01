@@ -98,7 +98,7 @@ def convert_managed_policy_names_to_arns(client, policy_names):
     try:
         return [allpolicies[policy] for policy in policy_names if policy is not None]
     except KeyError as e:
-        raise AnsibleIAMError(message="Failed to find policy by name:" +str(e))
+        raise AnsibleIAMError(message="Failed to find policy by name:" + str(e))
 
 
 def get_aws_account_id(module):
