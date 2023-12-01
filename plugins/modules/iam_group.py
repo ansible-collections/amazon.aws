@@ -202,6 +202,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -246,7 +247,7 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
         return False
 
     if managed_policies:
-        managed_policies = convert_managed_policy_names_to_arns(connection, module, managed_policies)
+        managed_policies = convert_managed_policy_names_to_arns(connection, managed_policies)
 
     group_name = group_info["Group"]["GroupName"]
 
@@ -461,10 +462,15 @@ def main():
 
     state = module.params.get("state")
 
-    if state == "present":
-        create_or_update_group(connection, module)
-    else:
-        destroy_group(connection, module)
+    try:
+        if state == "present":
+            create_or_update_group(connection, module)
+        else:
+            destroy_group(connection, module)
+    except AnsibleIAMError as e:
+        if e.exception:
+            module.fail_json_aws(e.exception, msg=e.message)
+        module.fail_json(msg=e.message)
 
 
 if __name__ == "__main__":

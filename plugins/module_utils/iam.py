@@ -79,18 +79,18 @@ def _list_managed_policies(client, **kwargs):
     return paginator.paginate(**kwargs).build_full_result()
 
 
-def list_managed_policies(client, module):
+def list_managed_policies(client):
     try:
         return _list_managed_policies(client)["Policies"]
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to list all managed policies")
+        raise AnsibleIAMError(message="Failed to list all managed policies", exception=e)
 
 
-def convert_managed_policy_names_to_arns(client, module, policy_names):
+def convert_managed_policy_names_to_arns(client, policy_names):
     if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
-    policies = list_managed_policies(client, module)
+    policies = list_managed_policies(client)
 
     for policy in policies:
         allpolicies[policy["PolicyName"]] = policy["Arn"]
@@ -98,7 +98,7 @@ def convert_managed_policy_names_to_arns(client, module, policy_names):
     try:
         return [allpolicies[policy] for policy in policy_names if policy is not None]
     except KeyError as e:
-        module.fail_json(msg="Couldn't find polic: " + str(e))
+        raise AnsibleIAMError(message="Failed to find policy by name:" +str(e))
 
 
 def get_aws_account_id(module):
