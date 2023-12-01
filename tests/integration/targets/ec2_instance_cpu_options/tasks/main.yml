@@ -82,4 +82,61 @@
   - name: "Confirm existence of instance id."
     assert:
       that:
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - checkmode_instance_fact.instances | length == 0
+
+  - name: "create t3.nano instance"
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-test-t3nano-latest-t3micro"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      wait: true
+
+  - name: "fact ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-test-t3nano-latest-t3micro"
+    register: checkmode_instance_fact
+
+  - name: "Confirm existence of instance id."
+    assert:
+      that:
+        - checkmode_instance_fact.instances | length == 1
+
+  - name: "stopp instance"
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-test-t3nano-latest-t3micro"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      wait: true
+    register: stopped_instance
+
+  - name: "Confirm instance is stopped"
+    assert:
+      that:
+        - stopped_instance.instances[0].msg == 'Instances stopped'
+
+  - name: "start instance as t3.micro"
+    ec2_instance:
+      state: stopped
+      name: "{{ resource_prefix }}-test-t3nano-latest-t3micro"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.micro
+      wait: true
+    register: micro_instance
+
+  - name: "Confirm new instance type"
+    assert:
+      that:
+        - micro_instance.instances[0].instance_type == 't3.micro'
+        - changes[0].InstanceType.Value == 't3.micro'
