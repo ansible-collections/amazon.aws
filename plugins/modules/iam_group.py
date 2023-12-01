@@ -19,7 +19,8 @@ options:
   name:
     description:
       - The name of the group.
-      - Note: group names are unique within an account.  Paths (I(path)) do B(not) affect
+      - >-
+        Note: group names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyGroup) and C(/Path2/MyGroup) in the same account.
     required: true
@@ -31,6 +32,7 @@ options:
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
     aliases: ['prefix', 'path_prefix']
     version_added: 7.1.0
+    type: str
   managed_policies:
     description:
       - A list of managed policy ARNs or friendly names to attach to the role.
@@ -178,7 +180,7 @@ iam_group:
         attached_policies:
             version_added: 7.1.0
             description:
-                list containing basic information about managed policies attached to the group.
+                - list containing basic information about managed policies attached to the group.
             returned: success
             type: complex
             contains:
@@ -248,8 +250,6 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
     if managed_policies:
         managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
 
-    if "GroupName" not in group_info["Group"]:
-        module.fail_json(msg="GroupName missing", group=group)
     group_name = group_info["Group"]["GroupName"]
 
     current_attached_policies_desc = get_attached_policy_list(connection, module, group_name)
