@@ -121,7 +121,7 @@
   - name: "Confirm instance is stopped"
     assert:
       that:
-        - stopped_instance.instances[0].msg == 'Instances stopped'
+        - stopped_instance.msg == 'Instances stopped'
 
   - name: "start instance as t3.micro"
     ec2_instance:
@@ -138,5 +138,5 @@
   - name: "Confirm new instance type"
     assert:
       that:
-        - micro_instance.instances[0].instance_type == 't3.micro'
-        - changes[0].InstanceType.Value == 't3.micro'
+        - micro_instance.instances.0.instance_type == 't3.micro'
+        - micro_instance.changes[0].InstanceType.Value == 't3.micro'
