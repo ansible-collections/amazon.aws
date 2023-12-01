@@ -153,7 +153,7 @@
       - "'master_username' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.master_username == username
       - "'port' in _result_create_source_db_cluster"
-      - "_result_create_source_db_cluster.port == port
+      - _result_create_source_db_cluster.port == port
       - "'status' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.status == "available"
       - "'tags' in _result_create_source_db_cluster"

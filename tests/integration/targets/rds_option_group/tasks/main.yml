@@ -202,7 +202,7 @@
       - "'engine_name' in option_groups_list"
       - option_groups_list.engine_name == engine_name
       - "'major_engine_version' in option_groups_list"
-      - option_groups_list.major_engine_version == major_engine_version
+      - (option_groups_list.major_engine_version | string) == (major_engine_version | string)
       - "'option_group_arn' in option_groups_list"
       - "'option_group_description' in option_groups_list"
       - option_groups_list.option_group_description == "{{ option_group_description
@@ -428,7 +428,7 @@
       - "'engine_name' in option_groups_list"
       - option_groups_list.engine_name == engine_name
       - "'major_engine_version' in option_groups_list"
-      - option_groups_list.major_engine_version == major_engine_version
+      - (option_groups_list.major_engine_version | string) == (major_engine_version | string)
       - "'option_group_arn' in option_groups_list"
       - "'option_group_description' in option_groups_list"
       - option_groups_list.option_group_description == "{{ option_group_description

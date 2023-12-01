@@ -821,7 +821,7 @@
       that:
       - alb is changed
       - alb.listeners[0].rules | length == 2
-      - '1' in +alb.listeners[0].rules | map(attribute='priority')
+      - "'1' in alb.listeners[0].rules | map(attribute='priority')"
 
   - name: Update an ALB with different listener by adding rule (idempotence) - check_mode
     elb_application_lb:
@@ -877,7 +877,7 @@
       that:
       - alb is not changed
       - alb.listeners[0].rules | length == 2
-      - '1' in +alb.listeners[0].rules | map(attribute='priority')
+      - "'1' in alb.listeners[0].rules | map(attribute='priority')"
 
     # ------------------------------------------------------------------------------------------
 
@@ -935,7 +935,7 @@
       that:
       - alb is changed
       - alb.listeners[0].rules | length == 2
-      - '2' in +alb.listeners[0].rules | map(attribute='priority')
+      - "'2' in alb.listeners[0].rules | map(attribute='priority')"
 
   - name: Update an ALB with different listener by modifying rule (idempotence) -
       check_mode
@@ -992,7 +992,7 @@
       that:
       - alb is not changed
       - alb.listeners[0].rules | length == 2
-      - '2' in +alb.listeners[0].rules | map(attribute='priority')
+      - "'2' in alb.listeners[0].rules | map(attribute='priority')"
 
     # ------------------------------------------------------------------------------------------
 
@@ -1034,7 +1034,7 @@
       that:
       - alb is changed
       - alb.listeners[0].rules | length == 1
-      - '2' not in +alb.listeners[0].rules | map(attribute='priority')
+      - "'2' not in alb.listeners[0].rules | map(attribute='priority')"
 
   - name: Update an ALB with different listener by deleting rule (idempotence) - check_mode
     elb_application_lb:
@@ -1074,7 +1074,7 @@
       that:
       - alb is not changed
       - alb.listeners[0].rules | length == 1
-      - '2' not in +alb.listeners[0].rules | map(attribute='priority')
+      - "'2' not in alb.listeners[0].rules | map(attribute='priority')"
 
     # ------------------------------------------------------------------------------------------
 
@@ -1161,7 +1161,7 @@
   - assert:
       that:
       - alb is changed
-      - alb.tags == "created_by": "ALB test" resource_prefix
+      - alb.tags == {"created_by": "ALB test" +resource_prefix}
 
   - name: Update an ALB by adding tags (idempotence) - check_mode
     elb_application_lb:
