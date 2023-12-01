@@ -243,6 +243,22 @@ def ensure_path(connection, module, group_info, path):
     return True
 
 
+def detach_policies(connection, module, group_name, policies):
+    for policy_arn in policies:
+        try:
+            connection.detach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=f"Couldn't detach policy {policy_arn} from group {group_name}")
+
+
+def attach_policies(connection, module, group_name, policies):
+    for policy_arn in policies:
+        try:
+            connection.attach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=f"Couldn't attach policy {policy_arn} to group {group_name}")
+
+
 def ensure_managed_policies(connection, module, group_info, managed_policies, purge_policies):
     if managed_policies is None:
         return False
@@ -266,20 +282,26 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
     if module.check_mode:
         return True
 
-    # Detach policies not wanted
-    for policy_arn in policies_to_remove:
-        try:
-            connection.detach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't detach policy from group {group_name}")
-    # Attach ne policies
-    for policy_arn in policies_to_add:
-        try:
-            connection.attach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't attach policy to group {group_name}")
+    detach_policies(connection, module, group_name, policies_to_remove)
+    attach_policies(connection, module, group_name, policies_to_add)
 
     return True
+
+
+def add_group_members(connection, module, group_name, members):
+    for user in members:
+        try:
+            connection.add_user_to_group(GroupName=group_name, UserName=user)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=f"Couldn't add user {user} to group {group_name}")
+
+
+def remove_group_members(connection, module, group_name, members):
+    for user in members:
+        try:
+            connection.remove_user_from_group(aws_retry=True, GroupName=group_name, UserName=user)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=f"Couldn't remove user {user} from group {group_name}")
 
 
 def ensure_group_members(connection, module, group_info, users, purge_users):
@@ -300,17 +322,8 @@ def ensure_group_members(connection, module, group_info, users, purge_users):
     if module.check_mode:
         return True
 
-    for user in members_to_remove:
-        try:
-            connection.remove_user_from_group(aws_retry=True, GroupName=group_name, UserName=user)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't remove user {user} from group {group_name}")
-
-    for user in members_to_add:
-        try:
-            connection.add_user_to_group(GroupName=group_name, UserName=user)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't add user {user} to group {group_name}")
+    add_group_members(connection, module, group_name, members_to_add)
+    remove_group_members(connection, module, group_name, members_to_remove)
 
     return True
 
@@ -391,13 +404,12 @@ def create_or_update_group(connection, module):
 
 
 def destroy_group(connection, module):
-    params = dict()
-    params["GroupName"] = module.params.get("name")
+    group_name = module.params.get("name")
 
     try:
-        group = get_group(connection, module, params["GroupName"])
+        group = get_group(connection, module, group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't get group {params['GroupName']}")
+        module.fail_json_aws(e, f"Couldn't get group {group_name}")
 
     if not group:
         module.exit_json(changed=False)
@@ -407,24 +419,18 @@ def destroy_group(connection, module):
         module.exit_json(changed=True)
 
     # Remove any attached policies otherwise deletion fails
-    try:
-        for policy in get_attached_policy_list(connection, module, params["GroupName"]):
-            connection.detach_group_policy(GroupName=params["GroupName"], PolicyArn=policy["PolicyArn"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Couldn't remove policy from group {params['GroupName']}")
+    current_policies_desc = get_attached_policy_list(connection, module, group_name)
+    current_policies = [policy["PolicyArn"] for policy in current_policies_desc]
+    detach_policies(connection, module, group_name, current_policies)
 
     # Remove any users in the group otherwise deletion fails
     current_group_members = [user["UserName"] for user in group["Users"]]
-    try:
-        for user in current_group_members:
-            connection.remove_user_from_group(GroupName=params["GroupName"], UserName=user)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't remove user {user} from group {params['GroupName']}")
+    remove_group_members(connection, module, group_name, current_group_members)
 
     try:
-        connection.delete_group(**params)
+        connection.delete_group(aws_retry=True, GroupName=group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't delete group {params['GroupName']}")
+        module.fail_json_aws(e, f"Couldn't delete group {group_name}")
 
     module.exit_json(changed=True)
 
