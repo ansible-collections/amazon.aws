@@ -55,8 +55,8 @@
         that:
           - create is changed
           # We rely on these for the info test, make sure they're what we expect
-          - '"{{ aws_region }}a" in create.elb.zones'
-          - '"{{ aws_region }}b" in create.elb.zones'
+          - aws_region ~ 'a' in create.elb.zones
+          - aws_region ~ 'b' in create.elb.zones
           - create.elb.health_check.healthy_threshold == 10
           - create.elb.health_check.interval == 30
           - create.elb.health_check.target == "HTTP:80/index.html"
@@ -74,8 +74,8 @@
         that:
           - info.elbs|length == 1
           - elb.availability_zones|length == 2
-          - '"{{ aws_region }}a" in elb.availability_zones'
-          - '"{{ aws_region }}b" in elb.availability_zones'
+          - aws_region ~ 'a' in elb.availability_zones
+          - aws_region ~ 'b' in elb.availability_zones
           - elb.health_check.healthy_threshold == 10
           - elb.health_check.interval == 30
           - elb.health_check.target == "HTTP:80/index.html"
@@ -134,7 +134,7 @@
     - assert:
         that:
           - update_az is changed
-          - update_az.elb.zones[0] == "{{ aws_region }}c"
+          - update_az.elb.zones[0] == aws_region ~ 'c'
 
     - name: Get ELB info after changing AZ's
       elb_classic_lb_info:
@@ -144,7 +144,7 @@
     - assert:
         that:
           - elb.availability_zones|length == 1
-          - '"{{ aws_region }}c" in elb.availability_zones[0]'
+          - aws_region ~ 'c' in elb.availability_zones[0]
       vars:
         elb: "{{ info.elbs[0] }}"
 
@@ -170,9 +170,9 @@
     - assert:
         that:
           - update_az is changed
-          - '"{{ aws_region }}a" in update_az.elb.zones'
-          - '"{{ aws_region }}b" in update_az.elb.zones'
-          - '"{{ aws_region }}c" in update_az.elb.zones'
+          - aws_region ~ 'a' in update_az.elb.zones
+          - aws_region ~ 'b' in update_az.elb.zones
+          - aws_region ~ 'c' in update_az.elb.zones
 
     - name: Get ELB info after updating AZ's
       elb_classic_lb_info:
@@ -182,9 +182,9 @@
     - assert:
         that:
           - elb.availability_zones|length == 3
-          - '"{{ aws_region }}a" in elb.availability_zones'
-          - '"{{ aws_region }}b" in elb.availability_zones'
-          - '"{{ aws_region }}c" in elb.availability_zones'
+          - aws_region ~ 'a' in elb.availability_zones
+          - aws_region ~ 'b' in elb.availability_zones
+          - aws_region ~ 'c' in elb.availability_zones
       vars:
         elb: "{{ info.elbs[0] }}"
 
