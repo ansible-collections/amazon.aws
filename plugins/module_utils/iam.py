@@ -14,6 +14,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from .arn import parse_aws_arn
+from .arn import validate_aws_arn
 from .botocore import is_boto3_error_code
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
@@ -70,6 +71,34 @@ def _add_role_to_instance_profile(client, **kwargs):
 @AWSRetry.jittered_backoff()
 def _remove_role_from_instance_profile(client, **kwargs):
     client.remove_role_from_instance_profile(**kwargs)
+
+
+@AWSRetry.jittered_backoff()
+def _list_managed_policies(client, **kwargs):
+    paginator = client.get_paginator("list_policies")
+    return paginator.paginate(**kwargs).build_full_result()
+
+
+def list_managed_policies(client, module):
+    try:
+        return _list_managed_policies(client)["Policies"]
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to list all managed policies")
+
+
+def convert_managed_policy_names_to_arns(client, module, policy_names):
+    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
+        return policy_names
+    allpolicies = {}
+    policies = list_managed_policies(client, module)
+
+    for policy in policies:
+        allpolicies[policy["PolicyName"]] = policy["Arn"]
+        allpolicies[policy["Arn"]] = policy["Arn"]
+    try:
+        return [allpolicies[policy] for policy in policy_names if policy is not None]
+    except KeyError as e:
+        module.fail_json(msg="Couldn't find polic: " + str(e))
 
 
 def get_aws_account_id(module):

@@ -201,28 +201,10 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-
-
-def convert_friendly_names_to_arns(connection, module, policy_names):
-    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
-        return policy_names
-
-    # 2023-12-01 IAM API doesn't support getting/setting policies by name, so we need to list all policies
-    # to be able to convert names to ARNs.
-    allpolicies = {}
-    policies = list_all_policies(connection, module)
-
-    for policy in policies:
-        allpolicies[policy["PolicyName"]] = policy["Arn"]
-        allpolicies[policy["Arn"]] = policy["Arn"]
-    try:
-        return [allpolicies[policy] for policy in policy_names if policy is not None]
-    except KeyError as e:
-        module.fail_json(msg="Couldn't find policy: " + str(e))
 
 
 def ensure_path(connection, module, group_info, path):
@@ -264,7 +246,7 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
         return False
 
     if managed_policies:
-        managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
+        managed_policies = convert_managed_policy_names_to_arns(connection, module, managed_policies)
 
     group_name = group_info["Group"]["GroupName"]
 
