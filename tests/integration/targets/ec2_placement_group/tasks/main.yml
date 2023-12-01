@@ -25,7 +25,7 @@
     - assert:
         that:
           - pg_1_create_check_mode is changed
-          - pg_1_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create_check_mode.placement_group.name == resource_prefix ~ '-pg1'
           - pg_1_create_check_mode.placement_group.state == "DryRun"
           - '"ec2:CreatePlacementGroup" in pg_1_create_check_mode.resource_actions'
 
@@ -41,7 +41,7 @@
     - assert:
         that:
           - pg_1_create is changed
-          - pg_1_create.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create.placement_group.name == resource_prefix ~ '-pg1'
           - pg_1_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" in pg_1_create.resource_actions'
 
@@ -54,7 +54,7 @@
     - assert:
         that:
           - pg_1_info_result is not changed
-          - pg_1_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg1'
+          - pg_1_info_result.placement_groups[0].name == resource_prefix ~ '-pg1'
           - pg_1_info_result.placement_groups[0].state == "available"
           - pg_1_info_result.placement_groups[0].strategy == "cluster"
           - '"ec2:DescribePlacementGroups" in pg_1_info_result.resource_actions'
@@ -68,7 +68,7 @@
     - assert:
         that:
           - pg_1_create is not changed
-          - pg_1_create.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create.placement_group.name == resource_prefix ~ '-pg1'
           - pg_1_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_1_create.resource_actions'
 
@@ -82,7 +82,7 @@
     - assert:
         that:
           - pg_1_create_check_mode_idem is not changed
-          - pg_1_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create_check_mode_idem.placement_group.name == resource_prefix ~ '-pg1'
           - pg_1_create_check_mode_idem.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_1_create_check_mode_idem.resource_actions'
 
@@ -97,7 +97,7 @@
     - assert:
         that:
           - pg_2_create_check_mode is changed
-          - pg_2_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create_check_mode.placement_group.name == resource_prefix ~ '-pg2'
           - pg_2_create_check_mode.placement_group.state == "DryRun"
           - '"ec2:CreatePlacementGroup" in pg_2_create_check_mode.resource_actions'
 
@@ -111,7 +111,7 @@
     - assert:
         that:
           - pg_2_create is changed
-          - pg_2_create.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create.placement_group.name == resource_prefix ~ '-pg2'
           - pg_2_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" in pg_2_create.resource_actions'
 
@@ -127,7 +127,7 @@
     - assert:
         that:
           - pg_2_info_result is not changed
-          - pg_2_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg2'
+          - pg_2_info_result.placement_groups[0].name == resource_prefix ~ '-pg2'
           - pg_2_info_result.placement_groups[0].state == "available"
           - pg_2_info_result.placement_groups[0].strategy == "spread"
           - '"ec2:DescribePlacementGroups" in pg_2_info_result.resource_actions'
@@ -142,7 +142,7 @@
     - assert:
         that:
           - pg_2_create is not changed
-          - pg_2_create.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create.placement_group.name == resource_prefix ~ '-pg2'
           - pg_2_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_2_create.resource_actions'
 
@@ -157,7 +157,7 @@
     - assert:
         that:
           - pg_2_create_check_mode_idem is not changed
-          - pg_2_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create_check_mode_idem.placement_group.name == resource_prefix ~ '-pg2'
           - pg_2_create_check_mode_idem.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_2_create_check_mode_idem.resource_actions'
 
@@ -173,7 +173,7 @@
     - assert:
         that:
           - pg_3_create_check_mode is changed
-          - pg_3_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create_check_mode.placement_group.name == resource_prefix ~ '-pg3'
           - pg_3_create_check_mode.placement_group.state == "DryRun"
           - '"ec2:CreatePlacementGroup" in pg_3_create_check_mode.resource_actions'
 
@@ -188,7 +188,7 @@
     - assert:
         that:
           - pg_3_create is changed
-          - pg_3_create.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create.placement_group.name == resource_prefix ~ '-pg3'
           - pg_3_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" in pg_3_create.resource_actions'
 
@@ -205,7 +205,7 @@
     - assert:
         that:
           - pg_3_info_result is not changed
-          - pg_3_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg3'
+          - pg_3_info_result.placement_groups[0].name == resource_prefix ~ '-pg3'
           - pg_3_info_result.placement_groups[0].state == "available"
           - pg_3_info_result.placement_groups[0].strategy == "partition"
           - '"ec2:DescribePlacementGroups" in pg_3_info_result.resource_actions'
@@ -221,7 +221,7 @@
     - assert:
         that:
           - pg_3_create is not changed
-          - pg_3_create.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create.placement_group.name == resource_prefix ~ '-pg3'
           - pg_3_create.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_3_create.resource_actions'
 
@@ -237,7 +237,7 @@
     - assert:
         that:
           - pg_3_create_check_mode_idem is not changed
-          - pg_3_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create_check_mode_idem.placement_group.name == resource_prefix ~ '-pg3'
           - pg_3_create_check_mode_idem.placement_group.state == "available"
           - '"ec2:CreatePlacementGroup" not in pg_3_create_check_mode_idem.resource_actions'
 
