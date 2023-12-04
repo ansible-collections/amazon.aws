@@ -1403,6 +1403,8 @@
 
     - name: Get ALB application info without skipping anything
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
       register: alb_info
     - ansible.builtin.assert:
         that:
@@ -1423,6 +1425,8 @@
 
     - name: Get ALB application info excluding attributes
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
         include_attributes: false
       register: alb_info
     - ansible.builtin.assert:
@@ -1442,6 +1446,8 @@
 
     - name: Get ALB application info without listeners, but with rules
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
         include_listeners: false
       register: alb_info
     - ansible.builtin.assert:
@@ -1451,6 +1457,8 @@
 
     - name: Get ALB application info without listeners or rules
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
         include_listeners: false
         include_listener_rules: false
       register: alb_info
@@ -1460,6 +1468,8 @@
 
     - name: Get ALB application info without listener rules
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
         include_listener_rules: false
       register: alb_info
     - ansible.builtin.assert:
@@ -1469,6 +1479,8 @@
 
     - name: Get ALB application minimal info
       amazon.aws.elb_application_lb_info:
+        names:
+          - "{{ alb_2_name }}"
         include_attributes: false
         include_listeners: false
         include_listener_rules: false
