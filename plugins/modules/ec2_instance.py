@@ -55,6 +55,7 @@ options:
       - Only required when instance is not already present.
       - At least one of I(instance_type) or I(launch_template) must be specificed when launching an
         instance.
+      - To change the I(instance_type), the instance must be in I(state=stopped).
     type: str
   count:
     description:
@@ -1563,6 +1564,7 @@ def diff_instance_and_params(instance, params, skip=None):
     param_mappings = [
         ParamMapper("ebs_optimized", "EbsOptimized", "ebsOptimized", value_wrapper),
         ParamMapper("termination_protection", "DisableApiTermination", "disableApiTermination", value_wrapper),
+        ParamMapper('instance_type', 'InstanceType', 'instanceType', value_wrapper),
         # user data is an immutable property
         # ParamMapper('user_data', 'UserData', 'userData', value_wrapper),
     ]
