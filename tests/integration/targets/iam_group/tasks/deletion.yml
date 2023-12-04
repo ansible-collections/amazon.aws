@@ -1,0 +1,42 @@
+---
+- name: remove group (check_mode)
+  iam_group:
+    name: '{{ test_group }}'
+    state: absent
+  register: iam_group
+  check_mode: true
+
+- assert:
+    that:
+      - iam_group is changed
+
+- name: remove group
+  iam_group:
+    name: '{{ test_group }}'
+    state: absent
+  register: iam_group
+
+- assert:
+    that:
+      - iam_group is changed
+
+- name: re-remove group (check_mode)
+  iam_group:
+    name: '{{ test_group }}'
+    state: absent
+  register: iam_group
+  check_mode: true
+
+- assert:
+    that:
+      - iam_group is not changed
+
+- name: re-remove group
+  iam_group:
+    name: '{{ test_group }}'
+    state: absent
+  register: iam_group
+
+- assert:
+    that:
+      - iam_group is not changed
