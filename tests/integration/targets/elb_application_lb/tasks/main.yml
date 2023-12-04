@@ -1161,7 +1161,10 @@
   - assert:
       that:
       - alb is changed
-      - alb.tags == "created_by": "'ALB test '+resource_prefix"
+      - alb.tags == created_tags
+    vars:
+      created_tags:
+        created_by: 'ALB test {{ resource_prefix }}'
 
   - name: Update an ALB by adding tags (idempotence) - check_mode
     elb_application_lb:
@@ -1190,7 +1193,10 @@
   - assert:
       that:
       - alb is not changed
-      - alb.tags == "created_by": "'ALB test '+resource_prefix"
+      - alb.tags == created_tags
+    vars:
+      created_tags:
+        created_by: 'ALB test {{ resource_prefix }}'
 
     # ------------------------------------------------------------------------------------------
 
@@ -1221,7 +1227,10 @@
   - assert:
       that:
       - alb is changed
-      - alb.tags == "created_by": "'ALB test '+resource_prefix+'-2'"
+      - alb.tags == created_tags
+    vars:
+      created_tags:
+        created_by: 'ALB test {{ resource_prefix }}-2'
 
 
   - name: Update an ALB by modifying tags (idempotence) - check_mode
@@ -1251,7 +1260,10 @@
   - assert:
       that:
       - alb is not changed
-      - alb.tags == "created_by": "'ALB test '+resource_prefix+'-2'"
+      - alb.tags == created_tags
+    vars:
+      created_tags:
+        created_by: 'ALB test {{ resource_prefix }}-2'
 
     # ------------------------------------------------------------------------------------------
 
