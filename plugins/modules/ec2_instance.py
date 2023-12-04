@@ -1630,6 +1630,36 @@ def diff_instance_and_params(instance, params, skip=None):
     return changes_to_apply
 
 
+def change_instance_metadata_options(instance, params):
+    changed = False
+
+    existing_metadata_options = camel_dict_to_snake_dict(instance.get("MetadataOptions"))
+    metadata_options_to_apply = params.get("metadata_options")
+
+    changes_to_apply = {key:  metadata_options_to_apply[key] for key in set(existing_metadata_options) & set(metadata_options_to_apply) if existing_metadata_options[key] != metadata_options_to_apply[key]}
+
+    if changes_to_apply:
+        request_args = {
+            "InstanceId": instance["InstanceId"],
+            "HttpTokens": changes_to_apply.get("http_tokens", ""),
+            "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit", ""),
+            "HttpEndpoint": changes_to_apply.get("http_endpoint", ""),
+            "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6", ""),
+            "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", "")
+        }
+        request_args = {k: v for k, v in request_args.items() if v}
+
+        if not module.check_mode:
+            try:
+                client.modify_instance_metadata_options(aws_retry=True, **request_args)
+                changed = True
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(
+                    e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
+                )
+
+    return changed
+
 def change_network_attachments(instance, params):
     if (params.get("network") or {}).get("interfaces") is not None:
         new_ids = []
@@ -1959,6 +1989,10 @@ def handle_existing(existing_matches, state, filters):
 
     for instance in existing_matches:
         changed |= ensure_ec2_tags(client, module, instance["InstanceId"], tags=tags, purge_tags=purge_tags)
+
+        if module.params.get("metadata_options"):
+            changed |= change_instance_metadata_options(instance, module.params)
+
         changes = diff_instance_and_params(instance, module.params)
         for c in changes:
             if not module.check_mode:
