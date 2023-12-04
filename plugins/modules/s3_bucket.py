@@ -251,11 +251,11 @@ EXAMPLES = r"""
     name: mys3bucket
     state: present
     public_access:
-        block_public_acls: true
-        ignore_public_acls: true
-        ## keys == 'false' can be omitted, undefined keys defaults to 'false'
-        # block_public_policy: false
-        # restrict_public_buckets: false
+      block_public_acls: true
+      ignore_public_acls: true
+      ## keys == 'false' can be omitted, undefined keys defaults to 'false'
+      # block_public_policy: false
+      # restrict_public_buckets: false
 
 # Delete public policy block from bucket
 - amazon.aws.s3_bucket:

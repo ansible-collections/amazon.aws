@@ -16,7 +16,7 @@ options:
   policy_name:
     description:
       - The name of the managed policy.
-    required: True
+    required: true
     type: str
   policy_description:
     description:
@@ -30,7 +30,7 @@ options:
   make_default:
     description:
       - Make this revision the default revision.
-    default: True
+    default: true
     type: bool
   only_version:
     description:
@@ -75,9 +75,9 @@ EXAMPLES = r"""
     policy:
       Version: "2012-10-17"
       Statement:
-      - Effect: "Allow"
-        Action: "logs:CreateLogGroup"
-        Resource: "*"
+        - Effect: "Allow"
+          Action: "logs:CreateLogGroup"
+          Resource: "*"
     make_default: false
     state: present
 

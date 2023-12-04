@@ -91,7 +91,7 @@ EXAMPLES = r"""
 - name: Gather information about any instance in states "shutting-down", "stopping", "stopped"
   amazon.aws.ec2_instance_info:
     filters:
-      instance-state-name: [ "shutting-down", "stopping", "stopped" ]
+      instance-state-name: ["shutting-down", "stopping", "stopped"]
 
 - name: Gather information about any instance with Name beginning with RHEL and an uptime of at least 60 minutes
   amazon.aws.ec2_instance_info:
@@ -99,7 +99,7 @@ EXAMPLES = r"""
     uptime: 60
     filters:
       "tag:Name": "RHEL-*"
-      instance-state-name: [ "running"]
+      instance-state-name: ["running"]
   register: ec2_node_info
 
 - name: Gather information about a particular instance using ID and include kernel attribute
@@ -107,7 +107,7 @@ EXAMPLES = r"""
     instance_ids:
       - i-12345678
     include_attributes:
-        - kernel
+      - kernel
 """
 
 RETURN = r"""

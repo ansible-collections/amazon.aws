@@ -107,7 +107,7 @@ EXAMPLES = r"""
   amazon.aws.ec2_vpc_net:
     name: Module_dev2
     cidr_block: 10.10.0.0/16
-    ipv6_cidr: True
+    ipv6_cidr: true
     region: us-east-1
     tenancy: dedicated
 

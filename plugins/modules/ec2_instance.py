@@ -490,12 +490,12 @@ EXAMPLES = r"""
       Environment: Testing
     instance_type: c4.large
     volumes:
-    - device_name: /dev/sda1
-      ebs:
-        delete_on_termination: true
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: true
     cpu_options:
-        core_count: 1
-        threads_per_core: 1
+      core_count: 1
+      threads_per_core: 1
 
 - name: start an instance and have it begin a Tower callback on boot
   amazon.aws.ec2_instance:
@@ -526,9 +526,9 @@ EXAMPLES = r"""
     tags:
       Env: "eni_on"
     volumes:
-    - device_name: /dev/sda1
-      ebs:
-        delete_on_termination: true
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: true
     instance_type: t2.micro
     image_id: ami-123456
 

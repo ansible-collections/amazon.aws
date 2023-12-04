@@ -310,7 +310,7 @@ options:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
         type: bool
-        required: False
+        required: false
         version_added: 6.5.0
     replication_source_identifier:
         description:
@@ -440,7 +440,7 @@ EXAMPLES = r"""
     password: "{{ password }}"
     username: "{{ username }}"
     cluster_id: "{{ cluster_id }}"
-    skip_final_snapshot: True
+    skip_final_snapshot: true
     tags:
       Name: "cluster-{{ resource_prefix }}"
       Created_By: "Ansible_rds_cluster_integration_test"

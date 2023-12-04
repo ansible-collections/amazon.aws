@@ -325,7 +325,7 @@ EXAMPLES = r"""
     record: elb.foo.com
     type: A
     value: "{{ elb_dns_name }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
 - name: Retrieve the details for elb.foo.com
   amazon.aws.route53:
@@ -342,7 +342,7 @@ EXAMPLES = r"""
     ttl: "{{ rec.set.ttl }}"
     type: "{{ rec.set.type }}"
     value: "{{ rec.set.value }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
 - name: Add an alias record that points to an Amazon ELB and evaluates it health
   amazon.aws.route53:
@@ -351,9 +351,9 @@ EXAMPLES = r"""
     record: elb.foo.com
     type: A
     value: "{{ elb_dns_name }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
-    alias_evaluate_target_health: True
+    alias_evaluate_target_health: true
 - name: Add an AAAA record with Hosted Zone ID
   amazon.aws.route53:
     state: present

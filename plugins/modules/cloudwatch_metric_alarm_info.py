@@ -68,14 +68,14 @@ EXAMPLES = r"""
 - name: describe the metric alarm based on alarm names
   amazon.aws.cloudwatch_metric_alarm_info:
     alarm_names:
-        - my-test-alarm-1
-        - my-test-alarm-2
+      - my-test-alarm-1
+      - my-test-alarm-2
 
 - name: describe the metric alarm based alarm names and state value
   amazon.aws.cloudwatch_metric_alarm_info:
     alarm_names:
-        - my-test-alarm-1
-        - my-test-alarm-2
+      - my-test-alarm-1
+      - my-test-alarm-2
     state_value: OK
 
 - name: describe the metric alarm based alarm names prefix

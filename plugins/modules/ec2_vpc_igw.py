@@ -71,8 +71,8 @@ EXAMPLES = r"""
     vpc_id: vpc-abcdefgh
     state: present
     tags:
-        Tag1: tag1
-        Tag2: tag2
+      Tag1: tag1
+      Tag2: tag2
   register: igw
 
 - name: Create a detached gateway
@@ -106,7 +106,6 @@ EXAMPLES = r"""
     internet_gateway_id: igw-abcdefgh
     vpc_id: vpc-abcdefgh
   register: vpc_igw_delete
-
 """
 
 RETURN = r"""

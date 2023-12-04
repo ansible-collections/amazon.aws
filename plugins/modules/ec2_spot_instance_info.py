@@ -51,13 +51,13 @@ EXAMPLES = r"""
       - sir-13579246
       - sir-87654321
     filters:
-        launch.instance-type: t3.medium
+      launch.instance-type: t3.medium
 
 - name: describe the Spot requests filtered using multiple filters
   amazon.aws.ec2_spot_instance_info:
     filters:
-        state: active
-        launch.block-device-mapping.device-name: /dev/sdb
+      state: active
+      launch.block-device-mapping.device-name: /dev/sdb
 """
 
 RETURN = r"""
