@@ -253,6 +253,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of managed policy ARNs or friendly names to attach to the role.</p>
+<p>If known, it is recommended to use ARNs rather than friendly names to avoid additional lookups.</p>
 <p>To embed an inline policy, use <a class="reference internal" href="iam_policy_module.html#ansible-collections-amazon-aws-iam-policy-module"><span class="std std-ref">amazon.aws.iam_policy</span></a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
@@ -261,10 +262,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The name of the group to create.</p>
+<td><div class="ansible-option-cell"><p>The name of the group.</p>
+<p>Note: group names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyGroup</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyGroup</span></code> in the same account.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-path"></div>
+<div class="ansibleOptionAnchor" id="parameter-prefix"></div>
+<div class="ansibleOptionAnchor" id="parameter-path_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-prefix"><span id="ansible-collections-amazon-aws-iam-group-module-parameter-path-prefix"></span><span id="ansible-collections-amazon-aws-iam-group-module-parameter-path"></span><strong>path</strong></p>
+<a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: prefix, path_prefix</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 7.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The group path.</p>
+<p>For more information about IAM paths, see the AWS IAM identifiers documentation <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-profile"><span id="ansible-collections-amazon-aws-iam-group-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -276,7 +290,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_policies"></div>
 <div class="ansibleOptionAnchor" id="parameter-purge_policy"></div>
 <div class="ansibleOptionAnchor" id="parameter-purge_managed_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-purge-policy"><span id="ansible-collections-amazon-aws-iam-group-module-parameter-purge-policies"></span><span id="ansible-collections-amazon-aws-iam-group-module-parameter-purge-managed-policies"></span><strong>purge_policies</strong></p>
@@ -291,7 +305,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_users"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-purge-users"><strong>purge_users</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_users" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -303,7 +317,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-region"><span id="ansible-collections-amazon-aws-iam-group-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-iam-group-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -318,7 +332,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -335,7 +349,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -353,7 +367,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -365,7 +379,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-users"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-users"><strong>users</strong></p>
 <a class="ansibleOptionLink" href="#parameter-users" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -373,7 +387,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -465,6 +479,33 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_group/attached_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-attached-policies"><strong>attached_policies</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_group/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 7.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>list containing basic information about managed policies attached to the group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_group/attached_policies/policy_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-attached-policies-policy-arn"><strong>policy_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_group/attached_policies/policy_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the Amazon Resource Name (ARN) specifying the managed policy.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:policy/test_policy&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_group/attached_policies/policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-attached-policies-policy-name"><strong>policy_name</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_group/attached_policies/policy_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the friendly name that identifies the policy.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test_policy&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group"><strong>group</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -472,7 +513,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group-arn"><strong>arn</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -481,7 +522,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::1234567890:group/testgroup1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -490,7 +531,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-02-08T04:36:28+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group/group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group-group-id"><strong>group_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group/group_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -499,7 +540,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AGPA12345EXAMPLE54321&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group/group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group-group-name"><strong>group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group/group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -508,7 +549,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;testgroup1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/group/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-group-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/group/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -517,7 +558,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users"><strong>users</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -525,7 +566,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users-arn"><strong>arn</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -534,7 +575,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::1234567890:user/test_user1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -543,7 +584,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-02-08T04:36:28+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -552,7 +593,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users/user_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users-user-id"><strong>user_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users/user_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -561,7 +602,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AIDA12345EXAMPLE54321&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_group/users/user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-return-iam-group-users-user-name"><strong>user_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_group/users/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
