@@ -16,6 +16,8 @@
     amazon.aws.route53:
       # Route53 is explicitly a global service
       region:
+  collections:
+    - amazon.aws
   block:
   - name: create VPC
     ec2_vpc_net:

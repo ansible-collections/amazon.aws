@@ -4,6 +4,8 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
   block:
   # Make custom ENIs and attach via the `network` parameter
   - ec2_eni:

@@ -1,0 +1,2 @@
+trivial:
+  - use FQCN for integration test targets.

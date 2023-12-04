@@ -6,6 +6,8 @@
       session_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
 
+  collections:
+    - amazon.aws
   block:
 
     # ==== Env setup ==========================================================

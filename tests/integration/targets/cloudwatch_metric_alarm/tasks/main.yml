@@ -5,6 +5,8 @@
       secret_key: '{{ aws_secret_key }}'
       session_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
+  collections:
+    - amazon.aws
   block:
   - set_fact:
       alarm_full_name: '{{ alarm_prefix }}-{{ resource_prefix }}-cpu-low'
