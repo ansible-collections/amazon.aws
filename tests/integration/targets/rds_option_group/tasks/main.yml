@@ -525,7 +525,7 @@
           - "'vpc_id' in new_rds_mysql_option_group"
           - new_rds_mysql_option_group.vpc_id == vpc_id
           - "'tags' in new_rds_mysql_option_group"
-          - (new_rds_mysql_option_group.tags == option_tags
+          - new_rds_mysql_option_group.tags == option_tags
           - "'options' in new_rds_mysql_option_group"
           - (new_rds_mysql_option_group.options | length) > 0
           - "'option_name' in option"
