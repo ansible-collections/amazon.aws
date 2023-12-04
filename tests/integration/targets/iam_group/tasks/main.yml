@@ -14,6 +14,18 @@
       name: '{{ test_user }}'
       state: present
 
+  - name: Create Safe IAM Managed Policy
+    iam_managed_policy:
+      state: present
+      policy_name: '{{ custom_policy_name }}'
+      policy_description: A safe (deny-all) managed policy
+      policy: "{{ lookup('file', 'deny-all.json') }}"
+    register: create_managed_policy
+
+  - assert:
+      that:
+      - create_managed_policy is succeeded
+
   - name: ensure group exists
     iam_group:
       name: '{{ test_group }}'
@@ -24,102 +36,28 @@
 
   - assert:
       that:
-        - iam_group.iam_group.users
+        - "'users' in iam_group.iam_group"
+        - "'group' in iam_group.iam_group"
+        - "'attached_policies' in iam_group.iam_group"
         - iam_group is changed
+        - iam_group.iam_group.group.group_name == test_group
+        - iam_group.iam_group.group.path == "/"
 
-  - name: add non existent user to group
-    iam_group:
-      name: '{{ test_group }}'
-      users:
-        - '{{ test_user }}'
-        - NonExistentUser
-      state: present
-    ignore_errors: yes
-    register: iam_group
-
-  - name: assert that adding non existent user to group fails with helpful message
-    assert:
-      that:
-        - iam_group is failed
-        - iam_group.msg.startswith("Couldn't add user NonExistentUser to group {{ test_group }}")
-
-  - name: remove a user
-    iam_group:
-      name: '{{ test_group }}'
-      purge_users: True
-      users: []
-      state: present
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is changed
-        - not iam_group.iam_group.users
-
-  - name: re-remove a user (no change)
-    iam_group:
-      name: '{{ test_group }}'
-      purge_users: True
-      users: []
-      state: present
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is not changed
-        - not iam_group.iam_group.users
-
-  - name: Add the user again
-    iam_group:
-      name: '{{ test_group }}'
-      users:
-        - '{{ test_user }}'
-      state: present
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is changed
-        - iam_group.iam_group.users
-
-  - name: Re-add the user
-    iam_group:
-      name: '{{ test_group }}'
-      users:
-        - '{{ test_user }}'
-      state: present
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is not changed
-        - iam_group.iam_group.users
-
-  - name: remove group
-    iam_group:
-      name: '{{ test_group }}'
-      state: absent
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is changed
-
-  - name: re-remove group
-    iam_group:
-      name: '{{ test_group }}'
-      state: absent
-    register: iam_group
-
-  - assert:
-      that:
-        - iam_group is not changed
+  - include_tasks: users.yml
+  - include_tasks: path.yml
+  - include_tasks: policy_update.yml
+  - include_tasks: deletion.yml
 
   always:
   - name: remove group
     iam_group:
       name: '{{ test_group }}'
       state: absent
+
+  - name: Remove Safe IAM Managed Policy
+    iam_managed_policy:
+      state: absent
+      policy_name: '{{ custom_policy_name }}'
 
   - name: remove ansible user
     iam_user:
