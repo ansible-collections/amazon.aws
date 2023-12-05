@@ -6,13 +6,12 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
     - name: Create an AWS Backup Vault so we have something to tag
       amazon.aws.backup_vault:
         backup_vault_name: "{{ backup_vault_name }}"
       register: backup_vault_create_result
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         vault_arn: "{{ backup_vault_create_result.vault.backup_vault_arn }}"
 
     - name: List tags on a backup vault
@@ -20,7 +19,7 @@
         resource: "{{ vault_arn }}"
       register: current_tags
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - '"tags" in current_tags'
           - current_tags.tags | length == 0
@@ -30,14 +29,14 @@
         resource: "{{ vault_arn }}"
         state: present
         tags:
-            CamelCaseKey: CamelCaseValue
-            pascalCaseKey: pascalCaseValue
-            snake_case_key: snake_case_value
-            test_tag_key_1: tag_tag_value_1
-            test_tag_key_2: tag_tag_value_2
+          CamelCaseKey: CamelCaseValue
+          pascalCaseKey: pascalCaseValue
+          snake_case_key: snake_case_value
+          test_tag_key_1: tag_tag_value_1
+          test_tag_key_2: tag_tag_value_2
       register: add_tags_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - add_tags_result is changed
           - add_tags_result.tags | length == 5
@@ -53,10 +52,10 @@
         resource: "{{ vault_arn }}"
         state: absent
         tags:
-            CamelCaseKey: CamelCaseValue
+          CamelCaseKey: CamelCaseValue
       register: remove_specified_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - remove_specified_result is changed
           - remove_specified_result.tags | length == 4
@@ -71,12 +70,12 @@
         resource: "{{ vault_arn }}"
         state: absent
         tags:
-            test_tag_key_1: tag_tag_value_1
-            test_tag_key_2: tag_tag_value_2
+          test_tag_key_1: tag_tag_value_1
+          test_tag_key_2: tag_tag_value_2
         purge_tags: true
       register: remove_except_specified_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - remove_except_specified_result is changed
           - remove_except_specified_result.tags | length == 2
@@ -89,10 +88,10 @@
         resource: "{{ vault_arn }}"
         state: present
         tags:
-            test_tag_key_1: test_tag_NEW_VALUE_1
+          test_tag_key_1: test_tag_NEW_VALUE_1
       register: update_specified_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_specified_result is changed
           - update_specified_result.tags | length == 2
@@ -107,7 +106,7 @@
         purge_tags: true
       register: remove_all_tags_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - '"tags" in remove_all_tags_result'
           - remove_all_tags_result.tags | length == 0

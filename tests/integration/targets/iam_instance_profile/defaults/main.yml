@@ -1,12 +1,12 @@
 ---
-test_profile: '{{ resource_prefix }}-iam-ip'
-test_profile_complex: '{{ resource_prefix }}-iam-ip-complex'
-test_role: '{{ resource_prefix }}-iam-ipr'
-test_path: '/{{ resource_prefix }}-ip/'
-safe_managed_policy: 'AWSDenyAll'
+test_profile: "{{ resource_prefix }}-iam-ip"
+test_profile_complex: "{{ resource_prefix }}-iam-ip-complex"
+test_role: "{{ resource_prefix }}-iam-ipr"
+test_path: /{{ resource_prefix }}-ip/
+safe_managed_policy: AWSDenyAll
 
 test_tags:
-  'Key with Spaces': Value with spaces
+  Key with Spaces: Value with spaces
   CamelCaseKey: CamelCaseValue
   pascalCaseKey: pascalCaseValue
   snake_case_key: snake_case_value

@@ -1,213 +1,213 @@
 ---
-  # ============================================================
+# ============================================================
 
-  - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24", "10.20.0.0/24"]
-    check_mode: true
-    register: result
+          - [10.0.0.0/24, 10.20.0.0/24]
+  check_mode: true
+  register: result
 
-  - name: assert state=present (expected changed=true)
-    assert:
-      that:
-        - 'result.changed'
+- name: assert state=present (expected changed=true)
+  ansible.builtin.assert:
+    that:
+      - result.changed
 
-  - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24", "10.20.0.0/24"]
-    register: result
+          - [10.0.0.0/24, 10.20.0.0/24]
+  register: result
 
-  - name: assert state=present (expected changed=true)
-    assert:
-      that:
-        - 'result.changed'
-        - 'result.ip_permissions | length == 2'
-        - 'result.ip_permissions[0].ip_ranges | length == 4 or result.ip_permissions[1].ip_ranges | length == 4'
-        - 'result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2'
+- name: assert state=present (expected changed=true)
+  ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.ip_permissions | length == 2
+      - result.ip_permissions[0].ip_ranges | length == 4 or result.ip_permissions[1].ip_ranges | length == 4
+      - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
-  - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false) (CHECK MODE)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false) (CHECK MODE)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24", "10.20.0.0/24"]
-    check_mode: true
-    register: result
+          - [10.0.0.0/24, 10.20.0.0/24]
+  check_mode: true
+  register: result
 
-  - name: assert state=present (expected changed=true)
-    assert:
-      that:
-        - 'not result.changed'
+- name: assert state=present (expected changed=true)
+  ansible.builtin.assert:
+    that:
+      - not result.changed
 
-  - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24", "10.20.0.0/24"]
-    register: result
+          - [10.0.0.0/24, 10.20.0.0/24]
+  register: result
 
-  - name: assert state=present (expected changed=true)
-    assert:
-      that:
-        - 'not result.changed'
+- name: assert state=present (expected changed=true)
+  ansible.builtin.assert:
+    that:
+      - not result.changed
 
-  - name: test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24"]
-    check_mode: true
-    register: result
+          - [10.0.0.0/24]
+  check_mode: true
+  register: result
 
-  - assert:
-      that:
-        - result.changed
+- ansible.builtin.assert:
+    that:
+      - result.changed
 
-  - name: test state=present purging a nested ipv4 target (expected changed=true)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present purging a nested ipv4 target (expected changed=true)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - "64:ff9b::/96"
-          - ["2620::/32"]
-      - proto: "tcp"
+          - 64:ff9b::/96
+          - [2620::/32]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24"]
-    register: result
+          - [10.0.0.0/24]
+  register: result
 
-  - assert:
-      that:
-        - result.changed
-        - 'result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3'
-        - 'result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2'
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3
+      - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
-  - name: test state=present with both associated ipv6 targets nested (expected changed=false)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present with both associated ipv6 targets nested (expected changed=false)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - ["2620::/32", "64:ff9b::/96"]
-      - proto: "tcp"
+          - [2620::/32, 64:ff9b::/96]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24"]
-    register: result
+          - [10.0.0.0/24]
+  register: result
 
-  - assert:
-      that:
-        - not result.changed
+- ansible.builtin.assert:
+    that:
+      - not result.changed
 
-  - name: test state=present add another nested ipv6 target (expected changed=true)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
-      - proto: "tcp"
+- name: test state=present add another nested ipv6 target (expected changed=true)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
+      - proto: tcp
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - ["2620::/32", "64:ff9b::/96"]
-          - ["2001:DB8:A0B:12F0::1/64"]
-      - proto: "tcp"
+          - [2620::/32, 64:ff9b::/96]
+          - [2001:DB8:A0B:12F0::1/64]
+      - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - ["10.0.0.0/24"]
-    register: result
+          - [10.0.0.0/24]
+  register: result
 
-  - assert:
-      that:
-        - result.changed
-        - result.warning is not defined
-        - 'result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3'
-        - 'result.ip_permissions[0].ipv6_ranges | length == 3 or result.ip_permissions[1].ipv6_ranges | length == 3'
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.warning is not defined
+      - result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3
+      - result.ip_permissions[0].ipv6_ranges | length == 3 or result.ip_permissions[1].ipv6_ranges | length == 3
 
-  - name: delete it
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      state: absent
+- name: delete it
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    state: absent

@@ -8,47 +8,46 @@
       region: "{{ aws_region }}"
   vars:
     first_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
     second_tags:
-      'New Key with Spaces': Value with spaces
+      New Key with Spaces: Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
     third_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
     final_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
     name_tags:
       Name: "{{ vpc_name }}"
   block:
-
     # ============================================================
 
     - name: Get the current caller identity facts
-      aws_caller_info:
+      amazon.aws.aws_caller_info:
       register: caller_facts
 
     - name: run the module without parameters
-      ec2_vpc_net:
-      ignore_errors: yes
+      amazon.aws.ec2_vpc_net:
+      ignore_errors: true
       register: result
 
     - name: assert failure
-      assert:
+      ansible.builtin.assert:
         that:
           - result is failed
           #- result.msg.startswith("missing required arguments")
@@ -57,29 +56,29 @@
     # ============================================================
 
     - name: Fetch existing VPC info
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
     - name: Check no-one is using the Prefix before we start
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_info.vpcs | length == 0
 
     - name: test check mode creating a VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: check for a change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - vpc_info.vpcs | length == 0
@@ -87,26 +86,26 @@
     # ============================================================
 
     - name: create a VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC was created successfully
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
           - vpc_info.vpcs | length == 1
 
     - name: assert the output
-      assert:
+      ansible.builtin.assert:
         that:
           - '"cidr_block" in result.vpc'
           - result.vpc.cidr_block == vpc_cidr
@@ -127,26 +126,26 @@
           - result.vpc.tags.Name == vpc_name
 
     - name: set the first VPC's details as facts for comparison and cleanup
-      set_fact:
+      ansible.builtin.set_fact:
         vpc_1_result: "{{ result }}"
         vpc_1: "{{ result.vpc.id }}"
         vpc_1_ipv6_cidr: "{{ result.vpc.ipv6_cidr_block_association_set.0.ipv6_cidr_block }}"
         default_dhcp_options_id: "{{ result.vpc.dhcp_options_id }}"
 
     - name: create a VPC (retry)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert nothing changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -171,7 +170,7 @@
           - result.vpc.id == vpc_1
 
     - name: No-op VPC configuration, missing ipv6_cidr property
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
@@ -181,7 +180,7 @@
         #ipv6_cidr: True
       register: result
     - name: assert configuration did not change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -189,25 +188,25 @@
     # ============================================================
 
     - name: VPC info (no filters)
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
       register: vpc_info
       retries: 3
       delay: 3
       until: '"InvalidVpcID.NotFound" not in ( vpc_info.msg | default("") )'
 
     - name: Test that our new VPC shows up in the results
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_1 in ( vpc_info.vpcs | map(attribute="vpc_id") | list )
 
     - name: VPC info (Simple tag filter)
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: Test vpc_info results
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block_association_set | length == 1
@@ -231,19 +230,19 @@
     # ============================================================
 
     - name: Try to add IPv6 CIDR when one already exists
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: Assert no changes made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
           - vpc_info.vpcs | length == 1
@@ -251,46 +250,46 @@
     # ============================================================
 
     - name: test check mode creating an identical VPC (multi_ok)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
-        multi_ok: yes
+        ipv6_cidr: true
+        multi_ok: true
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change would be made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
     - name: assert a change was not actually made
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_info.vpcs | length == 1
 
     # ============================================================
 
     - name: create a VPC with a dedicated tenancy using the same CIDR and name
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
         tenancy: dedicated
-        multi_ok: yes
+        multi_ok: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a new VPC was created
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -299,20 +298,20 @@
           - vpc_info.vpcs | length == 2
 
     - name: set the second VPC's details as facts for comparison and cleanup
-      set_fact:
+      ansible.builtin.set_fact:
         vpc_2_result: "{{ result }}"
         vpc_2: "{{ result.vpc.id }}"
 
     # ============================================================
 
     - name: VPC info (Simple VPC-ID filter)
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
         filters:
-          "vpc-id": "{{ vpc_2 }}"
+          vpc-id: "{{ vpc_2 }}"
       register: vpc_info
 
     - name: Test vpc_info results
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block_association_set | length == 1
@@ -338,22 +337,22 @@
     # This will only fail if there are already *2* vpcs otherwise ec2_vpc_net
     # assumes you want to update your existing VPC...
     - name: attempt to create another VPC with the same CIDR and name without multi_ok
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
         tenancy: dedicated
-        multi_ok: no
+        multi_ok: false
       register: new_result
-      ignore_errors: yes
-    - ec2_vpc_net_info:
+      ignore_errors: true
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert failure
-      assert:
+      ansible.builtin.assert:
         that:
           - new_result is failed
           - '"If you would like to create the VPC anyway please pass True to the multi_ok param" in new_result.msg'
@@ -362,7 +361,7 @@
     # ============================================================
 
     - name: Set new name for second VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         vpc_id: "{{ vpc_2 }}"
         name: "{{ vpc_name_updated }}"
@@ -370,7 +369,7 @@
       register: result
 
     - name: assert name changed
-      assert:
+      ansible.builtin.assert:
         that:
           - '"cidr_block" in result.vpc'
           - result.vpc.cidr_block == vpc_cidr
@@ -390,32 +389,32 @@
           - result.vpc.tags.Name == vpc_name_updated
           - result.vpc.id == vpc_2
 
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert success
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - vpc_info.vpcs | length == 1
           - vpc_info.vpcs[0].vpc_id == vpc_1
 
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name_updated }}"
+          tag:Name: "{{ vpc_name_updated }}"
       register: vpc_info
 
     - name: assert success
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - vpc_info.vpcs | length == 1
           - vpc_info.vpcs[0].vpc_id == vpc_2
 
     - name: delete second VPC (by id)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         vpc_id: "{{ vpc_2 }}"
         state: absent
         cidr_block: "{{ vpc_cidr }}"
@@ -424,14 +423,14 @@
     # ============================================================
 
     - name: attempt to delete a VPC that doesn't exist
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: absent
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}-does-not-exist"
       register: result
 
     - name: assert no changes were made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
           - not result.vpc
@@ -439,7 +438,7 @@
     # ============================================================
 
     - name: create a DHCP option set to use in next test
-      ec2_vpc_dhcp_option:
+      amazon.aws.ec2_vpc_dhcp_option:
         dns_servers:
           - 8.8.4.4
           - 8.8.8.8
@@ -447,25 +446,25 @@
           Name: "{{ vpc_name }}"
       register: new_dhcp
     - name: assert the DHCP option set was successfully created
-      assert:
+      ansible.builtin.assert:
         that:
           - new_dhcp is successful
 
     - name: modify the DHCP options set for a VPC (check_mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
-      check_mode: True
-    - ec2_vpc_net_info:
+      check_mode: true
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed but didn't update
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.vpc.id == vpc_1
@@ -473,19 +472,19 @@
           - vpc_info.vpcs[0].dhcp_options_id == default_dhcp_options_id
 
     - name: modify the DHCP options set for a VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.vpc.id == vpc_1
@@ -495,19 +494,19 @@
           - vpc_info.vpcs[0].dhcp_options_id == new_dhcp.dhcp_options_id
 
     - name: modify the DHCP options set for a VPC (retry)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
           - result.vpc.id == vpc_1
@@ -518,20 +517,20 @@
     # ============================================================
 
     - name: disable dns_hostnames (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
+        dns_hostnames: false
       register: result
-      check_mode: True
-    - ec2_vpc_net_info:
+      check_mode: true
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert changed was set but not made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -540,19 +539,19 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_hostnames
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
+        dns_hostnames: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -562,19 +561,19 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_hostnames (retry)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
+        dns_hostnames: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -584,21 +583,21 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_support (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
-        dns_support: False
-      check_mode: True
+        dns_hostnames: false
+        dns_support: false
+      check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert changed was set but not made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -608,20 +607,20 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_support
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
-        dns_support: False
+        dns_hostnames: false
+        dns_support: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -631,20 +630,20 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == False
 
     - name: disable dns_support (retry)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: False
-        dns_support: False
+        dns_hostnames: false
+        dns_support: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was not made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -654,21 +653,21 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == False
 
     - name: re-enable dns_support (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: True
-        dns_support: True
+        dns_hostnames: true
+        dns_support: true
       register: result
-      check_mode: True
-    - ec2_vpc_net_info:
+      check_mode: true
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change would be made but has not been
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -678,20 +677,20 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == False
 
     - name: re-enable dns_support
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: True
-        dns_support: True
+        dns_hostnames: true
+        dns_support: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -701,20 +700,20 @@
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: re-enable dns_support (retry)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        dns_hostnames: True
-        dns_support: True
+        dns_hostnames: true
+        dns_support: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was not made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -726,20 +725,20 @@
     # ============================================================
 
     - name: add tags (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ first_tags }}"
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name but not Ansible tag
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -750,19 +749,19 @@
           - vpc_info.vpcs[0].tags == name_tags
 
     - name: add tags
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ first_tags }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -772,19 +771,19 @@
           - vpc_info.vpcs[0].tags == (first_tags | combine(name_tags))
 
     - name: add tags (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ first_tags }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -796,7 +795,7 @@
     # ============================================================
 
     - name: modify tags with purge (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
@@ -804,13 +803,13 @@
         purge_tags: true
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name but not Ansible tag
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -820,20 +819,20 @@
           - vpc_info.vpcs[0].tags == (first_tags | combine(name_tags))
 
     - name: modify tags with purge
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ second_tags }}"
         purge_tags: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -843,20 +842,20 @@
           - vpc_info.vpcs[0].tags == (second_tags | combine(name_tags))
 
     - name: modify tags with purge (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ second_tags }}"
         purge_tags: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -868,7 +867,7 @@
     # ============================================================
 
     - name: modify tags without purge (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
@@ -876,13 +875,13 @@
         purge_tags: false
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name but not Ansible tag
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -892,20 +891,20 @@
           - vpc_info.vpcs[0].tags == (second_tags | combine(name_tags))
 
     - name: modify tags with purge
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -915,20 +914,20 @@
           - vpc_info.vpcs[0].tags == (final_tags | combine(name_tags))
 
     - name: modify tags with purge (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -940,21 +939,21 @@
     # ============================================================
 
     - name: modify CIDR (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_a }}"
         name: "{{ vpc_name }}"
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: Check the CIDRs weren't changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -972,20 +971,20 @@
           - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_a }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1011,20 +1010,20 @@
           - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_a }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1050,21 +1049,21 @@
           - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: Check the CIDRs weren't changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1083,20 +1082,20 @@
           - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1126,20 +1125,20 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1168,21 +1167,21 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - list all - check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_a }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1211,21 +1210,21 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - list all)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_a }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1254,21 +1253,21 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - different order - check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
-        - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr_a }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1297,21 +1296,21 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - different order)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
-        - "{{ vpc_cidr_a }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr_a }}"
         name: "{{ vpc_name }}"
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1340,22 +1339,22 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - purge (check mode)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
-        purge_cidrs: yes
+        purge_cidrs: true
       check_mode: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: Check the CIDRs weren't changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1373,21 +1372,21 @@
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - purge
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
-        purge_cidrs: yes
+        purge_cidrs: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1395,31 +1394,36 @@
           - vpc_info.vpcs | length == 1
           - result.vpc.cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
-          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length ==
+            2
           - vpc_cidr in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
           - vpc_cidr_a not in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block'))
           - vpc_cidr_b in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block'))
-          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
-          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length
+            == 2
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
+          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
 
     - name: modify CIDR - purge (no change)
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block:
-        - "{{ vpc_cidr }}"
-        - "{{ vpc_cidr_b }}"
+          - "{{ vpc_cidr }}"
+          - "{{ vpc_cidr_b }}"
         name: "{{ vpc_name }}"
-        purge_cidrs: yes
+        purge_cidrs: true
       register: result
-    - ec2_vpc_net_info:
+    - amazon.aws.ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ vpc_name }}"
+          tag:Name: "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
@@ -1427,27 +1431,33 @@
           - vpc_info.vpcs | length == 1
           - result.vpc.cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
-          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length ==
+            2
           - vpc_cidr in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_cidr_a not in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_a not in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
           - vpc_cidr_b in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
-          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length
+            == 2
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
+          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block')
+            | list)
 
     # ============================================================
 
     - name: Remove IPv6 CIDR association from VPC in check mode
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: False
+        ipv6_cidr: false
       check_mode: true
       register: result
     - name: assert configuration would change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1455,27 +1465,27 @@
     - name: Set IPv6 CIDR association to VPC, no change expected
       # I.e. assert the previous ec2_vpc_net task in check_mode did not
       # mistakenly modify the VPC configuration.
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
       register: result
     - name: assert configuration did not change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is not changed
 
     - name: Remove IPv6 CIDR association from VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: False
+        ipv6_cidr: false
       register: result
     - name: assert IPv6 CIDR association removed from VPC
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1485,14 +1495,14 @@
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
 
     - name: Add IPv6 CIDR association to VPC again
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        ipv6_cidr: True
+        ipv6_cidr: true
       register: result
     - name: assert configuration change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is successful
           - result is changed
@@ -1506,11 +1516,10 @@
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.netcommon.ipv6
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
-
     # ============================================================
 
     - name: test check mode to delete a VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         state: absent
@@ -1518,35 +1527,34 @@
       register: result
 
     - name: assert that a change would have been made
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
 
-    # ============================================================
+  # ============================================================
 
   always:
-
     - name: Describe VPCs before deleting them (for debugging)
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
       ignore_errors: true
 
     - name: replace the DHCP options set so the new one can be deleted
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         state: present
-        multi_ok: no
+        multi_ok: false
         dhcp_opts_id: "{{ default_dhcp_options_id }}"
       ignore_errors: true
 
     - name: remove the DHCP option set
-      ec2_vpc_dhcp_option:
+      amazon.aws.ec2_vpc_dhcp_option:
         dhcp_options_id: "{{ new_dhcp.dhcp_options_id }}"
         state: absent
       ignore_errors: true
 
     - name: remove the VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
         state: absent

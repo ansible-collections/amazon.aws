@@ -1,20 +1,21 @@
+---
 - name: lookup range with no arguments
-  set_fact:
+  ansible.builtin.set_fact:
     no_params: "{{ lookup('amazon.aws.aws_service_ip_ranges') }}"
 
 - name: assert that we're returned a single string
-  assert:
+  ansible.builtin.assert:
     that:
       - no_params is defined
       - no_params is string
 
 - name: lookup range with wantlist
-  set_fact:
+  ansible.builtin.set_fact:
     want_list: "{{ lookup('amazon.aws.aws_service_ip_ranges', wantlist=True) }}"
     want_ipv6_list: "{{ lookup('amazon.aws.aws_service_ip_ranges', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - want_list is defined
       - want_list is iterable
@@ -27,14 +28,13 @@
       - want_ipv6_list | length > 1
       - want_ipv6_list[0] | ansible.utils.ipv6
 
-
 - name: lookup range with service
-  set_fact:
+  ansible.builtin.set_fact:
     s3_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', service='S3', wantlist=True) }}"
     s3_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', service='S3', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - s3_ips is defined
       - s3_ips is iterable
@@ -48,12 +48,12 @@
       - s3_ipv6s[0] | ansible.utils.ipv6
 
 - name: lookup range with a different service
-  set_fact:
+  ansible.builtin.set_fact:
     route53_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', service='ROUTE53_HEALTHCHECKS', wantlist=True) }}"
     route53_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', service='ROUTE53_HEALTHCHECKS', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - route53_ips is defined
       - route53_ips is iterable
@@ -66,23 +66,22 @@
       - route53_ipv6s | length > 1
       - route53_ipv6s[0] | ansible.utils.ipv6
 
-
 - name: assert that service IPV4s and IPV6s do not overlap
-  assert:
+  ansible.builtin.assert:
     that:
       - route53_ips | intersect(s3_ips) | length == 0
       - route53_ipv6s | intersect(s3_ipv6s) | length == 0
 
 - name: lookup range with region
-  set_fact:
+  ansible.builtin.set_fact:
     us_east_1_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', wantlist=True) }}"
 
 - name: lookup IPV6 range with region
-  set_fact:
+  ansible.builtin.set_fact:
     us_east_1_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - us_east_1_ips is defined
       - us_east_1_ips is iterable
@@ -96,12 +95,12 @@
       - us_east_1_ipv6s[0] | ansible.utils.ipv6
 
 - name: lookup range with a different region
-  set_fact:
+  ansible.builtin.set_fact:
     eu_central_1_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='eu-central-1', wantlist=True) }}"
     eu_central_1_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='eu-central-1', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - eu_central_1_ips is defined
       - eu_central_1_ips is iterable
@@ -115,18 +114,18 @@
       - eu_central_1_ipv6s[0] | ansible.utils.ipv6
 
 - name: assert that regional IPs don't overlap
-  assert:
+  ansible.builtin.assert:
     that:
       - eu_central_1_ips | intersect(us_east_1_ips) | length == 0
       - eu_central_1_ipv6s | intersect(us_east_1_ipv6s) | length == 0
 
 - name: lookup range with service and region
-  set_fact:
+  ansible.builtin.set_fact:
     s3_us_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', service='S3', wantlist=True) }}"
     s3_us_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', service='S3', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
-  assert:
+  ansible.builtin.assert:
     that:
       - s3_us_ips is defined
       - s3_us_ips is iterable
@@ -140,7 +139,7 @@
       - s3_us_ipv6s[0] | ansible.utils.ipv6
 
 - name: assert that the regional service IPs are a subset of the regional IPs and service IPs.
-  assert:
+  ansible.builtin.assert:
     that:
       - ( s3_us_ips | intersect(us_east_1_ips) | length ) == ( s3_us_ips | length )
       - ( s3_us_ips | intersect(s3_ips) | length ) == ( s3_us_ips | length )

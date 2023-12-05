@@ -12,7 +12,7 @@ edit_on_github:
   # repository's root, you have to specify the path to the collection root here. For example,
   # if the collection root is in a subdirectory ansible_collections/community/REPO_NAME
   # in your repository, you have to set path_prefix to 'ansible_collections/community/REPO_NAME'.
-  path_prefix: ''
+  path_prefix: ""
 
 # Here you can add arbitrary extra links. Please keep the number of links down to a
 # minimum! Also please keep the description short, since this will be the text put on
@@ -34,8 +34,8 @@ edit_on_github:
 communication:
   matrix_rooms:
     - topic: General usage and support questions
-      room: '#aws:ansible.im'
+      room: "#aws:ansible.im"
   irc_channels:
     - topic: General usage and support questions
       network: Libera
-      channel: '#ansible-aws'
+      channel: "#ansible-aws"

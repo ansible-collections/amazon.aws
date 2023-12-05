@@ -5,7 +5,7 @@
 #
 # ###############################################################################
 
-- name: "Wrap up all tests and setup AWS credentials"
+- name: Wrap up all tests and setup AWS credentials
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -13,8 +13,8 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - debug:
+    - ansible.builtin.debug:
         msg: "{{ inventory_hostname }} start: {{ lookup('pipe','date') }}"
-    - include_tasks: '{{ inventory_hostname }}.yml'
-    - debug:
+    - ansible.builtin.include_tasks: "{{ inventory_hostname }}.yml"
+    - ansible.builtin.debug:
         msg: "{{ inventory_hostname }} finish: {{ lookup('pipe','date') }}"

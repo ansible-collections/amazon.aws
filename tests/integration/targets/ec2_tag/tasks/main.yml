@@ -8,7 +8,7 @@
       region: "{{ aws_region }}"
   block:
     - name: Create an EC2 volume so we have something to tag
-      ec2_vol:
+      amazon.aws.ec2_vol:
         name: "{{ resource_prefix }} ec2_tag volume"
         volume_size: 1
         state: present
@@ -16,17 +16,17 @@
       register: volume
 
     - name: List the tags on the volume (ec2_tag_info)
-      ec2_tag_info:
+      amazon.aws.ec2_tag_info:
         resource: "{{ volume.volume_id }}"
       register: result_info
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result_info.tags | length == 1
           - result_info.tags.Name == '{{ resource_prefix }} ec2_tag volume'
 
     - name: Set some new tags on the volume
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         state: present
         tags:
@@ -35,11 +35,11 @@
           baz: also baz
       register: result
     - name: List the new tags on the volume
-      ec2_tag_info:
+      amazon.aws.ec2_tag_info:
         resource: "{{ volume.volume_id }}"
       register: result_info
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.tags | length == 4
@@ -55,40 +55,40 @@
           - result_info.tags.baz == 'also baz'
 
     - name: Remove a tag by name
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         state: absent
         tags:
           baz:
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.removed_tags | length == 1
           - "'baz' in result.removed_tags"
 
     - name: Don't remove a tag
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         state: absent
         tags:
           foo: baz
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: Remove a tag
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         state: absent
         tags:
           foo: foo
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.tags | length == 2
@@ -98,14 +98,14 @@
           - result.tags.bar == 'baz'
 
     - name: Set an exclusive tag
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         purge_tags: true
         tags:
           baz: quux
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.tags | length == 1
@@ -114,23 +114,23 @@
           - result.tags.baz == 'quux'
 
     - name: Remove all tags
-      ec2_tag:
+      amazon.aws.ec2_tag:
         resource: "{{ volume.volume_id }}"
         purge_tags: true
         tags: {}
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.tags | length == 0
 
   always:
     - name: Remove the volume
-      ec2_vol:
+      amazon.aws.ec2_vol:
         id: "{{ volume.volume_id }}"
         state: absent
       register: result
       until: result is not failed
-      ignore_errors: yes
+      ignore_errors: true
       retries: 10

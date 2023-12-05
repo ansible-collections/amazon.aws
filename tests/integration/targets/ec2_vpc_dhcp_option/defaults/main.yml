@@ -1,5 +1,5 @@
 ---
 # defaults file for ec2_dhcp_option_info tests
-vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
 # default option sets get an AWS domain_name, which is different in us-east-1
 aws_domain_name: "{{ (aws_region == 'us-east-1') | ternary('ec2.internal', aws_region + '.compute.internal') }}"

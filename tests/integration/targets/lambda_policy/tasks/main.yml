@@ -1,147 +1,149 @@
+---
 - name: Integration testing for lambda_policy
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
   collections:
     - community.general
     - amazon.aws
     - community.aws
   block:
-  - name: create minimal lambda role
-    iam_role:
-      name: '{{ lambda_role_name }}'
-      assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
-      create_instance_profile: false
-      managed_policies:
-      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
-    register: iam_role
-  - name: wait 10 seconds for role to become available
-    pause:
-      seconds: 10
-    when: iam_role.changed
+    - name: create minimal lambda role
+      community.aws.iam_role:
+        name: "{{ lambda_role_name }}"
+        assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
+        create_instance_profile: false
+        managed_policies:
+          - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      register: iam_role
+    - name: wait 10 seconds for role to become available
+      ansible.builtin.pause:
+        seconds: 10
+      when: iam_role.changed
 
-  - name: test with no parameters
-    lambda_policy: null
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with no parameters
-    assert:
-      that:
-      - result.failed
-      - 'result.msg.startswith("missing required arguments: ")'
-      - '"action" in result.msg'
-      - '"function_name" in result.msg'
-      - '"principal" in result.msg'
-      - '"statement_id" in result.msg'
+    - name: test with no parameters
+      amazon.aws.lambda_policy:
+      register: result
+      ignore_errors: true
+    - name: assert failure when called with no parameters
+      ansible.builtin.assert:
+        that:
+          - result.failed
+          - 'result.msg.startswith("missing required arguments: ")'
+          - '"action" in result.msg'
+          - '"function_name" in result.msg'
+          - '"principal" in result.msg'
+          - '"statement_id" in result.msg'
 
-  - name: move lambda into place for archive module
-    copy:
-      src: mini_http_lambda.py
-      dest: '{{ output_dir }}/mini_http_lambda.py'
-      mode: preserve
-  - name: bundle lambda into a zip
-    register: zip_res
-    archive:
-      format: zip
-      path: '{{ output_dir }}/mini_http_lambda.py'
-      dest: '{{ output_dir }}/mini_http_lambda.zip'
-  - name: create minimal lambda role
-    iam_role:
-      name: ansible_lambda_role
-      assume_role_policy_document: '{{ lookup(''file'', ''minimal_trust_policy.json'', convert_data=False) }}'
-      create_instance_profile: false
-    register: iam_role
-  - name: wait 10 seconds for role to become available
-    pause:
-      seconds: 10
-    when: iam_role.changed
-  - name: test state=present - upload the lambda
-    lambda:
-      name: '{{lambda_function_name}}'
-      runtime: python3.9
-      handler: mini_http_lambda.handler
-      role: '{{ lambda_role_name }}'
-      zip_file: '{{zip_res.dest}}'
-    register: lambda_result
-  - name: get the aws account ID for use in future commands
-    aws_caller_info: {}
-    register: aws_caller_info
-  - name: register lambda uri for use in template
-    set_fact:
-      mini_lambda_uri: arn:aws:apigateway:{{ aws_region }}:lambda:path/2015-03-31/functions/arn:aws:lambda:{{ aws_region }}:{{ aws_caller_info.account }}:function:{{ lambda_result.configuration.function_name }}/invocations
-  - name: build API file
-    template:
-      src: endpoint-test-swagger-api.yml.j2
-      dest: '{{output_dir}}/endpoint-test-swagger-api.yml.j2'
-  - name: deploy new API
-    api_gateway:
-      api_file: '{{output_dir}}/endpoint-test-swagger-api.yml.j2'
-      stage: lambdabased
-    register: create_result
-  - name: register api id for later
-    set_fact:
-      api_id: '{{ create_result.api_id }}'
-  - name: check API fails with permissions failure
-    uri:
-      url: https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/lambdabased/mini/Mr_Ansible_Tester
-    register: unauth_uri_result
-    ignore_errors: true
-  - name: assert internal server error due to permissions
-    assert:
-      that:
-      - unauth_uri_result is failed
-      - unauth_uri_result.status == 500
-  - name: give api gateway execute permissions on lambda
-    lambda_policy:
-      function_name: '{{ lambda_function_name }}'
-      state: present
-      statement_id: api-gateway-invoke-lambdas
-      action: lambda:InvokeFunction
-      principal: apigateway.amazonaws.com
-      source_arn: arn:aws:execute-api:{{ aws_region }}:{{ aws_caller_info.account }}:*/*
-  - name: try again but with ARN
-    lambda_policy:
-      function_name: '{{ lambda_result.configuration.function_arn }}'
-      state: present
-      statement_id: api-gateway-invoke-lambdas
-      action: lambda:InvokeFunction
-      principal: apigateway.amazonaws.com
-      source_arn: arn:aws:execute-api:{{ aws_region }}:{{ aws_caller_info.account }}:*/*
-  - name: Wait for permissions to propagate
-    ansible.builtin.pause:
-      seconds: 5
-  - name: check API works with execute permissions
-    uri:
-      url: https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/lambdabased/mini/Mr_Ansible_Tester
-    register: uri_result
-  - name: assert API works success
-    assert:
-      that:
-      - uri_result
-  - name: deploy new API
-    api_gateway:
-      api_file: '{{output_dir}}/endpoint-test-swagger-api.yml.j2'
-      stage: lambdabased
-    register: create_result
-    ignore_errors: true
+    - name: move lambda into place for archive module
+      ansible.builtin.copy:
+        src: mini_http_lambda.py
+        dest: "{{ output_dir }}/mini_http_lambda.py"
+        mode: preserve
+    - name: bundle lambda into a zip
+      register: zip_res
+      community.general.archive:
+        format: zip
+        path: "{{ output_dir }}/mini_http_lambda.py"
+        dest: "{{ output_dir }}/mini_http_lambda.zip"
+    - name: create minimal lambda role
+      community.aws.iam_role:
+        name: ansible_lambda_role
+        assume_role_policy_document: "{{ lookup('file', 'minimal_trust_policy.json', convert_data=False) }}"
+        create_instance_profile: false
+      register: iam_role
+    - name: wait 10 seconds for role to become available
+      ansible.builtin.pause:
+        seconds: 10
+      when: iam_role.changed
+    - name: test state=present - upload the lambda
+      amazon.aws.lambda:
+        name: "{{lambda_function_name}}"
+        runtime: python3.9
+        handler: mini_http_lambda.handler
+        role: "{{ lambda_role_name }}"
+        zip_file: "{{zip_res.dest}}"
+      register: lambda_result
+    - name: get the aws account ID for use in future commands
+      amazon.aws.aws_caller_info: {}
+      register: aws_caller_info
+    - name: register lambda uri for use in template
+      ansible.builtin.set_fact:
+        mini_lambda_uri: arn:aws:apigateway:{{ aws_region }}:lambda:path/2015-03-31/functions/arn:aws:lambda:{{ aws_region }}:{{ aws_caller_info.account }}:function:{{
+          lambda_result.configuration.function_name }}/invocations
+    - name: build API file
+      ansible.builtin.template:
+        src: endpoint-test-swagger-api.yml.j2
+        dest: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
+    - name: deploy new API
+      api_gateway:
+        api_file: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
+        stage: lambdabased
+      register: create_result
+    - name: register api id for later
+      ansible.builtin.set_fact:
+        api_id: "{{ create_result.api_id }}"
+    - name: check API fails with permissions failure
+      ansible.builtin.uri:
+        url: https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/lambdabased/mini/Mr_Ansible_Tester
+      register: unauth_uri_result
+      ignore_errors: true
+    - name: assert internal server error due to permissions
+      ansible.builtin.assert:
+        that:
+          - unauth_uri_result is failed
+          - unauth_uri_result.status == 500
+    - name: give api gateway execute permissions on lambda
+      amazon.aws.lambda_policy:
+        function_name: "{{ lambda_function_name }}"
+        state: present
+        statement_id: api-gateway-invoke-lambdas
+        action: lambda:InvokeFunction
+        principal: apigateway.amazonaws.com
+        source_arn: arn:aws:execute-api:{{ aws_region }}:{{ aws_caller_info.account }}:*/*
+    - name: try again but with ARN
+      amazon.aws.lambda_policy:
+        function_name: "{{ lambda_result.configuration.function_arn }}"
+        state: present
+        statement_id: api-gateway-invoke-lambdas
+        action: lambda:InvokeFunction
+        principal: apigateway.amazonaws.com
+        source_arn: arn:aws:execute-api:{{ aws_region }}:{{ aws_caller_info.account }}:*/*
+    - name: Wait for permissions to propagate
+      ansible.builtin.pause:
+        seconds: 5
+    - name: check API works with execute permissions
+      ansible.builtin.uri:
+        url: https://{{create_result.api_id}}.execute-api.{{aws_region}}.amazonaws.com/lambdabased/mini/Mr_Ansible_Tester
+      register: uri_result
+    - name: assert API works success
+      ansible.builtin.assert:
+        that:
+          - uri_result
+    - name: deploy new API
+      api_gateway:
+        api_file: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
+        stage: lambdabased
+      register: create_result
+      ignore_errors: true
   always:
-  - name: destroy lambda for test cleanup if created
-    lambda:
-      name: '{{lambda_function_name}}'
-      state: absent
-    register: result
-    ignore_errors: true
-  - name: destroy API for test cleanup if created
-    api_gateway:
-      state: absent
-      api_id: '{{api_id}}'
-    register: destroy_result
-    ignore_errors: true
-  - name: Clean up test role
-    iam_role:
-      name: '{{ lambda_role_name }}'
-      state: absent
-    ignore_errors: true
+    - name: destroy lambda for test cleanup if created
+      amazon.aws.lambda:
+        name: "{{lambda_function_name}}"
+        state: absent
+      register: result
+      ignore_errors: true
+    - name: destroy API for test cleanup if created
+      api_gateway:
+        state: absent
+        api_id: "{{api_id}}"
+      register: destroy_result
+      ignore_errors: true
+    - name: Clean up test role
+      community.aws.iam_role:
+        name: "{{ lambda_role_name }}"
+        state: absent
+      ignore_errors: true

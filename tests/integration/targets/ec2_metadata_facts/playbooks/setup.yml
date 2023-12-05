@@ -9,166 +9,166 @@
   hosts: localhost
 
   collections:
-  - amzon.aws
-  - community.aws
+    - amzon.aws
+    - community.aws
 
   vars:
-    vpc_name: '{{ resource_prefix }}-vpc'
-    vpc_seed: '{{ resource_prefix }}'
-    vpc_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/16'
-    subnet_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
+    vpc_name: "{{ resource_prefix }}-vpc"
+    vpc_seed: "{{ resource_prefix }}"
+    vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.0.0/16
+    subnet_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.32.0/24
 
   tasks:
-  - set_fact:
-      # As lookup plugins don't have access to module_defaults
-      connection_args:
-        region: "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
-        session_token: "{{ security_token | default(omit) }}"
+    - ansible.builtin.set_fact:
+        # As lookup plugins don't have access to module_defaults
+        connection_args:
+          region: "{{ aws_region }}"
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
 
-  - include_role:
-      name: '../setup_sshkey'
-  - include_role:
-      name: '../setup_ec2_facts'
+    - ansible.builtin.include_role:
+        name: ../setup_sshkey
+    - ansible.builtin.include_role:
+        name: ../setup_ec2_facts
 
-  - set_fact:
-      availability_zone: '{{ ec2_availability_zone_names[0] }}'
+    - ansible.builtin.set_fact:
+        availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
-  # ============================================================
-  - name: create a VPC
-    ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
-      state: present
-      cidr_block: "{{ vpc_cidr }}"
-      tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
-    register: vpc_result
+    # ============================================================
+    - name: create a VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        tags:
+          Name: "{{ resource_prefix }}-vpc"
+          Description: Created by ansible-test
+      register: vpc_result
 
-  - set_fact:
-      vpc_id: "{{ vpc_result.vpc.id }}"
+    - ansible.builtin.set_fact:
+        vpc_id: "{{ vpc_result.vpc.id }}"
 
-  - name: create an internet gateway
-    ec2_vpc_igw:
-      vpc_id: "{{ vpc_id }}"
-      state: present
-      tags:
-        "Name": "{{ resource_prefix }}"
-    register: igw_result
+    - name: create an internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        state: present
+        tags:
+          Name: "{{ resource_prefix }}"
+      register: igw_result
 
-  - name: create a subnet
-    ec2_vpc_subnet:
-      cidr: "{{ vpc_cidr }}"
-      az: "{{ availability_zone }}"
-      vpc_id: "{{ vpc_id }}"
-      tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
-      state: present
-    register: vpc_subnet_result
+    - name: create a subnet
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ vpc_cidr }}"
+        az: "{{ availability_zone }}"
+        vpc_id: "{{ vpc_id }}"
+        tags:
+          Name: "{{ resource_prefix }}-vpc"
+          Description: Created by ansible-test
+        state: present
+      register: vpc_subnet_result
 
-  - name: create a public route table
-    ec2_vpc_route_table:
-      vpc_id: "{{ vpc_id }}"
-      tags:
-        "Name": "{{ resource_prefix }}"
-      subnets:
-        - "{{ vpc_subnet_result.subnet.id }}"
-      routes:
-        - dest: 0.0.0.0/0
-          gateway_id: "{{ igw_result.gateway_id }}"
-    register: public_route_table
+    - name: create a public route table
+      amazon.aws.ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        tags:
+          Name: "{{ resource_prefix }}"
+        subnets:
+          - "{{ vpc_subnet_result.subnet.id }}"
+        routes:
+          - dest: "0.0.0.0/0"
+            gateway_id: "{{ igw_result.gateway_id }}"
+      register: public_route_table
 
-  - name: create a security group
-    ec2_security_group:
-      name: "{{ resource_prefix }}-sg"
-      description: "Created by {{ resource_prefix }}"
-      rules:
-        - proto: tcp
-          ports: 22
-          cidr_ip: 0.0.0.0/0
-        - proto: icmp
-          from_port: -1
-          to_port: -1
-          cidr_ip: 0.0.0.0/0
-      state: present
-      vpc_id: "{{ vpc_result.vpc.id }}"
-    register: vpc_sg_result
+    - name: create a security group
+      ec2_security_group:
+        name: "{{ resource_prefix }}-sg"
+        description: Created by {{ resource_prefix }}
+        rules:
+          - proto: tcp
+            ports: 22
+            cidr_ip: "0.0.0.0/0"
+          - proto: icmp
+            from_port: -1
+            to_port: -1
+            cidr_ip: "0.0.0.0/0"
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_sg_result
 
-  - name: Create a key
-    ec2_key:
-      name: '{{ resource_prefix }}'
-      key_material: '{{ key_material }}'
-      state: present
-    register: ec2_key_result
+    - name: Create a key
+      amazon.aws.ec2_key:
+        name: "{{ resource_prefix }}"
+        key_material: "{{ key_material }}"
+        state: present
+      register: ec2_key_result
 
-  - name: Set facts to simplify use of extra resources
-    set_fact:
-      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-      vpc_sg_id: "{{ vpc_sg_result.group_id }}"
-      vpc_igw_id: "{{ igw_result.gateway_id }}"
-      vpc_route_table_id: "{{ public_route_table.route_table.id }}"
-      ec2_key_name: "{{ ec2_key_result.key.name }}"
+    - name: Set facts to simplify use of extra resources
+      ansible.builtin.set_fact:
+        vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+        vpc_sg_id: "{{ vpc_sg_result.group_id }}"
+        vpc_igw_id: "{{ igw_result.gateway_id }}"
+        vpc_route_table_id: "{{ public_route_table.route_table.id }}"
+        ec2_key_name: "{{ ec2_key_result.key.name }}"
 
-  - name: Create an instance to test with
-    ec2_instance:
-      state: running
-      name: "{{ resource_prefix }}-ec2-metadata-facts"
-      image_id: "{{ ec2_ami_id }}"
-      vpc_subnet_id: "{{ vpc_subnet_id }}"
-      security_group: "{{ vpc_sg_id }}"
-      instance_type: t2.micro
-      key_name: "{{ ec2_key_name }}"
-      network:
-        assign_public_ip: true
-        delete_on_termination: true
-      metadata_options:
+    - name: Create an instance to test with
+      amazon.aws.ec2_instance:
+        state: running
+        name: "{{ resource_prefix }}-ec2-metadata-facts"
+        image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ vpc_subnet_id }}"
+        security_group: "{{ vpc_sg_id }}"
+        instance_type: t2.micro
+        key_name: "{{ ec2_key_name }}"
+        network:
+          assign_public_ip: true
+          delete_on_termination: true
+        metadata_options:
           instance_metadata_tags: enabled
-      tags:
-        snake_case_key: a_snake_case_value
-        camelCaseKey: aCamelCaseValue
-    register: ec2_instance
+        tags:
+          snake_case_key: a_snake_case_value
+          camelCaseKey: aCamelCaseValue
+      register: ec2_instance
 
-  - set_fact:
-      ec2_ami_id_py2: "{{ lookup('aws_ssm', '/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2', **connection_args) }}"
-      ec2_ami_ssh_user_py2: "ec2-user"
+    - ansible.builtin.set_fact:
+        ec2_ami_id_py2: "{{ lookup('aws_ssm', '/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2', **connection_args) }}"
+        ec2_ami_ssh_user_py2: ec2-user
 
-  - name: Create an instance to test with using Python 2
-    ec2_instance:
-      state: running
-      name: "{{ resource_prefix }}-ec2-metadata-facts-py2"
-      image_id: "{{ ec2_ami_id_py2 }}"
-      vpc_subnet_id: "{{ vpc_subnet_id }}"
-      security_group: "{{ vpc_sg_id }}"
-      instance_type: t2.micro
-      key_name: "{{ ec2_key_name }}"
-      network:
-        assign_public_ip: true
-        delete_on_termination: true
-      metadata_options:
+    - name: Create an instance to test with using Python 2
+      amazon.aws.ec2_instance:
+        state: running
+        name: "{{ resource_prefix }}-ec2-metadata-facts-py2"
+        image_id: "{{ ec2_ami_id_py2 }}"
+        vpc_subnet_id: "{{ vpc_subnet_id }}"
+        security_group: "{{ vpc_sg_id }}"
+        instance_type: t2.micro
+        key_name: "{{ ec2_key_name }}"
+        network:
+          assign_public_ip: true
+          delete_on_termination: true
+        metadata_options:
           instance_metadata_tags: enabled
-      tags:
-        snake_case_key: a_snake_case_value
-        camelCaseKey: aCamelCaseValue
-      wait: True
-    register: ec2_instance_py2
+        tags:
+          snake_case_key: a_snake_case_value
+          camelCaseKey: aCamelCaseValue
+        wait: true
+      register: ec2_instance_py2
 
-  - set_fact:
-      ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
-      ec2_instance_id_py2: "{{ ec2_instance_py2.instances[0].instance_id }}"
+    - ansible.builtin.set_fact:
+        ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
+        ec2_instance_id_py2: "{{ ec2_instance_py2.instances[0].instance_id }}"
 
-  - name: Create inventory file
-    template:
-      src: ../templates/inventory.j2
-      dest: ../inventory
+    - name: Create inventory file
+      ansible.builtin.template:
+        src: ../templates/inventory.j2
+        dest: ../inventory
 
-  - wait_for:
-      port: 22
-      host: '{{ ec2_instance.instances[0].public_ip_address }}'
-      timeout: 1200
+    - ansible.builtin.wait_for:
+        port: 22
+        host: "{{ ec2_instance.instances[0].public_ip_address }}"
+        timeout: 1200
 
-  - wait_for:
-      port: 22
-      host: '{{ ec2_instance_py2.instances[0].public_ip_address }}'
-      timeout: 1200
+    - ansible.builtin.wait_for:
+        port: 22
+        host: "{{ ec2_instance_py2.instances[0].public_ip_address }}"
+        timeout: 1200

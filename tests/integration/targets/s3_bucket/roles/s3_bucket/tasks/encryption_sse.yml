@@ -6,38 +6,38 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}e-sse"
     # ============================================================
 
-    - name: 'Create a simple bucket'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create a simple bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
       register: output
 
-    - name: 'Enable AES256 encryption'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Enable AES256 encryption
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
-        encryption: 'AES256'
+        encryption: AES256
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           # SSE is now enabled by default
           # - output.changed
           - output.encryption
           - output.encryption.SSEAlgorithm == 'AES256'
 
-    - name: 'Re-enable AES256 encryption (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Re-enable AES256 encryption (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
-        encryption: 'AES256'
+        encryption: AES256
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - output.encryption
@@ -75,19 +75,19 @@
     ## # ============================================================
 
     - name: Delete encryption test s3 bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
   # ============================================================
   always:
     - name: Ensure all buckets are deleted
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

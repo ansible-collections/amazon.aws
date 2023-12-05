@@ -8,7 +8,7 @@
       region: "{{ aws_region }}"
   block:
     - name: Create VPC for use in testing
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         state: present
         name: "{{ vpc_name }}"
         cidr_block: "{{ vpc_cidr }}"
@@ -20,7 +20,7 @@
         - Delete ec2_instance environment
 
     - name: Create default subnet in zone A
-      ec2_vpc_subnet:
+      amazon.aws.ec2_vpc_subnet:
         state: present
         vpc_id: "{{ testing_vpc.vpc.id }}"
         cidr: "{{ subnet_a_cidr }}"
@@ -30,7 +30,7 @@
       register: testing_subnet_a
 
     - name: Create secondary subnet in zone B
-      ec2_vpc_subnet:
+      amazon.aws.ec2_vpc_subnet:
         state: present
         vpc_id: "{{ testing_vpc.vpc.id }}"
         cidr: "{{ subnet_b_cidr }}"
@@ -73,7 +73,7 @@
       register: sg2
 
     - name: Preserve defaults for other roles
-      set_fact:
+      ansible.builtin.set_fact:
       # Ensure variables are available outside of this role
         vpc_cidr: "{{ vpc_cidr }}"
         vpc_name: "{{ vpc_name }}"

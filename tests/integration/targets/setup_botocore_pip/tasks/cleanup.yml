@@ -1,5 +1,6 @@
-- name: 'Delete temporary pip environment'
-  file:
+---
+- name: Delete temporary pip environment
+  ansible.builtin.file:
     path: "{{ botocore_pip_directory }}"
     state: absent
-  no_log: yes
+  no_log: true

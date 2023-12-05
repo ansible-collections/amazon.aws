@@ -1,202 +1,202 @@
 ---
-- name: 'Create temporary location for CA files'
-  tempfile:
+- name: Create temporary location for CA files
+  ansible.builtin.tempfile:
     state: directory
-    suffix: 'test-CAs'
+    suffix: test-CAs
   register: ca_tmp
 
-- name: 'Ensure we have Amazons root CA available to us'
-  copy:
-    src: 'amazonroot.pem'
-    dest: '{{ ca_tmp.path }}/amazonroot.pem'
-    mode: 0644
+- name: Ensure we have Amazons root CA available to us
+  ansible.builtin.copy:
+    src: amazonroot.pem
+    dest: "{{ ca_tmp.path }}/amazonroot.pem"
+    mode: "0644"
 
-- name: 'Ensure we have a another CA (ISRG-X1) bundle available to us'
-  copy:
-    src: 'isrg-x1.pem'
-    dest: '{{ ca_tmp.path }}/isrg-x1.pem'
-    mode: 0644
+- name: Ensure we have a another CA (ISRG-X1) bundle available to us
+  ansible.builtin.copy:
+    src: isrg-x1.pem
+    dest: "{{ ca_tmp.path }}/isrg-x1.pem"
+    mode: "0644"
 
 ##################################################################################
 # Test disabling cert validation (make sure we don't error)
 
-- name: 'Test basic operation using default CA bundle (no validation) - parameter'
+- name: Test basic operation using default CA bundle (no validation) - parameter
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    validate_certs: False
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    validate_certs: false
   register: default_bundle_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - default_bundle_result is successful
+      - default_bundle_result is successful
 
 ##################################################################################
 # Tests using Amazon's CA (the one the endpoint certs should be signed with)
 
-- name: 'Test basic operation using Amazons root CA - parameter'
+- name: Test basic operation using Amazons root CA - parameter
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    aws_ca_bundle: '{{ ca_tmp.path }}/amazonroot.pem'
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    aws_ca_bundle: "{{ ca_tmp.path }}/amazonroot.pem"
   register: amazon_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - amazon_ca_result is successful
+      - amazon_ca_result is successful
 
-- name: 'Test basic operation using Amazons root CA - environment'
+- name: Test basic operation using Amazons root CA - environment
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
   environment:
-    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/amazonroot.pem'
+    AWS_CA_BUNDLE: "{{ ca_tmp.path }}/amazonroot.pem"
   register: amazon_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - amazon_ca_result is successful
+      - amazon_ca_result is successful
 
-- name: 'Test basic operation using Amazons root CA (no validation) - parameter'
+- name: Test basic operation using Amazons root CA (no validation) - parameter
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    aws_ca_bundle: '{{ ca_tmp.path }}/amazonroot.pem'
-    validate_certs: False
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    aws_ca_bundle: "{{ ca_tmp.path }}/amazonroot.pem"
+    validate_certs: false
   register: amazon_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - amazon_ca_result is successful
+      - amazon_ca_result is successful
 
-- name: 'Test basic operation using Amazons root CA (no validation) - environment'
+- name: Test basic operation using Amazons root CA (no validation) - environment
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    validate_certs: False
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    validate_certs: false
   environment:
-    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/amazonroot.pem'
+    AWS_CA_BUNDLE: "{{ ca_tmp.path }}/amazonroot.pem"
   register: amazon_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - amazon_ca_result is successful
+      - amazon_ca_result is successful
 
 ##################################################################################
 # Tests using ISRG's CA (one that the endpoint certs *aren't* signed with)
 
-- name: 'Test basic operation using a different CA - parameter'
+- name: Test basic operation using a different CA - parameter
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
-  ignore_errors: yes
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is failed
-    # Caught when we try to do something, and passed to fail_json_aws
-    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
-    - '"Fail JSON AWS" in isrg_ca_result.msg'
+      - isrg_ca_result is failed
+      # Caught when we try to do something, and passed to fail_json_aws
+      - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+      - '"Fail JSON AWS" in isrg_ca_result.msg'
 
-- name: 'Test basic operation using a different CA - environment'
+- name: Test basic operation using a different CA - environment
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
   environment:
-    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/isrg-x1.pem'
+    AWS_CA_BUNDLE: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
-  ignore_errors: yes
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is failed
-    # Caught when we try to do something, and passed to fail_json_aws
-    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
-    - '"Fail JSON AWS" in isrg_ca_result.msg'
+      - isrg_ca_result is failed
+      # Caught when we try to do something, and passed to fail_json_aws
+      - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+      - '"Fail JSON AWS" in isrg_ca_result.msg'
 
-- name: 'Test basic operation using a different CA (no validation) - parameter'
+- name: Test basic operation using a different CA (no validation) - parameter
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
-    validate_certs: False
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
+    validate_certs: false
   register: isrg_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is successful
+      - isrg_ca_result is successful
 
-- name: 'Test basic operation using a different CA (no validation) - environment'
+- name: Test basic operation using a different CA (no validation) - environment
   example_module:
-    region: '{{ aws_region }}'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
-    validate_certs: False
+    region: "{{ aws_region }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
+    validate_certs: false
   environment:
-    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/isrg-x1.pem'
+    AWS_CA_BUNDLE: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is successful
+      - isrg_ca_result is successful
 
 ##################################################################################
 # https://github.com/ansible-collections/amazon.aws/issues/129
-- name: 'Test CA bundle is used when authenticating with a profile - implied validation'
+- name: Test CA bundle is used when authenticating with a profile - implied validation
   example_module:
-    profile: 'test_profile'
-    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+    profile: test_profile
+    aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
-  ignore_errors: yes
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is failed
-    # Caught when we try to do something, and passed to fail_json_aws
-    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
-    - '"Fail JSON AWS" in isrg_ca_result.msg'
+      - isrg_ca_result is failed
+      # Caught when we try to do something, and passed to fail_json_aws
+      - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+      - '"Fail JSON AWS" in isrg_ca_result.msg'
 
-- name: 'Test CA bundle is used when authenticating with a profile - explicit validation'
+- name: Test CA bundle is used when authenticating with a profile - explicit validation
   example_module:
-    profile: 'test_profile'
-    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
-    validate_certs: True
+    profile: test_profile
+    aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
+    validate_certs: true
   register: isrg_ca_result
-  ignore_errors: yes
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is failed
-    # Caught when we try to do something, and passed to fail_json_aws
-    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
-    - '"Fail JSON AWS" in isrg_ca_result.msg'
+      - isrg_ca_result is failed
+      # Caught when we try to do something, and passed to fail_json_aws
+      - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+      - '"Fail JSON AWS" in isrg_ca_result.msg'
 
-- name: 'Test CA bundle is used when authenticating with a profile - explicitly disable validation'
+- name: Test CA bundle is used when authenticating with a profile - explicitly disable validation
   example_module:
-    profile: 'test_profile'
-    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
-    validate_certs: False
+    profile: test_profile
+    aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
+    validate_certs: false
   register: isrg_ca_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - isrg_ca_result is success
+      - isrg_ca_result is success

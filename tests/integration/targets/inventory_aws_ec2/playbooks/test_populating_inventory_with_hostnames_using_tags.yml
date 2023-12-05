@@ -4,41 +4,36 @@
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
   tasks:
-
     - module_defaults:
         group/aws:
-          access_key: '{{ aws_access_key }}'
-          secret_key: '{{ aws_secret_key }}'
-          session_token: '{{ security_token | default(omit) }}'
-          region: '{{ aws_region }}'
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
+          region: "{{ aws_region }}"
       block:
-
         # Create VPC, subnet, security group, and find image_id to create instance
-        - include_tasks: tasks/setup.yml
-
-        # Create new host
+        - ansible.builtin.include_tasks: tasks/setup.yml
         - name: create a new host
-          ec2_instance:
-            image_id: '{{ image_id }}'
-            name: '{{ resource_prefix }}'
+          amazon.aws.ec2_instance:
+            image_id: "{{ image_id }}"
+            name: "{{ resource_prefix }}"
             tags:
               Tag1: Test1
               Tag2: Test2
             purge_tags: true
             instance_type: t2.micro
-            security_groups: '{{ sg_id }}'
-            vpc_subnet_id: '{{ subnet_id }}'
+            security_groups: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
             wait: false
           register: setup_instance
 
         # refresh inventory
-        - meta: refresh_inventory
-
-        - debug:
+        - ansible.builtin.meta: refresh_inventory
+        - ansible.builtin.debug:
             var: groups
 
         - name: assert groups and hostvars were populated with inventory
-          assert:
+          ansible.builtin.assert:
             that:
               - "'aws_ec2' in groups"
               - groups['aws_ec2'] | length == 1

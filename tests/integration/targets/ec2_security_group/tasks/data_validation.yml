@@ -2,32 +2,32 @@
 - block:
     - name: Create a group with only the default rule
       ec2_security_group:
-        name: '{{ec2_group_name}}-input-tests'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-input-tests"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
 
     - name: Run through some common weird port specs
       ec2_security_group:
-        name: '{{ec2_group_name}}-input-tests'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-input-tests"
+        description: "{{ec2_group_description}}"
         rules:
           - "{{ item }}"
       with_items:
         - proto: tcp
           from_port: "8182"
           to_port: 8182
-          cidr_ipv6: "fc00:ff9b::/96"
+          cidr_ipv6: fc00:ff9b::/96
           rule_desc: Mixed string and non-string ports
         - proto: tcp
           ports:
-          - "9000"
-          - 9001
-          - 9002-9005
-          cidr_ip: "10.2.3.0/24"
+            - "9000"
+            - 9001
+            - 9002-9005
+          cidr_ip: 10.2.3.0/24
   always:
     - name: tidy up input testing group
       ec2_security_group:
-        name: '{{ec2_group_name}}-input-tests'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}-input-tests"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

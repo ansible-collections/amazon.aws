@@ -1,7 +1,7 @@
 ---
 name: sanity tests
 
-on: [workflow_call]  # allow this workflow to be called from other workflows
+on: [workflow_call] # allow this workflow to be called from other workflows
 
 jobs:
   sanity:

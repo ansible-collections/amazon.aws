@@ -8,10 +8,10 @@
   block:
     - name: create a key
       kms_key:
-        alias: '{{ kms_key_alias }}'
+        alias: "{{ kms_key_alias }}"
         state: present
-        enabled: yes
-        enable_key_rotation: no
+        enabled: true
+        enable_key_rotation: false
       register: key
 
     - name: Create an AWS Backup Vault - check mode
@@ -21,9 +21,9 @@
         tags:
           environment: dev
       register: backup_vault_result_check
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - backup_vault_result_check is changed
           - backup_vault_result_check.vault.backup_vault_name == backup_vault_name
@@ -38,7 +38,7 @@
           environment: dev
       register: backup_vault_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - backup_vault_result is changed
           - backup_vault_result.vault.backup_vault_name == backup_vault_name
@@ -51,7 +51,7 @@
           - "{{ backup_vault_name }}"
       register: vault_info
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - vault_info.backup_vaults[0].backup_vault_name == backup_vault_result.vault.backup_vault_name
           - vault_info.backup_vaults[0].backup_vault_arn == backup_vault_result.vault.backup_vault_arn
@@ -65,7 +65,7 @@
           environment: dev
       register: backup_vault_result_idem
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - backup_vault_result_idem is not changed
           - backup_vault_result_idem.vault.backup_vault_name == backup_vault_name
@@ -82,7 +82,7 @@
       register: backup_vault_update_check_mode_result
 
     - name: Verify check mode update result
-      assert:
+      ansible.builtin.assert:
         that:
           - backup_vault_update_check_mode_result is changed
           - backup_vault_update_check_mode_result.vault.backup_vault_name == backup_vault_name
@@ -254,6 +254,6 @@
     - name: finish off by deleting keys
       kms_key:
         state: absent
-        alias: '{{ kms_key_alias }}'
+        alias: "{{ kms_key_alias }}"
         pending_window: 7
       ignore_errors: true

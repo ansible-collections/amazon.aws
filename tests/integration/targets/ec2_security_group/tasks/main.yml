@@ -1,395 +1,392 @@
 ---
-- set_fact:
+- ansible.builtin.set_fact:
     # lookup plugins don't have access to module_defaults
     connection_args:
-        region: "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
-        session_token: "{{ security_token | default(omit) }}"
-  no_log: True
+      region: "{{ aws_region }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+  no_log: true
 
 # ============================================================
 - name: Run all tests
   module_defaults:
-      group/aws:
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
-        session_token: "{{ security_token | default(omit)}}"
-        region: "{{ aws_region }}"
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit)}}"
+      region: "{{ aws_region }}"
   block:
     - name: determine if there is a default VPC
-      set_fact:
+      ansible.builtin.set_fact:
         defaultvpc: "{{ lookup('amazon.aws.aws_account_attribute', attribute='default-vpc', **connection_args) }}"
       register: default_vpc
 
     - name: create a VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
         cidr_block: "{{ vpc_cidr }}"
         tags:
           Name: "{{ resource_prefix }}-vpc"
-          Description: "Created by ansible-test"
+          Description: Created by ansible-test
       register: vpc_result
     #TODO(ryansb): Update CI for VPC peering permissions
     #- include_tasks: ./multi_account.yml
-    - include_tasks: ./diff_mode.yml
-    - include_tasks: ./numeric_protos.yml
-    - include_tasks: ./rule_group_create.yml
-    - include_tasks: ./egress_tests.yml
-    - include_tasks: ./icmp_verbs.yml
-    - include_tasks: ./data_validation.yml
-    - include_tasks: ./multi_nested_target.yml
-    - include_tasks: ./group_info.yml
-
-    # ============================================================
+    - ansible.builtin.include_tasks: ./diff_mode.yml
+    - ansible.builtin.include_tasks: ./numeric_protos.yml
+    - ansible.builtin.include_tasks: ./rule_group_create.yml
+    - ansible.builtin.include_tasks: ./egress_tests.yml
+    - ansible.builtin.include_tasks: ./icmp_verbs.yml
+    - ansible.builtin.include_tasks: ./data_validation.yml
+    - ansible.builtin.include_tasks: ./multi_nested_target.yml
+    - ansible.builtin.include_tasks: ./group_info.yml
     - name: test state=absent (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: absent
       check_mode: true
       register: result
 
     - name: assert no changes would be made
-      assert:
+      ansible.builtin.assert:
         that:
           - not result.changed
 
     # ===========================================================
     - name: test state=absent
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: absent
       register: result
 
     # ============================================================
     - name: test state=present (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test state=present (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
-           - 'result.group_id.startswith("sg-")'
+          - result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test state=present different description (expected changed=false) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}CHANGED'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}CHANGED"
         state: present
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'not result.changed'
+          - not result.changed
 
     # ============================================================
     - name: test state=present different description (expected changed=false)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}CHANGED'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}CHANGED"
         state: present
       ignore_errors: true
       register: result
 
     - name: assert state=present (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'not result.changed'
-           - 'result.group_id.startswith("sg-")'
+          - not result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test state=present (expected changed=false)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
       register: result
 
     - name: assert state=present (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'not result.changed'
-           - 'result.group_id.startswith("sg-")'
+          - not result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: tests IPv6 with the default VPC
-      include_tasks: ./ipv6_default_tests.yml
+      ansible.builtin.include_tasks: ./ipv6_default_tests.yml
       when: default_vpc
 
     - name: test IPv6 with a specified VPC
       block:
-
         # ============================================================
         - name: test state=present (expected changed=true) (CHECK MODE)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
           check_mode: true
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
+              - result.changed
 
         # ============================================================
         - name: test state=present (expected changed=true)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
-               - 'result.group_id.startswith("sg-")'
+              - result.changed
+              - result.group_id.startswith("sg-")
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=true) (CHECK MODE)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
           check_mode: true
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
+              - result.changed
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=true)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
-               - 'result.group_id.startswith("sg-")'
+              - result.changed
+              - result.group_id.startswith("sg-")
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=false) (CHECK MODE)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
           check_mode: true
           register: result
 
         - name: assert nothing changed
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'not result.changed'
+              - not result.changed
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=false)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
           register: result
 
         - name: assert nothing changed
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'not result.changed'
+              - not result.changed
 
         # ============================================================
         - name: test rules_egress state=present for ipv6 (expected changed=true) (CHECK MODE)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
             rules_egress:
-            - proto: "tcp"
-              from_port: 8181
-              to_port: 8181
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8181
+                to_port: 8181
+                cidr_ipv6: 64:ff9b::/96
           check_mode: true
           diff: true
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
-               - 'result.diff.0.before.ip_permissions == result.diff.0.after.ip_permissions'
-               - 'result.diff.0.before.ip_permissions_egress != result.diff.0.after.ip_permissions_egress'
+              - result.changed
+              - result.diff.0.before.ip_permissions == result.diff.0.after.ip_permissions
+              - result.diff.0.before.ip_permissions_egress != result.diff.0.after.ip_permissions_egress
 
         # ============================================================
         - name: test rules_egress state=present for ipv6 (expected changed=true)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: present
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
             rules:
-            - proto: "tcp"
-              from_port: 8182
-              to_port: 8182
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8182
+                to_port: 8182
+                cidr_ipv6: 64:ff9b::/96
             rules_egress:
-            - proto: "tcp"
-              from_port: 8181
-              to_port: 8181
-              cidr_ipv6: "64:ff9b::/96"
+              - proto: tcp
+                from_port: 8181
+                to_port: 8181
+                cidr_ipv6: 64:ff9b::/96
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-               - 'result.changed'
-               - 'result.group_id.startswith("sg-")'
+              - result.changed
+              - result.group_id.startswith("sg-")
 
         # ============================================================
         - name: test state=absent (expected changed=true) (CHECK MODE)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: absent
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
           check_mode: true
           diff: true
           register: result
 
         - name: assert group was removed
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'result.changed'
-              - 'not result.diff.0.after'
+              - result.changed
+              - not result.diff.0.after
 
         # ============================================================
         - name: test state=absent (expected changed=true)
           ec2_security_group:
-            name: '{{ ec2_group_name }}-2'
-            description: '{{ ec2_group_description }}-2'
+            name: "{{ ec2_group_name }}-2"
+            description: "{{ ec2_group_description }}-2"
             state: absent
-            vpc_id: '{{ vpc_result.vpc.id }}'
+            vpc_id: "{{ vpc_result.vpc.id }}"
           register: result
 
         - name: assert group was removed
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'result.changed'
+              - result.changed
 
     # ============================================================
     - name: test state=present for ipv4 (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-        - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test state=present for ipv4 (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-        - 'result.changed'
-        - 'result.group_id.startswith("sg-")'
-        - 'result.ip_permissions|length == 1'
-        - 'result.ip_permissions_egress|length == 1'
+          - result.changed
+          - result.group_id.startswith("sg-")
+          - result.ip_permissions|length == 1
+          - result.ip_permissions_egress|length == 1
 
     # ============================================================
     - name: add same rule to the existing group  (expected changed=false) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       check_mode: true
       diff: true
       register: check_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not check_result.changed
           - check_result.diff.0.before.ip_permissions.0 == check_result.diff.0.after.ip_permissions.0
@@ -397,449 +394,446 @@
     # ============================================================
     - name: add same rule to the existing group  (expected changed=false)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
-          - 'result.group_id.startswith("sg-")'
+          - not result.changed
+          - result.group_id.startswith("sg-")
 
     - name: assert state=present (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not check_result.changed'
+          - not check_result.changed
 
     # ============================================================
     - name: add a rule that auto creates another security group (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
-        purge_rules: no
+        purge_rules: false
         rules:
-        - proto: "tcp"
-          group_name: "{{ resource_prefix }} - Another security group"
-          group_desc: Another security group
-          ports: 7171
+          - proto: tcp
+            group_name: "{{ resource_prefix }} - Another security group"
+            group_desc: Another security group
+            ports: 7171
       check_mode: true
       register: result
 
     - name: check that there are now two rules
-      assert:
+      ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
     - name: add a rule that auto creates another security group
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
-        purge_rules: no
+        purge_rules: false
         rules:
-        - proto: "tcp"
-          group_name: "{{ resource_prefix }} - Another security group"
-          group_desc: Another security group
-          ports: 7171
+          - proto: tcp
+            group_name: "{{ resource_prefix }} - Another security group"
+            group_desc: Another security group
+            ports: 7171
       register: result
 
     - name: check that there are now two rules
-      assert:
+      ansible.builtin.assert:
         that:
           - result.changed
           - result.warning is not defined
           - result.ip_permissions|length == 2
-          - result.ip_permissions[0].user_id_group_pairs or
-            result.ip_permissions[1].user_id_group_pairs
-          - 'result.ip_permissions_egress[0].ip_protocol == "-1"'
+          - result.ip_permissions[0].user_id_group_pairs or result.ip_permissions[1].user_id_group_pairs
+          - result.ip_permissions_egress[0].ip_protocol == "-1"
 
     # ============================================================
     - name: test ip rules convert port numbers from string to int (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: "8183"
-          to_port: "8183"
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: "8183"
+            to_port: "8183"
+            cidr_ip: 10.1.1.1/32
         rules_egress:
-        - proto: "tcp"
-          from_port: "8184"
-          to_port: "8184"
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: "8184"
+            to_port: "8184"
+            cidr_ip: 10.1.1.1/32
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test ip rules convert port numbers from string to int (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: "8183"
-          to_port: "8183"
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: "8183"
+            to_port: "8183"
+            cidr_ip: 10.1.1.1/32
         rules_egress:
-        - proto: "tcp"
-          from_port: "8184"
-          to_port: "8184"
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: "8184"
+            to_port: "8184"
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
-           - 'result.group_id.startswith("sg-")'
-           - 'result.ip_permissions|length == 1'
-           - 'result.ip_permissions_egress[0].ip_protocol == "tcp"'
-
+          - result.changed
+          - result.group_id.startswith("sg-")
+          - result.ip_permissions|length == 1
+          - result.ip_permissions_egress[0].ip_protocol == "tcp"
 
     # ============================================================
     - name: test group rules convert port numbers from string to int (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: "8185"
-          to_port: "8185"
-          group_id: "{{result.group_id}}"
+          - proto: tcp
+            from_port: "8185"
+            to_port: "8185"
+            group_id: "{{result.group_id}}"
         rules_egress:
-        - proto: "tcp"
-          from_port: "8186"
-          to_port: "8186"
-          group_id: "{{result.group_id}}"
+          - proto: tcp
+            from_port: "8186"
+            to_port: "8186"
+            group_id: "{{result.group_id}}"
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test group rules convert port numbers from string to int (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: "8185"
-          to_port: "8185"
-          group_id: "{{result.group_id}}"
+          - proto: tcp
+            from_port: "8185"
+            to_port: "8185"
+            group_id: "{{result.group_id}}"
         rules_egress:
-        - proto: "tcp"
-          from_port: "8186"
-          to_port: "8186"
-          group_id: "{{result.group_id}}"
+          - proto: tcp
+            from_port: "8186"
+            to_port: "8186"
+            group_id: "{{result.group_id}}"
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
-           - 'result.group_id.startswith("sg-")'
-           - result.warning is not defined
+          - result.changed
+          - result.group_id.startswith("sg-")
+          - result.warning is not defined
 
     # ============================================================
     - name: test adding a range of ports and ports given as strings (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8183-8190
-            - '8192'
-          cidr_ip: 10.1.1.1/32
+          - proto: tcp
+            ports:
+              - 8183-8190
+              - "8192"
+            cidr_ip: 10.1.1.1/32
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test adding a range of ports and ports given as strings (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8183-8190
-            - '8192'
-          cidr_ip: 10.1.1.1/32
+          - proto: tcp
+            ports:
+              - 8183-8190
+              - "8192"
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.group_id.startswith("sg-")'
+          - result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test adding a rule with a IPv4 CIDR with host bits set (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8195
-          cidr_ip: 10.0.0.1/8
+          - proto: tcp
+            ports:
+              - 8195
+            cidr_ip: 10.0.0.1/8
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test adding a rule with a IPv4 CIDR with host bits set (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8195
-          cidr_ip: 10.0.0.1/8
+          - proto: tcp
+            ports:
+              - 8195
+            cidr_ip: 10.0.0.1/8
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.group_id.startswith("sg-")'
+          - result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test adding the same rule with a IPv4 CIDR with host bits set (expected changed=false) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8195
-          cidr_ip: 10.0.0.1/8
+          - proto: tcp
+            ports:
+              - 8195
+            cidr_ip: 10.0.0.1/8
       check_mode: true
       register: check_result
 
     # ============================================================
     - name: test adding the same rule with a IPv4 CIDR with host bits set (expected changed=false and a warning)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
         state: present
         # set purge_rules to false so we don't get a false positive from previously added rules
         purge_rules: false
         rules:
-        - proto: "tcp"
-          ports:
-            - 8195
-          cidr_ip: 10.0.0.1/8
+          - proto: tcp
+            ports:
+              - 8195
+            cidr_ip: 10.0.0.1/8
       register: result
 
     - name: assert state=present (expected changed=false and a warning)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not check_result.changed'
+          - not check_result.changed
 
     - name: assert state=present (expected changed=false and a warning)
-      assert:
+      ansible.builtin.assert:
         that:
           # No way to assert for warnings?
-          - 'not result.changed'
-          - 'result.group_id.startswith("sg-")'
+          - not result.changed
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test using the default VPC
       block:
-
         - name: test adding a rule with a IPv6 CIDR with host bits set (expected changed=true) (CHECK MODE)
           ec2_security_group:
-            name: '{{ec2_group_name}}'
-            description: '{{ec2_group_description}}'
+            name: "{{ec2_group_name}}"
+            description: "{{ec2_group_description}}"
             state: present
             # set purge_rules to false so we don't get a false positive from previously added rules
             purge_rules: false
             rules:
-            - proto: "tcp"
-              ports:
-                - 8196
-              cidr_ipv6: '2001:db00::1/24'
+              - proto: tcp
+                ports:
+                  - 8196
+                cidr_ipv6: 2001:db00::1/24
           check_mode: true
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'result.changed'
+              - result.changed
 
         # ============================================================
         - name: test adding a rule with a IPv6 CIDR with host bits set (expected changed=true)
           ec2_security_group:
-            name: '{{ec2_group_name}}'
-            description: '{{ec2_group_description}}'
+            name: "{{ec2_group_name}}"
+            description: "{{ec2_group_description}}"
             state: present
             # set purge_rules to false so we don't get a false positive from previously added rules
             purge_rules: false
             rules:
-            - proto: "tcp"
-              ports:
-                - 8196
-              cidr_ipv6: '2001:db00::1/24'
+              - proto: tcp
+                ports:
+                  - 8196
+                cidr_ipv6: 2001:db00::1/24
           register: result
 
         - name: assert state=present (expected changed=true)
-          assert:
+          ansible.builtin.assert:
             that:
-              - 'result.changed'
-              - 'result.group_id.startswith("sg-")'
+              - result.changed
+              - result.group_id.startswith("sg-")
 
         # ============================================================
 
         - name: test adding a rule again with a IPv6 CIDR with host bits set (expected changed=false and a warning)
           ec2_security_group:
-            name: '{{ec2_group_name}}'
-            description: '{{ec2_group_description}}'
+            name: "{{ec2_group_name}}"
+            description: "{{ec2_group_description}}"
             state: present
             # set purge_rules to false so we don't get a false positive from previously added rules
             purge_rules: false
             rules:
-            - proto: "tcp"
-              ports:
-                - 8196
-              cidr_ipv6: '2001:db00::1/24'
+              - proto: tcp
+                ports:
+                  - 8196
+                cidr_ipv6: 2001:db00::1/24
           register: result
 
         - name: assert state=present (expected changed=false and a warning)
-          assert:
+          ansible.builtin.assert:
             that:
               # No way to assert for warnings?
-              - 'not result.changed'
-              - 'result.group_id.startswith("sg-")'
+              - not result.changed
+              - result.group_id.startswith("sg-")
 
       when: default_vpc
 
     # ============================================================
     - name: test state=absent (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
+        name: "{{ec2_group_name}}"
         state: absent
       check_mode: true
       register: result
 
     - name: assert state=absent (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test state=absent (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
+        name: "{{ec2_group_name}}"
         state: absent
       register: result
 
     - name: assert state=absent (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
-           - 'not result.group_id'
+          - result.changed
+          - not result.group_id
 
     # ============================================================
     - name: create security group in the VPC (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       check_mode: true
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: create security group in the VPC
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.vpc_id == vpc_result.vpc.id'
-          - 'result.group_id.startswith("sg-")'
+          - result.changed
+          - result.vpc_id == vpc_result.vpc.id
+          - result.group_id.startswith("sg-")
 
     # ============================================================
     - name: test adding tags (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
           tag2: test2
@@ -848,49 +842,49 @@
       register: result
 
     - name: assert that tags were added (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'not result.diff.0.before.tags'
-          - 'result.diff.0.after.tags.tag1 == "test1"'
-          - 'result.diff.0.after.tags.tag2 == "test2"'
+          - result.changed
+          - not result.diff.0.before.tags
+          - result.diff.0.after.tags.tag1 == "test1"
+          - result.diff.0.after.tags.tag2 == "test2"
 
     # ============================================================
     - name: test adding tags (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
           tag2: test2
       register: result
 
     - name: assert that tags were added (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
           - 'result.tags == {"tag1": "test1", "tag2": "test2"}'
 
     # ============================================================
     - name: test that tags are present (expected changed=False) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_rules_egress: false
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
           tag2: test2
@@ -898,444 +892,443 @@
       register: result
 
     - name: assert that tags were not changed (expected changed=False)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
+          - not result.changed
 
     # ============================================================
     - name: test that tags are present (expected changed=False)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_rules_egress: false
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
           tag2: test2
       register: result
 
     - name: assert that tags were not changed (expected changed=False)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
+          - not result.changed
           - 'result.tags == {"tag1": "test1", "tag2": "test2"}'
 
     # ============================================================
     - name: test purging tags (expected changed=True) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
       check_mode: true
       register: result
 
     - name: assert that tag2 was removed (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test purging tags (expected changed=True)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags:
           tag1: test1
       register: result
 
     - name: assert that tag2 was removed (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
           - 'result.tags == {"tag1": "test1"}'
 
     # ============================================================
 
     - name: assert that tags are left as-is if not specified (expected changed=False)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert that the tags stayed the same (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
+          - not result.changed
           - 'result.tags == {"tag1": "test1"}'
 
     # ============================================================
 
     - name: test purging all tags (expected changed=True)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         rules:
-        - proto: "tcp"
-          from_port: 8182
-          to_port: 8182
-          cidr_ip: "10.1.1.1/32"
+          - proto: tcp
+            from_port: 8182
+            to_port: 8182
+            cidr_ip: 10.1.1.1/32
         tags: {}
       register: result
 
     - name: assert that tag1 was removed (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'not result.tags'
+          - result.changed
+          - not result.tags
 
     # ============================================================
     - name: test adding a rule and egress rule descriptions (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         # purge the other rules so assertions work for the subsequent tests for rule descriptions
         purge_rules_egress: true
         purge_rules: true
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 1
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 1
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 1
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 1
       check_mode: true
       register: result
 
     - name: assert that rule descriptions are created (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # =========================================================================================
     - name: add rules without descriptions ready for adding descriptions to existing rules
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         # purge the other rules so assertions work for the subsequent tests for rule descriptions
         purge_rules_egress: true
         purge_rules: true
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
       register: result
 
     # ============================================================
     - name: test adding a rule and egress rule descriptions (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         # purge the other rules so assertions work for the subsequent tests for rule descriptions
         purge_rules_egress: true
         purge_rules: true
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 1
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 1
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 1
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 1
       register: result
 
     - name: assert that rule descriptions are created (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 1"'
-          - 'result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 1"'
+          - result.changed
+          - result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 1"
+          - result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 1"
 
     # ============================================================
     - name: test modifying rule and egress rule descriptions (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 2
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 2
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 2
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 2
       check_mode: true
       register: result
 
     - name: assert that rule descriptions were modified (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.ip_permissions | length > 0'
-          - 'result.changed'
+          - result.ip_permissions | length > 0
+          - result.changed
 
     # ============================================================
     - name: test modifying rule and egress rule descriptions (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 2
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 2
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 2
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 2
       register: result
 
     - name: assert that rule descriptions were modified (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 2"'
-          - 'result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 2"'
+          - result.changed
+          - result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 2"
+          - result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 2"
 
     # ============================================================
 
     - name: test creating rule in default vpc with egress rule (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}-default-vpc'
-        description: '{{ec2_group_description}} default VPC'
+        name: "{{ec2_group_name}}-default-vpc"
+        description: "{{ec2_group_description}} default VPC"
         purge_rules_egress: true
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ip: 10.1.1.1/24
-          rule_desc: ipv4 rule desc
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ip: 10.1.1.1/24
+            rule_desc: ipv4 rule desc
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 2
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 2
       register: result
 
     - name: assert that rule descriptions were modified (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
-          - 'result.ip_permissions_egress|length == 1'
+          - result.changed
+          - result.ip_permissions_egress|length == 1
 
     # ============================================================
     - name: test that keeping the same rule descriptions (expected changed=false) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 2
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 2
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 2
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 2
       check_mode: true
       register: result
 
     - name: assert that rule descriptions stayed the same (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
+          - not result.changed
 
     # ============================================================
     - name: test that keeping the same rule descriptions (expected changed=false)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc: ipv6 rule desc 2
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc: ipv6 rule desc 2
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc: egress rule desc 2
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc: egress rule desc 2
       register: result
 
     - name: assert that rule descriptions stayed the same (expected changed=false)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'not result.changed'
-          - 'result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 2"'
-          - 'result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 2"'
+          - not result.changed
+          - result.ip_permissions[0].ipv6_ranges[0].description == "ipv6 rule desc 2"
+          - result.ip_permissions_egress[0].ip_ranges[0].description == "egress rule desc 2"
 
     # ============================================================
     - name: test removing rule descriptions (expected changed=true) (CHECK MODE)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc:
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc:
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc:
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc:
       check_mode: true
       register: result
 
     - name: assert that rule descriptions were removed (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.changed'
+          - result.changed
 
     # ============================================================
     - name: test removing rule descriptions (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         purge_rules_egress: false
         purge_rules: false
         state: present
         rules:
-        - proto: "tcp"
-          ports:
-          - 8281
-          cidr_ipv6: 1001:d00::/24
-          rule_desc:
+          - proto: tcp
+            ports:
+              - 8281
+            cidr_ipv6: 1001:d00::/24
+            rule_desc:
         rules_egress:
-        - proto: "tcp"
-          ports:
-          - 8282
-          cidr_ip: 10.2.2.2/32
-          rule_desc:
+          - proto: tcp
+            ports:
+              - 8282
+            cidr_ip: 10.2.2.2/32
+            rule_desc:
       register: result
       ignore_errors: true
 
     - name: assert that rule descriptions were removed
-      assert:
+      ansible.builtin.assert:
         that:
-          - 'result.ip_permissions[0].ipv6_ranges[0].description is undefined'
-          - 'result.ip_permissions_egress[0].ip_ranges[0].description is undefined'
+          - result.ip_permissions[0].ipv6_ranges[0].description is undefined
+          - result.ip_permissions_egress[0].ip_ranges[0].description is undefined
 
     # ============================================================
 
     - name: test state=absent (expected changed=true)
       ec2_security_group:
-        name: '{{ec2_group_name}}'
+        name: "{{ec2_group_name}}"
         state: absent
       register: result
 
     - name: assert state=absent (expected changed=true)
-      assert:
+      ansible.builtin.assert:
         that:
-           - 'result.changed'
-           - 'not result.group_id'
+          - result.changed
+          - not result.group_id
   always:
-
     # ============================================================
     # Describe state of remaining resources
 
     - name: Retrieve security group info based on SG VPC
       ec2_security_group_info:
         filters:
-          vpc-id: '{{ vpc_result.vpc.id }}'
+          vpc-id: "{{ vpc_result.vpc.id }}"
       register: remaining_groups
 
     - name: Retrieve subnet info based on SG VPC
-      ec2_vpc_subnet_info:
+      amazon.aws.ec2_vpc_subnet_info:
         filters:
-          vpc-id: '{{ vpc_result.vpc.id }}'
+          vpc-id: "{{ vpc_result.vpc.id }}"
       register: remaining_subnets
 
     - name: Retrieve VPC info based on SG VPC
-      ec2_vpc_net_info:
+      amazon.aws.ec2_vpc_net_info:
         vpc_ids:
-          - '{{ vpc_result.vpc.id }}'
+          - "{{ vpc_result.vpc.id }}"
       register: remaining_vpc
 
     # ============================================================
@@ -1343,28 +1336,28 @@
 
     - name: Delete rules from remaining SGs
       ec2_security_group:
-        name: '{{ item.group_name }}'
-        group_id: '{{ item.group_id }}'
-        description: '{{ item.description }}'
+        name: "{{ item.group_name }}"
+        group_id: "{{ item.group_id }}"
+        description: "{{ item.description }}"
         rules: []
         rules_egress: []
-      loop: '{{ remaining_groups.security_groups }}'
-      ignore_errors: yes
+      loop: "{{ remaining_groups.security_groups }}"
+      ignore_errors: true
 
     - name: Delete remaining SGs
       ec2_security_group:
         state: absent
-        group_id: '{{ item.group_id }}'
-      loop: '{{ remaining_groups.security_groups }}'
+        group_id: "{{ item.group_id }}"
+      loop: "{{ remaining_groups.security_groups }}"
       when:
-      - item.group_name != 'default'
-      ignore_errors: yes
+        - item.group_name != 'default'
+      ignore_errors: true
 
     # ============================================================
 
     - name: tidy up VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: absent
         cidr_block: "{{ vpc_cidr }}"
-      ignore_errors: yes
+      ignore_errors: true

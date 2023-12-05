@@ -1,10 +1,10 @@
 ---
 - module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
 
   collections:
     - amazon.aws
@@ -16,27 +16,27 @@
 
   block:
     - name: Create temporary directory
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         suffix: .lambda_handler
       register: _dir
 
-    - copy:
+    - ansible.builtin.copy:
         content: "{{ lambda_hander_content }}"
         dest: "{{ _dir.path }}/lambda_handler.py"
         remote_src: true
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         zip_file_path: "{{ _dir.path }}/lambda_handler.zip"
 
     - name: Create lambda handler archive
-      archive:
+      community.general.archive:
         path: "{{ _dir.path }}/lambda_handler.py"
         dest: "{{ zip_file_path }}"
         format: zip
 
     - name: Create S3 bucket for testing
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ s3_bucket_name }}"
         state: present
 
@@ -51,7 +51,7 @@
     - name: Create lambda layer (check_mode=true)
       lambda_layer:
         name: "{{ layer_name }}"
-        description: '{{ resource_prefix }} lambda layer first version'
+        description: "{{ resource_prefix }} lambda layer first version"
         content:
           zip_file: "{{ zip_file_path }}"
         compatible_runtimes:
@@ -66,7 +66,7 @@
       register: layers
 
     - name: Ensure lambda layer was not created
-      assert:
+      ansible.builtin.assert:
         that:
           - create_check_mode is changed
           - create_check_mode.msg == "Create operation skipped - running in check mode"
@@ -75,7 +75,7 @@
     - name: Create lambda layer (first version)
       lambda_layer:
         name: "{{ layer_name }}"
-        description: '{{ resource_prefix }} lambda layer first version'
+        description: "{{ resource_prefix }} lambda layer first version"
         content:
           zip_file: "{{ zip_file_path }}"
         compatible_runtimes:
@@ -86,7 +86,7 @@
     - name: Create another lambda layer version
       lambda_layer:
         name: "{{ layer_name }}"
-        description: '{{ resource_prefix }} lambda layer second version'
+        description: "{{ resource_prefix }} lambda layer second version"
         content:
           s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
@@ -98,9 +98,9 @@
     - name: Retrieve all layers with latest version
       lambda_layer_info:
       register: layers
-    
+
     - name: Ensure layer created above was found
-      assert:
+      ansible.builtin.assert:
         that:
           - '"layers_versions" in layers'
           - first_version.layer_versions | length == 1
@@ -118,7 +118,7 @@
       register: layers
 
     - name: Ensure layer created above was found
-      assert:
+      ansible.builtin.assert:
         that:
           - '"layers_versions" in layers'
           - layers.layers_versions | length == 2
@@ -143,7 +143,7 @@
       register: layers
 
     - name: Ensure no layer version was deleted
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_check_mode is changed
           - delete_check_mode.layer_versions | length == 1
@@ -166,7 +166,7 @@
       register: layers
 
     - name: Ensure latest layer version was deleted
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_layer is changed
           - delete_layer.layer_versions | length == 1
@@ -184,19 +184,19 @@
       register: delete_idempotent
 
     - name: Ensure nothing changed
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_idempotent is not changed
 
     - name: Create multiple lambda layer versions
       lambda_layer:
         name: "{{ layer_name }}"
-        description: '{{ resource_prefix }} lambda layer version compatible with python3.{{ item }}'
+        description: "{{ resource_prefix }} lambda layer version compatible with python3.{{ item }}"
         content:
           s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
-          - "python3.{{ item }}"
+          - python3.{{ item }}
         license_info: GPL-3.0-only
       with_items: ["9", "10"]
 
@@ -213,7 +213,7 @@
       register: layers
 
     - name: Ensure layer does not exist anymore
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_layer is changed
           - delete_layer.layer_versions | length > 1
@@ -228,7 +228,7 @@
       ignore_errors: true
 
     - name: Delete temporary directory
-      file:
+      ansible.builtin.file:
         state: absent
         path: "{{ _dir.path }}"
       ignore_errors: true
@@ -241,7 +241,7 @@
       ignore_errors: true
 
     - name: Delete S3 bucket
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ s3_bucket_name }}"
         force: true
         state: absent
