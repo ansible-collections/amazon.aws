@@ -1,2 +1,3 @@
+plugins/inventory/aws_ec2.py yaml-lint:unparsable-with-libyaml # bug in ansible-test - https://github.com/ansible/ansible/issues/82353
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
 plugins/module_utils/policy.py pylint:collection-deprecated-version
