@@ -28,14 +28,14 @@ Minor Changes
 - iam_group - add support for setting group path (https://github.com/ansible-collections/amazon.aws/pull/1892).
 - iam_group - adds attached_policies return value (https://github.com/ansible-collections/amazon.aws/pull/1892).
 - iam_group - code refactored to avoid single long function (https://github.com/ansible-collections/amazon.aws/pull/1892).
-- modules/ec2_instance - add support for AdditionalInfo option when creating an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
+- ec2_instance - add support for AdditionalInfo option when creating an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
 - rds_instance_snapshot - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
 
 Bugfixes
 --------
 
 - ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time (https://github.com/ansible-collections/amazon.aws/pull/1848).
-- s3_object - Fix typo that caused false deprecation warning when setting `overwrite=latest` (https://github.com/ansible-collections/amazon.aws/pull/1847).
+- s3_object - Fix typo that caused false deprecation warning when setting ``overwrite=latest`` (https://github.com/ansible-collections/amazon.aws/pull/1847).
 - s3_object - when doing a put and specifying ``Content-Type`` in metadata, this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None`` causing the put to fail. Fix now correctly honours the specified ``Content-Type`` (https://github.com/ansible-collections/amazon.aws/issues/1881).
 
 v7.0.0
